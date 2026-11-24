@@ -5,14 +5,12 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         name: "name",
  *         permissions: ["activity:read"],
  *         scopes: ["workspaces:read"]
  *     }
  */
 export interface NewPartnerKey {
-    workspaceId: string;
     expiresInDays?: number;
     name: string;
     permissions: Peal.Permission[];

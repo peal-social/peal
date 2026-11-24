@@ -5,11 +5,9 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         network: "meta"
  *     }
  */
 export interface ConnectAdsRequest {
-    workspaceId: string;
     network: Peal.AdNetwork;
 }

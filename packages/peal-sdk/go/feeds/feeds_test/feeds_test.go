@@ -88,9 +88,7 @@ func TestFeedsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListFeedsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListFeedsRequest{}
 	_, invocationErr := client.Feeds.List(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestFeedsListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFeedsListWithWireMock", "GET", "/api/workspaces/workspaceId/feeds", nil, 1)
+	VerifyRequestCount(t, "TestFeedsListWithWireMock", "GET", "/api/v1/feeds", nil, 1)
 }
 
 func TestFeedsCreateWithWireMock(
@@ -115,8 +113,7 @@ func TestFeedsCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewFeed{
-		WorkspaceID: "workspaceId",
-		URL:         "url",
+		URL: "url",
 	}
 	_, invocationErr := client.Feeds.Create(
 		context.TODO(),
@@ -127,7 +124,7 @@ func TestFeedsCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFeedsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/feeds", nil, 1)
+	VerifyRequestCount(t, "TestFeedsCreateWithWireMock", "POST", "/api/v1/feeds", nil, 1)
 }
 
 func TestFeedsPreviewWithWireMock(
@@ -142,8 +139,7 @@ func TestFeedsPreviewWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.FeedPreviewRequest{
-		WorkspaceID: "workspaceId",
-		URL:         "url",
+		URL: "url",
 	}
 	_, invocationErr := client.Feeds.Preview(
 		context.TODO(),
@@ -154,7 +150,7 @@ func TestFeedsPreviewWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFeedsPreviewWithWireMock", "POST", "/api/workspaces/workspaceId/feeds/preview", nil, 1)
+	VerifyRequestCount(t, "TestFeedsPreviewWithWireMock", "POST", "/api/v1/feeds/preview", nil, 1)
 }
 
 func TestFeedsGetWithWireMock(
@@ -169,8 +165,7 @@ func TestFeedsGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetFeedsRequest{
-		WorkspaceID: "workspaceId",
-		FeedID:      "feedId",
+		FeedID: "feedId",
 	}
 	_, invocationErr := client.Feeds.Get(
 		context.TODO(),
@@ -181,7 +176,7 @@ func TestFeedsGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFeedsGetWithWireMock", "GET", "/api/workspaces/workspaceId/feeds/feedId", nil, 1)
+	VerifyRequestCount(t, "TestFeedsGetWithWireMock", "GET", "/api/v1/feeds/feedId", nil, 1)
 }
 
 func TestFeedsDeleteWithWireMock(
@@ -196,8 +191,7 @@ func TestFeedsDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteFeedsRequest{
-		WorkspaceID: "workspaceId",
-		FeedID:      "feedId",
+		FeedID: "feedId",
 	}
 	invocationErr := client.Feeds.Delete(
 		context.TODO(),
@@ -208,7 +202,7 @@ func TestFeedsDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFeedsDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/feeds/feedId", nil, 1)
+	VerifyRequestCount(t, "TestFeedsDeleteWithWireMock", "DELETE", "/api/v1/feeds/feedId", nil, 1)
 }
 
 func TestFeedsUpdateWithWireMock(
@@ -223,8 +217,7 @@ func TestFeedsUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.FeedChange{
-		WorkspaceID: "workspaceId",
-		FeedID:      "feedId",
+		FeedID: "feedId",
 	}
 	_, invocationErr := client.Feeds.Update(
 		context.TODO(),
@@ -235,7 +228,7 @@ func TestFeedsUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFeedsUpdateWithWireMock", "PATCH", "/api/workspaces/workspaceId/feeds/feedId", nil, 1)
+	VerifyRequestCount(t, "TestFeedsUpdateWithWireMock", "PATCH", "/api/v1/feeds/feedId", nil, 1)
 }
 
 func TestFeedsItemsWithWireMock(
@@ -250,8 +243,7 @@ func TestFeedsItemsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ItemsFeedsRequest{
-		WorkspaceID: "workspaceId",
-		FeedID:      "feedId",
+		FeedID: "feedId",
 	}
 	_, invocationErr := client.Feeds.Items(
 		context.TODO(),
@@ -262,5 +254,5 @@ func TestFeedsItemsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFeedsItemsWithWireMock", "GET", "/api/workspaces/workspaceId/feeds/feedId/items", nil, 1)
+	VerifyRequestCount(t, "TestFeedsItemsWithWireMock", "GET", "/api/v1/feeds/feedId/items", nil, 1)
 }

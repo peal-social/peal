@@ -8,9 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
-import social.peal.resources.partneraccount.requests.ClosePartnerAccountRequest;
-import social.peal.resources.partneraccount.requests.GetPartnerAccountRequest;
-import social.peal.resources.partneraccount.requests.ListKeysPartnerAccountRequest;
 import social.peal.resources.partneraccount.requests.ListWorkspacesPartnerAccountRequest;
 import social.peal.resources.partneraccount.requests.NewPartnerKey;
 import social.peal.resources.partneraccount.requests.OpenPartner;
@@ -44,8 +41,8 @@ public class AsyncPartnerAccountClient {
     /**
      * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
      */
-    public CompletableFuture<PartnerStanding> get(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<PartnerStanding>> rawFuture = this.rawClient.get(workspaceId);
+    public CompletableFuture<PartnerStanding> get() {
+        CompletableFuture<PealClientHttpResponse<PartnerStanding>> rawFuture = this.rawClient.get();
         CompletableFuture<PartnerStanding> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -58,39 +55,8 @@ public class AsyncPartnerAccountClient {
     /**
      * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
      */
-    public CompletableFuture<PartnerStanding> get(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<PartnerStanding>> rawFuture =
-                this.rawClient.get(workspaceId, requestOptions);
-        CompletableFuture<PartnerStanding> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
-     */
-    public CompletableFuture<PartnerStanding> get(String workspaceId, GetPartnerAccountRequest request) {
-        CompletableFuture<PealClientHttpResponse<PartnerStanding>> rawFuture = this.rawClient.get(workspaceId, request);
-        CompletableFuture<PartnerStanding> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
-     */
-    public CompletableFuture<PartnerStanding> get(
-            String workspaceId, GetPartnerAccountRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<PartnerStanding>> rawFuture =
-                this.rawClient.get(workspaceId, request, requestOptions);
+    public CompletableFuture<PartnerStanding> get(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<PartnerStanding>> rawFuture = this.rawClient.get(requestOptions);
         CompletableFuture<PartnerStanding> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -103,8 +69,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 <code>PartnerAccountsClosed</code>. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<Partner> open(String workspaceId, OpenPartner request) {
-        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.open(workspaceId, request);
+    public CompletableFuture<Partner> open(OpenPartner request) {
+        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.open(request);
         CompletableFuture<Partner> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -117,9 +83,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 <code>PartnerAccountsClosed</code>. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<Partner> open(String workspaceId, OpenPartner request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture =
-                this.rawClient.open(workspaceId, request, requestOptions);
+    public CompletableFuture<Partner> open(OpenPartner request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.open(request, requestOptions);
         CompletableFuture<Partner> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -132,8 +97,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<Void> close(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.close(workspaceId);
+    public CompletableFuture<Void> close() {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.close();
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -146,38 +111,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<Void> close(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.close(workspaceId, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
-     */
-    public CompletableFuture<Void> close(String workspaceId, ClosePartnerAccountRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.close(workspaceId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
-     */
-    public CompletableFuture<Void> close(
-            String workspaceId, ClosePartnerAccountRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.close(workspaceId, request, requestOptions);
+    public CompletableFuture<Void> close(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.close(requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -190,8 +125,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<Partner> update(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.update(workspaceId);
+    public CompletableFuture<Partner> update() {
+        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.update();
         CompletableFuture<Partner> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -204,9 +139,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<Partner> update(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture =
-                this.rawClient.update(workspaceId, requestOptions);
+    public CompletableFuture<Partner> update(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.update(requestOptions);
         CompletableFuture<Partner> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -219,8 +153,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<Partner> update(String workspaceId, PartnerChange request) {
-        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.update(workspaceId, request);
+    public CompletableFuture<Partner> update(PartnerChange request) {
+        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.update(request);
         CompletableFuture<Partner> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -233,9 +167,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<Partner> update(String workspaceId, PartnerChange request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture =
-                this.rawClient.update(workspaceId, request, requestOptions);
+    public CompletableFuture<Partner> update(PartnerChange request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Partner>> rawFuture = this.rawClient.update(request, requestOptions);
         CompletableFuture<Partner> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -248,8 +181,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Lists the partner account's keys. Needs partner:read.
      */
-    public CompletableFuture<List<PartnerKey>> listKeys(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> rawFuture = this.rawClient.listKeys(workspaceId);
+    public CompletableFuture<List<PartnerKey>> listKeys() {
+        CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> rawFuture = this.rawClient.listKeys();
         CompletableFuture<List<PartnerKey>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -262,40 +195,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Lists the partner account's keys. Needs partner:read.
      */
-    public CompletableFuture<List<PartnerKey>> listKeys(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> rawFuture =
-                this.rawClient.listKeys(workspaceId, requestOptions);
-        CompletableFuture<List<PartnerKey>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the partner account's keys. Needs partner:read.
-     */
-    public CompletableFuture<List<PartnerKey>> listKeys(String workspaceId, ListKeysPartnerAccountRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> rawFuture =
-                this.rawClient.listKeys(workspaceId, request);
-        CompletableFuture<List<PartnerKey>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the partner account's keys. Needs partner:read.
-     */
-    public CompletableFuture<List<PartnerKey>> listKeys(
-            String workspaceId, ListKeysPartnerAccountRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> rawFuture =
-                this.rawClient.listKeys(workspaceId, request, requestOptions);
+    public CompletableFuture<List<PartnerKey>> listKeys(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> rawFuture = this.rawClient.listKeys(requestOptions);
         CompletableFuture<List<PartnerKey>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -308,9 +209,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.
      */
-    public CompletableFuture<CreatedPartnerKey> createKey(String workspaceId, NewPartnerKey request) {
-        CompletableFuture<PealClientHttpResponse<CreatedPartnerKey>> rawFuture =
-                this.rawClient.createKey(workspaceId, request);
+    public CompletableFuture<CreatedPartnerKey> createKey(NewPartnerKey request) {
+        CompletableFuture<PealClientHttpResponse<CreatedPartnerKey>> rawFuture = this.rawClient.createKey(request);
         CompletableFuture<CreatedPartnerKey> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -323,10 +223,9 @@ public class AsyncPartnerAccountClient {
     /**
      * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.
      */
-    public CompletableFuture<CreatedPartnerKey> createKey(
-            String workspaceId, NewPartnerKey request, RequestOptions requestOptions) {
+    public CompletableFuture<CreatedPartnerKey> createKey(NewPartnerKey request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CreatedPartnerKey>> rawFuture =
-                this.rawClient.createKey(workspaceId, request, requestOptions);
+                this.rawClient.createKey(request, requestOptions);
         CompletableFuture<CreatedPartnerKey> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -339,8 +238,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
-    public CompletableFuture<Void> revokeKey(String workspaceId, String partnerKeyId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.revokeKey(workspaceId, partnerKeyId);
+    public CompletableFuture<Void> revokeKey(String partnerKeyId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.revokeKey(partnerKeyId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -353,9 +252,23 @@ public class AsyncPartnerAccountClient {
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
-    public CompletableFuture<Void> revokeKey(String workspaceId, String partnerKeyId, RequestOptions requestOptions) {
+    public CompletableFuture<Void> revokeKey(String partnerKeyId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.revokeKey(workspaceId, partnerKeyId, requestOptions);
+                this.rawClient.revokeKey(partnerKeyId, requestOptions);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Revokes a partner key: it stops working at once. Needs partner:manage.
+     */
+    public CompletableFuture<Void> revokeKey(String partnerKeyId, RevokeKeyPartnerAccountRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.revokeKey(partnerKeyId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -369,28 +282,9 @@ public class AsyncPartnerAccountClient {
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
     public CompletableFuture<Void> revokeKey(
-            String workspaceId, String partnerKeyId, RevokeKeyPartnerAccountRequest request) {
+            String partnerKeyId, RevokeKeyPartnerAccountRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.revokeKey(workspaceId, partnerKeyId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Revokes a partner key: it stops working at once. Needs partner:manage.
-     */
-    public CompletableFuture<Void> revokeKey(
-            String workspaceId,
-            String partnerKeyId,
-            RevokeKeyPartnerAccountRequest request,
-            RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.revokeKey(workspaceId, partnerKeyId, request, requestOptions);
+                this.rawClient.revokeKey(partnerKeyId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -403,8 +297,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
-    public CompletableFuture<PartnerHealth> overview(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<PartnerHealth>> rawFuture = this.rawClient.overview(workspaceId);
+    public CompletableFuture<PartnerHealth> overview() {
+        CompletableFuture<PealClientHttpResponse<PartnerHealth>> rawFuture = this.rawClient.overview();
         CompletableFuture<PartnerHealth> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -417,9 +311,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
-    public CompletableFuture<PartnerHealth> overview(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<PartnerHealth>> rawFuture =
-                this.rawClient.overview(workspaceId, requestOptions);
+    public CompletableFuture<PartnerHealth> overview(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<PartnerHealth>> rawFuture = this.rawClient.overview(requestOptions);
         CompletableFuture<PartnerHealth> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -432,9 +325,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
-    public CompletableFuture<PartnerHealth> overview(String workspaceId, OverviewPartnerAccountRequest request) {
-        CompletableFuture<PealClientHttpResponse<PartnerHealth>> rawFuture =
-                this.rawClient.overview(workspaceId, request);
+    public CompletableFuture<PartnerHealth> overview(OverviewPartnerAccountRequest request) {
+        CompletableFuture<PealClientHttpResponse<PartnerHealth>> rawFuture = this.rawClient.overview(request);
         CompletableFuture<PartnerHealth> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -448,9 +340,9 @@ public class AsyncPartnerAccountClient {
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
     public CompletableFuture<PartnerHealth> overview(
-            String workspaceId, OverviewPartnerAccountRequest request, RequestOptions requestOptions) {
+            OverviewPartnerAccountRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<PartnerHealth>> rawFuture =
-                this.rawClient.overview(workspaceId, request, requestOptions);
+                this.rawClient.overview(request, requestOptions);
         CompletableFuture<PartnerHealth> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -463,9 +355,8 @@ public class AsyncPartnerAccountClient {
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
-    public CompletableFuture<CustomerWorkspacePage> listWorkspaces(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> rawFuture =
-                this.rawClient.listWorkspaces(workspaceId);
+    public CompletableFuture<CustomerWorkspacePage> listWorkspaces() {
+        CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> rawFuture = this.rawClient.listWorkspaces();
         CompletableFuture<CustomerWorkspacePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -478,9 +369,24 @@ public class AsyncPartnerAccountClient {
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
-    public CompletableFuture<CustomerWorkspacePage> listWorkspaces(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<CustomerWorkspacePage> listWorkspaces(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> rawFuture =
-                this.rawClient.listWorkspaces(workspaceId, requestOptions);
+                this.rawClient.listWorkspaces(requestOptions);
+        CompletableFuture<CustomerWorkspacePage> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
+     */
+    public CompletableFuture<CustomerWorkspacePage> listWorkspaces(ListWorkspacesPartnerAccountRequest request) {
+        CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> rawFuture =
+                this.rawClient.listWorkspaces(request);
         CompletableFuture<CustomerWorkspacePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -494,25 +400,9 @@ public class AsyncPartnerAccountClient {
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
     public CompletableFuture<CustomerWorkspacePage> listWorkspaces(
-            String workspaceId, ListWorkspacesPartnerAccountRequest request) {
+            ListWorkspacesPartnerAccountRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> rawFuture =
-                this.rawClient.listWorkspaces(workspaceId, request);
-        CompletableFuture<CustomerWorkspacePage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
-     */
-    public CompletableFuture<CustomerWorkspacePage> listWorkspaces(
-            String workspaceId, ListWorkspacesPartnerAccountRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> rawFuture =
-                this.rawClient.listWorkspaces(workspaceId, request, requestOptions);
+                this.rawClient.listWorkspaces(request, requestOptions);
         CompletableFuture<CustomerWorkspacePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

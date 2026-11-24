@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListThreadsInboxRequest {
-    workspaceId: string;
     channelId?: string;
     cursor?: string;
     limit?: string;

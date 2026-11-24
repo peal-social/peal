@@ -10,53 +10,10 @@ import (
 )
 
 var (
-	createSignaturesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type CreateSignaturesRequest struct {
-	WorkspaceID string            `json:"-" url:"-"`
-	Body        *SignatureDetails `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (c *CreateSignaturesRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CreateSignaturesRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(createSignaturesRequestFieldWorkspaceID)
-}
-
-func (c *CreateSignaturesRequest) UnmarshalJSON(data []byte) error {
-	body := new(SignatureDetails)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	c.Body = body
-	return nil
-}
-
-func (c *CreateSignaturesRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.Body)
-}
-
-var (
-	deleteSignaturesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteSignaturesRequestFieldSignatureID = big.NewInt(1 << 1)
+	deleteSignaturesRequestFieldSignatureID = big.NewInt(1 << 0)
 )
 
 type DeleteSignaturesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
 	SignatureID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -72,45 +29,11 @@ func (d *DeleteSignaturesRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteSignaturesRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteSignaturesRequestFieldWorkspaceID)
-}
-
 // SetSignatureID sets the SignatureID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteSignaturesRequest) SetSignatureID(signatureID string) {
 	d.SignatureID = signatureID
 	d.require(deleteSignaturesRequestFieldSignatureID)
-}
-
-var (
-	listSignaturesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListSignaturesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListSignaturesRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListSignaturesRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listSignaturesRequestFieldWorkspaceID)
 }
 
 var (
@@ -803,12 +726,10 @@ func (s *SignatureScopeWorkspace) String() string {
 }
 
 var (
-	updateSignaturesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	updateSignaturesRequestFieldSignatureID = big.NewInt(1 << 1)
+	updateSignaturesRequestFieldSignatureID = big.NewInt(1 << 0)
 )
 
 type UpdateSignaturesRequest struct {
-	WorkspaceID string            `json:"-" url:"-"`
 	SignatureID string            `json:"-" url:"-"`
 	Body        *SignatureDetails `json:"-" url:"-"`
 
@@ -823,13 +744,6 @@ func (u *UpdateSignaturesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UpdateSignaturesRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(updateSignaturesRequestFieldWorkspaceID)
 }
 
 // SetSignatureID sets the SignatureID field and marks it as non-optional;

@@ -88,19 +88,15 @@ func TestQueuesListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListQueuesRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Queues.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestQueuesListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestQueuesListWithWireMock", "GET", "/api/workspaces/workspaceId/queues", nil, 1)
+	VerifyRequestCount(t, "TestQueuesListWithWireMock", "GET", "/api/v1/queues", nil, 1)
 }
 
 func TestQueuesCreateWithWireMock(
@@ -114,18 +110,15 @@ func TestQueuesCreateWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.CreateQueuesRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.QueueDetails{
-			Name: "name",
-			Slots: []*peal.QueueSlot{
-				&peal.QueueSlot{
-					Day:  peal.WeekdayMonday,
-					Time: "time",
-				},
+	request := &peal.QueueDetails{
+		Name: "name",
+		Slots: []*peal.QueueSlot{
+			&peal.QueueSlot{
+				Day:  peal.WeekdayMonday,
+				Time: "time",
 			},
-			TimeZone: "timeZone",
 		},
+		TimeZone: "timeZone",
 	}
 	_, invocationErr := client.Queues.Create(
 		context.TODO(),
@@ -136,7 +129,7 @@ func TestQueuesCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestQueuesCreateWithWireMock", "POST", "/api/workspaces/workspaceId/queues", nil, 1)
+	VerifyRequestCount(t, "TestQueuesCreateWithWireMock", "POST", "/api/v1/queues", nil, 1)
 }
 
 func TestQueuesGetWithWireMock(
@@ -151,8 +144,7 @@ func TestQueuesGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetQueuesRequest{
-		WorkspaceID: "workspaceId",
-		QueueID:     "queueId",
+		QueueID: "queueId",
 	}
 	_, invocationErr := client.Queues.Get(
 		context.TODO(),
@@ -163,7 +155,7 @@ func TestQueuesGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestQueuesGetWithWireMock", "GET", "/api/workspaces/workspaceId/queues/queueId", nil, 1)
+	VerifyRequestCount(t, "TestQueuesGetWithWireMock", "GET", "/api/v1/queues/queueId", nil, 1)
 }
 
 func TestQueuesUpdateWithWireMock(
@@ -178,8 +170,7 @@ func TestQueuesUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UpdateQueuesRequest{
-		WorkspaceID: "workspaceId",
-		QueueID:     "queueId",
+		QueueID: "queueId",
 		Body: &peal.QueueDetails{
 			Name: "name",
 			Slots: []*peal.QueueSlot{
@@ -200,7 +191,7 @@ func TestQueuesUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestQueuesUpdateWithWireMock", "PUT", "/api/workspaces/workspaceId/queues/queueId", nil, 1)
+	VerifyRequestCount(t, "TestQueuesUpdateWithWireMock", "PUT", "/api/v1/queues/queueId", nil, 1)
 }
 
 func TestQueuesDeleteWithWireMock(
@@ -215,8 +206,7 @@ func TestQueuesDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteQueuesRequest{
-		WorkspaceID: "workspaceId",
-		QueueID:     "queueId",
+		QueueID: "queueId",
 	}
 	invocationErr := client.Queues.Delete(
 		context.TODO(),
@@ -227,7 +217,7 @@ func TestQueuesDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestQueuesDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/queues/queueId", nil, 1)
+	VerifyRequestCount(t, "TestQueuesDeleteWithWireMock", "DELETE", "/api/v1/queues/queueId", nil, 1)
 }
 
 func TestQueuesSlotsWithWireMock(
@@ -242,8 +232,7 @@ func TestQueuesSlotsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SlotsQueuesRequest{
-		WorkspaceID: "workspaceId",
-		QueueID:     "queueId",
+		QueueID: "queueId",
 	}
 	_, invocationErr := client.Queues.Slots(
 		context.TODO(),
@@ -254,7 +243,7 @@ func TestQueuesSlotsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestQueuesSlotsWithWireMock", "GET", "/api/workspaces/workspaceId/queues/queueId/slots", nil, 1)
+	VerifyRequestCount(t, "TestQueuesSlotsWithWireMock", "GET", "/api/v1/queues/queueId/slots", nil, 1)
 }
 
 func TestQueuesReshuffleWithWireMock(
@@ -269,8 +258,7 @@ func TestQueuesReshuffleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ReshuffleQueuesRequest{
-		WorkspaceID: "workspaceId",
-		QueueID:     "queueId",
+		QueueID: "queueId",
 	}
 	_, invocationErr := client.Queues.Reshuffle(
 		context.TODO(),
@@ -281,5 +269,5 @@ func TestQueuesReshuffleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestQueuesReshuffleWithWireMock", "POST", "/api/workspaces/workspaceId/queues/queueId/reshuffle", nil, 1)
+	VerifyRequestCount(t, "TestQueuesReshuffleWithWireMock", "POST", "/api/v1/queues/queueId/reshuffle", nil, 1)
 }

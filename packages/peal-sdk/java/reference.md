@@ -198,7 +198,7 @@ client.credential().get();
 </details>
 
 ## apiKeys
-<details><summary><code>client.apiKeys.list(workspaceId) -> List&amp;lt;ApiKey&amp;gt;</code></summary>
+<details><summary><code>client.apiKeys.list() -> List&amp;lt;ApiKey&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -225,28 +225,8 @@ Lists the workspace's API keys, with the member who made each. Needs apiKey:read
 <dd>
 
 ```java
-client.apiKeys().list(
-    "workspaceId",
-    ListApiKeysRequest
-        .builder()
-        .build()
-);
+client.apiKeys().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -257,7 +237,7 @@ client.apiKeys().list(
 </dl>
 </details>
 
-<details><summary><code>client.apiKeys.create(workspaceId, request) -> CreatedApiKey</code></summary>
+<details><summary><code>client.apiKeys.create(request) -> CreatedApiKey</code></summary>
 <dl>
 <dd>
 
@@ -285,7 +265,6 @@ Creates an API key for the workspace with some of the caller's permissions, and 
 
 ```java
 client.apiKeys().create(
-    "workspaceId",
     NewApiKey
         .builder()
         .name("name")
@@ -304,14 +283,6 @@ client.apiKeys().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -344,7 +315,7 @@ client.apiKeys().create(
 </dl>
 </details>
 
-<details><summary><code>client.apiKeys.revoke(workspaceId, apiKeyId)</code></summary>
+<details><summary><code>client.apiKeys.revoke(apiKeyId)</code></summary>
 <dl>
 <dd>
 
@@ -372,7 +343,6 @@ Revokes an API key of the workspace: it stops working at once. Needs apiKey:dele
 
 ```java
 client.apiKeys().revoke(
-    "workspaceId",
     "apiKeyId",
     RevokeApiKeysRequest
         .builder()
@@ -392,14 +362,6 @@ client.apiKeys().revoke(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **apiKeyId:** `String` 
     
 </dd>
@@ -413,7 +375,7 @@ client.apiKeys().revoke(
 </details>
 
 ## channels
-<details><summary><code>client.channels.list(workspaceId) -> List&amp;lt;Channel&amp;gt;</code></summary>
+<details><summary><code>client.channels.list() -> List&amp;lt;Channel&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -440,28 +402,8 @@ Lists the channels connected to the workspace, oldest first. Their tokens are ne
 <dd>
 
 ```java
-client.channels().list(
-    "workspaceId",
-    ListChannelsRequest
-        .builder()
-        .build()
-);
+client.channels().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -472,7 +414,7 @@ client.channels().list(
 </dl>
 </details>
 
-<details><summary><code>client.channels.find(workspaceId) -> ChannelPage</code></summary>
+<details><summary><code>client.channels.find() -> ChannelPage</code></summary>
 <dl>
 <dd>
 
@@ -500,7 +442,6 @@ Lists the workspace's channels a page at a time, oldest first: 50 unless `limit`
 
 ```java
 client.channels().find(
-    "workspaceId",
     FindChannelsRequest
         .builder()
         .build()
@@ -515,14 +456,6 @@ client.channels().find(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -571,7 +504,7 @@ client.channels().find(
 </dl>
 </details>
 
-<details><summary><code>client.channels.platforms(workspaceId) -> ConnectablePlatforms</code></summary>
+<details><summary><code>client.channels.platforms() -> ConnectablePlatforms</code></summary>
 <dl>
 <dd>
 
@@ -598,28 +531,8 @@ Lists the platforms this server can connect accounts of, in Peal's order. A plat
 <dd>
 
 ```java
-client.channels().platforms(
-    "workspaceId",
-    PlatformsChannelsRequest
-        .builder()
-        .build()
-);
+client.channels().platforms();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -630,7 +543,7 @@ client.channels().platforms(
 </dl>
 </details>
 
-<details><summary><code>client.channels.connectSite(workspaceId, request) -> Channel</code></summary>
+<details><summary><code>client.channels.connectSite(request) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -658,7 +571,6 @@ Connects a website, to publish articles to it: a WordPress site, by its address,
 
 ```java
 client.channels().connectSite(
-    "workspaceId",
     ConnectSite
         .builder()
         .address("address")
@@ -677,14 +589,6 @@ client.channels().connectSite(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -725,7 +629,7 @@ client.channels().connectSite(
 </dl>
 </details>
 
-<details><summary><code>client.channels.connectSiteWithKey(workspaceId, request) -> Channel</code></summary>
+<details><summary><code>client.channels.connectSiteWithKey(request) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -753,7 +657,6 @@ Connects an account on a publishing platform, to publish articles to it, with a 
 
 ```java
 client.channels().connectSiteWithKey(
-    "workspaceId",
     ConnectSiteWithKey
         .builder()
         .apiKey("apiKey")
@@ -770,14 +673,6 @@ client.channels().connectSiteWithKey(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -810,7 +705,7 @@ client.channels().connectSiteWithKey(
 </dl>
 </details>
 
-<details><summary><code>client.channels.connectChat(workspaceId, request) -> Channel</code></summary>
+<details><summary><code>client.channels.connectChat(request) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -838,18 +733,12 @@ Connects a chat, to post to it, with a secret its member pastes, no sign-in page
 
 ```java
 client.channels().connectChat(
-    "workspaceId",
-    ConnectChatChannelsRequest
-        .builder()
-        .body(
-            ConnectChat.discord(
-                ConnectDiscordChat
-                    .builder()
-                    .webhookUrl("webhookUrl")
-                    .build()
-            )
-        )
-        .build()
+    ConnectChat.discord(
+        ConnectDiscordChat
+            .builder()
+            .webhookUrl("webhookUrl")
+            .build()
+    )
 );
 ```
 </dd>
@@ -861,14 +750,6 @@ client.channels().connectChat(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -885,7 +766,7 @@ client.channels().connectChat(
 </dl>
 </details>
 
-<details><summary><code>client.channels.startSiteSignIn(workspaceId, platform, request) -> Authorization</code></summary>
+<details><summary><code>client.channels.startSiteSignIn(platform, request) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -913,7 +794,6 @@ Starts connecting a website by signing in on its platform: on WordPress.com (`wo
 
 ```java
 client.channels().startSiteSignIn(
-    "workspaceId",
     OAuthSitePlatform.WORDPRESS_COM,
     StartSiteSignIn
         .builder()
@@ -929,14 +809,6 @@ client.channels().startSiteSignIn(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -961,7 +833,7 @@ client.channels().startSiteSignIn(
 </dl>
 </details>
 
-<details><summary><code>client.channels.completeSiteSignIn(workspaceId, platform, request) -> Channel</code></summary>
+<details><summary><code>client.channels.completeSiteSignIn(platform, request) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -989,7 +861,6 @@ Completes a website sign-in with what the platform sent back: the site becomes a
 
 ```java
 client.channels().completeSiteSignIn(
-    "workspaceId",
     OAuthSitePlatform.WORDPRESS_COM,
     SiteSignInCallback
         .builder()
@@ -1006,14 +877,6 @@ client.channels().completeSiteSignIn(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1054,7 +917,7 @@ client.channels().completeSiteSignIn(
 </dl>
 </details>
 
-<details><summary><code>client.channels.connect(workspaceId, platform, request) -> Authorization</code></summary>
+<details><summary><code>client.channels.connect(platform, request) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1082,7 +945,6 @@ Starts connecting an account of the platform: answers with the platform's sign-i
 
 ```java
 client.channels().connect(
-    "workspaceId",
     Platform.X,
     ConnectChannel
         .builder()
@@ -1098,14 +960,6 @@ client.channels().connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1146,7 +1000,7 @@ client.channels().connect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.completeConnect(workspaceId, platform, request) -> ConnectOutcome</code></summary>
+<details><summary><code>client.channels.completeConnect(platform, request) -> ConnectOutcome</code></summary>
 <dl>
 <dd>
 
@@ -1174,7 +1028,6 @@ Completes a connection with what the platform sent back: the account becomes a c
 
 ```java
 client.channels().completeConnect(
-    "workspaceId",
     Platform.X,
     ConnectCallback
         .builder()
@@ -1191,14 +1044,6 @@ client.channels().completeConnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1247,7 +1092,7 @@ client.channels().completeConnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.chooseAccounts(workspaceId, platform, request) -> List&amp;lt;Channel&amp;gt;</code></summary>
+<details><summary><code>client.channels.chooseAccounts(platform, request) -> List&amp;lt;Channel&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -1275,7 +1120,6 @@ Connects the accounts the member chose among those a completed sign-in listed: e
 
 ```java
 client.channels().chooseAccounts(
-    "workspaceId",
     Platform.X,
     ChooseAccounts
         .builder()
@@ -1295,14 +1139,6 @@ client.channels().chooseAccounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1335,7 +1171,7 @@ client.channels().chooseAccounts(
 </dl>
 </details>
 
-<details><summary><code>client.channels.reconnect(workspaceId, channelId) -> Authorization</code></summary>
+<details><summary><code>client.channels.reconnect(channelId) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1363,7 +1199,6 @@ Starts reconnecting a channel whose token stopped working or is about to: answer
 
 ```java
 client.channels().reconnect(
-    "workspaceId",
     "channelId",
     ReconnectChannelsRequest
         .builder()
@@ -1379,14 +1214,6 @@ client.channels().reconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1419,7 +1246,7 @@ client.channels().reconnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.disconnect(workspaceId, channelId)</code></summary>
+<details><summary><code>client.channels.disconnect(channelId)</code></summary>
 <dl>
 <dd>
 
@@ -1447,7 +1274,6 @@ Disconnects a channel from the workspace: the channel and the tokens Peal holds 
 
 ```java
 client.channels().disconnect(
-    "workspaceId",
     "channelId",
     DisconnectChannelsRequest
         .builder()
@@ -1467,14 +1293,6 @@ client.channels().disconnect(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -1487,7 +1305,7 @@ client.channels().disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.update(workspaceId, channelId, request) -> Channel</code></summary>
+<details><summary><code>client.channels.update(channelId, request) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1515,7 +1333,6 @@ Gives the channel the name the workspace calls it by (`label`, 60 characters at 
 
 ```java
 client.channels().update(
-    "workspaceId",
     "channelId",
     ChannelUpdate
         .builder()
@@ -1534,14 +1351,6 @@ client.channels().update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1566,7 +1375,7 @@ client.channels().update(
 </dl>
 </details>
 
-<details><summary><code>client.channels.disable(workspaceId, channelId) -> Channel</code></summary>
+<details><summary><code>client.channels.disable(channelId) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1594,7 +1403,6 @@ Turns the channel off: nothing goes out on it until it is turned back on. It kee
 
 ```java
 client.channels().disable(
-    "workspaceId",
     "channelId",
     DisableChannelsRequest
         .builder()
@@ -1614,14 +1422,6 @@ client.channels().disable(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -1634,7 +1434,7 @@ client.channels().disable(
 </dl>
 </details>
 
-<details><summary><code>client.channels.enable(workspaceId, channelId) -> Channel</code></summary>
+<details><summary><code>client.channels.enable(channelId) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1662,7 +1462,6 @@ Turns a channel back on. It posts again at once, or has the status `refreshNeede
 
 ```java
 client.channels().enable(
-    "workspaceId",
     "channelId",
     EnableChannelsRequest
         .builder()
@@ -1682,14 +1481,6 @@ client.channels().enable(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -1703,7 +1494,7 @@ client.channels().enable(
 </details>
 
 ## posts
-<details><summary><code>client.posts.drafts(workspaceId) -> DraftPage</code></summary>
+<details><summary><code>client.posts.drafts() -> DraftPage</code></summary>
 <dl>
 <dd>
 
@@ -1731,7 +1522,6 @@ Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50
 
 ```java
 client.posts().drafts(
-    "workspaceId",
     DraftsPostsRequest
         .builder()
         .build()
@@ -1746,14 +1536,6 @@ client.posts().drafts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1778,7 +1560,7 @@ client.posts().drafts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.list(workspaceId) -> List&amp;lt;Post&amp;gt;</code></summary>
+<details><summary><code>client.posts.list() -> List&amp;lt;Post&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -1806,7 +1588,6 @@ Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 
 
 ```java
 client.posts().list(
-    "workspaceId",
     ListPostsRequest
         .builder()
         .from("from")
@@ -1823,14 +1604,6 @@ client.posts().list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1855,7 +1628,7 @@ client.posts().list(
 </dl>
 </details>
 
-<details><summary><code>client.posts.create(workspaceId, request) -> Post</code></summary>
+<details><summary><code>client.posts.create(request) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1883,40 +1656,34 @@ Creates a draft for some of the workspace's channels, possibly none yet, with op
 
 ```java
 client.posts().create(
-    "workspaceId",
-    CreatePostsRequest
+    PostDraft
         .builder()
-        .body(
-            PostDraft
+        .content(
+            PostContent
                 .builder()
-                .content(
-                    PostContent
-                        .builder()
-                        .text("text")
-                        .media(
-                            Arrays.asList(
-                                MediaAttachment
-                                    .builder()
-                                    .altText("altText")
-                                    .mediaId("mediaId")
-                                    .build()
-                            )
-                        )
-                        .overrides(
-                            Arrays.asList(
-                                TextOverride
-                                    .builder()
-                                    .channelId("channelId")
-                                    .text("text")
-                                    .build()
-                            )
-                        )
-                        .build()
+                .text("text")
+                .media(
+                    Arrays.asList(
+                        MediaAttachment
+                            .builder()
+                            .altText("altText")
+                            .mediaId("mediaId")
+                            .build()
+                    )
                 )
-                .channelIds(
-                    Arrays.asList("channelIds")
+                .overrides(
+                    Arrays.asList(
+                        TextOverride
+                            .builder()
+                            .channelId("channelId")
+                            .text("text")
+                            .build()
+                    )
                 )
                 .build()
+        )
+        .channelIds(
+            Arrays.asList("channelIds")
         )
         .build()
 );
@@ -1934,14 +1701,6 @@ client.posts().create(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `PostDraft` 
     
 </dd>
@@ -1954,7 +1713,7 @@ client.posts().create(
 </dl>
 </details>
 
-<details><summary><code>client.posts.search(workspaceId) -> PostPage</code></summary>
+<details><summary><code>client.posts.search() -> PostPage</code></summary>
 <dl>
 <dd>
 
@@ -1982,7 +1741,6 @@ Lists the workspace's posts, whatever their state, a page at a time: 20 unless `
 
 ```java
 client.posts().search(
-    "workspaceId",
     SearchPostsRequest
         .builder()
         .build()
@@ -1997,14 +1755,6 @@ client.posts().search(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2133,7 +1883,7 @@ client.posts().search(
 </dl>
 </details>
 
-<details><summary><code>client.posts.send(workspaceId, request) -> Post</code></summary>
+<details><summary><code>client.posts.send(request) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -2161,7 +1911,6 @@ Creates a post and sends it to some of the workspace's channels in one call: `wh
 
 ```java
 client.posts().send(
-    "workspaceId",
     NewPost
         .builder()
         .content(
@@ -2210,14 +1959,6 @@ client.posts().send(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2322,7 +2063,7 @@ client.posts().send(
 </dl>
 </details>
 
-<details><summary><code>client.posts.bulk(workspaceId, request) -> BulkResult</code></summary>
+<details><summary><code>client.posts.bulk(request) -> BulkResult</code></summary>
 <dl>
 <dd>
 
@@ -2350,7 +2091,6 @@ Creates and sends up to 50 posts in one request, each as `send` would: one post 
 
 ```java
 client.posts().bulk(
-    "workspaceId",
     BulkPosts
         .builder()
         .posts(
@@ -2410,14 +2150,6 @@ client.posts().bulk(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **idempotencyKey:** `Optional<String>` 
     
 </dd>
@@ -2438,7 +2170,7 @@ client.posts().bulk(
 </dl>
 </details>
 
-<details><summary><code>client.posts.import_(workspaceId, request) -> ImportResult</code></summary>
+<details><summary><code>client.posts.import_(request) -> ImportResult</code></summary>
 <dl>
 <dd>
 
@@ -2466,7 +2198,6 @@ Creates and sends the posts a CSV file lists, one per row, at most 100 rows unde
 
 ```java
 client.posts().import_(
-    "workspaceId",
     PostImport
         .builder()
         .csv("csv")
@@ -2482,14 +2213,6 @@ client.posts().import_(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2522,7 +2245,7 @@ client.posts().import_(
 </dl>
 </details>
 
-<details><summary><code>client.posts.validate(workspaceId, request) -> PostValidation</code></summary>
+<details><summary><code>client.posts.validate(request) -> PostValidation</code></summary>
 <dl>
 <dd>
 
@@ -2550,7 +2273,6 @@ Checks a post without making it, and changes nothing: send what `send` takes, or
 
 ```java
 client.posts().validate(
-    "workspaceId",
     PostToValidate
         .builder()
         .content(
@@ -2592,14 +2314,6 @@ client.posts().validate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2680,7 +2394,7 @@ client.posts().validate(
 </dl>
 </details>
 
-<details><summary><code>client.posts.get(workspaceId, postId) -> Post</code></summary>
+<details><summary><code>client.posts.get(postId) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -2708,7 +2422,6 @@ Answers with a post of the workspace. Needs post:read.
 
 ```java
 client.posts().get(
-    "workspaceId",
     "postId",
     GetPostsRequest
         .builder()
@@ -2728,14 +2441,6 @@ client.posts().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -2748,7 +2453,7 @@ client.posts().get(
 </dl>
 </details>
 
-<details><summary><code>client.posts.update(workspaceId, postId, request) -> Post</code></summary>
+<details><summary><code>client.posts.update(postId, request) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -2776,7 +2481,6 @@ Replaces a draft's content, channels and options: options left out are removed. 
 
 ```java
 client.posts().update(
-    "workspaceId",
     "postId",
     UpdatePostsRequest
         .builder()
@@ -2828,14 +2532,6 @@ client.posts().update(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -2856,7 +2552,7 @@ client.posts().update(
 </dl>
 </details>
 
-<details><summary><code>client.posts.discard(workspaceId, postId)</code></summary>
+<details><summary><code>client.posts.discard(postId)</code></summary>
 <dl>
 <dd>
 
@@ -2884,7 +2580,6 @@ Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Need
 
 ```java
 client.posts().discard(
-    "workspaceId",
     "postId",
     DiscardPostsRequest
         .builder()
@@ -2904,14 +2599,6 @@ client.posts().discard(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -2924,7 +2611,7 @@ client.posts().discard(
 </dl>
 </details>
 
-<details><summary><code>client.posts.outcome(workspaceId, postId) -> Post</code></summary>
+<details><summary><code>client.posts.outcome(postId) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -2952,7 +2639,6 @@ Answers with a post once it has gone out: it waits up to `wait` seconds (60 at m
 
 ```java
 client.posts().outcome(
-    "workspaceId",
     "postId",
     OutcomePostsRequest
         .builder()
@@ -2968,14 +2654,6 @@ client.posts().outcome(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3000,7 +2678,7 @@ client.posts().outcome(
 </dl>
 </details>
 
-<details><summary><code>client.posts.attempts(workspaceId, postId) -> List&amp;lt;PublicationAttempt&amp;gt;</code></summary>
+<details><summary><code>client.posts.attempts(postId) -> List&amp;lt;PublicationAttempt&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -3028,7 +2706,6 @@ Lists every attempt Peal made at publishing the post, by channel, round and atte
 
 ```java
 client.posts().attempts(
-    "workspaceId",
     "postId",
     AttemptsPostsRequest
         .builder()
@@ -3048,14 +2725,6 @@ client.posts().attempts(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -3068,7 +2737,7 @@ client.posts().attempts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.tag(workspaceId, postId, request) -> Post</code></summary>
+<details><summary><code>client.posts.tag(postId, request) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3096,7 +2765,6 @@ Files a post under these tags of the workspace, 10 at most, instead of those it 
 
 ```java
 client.posts().tag(
-    "workspaceId",
     "postId",
     PostTags
         .builder()
@@ -3115,14 +2783,6 @@ client.posts().tag(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3147,7 +2807,7 @@ client.posts().tag(
 </dl>
 </details>
 
-<details><summary><code>client.posts.duplicate(workspaceId, postId) -> Post</code></summary>
+<details><summary><code>client.posts.duplicate(postId) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3175,7 +2835,6 @@ Makes a new draft that says what the post says, whatever the post's status: its 
 
 ```java
 client.posts().duplicate(
-    "workspaceId",
     "postId",
     DuplicatePostsRequest
         .builder()
@@ -3195,14 +2854,6 @@ client.posts().duplicate(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -3215,7 +2866,7 @@ client.posts().duplicate(
 </dl>
 </details>
 
-<details><summary><code>client.posts.schedule(workspaceId, postId, request) -> Post</code></summary>
+<details><summary><code>client.posts.schedule(postId, request) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3243,7 +2894,6 @@ Schedules a draft on some of the workspace's channels at an instant, kept with t
 
 ```java
 client.posts().schedule(
-    "workspaceId",
     "postId",
     SchedulePost
         .builder()
@@ -3264,14 +2914,6 @@ client.posts().schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3312,7 +2954,7 @@ client.posts().schedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.reschedule(workspaceId, postId, request) -> Post</code></summary>
+<details><summary><code>client.posts.reschedule(postId, request) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3340,7 +2982,6 @@ Moves a scheduled post, or one awaiting approval, to another instant, or schedul
 
 ```java
 client.posts().reschedule(
-    "workspaceId",
     "postId",
     ReschedulePostsRequest
         .builder()
@@ -3367,14 +3008,6 @@ client.posts().reschedule(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -3395,7 +3028,7 @@ client.posts().reschedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.enqueue(workspaceId, postId, request) -> Post</code></summary>
+<details><summary><code>client.posts.enqueue(postId, request) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3423,7 +3056,6 @@ Puts a post on the next free slot of a queue (`queueId`, or the workspace's defa
 
 ```java
 client.posts().enqueue(
-    "workspaceId",
     "postId",
     QueuePost
         .builder()
@@ -3439,14 +3071,6 @@ client.posts().enqueue(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3479,7 +3103,7 @@ client.posts().enqueue(
 </dl>
 </details>
 
-<details><summary><code>client.posts.unschedule(workspaceId, postId) -> Post</code></summary>
+<details><summary><code>client.posts.unschedule(postId) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3507,7 +3131,6 @@ Takes a scheduled post back to draft, so its text and media can change: it goes 
 
 ```java
 client.posts().unschedule(
-    "workspaceId",
     "postId",
     UnschedulePostsRequest
         .builder()
@@ -3527,14 +3150,6 @@ client.posts().unschedule(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -3547,7 +3162,7 @@ client.posts().unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.repost(workspaceId, postId, targetId) -> Post</code></summary>
+<details><summary><code>client.posts.repost(postId, targetId) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3575,7 +3190,6 @@ Sends the post again, now, on one channel where it failed or is unconfirmed: a n
 
 ```java
 client.posts().repost(
-    "workspaceId",
     "postId",
     "targetId",
     RepostPostsRequest
@@ -3592,14 +3206,6 @@ client.posts().repost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3624,7 +3230,7 @@ client.posts().repost(
 </dl>
 </details>
 
-<details><summary><code>client.posts.removeTarget(workspaceId, postId, targetId) -> Post</code></summary>
+<details><summary><code>client.posts.removeTarget(postId, targetId) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3652,7 +3258,6 @@ Takes one channel off a post that waits for its time (scheduled, or awaiting app
 
 ```java
 client.posts().removeTarget(
-    "workspaceId",
     "postId",
     "targetId",
     RemoveTargetPostsRequest
@@ -3669,14 +3274,6 @@ client.posts().removeTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3701,7 +3298,7 @@ client.posts().removeTarget(
 </dl>
 </details>
 
-<details><summary><code>client.posts.confirm(workspaceId, postId, targetId, request) -> Post</code></summary>
+<details><summary><code>client.posts.confirm(postId, targetId, request) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3729,7 +3326,6 @@ Says what you found on the platform for a post unconfirmed on one channel: `publ
 
 ```java
 client.posts().confirm(
-    "workspaceId",
     "postId",
     "targetId",
     ConfirmPostsRequest
@@ -3756,14 +3352,6 @@ client.posts().confirm(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3796,7 +3384,7 @@ client.posts().confirm(
 </dl>
 </details>
 
-<details><summary><code>client.posts.leaveOutRest(workspaceId, postId, targetId) -> Post</code></summary>
+<details><summary><code>client.posts.leaveOutRest(postId, targetId) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3824,7 +3412,6 @@ Publishes the post on one channel without the parts that did not go out after it
 
 ```java
 client.posts().leaveOutRest(
-    "workspaceId",
     "postId",
     "targetId",
     LeaveOutRestPostsRequest
@@ -3841,14 +3428,6 @@ client.posts().leaveOutRest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3873,7 +3452,7 @@ client.posts().leaveOutRest(
 </dl>
 </details>
 
-<details><summary><code>client.posts.unpublishTarget(workspaceId, postId, targetId) -> LivePostChange</code></summary>
+<details><summary><code>client.posts.unpublishTarget(postId, targetId) -> LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -3901,7 +3480,6 @@ Deletes the post from one channel's platform, for everyone: every part of a thre
 
 ```java
 client.posts().unpublishTarget(
-    "workspaceId",
     "postId",
     "targetId",
     UnpublishTargetPostsRequest
@@ -3918,14 +3496,6 @@ client.posts().unpublishTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3958,7 +3528,7 @@ client.posts().unpublishTarget(
 </dl>
 </details>
 
-<details><summary><code>client.posts.editTarget(workspaceId, postId, targetId, request) -> LivePostChange</code></summary>
+<details><summary><code>client.posts.editTarget(postId, targetId, request) -> LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -3986,7 +3556,6 @@ Replaces the text of one part of the post (`part`, from 0, the post itself by de
 
 ```java
 client.posts().editTarget(
-    "workspaceId",
     "postId",
     "targetId",
     LivePostEdit
@@ -4004,14 +3573,6 @@ client.posts().editTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4060,7 +3621,7 @@ client.posts().editTarget(
 </dl>
 </details>
 
-<details><summary><code>client.posts.unpublish(workspaceId, postId) -> PostUnpublish</code></summary>
+<details><summary><code>client.posts.unpublish(postId) -> PostUnpublish</code></summary>
 <dl>
 <dd>
 
@@ -4088,7 +3649,6 @@ Deletes the post from every channel's platform where it can be, as unpublishing 
 
 ```java
 client.posts().unpublish(
-    "workspaceId",
     "postId",
     UnpublishPostsRequest
         .builder()
@@ -4108,14 +3668,6 @@ client.posts().unpublish(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -4128,7 +3680,7 @@ client.posts().unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.posts.changes(workspaceId, postId) -> LivePostChanges</code></summary>
+<details><summary><code>client.posts.changes(postId) -> LivePostChanges</code></summary>
 <dl>
 <dd>
 
@@ -4156,7 +3708,6 @@ Lists the changes asked of the post once it was live (deleting it from a channel
 
 ```java
 client.posts().changes(
-    "workspaceId",
     "postId",
     ChangesPostsRequest
         .builder()
@@ -4176,14 +3727,6 @@ client.posts().changes(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -4196,7 +3739,7 @@ client.posts().changes(
 </dl>
 </details>
 
-<details><summary><code>client.posts.cancel(workspaceId, postId) -> Post</code></summary>
+<details><summary><code>client.posts.cancel(postId) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -4224,7 +3767,6 @@ Cancels a draft, a scheduled post or one awaiting approval. A post already publi
 
 ```java
 client.posts().cancel(
-    "workspaceId",
     "postId",
     CancelPostsRequest
         .builder()
@@ -4244,14 +3786,6 @@ client.posts().cancel(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -4265,7 +3799,7 @@ client.posts().cancel(
 </details>
 
 ## articles
-<details><summary><code>client.articles.list(workspaceId) -> ArticlePage</code></summary>
+<details><summary><code>client.articles.list() -> ArticlePage</code></summary>
 <dl>
 <dd>
 
@@ -4293,7 +3827,6 @@ Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 
 
 ```java
 client.articles().list(
-    "workspaceId",
     ListArticlesRequest
         .builder()
         .build()
@@ -4308,14 +3841,6 @@ client.articles().list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4348,7 +3873,7 @@ client.articles().list(
 </dl>
 </details>
 
-<details><summary><code>client.articles.create(workspaceId, request) -> Article</code></summary>
+<details><summary><code>client.articles.create(request) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -4376,7 +3901,6 @@ Writes an article for one of the workspace's websites (a channel connected with 
 
 ```java
 client.articles().create(
-    "workspaceId",
     NewArticle
         .builder()
         .body(
@@ -4402,14 +3926,6 @@ client.articles().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4490,7 +4006,7 @@ client.articles().create(
 </dl>
 </details>
 
-<details><summary><code>client.articles.get(workspaceId, articleId) -> Article</code></summary>
+<details><summary><code>client.articles.get(articleId) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -4518,7 +4034,6 @@ Reads an article. Needs post:read.
 
 ```java
 client.articles().get(
-    "workspaceId",
     "articleId",
     GetArticlesRequest
         .builder()
@@ -4538,14 +4053,6 @@ client.articles().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleId:** `String` 
     
 </dd>
@@ -4558,7 +4065,7 @@ client.articles().get(
 </dl>
 </details>
 
-<details><summary><code>client.articles.delete(workspaceId, articleId)</code></summary>
+<details><summary><code>client.articles.delete(articleId)</code></summary>
 <dl>
 <dd>
 
@@ -4586,7 +4093,6 @@ Deletes the article from Peal, and its job when it waits to go out; never while 
 
 ```java
 client.articles().delete(
-    "workspaceId",
     "articleId",
     DeleteArticlesRequest
         .builder()
@@ -4606,14 +4112,6 @@ client.articles().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleId:** `String` 
     
 </dd>
@@ -4626,7 +4124,7 @@ client.articles().delete(
 </dl>
 </details>
 
-<details><summary><code>client.articles.update(workspaceId, articleId, request) -> Article</code></summary>
+<details><summary><code>client.articles.update(articleId, request) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -4654,7 +4152,6 @@ Replaces what a draft, a scheduled article or one that failed says. A scheduled 
 
 ```java
 client.articles().update(
-    "workspaceId",
     "articleId",
     UpdateArticlesRequest
         .builder()
@@ -4689,14 +4186,6 @@ client.articles().update(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleId:** `String` 
     
 </dd>
@@ -4717,7 +4206,7 @@ client.articles().update(
 </dl>
 </details>
 
-<details><summary><code>client.articles.schedule(workspaceId, articleId, request) -> Article</code></summary>
+<details><summary><code>client.articles.schedule(articleId, request) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -4745,7 +4234,6 @@ Schedules a draft, moves a scheduled article, or schedules one that failed again
 
 ```java
 client.articles().schedule(
-    "workspaceId",
     "articleId",
     ScheduleArticlesRequest
         .builder()
@@ -4771,14 +4259,6 @@ client.articles().schedule(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleId:** `String` 
     
 </dd>
@@ -4799,7 +4279,7 @@ client.articles().schedule(
 </dl>
 </details>
 
-<details><summary><code>client.articles.unschedule(workspaceId, articleId) -> Article</code></summary>
+<details><summary><code>client.articles.unschedule(articleId) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -4827,7 +4307,6 @@ Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 
 ```java
 client.articles().unschedule(
-    "workspaceId",
     "articleId",
     UnscheduleArticlesRequest
         .builder()
@@ -4847,14 +4326,6 @@ client.articles().unschedule(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleId:** `String` 
     
 </dd>
@@ -4867,7 +4338,7 @@ client.articles().unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.articles.retry(workspaceId, articleId) -> Article</code></summary>
+<details><summary><code>client.articles.retry(articleId) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -4895,7 +4366,6 @@ Sends a failed article again now, or one that was unconfirmed once a member chec
 
 ```java
 client.articles().retry(
-    "workspaceId",
     "articleId",
     RetryArticlesRequest
         .builder()
@@ -4915,14 +4385,6 @@ client.articles().retry(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleId:** `String` 
     
 </dd>
@@ -4935,7 +4397,7 @@ client.articles().retry(
 </dl>
 </details>
 
-<details><summary><code>client.articles.unpublish(workspaceId, articleId) -> Article</code></summary>
+<details><summary><code>client.articles.unpublish(articleId) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -4963,7 +4425,6 @@ Moves the article's post to the site's trash, where the site keeps it for a whil
 
 ```java
 client.articles().unpublish(
-    "workspaceId",
     "articleId",
     UnpublishArticlesRequest
         .builder()
@@ -4983,14 +4444,6 @@ client.articles().unpublish(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleId:** `String` 
     
 </dd>
@@ -5003,7 +4456,7 @@ client.articles().unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.articles.updateOnSite(workspaceId, articleId, request) -> Article</code></summary>
+<details><summary><code>client.articles.updateOnSite(articleId, request) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5031,7 +4484,6 @@ Replaces what the article's post says on the site (title, body, excerpt, tags, c
 
 ```java
 client.articles().updateOnSite(
-    "workspaceId",
     "articleId",
     UpdateOnSiteArticlesRequest
         .builder()
@@ -5066,14 +4518,6 @@ client.articles().updateOnSite(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleId:** `String` 
     
 </dd>
@@ -5095,7 +4539,7 @@ client.articles().updateOnSite(
 </details>
 
 ## media
-<details><summary><code>client.media.list(workspaceId) -> MediaPage</code></summary>
+<details><summary><code>client.media.list() -> MediaPage</code></summary>
 <dl>
 <dd>
 
@@ -5123,7 +4567,6 @@ Lists the workspace's media, newest first, 30 a page unless `limit` (at most 100
 
 ```java
 client.media().list(
-    "workspaceId",
     ListMediaRequest
         .builder()
         .build()
@@ -5138,14 +4581,6 @@ client.media().list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5186,7 +4621,7 @@ client.media().list(
 </dl>
 </details>
 
-<details><summary><code>client.media.create(workspaceId, request) -> PreparedUpload</code></summary>
+<details><summary><code>client.media.create(request) -> PreparedUpload</code></summary>
 <dl>
 <dd>
 
@@ -5214,7 +4649,6 @@ Records pending media and signs the upload of its file: one PUT for an image or 
 
 ```java
 client.media().create(
-    "workspaceId",
     NewUpload
         .builder()
         .byteSize(1000000L)
@@ -5231,14 +4665,6 @@ client.media().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5279,7 +4705,7 @@ client.media().create(
 </dl>
 </details>
 
-<details><summary><code>client.media.importFromUrl(workspaceId, request) -> Media</code></summary>
+<details><summary><code>client.media.importFromUrl(request) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -5307,7 +4733,6 @@ Fetches a file from a public address, stores it as media of the workspace and pr
 
 ```java
 client.media().importFromUrl(
-    "workspaceId",
     MediaImport
         .builder()
         .url("url")
@@ -5323,14 +4748,6 @@ client.media().importFromUrl(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5355,7 +4772,7 @@ client.media().importFromUrl(
 </dl>
 </details>
 
-<details><summary><code>client.media.get(workspaceId, mediaId) -> Media</code></summary>
+<details><summary><code>client.media.get(mediaId) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -5383,7 +4800,6 @@ Shows one of the workspace's media. Needs media:read.
 
 ```java
 client.media().get(
-    "workspaceId",
     "mediaId",
     GetMediaRequest
         .builder()
@@ -5403,14 +4819,6 @@ client.media().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **mediaId:** `String` 
     
 </dd>
@@ -5423,7 +4831,7 @@ client.media().get(
 </dl>
 </details>
 
-<details><summary><code>client.media.delete(workspaceId, mediaId)</code></summary>
+<details><summary><code>client.media.delete(mediaId)</code></summary>
 <dl>
 <dd>
 
@@ -5451,7 +4859,6 @@ Deletes the media and its file, and cancels its upload if it is still pending. D
 
 ```java
 client.media().delete(
-    "workspaceId",
     "mediaId",
     DeleteMediaRequest
         .builder()
@@ -5471,14 +4878,6 @@ client.media().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **mediaId:** `String` 
     
 </dd>
@@ -5491,7 +4890,7 @@ client.media().delete(
 </dl>
 </details>
 
-<details><summary><code>client.media.describe(workspaceId, mediaId, request) -> Media</code></summary>
+<details><summary><code>client.media.describe(mediaId, request) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -5519,7 +4918,6 @@ Sets the media's description, which platforms show to people who cannot see it. 
 
 ```java
 client.media().describe(
-    "workspaceId",
     "mediaId",
     MediaDescription
         .builder()
@@ -5538,14 +4936,6 @@ client.media().describe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5570,7 +4960,7 @@ client.media().describe(
 </dl>
 </details>
 
-<details><summary><code>client.media.complete(workspaceId, mediaId) -> Media</code></summary>
+<details><summary><code>client.media.complete(mediaId) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -5598,7 +4988,6 @@ Checks that the file reached the store with the declared size and type, joining 
 
 ```java
 client.media().complete(
-    "workspaceId",
     "mediaId",
     CompleteMediaRequest
         .builder()
@@ -5618,14 +5007,6 @@ client.media().complete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **mediaId:** `String` 
     
 </dd>
@@ -5638,7 +5019,7 @@ client.media().complete(
 </dl>
 </details>
 
-<details><summary><code>client.media.usage(workspaceId, mediaId) -> MediaUsage</code></summary>
+<details><summary><code>client.media.usage(mediaId) -> MediaUsage</code></summary>
 <dl>
 <dd>
 
@@ -5666,7 +5047,6 @@ Lists the posts that show the media: drafts, which lose it if it is deleted, and
 
 ```java
 client.media().usage(
-    "workspaceId",
     "mediaId",
     UsageMediaRequest
         .builder()
@@ -5686,14 +5066,6 @@ client.media().usage(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **mediaId:** `String` 
     
 </dd>
@@ -5707,7 +5079,7 @@ client.media().usage(
 </details>
 
 ## mediaAudio
-<details><summary><code>client.mediaAudio.createVoiceover(workspaceId, request) -> Media</code></summary>
+<details><summary><code>client.mediaAudio.createVoiceover(request) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -5735,7 +5107,6 @@ Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models
 
 ```java
 client.mediaAudio().createVoiceover(
-    "workspaceId",
     VoiceoverRequest
         .builder()
         .text("text")
@@ -5751,14 +5122,6 @@ client.mediaAudio().createVoiceover(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5783,7 +5146,7 @@ client.mediaAudio().createVoiceover(
 </dl>
 </details>
 
-<details><summary><code>client.mediaAudio.transcribe(workspaceId, mediaId, request) -> Transcript</code></summary>
+<details><summary><code>client.mediaAudio.transcribe(mediaId, request) -> Transcript</code></summary>
 <dl>
 <dd>
 
@@ -5811,7 +5174,6 @@ Sends a ready audio or video file of the media library, of at most 25000000 byte
 
 ```java
 client.mediaAudio().transcribe(
-    "workspaceId",
     "mediaId",
     TranscriptionRequest
         .builder()
@@ -5827,14 +5189,6 @@ client.mediaAudio().transcribe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6172,7 +5526,7 @@ client.notificationPreferences().update(
 </details>
 
 ## assistant
-<details><summary><code>client.assistant.status(workspaceId) -> AssistantStatus</code></summary>
+<details><summary><code>client.assistant.status() -> AssistantStatus</code></summary>
 <dl>
 <dd>
 
@@ -6199,28 +5553,8 @@ Tells whether the assistant writes for the workspace, so clients show it or hide
 <dd>
 
 ```java
-client.assistant().status(
-    "workspaceId",
-    StatusAssistantRequest
-        .builder()
-        .build()
-);
+client.assistant().status();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -6231,7 +5565,7 @@ client.assistant().status(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.suggest(workspaceId, request) -> Suggestion</code></summary>
+<details><summary><code>client.assistant.suggest(request) -> Suggestion</code></summary>
 <dl>
 <dd>
 
@@ -6259,7 +5593,6 @@ Asks the language model to rewrite, shorten or translate a post's text, to sugge
 
 ```java
 client.assistant().suggest(
-    "workspaceId",
     SuggestionRequest
         .builder()
         .action(
@@ -6287,14 +5620,6 @@ client.assistant().suggest(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **action:** `AssistantAction` 
     
 </dd>
@@ -6315,7 +5640,7 @@ client.assistant().suggest(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.generateImage(workspaceId, request) -> Media</code></summary>
+<details><summary><code>client.assistant.generateImage(request) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -6343,7 +5668,6 @@ Asks for one image from the prompt, in the aspect asked for, and answers with it
 
 ```java
 client.assistant().generateImage(
-    "workspaceId",
     ImageRequest
         .builder()
         .aspect(ImageAspect.SQUARE)
@@ -6360,14 +5684,6 @@ client.assistant().generateImage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6392,7 +5708,7 @@ client.assistant().generateImage(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.imageProvider(workspaceId) -> ImageProviderSetting</code></summary>
+<details><summary><code>client.assistant.imageProvider() -> ImageProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -6419,28 +5735,8 @@ Reads the image provider the workspace brought, a provider Peal knows by name (O
 <dd>
 
 ```java
-client.assistant().imageProvider(
-    "workspaceId",
-    ImageProviderAssistantRequest
-        .builder()
-        .build()
-);
+client.assistant().imageProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -6451,7 +5747,7 @@ client.assistant().imageProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.setImageProvider(workspaceId, request) -> ImageProvider</code></summary>
+<details><summary><code>client.assistant.setImageProvider(request) -> ImageProvider</code></summary>
 <dl>
 <dd>
 
@@ -6479,7 +5775,6 @@ Sets the image provider the workspace brings, a provider Peal knows by name (Ope
 
 ```java
 client.assistant().setImageProvider(
-    "workspaceId",
     ImageProviderChange
         .builder()
         .model("model")
@@ -6495,14 +5790,6 @@ client.assistant().setImageProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6543,7 +5830,7 @@ client.assistant().setImageProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.removeImageProvider(workspaceId)</code></summary>
+<details><summary><code>client.assistant.removeImageProvider()</code></summary>
 <dl>
 <dd>
 
@@ -6570,28 +5857,8 @@ Removes the workspace's image provider and its key: images are made by the serve
 <dd>
 
 ```java
-client.assistant().removeImageProvider(
-    "workspaceId",
-    RemoveImageProviderAssistantRequest
-        .builder()
-        .build()
-);
+client.assistant().removeImageProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -6602,7 +5869,7 @@ client.assistant().removeImageProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.textProvider(workspaceId) -> TextProviderSetting</code></summary>
+<details><summary><code>client.assistant.textProvider() -> TextProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -6629,28 +5896,8 @@ Reads the text provider the workspace brought, Anthropic's Messages API or an en
 <dd>
 
 ```java
-client.assistant().textProvider(
-    "workspaceId",
-    TextProviderAssistantRequest
-        .builder()
-        .build()
-);
+client.assistant().textProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -6661,7 +5908,7 @@ client.assistant().textProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.setTextProvider(workspaceId, request) -> TextProvider</code></summary>
+<details><summary><code>client.assistant.setTextProvider(request) -> TextProvider</code></summary>
 <dl>
 <dd>
 
@@ -6689,7 +5936,6 @@ Sets the text provider the workspace brings, Anthropic's Messages API or an endp
 
 ```java
 client.assistant().setTextProvider(
-    "workspaceId",
     TextProviderChange
         .builder()
         .model("model")
@@ -6705,14 +5951,6 @@ client.assistant().setTextProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6761,7 +5999,7 @@ client.assistant().setTextProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.removeTextProvider(workspaceId)</code></summary>
+<details><summary><code>client.assistant.removeTextProvider()</code></summary>
 <dl>
 <dd>
 
@@ -6788,28 +6026,8 @@ Removes the workspace's text provider and its key: the server's language model w
 <dd>
 
 ```java
-client.assistant().removeTextProvider(
-    "workspaceId",
-    RemoveTextProviderAssistantRequest
-        .builder()
-        .build()
-);
+client.assistant().removeTextProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -6820,7 +6038,7 @@ client.assistant().removeTextProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.testTextProvider(workspaceId)</code></summary>
+<details><summary><code>client.assistant.testTextProvider()</code></summary>
 <dl>
 <dd>
 
@@ -6847,28 +6065,8 @@ Sends the workspace's text provider one short request, a rewrite of a fixed sent
 <dd>
 
 ```java
-client.assistant().testTextProvider(
-    "workspaceId",
-    TestTextProviderAssistantRequest
-        .builder()
-        .build()
-);
+client.assistant().testTextProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -6879,7 +6077,7 @@ client.assistant().testTextProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.providers(workspaceId) -> AiProviderConnections</code></summary>
+<details><summary><code>client.assistant.providers() -> AiProviderConnections</code></summary>
 <dl>
 <dd>
 
@@ -6906,28 +6104,8 @@ Lists the AI providers the workspace connected with a key of its own: where each
 <dd>
 
 ```java
-client.assistant().providers(
-    "workspaceId",
-    ProvidersAssistantRequest
-        .builder()
-        .build()
-);
+client.assistant().providers();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -6938,7 +6116,7 @@ client.assistant().providers(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.connectProvider(workspaceId, provider, request) -> AiProviderConnection</code></summary>
+<details><summary><code>client.assistant.connectProvider(provider, request) -> AiProviderConnection</code></summary>
 <dl>
 <dd>
 
@@ -6966,7 +6144,6 @@ Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `open
 
 ```java
 client.assistant().connectProvider(
-    "workspaceId",
     AiProvider.ANTHROPIC,
     AiProviderConnectionChange
         .builder()
@@ -6982,14 +6159,6 @@ client.assistant().connectProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7022,7 +6191,7 @@ client.assistant().connectProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.disconnectProvider(workspaceId, provider)</code></summary>
+<details><summary><code>client.assistant.disconnectProvider(provider)</code></summary>
 <dl>
 <dd>
 
@@ -7050,7 +6219,6 @@ Removes the provider and its key, and the uses it served: the server's model wor
 
 ```java
 client.assistant().disconnectProvider(
-    "workspaceId",
     AiProvider.ANTHROPIC,
     DisconnectProviderAssistantRequest
         .builder()
@@ -7070,14 +6238,6 @@ client.assistant().disconnectProvider(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **provider:** `AiProvider` 
     
 </dd>
@@ -7090,7 +6250,7 @@ client.assistant().disconnectProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.testProvider(workspaceId, provider, request)</code></summary>
+<details><summary><code>client.assistant.testProvider(provider, request)</code></summary>
 <dl>
 <dd>
 
@@ -7118,7 +6278,6 @@ Sends a connected provider one short request for text, a rewrite of a fixed sent
 
 ```java
 client.assistant().testProvider(
-    "workspaceId",
     AiProvider.ANTHROPIC,
     AiProviderTest
         .builder()
@@ -7134,14 +6293,6 @@ client.assistant().testProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7166,7 +6317,7 @@ client.assistant().testProvider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.models(workspaceId) -> AiCapabilityModels</code></summary>
+<details><summary><code>client.assistant.models() -> AiCapabilityModels</code></summary>
 <dl>
 <dd>
 
@@ -7193,28 +6344,8 @@ Tells, for each use (text, images, videos, voice-overs, transcripts, slide video
 <dd>
 
 ```java
-client.assistant().models(
-    "workspaceId",
-    ModelsAssistantRequest
-        .builder()
-        .build()
-);
+client.assistant().models();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -7225,7 +6356,7 @@ client.assistant().models(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.setModel(workspaceId, capability, request) -> AiCapabilityModel</code></summary>
+<details><summary><code>client.assistant.setModel(capability, request) -> AiCapabilityModel</code></summary>
 <dl>
 <dd>
 
@@ -7253,7 +6384,6 @@ Chooses the provider and the model for one use: the provider must be connected (
 
 ```java
 client.assistant().setModel(
-    "workspaceId",
     AiCapability.TEXT,
     AiCapabilityModelChange
         .builder()
@@ -7270,14 +6400,6 @@ client.assistant().setModel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7310,7 +6432,7 @@ client.assistant().setModel(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.unsetModel(workspaceId, capability)</code></summary>
+<details><summary><code>client.assistant.unsetModel(capability)</code></summary>
 <dl>
 <dd>
 
@@ -7338,7 +6460,6 @@ Leaves a use to the server's model, if it has one (`serverModel`), within the wo
 
 ```java
 client.assistant().unsetModel(
-    "workspaceId",
     AiCapability.TEXT,
     UnsetModelAssistantRequest
         .builder()
@@ -7358,14 +6479,6 @@ client.assistant().unsetModel(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **capability:** `AiCapability` 
     
 </dd>
@@ -7379,7 +6492,7 @@ client.assistant().unsetModel(
 </details>
 
 ## videoGenerations
-<details><summary><code>client.videoGenerations.list(workspaceId) -> VideoGenerations</code></summary>
+<details><summary><code>client.videoGenerations.list() -> VideoGenerations</code></summary>
 <dl>
 <dd>
 
@@ -7407,7 +6520,6 @@ Lists the videos the workspace asked for, newest first, 50 at most, only those w
 
 ```java
 client.videoGenerations().list(
-    "workspaceId",
     ListVideoGenerationsRequest
         .builder()
         .build()
@@ -7426,14 +6538,6 @@ client.videoGenerations().list(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **status:** `Optional<VideoGenerationStatus>` 
     
 </dd>
@@ -7446,7 +6550,7 @@ client.videoGenerations().list(
 </dl>
 </details>
 
-<details><summary><code>client.videoGenerations.create(workspaceId, request) -> VideoGeneration</code></summary>
+<details><summary><code>client.videoGenerations.create(request) -> VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -7474,7 +6578,6 @@ Asks the provider the workspace chose for videos (`PUT .../assistant/models/vide
 
 ```java
 client.videoGenerations().create(
-    "workspaceId",
     VideoGenerationRequest
         .builder()
         .aspect(ImageAspect.SQUARE)
@@ -7491,14 +6594,6 @@ client.videoGenerations().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7539,7 +6634,7 @@ client.videoGenerations().create(
 </dl>
 </details>
 
-<details><summary><code>client.videoGenerations.get(workspaceId, generationId) -> VideoGeneration</code></summary>
+<details><summary><code>client.videoGenerations.get(generationId) -> VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -7567,7 +6662,6 @@ Reads where a video stands: queued, running, succeeded with its file (`mediaId`)
 
 ```java
 client.videoGenerations().get(
-    "workspaceId",
     "generationId",
     GetVideoGenerationsRequest
         .builder()
@@ -7587,14 +6681,6 @@ client.videoGenerations().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **generationId:** `String` 
     
 </dd>
@@ -7608,7 +6694,7 @@ client.videoGenerations().get(
 </details>
 
 ## slideshows
-<details><summary><code>client.slideshows.list(workspaceId) -> Slideshows</code></summary>
+<details><summary><code>client.slideshows.list() -> Slideshows</code></summary>
 <dl>
 <dd>
 
@@ -7636,7 +6722,6 @@ Lists the slide videos the workspace asked for, newest first, 50 at most, only t
 
 ```java
 client.slideshows().list(
-    "workspaceId",
     ListSlideshowsRequest
         .builder()
         .build()
@@ -7655,14 +6740,6 @@ client.slideshows().list(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **status:** `Optional<SlideshowStatus>` 
     
 </dd>
@@ -7675,7 +6752,7 @@ client.slideshows().list(
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.create(workspaceId, request) -> Slideshow</code></summary>
+<details><summary><code>client.slideshows.create(request) -> Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7703,7 +6780,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```java
 client.slideshows().create(
-    "workspaceId",
     SlideshowRequest
         .builder()
         .aspect(ImageAspect.SQUARE)
@@ -7727,14 +6803,6 @@ client.slideshows().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7783,7 +6851,7 @@ client.slideshows().create(
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.createFromEdit(workspaceId, request) -> Slideshow</code></summary>
+<details><summary><code>client.slideshows.createFromEdit(request) -> Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7811,7 +6879,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```java
 client.slideshows().createFromEdit(
-    "workspaceId",
     EditRenderRequest
         .builder()
         .edit(
@@ -7835,14 +6902,6 @@ client.slideshows().createFromEdit(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **edit:** `Map<String, Object>` 
     
 </dd>
@@ -7855,7 +6914,7 @@ client.slideshows().createFromEdit(
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.get(workspaceId, slideshowId) -> Slideshow</code></summary>
+<details><summary><code>client.slideshows.get(slideshowId) -> Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7883,7 +6942,6 @@ Reads where a slide video stands: queued, running, succeeded with its file (`med
 
 ```java
 client.slideshows().get(
-    "workspaceId",
     "slideshowId",
     GetSlideshowsRequest
         .builder()
@@ -7903,14 +6961,6 @@ client.slideshows().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **slideshowId:** `String` 
     
 </dd>
@@ -7924,7 +6974,7 @@ client.slideshows().get(
 </details>
 
 ## members
-<details><summary><code>client.members.list(workspaceId) -> List&amp;lt;WorkspaceMember&amp;gt;</code></summary>
+<details><summary><code>client.members.list() -> List&amp;lt;WorkspaceMember&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -7951,28 +7001,8 @@ Lists the workspace's members, in the order they joined, with their name, email 
 <dd>
 
 ```java
-client.members().list(
-    "workspaceId",
-    ListMembersRequest
-        .builder()
-        .build()
-);
+client.members().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -7984,7 +7014,7 @@ client.members().list(
 </details>
 
 ## invitations
-<details><summary><code>client.invitations.list(workspaceId) -> List&amp;lt;Invitation&amp;gt;</code></summary>
+<details><summary><code>client.invitations.list() -> List&amp;lt;Invitation&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -8011,28 +7041,8 @@ Lists the workspace's pending invitations, oldest first, expired ones included. 
 <dd>
 
 ```java
-client.invitations().list(
-    "workspaceId",
-    ListInvitationsRequest
-        .builder()
-        .build()
-);
+client.invitations().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -8043,7 +7053,7 @@ client.invitations().list(
 </dl>
 </details>
 
-<details><summary><code>client.invitations.create(workspaceId, request) -> Invitation</code></summary>
+<details><summary><code>client.invitations.create(request) -> Invitation</code></summary>
 <dl>
 <dd>
 
@@ -8071,7 +7081,6 @@ Invites someone to the workspace with a role: Peal emails them a link that works
 
 ```java
 client.invitations().create(
-    "workspaceId",
     NewInvitation
         .builder()
         .email("email")
@@ -8088,14 +7097,6 @@ client.invitations().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8120,7 +7121,7 @@ client.invitations().create(
 </dl>
 </details>
 
-<details><summary><code>client.invitations.revoke(workspaceId, invitationId)</code></summary>
+<details><summary><code>client.invitations.revoke(invitationId)</code></summary>
 <dl>
 <dd>
 
@@ -8148,7 +7149,6 @@ Revokes a pending invitation of the workspace: its link stops working at once. N
 
 ```java
 client.invitations().revoke(
-    "workspaceId",
     "invitationId",
     RevokeInvitationsRequest
         .builder()
@@ -8168,14 +7168,6 @@ client.invitations().revoke(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **invitationId:** `String` 
     
 </dd>
@@ -8189,7 +7181,7 @@ client.invitations().revoke(
 </details>
 
 ## billing
-<details><summary><code>client.billing.get(workspaceId) -> Billing</code></summary>
+<details><summary><code>client.billing.get() -> Billing</code></summary>
 <dl>
 <dd>
 
@@ -8216,28 +7208,8 @@ Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tie
 <dd>
 
 ```java
-client.billing().get(
-    "workspaceId",
-    GetBillingRequest
-        .builder()
-        .build()
-);
+client.billing().get();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -8248,7 +7220,7 @@ client.billing().get(
 </dl>
 </details>
 
-<details><summary><code>client.billing.standing(workspaceId) -> Standing</code></summary>
+<details><summary><code>client.billing.standing() -> Standing</code></summary>
 <dl>
 <dd>
 
@@ -8275,28 +7247,8 @@ Answers where the workspace stands against its plan: what it holds beyond it, as
 <dd>
 
 ```java
-client.billing().standing(
-    "workspaceId",
-    StandingBillingRequest
-        .builder()
-        .build()
-);
+client.billing().standing();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -8308,7 +7260,7 @@ client.billing().standing(
 </details>
 
 ## usage
-<details><summary><code>client.usage.get(workspaceId) -> WorkspaceUsageReport</code></summary>
+<details><summary><code>client.usage.get() -> WorkspaceUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -8336,7 +7288,6 @@ Answers what the workspace uses of its plan now, and day by day from `from` to `
 
 ```java
 client.usage().get(
-    "workspaceId",
     GetUsageRequest
         .builder()
         .build()
@@ -8351,14 +7302,6 @@ client.usage().get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8383,7 +7326,7 @@ client.usage().get(
 </dl>
 </details>
 
-<details><summary><code>client.usage.partner(workspaceId) -> PartnerUsageReport</code></summary>
+<details><summary><code>client.usage.partner() -> PartnerUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -8395,7 +7338,7 @@ client.usage().get(
 <dl>
 <dd>
 
-Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
 </dd>
 </dl>
 </dd>
@@ -8411,7 +7354,6 @@ Answers what the partner account uses across the workspaces it holds, from `from
 
 ```java
 client.usage().partner(
-    "workspaceId",
     PartnerUsageRequest
         .builder()
         .build()
@@ -8426,14 +7368,6 @@ client.usage().partner(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8475,7 +7409,7 @@ client.usage().partner(
 </details>
 
 ## analytics
-<details><summary><code>client.analytics.summary(workspaceId) -> AnalyticsSummary</code></summary>
+<details><summary><code>client.analytics.summary() -> AnalyticsSummary</code></summary>
 <dl>
 <dd>
 
@@ -8503,7 +7437,6 @@ Sums up the posts published from `from` to `to`, both included and at most 366 d
 
 ```java
 client.analytics().summary(
-    "workspaceId",
     SummaryAnalyticsRequest
         .builder()
         .from("from")
@@ -8521,14 +7454,6 @@ client.analytics().summary(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8561,7 +7486,7 @@ client.analytics().summary(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.dashboard(workspaceId) -> AnalyticsDashboard</code></summary>
+<details><summary><code>client.analytics.dashboard() -> AnalyticsDashboard</code></summary>
 <dl>
 <dd>
 
@@ -8589,7 +7514,6 @@ Answers a workspace's analytics over a range in one call: the totals of the post
 
 ```java
 client.analytics().dashboard(
-    "workspaceId",
     DashboardAnalyticsRequest
         .builder()
         .timeZone("timeZone")
@@ -8605,14 +7529,6 @@ client.analytics().dashboard(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8661,7 +7577,7 @@ client.analytics().dashboard(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.channel(workspaceId, channelId) -> ChannelSeries</code></summary>
+<details><summary><code>client.analytics.channel(channelId) -> ChannelSeries</code></summary>
 <dl>
 <dd>
 
@@ -8689,7 +7605,6 @@ Answers one channel's numbers day by day: its followers, the accounts it follows
 
 ```java
 client.analytics().channel(
-    "workspaceId",
     "channelId",
     ChannelAnalyticsRequest
         .builder()
@@ -8706,14 +7621,6 @@ client.analytics().channel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8762,7 +7669,7 @@ client.analytics().channel(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.export(workspaceId) -> InputStream</code></summary>
+<details><summary><code>client.analytics.export() -> InputStream</code></summary>
 <dl>
 <dd>
 
@@ -8790,7 +7697,6 @@ Streams the workspace's analytics as a file: `kind=posts` lists each post publis
 
 ```java
 client.analytics().export(
-    "workspaceId",
     ExportAnalyticsRequest
         .builder()
         .timeZone("timeZone")
@@ -8807,14 +7713,6 @@ client.analytics().export(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8871,7 +7769,7 @@ client.analytics().export(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.bestTimes(workspaceId) -> BestTimes</code></summary>
+<details><summary><code>client.analytics.bestTimes() -> BestTimes</code></summary>
 <dl>
 <dd>
 
@@ -8899,7 +7797,6 @@ Answers when one channel's posts did best, by weekday and hour as `timeZone` (an
 
 ```java
 client.analytics().bestTimes(
-    "workspaceId",
     BestTimesAnalyticsRequest
         .builder()
         .channelId("channelId")
@@ -8916,14 +7813,6 @@ client.analytics().bestTimes(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8956,7 +7845,7 @@ client.analytics().bestTimes(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.post(workspaceId, postId) -> PostAnalytics</code></summary>
+<details><summary><code>client.analytics.post(postId) -> PostAnalytics</code></summary>
 <dl>
 <dd>
 
@@ -8984,7 +7873,6 @@ Answers with the counts of a post on each channel it went live on, over time. A 
 
 ```java
 client.analytics().post(
-    "workspaceId",
     "postId",
     PostAnalyticsRequest
         .builder()
@@ -9004,14 +7892,6 @@ client.analytics().post(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -9025,7 +7905,7 @@ client.analytics().post(
 </details>
 
 ## tiktok
-<details><summary><code>client.tiktok.creator(workspaceId, channelId) -> TikTokAccount</code></summary>
+<details><summary><code>client.tiktok.creator(channelId) -> TikTokAccount</code></summary>
 <dl>
 <dd>
 
@@ -9053,7 +7933,6 @@ Reads a TikTok channel's creator from TikTok: their nickname, the audiences the 
 
 ```java
 client.tiktok().creator(
-    "workspaceId",
     "channelId",
     CreatorTiktokRequest
         .builder()
@@ -9073,14 +7952,6 @@ client.tiktok().creator(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -9094,7 +7965,7 @@ client.tiktok().creator(
 </details>
 
 ## capabilities
-<details><summary><code>client.capabilities.platforms(workspaceId) -> List&amp;lt;PlatformCapabilities&amp;gt;</code></summary>
+<details><summary><code>client.capabilities.platforms() -> List&amp;lt;PlatformCapabilities&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -9121,28 +7992,8 @@ Describes what a post may hold on every platform, in Peal's order, whether or no
 <dd>
 
 ```java
-client.capabilities().platforms(
-    "workspaceId",
-    PlatformsCapabilitiesRequest
-        .builder()
-        .build()
-);
+client.capabilities().platforms();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -9153,7 +8004,7 @@ client.capabilities().platforms(
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.channel(workspaceId, channelId) -> ChannelCapabilities</code></summary>
+<details><summary><code>client.capabilities.channel(channelId) -> ChannelCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -9181,7 +8032,6 @@ Describes what a post on this channel may hold: its platform's capabilities, and
 
 ```java
 client.capabilities().channel(
-    "workspaceId",
     "channelId",
     ChannelCapabilitiesRequest
         .builder()
@@ -9201,14 +8051,6 @@ client.capabilities().channel(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -9222,7 +8064,7 @@ client.capabilities().channel(
 </details>
 
 ## lookups
-<details><summary><code>client.lookups.list(workspaceId, channelId) -> List&amp;lt;LookupDescription&amp;gt;</code></summary>
+<details><summary><code>client.lookups.list(channelId) -> List&amp;lt;LookupDescription&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -9250,7 +8092,6 @@ Lists the lookups the channel has: what its platform tells about the account tha
 
 ```java
 client.lookups().list(
-    "workspaceId",
     "channelId",
     ListLookupsRequest
         .builder()
@@ -9270,14 +8111,6 @@ client.lookups().list(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -9290,7 +8123,7 @@ client.lookups().list(
 </dl>
 </details>
 
-<details><summary><code>client.lookups.run(workspaceId, channelId, name, request) -> LookupResult</code></summary>
+<details><summary><code>client.lookups.run(channelId, name, request) -> LookupResult</code></summary>
 <dl>
 <dd>
 
@@ -9318,7 +8151,6 @@ Runs one of the channel's lookups: asks the platform now, with the channel's tok
 
 ```java
 client.lookups().run(
-    "workspaceId",
     "channelId",
     "name",
     LookupInput
@@ -9335,14 +8167,6 @@ client.lookups().run(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9416,7 +8240,7 @@ client.lookups().run(
 </details>
 
 ## webhooks
-<details><summary><code>client.webhooks.list(workspaceId) -> List&amp;lt;WebhookEndpoint&amp;gt;</code></summary>
+<details><summary><code>client.webhooks.list() -> List&amp;lt;WebhookEndpoint&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -9443,28 +8267,8 @@ Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 <dd>
 
 ```java
-client.webhooks().list(
-    "workspaceId",
-    ListWebhooksRequest
-        .builder()
-        .build()
-);
+client.webhooks().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -9475,7 +8279,7 @@ client.webhooks().list(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.create(workspaceId, request) -> WebhookEndpointSecret</code></summary>
+<details><summary><code>client.webhooks.create(request) -> WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -9503,7 +8307,6 @@ Adds a webhook endpoint to the workspace, and answers with its signing secret, w
 
 ```java
 client.webhooks().create(
-    "workspaceId",
     NewWebhookEndpoint
         .builder()
         .url("url")
@@ -9522,14 +8325,6 @@ client.webhooks().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9602,7 +8397,7 @@ client.webhooks().create(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.searchDeliveries(workspaceId) -> WebhookDeliveryPage</code></summary>
+<details><summary><code>client.webhooks.searchDeliveries() -> WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -9630,7 +8425,6 @@ Lists the workspace's deliveries across its endpoints, newest first, 30 a page u
 
 ```java
 client.webhooks().searchDeliveries(
-    "workspaceId",
     SearchDeliveriesWebhooksRequest
         .builder()
         .build()
@@ -9645,14 +8439,6 @@ client.webhooks().searchDeliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9717,7 +8503,7 @@ client.webhooks().searchDeliveries(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.redeliverMany(workspaceId, request) -> WebhookBulkRedelivery</code></summary>
+<details><summary><code>client.webhooks.redeliverMany(request) -> WebhookBulkRedelivery</code></summary>
 <dl>
 <dd>
 
@@ -9745,20 +8531,14 @@ Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, o
 
 ```java
 client.webhooks().redeliverMany(
-    "workspaceId",
-    RedeliverManyWebhooksRequest
-        .builder()
-        .body(
-            WebhookRedeliveryRequest.of(
-                WebhookRedeliveryByIds
-                    .builder()
-                    .deliveryIds(
-                        Arrays.asList("deliveryIds")
-                    )
-                    .build()
+    WebhookRedeliveryRequest.of(
+        WebhookRedeliveryByIds
+            .builder()
+            .deliveryIds(
+                Arrays.asList("deliveryIds")
             )
-        )
-        .build()
+            .build()
+    )
 );
 ```
 </dd>
@@ -9770,14 +8550,6 @@ client.webhooks().redeliverMany(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9794,7 +8566,7 @@ client.webhooks().redeliverMany(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.get(workspaceId, endpointId) -> WebhookEndpoint</code></summary>
+<details><summary><code>client.webhooks.get(endpointId) -> WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -9822,7 +8594,6 @@ Shows one of the workspace's webhook endpoints. Needs webhook:read.
 
 ```java
 client.webhooks().get(
-    "workspaceId",
     "endpointId",
     GetWebhooksRequest
         .builder()
@@ -9842,14 +8613,6 @@ client.webhooks().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **endpointId:** `String` 
     
 </dd>
@@ -9862,7 +8625,7 @@ client.webhooks().get(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.delete(workspaceId, endpointId)</code></summary>
+<details><summary><code>client.webhooks.delete(endpointId)</code></summary>
 <dl>
 <dd>
 
@@ -9890,7 +8653,6 @@ Deletes an endpoint, its secret and its delivery log: nothing more is sent to it
 
 ```java
 client.webhooks().delete(
-    "workspaceId",
     "endpointId",
     DeleteWebhooksRequest
         .builder()
@@ -9910,14 +8672,6 @@ client.webhooks().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **endpointId:** `String` 
     
 </dd>
@@ -9930,7 +8684,7 @@ client.webhooks().delete(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.update(workspaceId, endpointId, request) -> WebhookEndpoint</code></summary>
+<details><summary><code>client.webhooks.update(endpointId, request) -> WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -9958,7 +8712,6 @@ Changes an endpoint's address, description, events, filters or headers, or turns
 
 ```java
 client.webhooks().update(
-    "workspaceId",
     "endpointId",
     WebhookEndpointChange
         .builder()
@@ -9974,14 +8727,6 @@ client.webhooks().update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10054,7 +8799,7 @@ client.webhooks().update(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.rotateSecret(workspaceId, endpointId) -> WebhookEndpointSecret</code></summary>
+<details><summary><code>client.webhooks.rotateSecret(endpointId) -> WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -10082,7 +8827,6 @@ Replaces an endpoint's signing secret, and answers with the new one, which is no
 
 ```java
 client.webhooks().rotateSecret(
-    "workspaceId",
     "endpointId",
     RotateSecretWebhooksRequest
         .builder()
@@ -10102,14 +8846,6 @@ client.webhooks().rotateSecret(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **endpointId:** `String` 
     
 </dd>
@@ -10122,7 +8858,7 @@ client.webhooks().rotateSecret(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.sendTest(workspaceId, endpointId) -> WebhookDelivery</code></summary>
+<details><summary><code>client.webhooks.sendTest(endpointId) -> WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -10150,7 +8886,6 @@ Sends the endpoint a `webhook.test` event, or, with `eventType`, a sample of tha
 
 ```java
 client.webhooks().sendTest(
-    "workspaceId",
     "endpointId",
     SendTestWebhooksRequest
         .builder()
@@ -10166,14 +8901,6 @@ client.webhooks().sendTest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10198,7 +8925,7 @@ client.webhooks().sendTest(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.listDeliveries(workspaceId, endpointId) -> WebhookDeliveryPage</code></summary>
+<details><summary><code>client.webhooks.listDeliveries(endpointId) -> WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -10226,7 +8953,6 @@ Lists the endpoint's deliveries, newest first, of a `status` and an `eventType` 
 
 ```java
 client.webhooks().listDeliveries(
-    "workspaceId",
     "endpointId",
     ListDeliveriesWebhooksRequest
         .builder()
@@ -10242,14 +8968,6 @@ client.webhooks().listDeliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10298,7 +9016,7 @@ client.webhooks().listDeliveries(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.redeliver(workspaceId, endpointId, deliveryId) -> WebhookDelivery</code></summary>
+<details><summary><code>client.webhooks.redeliver(endpointId, deliveryId) -> WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -10326,7 +9044,6 @@ Sends the delivery's event to the endpoint again, as a new delivery of the same 
 
 ```java
 client.webhooks().redeliver(
-    "workspaceId",
     "endpointId",
     "deliveryId",
     RedeliverWebhooksRequest
@@ -10343,14 +9060,6 @@ client.webhooks().redeliver(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10376,7 +9085,7 @@ client.webhooks().redeliver(
 </details>
 
 ## inbox
-<details><summary><code>client.inbox.listThreads(workspaceId) -> InboxThreadPage</code></summary>
+<details><summary><code>client.inbox.listThreads() -> InboxThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -10404,7 +9113,6 @@ Lists the threads that have comments, one per post and channel: those with a com
 
 ```java
 client.inbox().listThreads(
-    "workspaceId",
     ListThreadsInboxRequest
         .builder()
         .build()
@@ -10419,14 +9127,6 @@ client.inbox().listThreads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10475,7 +9175,7 @@ client.inbox().listThreads(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.getThread(workspaceId, threadId) -> InboxThreadDetail</code></summary>
+<details><summary><code>client.inbox.getThread(threadId) -> InboxThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -10503,7 +9203,6 @@ Shows a thread whole: its comments, oldest first, the replies sent from Peal, an
 
 ```java
 client.inbox().getThread(
-    "workspaceId",
     "threadId",
     GetThreadInboxRequest
         .builder()
@@ -10523,14 +9222,6 @@ client.inbox().getThread(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **threadId:** `String` 
     
 </dd>
@@ -10543,7 +9234,7 @@ client.inbox().getThread(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.getAbilities(workspaceId, channelId) -> InboxAbilities</code></summary>
+<details><summary><code>client.inbox.getAbilities(channelId) -> InboxAbilities</code></summary>
 <dl>
 <dd>
 
@@ -10571,7 +9262,6 @@ Says what a channel can do about the comments under its posts, from its platform
 
 ```java
 client.inbox().getAbilities(
-    "workspaceId",
     "channelId",
     GetAbilitiesInboxRequest
         .builder()
@@ -10591,14 +9281,6 @@ client.inbox().getAbilities(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -10611,7 +9293,7 @@ client.inbox().getAbilities(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.reply(workspaceId, commentId, request) -> InboxReply</code></summary>
+<details><summary><code>client.inbox.reply(commentId, request) -> InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10639,7 +9321,6 @@ Answers a comment in public, as the channel's account: everyone who sees the pos
 
 ```java
 client.inbox().reply(
-    "workspaceId",
     "commentId",
     NewInboxReply
         .builder()
@@ -10656,14 +9337,6 @@ client.inbox().reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10696,7 +9369,7 @@ client.inbox().reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.setAnswered(workspaceId, commentId, request) -> InboxComment</code></summary>
+<details><summary><code>client.inbox.setAnswered(commentId, request) -> InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -10724,7 +9397,6 @@ Says a comment needs no answer (`answered: true`), or waits for one again (`fals
 
 ```java
 client.inbox().setAnswered(
-    "workspaceId",
     "commentId",
     SetAnsweredInboxRequest
         .builder()
@@ -10741,14 +9413,6 @@ client.inbox().setAnswered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10773,7 +9437,7 @@ client.inbox().setAnswered(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.moderate(workspaceId, commentId, request) -> InboxComment</code></summary>
+<details><summary><code>client.inbox.moderate(commentId, request) -> InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -10801,7 +9465,6 @@ Asks the channel's account to hide or show a comment, like it or take the like b
 
 ```java
 client.inbox().moderate(
-    "workspaceId",
     "commentId",
     ModerateInboxRequest
         .builder()
@@ -10818,14 +9481,6 @@ client.inbox().moderate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10850,7 +9505,7 @@ client.inbox().moderate(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.confirmReply(workspaceId, replyId, request) -> InboxReply</code></summary>
+<details><summary><code>client.inbox.confirmReply(replyId, request) -> InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10878,7 +9533,6 @@ Records what someone found on the platform for an unconfirmed reply: it is there
 
 ```java
 client.inbox().confirmReply(
-    "workspaceId",
     "replyId",
     ConfirmReplyInboxRequest
         .builder()
@@ -10895,14 +9549,6 @@ client.inbox().confirmReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10927,7 +9573,7 @@ client.inbox().confirmReply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.withdrawReply(workspaceId, replyId) -> InboxReply</code></summary>
+<details><summary><code>client.inbox.withdrawReply(replyId) -> InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10955,7 +9601,6 @@ Deletes a reply sent from Peal from its platform, and answers with it, `withdraw
 
 ```java
 client.inbox().withdrawReply(
-    "workspaceId",
     "replyId",
     WithdrawReplyInboxRequest
         .builder()
@@ -10975,14 +9620,6 @@ client.inbox().withdrawReply(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **replyId:** `String` 
     
 </dd>
@@ -10996,7 +9633,7 @@ client.inbox().withdrawReply(
 </details>
 
 ## inboxReviews
-<details><summary><code>client.inboxReviews.listReviewThreads(workspaceId) -> InboxReviewThreadPage</code></summary>
+<details><summary><code>client.inboxReviews.listReviewThreads() -> InboxReviewThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -11024,7 +9661,6 @@ Lists the locations that have reviews, one per channel: those with a review wait
 
 ```java
 client.inboxReviews().listReviewThreads(
-    "workspaceId",
     ListReviewThreadsInboxReviewsRequest
         .builder()
         .build()
@@ -11039,14 +9675,6 @@ client.inboxReviews().listReviewThreads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11087,7 +9715,7 @@ client.inboxReviews().listReviewThreads(
 </dl>
 </details>
 
-<details><summary><code>client.inboxReviews.getReviewThread(workspaceId, threadId) -> InboxReviewThreadDetail</code></summary>
+<details><summary><code>client.inboxReviews.getReviewThread(threadId) -> InboxReviewThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -11115,7 +9743,6 @@ Shows a location's reviews whole, the latest first, the replies sent from Peal, 
 
 ```java
 client.inboxReviews().getReviewThread(
-    "workspaceId",
     "threadId",
     GetReviewThreadInboxReviewsRequest
         .builder()
@@ -11135,14 +9762,6 @@ client.inboxReviews().getReviewThread(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **threadId:** `String` 
     
 </dd>
@@ -11155,7 +9774,7 @@ client.inboxReviews().getReviewThread(
 </dl>
 </details>
 
-<details><summary><code>client.inboxReviews.replyToReview(workspaceId, reviewId, request) -> InboxReviewReply</code></summary>
+<details><summary><code>client.inboxReviews.replyToReview(reviewId, request) -> InboxReviewReply</code></summary>
 <dl>
 <dd>
 
@@ -11183,7 +9802,6 @@ Answers a review in public, as the location: the reply replaces the one the revi
 
 ```java
 client.inboxReviews().replyToReview(
-    "workspaceId",
     "reviewId",
     NewInboxReviewReply
         .builder()
@@ -11200,14 +9818,6 @@ client.inboxReviews().replyToReview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11240,7 +9850,7 @@ client.inboxReviews().replyToReview(
 </dl>
 </details>
 
-<details><summary><code>client.inboxReviews.withdrawReviewReply(workspaceId, reviewId) -> InboxReview</code></summary>
+<details><summary><code>client.inboxReviews.withdrawReviewReply(reviewId) -> InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -11268,7 +9878,6 @@ Deletes the location's reply to a review from the platform, whoever wrote it, an
 
 ```java
 client.inboxReviews().withdrawReviewReply(
-    "workspaceId",
     "reviewId",
     WithdrawReviewReplyInboxReviewsRequest
         .builder()
@@ -11288,14 +9897,6 @@ client.inboxReviews().withdrawReviewReply(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **reviewId:** `String` 
     
 </dd>
@@ -11308,7 +9909,7 @@ client.inboxReviews().withdrawReviewReply(
 </dl>
 </details>
 
-<details><summary><code>client.inboxReviews.setReviewAnswered(workspaceId, reviewId, request) -> InboxReview</code></summary>
+<details><summary><code>client.inboxReviews.setReviewAnswered(reviewId, request) -> InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -11336,7 +9937,6 @@ Says a review needs no answer (`answered: true`), or waits for one again (`false
 
 ```java
 client.inboxReviews().setReviewAnswered(
-    "workspaceId",
     "reviewId",
     SetReviewAnsweredInboxReviewsRequest
         .builder()
@@ -11353,14 +9953,6 @@ client.inboxReviews().setReviewAnswered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11386,7 +9978,7 @@ client.inboxReviews().setReviewAnswered(
 </details>
 
 ## inboxMessages
-<details><summary><code>client.inboxMessages.listConversations(workspaceId) -> InboxConversationPage</code></summary>
+<details><summary><code>client.inboxMessages.listConversations() -> InboxConversationPage</code></summary>
 <dl>
 <dd>
 
@@ -11414,7 +10006,6 @@ Lists the workspace's conversations, the latest message first, 30 a page unless 
 
 ```java
 client.inboxMessages().listConversations(
-    "workspaceId",
     ListConversationsInboxMessagesRequest
         .builder()
         .build()
@@ -11429,14 +10020,6 @@ client.inboxMessages().listConversations(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11477,7 +10060,7 @@ client.inboxMessages().listConversations(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.getConversation(workspaceId, conversationId) -> InboxConversationDetail</code></summary>
+<details><summary><code>client.inboxMessages.getConversation(conversationId) -> InboxConversationDetail</code></summary>
 <dl>
 <dd>
 
@@ -11505,7 +10088,6 @@ Shows a conversation: a page of its messages (the latest 100 unless `limit` says
 
 ```java
 client.inboxMessages().getConversation(
-    "workspaceId",
     "conversationId",
     GetConversationInboxMessagesRequest
         .builder()
@@ -11521,14 +10103,6 @@ client.inboxMessages().getConversation(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11561,7 +10135,7 @@ client.inboxMessages().getConversation(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.sendMessage(workspaceId, conversationId, request) -> InboxOutgoingMessage</code></summary>
+<details><summary><code>client.inboxMessages.sendMessage(conversationId, request) -> InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -11589,7 +10163,6 @@ Answers a conversation privately, as the channel's account: the message goes to 
 
 ```java
 client.inboxMessages().sendMessage(
-    "workspaceId",
     "conversationId",
     NewInboxMessage
         .builder()
@@ -11606,14 +10179,6 @@ client.inboxMessages().sendMessage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11646,7 +10211,7 @@ client.inboxMessages().sendMessage(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.sendPrivateReply(workspaceId, request) -> InboxPrivateReply</code></summary>
+<details><summary><code>client.inboxMessages.sendPrivateReply(request) -> InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11674,7 +10239,6 @@ Sends the author of a comment under the workspace's post one private message, as
 
 ```java
 client.inboxMessages().sendPrivateReply(
-    "workspaceId",
     NewInboxPrivateReply
         .builder()
         .commentId("commentId")
@@ -11691,14 +10255,6 @@ client.inboxMessages().sendPrivateReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11731,7 +10287,7 @@ client.inboxMessages().sendPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.getPrivateReply(workspaceId, privateReplyId) -> InboxPrivateReply</code></summary>
+<details><summary><code>client.inboxMessages.getPrivateReply(privateReplyId) -> InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11759,7 +10315,6 @@ Shows a private reply sent to a comment's author, and how it stands. Needs engag
 
 ```java
 client.inboxMessages().getPrivateReply(
-    "workspaceId",
     "privateReplyId",
     GetPrivateReplyInboxMessagesRequest
         .builder()
@@ -11779,14 +10334,6 @@ client.inboxMessages().getPrivateReply(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **privateReplyId:** `String` 
     
 </dd>
@@ -11799,7 +10346,7 @@ client.inboxMessages().getPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.confirmPrivateReply(workspaceId, privateReplyId, request) -> InboxPrivateReply</code></summary>
+<details><summary><code>client.inboxMessages.confirmPrivateReply(privateReplyId, request) -> InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11827,7 +10374,6 @@ Records what someone found in the person's conversation for an unconfirmed priva
 
 ```java
 client.inboxMessages().confirmPrivateReply(
-    "workspaceId",
     "privateReplyId",
     ConfirmPrivateReplyInboxMessagesRequest
         .builder()
@@ -11844,14 +10390,6 @@ client.inboxMessages().confirmPrivateReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11876,7 +10414,7 @@ client.inboxMessages().confirmPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.setConversationRead(workspaceId, conversationId, request) -> InboxConversation</code></summary>
+<details><summary><code>client.inboxMessages.setConversationRead(conversationId, request) -> InboxConversation</code></summary>
 <dl>
 <dd>
 
@@ -11904,7 +10442,6 @@ Says a conversation was read (`read: true`), or is unread again (`false`). Nothi
 
 ```java
 client.inboxMessages().setConversationRead(
-    "workspaceId",
     "conversationId",
     SetConversationReadInboxMessagesRequest
         .builder()
@@ -11921,14 +10458,6 @@ client.inboxMessages().setConversationRead(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11953,7 +10482,7 @@ client.inboxMessages().setConversationRead(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.getMessageSettings(workspaceId) -> InboxMessageSettings</code></summary>
+<details><summary><code>client.inboxMessages.getMessageSettings() -> InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -11980,28 +10509,8 @@ Lists the channels whose direct messages the workspace turned on, and the applic
 <dd>
 
 ```java
-client.inboxMessages().getMessageSettings(
-    "workspaceId",
-    GetMessageSettingsInboxMessagesRequest
-        .builder()
-        .build()
-);
+client.inboxMessages().getMessageSettings();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -12012,7 +10521,7 @@ client.inboxMessages().getMessageSettings(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.setChannelMessages(workspaceId, channelId, request) -> InboxMessageSettings</code></summary>
+<details><summary><code>client.inboxMessages.setChannelMessages(channelId, request) -> InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -12040,7 +10549,6 @@ Turns a channel's direct messages on (`enabled: true`): Peal reads its conversat
 
 ```java
 client.inboxMessages().setChannelMessages(
-    "workspaceId",
     "channelId",
     SetChannelMessagesInboxMessagesRequest
         .builder()
@@ -12057,14 +10565,6 @@ client.inboxMessages().setChannelMessages(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12089,7 +10589,7 @@ client.inboxMessages().setChannelMessages(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.setMessageApplication(workspaceId, request) -> InboxMessageSettings</code></summary>
+<details><summary><code>client.inboxMessages.setMessageApplication(request) -> InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -12117,7 +10617,6 @@ Lets an application connected through OAuth (by its client id) read and answer t
 
 ```java
 client.inboxMessages().setMessageApplication(
-    "workspaceId",
     SetMessageApplicationInboxMessagesRequest
         .builder()
         .allowed(true)
@@ -12134,14 +10633,6 @@ client.inboxMessages().setMessageApplication(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12166,7 +10657,7 @@ client.inboxMessages().setMessageApplication(
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.confirmMessage(workspaceId, messageId, request) -> InboxOutgoingMessage</code></summary>
+<details><summary><code>client.inboxMessages.confirmMessage(messageId, request) -> InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -12194,7 +10685,6 @@ Records what someone found on the platform for an unconfirmed message: it is the
 
 ```java
 client.inboxMessages().confirmMessage(
-    "workspaceId",
     "messageId",
     ConfirmMessageInboxMessagesRequest
         .builder()
@@ -12211,14 +10701,6 @@ client.inboxMessages().confirmMessage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12244,7 +10726,7 @@ client.inboxMessages().confirmMessage(
 </details>
 
 ## ads
-<details><summary><code>client.ads.status(workspaceId) -> AdsStatus</code></summary>
+<details><summary><code>client.ads.status() -> AdsStatus</code></summary>
 <dl>
 <dd>
 
@@ -12271,28 +10753,8 @@ Says what this server offers of ads (`off`, `read` or `spend`) and on which netw
 <dd>
 
 ```java
-client.ads().status(
-    "workspaceId",
-    StatusAdsRequest
-        .builder()
-        .build()
-);
+client.ads().status();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -12303,7 +10765,7 @@ client.ads().status(
 </dl>
 </details>
 
-<details><summary><code>client.ads.listConnections(workspaceId) -> List&amp;lt;AdConnection&amp;gt;</code></summary>
+<details><summary><code>client.ads.listConnections() -> List&amp;lt;AdConnection&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -12330,28 +10792,8 @@ Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whet
 <dd>
 
 ```java
-client.ads().listConnections(
-    "workspaceId",
-    ListConnectionsAdsRequest
-        .builder()
-        .build()
-);
+client.ads().listConnections();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -12362,7 +10804,7 @@ client.ads().listConnections(
 </dl>
 </details>
 
-<details><summary><code>client.ads.connect(workspaceId, network) -> AdSignIn</code></summary>
+<details><summary><code>client.ads.connect(network) -> AdSignIn</code></summary>
 <dl>
 <dd>
 
@@ -12390,7 +10832,6 @@ Starts a sign-in to an ad network and answers the page to send the member's brow
 
 ```java
 client.ads().connect(
-    "workspaceId",
     AdNetwork.META,
     ConnectAdsRequest
         .builder()
@@ -12410,14 +10851,6 @@ client.ads().connect(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **network:** `AdNetwork` 
     
 </dd>
@@ -12430,7 +10863,7 @@ client.ads().connect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.completeConnect(workspaceId, network, request) -> AdSignInResult</code></summary>
+<details><summary><code>client.ads.completeConnect(network, request) -> AdSignInResult</code></summary>
 <dl>
 <dd>
 
@@ -12458,7 +10891,6 @@ Completes a sign-in with what the network's page sent back, and answers the ad a
 
 ```java
 client.ads().completeConnect(
-    "workspaceId",
     AdNetwork.META,
     AdSignInCallback
         .builder()
@@ -12475,14 +10907,6 @@ client.ads().completeConnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12523,7 +10947,7 @@ client.ads().completeConnect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.reachableAccounts(workspaceId, connectionId) -> List&amp;lt;ReachableAdAccount&amp;gt;</code></summary>
+<details><summary><code>client.ads.reachableAccounts(connectionId) -> List&amp;lt;ReachableAdAccount&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -12551,7 +10975,6 @@ Lists the ad accounts a sign-in reaches now, as the network gives them: currency
 
 ```java
 client.ads().reachableAccounts(
-    "workspaceId",
     "connectionId",
     ReachableAccountsAdsRequest
         .builder()
@@ -12571,14 +10994,6 @@ client.ads().reachableAccounts(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **connectionId:** `String` 
     
 </dd>
@@ -12591,7 +11006,7 @@ client.ads().reachableAccounts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.connectAccounts(workspaceId, connectionId, request) -> List&amp;lt;AdAccount&amp;gt;</code></summary>
+<details><summary><code>client.ads.connectAccounts(connectionId, request) -> List&amp;lt;AdAccount&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -12619,7 +11034,6 @@ Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the n
 
 ```java
 client.ads().connectAccounts(
-    "workspaceId",
     "connectionId",
     AdAccountsToConnect
         .builder()
@@ -12638,14 +11052,6 @@ client.ads().connectAccounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12670,7 +11076,7 @@ client.ads().connectAccounts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.disconnect(workspaceId, connectionId)</code></summary>
+<details><summary><code>client.ads.disconnect(connectionId)</code></summary>
 <dl>
 <dd>
 
@@ -12698,7 +11104,6 @@ Removes a sign-in, its token, the ad accounts it connects and what was read of t
 
 ```java
 client.ads().disconnect(
-    "workspaceId",
     "connectionId",
     DisconnectAdsRequest
         .builder()
@@ -12718,14 +11123,6 @@ client.ads().disconnect(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **connectionId:** `String` 
     
 </dd>
@@ -12738,7 +11135,7 @@ client.ads().disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.listAccounts(workspaceId) -> List&amp;lt;AdAccount&amp;gt;</code></summary>
+<details><summary><code>client.ads.listAccounts() -> List&amp;lt;AdAccount&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -12765,28 +11162,8 @@ Lists the workspace's connected ad accounts, oldest first, with whether each may
 <dd>
 
 ```java
-client.ads().listAccounts(
-    "workspaceId",
-    ListAccountsAdsRequest
-        .builder()
-        .build()
-);
+client.ads().listAccounts();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -12797,7 +11174,7 @@ client.ads().listAccounts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.getAccount(workspaceId, accountId) -> AdSpending</code></summary>
+<details><summary><code>client.ads.getAccount(accountId) -> AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -12825,7 +11202,6 @@ Shows an ad account with what its boosts made through Peal commit in the current
 
 ```java
 client.ads().getAccount(
-    "workspaceId",
     "accountId",
     GetAccountAdsRequest
         .builder()
@@ -12845,14 +11221,6 @@ client.ads().getAccount(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **accountId:** `String` 
     
 </dd>
@@ -12865,7 +11233,7 @@ client.ads().getAccount(
 </dl>
 </details>
 
-<details><summary><code>client.ads.removeAccount(workspaceId, accountId)</code></summary>
+<details><summary><code>client.ads.removeAccount(accountId)</code></summary>
 <dl>
 <dd>
 
@@ -12893,7 +11261,6 @@ Disconnects an ad account: what was read of it goes with it, and its boosts' rec
 
 ```java
 client.ads().removeAccount(
-    "workspaceId",
     "accountId",
     RemoveAccountAdsRequest
         .builder()
@@ -12913,14 +11280,6 @@ client.ads().removeAccount(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **accountId:** `String` 
     
 </dd>
@@ -12933,7 +11292,7 @@ client.ads().removeAccount(
 </dl>
 </details>
 
-<details><summary><code>client.ads.setSpending(workspaceId, accountId, request) -> AdSpending</code></summary>
+<details><summary><code>client.ads.setSpending(accountId, request) -> AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -12961,7 +11320,6 @@ Decides whether an ad account may spend through Peal, and how much: `enabled` wi
 
 ```java
 client.ads().setSpending(
-    "workspaceId",
     "accountId",
     AdSpendingDecision
         .builder()
@@ -12978,14 +11336,6 @@ client.ads().setSpending(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13018,7 +11368,7 @@ client.ads().setSpending(
 </dl>
 </details>
 
-<details><summary><code>client.ads.listCampaigns(workspaceId, accountId) -> AdCampaignReport</code></summary>
+<details><summary><code>client.ads.listCampaigns(accountId) -> AdCampaignReport</code></summary>
 <dl>
 <dd>
 
@@ -13046,7 +11396,6 @@ Lists an ad account's campaigns as last read from its network (every hour on Met
 
 ```java
 client.ads().listCampaigns(
-    "workspaceId",
     "accountId",
     ListCampaignsAdsRequest
         .builder()
@@ -13062,14 +11411,6 @@ client.ads().listCampaigns(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13102,7 +11443,7 @@ client.ads().listCampaigns(
 </dl>
 </details>
 
-<details><summary><code>client.ads.listAds(workspaceId, accountId) -> AdReport</code></summary>
+<details><summary><code>client.ads.listAds(accountId) -> AdReport</code></summary>
 <dl>
 <dd>
 
@@ -13130,7 +11471,6 @@ Lists an ad account's ads as last read, those of one campaign with `campaignId` 
 
 ```java
 client.ads().listAds(
-    "workspaceId",
     "accountId",
     ListAdsAdsRequest
         .builder()
@@ -13146,14 +11486,6 @@ client.ads().listAds(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13194,7 +11526,7 @@ client.ads().listAds(
 </dl>
 </details>
 
-<details><summary><code>client.ads.listInsights(workspaceId, accountId) -> AdInsightReport</code></summary>
+<details><summary><code>client.ads.listInsights(accountId) -> AdInsightReport</code></summary>
 <dl>
 <dd>
 
@@ -13222,7 +11554,6 @@ Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spe
 
 ```java
 client.ads().listInsights(
-    "workspaceId",
     "accountId",
     ListInsightsAdsRequest
         .builder()
@@ -13238,14 +11569,6 @@ client.ads().listInsights(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13278,7 +11601,7 @@ client.ads().listInsights(
 </dl>
 </details>
 
-<details><summary><code>client.ads.postPerformance(workspaceId, postId) -> PostAdPerformance</code></summary>
+<details><summary><code>client.ads.postPerformance(postId) -> PostAdPerformance</code></summary>
 <dl>
 <dd>
 
@@ -13306,7 +11629,6 @@ Shows a published post's organic counts on each channel beside what the ads that
 
 ```java
 client.ads().postPerformance(
-    "workspaceId",
     "postId",
     PostPerformanceAdsRequest
         .builder()
@@ -13326,14 +11648,6 @@ client.ads().postPerformance(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -13346,7 +11660,7 @@ client.ads().postPerformance(
 </dl>
 </details>
 
-<details><summary><code>client.ads.quoteBoost(workspaceId, request) -> BoostQuote</code></summary>
+<details><summary><code>client.ads.quoteBoost(request) -> BoostQuote</code></summary>
 <dl>
 <dd>
 
@@ -13374,37 +11688,31 @@ Checks a boost as `createBoost` would, and says what it would commit and the roo
 
 ```java
 client.ads().quoteBoost(
-    "workspaceId",
-    QuoteBoostAdsRequest
+    NewBoost
         .builder()
-        .body(
-            NewBoost
+        .accountId("accountId")
+        .audience(
+            BoostAudience
                 .builder()
-                .accountId("accountId")
-                .audience(
-                    BoostAudience
-                        .builder()
-                        .ageMax(1)
-                        .ageMin(1)
-                        .countries(
-                            Arrays.asList("countries")
-                        )
-                        .build()
+                .ageMax(1)
+                .ageMin(1)
+                .countries(
+                    Arrays.asList("countries")
                 )
-                .budget(
-                    BoostBudget
-                        .builder()
-                        .amount(1000000L)
-                        .kind(BoostBudgetKind.TOTAL)
-                        .build()
-                )
-                .channelId("channelId")
-                .currency("currency")
-                .endsAt("endsAt")
-                .postId("postId")
-                .specialAdCategory(SpecialAdCategory.NONE)
                 .build()
         )
+        .budget(
+            BoostBudget
+                .builder()
+                .amount(1000000L)
+                .kind(BoostBudgetKind.TOTAL)
+                .build()
+        )
+        .channelId("channelId")
+        .currency("currency")
+        .endsAt("endsAt")
+        .postId("postId")
+        .specialAdCategory(SpecialAdCategory.NONE)
         .build()
 );
 ```
@@ -13421,14 +11729,6 @@ client.ads().quoteBoost(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `NewBoost` 
     
 </dd>
@@ -13441,7 +11741,7 @@ client.ads().quoteBoost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.listBoosts(workspaceId) -> BoostPage</code></summary>
+<details><summary><code>client.ads.listBoosts() -> BoostPage</code></summary>
 <dl>
 <dd>
 
@@ -13469,7 +11769,6 @@ Lists the workspace's boosts, newest first, 50 a page, those of one post with `p
 
 ```java
 client.ads().listBoosts(
-    "workspaceId",
     ListBoostsAdsRequest
         .builder()
         .build()
@@ -13484,14 +11783,6 @@ client.ads().listBoosts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13516,7 +11807,7 @@ client.ads().listBoosts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.createBoost(workspaceId, request) -> Boost</code></summary>
+<details><summary><code>client.ads.createBoost(request) -> Boost</code></summary>
 <dl>
 <dd>
 
@@ -13544,7 +11835,6 @@ client.ads().listBoosts(
 
 ```java
 client.ads().createBoost(
-    "workspaceId",
     CreateBoostAdsRequest
         .builder()
         .idempotencyKey("idempotency-key")
@@ -13592,14 +11882,6 @@ client.ads().createBoost(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **idempotencyKey:** `String` 
     
 </dd>
@@ -13620,7 +11902,7 @@ client.ads().createBoost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.getBoost(workspaceId, boostId) -> BoostDetail</code></summary>
+<details><summary><code>client.ads.getBoost(boostId) -> BoostDetail</code></summary>
 <dl>
 <dd>
 
@@ -13648,7 +11930,6 @@ Shows a boost and the journal of the requests Peal sent the network for it, each
 
 ```java
 client.ads().getBoost(
-    "workspaceId",
     "boostId",
     GetBoostAdsRequest
         .builder()
@@ -13668,14 +11949,6 @@ client.ads().getBoost(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **boostId:** `String` 
     
 </dd>
@@ -13688,7 +11961,7 @@ client.ads().getBoost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.pauseBoost(workspaceId, boostId) -> Boost</code></summary>
+<details><summary><code>client.ads.pauseBoost(boostId) -> Boost</code></summary>
 <dl>
 <dd>
 
@@ -13716,7 +11989,6 @@ Pauses a boost that runs or may run: its campaign is told to pause, and the boos
 
 ```java
 client.ads().pauseBoost(
-    "workspaceId",
     "boostId",
     PauseBoostAdsRequest
         .builder()
@@ -13736,14 +12008,6 @@ client.ads().pauseBoost(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **boostId:** `String` 
     
 </dd>
@@ -13756,7 +12020,7 @@ client.ads().pauseBoost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.resumeBoost(workspaceId, boostId) -> Boost</code></summary>
+<details><summary><code>client.ads.resumeBoost(boostId) -> Boost</code></summary>
 <dl>
 <dd>
 
@@ -13784,7 +12048,6 @@ client.ads().pauseBoost(
 
 ```java
 client.ads().resumeBoost(
-    "workspaceId",
     "boostId",
     ResumeBoostAdsRequest
         .builder()
@@ -13804,14 +12067,6 @@ client.ads().resumeBoost(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **boostId:** `String` 
     
 </dd>
@@ -13824,7 +12079,7 @@ client.ads().resumeBoost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.stopBoost(workspaceId, boostId) -> Boost</code></summary>
+<details><summary><code>client.ads.stopBoost(boostId) -> Boost</code></summary>
 <dl>
 <dd>
 
@@ -13852,7 +12107,6 @@ Stops a boost for good: its campaign is told to pause, and the boost is `stopped
 
 ```java
 client.ads().stopBoost(
-    "workspaceId",
     "boostId",
     StopBoostAdsRequest
         .builder()
@@ -13872,14 +12126,6 @@ client.ads().stopBoost(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **boostId:** `String` 
     
 </dd>
@@ -13892,7 +12138,7 @@ client.ads().stopBoost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.auditTrail(workspaceId) -> AdAuditPage</code></summary>
+<details><summary><code>client.ads.auditTrail() -> AdAuditPage</code></summary>
 <dl>
 <dd>
 
@@ -13920,7 +12166,6 @@ Lists the ads audit trail, newest first, 100 a page: every decision about spendi
 
 ```java
 client.ads().auditTrail(
-    "workspaceId",
     AuditTrailAdsRequest
         .builder()
         .build()
@@ -13939,14 +12184,6 @@ client.ads().auditTrail(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **cursor:** `Optional<String>` 
     
 </dd>
@@ -13960,7 +12197,7 @@ client.ads().auditTrail(
 </details>
 
 ## activity
-<details><summary><code>client.activity.list(workspaceId) -> ActivityPage</code></summary>
+<details><summary><code>client.activity.list() -> ActivityPage</code></summary>
 <dl>
 <dd>
 
@@ -13988,7 +12225,6 @@ Lists the requests that asked to change something in the workspace, newest first
 
 ```java
 client.activity().list(
-    "workspaceId",
     ListActivityRequest
         .builder()
         .build()
@@ -14003,14 +12239,6 @@ client.activity().list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14676,7 +12904,7 @@ client.partnerUsage().get(
 </details>
 
 ## partnerAccount
-<details><summary><code>client.partnerAccount.get(workspaceId) -> PartnerStanding</code></summary>
+<details><summary><code>client.partnerAccount.get() -> PartnerStanding</code></summary>
 <dl>
 <dd>
 
@@ -14703,28 +12931,8 @@ The workspace's partner account and what it holds, null when it has none, and wh
 <dd>
 
 ```java
-client.partnerAccount().get(
-    "workspaceId",
-    GetPartnerAccountRequest
-        .builder()
-        .build()
-);
+client.partnerAccount().get();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -14735,7 +12943,7 @@ client.partnerAccount().get(
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.open(workspaceId, request) -> Partner</code></summary>
+<details><summary><code>client.partnerAccount.open(request) -> Partner</code></summary>
 <dl>
 <dd>
 
@@ -14763,7 +12971,6 @@ Opens a partner account for the workspace, which becomes its home workspace, und
 
 ```java
 client.partnerAccount().open(
-    "workspaceId",
     OpenPartner
         .builder()
         .name("name")
@@ -14783,14 +12990,6 @@ client.partnerAccount().open(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **name:** `String` 
     
 </dd>
@@ -14803,7 +13002,7 @@ client.partnerAccount().open(
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.close(workspaceId)</code></summary>
+<details><summary><code>client.partnerAccount.close()</code></summary>
 <dl>
 <dd>
 
@@ -14830,28 +13029,8 @@ Closes the workspace's partner account: its keys stop working at once. Refused w
 <dd>
 
 ```java
-client.partnerAccount().close(
-    "workspaceId",
-    ClosePartnerAccountRequest
-        .builder()
-        .build()
-);
+client.partnerAccount().close();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -14862,7 +13041,7 @@ client.partnerAccount().close(
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.update(workspaceId, request) -> Partner</code></summary>
+<details><summary><code>client.partnerAccount.update(request) -> Partner</code></summary>
 <dl>
 <dd>
 
@@ -14890,7 +13069,6 @@ Changes the partner account's name, its logo (an HTTPS URL, shown from that addr
 
 ```java
 client.partnerAccount().update(
-    "workspaceId",
     PartnerChange
         .builder()
         .build()
@@ -14905,14 +13083,6 @@ client.partnerAccount().update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14953,7 +13123,7 @@ client.partnerAccount().update(
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.listKeys(workspaceId) -> List&amp;lt;PartnerKey&amp;gt;</code></summary>
+<details><summary><code>client.partnerAccount.listKeys() -> List&amp;lt;PartnerKey&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -14980,28 +13150,8 @@ Lists the partner account's keys. Needs partner:read.
 <dd>
 
 ```java
-client.partnerAccount().listKeys(
-    "workspaceId",
-    ListKeysPartnerAccountRequest
-        .builder()
-        .build()
-);
+client.partnerAccount().listKeys();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -15012,7 +13162,7 @@ client.partnerAccount().listKeys(
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.createKey(workspaceId, request) -> CreatedPartnerKey</code></summary>
+<details><summary><code>client.partnerAccount.createKey(request) -> CreatedPartnerKey</code></summary>
 <dl>
 <dd>
 
@@ -15040,7 +13190,6 @@ Creates a partner key, and answers with the key itself, which is not shown again
 
 ```java
 client.partnerAccount().createKey(
-    "workspaceId",
     NewPartnerKey
         .builder()
         .name("name")
@@ -15062,14 +13211,6 @@ client.partnerAccount().createKey(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15110,7 +13251,7 @@ client.partnerAccount().createKey(
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.revokeKey(workspaceId, partnerKeyId)</code></summary>
+<details><summary><code>client.partnerAccount.revokeKey(partnerKeyId)</code></summary>
 <dl>
 <dd>
 
@@ -15138,7 +13279,6 @@ Revokes a partner key: it stops working at once. Needs partner:manage.
 
 ```java
 client.partnerAccount().revokeKey(
-    "workspaceId",
     "partnerKeyId",
     RevokeKeyPartnerAccountRequest
         .builder()
@@ -15158,14 +13298,6 @@ client.partnerAccount().revokeKey(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **partnerKeyId:** `String` 
     
 </dd>
@@ -15178,7 +13310,7 @@ client.partnerAccount().revokeKey(
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.overview(workspaceId) -> PartnerHealth</code></summary>
+<details><summary><code>client.partnerAccount.overview() -> PartnerHealth</code></summary>
 <dl>
 <dd>
 
@@ -15206,7 +13338,6 @@ Answers, for each workspace the partner owns, what needs attention: its channels
 
 ```java
 client.partnerAccount().overview(
-    "workspaceId",
     OverviewPartnerAccountRequest
         .builder()
         .build()
@@ -15221,14 +13352,6 @@ client.partnerAccount().overview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15253,7 +13376,7 @@ client.partnerAccount().overview(
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.listWorkspaces(workspaceId) -> CustomerWorkspacePage</code></summary>
+<details><summary><code>client.partnerAccount.listWorkspaces() -> CustomerWorkspacePage</code></summary>
 <dl>
 <dd>
 
@@ -15281,7 +13404,6 @@ Lists the workspaces the partner account owns, newest first, each with the numbe
 
 ```java
 client.partnerAccount().listWorkspaces(
-    "workspaceId",
     ListWorkspacesPartnerAccountRequest
         .builder()
         .build()
@@ -15296,14 +13418,6 @@ client.partnerAccount().listWorkspaces(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15345,7 +13459,7 @@ client.partnerAccount().listWorkspaces(
 </details>
 
 ## connectLinks
-<details><summary><code>client.connectLinks.list(workspaceId) -> List&amp;lt;ConnectLink&amp;gt;</code></summary>
+<details><summary><code>client.connectLinks.list() -> List&amp;lt;ConnectLink&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -15372,28 +13486,8 @@ Lists the workspace's connect links, newest first, the last 100: those waiting, 
 <dd>
 
 ```java
-client.connectLinks().list(
-    "workspaceId",
-    ListConnectLinksRequest
-        .builder()
-        .build()
-);
+client.connectLinks().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -15404,7 +13498,7 @@ client.connectLinks().list(
 </dl>
 </details>
 
-<details><summary><code>client.connectLinks.create(workspaceId, request) -> CreatedConnectLink</code></summary>
+<details><summary><code>client.connectLinks.create(request) -> CreatedConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15432,7 +13526,6 @@ Creates a link to hand to whoever owns an account of `platform`, or accounts of 
 
 ```java
 client.connectLinks().create(
-    "workspaceId",
     NewConnectLink
         .builder()
         .build()
@@ -15447,14 +13540,6 @@ client.connectLinks().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15519,7 +13604,7 @@ client.connectLinks().create(
 </dl>
 </details>
 
-<details><summary><code>client.connectLinks.get(workspaceId, linkId) -> ConnectLink</code></summary>
+<details><summary><code>client.connectLinks.get(linkId) -> ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15547,7 +13632,6 @@ One connect link of the workspace: where it stands, the channels it connected on
 
 ```java
 client.connectLinks().get(
-    "workspaceId",
     "linkId",
     GetConnectLinksRequest
         .builder()
@@ -15567,14 +13651,6 @@ client.connectLinks().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **linkId:** `String` 
     
 </dd>
@@ -15587,7 +13663,7 @@ client.connectLinks().get(
 </dl>
 </details>
 
-<details><summary><code>client.connectLinks.revoke(workspaceId, linkId) -> ConnectLink</code></summary>
+<details><summary><code>client.connectLinks.revoke(linkId) -> ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15615,7 +13691,6 @@ Takes a connect link back: it opens nothing more, and a sign-in in progress thro
 
 ```java
 client.connectLinks().revoke(
-    "workspaceId",
     "linkId",
     RevokeConnectLinksRequest
         .builder()
@@ -15635,14 +13710,6 @@ client.connectLinks().revoke(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **linkId:** `String` 
     
 </dd>
@@ -15656,7 +13723,7 @@ client.connectLinks().revoke(
 </details>
 
 ## review
-<details><summary><code>client.review.settings(workspaceId) -> ReviewSettings</code></summary>
+<details><summary><code>client.review.settings() -> ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -15683,28 +13750,8 @@ Answers with the workspace's approval policy: which of its posts wait for an app
 <dd>
 
 ```java
-client.review().settings(
-    "workspaceId",
-    SettingsReviewRequest
-        .builder()
-        .build()
-);
+client.review().settings();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -15715,7 +13762,7 @@ client.review().settings(
 </dl>
 </details>
 
-<details><summary><code>client.review.updateSettings(workspaceId, request) -> ReviewSettings</code></summary>
+<details><summary><code>client.review.updateSettings(request) -> ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -15743,15 +13790,9 @@ Chooses the workspace's approval policy. It applies to posts scheduled from then
 
 ```java
 client.review().updateSettings(
-    "workspaceId",
-    UpdateSettingsReviewRequest
+    ReviewSettings
         .builder()
-        .body(
-            ReviewSettings
-                .builder()
-                .approvalPolicy(ApprovalPolicy.NEVER)
-                .build()
-        )
+        .approvalPolicy(ApprovalPolicy.NEVER)
         .build()
 );
 ```
@@ -15768,14 +13809,6 @@ client.review().updateSettings(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `ReviewSettings` 
     
 </dd>
@@ -15788,7 +13821,7 @@ client.review().updateSettings(
 </dl>
 </details>
 
-<details><summary><code>client.review.pending(workspaceId) -> List&amp;lt;ApprovalRequest&amp;gt;</code></summary>
+<details><summary><code>client.review.pending() -> List&amp;lt;ApprovalRequest&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -15815,28 +13848,8 @@ Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs
 <dd>
 
 ```java
-client.review().pending(
-    "workspaceId",
-    PendingReviewRequest
-        .builder()
-        .build()
-);
+client.review().pending();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -15847,7 +13860,7 @@ client.review().pending(
 </dl>
 </details>
 
-<details><summary><code>client.review.thread(workspaceId, postId) -> PostReview</code></summary>
+<details><summary><code>client.review.thread(postId) -> PostReview</code></summary>
 <dl>
 <dd>
 
@@ -15875,7 +13888,6 @@ Answers with a post's review: its comments, oldest first, and the approvals aske
 
 ```java
 client.review().thread(
-    "workspaceId",
     "postId",
     ThreadReviewRequest
         .builder()
@@ -15895,14 +13907,6 @@ client.review().thread(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -15915,7 +13919,7 @@ client.review().thread(
 </dl>
 </details>
 
-<details><summary><code>client.review.comment(workspaceId, postId, request) -> ReviewComment</code></summary>
+<details><summary><code>client.review.comment(postId, request) -> ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -15943,7 +13947,6 @@ Comments on a post, starts a thread about one of its channels or some words of i
 
 ```java
 client.review().comment(
-    "workspaceId",
     "postId",
     NewComment
         .builder()
@@ -15960,14 +13963,6 @@ client.review().comment(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16008,7 +14003,7 @@ client.review().comment(
 </dl>
 </details>
 
-<details><summary><code>client.review.resolve(workspaceId, postId, commentId, request) -> ReviewComment</code></summary>
+<details><summary><code>client.review.resolve(postId, commentId, request) -> ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -16036,7 +14031,6 @@ Resolves the thread a comment started, or reopens it. An answer is not resolved:
 
 ```java
 client.review().resolve(
-    "workspaceId",
     "postId",
     "commentId",
     ResolveReviewRequest
@@ -16054,14 +14048,6 @@ client.review().resolve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16094,7 +14080,7 @@ client.review().resolve(
 </dl>
 </details>
 
-<details><summary><code>client.review.approve(workspaceId, postId, request) -> ApprovalOutcome</code></summary>
+<details><summary><code>client.review.approve(postId, request) -> ApprovalOutcome</code></summary>
 <dl>
 <dd>
 
@@ -16122,7 +14108,6 @@ Approves a post that waits for an approval, as the reviewer was shown it: send t
 
 ```java
 client.review().approve(
-    "workspaceId",
     "postId",
     ApprovalDecision
         .builder()
@@ -16140,14 +14125,6 @@ client.review().approve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16180,7 +14157,7 @@ client.review().approve(
 </dl>
 </details>
 
-<details><summary><code>client.review.requestChanges(workspaceId, postId, request) -> ChangesOutcome</code></summary>
+<details><summary><code>client.review.requestChanges(postId, request) -> ChangesOutcome</code></summary>
 <dl>
 <dd>
 
@@ -16208,7 +14185,6 @@ Sends a post that waits for an approval back to draft, with a comment that says 
 
 ```java
 client.review().requestChanges(
-    "workspaceId",
     "postId",
     ChangesRequest
         .builder()
@@ -16227,14 +14203,6 @@ client.review().requestChanges(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16275,7 +14243,7 @@ client.review().requestChanges(
 </dl>
 </details>
 
-<details><summary><code>client.review.links(workspaceId, postId) -> List&amp;lt;ReviewLink&amp;gt;</code></summary>
+<details><summary><code>client.review.links(postId) -> List&amp;lt;ReviewLink&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -16303,7 +14271,6 @@ Lists a post's review links, newest first, ended ones included. No token is show
 
 ```java
 client.review().links(
-    "workspaceId",
     "postId",
     LinksReviewRequest
         .builder()
@@ -16323,14 +14290,6 @@ client.review().links(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postId:** `String` 
     
 </dd>
@@ -16343,7 +14302,7 @@ client.review().links(
 </dl>
 </details>
 
-<details><summary><code>client.review.createLink(workspaceId, postId, request) -> CreatedReviewLink</code></summary>
+<details><summary><code>client.review.createLink(postId, request) -> CreatedReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -16371,7 +14330,6 @@ Makes a link that shows a draft, a post that waits for an approval or a schedule
 
 ```java
 client.review().createLink(
-    "workspaceId",
     "postId",
     NewReviewLink
         .builder()
@@ -16388,14 +14346,6 @@ client.review().createLink(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16428,7 +14378,7 @@ client.review().createLink(
 </dl>
 </details>
 
-<details><summary><code>client.review.revokeLink(workspaceId, linkId) -> ReviewLink</code></summary>
+<details><summary><code>client.review.revokeLink(linkId) -> ReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -16456,7 +14406,6 @@ Ends a review link at once: whoever opens it is told it was revoked. Needs post:
 
 ```java
 client.review().revokeLink(
-    "workspaceId",
     "linkId",
     RevokeLinkReviewRequest
         .builder()
@@ -16476,14 +14425,6 @@ client.review().revokeLink(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **linkId:** `String` 
     
 </dd>
@@ -16497,7 +14438,7 @@ client.review().revokeLink(
 </details>
 
 ## tags
-<details><summary><code>client.tags.list(workspaceId) -> List&amp;lt;Tag&amp;gt;</code></summary>
+<details><summary><code>client.tags.list() -> List&amp;lt;Tag&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -16524,28 +14465,8 @@ Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`)
 <dd>
 
 ```java
-client.tags().list(
-    "workspaceId",
-    ListTagsRequest
-        .builder()
-        .build()
-);
+client.tags().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -16556,7 +14477,7 @@ client.tags().list(
 </dl>
 </details>
 
-<details><summary><code>client.tags.create(workspaceId, request) -> Tag</code></summary>
+<details><summary><code>client.tags.create(request) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -16584,16 +14505,10 @@ Adds a tag to the workspace: a name of 40 characters at most, on one line, which
 
 ```java
 client.tags().create(
-    "workspaceId",
-    CreateTagsRequest
+    TagDetails
         .builder()
-        .body(
-            TagDetails
-                .builder()
-                .colour(TagColour.GRAY)
-                .name("name")
-                .build()
-        )
+        .colour(TagColour.GRAY)
+        .name("name")
         .build()
 );
 ```
@@ -16610,14 +14525,6 @@ client.tags().create(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `TagDetails` 
     
 </dd>
@@ -16630,7 +14537,7 @@ client.tags().create(
 </dl>
 </details>
 
-<details><summary><code>client.tags.delete(workspaceId, tagId)</code></summary>
+<details><summary><code>client.tags.delete(tagId)</code></summary>
 <dl>
 <dd>
 
@@ -16658,7 +14565,6 @@ Deletes a tag, and takes it off every post that had it; the posts stay. Needs po
 
 ```java
 client.tags().delete(
-    "workspaceId",
     "tagId",
     DeleteTagsRequest
         .builder()
@@ -16678,14 +14584,6 @@ client.tags().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **tagId:** `String` 
     
 </dd>
@@ -16698,7 +14596,7 @@ client.tags().delete(
 </dl>
 </details>
 
-<details><summary><code>client.tags.update(workspaceId, tagId, request) -> Tag</code></summary>
+<details><summary><code>client.tags.update(tagId, request) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -16726,7 +14624,6 @@ Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
 ```java
 client.tags().update(
-    "workspaceId",
     "tagId",
     UpdateTagsRequest
         .builder()
@@ -16753,14 +14650,6 @@ client.tags().update(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **tagId:** `String` 
     
 </dd>
@@ -16782,7 +14671,7 @@ client.tags().update(
 </details>
 
 ## signatures
-<details><summary><code>client.signatures.list(workspaceId) -> List&amp;lt;Signature&amp;gt;</code></summary>
+<details><summary><code>client.signatures.list() -> List&amp;lt;Signature&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -16809,28 +14698,8 @@ Lists the workspace's signatures, oldest first. Needs post:read.
 <dd>
 
 ```java
-client.signatures().list(
-    "workspaceId",
-    ListSignaturesRequest
-        .builder()
-        .build()
-);
+client.signatures().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -16841,7 +14710,7 @@ client.signatures().list(
 </dl>
 </details>
 
-<details><summary><code>client.signatures.create(workspaceId, request) -> Signature</code></summary>
+<details><summary><code>client.signatures.create(request) -> Signature</code></summary>
 <dl>
 <dd>
 
@@ -16869,16 +14738,10 @@ Adds a signature to the workspace: a name no other signature of the workspace ha
 
 ```java
 client.signatures().create(
-    "workspaceId",
-    CreateSignaturesRequest
+    SignatureDetails
         .builder()
-        .body(
-            SignatureDetails
-                .builder()
-                .name("name")
-                .text("text")
-                .build()
-        )
+        .name("name")
+        .text("text")
         .build()
 );
 ```
@@ -16895,14 +14758,6 @@ client.signatures().create(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `SignatureDetails` 
     
 </dd>
@@ -16915,7 +14770,7 @@ client.signatures().create(
 </dl>
 </details>
 
-<details><summary><code>client.signatures.update(workspaceId, signatureId, request) -> Signature</code></summary>
+<details><summary><code>client.signatures.update(signatureId, request) -> Signature</code></summary>
 <dl>
 <dd>
 
@@ -16943,7 +14798,6 @@ Replaces a signature's name, text, scope and whether it is a default. Posts that
 
 ```java
 client.signatures().update(
-    "workspaceId",
     "signatureId",
     UpdateSignaturesRequest
         .builder()
@@ -16970,14 +14824,6 @@ client.signatures().update(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **signatureId:** `String` 
     
 </dd>
@@ -16998,7 +14844,7 @@ client.signatures().update(
 </dl>
 </details>
 
-<details><summary><code>client.signatures.delete(workspaceId, signatureId)</code></summary>
+<details><summary><code>client.signatures.delete(signatureId)</code></summary>
 <dl>
 <dd>
 
@@ -17026,7 +14872,6 @@ Deletes a signature. Posts that already hold its text keep it. Needs post:update
 
 ```java
 client.signatures().delete(
-    "workspaceId",
     "signatureId",
     DeleteSignaturesRequest
         .builder()
@@ -17046,14 +14891,6 @@ client.signatures().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **signatureId:** `String` 
     
 </dd>
@@ -17067,7 +14904,7 @@ client.signatures().delete(
 </details>
 
 ## channelSets
-<details><summary><code>client.channelSets.list(workspaceId) -> List&amp;lt;ChannelSet&amp;gt;</code></summary>
+<details><summary><code>client.channelSets.list() -> List&amp;lt;ChannelSet&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -17094,28 +14931,8 @@ Lists the workspace's channel sets, oldest first, each with the channels it keep
 <dd>
 
 ```java
-client.channelSets().list(
-    "workspaceId",
-    ListChannelSetsRequest
-        .builder()
-        .build()
-);
+client.channelSets().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -17126,7 +14943,7 @@ client.channelSets().list(
 </dl>
 </details>
 
-<details><summary><code>client.channelSets.create(workspaceId, request) -> ChannelSet</code></summary>
+<details><summary><code>client.channelSets.create(request) -> ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -17154,17 +14971,11 @@ Saves a selection of the workspace's channels under a name no other set of the w
 
 ```java
 client.channelSets().create(
-    "workspaceId",
-    CreateChannelSetsRequest
+    ChannelSetDetails
         .builder()
-        .body(
-            ChannelSetDetails
-                .builder()
-                .name("name")
-                .channelIds(
-                    Arrays.asList("channelIds")
-                )
-                .build()
+        .name("name")
+        .channelIds(
+            Arrays.asList("channelIds")
         )
         .build()
 );
@@ -17182,14 +14993,6 @@ client.channelSets().create(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `ChannelSetDetails` 
     
 </dd>
@@ -17202,7 +15005,7 @@ client.channelSets().create(
 </dl>
 </details>
 
-<details><summary><code>client.channelSets.update(workspaceId, channelSetId, request) -> ChannelSet</code></summary>
+<details><summary><code>client.channelSets.update(channelSetId, request) -> ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -17230,7 +15033,6 @@ Replaces a set's name, channels and options: every channel must be connected now
 
 ```java
 client.channelSets().update(
-    "workspaceId",
     "channelSetId",
     UpdateChannelSetsRequest
         .builder()
@@ -17259,14 +15061,6 @@ client.channelSets().update(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelSetId:** `String` 
     
 </dd>
@@ -17287,7 +15081,7 @@ client.channelSets().update(
 </dl>
 </details>
 
-<details><summary><code>client.channelSets.delete(workspaceId, channelSetId)</code></summary>
+<details><summary><code>client.channelSets.delete(channelSetId)</code></summary>
 <dl>
 <dd>
 
@@ -17315,7 +15109,6 @@ Deletes a channel set. Its channels, and the posts made with it, stay. Needs pos
 
 ```java
 client.channelSets().delete(
-    "workspaceId",
     "channelSetId",
     DeleteChannelSetsRequest
         .builder()
@@ -17335,14 +15128,6 @@ client.channelSets().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelSetId:** `String` 
     
 </dd>
@@ -17356,7 +15141,7 @@ client.channelSets().delete(
 </details>
 
 ## queues
-<details><summary><code>client.queues.list(workspaceId) -> List&amp;lt;Queue&amp;gt;</code></summary>
+<details><summary><code>client.queues.list() -> List&amp;lt;Queue&amp;gt;</code></summary>
 <dl>
 <dd>
 
@@ -17383,28 +15168,8 @@ Lists the workspace's queues, the default first, then by name, each with its slo
 <dd>
 
 ```java
-client.queues().list(
-    "workspaceId",
-    ListQueuesRequest
-        .builder()
-        .build()
-);
+client.queues().list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -17415,7 +15180,7 @@ client.queues().list(
 </dl>
 </details>
 
-<details><summary><code>client.queues.create(workspaceId, request) -> Queue</code></summary>
+<details><summary><code>client.queues.create(request) -> Queue</code></summary>
 <dl>
 <dd>
 
@@ -17443,24 +15208,18 @@ Saves a queue. A slot is a weekday and a time of day (`HH:mm`) in the queue's IA
 
 ```java
 client.queues().create(
-    "workspaceId",
-    CreateQueuesRequest
+    QueueDetails
         .builder()
-        .body(
-            QueueDetails
-                .builder()
-                .name("name")
-                .timeZone("timeZone")
-                .slots(
-                    Arrays.asList(
-                        QueueSlot
-                            .builder()
-                            .day(Weekday.MONDAY)
-                            .time("time")
-                            .build()
-                    )
-                )
-                .build()
+        .name("name")
+        .timeZone("timeZone")
+        .slots(
+            Arrays.asList(
+                QueueSlot
+                    .builder()
+                    .day(Weekday.MONDAY)
+                    .time("time")
+                    .build()
+            )
         )
         .build()
 );
@@ -17478,14 +15237,6 @@ client.queues().create(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `QueueDetails` 
     
 </dd>
@@ -17498,7 +15249,7 @@ client.queues().create(
 </dl>
 </details>
 
-<details><summary><code>client.queues.get(workspaceId, queueId) -> Queue</code></summary>
+<details><summary><code>client.queues.get(queueId) -> Queue</code></summary>
 <dl>
 <dd>
 
@@ -17526,7 +15277,6 @@ Answers with a queue of the workspace. Needs post:read and channel:read.
 
 ```java
 client.queues().get(
-    "workspaceId",
     "queueId",
     GetQueuesRequest
         .builder()
@@ -17546,14 +15296,6 @@ client.queues().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queueId:** `String` 
     
 </dd>
@@ -17566,7 +15308,7 @@ client.queues().get(
 </dl>
 </details>
 
-<details><summary><code>client.queues.update(workspaceId, queueId, request) -> Queue</code></summary>
+<details><summary><code>client.queues.update(queueId, request) -> Queue</code></summary>
 <dl>
 <dd>
 
@@ -17594,7 +15336,6 @@ Replaces a queue's name, zone, slots and channels: every channel must be connect
 
 ```java
 client.queues().update(
-    "workspaceId",
     "queueId",
     UpdateQueuesRequest
         .builder()
@@ -17630,14 +15371,6 @@ client.queues().update(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queueId:** `String` 
     
 </dd>
@@ -17658,7 +15391,7 @@ client.queues().update(
 </dl>
 </details>
 
-<details><summary><code>client.queues.delete(workspaceId, queueId)</code></summary>
+<details><summary><code>client.queues.delete(queueId)</code></summary>
 <dl>
 <dd>
 
@@ -17686,7 +15419,6 @@ Deletes a queue. The posts it placed stay scheduled at their times, and no longe
 
 ```java
 client.queues().delete(
-    "workspaceId",
     "queueId",
     DeleteQueuesRequest
         .builder()
@@ -17706,14 +15438,6 @@ client.queues().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queueId:** `String` 
     
 </dd>
@@ -17726,7 +15450,7 @@ client.queues().delete(
 </dl>
 </details>
 
-<details><summary><code>client.queues.slots(workspaceId, queueId) -> QueuePreview</code></summary>
+<details><summary><code>client.queues.slots(queueId) -> QueuePreview</code></summary>
 <dl>
 <dd>
 
@@ -17754,7 +15478,6 @@ Lists the queue's next `count` slots after now (10 unless given, 50 at most), ea
 
 ```java
 client.queues().slots(
-    "workspaceId",
     "queueId",
     SlotsQueuesRequest
         .builder()
@@ -17770,14 +15493,6 @@ client.queues().slots(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17802,7 +15517,7 @@ client.queues().slots(
 </dl>
 </details>
 
-<details><summary><code>client.queues.reshuffle(workspaceId, queueId) -> QueueReshuffle</code></summary>
+<details><summary><code>client.queues.reshuffle(queueId) -> QueueReshuffle</code></summary>
 <dl>
 <dd>
 
@@ -17830,7 +15545,6 @@ Moves the posts that wait in the queue (scheduled or awaiting approval, after no
 
 ```java
 client.queues().reshuffle(
-    "workspaceId",
     "queueId",
     ReshuffleQueuesRequest
         .builder()
@@ -17850,14 +15564,6 @@ client.queues().reshuffle(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queueId:** `String` 
     
 </dd>
@@ -17871,7 +15577,7 @@ client.queues().reshuffle(
 </details>
 
 ## recycling
-<details><summary><code>client.recycling.list(workspaceId) -> RecyclingRulePage</code></summary>
+<details><summary><code>client.recycling.list() -> RecyclingRulePage</code></summary>
 <dl>
 <dd>
 
@@ -17899,7 +15605,6 @@ Lists the workspace's recycling rules, oldest first, 50 a page unless `limit` (a
 
 ```java
 client.recycling().list(
-    "workspaceId",
     ListRecyclingRequest
         .builder()
         .build()
@@ -17914,14 +15619,6 @@ client.recycling().list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17954,7 +15651,7 @@ client.recycling().list(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.create(workspaceId, request) -> RecyclingRule</code></summary>
+<details><summary><code>client.recycling.create(request) -> RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -17982,7 +15679,6 @@ Starts a rule that repeats a post that is scheduled, publishing or went out (del
 
 ```java
 client.recycling().create(
-    "workspaceId",
     NewRecyclingRule
         .builder()
         .every(
@@ -18005,14 +15701,6 @@ client.recycling().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18069,7 +15757,7 @@ client.recycling().create(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.get(workspaceId, ruleId) -> RecyclingRule</code></summary>
+<details><summary><code>client.recycling.get(ruleId) -> RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18097,7 +15785,6 @@ Answers with a rule of the workspace and its next 3 posts to come, each with the
 
 ```java
 client.recycling().get(
-    "workspaceId",
     "ruleId",
     GetRecyclingRequest
         .builder()
@@ -18117,14 +15804,6 @@ client.recycling().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleId:** `String` 
     
 </dd>
@@ -18137,7 +15816,7 @@ client.recycling().get(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.delete(workspaceId, ruleId)</code></summary>
+<details><summary><code>client.recycling.delete(ruleId)</code></summary>
 <dl>
 <dd>
 
@@ -18165,7 +15844,6 @@ Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay 
 
 ```java
 client.recycling().delete(
-    "workspaceId",
     "ruleId",
     DeleteRecyclingRequest
         .builder()
@@ -18185,14 +15863,6 @@ client.recycling().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleId:** `String` 
     
 </dd>
@@ -18205,7 +15875,7 @@ client.recycling().delete(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.update(workspaceId, ruleId, request) -> RecyclingRule</code></summary>
+<details><summary><code>client.recycling.update(ruleId, request) -> RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18233,7 +15903,6 @@ Changes a rule's variants, its `count` or `until` (null takes it away), or pause
 
 ```java
 client.recycling().update(
-    "workspaceId",
     "ruleId",
     RecyclingRuleChange
         .builder()
@@ -18249,14 +15918,6 @@ client.recycling().update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18305,7 +15966,7 @@ client.recycling().update(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.resume(workspaceId, ruleId, request) -> RecyclingRule</code></summary>
+<details><summary><code>client.recycling.resume(ruleId, request) -> RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18333,7 +15994,6 @@ Sets a paused rule going again, or one that ended for a reason that can be put r
 
 ```java
 client.recycling().resume(
-    "workspaceId",
     "ruleId",
     RecyclingResume
         .builder()
@@ -18349,14 +16009,6 @@ client.recycling().resume(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18382,7 +16034,7 @@ client.recycling().resume(
 </details>
 
 ## followUps
-<details><summary><code>client.followUps.list(workspaceId) -> FollowUpRulePage</code></summary>
+<details><summary><code>client.followUps.list() -> FollowUpRulePage</code></summary>
 <dl>
 <dd>
 
@@ -18410,7 +16062,6 @@ Lists the workspace's follow-up rules, oldest first, 50 a page unless `limit` (a
 
 ```java
 client.followUps().list(
-    "workspaceId",
     ListFollowUpsRequest
         .builder()
         .build()
@@ -18425,14 +16076,6 @@ client.followUps().list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18473,7 +16116,7 @@ client.followUps().list(
 </dl>
 </details>
 
-<details><summary><code>client.followUps.create(workspaceId, request) -> FollowUpRule</code></summary>
+<details><summary><code>client.followUps.create(request) -> FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18501,7 +16144,6 @@ Starts a rule on a post (`postId`) or on every post a channel publishes from now
 
 ```java
 client.followUps().create(
-    "workspaceId",
     NewFollowUpRule
         .builder()
         .likes(1)
@@ -18517,14 +16159,6 @@ client.followUps().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18573,7 +16207,7 @@ client.followUps().create(
 </dl>
 </details>
 
-<details><summary><code>client.followUps.get(workspaceId, ruleId) -> FollowUpRule</code></summary>
+<details><summary><code>client.followUps.get(ruleId) -> FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18601,7 +16235,6 @@ Answers with a rule of the workspace, what its channels can carry and its latest
 
 ```java
 client.followUps().get(
-    "workspaceId",
     "ruleId",
     GetFollowUpsRequest
         .builder()
@@ -18621,14 +16254,6 @@ client.followUps().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleId:** `String` 
     
 </dd>
@@ -18641,7 +16266,7 @@ client.followUps().get(
 </dl>
 </details>
 
-<details><summary><code>client.followUps.delete(workspaceId, ruleId)</code></summary>
+<details><summary><code>client.followUps.delete(ruleId)</code></summary>
 <dl>
 <dd>
 
@@ -18669,7 +16294,6 @@ Stops a rule: it ends `stopped`, what it armed and did not send is given up, and
 
 ```java
 client.followUps().delete(
-    "workspaceId",
     "ruleId",
     DeleteFollowUpsRequest
         .builder()
@@ -18689,14 +16313,6 @@ client.followUps().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleId:** `String` 
     
 </dd>
@@ -18709,7 +16325,7 @@ client.followUps().delete(
 </dl>
 </details>
 
-<details><summary><code>client.followUps.update(workspaceId, ruleId, request) -> FollowUpRule</code></summary>
+<details><summary><code>client.followUps.update(ruleId, request) -> FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18737,7 +16353,6 @@ Changes a rule's `likes`, its `comment` (null takes it away) or whether it repos
 
 ```java
 client.followUps().update(
-    "workspaceId",
     "ruleId",
     FollowUpRuleChange
         .builder()
@@ -18753,14 +16368,6 @@ client.followUps().update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18809,7 +16416,7 @@ client.followUps().update(
 </dl>
 </details>
 
-<details><summary><code>client.followUps.approve(workspaceId, ruleId) -> FollowUpRule</code></summary>
+<details><summary><code>client.followUps.approve(ruleId) -> FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18837,7 +16444,6 @@ Approves what a rule sends, for a rule whose starter's posts wait for an approva
 
 ```java
 client.followUps().approve(
-    "workspaceId",
     "ruleId",
     ApproveFollowUpsRequest
         .builder()
@@ -18857,14 +16463,6 @@ client.followUps().approve(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleId:** `String` 
     
 </dd>
@@ -18878,7 +16476,7 @@ client.followUps().approve(
 </details>
 
 ## inboxRules
-<details><summary><code>client.inboxRules.listCommentRules(workspaceId) -> CommentRulePage</code></summary>
+<details><summary><code>client.inboxRules.listCommentRules() -> CommentRulePage</code></summary>
 <dl>
 <dd>
 
@@ -18906,7 +16504,6 @@ Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at 
 
 ```java
 client.inboxRules().listCommentRules(
-    "workspaceId",
     ListCommentRulesInboxRulesRequest
         .builder()
         .build()
@@ -18921,14 +16518,6 @@ client.inboxRules().listCommentRules(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18961,7 +16550,7 @@ client.inboxRules().listCommentRules(
 </dl>
 </details>
 
-<details><summary><code>client.inboxRules.createCommentRule(workspaceId, request) -> CommentRule</code></summary>
+<details><summary><code>client.inboxRules.createCommentRule(request) -> CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -18989,7 +16578,6 @@ Starts a rule on the comments of a post that went out (`postId`) or of every pos
 
 ```java
 client.inboxRules().createCommentRule(
-    "workspaceId",
     NewCommentRule
         .builder()
         .reply("reply")
@@ -19008,14 +16596,6 @@ client.inboxRules().createCommentRule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19064,7 +16644,7 @@ client.inboxRules().createCommentRule(
 </dl>
 </details>
 
-<details><summary><code>client.inboxRules.getCommentRule(workspaceId, ruleId) -> CommentRule</code></summary>
+<details><summary><code>client.inboxRules.getCommentRule(ruleId) -> CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -19092,7 +16672,6 @@ Answers a comment rule of the workspace, what its channels can carry and what it
 
 ```java
 client.inboxRules().getCommentRule(
-    "workspaceId",
     "ruleId",
     GetCommentRuleInboxRulesRequest
         .builder()
@@ -19112,14 +16691,6 @@ client.inboxRules().getCommentRule(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleId:** `String` 
     
 </dd>
@@ -19132,7 +16703,7 @@ client.inboxRules().getCommentRule(
 </dl>
 </details>
 
-<details><summary><code>client.inboxRules.deleteCommentRule(workspaceId, ruleId)</code></summary>
+<details><summary><code>client.inboxRules.deleteCommentRule(ruleId)</code></summary>
 <dl>
 <dd>
 
@@ -19160,7 +16731,6 @@ Stops a rule: it answers nothing more; the replies it sent stay, and the inbox w
 
 ```java
 client.inboxRules().deleteCommentRule(
-    "workspaceId",
     "ruleId",
     DeleteCommentRuleInboxRulesRequest
         .builder()
@@ -19180,14 +16750,6 @@ client.inboxRules().deleteCommentRule(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleId:** `String` 
     
 </dd>
@@ -19200,7 +16762,7 @@ client.inboxRules().deleteCommentRule(
 </dl>
 </details>
 
-<details><summary><code>client.inboxRules.updateCommentRule(workspaceId, ruleId, request) -> CommentRule</code></summary>
+<details><summary><code>client.inboxRules.updateCommentRule(ruleId, request) -> CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -19228,7 +16790,6 @@ Changes a rule's keywords, reply or private reply (`privateReply` null takes it 
 
 ```java
 client.inboxRules().updateCommentRule(
-    "workspaceId",
     "ruleId",
     CommentRuleChange
         .builder()
@@ -19244,14 +16805,6 @@ client.inboxRules().updateCommentRule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19301,7 +16854,7 @@ client.inboxRules().updateCommentRule(
 </details>
 
 ## feeds
-<details><summary><code>client.feeds.list(workspaceId) -> FeedPage</code></summary>
+<details><summary><code>client.feeds.list() -> FeedPage</code></summary>
 <dl>
 <dd>
 
@@ -19329,7 +16882,6 @@ Lists the workspace's feeds, oldest first, 50 a page unless `limit` (at most 100
 
 ```java
 client.feeds().list(
-    "workspaceId",
     ListFeedsRequest
         .builder()
         .build()
@@ -19344,14 +16896,6 @@ client.feeds().list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19376,7 +16920,7 @@ client.feeds().list(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.create(workspaceId, request) -> CreatedFeed</code></summary>
+<details><summary><code>client.feeds.create(request) -> CreatedFeed</code></summary>
 <dl>
 <dd>
 
@@ -19404,7 +16948,6 @@ Follows a feed at `url`: it is read once, and refused when it is not a feed; eve
 
 ```java
 client.feeds().create(
-    "workspaceId",
     NewFeed
         .builder()
         .url("url")
@@ -19420,14 +16963,6 @@ client.feeds().create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19492,7 +17027,7 @@ client.feeds().create(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.preview(workspaceId, request) -> FeedPreview</code></summary>
+<details><summary><code>client.feeds.preview(request) -> FeedPreview</code></summary>
 <dl>
 <dd>
 
@@ -19520,7 +17055,6 @@ Reads an address and answers its title and its 3 newest items, each with what `t
 
 ```java
 client.feeds().preview(
-    "workspaceId",
     FeedPreviewRequest
         .builder()
         .url("url")
@@ -19536,14 +17070,6 @@ client.feeds().preview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19568,7 +17094,7 @@ client.feeds().preview(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.get(workspaceId, feedId) -> Feed</code></summary>
+<details><summary><code>client.feeds.get(feedId) -> Feed</code></summary>
 <dl>
 <dd>
 
@@ -19596,7 +17122,6 @@ Answers with a feed of the workspace: its state, when it was last read and is ne
 
 ```java
 client.feeds().get(
-    "workspaceId",
     "feedId",
     GetFeedsRequest
         .builder()
@@ -19616,14 +17141,6 @@ client.feeds().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **feedId:** `String` 
     
 </dd>
@@ -19636,7 +17153,7 @@ client.feeds().get(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.delete(workspaceId, feedId)</code></summary>
+<details><summary><code>client.feeds.delete(feedId)</code></summary>
 <dl>
 <dd>
 
@@ -19664,7 +17181,6 @@ Stops following a feed and forgets what it read; the drafts and posts it made st
 
 ```java
 client.feeds().delete(
-    "workspaceId",
     "feedId",
     DeleteFeedsRequest
         .builder()
@@ -19684,14 +17200,6 @@ client.feeds().delete(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **feedId:** `String` 
     
 </dd>
@@ -19704,7 +17212,7 @@ client.feeds().delete(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.update(workspaceId, feedId, request) -> Feed</code></summary>
+<details><summary><code>client.feeds.update(feedId, request) -> Feed</code></summary>
 <dl>
 <dd>
 
@@ -19732,7 +17240,6 @@ Changes a feed; what the request leaves out stays. A new `url` is read at once, 
 
 ```java
 client.feeds().update(
-    "workspaceId",
     "feedId",
     FeedChange
         .builder()
@@ -19748,14 +17255,6 @@ client.feeds().update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19836,7 +17335,7 @@ client.feeds().update(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.items(workspaceId, feedId) -> FeedItems</code></summary>
+<details><summary><code>client.feeds.items(feedId) -> FeedItems</code></summary>
 <dl>
 <dd>
 
@@ -19864,7 +17363,6 @@ Lists a feed's 50 newest items, newest first: when each was seen, the date it ga
 
 ```java
 client.feeds().items(
-    "workspaceId",
     "feedId",
     ItemsFeedsRequest
         .builder()
@@ -19884,14 +17382,6 @@ client.feeds().items(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **feedId:** `String` 
     
 </dd>
@@ -19905,7 +17395,7 @@ client.feeds().items(
 </details>
 
 ## channelDefaults
-<details><summary><code>client.channelDefaults.get(workspaceId, channelId) -> ChannelDefaults</code></summary>
+<details><summary><code>client.channelDefaults.get(channelId) -> ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -19933,7 +17423,6 @@ Answers the options new posts take on the channel when they give none there, or 
 
 ```java
 client.channelDefaults().get(
-    "workspaceId",
     "channelId",
     GetChannelDefaultsRequest
         .builder()
@@ -19953,14 +17442,6 @@ client.channelDefaults().get(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -19973,7 +17454,7 @@ client.channelDefaults().get(
 </dl>
 </details>
 
-<details><summary><code>client.channelDefaults.set(workspaceId, channelId, request) -> ChannelDefaults</code></summary>
+<details><summary><code>client.channelDefaults.set(channelId, request) -> ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -20001,7 +17482,6 @@ Keeps these as the channel's default options, instead of any it had: options of 
 
 ```java
 client.channelDefaults().set(
-    "workspaceId",
     "channelId",
     NewChannelDefaults
         .builder()
@@ -20028,14 +17508,6 @@ client.channelDefaults().set(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -20056,7 +17528,7 @@ client.channelDefaults().set(
 </dl>
 </details>
 
-<details><summary><code>client.channelDefaults.clear(workspaceId, channelId)</code></summary>
+<details><summary><code>client.channelDefaults.clear(channelId)</code></summary>
 <dl>
 <dd>
 
@@ -20084,7 +17556,6 @@ Leaves the channel without default options. Posts already made keep theirs. Need
 
 ```java
 client.channelDefaults().clear(
-    "workspaceId",
     "channelId",
     ClearChannelDefaultsRequest
         .builder()
@@ -20104,14 +17575,6 @@ client.channelDefaults().clear(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelId:** `String` 
     
 </dd>
@@ -20125,7 +17588,7 @@ client.channelDefaults().clear(
 </details>
 
 ## shortLinks
-<details><summary><code>client.shortLinks.status(workspaceId) -> ShortLinkStatus</code></summary>
+<details><summary><code>client.shortLinks.status() -> ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -20152,28 +17615,8 @@ Answers whether this server shortens links (`available`), what a short address s
 <dd>
 
 ```java
-client.shortLinks().status(
-    "workspaceId",
-    StatusShortLinksRequest
-        .builder()
-        .build()
-);
+client.shortLinks().status();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -20184,7 +17627,7 @@ client.shortLinks().status(
 </dl>
 </details>
 
-<details><summary><code>client.shortLinks.setDefault(workspaceId, request) -> ShortLinkStatus</code></summary>
+<details><summary><code>client.shortLinks.setDefault(request) -> ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -20212,7 +17655,6 @@ Sets whether the workspace's new posts ask for short links unless they say other
 
 ```java
 client.shortLinks().setDefault(
-    "workspaceId",
     ShortLinkSettings
         .builder()
         .byDefault(true)
@@ -20232,14 +17674,6 @@ client.shortLinks().setDefault(
 <dl>
 <dd>
 
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **byDefault:** `Boolean` 
     
 </dd>
@@ -20252,7 +17686,7 @@ client.shortLinks().setDefault(
 </dl>
 </details>
 
-<details><summary><code>client.shortLinks.list(workspaceId) -> ShortLinkPage</code></summary>
+<details><summary><code>client.shortLinks.list() -> ShortLinkPage</code></summary>
 <dl>
 <dd>
 
@@ -20280,7 +17714,6 @@ Lists the workspace's short links, newest first, 50 a page unless `limit` (at mo
 
 ```java
 client.shortLinks().list(
-    "workspaceId",
     ListShortLinksRequest
         .builder()
         .build()
@@ -20295,14 +17728,6 @@ client.shortLinks().list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20359,7 +17784,7 @@ client.shortLinks().list(
 </dl>
 </details>
 
-<details><summary><code>client.shortLinks.get(workspaceId, linkId) -> ShortLinkReport</code></summary>
+<details><summary><code>client.shortLinks.get(linkId) -> ShortLinkReport</code></summary>
 <dl>
 <dd>
 
@@ -20387,7 +17812,6 @@ Answers one short link with its clicks each day from `from` to `to` (UTC days, b
 
 ```java
 client.shortLinks().get(
-    "workspaceId",
     "linkId",
     GetShortLinksRequest
         .builder()
@@ -20403,14 +17827,6 @@ client.shortLinks().get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceId:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>

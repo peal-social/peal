@@ -44,8 +44,7 @@ func (r *RawClient) List(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/lookups",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/lookups",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(
@@ -90,8 +89,7 @@ func (r *RawClient) Run(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/lookups/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/lookups/%v",
 		request.ChannelID,
 		request.Name,
 	)

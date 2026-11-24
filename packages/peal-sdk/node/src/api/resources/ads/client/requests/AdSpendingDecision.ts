@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         accountId: "accountId",
  *         enabled: true
  *     }
  */
 export interface AdSpendingDecision {
-    workspaceId: string;
     accountId: string;
     enabled: boolean;
     monthlyCeiling?: Peal.AdMoney;

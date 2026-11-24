@@ -36,9 +36,6 @@ import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.errors.UnprocessableEntityError;
-import social.peal.resources.partneraccount.requests.ClosePartnerAccountRequest;
-import social.peal.resources.partneraccount.requests.GetPartnerAccountRequest;
-import social.peal.resources.partneraccount.requests.ListKeysPartnerAccountRequest;
 import social.peal.resources.partneraccount.requests.ListWorkspacesPartnerAccountRequest;
 import social.peal.resources.partneraccount.requests.NewPartnerKey;
 import social.peal.resources.partneraccount.requests.OpenPartner;
@@ -63,47 +60,28 @@ public class AsyncRawPartnerAccountClient {
     /**
      * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
      */
-    public CompletableFuture<PealClientHttpResponse<PartnerStanding>> get(String workspaceId) {
-        return get(workspaceId, GetPartnerAccountRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<PartnerStanding>> get() {
+        return get(null);
     }
 
     /**
      * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
      */
-    public CompletableFuture<PealClientHttpResponse<PartnerStanding>> get(
-            String workspaceId, RequestOptions requestOptions) {
-        return get(workspaceId, GetPartnerAccountRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<PartnerStanding>> get(
-            String workspaceId, GetPartnerAccountRequest request) {
-        return get(workspaceId, request, null);
-    }
-
-    /**
-     * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<PartnerStanding>> get(
-            String workspaceId, GetPartnerAccountRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<PartnerStanding>> get(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner");
+                .addPathSegments("api/v1/partner-account");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -132,6 +110,11 @@ public class AsyncRawPartnerAccountClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -185,20 +168,17 @@ public class AsyncRawPartnerAccountClient {
     /**
      * Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 <code>PartnerAccountsClosed</code>. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<PealClientHttpResponse<Partner>> open(String workspaceId, OpenPartner request) {
-        return open(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Partner>> open(OpenPartner request) {
+        return open(request, null);
     }
 
     /**
      * Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 <code>PartnerAccountsClosed</code>. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<PealClientHttpResponse<Partner>> open(
-            String workspaceId, OpenPartner request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Partner>> open(OpenPartner request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner");
+                .addPathSegments("api/v1/partner-account");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -242,6 +222,11 @@ public class AsyncRawPartnerAccountClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -300,49 +285,31 @@ public class AsyncRawPartnerAccountClient {
     /**
      * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> close(String workspaceId) {
-        return close(workspaceId, ClosePartnerAccountRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> close() {
+        return close(null);
     }
 
     /**
      * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> close(String workspaceId, RequestOptions requestOptions) {
-        return close(workspaceId, ClosePartnerAccountRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> close(
-            String workspaceId, ClosePartnerAccountRequest request) {
-        return close(workspaceId, request, null);
-    }
-
-    /**
-     * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> close(
-            String workspaceId, ClosePartnerAccountRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Void>> close(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner");
+                .addPathSegments("api/v1/partner-account");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method(
                         "DELETE",
                         BodyProperties.toRequestBody(
                                 requestOptions != null ? requestOptions.getBodyProperties() : null, null))
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -369,6 +336,11 @@ public class AsyncRawPartnerAccountClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -427,35 +399,32 @@ public class AsyncRawPartnerAccountClient {
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public CompletableFuture<PealClientHttpResponse<Partner>> update(String workspaceId) {
-        return update(workspaceId, PartnerChange.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Partner>> update() {
+        return update(PartnerChange.builder().build());
+    }
+
+    /**
+     * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
+     */
+    public CompletableFuture<PealClientHttpResponse<Partner>> update(RequestOptions requestOptions) {
+        return update(PartnerChange.builder().build(), requestOptions);
+    }
+
+    /**
+     * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
+     */
+    public CompletableFuture<PealClientHttpResponse<Partner>> update(PartnerChange request) {
+        return update(request, null);
     }
 
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
     public CompletableFuture<PealClientHttpResponse<Partner>> update(
-            String workspaceId, RequestOptions requestOptions) {
-        return update(workspaceId, PartnerChange.builder().build(), requestOptions);
-    }
-
-    /**
-     * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
-     */
-    public CompletableFuture<PealClientHttpResponse<Partner>> update(String workspaceId, PartnerChange request) {
-        return update(workspaceId, request, null);
-    }
-
-    /**
-     * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
-     */
-    public CompletableFuture<PealClientHttpResponse<Partner>> update(
-            String workspaceId, PartnerChange request, RequestOptions requestOptions) {
+            PartnerChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner");
+                .addPathSegments("api/v1/partner-account");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -499,6 +468,11 @@ public class AsyncRawPartnerAccountClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -557,48 +531,28 @@ public class AsyncRawPartnerAccountClient {
     /**
      * Lists the partner account's keys. Needs partner:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> listKeys(String workspaceId) {
-        return listKeys(workspaceId, ListKeysPartnerAccountRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> listKeys() {
+        return listKeys(null);
     }
 
     /**
      * Lists the partner account's keys. Needs partner:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> listKeys(
-            String workspaceId, RequestOptions requestOptions) {
-        return listKeys(workspaceId, ListKeysPartnerAccountRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the partner account's keys. Needs partner:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> listKeys(
-            String workspaceId, ListKeysPartnerAccountRequest request) {
-        return listKeys(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the partner account's keys. Needs partner:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> listKeys(
-            String workspaceId, ListKeysPartnerAccountRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<List<PartnerKey>>> listKeys(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner")
-                .addPathSegments("keys");
+                .addPathSegments("api/v1/partner-account/keys");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -628,6 +582,11 @@ public class AsyncRawPartnerAccountClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -681,22 +640,18 @@ public class AsyncRawPartnerAccountClient {
     /**
      * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.
      */
-    public CompletableFuture<PealClientHttpResponse<CreatedPartnerKey>> createKey(
-            String workspaceId, NewPartnerKey request) {
-        return createKey(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<CreatedPartnerKey>> createKey(NewPartnerKey request) {
+        return createKey(request, null);
     }
 
     /**
      * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.
      */
     public CompletableFuture<PealClientHttpResponse<CreatedPartnerKey>> createKey(
-            String workspaceId, NewPartnerKey request, RequestOptions requestOptions) {
+            NewPartnerKey request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner")
-                .addPathSegments("keys");
+                .addPathSegments("api/v1/partner-account/keys");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -741,6 +696,11 @@ public class AsyncRawPartnerAccountClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -799,46 +759,34 @@ public class AsyncRawPartnerAccountClient {
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> revokeKey(String workspaceId, String partnerKeyId) {
-        return revokeKey(
-                workspaceId,
-                partnerKeyId,
-                RevokeKeyPartnerAccountRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> revokeKey(String partnerKeyId) {
+        return revokeKey(partnerKeyId, RevokeKeyPartnerAccountRequest.builder().build());
     }
 
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> revokeKey(
-            String workspaceId, String partnerKeyId, RequestOptions requestOptions) {
-        return revokeKey(
-                workspaceId,
-                partnerKeyId,
-                RevokeKeyPartnerAccountRequest.builder().build(),
-                requestOptions);
+            String partnerKeyId, RequestOptions requestOptions) {
+        return revokeKey(partnerKeyId, RevokeKeyPartnerAccountRequest.builder().build(), requestOptions);
     }
 
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> revokeKey(
-            String workspaceId, String partnerKeyId, RevokeKeyPartnerAccountRequest request) {
-        return revokeKey(workspaceId, partnerKeyId, request, null);
+            String partnerKeyId, RevokeKeyPartnerAccountRequest request) {
+        return revokeKey(partnerKeyId, request, null);
     }
 
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> revokeKey(
-            String workspaceId,
-            String partnerKeyId,
-            RevokeKeyPartnerAccountRequest request,
-            RequestOptions requestOptions) {
+            String partnerKeyId, RevokeKeyPartnerAccountRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner/keys")
+                .addPathSegments("api/v1/partner-account/keys")
                 .addPathSegment(PathSegments.validate(partnerKeyId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -880,6 +828,11 @@ public class AsyncRawPartnerAccountClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -933,37 +886,32 @@ public class AsyncRawPartnerAccountClient {
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
-    public CompletableFuture<PealClientHttpResponse<PartnerHealth>> overview(String workspaceId) {
-        return overview(workspaceId, OverviewPartnerAccountRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<PartnerHealth>> overview() {
+        return overview(OverviewPartnerAccountRequest.builder().build());
+    }
+
+    /**
+     * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<PartnerHealth>> overview(RequestOptions requestOptions) {
+        return overview(OverviewPartnerAccountRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<PartnerHealth>> overview(OverviewPartnerAccountRequest request) {
+        return overview(request, null);
     }
 
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
     public CompletableFuture<PealClientHttpResponse<PartnerHealth>> overview(
-            String workspaceId, RequestOptions requestOptions) {
-        return overview(workspaceId, OverviewPartnerAccountRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<PartnerHealth>> overview(
-            String workspaceId, OverviewPartnerAccountRequest request) {
-        return overview(workspaceId, request, null);
-    }
-
-    /**
-     * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<PartnerHealth>> overview(
-            String workspaceId, OverviewPartnerAccountRequest request, RequestOptions requestOptions) {
+            OverviewPartnerAccountRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner")
-                .addPathSegments("overview");
+                .addPathSegments("api/v1/partner-account/overview");
         if (request.getBefore().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "before", request.getBefore().get(), false);
@@ -1069,39 +1017,34 @@ public class AsyncRawPartnerAccountClient {
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
-    public CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> listWorkspaces(String workspaceId) {
-        return listWorkspaces(
-                workspaceId, ListWorkspacesPartnerAccountRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> listWorkspaces() {
+        return listWorkspaces(ListWorkspacesPartnerAccountRequest.builder().build());
     }
 
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
     public CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> listWorkspaces(
-            String workspaceId, RequestOptions requestOptions) {
-        return listWorkspaces(
-                workspaceId, ListWorkspacesPartnerAccountRequest.builder().build(), requestOptions);
+            RequestOptions requestOptions) {
+        return listWorkspaces(ListWorkspacesPartnerAccountRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
     public CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> listWorkspaces(
-            String workspaceId, ListWorkspacesPartnerAccountRequest request) {
-        return listWorkspaces(workspaceId, request, null);
+            ListWorkspacesPartnerAccountRequest request) {
+        return listWorkspaces(request, null);
     }
 
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
     public CompletableFuture<PealClientHttpResponse<CustomerWorkspacePage>> listWorkspaces(
-            String workspaceId, ListWorkspacesPartnerAccountRequest request, RequestOptions requestOptions) {
+            ListWorkspacesPartnerAccountRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("partner")
-                .addPathSegments("workspaces");
+                .addPathSegments("api/v1/partner-account/workspaces");
         if (request.getBefore().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "before", request.getBefore().get(), false);

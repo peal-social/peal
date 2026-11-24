@@ -31,7 +31,7 @@ public partial class PartnerClient : IPartnerClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = "api/partner",
+                    Path = "api/v1/partner",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -160,7 +160,7 @@ public partial class PartnerClient : IPartnerClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = "api/partner/overview",
+                    Path = "api/v1/partner/overview",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -303,7 +303,7 @@ public partial class PartnerClient : IPartnerClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = "api/partner/workspaces",
+                    Path = "api/v1/partner/workspaces",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -443,7 +443,7 @@ public partial class PartnerClient : IPartnerClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = "api/partner/workspaces",
+                    Path = "api/v1/partner/workspaces",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -610,7 +610,7 @@ public partial class PartnerClient : IPartnerClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/partner/workspaces/{0}",
+                        "api/v1/partner/workspaces/{0}",
                         ValueConvert.ToPathParameterString(request.WorkspaceId)
                     ),
                     QueryString = _queryString,
@@ -752,7 +752,7 @@ public partial class PartnerClient : IPartnerClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/partner/workspaces/{0}",
+                        "api/v1/partner/workspaces/{0}",
                         ValueConvert.ToPathParameterString(request.WorkspaceId)
                     ),
                     QueryString = _queryString,
@@ -904,7 +904,7 @@ public partial class PartnerClient : IPartnerClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/partner/workspaces/{0}",
+                        "api/v1/partner/workspaces/{0}",
                         ValueConvert.ToPathParameterString(request.WorkspaceId)
                     ),
                     Body = request,
@@ -1074,7 +1074,7 @@ public partial class PartnerClient : IPartnerClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/partner/workspaces/{0}/channels/{1}/move",
+                        "api/v1/partner/workspaces/{0}/channels/{1}/move",
                         ValueConvert.ToPathParameterString(request.WorkspaceId),
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),

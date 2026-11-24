@@ -62,12 +62,10 @@ class MediaClient
      * Example:
      * ```php
      * $client->media->list(
-     *     'workspaceId',
      *     new ListMediaRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListMediaRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -81,7 +79,7 @@ class MediaClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListMediaRequest $request = new ListMediaRequest(), ?array $options = null): ?MediaPage
+    public function list(ListMediaRequest $request = new ListMediaRequest(), ?array $options = null): ?MediaPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -101,7 +99,7 @@ class MediaClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media",
+                    path: "api/v1/media",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -133,7 +131,6 @@ class MediaClient
      * Example:
      * ```php
      * $client->media->create(
-     *     'workspaceId',
      *     new NewUpload([
      *         'byteSize' => 1000000,
      *         'contentType' => 'contentType',
@@ -141,7 +138,6 @@ class MediaClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewUpload $request
      * @param ?array{
      *   baseUrl?: string,
@@ -155,7 +151,7 @@ class MediaClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, NewUpload $request, ?array $options = null): ?PreparedUpload
+    public function create(NewUpload $request, ?array $options = null): ?PreparedUpload
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -163,7 +159,7 @@ class MediaClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media",
+                    path: "api/v1/media",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -195,14 +191,12 @@ class MediaClient
      * Example:
      * ```php
      * $client->media->importFromUrl(
-     *     'workspaceId',
      *     new MediaImport([
      *         'url' => 'url',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param MediaImport $request
      * @param ?array{
      *   baseUrl?: string,
@@ -216,7 +210,7 @@ class MediaClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function importFromUrl(string $workspaceId, MediaImport $request, ?array $options = null): ?Media
+    public function importFromUrl(MediaImport $request, ?array $options = null): ?Media
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -224,7 +218,7 @@ class MediaClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/import",
+                    path: "api/v1/media/import",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -256,12 +250,10 @@ class MediaClient
      * Example:
      * ```php
      * $client->media->get(
-     *     'workspaceId',
      *     'mediaId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $mediaId
      * @param ?array{
      *   baseUrl?: string,
@@ -275,14 +267,14 @@ class MediaClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $mediaId, ?array $options = null): ?Media
+    public function get(string $mediaId, ?array $options = null): ?Media
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/{$mediaId}",
+                    path: "api/v1/media/{$mediaId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -313,12 +305,10 @@ class MediaClient
      * Example:
      * ```php
      * $client->media->delete(
-     *     'workspaceId',
      *     'mediaId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $mediaId
      * @param ?array{
      *   baseUrl?: string,
@@ -331,14 +321,14 @@ class MediaClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $mediaId, ?array $options = null): void
+    public function delete(string $mediaId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/{$mediaId}",
+                    path: "api/v1/media/{$mediaId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -363,7 +353,6 @@ class MediaClient
      * Example:
      * ```php
      * $client->media->describe(
-     *     'workspaceId',
      *     'mediaId',
      *     new MediaDescription([
      *         'altText' => null,
@@ -371,7 +360,6 @@ class MediaClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $mediaId
      * @param MediaDescription $request
      * @param ?array{
@@ -386,7 +374,7 @@ class MediaClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function describe(string $workspaceId, string $mediaId, MediaDescription $request, ?array $options = null): ?Media
+    public function describe(string $mediaId, MediaDescription $request, ?array $options = null): ?Media
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -394,7 +382,7 @@ class MediaClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/{$mediaId}",
+                    path: "api/v1/media/{$mediaId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -426,12 +414,10 @@ class MediaClient
      * Example:
      * ```php
      * $client->media->complete(
-     *     'workspaceId',
      *     'mediaId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $mediaId
      * @param ?array{
      *   baseUrl?: string,
@@ -445,7 +431,7 @@ class MediaClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function complete(string $workspaceId, string $mediaId, ?array $options = null): ?Media
+    public function complete(string $mediaId, ?array $options = null): ?Media
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -453,7 +439,7 @@ class MediaClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/{$mediaId}/complete",
+                    path: "api/v1/media/{$mediaId}/complete",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -484,12 +470,10 @@ class MediaClient
      * Example:
      * ```php
      * $client->media->usage(
-     *     'workspaceId',
      *     'mediaId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $mediaId
      * @param ?array{
      *   baseUrl?: string,
@@ -503,14 +487,14 @@ class MediaClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function usage(string $workspaceId, string $mediaId, ?array $options = null): ?MediaUsage
+    public function usage(string $mediaId, ?array $options = null): ?MediaUsage
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/{$mediaId}/usage",
+                    path: "api/v1/media/{$mediaId}/usage",
                     method: HttpMethod::GET,
                 ),
                 $options,

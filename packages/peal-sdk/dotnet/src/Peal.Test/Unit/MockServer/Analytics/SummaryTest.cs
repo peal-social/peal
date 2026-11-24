@@ -106,7 +106,7 @@ public class SummaryTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/analytics/summary")
+                    .WithPath("/api/v1/analytics/summary")
                     .WithParam("from", "from")
                     .WithParam("timeZone", "timeZone")
                     .WithParam("to", "to")
@@ -122,7 +122,6 @@ public class SummaryTest : BaseMockServerTest
         var response = await Client.Analytics.SummaryAsync(
             new SummaryAnalyticsRequest
             {
-                WorkspaceId = "workspaceId",
                 From = "from",
                 TimeZone = "timeZone",
                 To = "to",
@@ -189,7 +188,7 @@ public class SummaryTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/analytics/summary")
+                    .WithPath("/api/v1/analytics/summary")
                     .WithParam("from", "from")
                     .WithParam("timeZone", "timeZone")
                     .WithParam("to", "to")
@@ -205,7 +204,6 @@ public class SummaryTest : BaseMockServerTest
         var response = await Client.Analytics.SummaryAsync(
             new SummaryAnalyticsRequest
             {
-                WorkspaceId = "workspaceId",
                 From = "from",
                 TimeZone = "timeZone",
                 To = "to",

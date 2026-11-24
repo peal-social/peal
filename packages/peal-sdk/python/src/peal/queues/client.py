@@ -29,14 +29,12 @@ class QueuesClient:
         """
         return self._raw_client
 
-    def list(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Queue]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Queue]:
         """
         Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -50,18 +48,16 @@ class QueuesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.queues.list(
-            workspace_id="workspaceId",
-        )
+        client.queues.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         slots: typing.Sequence[QueueSlot],
@@ -76,8 +72,6 @@ class QueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         slots : typing.Sequence[QueueSlot]
@@ -103,10 +97,10 @@ class QueuesClient:
         from peal import Peal, QueueSlot
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.queues.create(
-            workspace_id="workspaceId",
             name="name",
             slots=[
                 QueueSlot(
@@ -118,7 +112,6 @@ class QueuesClient:
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             name=name,
             slots=slots,
             time_zone=time_zone,
@@ -129,16 +122,12 @@ class QueuesClient:
         )
         return _response.data
 
-    def get(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Queue:
+    def get(self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Queue:
         """
         Answers with a queue of the workspace. Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -154,19 +143,18 @@ class QueuesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.queues.get(
-            workspace_id="workspaceId",
             queue_id="queueId",
         )
         """
-        _response = self._raw_client.get(workspace_id, queue_id, request_options=request_options)
+        _response = self._raw_client.get(queue_id, request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         queue_id: str,
         *,
         name: str,
@@ -182,8 +170,6 @@ class QueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         name : str
@@ -211,10 +197,10 @@ class QueuesClient:
         from peal import Peal, QueueSlot
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.queues.update(
-            workspace_id="workspaceId",
             queue_id="queueId",
             name="name",
             slots=[
@@ -227,7 +213,6 @@ class QueuesClient:
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
             queue_id,
             name=name,
             slots=slots,
@@ -239,16 +224,12 @@ class QueuesClient:
         )
         return _response.data
 
-    def delete(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (`queueId` null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -263,19 +244,18 @@ class QueuesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.queues.delete(
-            workspace_id="workspaceId",
             queue_id="queueId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, queue_id, request_options=request_options)
+        _response = self._raw_client.delete(queue_id, request_options=request_options)
         return _response.data
 
     def slots(
         self,
-        workspace_id: str,
         queue_id: str,
         *,
         count: typing.Optional[str] = None,
@@ -286,8 +266,6 @@ class QueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         count : typing.Optional[str]
@@ -305,26 +283,22 @@ class QueuesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.queues.slots(
-            workspace_id="workspaceId",
             queue_id="queueId",
         )
         """
-        _response = self._raw_client.slots(workspace_id, queue_id, count=count, request_options=request_options)
+        _response = self._raw_client.slots(queue_id, count=count, request_options=request_options)
         return _response.data
 
-    def reshuffle(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> QueueReshuffle:
+    def reshuffle(self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> QueueReshuffle:
         """
         Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and `post.scheduled` told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (`post.approval_requested` is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (`stoppedBy` `planLimit`), when no slot is left within 366 days (`full`), or when the queue was saved meanwhile (`changed`); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (`noSlots`) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -340,14 +314,14 @@ class QueuesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.queues.reshuffle(
-            workspace_id="workspaceId",
             queue_id="queueId",
         )
         """
-        _response = self._raw_client.reshuffle(workspace_id, queue_id, request_options=request_options)
+        _response = self._raw_client.reshuffle(queue_id, request_options=request_options)
         return _response.data
 
 
@@ -366,16 +340,12 @@ class AsyncQueuesClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[Queue]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Queue]:
         """
         Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -391,24 +361,22 @@ class AsyncQueuesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.queues.list(
-                workspace_id="workspaceId",
-            )
+            await client.queues.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         slots: typing.Sequence[QueueSlot],
@@ -423,8 +391,6 @@ class AsyncQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         slots : typing.Sequence[QueueSlot]
@@ -452,13 +418,13 @@ class AsyncQueuesClient:
         from peal import AsyncPeal, QueueSlot
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.queues.create(
-                workspace_id="workspaceId",
                 name="name",
                 slots=[
                     QueueSlot(
@@ -473,7 +439,6 @@ class AsyncQueuesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             name=name,
             slots=slots,
             time_zone=time_zone,
@@ -484,16 +449,12 @@ class AsyncQueuesClient:
         )
         return _response.data
 
-    async def get(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Queue:
+    async def get(self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Queue:
         """
         Answers with a queue of the workspace. Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -511,25 +472,24 @@ class AsyncQueuesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.queues.get(
-                workspace_id="workspaceId",
                 queue_id="queueId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, queue_id, request_options=request_options)
+        _response = await self._raw_client.get(queue_id, request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         queue_id: str,
         *,
         name: str,
@@ -545,8 +505,6 @@ class AsyncQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         name : str
@@ -576,13 +534,13 @@ class AsyncQueuesClient:
         from peal import AsyncPeal, QueueSlot
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.queues.update(
-                workspace_id="workspaceId",
                 queue_id="queueId",
                 name="name",
                 slots=[
@@ -598,7 +556,6 @@ class AsyncQueuesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
             queue_id,
             name=name,
             slots=slots,
@@ -610,16 +567,12 @@ class AsyncQueuesClient:
         )
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (`queueId` null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -636,25 +589,24 @@ class AsyncQueuesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.queues.delete(
-                workspace_id="workspaceId",
                 queue_id="queueId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, queue_id, request_options=request_options)
+        _response = await self._raw_client.delete(queue_id, request_options=request_options)
         return _response.data
 
     async def slots(
         self,
-        workspace_id: str,
         queue_id: str,
         *,
         count: typing.Optional[str] = None,
@@ -665,8 +617,6 @@ class AsyncQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         count : typing.Optional[str]
@@ -686,32 +636,30 @@ class AsyncQueuesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.queues.slots(
-                workspace_id="workspaceId",
                 queue_id="queueId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.slots(workspace_id, queue_id, count=count, request_options=request_options)
+        _response = await self._raw_client.slots(queue_id, count=count, request_options=request_options)
         return _response.data
 
     async def reshuffle(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> QueueReshuffle:
         """
         Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and `post.scheduled` told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (`post.approval_requested` is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (`stoppedBy` `planLimit`), when no slot is left within 366 days (`full`), or when the queue was saved meanwhile (`changed`); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (`noSlots`) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -729,18 +677,18 @@ class AsyncQueuesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.queues.reshuffle(
-                workspace_id="workspaceId",
                 queue_id="queueId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.reshuffle(workspace_id, queue_id, request_options=request_options)
+        _response = await self._raw_client.reshuffle(queue_id, request_options=request_options)
         return _response.data

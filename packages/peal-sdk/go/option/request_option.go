@@ -108,3 +108,10 @@ func WithTokenFunc(fn func() (string, error)) *core.TokenFuncOption {
 		TokenFunc: fn,
 	}
 }
+
+// WithWorkspace sets the workspace request header.
+func WithWorkspace(workspace *string) *core.WorkspaceOption {
+	return &core.WorkspaceOption{
+		Workspace: workspace,
+	}
+}

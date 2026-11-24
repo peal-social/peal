@@ -12,7 +12,6 @@ use Peal\Environments;
 use Peal\Core\Client\HttpMethod;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Peal\Review\Requests\UpdateSettingsReviewRequest;
 use Peal\Types\ApprovalRequest;
 use Peal\Core\Json\JsonDecoder;
 use Peal\Types\PostReview;
@@ -68,12 +67,9 @@ class ReviewClient
      *
      * Example:
      * ```php
-     * $client->review->settings(
-     *     'workspaceId',
-     * );
+     * $client->review->settings();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -86,14 +82,14 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function settings(string $workspaceId, ?array $options = null): ?ReviewSettings
+    public function settings(?array $options = null): ?ReviewSettings
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/review/settings",
+                    path: "api/v1/review/settings",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -124,17 +120,13 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->updateSettings(
-     *     'workspaceId',
-     *     new UpdateSettingsReviewRequest([
-     *         'body' => new ReviewSettings([
-     *             'approvalPolicy' => ApprovalPolicy::Never->value,
-     *         ]),
+     *     new ReviewSettings([
+     *         'approvalPolicy' => ApprovalPolicy::Never->value,
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param UpdateSettingsReviewRequest $request
+     * @param ReviewSettings $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -147,16 +139,16 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function updateSettings(string $workspaceId, UpdateSettingsReviewRequest $request, ?array $options = null): ?ReviewSettings
+    public function updateSettings(ReviewSettings $request, ?array $options = null): ?ReviewSettings
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/review/settings",
+                    path: "api/v1/review/settings",
                     method: HttpMethod::PUT,
-                    body: $request->body,
+                    body: $request,
                 ),
                 $options,
             );
@@ -185,12 +177,9 @@ class ReviewClient
      *
      * Example:
      * ```php
-     * $client->review->pending(
-     *     'workspaceId',
-     * );
+     * $client->review->pending();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -203,14 +192,14 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function pending(string $workspaceId, ?array $options = null): ?array
+    public function pending(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/approvals",
+                    path: "api/v1/approvals",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -241,12 +230,10 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->thread(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -260,14 +247,14 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function thread(string $workspaceId, string $postId, ?array $options = null): ?PostReview
+    public function thread(string $postId, ?array $options = null): ?PostReview
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/review",
+                    path: "api/v1/posts/{$postId}/review",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -298,7 +285,6 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->comment(
-     *     'workspaceId',
      *     'postId',
      *     new NewComment([
      *         'text' => 'text',
@@ -306,7 +292,6 @@ class ReviewClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param NewComment $request
      * @param ?array{
@@ -321,7 +306,7 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function comment(string $workspaceId, string $postId, NewComment $request, ?array $options = null): ?ReviewComment
+    public function comment(string $postId, NewComment $request, ?array $options = null): ?ReviewComment
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -329,7 +314,7 @@ class ReviewClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/comments",
+                    path: "api/v1/posts/{$postId}/comments",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -361,7 +346,6 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->resolve(
-     *     'workspaceId',
      *     'postId',
      *     'commentId',
      *     new ResolveReviewRequest([
@@ -370,7 +354,6 @@ class ReviewClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param string $commentId
      * @param ResolveReviewRequest $request
@@ -386,7 +369,7 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function resolve(string $workspaceId, string $postId, string $commentId, ResolveReviewRequest $request, ?array $options = null): ?ReviewComment
+    public function resolve(string $postId, string $commentId, ResolveReviewRequest $request, ?array $options = null): ?ReviewComment
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -394,7 +377,7 @@ class ReviewClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/comments/{$commentId}",
+                    path: "api/v1/posts/{$postId}/comments/{$commentId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -426,7 +409,6 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->approve(
-     *     'workspaceId',
      *     'postId',
      *     new ApprovalDecision([
      *         'approvalId' => 'approvalId',
@@ -435,7 +417,6 @@ class ReviewClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ApprovalDecision $request
      * @param ?array{
@@ -450,7 +431,7 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function approve(string $workspaceId, string $postId, ApprovalDecision $request, ?array $options = null): ?ApprovalOutcome
+    public function approve(string $postId, ApprovalDecision $request, ?array $options = null): ?ApprovalOutcome
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -458,7 +439,7 @@ class ReviewClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/approve",
+                    path: "api/v1/posts/{$postId}/approve",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -490,7 +471,6 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->requestChanges(
-     *     'workspaceId',
      *     'postId',
      *     new ChangesRequest([
      *         'approvalId' => 'approvalId',
@@ -500,7 +480,6 @@ class ReviewClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ChangesRequest $request
      * @param ?array{
@@ -515,7 +494,7 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function requestChanges(string $workspaceId, string $postId, ChangesRequest $request, ?array $options = null): ?ChangesOutcome
+    public function requestChanges(string $postId, ChangesRequest $request, ?array $options = null): ?ChangesOutcome
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -523,7 +502,7 @@ class ReviewClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/request-changes",
+                    path: "api/v1/posts/{$postId}/request-changes",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -555,12 +534,10 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->links(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -574,14 +551,14 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function links(string $workspaceId, string $postId, ?array $options = null): ?array
+    public function links(string $postId, ?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/review-links",
+                    path: "api/v1/posts/{$postId}/review-links",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -612,7 +589,6 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->createLink(
-     *     'workspaceId',
      *     'postId',
      *     new NewReviewLink([
      *         'access' => ReviewLinkAccess::View->value,
@@ -620,7 +596,6 @@ class ReviewClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param NewReviewLink $request
      * @param ?array{
@@ -635,7 +610,7 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function createLink(string $workspaceId, string $postId, NewReviewLink $request, ?array $options = null): ?CreatedReviewLink
+    public function createLink(string $postId, NewReviewLink $request, ?array $options = null): ?CreatedReviewLink
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -643,7 +618,7 @@ class ReviewClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/review-links",
+                    path: "api/v1/posts/{$postId}/review-links",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -675,12 +650,10 @@ class ReviewClient
      * Example:
      * ```php
      * $client->review->revokeLink(
-     *     'workspaceId',
      *     'linkId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $linkId
      * @param ?array{
      *   baseUrl?: string,
@@ -694,14 +667,14 @@ class ReviewClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function revokeLink(string $workspaceId, string $linkId, ?array $options = null): ?ReviewLink
+    public function revokeLink(string $linkId, ?array $options = null): ?ReviewLink
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/review-links/{$linkId}",
+                    path: "api/v1/review-links/{$linkId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

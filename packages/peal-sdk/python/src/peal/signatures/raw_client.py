@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -30,16 +31,12 @@ class RawSignaturesClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[Signature]]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[Signature]]:
         """
         Lists the workspace's signatures, oldest first. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -49,7 +46,7 @@ class RawSignaturesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/signatures",
+            "api/v1/signatures",
             method="GET",
             request_options=request_options,
         )
@@ -63,6 +60,17 @@ class RawSignaturesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -118,7 +126,6 @@ class RawSignaturesClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         text: str,
@@ -131,8 +138,6 @@ class RawSignaturesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         text : str
@@ -153,7 +158,7 @@ class RawSignaturesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/signatures",
+            "api/v1/signatures",
             method="POST",
             json={
                 "isDefault": is_default,
@@ -162,9 +167,6 @@ class RawSignaturesClient:
                     object_=scope, annotation=SignatureScope, direction="write"
                 ),
                 "text": text,
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -179,6 +181,17 @@ class RawSignaturesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -256,7 +269,6 @@ class RawSignaturesClient:
 
     def update(
         self,
-        workspace_id: str,
         signature_id: str,
         *,
         name: str,
@@ -270,8 +282,6 @@ class RawSignaturesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         signature_id : str
 
         name : str
@@ -291,7 +301,7 @@ class RawSignaturesClient:
             Signature
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/signatures/{encode_path_param(signature_id)}",
+            f"api/v1/signatures/{encode_path_param(signature_id)}",
             method="PUT",
             json={
                 "isDefault": is_default,
@@ -317,6 +327,17 @@ class RawSignaturesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -393,15 +414,13 @@ class RawSignaturesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
-        self, workspace_id: str, signature_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, signature_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Deletes a signature. Posts that already hold its text keep it. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         signature_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -412,13 +431,24 @@ class RawSignaturesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/signatures/{encode_path_param(signature_id)}",
+            f"api/v1/signatures/{encode_path_param(signature_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -478,15 +508,13 @@ class AsyncRawSignaturesClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[Signature]]:
         """
         Lists the workspace's signatures, oldest first. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -496,7 +524,7 @@ class AsyncRawSignaturesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/signatures",
+            "api/v1/signatures",
             method="GET",
             request_options=request_options,
         )
@@ -510,6 +538,17 @@ class AsyncRawSignaturesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -565,7 +604,6 @@ class AsyncRawSignaturesClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         text: str,
@@ -578,8 +616,6 @@ class AsyncRawSignaturesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         text : str
@@ -600,7 +636,7 @@ class AsyncRawSignaturesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/signatures",
+            "api/v1/signatures",
             method="POST",
             json={
                 "isDefault": is_default,
@@ -609,9 +645,6 @@ class AsyncRawSignaturesClient:
                     object_=scope, annotation=SignatureScope, direction="write"
                 ),
                 "text": text,
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -626,6 +659,17 @@ class AsyncRawSignaturesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -703,7 +747,6 @@ class AsyncRawSignaturesClient:
 
     async def update(
         self,
-        workspace_id: str,
         signature_id: str,
         *,
         name: str,
@@ -717,8 +760,6 @@ class AsyncRawSignaturesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         signature_id : str
 
         name : str
@@ -738,7 +779,7 @@ class AsyncRawSignaturesClient:
             Signature
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/signatures/{encode_path_param(signature_id)}",
+            f"api/v1/signatures/{encode_path_param(signature_id)}",
             method="PUT",
             json={
                 "isDefault": is_default,
@@ -764,6 +805,17 @@ class AsyncRawSignaturesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -840,15 +892,13 @@ class AsyncRawSignaturesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, signature_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, signature_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Deletes a signature. Posts that already hold its text keep it. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         signature_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -859,13 +909,24 @@ class AsyncRawSignaturesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/signatures/{encode_path_param(signature_id)}",
+            f"api/v1/signatures/{encode_path_param(signature_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

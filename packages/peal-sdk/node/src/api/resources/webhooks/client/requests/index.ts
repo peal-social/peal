@@ -1,9 +1,7 @@
 export type { DeleteWebhooksRequest } from "./DeleteWebhooksRequest.js";
 export type { GetWebhooksRequest } from "./GetWebhooksRequest.js";
 export type { ListDeliveriesWebhooksRequest } from "./ListDeliveriesWebhooksRequest.js";
-export type { ListWebhooksRequest } from "./ListWebhooksRequest.js";
 export type { NewWebhookEndpoint } from "./NewWebhookEndpoint.js";
-export type { RedeliverManyWebhooksRequest } from "./RedeliverManyWebhooksRequest.js";
 export type { RedeliverWebhooksRequest } from "./RedeliverWebhooksRequest.js";
 export type { RotateSecretWebhooksRequest } from "./RotateSecretWebhooksRequest.js";
 export type { SearchDeliveriesWebhooksRequest } from "./SearchDeliveriesWebhooksRequest.js";

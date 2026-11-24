@@ -88,19 +88,15 @@ func TestConnectLinksListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListConnectLinksRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.ConnectLinks.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestConnectLinksListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestConnectLinksListWithWireMock", "GET", "/api/workspaces/workspaceId/connect-links", nil, 1)
+	VerifyRequestCount(t, "TestConnectLinksListWithWireMock", "GET", "/api/v1/connect-links", nil, 1)
 }
 
 func TestConnectLinksCreateWithWireMock(
@@ -114,9 +110,7 @@ func TestConnectLinksCreateWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.NewConnectLink{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.NewConnectLink{}
 	_, invocationErr := client.ConnectLinks.Create(
 		context.TODO(),
 		request,
@@ -126,7 +120,7 @@ func TestConnectLinksCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestConnectLinksCreateWithWireMock", "POST", "/api/workspaces/workspaceId/connect-links", nil, 1)
+	VerifyRequestCount(t, "TestConnectLinksCreateWithWireMock", "POST", "/api/v1/connect-links", nil, 1)
 }
 
 func TestConnectLinksGetWithWireMock(
@@ -141,8 +135,7 @@ func TestConnectLinksGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetConnectLinksRequest{
-		WorkspaceID: "workspaceId",
-		LinkID:      "linkId",
+		LinkID: "linkId",
 	}
 	_, invocationErr := client.ConnectLinks.Get(
 		context.TODO(),
@@ -153,7 +146,7 @@ func TestConnectLinksGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestConnectLinksGetWithWireMock", "GET", "/api/workspaces/workspaceId/connect-links/linkId", nil, 1)
+	VerifyRequestCount(t, "TestConnectLinksGetWithWireMock", "GET", "/api/v1/connect-links/linkId", nil, 1)
 }
 
 func TestConnectLinksRevokeWithWireMock(
@@ -168,8 +161,7 @@ func TestConnectLinksRevokeWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RevokeConnectLinksRequest{
-		WorkspaceID: "workspaceId",
-		LinkID:      "linkId",
+		LinkID: "linkId",
 	}
 	_, invocationErr := client.ConnectLinks.Revoke(
 		context.TODO(),
@@ -180,5 +172,5 @@ func TestConnectLinksRevokeWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestConnectLinksRevokeWithWireMock", "DELETE", "/api/workspaces/workspaceId/connect-links/linkId", nil, 1)
+	VerifyRequestCount(t, "TestConnectLinksRevokeWithWireMock", "DELETE", "/api/v1/connect-links/linkId", nil, 1)
 }

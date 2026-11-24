@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record NewFeed
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("attachPicture")]
     public bool? AttachPicture { get; set; }
 

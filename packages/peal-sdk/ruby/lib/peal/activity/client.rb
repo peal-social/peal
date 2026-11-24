@@ -26,14 +26,13 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :actor
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
       # @option params [String, nil] :operation
       #
       # @example
-      #   client.activity.list(workspace_id: "workspaceId")
+      #   client.activity.list
       #
       # @return [Peal::Types::ActivityPage]
       def list(request_options: {}, **params)
@@ -47,7 +46,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/activity",
+          path: "api/v1/activity",
           query: query_params,
           request_options: request_options
         )

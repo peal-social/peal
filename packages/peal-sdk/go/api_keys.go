@@ -10,14 +10,12 @@ import (
 )
 
 var (
-	newAPIKeyFieldWorkspaceID   = big.NewInt(1 << 0)
-	newAPIKeyFieldExpiresInDays = big.NewInt(1 << 1)
-	newAPIKeyFieldName          = big.NewInt(1 << 2)
-	newAPIKeyFieldPermissions   = big.NewInt(1 << 3)
+	newAPIKeyFieldExpiresInDays = big.NewInt(1 << 0)
+	newAPIKeyFieldName          = big.NewInt(1 << 1)
+	newAPIKeyFieldPermissions   = big.NewInt(1 << 2)
 )
 
 type NewAPIKey struct {
-	WorkspaceID   string       `json:"-" url:"-"`
 	ExpiresInDays *int         `json:"expiresInDays,omitempty" url:"-"`
 	Name          string       `json:"name" url:"-"`
 	Permissions   []Permission `json:"permissions" url:"-"`
@@ -33,13 +31,6 @@ func (n *NewAPIKey) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewAPIKey) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newAPIKeyFieldWorkspaceID)
 }
 
 // SetExpiresInDays sets the ExpiresInDays field and marks it as non-optional;
@@ -85,40 +76,11 @@ func (n *NewAPIKey) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	listAPIKeysRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListAPIKeysRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListAPIKeysRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListAPIKeysRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listAPIKeysRequestFieldWorkspaceID)
-}
-
-var (
-	revokeAPIKeysRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	revokeAPIKeysRequestFieldAPIKeyID    = big.NewInt(1 << 1)
+	revokeAPIKeysRequestFieldAPIKeyID = big.NewInt(1 << 0)
 )
 
 type RevokeAPIKeysRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	APIKeyID    string `json:"-" url:"-"`
+	APIKeyID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -131,13 +93,6 @@ func (r *RevokeAPIKeysRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RevokeAPIKeysRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(revokeAPIKeysRequestFieldWorkspaceID)
 }
 
 // SetAPIKeyID sets the APIKeyID field and marks it as non-optional;

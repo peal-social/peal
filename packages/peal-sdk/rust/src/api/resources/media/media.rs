@@ -38,7 +38,6 @@ impl MediaClient {
     ///     client
     ///         .media
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &MediaListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl MediaClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &MediaListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<MediaPage, ApiError> {
@@ -63,7 +61,7 @@ impl MediaClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/media", workspace_id),
+                "api/v1/media",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -101,7 +99,6 @@ impl MediaClient {
     ///     client
     ///         .media
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewUpload {
     ///                 byte_size: 1000000,
     ///                 content_type: "contentType".to_string(),
@@ -115,7 +112,6 @@ impl MediaClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewUpload,
         options: Option<RequestOptions>,
     ) -> Result<PreparedUpload, ApiError> {
@@ -130,7 +126,7 @@ impl MediaClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/media", workspace_id),
+                "api/v1/media",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -163,7 +159,6 @@ impl MediaClient {
     ///     client
     ///         .media
     ///         .import_from_url(
-    ///             &"workspaceId".to_string(),
     ///             &MediaImport {
     ///                 url: "url".to_string(),
     ///                 alt_text: None,
@@ -175,7 +170,6 @@ impl MediaClient {
     /// ```
     pub async fn import_from_url(
         &self,
-        workspace_id: &str,
         request: &MediaImport,
         options: Option<RequestOptions>,
     ) -> Result<Media, ApiError> {
@@ -190,7 +184,7 @@ impl MediaClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/media/import", workspace_id),
+                "api/v1/media/import",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -220,15 +214,11 @@ impl MediaClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .media
-    ///         .get(&"workspaceId".to_string(), &"mediaId".to_string(), None)
-    ///         .await;
+    ///     client.media.get(&"mediaId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         media_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Media, ApiError> {
@@ -242,7 +232,7 @@ impl MediaClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/media/{}", workspace_id, media_id),
+                &format!("api/v1/media/{}", media_id),
                 None,
                 None,
                 options,
@@ -272,15 +262,11 @@ impl MediaClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .media
-    ///         .delete(&"workspaceId".to_string(), &"mediaId".to_string(), None)
-    ///         .await;
+    ///     client.media.delete(&"mediaId".to_string(), None).await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         media_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -294,7 +280,7 @@ impl MediaClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/media/{}", workspace_id, media_id),
+                &format!("api/v1/media/{}", media_id),
                 None,
                 None,
                 options,
@@ -327,7 +313,6 @@ impl MediaClient {
     ///     client
     ///         .media
     ///         .describe(
-    ///             &"workspaceId".to_string(),
     ///             &"mediaId".to_string(),
     ///             &MediaDescription {
     ///                 ..Default::default()
@@ -339,7 +324,6 @@ impl MediaClient {
     /// ```
     pub async fn describe(
         &self,
-        workspace_id: &str,
         media_id: &str,
         request: &MediaDescription,
         options: Option<RequestOptions>,
@@ -355,7 +339,7 @@ impl MediaClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/media/{}", workspace_id, media_id),
+                &format!("api/v1/media/{}", media_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -385,15 +369,11 @@ impl MediaClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .media
-    ///         .complete(&"workspaceId".to_string(), &"mediaId".to_string(), None)
-    ///         .await;
+    ///     client.media.complete(&"mediaId".to_string(), None).await;
     /// }
     /// ```
     pub async fn complete(
         &self,
-        workspace_id: &str,
         media_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Media, ApiError> {
@@ -408,10 +388,7 @@ impl MediaClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/media/{}/complete",
-                    workspace_id, media_id
-                ),
+                &format!("api/v1/media/{}/complete", media_id),
                 None,
                 None,
                 options,
@@ -441,15 +418,11 @@ impl MediaClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .media
-    ///         .usage(&"workspaceId".to_string(), &"mediaId".to_string(), None)
-    ///         .await;
+    ///     client.media.usage(&"mediaId".to_string(), None).await;
     /// }
     /// ```
     pub async fn usage(
         &self,
-        workspace_id: &str,
         media_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<MediaUsage, ApiError> {
@@ -463,7 +436,7 @@ impl MediaClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/media/{}/usage", workspace_id, media_id),
+                &format!("api/v1/media/{}/usage", media_id),
                 None,
                 None,
                 options,

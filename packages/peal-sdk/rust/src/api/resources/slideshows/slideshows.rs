@@ -38,7 +38,6 @@ impl SlideshowsClient {
     ///     client
     ///         .slideshows
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &SlideshowsListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl SlideshowsClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &SlideshowsListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<Slideshows, ApiError> {
@@ -63,7 +61,7 @@ impl SlideshowsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/media/slideshows", workspace_id),
+                "api/v1/media/slideshows",
                 None,
                 QueryBuilder::new()
                     .serialize("status", request.status.clone())
@@ -98,7 +96,6 @@ impl SlideshowsClient {
     ///     client
     ///         .slideshows
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &SlideshowRequest {
     ///                 aspect: ImageAspect::Square,
     ///                 slides: vec![Slide {
@@ -116,7 +113,6 @@ impl SlideshowsClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &SlideshowRequest,
         options: Option<RequestOptions>,
     ) -> Result<Slideshow, ApiError> {
@@ -131,7 +127,7 @@ impl SlideshowsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/media/slideshows", workspace_id),
+                "api/v1/media/slideshows",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -164,7 +160,6 @@ impl SlideshowsClient {
     ///     client
     ///         .slideshows
     ///         .create_from_edit(
-    ///             &"workspaceId".to_string(),
     ///             &EditRenderRequest {
     ///                 edit: HashMap::from([("key".to_string(), serde_json::json!("value"))]),
     ///             },
@@ -175,7 +170,6 @@ impl SlideshowsClient {
     /// ```
     pub async fn create_from_edit(
         &self,
-        workspace_id: &str,
         request: &EditRenderRequest,
         options: Option<RequestOptions>,
     ) -> Result<Slideshow, ApiError> {
@@ -190,7 +184,7 @@ impl SlideshowsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/media/slideshows/edits", workspace_id),
+                "api/v1/media/slideshows/edits",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -222,13 +216,12 @@ impl SlideshowsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .slideshows
-    ///         .get(&"workspaceId".to_string(), &"slideshowId".to_string(), None)
+    ///         .get(&"slideshowId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         slideshow_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Slideshow, ApiError> {
@@ -242,10 +235,7 @@ impl SlideshowsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/media/slideshows/{}",
-                    workspace_id, slideshow_id
-                ),
+                &format!("api/v1/media/slideshows/{}", slideshow_id),
                 None,
                 None,
                 options,

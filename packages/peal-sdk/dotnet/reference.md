@@ -198,7 +198,7 @@ await client.Credential.GetAsync();
 </details>
 
 ## apiKeys
-<details><summary><code>client.ApiKeys.<a href="/src/Peal/ApiKeys/ApiKeysClient.cs">ListAsync</a>(ListApiKeysRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;ApiKey&gt;&gt;</code></summary>
+<details><summary><code>client.ApiKeys.<a href="/src/Peal/ApiKeys/ApiKeysClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;ApiKey&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -225,23 +225,8 @@ Lists the workspace's API keys, with the member who made each. Needs apiKey:read
 <dd>
 
 ```csharp
-await client.ApiKeys.ListAsync(new ListApiKeysRequest { WorkspaceId = "workspaceId" });
+await client.ApiKeys.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListApiKeysRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -282,7 +267,6 @@ Creates an API key for the workspace with some of the caller's permissions, and 
 await client.ApiKeys.CreateAsync(
     new NewApiKey
     {
-        WorkspaceId = "workspaceId",
         Name = "name",
         Permissions = new List<Permission>() { Permission.ActivityRead },
     }
@@ -340,9 +324,7 @@ Revokes an API key of the workspace: it stops working at once. Needs apiKey:dele
 <dd>
 
 ```csharp
-await client.ApiKeys.RevokeAsync(
-    new RevokeApiKeysRequest { WorkspaceId = "workspaceId", ApiKeyId = "apiKeyId" }
-);
+await client.ApiKeys.RevokeAsync(new RevokeApiKeysRequest { ApiKeyId = "apiKeyId" });
 ```
 </dd>
 </dl>
@@ -370,7 +352,7 @@ await client.ApiKeys.RevokeAsync(
 </details>
 
 ## channels
-<details><summary><code>client.Channels.<a href="/src/Peal/Channels/ChannelsClient.cs">ListAsync</a>(ListChannelsRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;Channel&gt;&gt;</code></summary>
+<details><summary><code>client.Channels.<a href="/src/Peal/Channels/ChannelsClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;Channel&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -397,23 +379,8 @@ Lists the channels connected to the workspace, oldest first. Their tokens are ne
 <dd>
 
 ```csharp
-await client.Channels.ListAsync(new ListChannelsRequest { WorkspaceId = "workspaceId" });
+await client.Channels.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListChannelsRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -451,7 +418,7 @@ Lists the workspace's channels a page at a time, oldest first: 50 unless `limit`
 <dd>
 
 ```csharp
-await client.Channels.FindAsync(new FindChannelsRequest { WorkspaceId = "workspaceId" });
+await client.Channels.FindAsync(new FindChannelsRequest());
 ```
 </dd>
 </dl>
@@ -478,7 +445,7 @@ await client.Channels.FindAsync(new FindChannelsRequest { WorkspaceId = "workspa
 </dl>
 </details>
 
-<details><summary><code>client.Channels.<a href="/src/Peal/Channels/ChannelsClient.cs">PlatformsAsync</a>(PlatformsChannelsRequest { ... }) -> WithRawResponseTask&lt;ConnectablePlatforms&gt;</code></summary>
+<details><summary><code>client.Channels.<a href="/src/Peal/Channels/ChannelsClient.cs">PlatformsAsync</a>() -> WithRawResponseTask&lt;ConnectablePlatforms&gt;</code></summary>
 <dl>
 <dd>
 
@@ -505,23 +472,8 @@ Lists the platforms this server can connect accounts of, in Peal's order. A plat
 <dd>
 
 ```csharp
-await client.Channels.PlatformsAsync(new PlatformsChannelsRequest { WorkspaceId = "workspaceId" });
+await client.Channels.PlatformsAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `PlatformsChannelsRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -562,7 +514,6 @@ Connects a website, to publish articles to it: a WordPress site, by its address,
 await client.Channels.ConnectSiteAsync(
     new ConnectSite
     {
-        WorkspaceId = "workspaceId",
         Address = "address",
         ApplicationPassword = "applicationPassword",
         Platform = SitePlatform.Wordpress,
@@ -623,12 +574,7 @@ Connects an account on a publishing platform, to publish articles to it, with a 
 
 ```csharp
 await client.Channels.ConnectSiteWithKeyAsync(
-    new ConnectSiteWithKey
-    {
-        WorkspaceId = "workspaceId",
-        ApiKey = "apiKey",
-        Platform = KeySitePlatform.Devto,
-    }
+    new ConnectSiteWithKey { ApiKey = "apiKey", Platform = KeySitePlatform.Devto }
 );
 ```
 </dd>
@@ -656,7 +602,7 @@ await client.Channels.ConnectSiteWithKeyAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.<a href="/src/Peal/Channels/ChannelsClient.cs">ConnectChatAsync</a>(ConnectChatChannelsRequest { ... }) -> WithRawResponseTask&lt;Channel&gt;</code></summary>
+<details><summary><code>client.Channels.<a href="/src/Peal/Channels/ChannelsClient.cs">ConnectChatAsync</a>(ConnectChat { ... }) -> WithRawResponseTask&lt;Channel&gt;</code></summary>
 <dl>
 <dd>
 
@@ -684,13 +630,7 @@ Connects a chat, to post to it, with a secret its member pastes, no sign-in page
 
 ```csharp
 await client.Channels.ConnectChatAsync(
-    new ConnectChatChannelsRequest
-    {
-        WorkspaceId = "workspaceId",
-        Body = new ConnectChat(
-            new ConnectChat.Discord(new ConnectDiscordChat { WebhookUrl = "webhookUrl" })
-        ),
-    }
+    new ConnectChat(new ConnectChat.Discord(new ConnectDiscordChat { WebhookUrl = "webhookUrl" }))
 );
 ```
 </dd>
@@ -706,7 +646,7 @@ await client.Channels.ConnectChatAsync(
 <dl>
 <dd>
 
-**request:** `ConnectChatChannelsRequest` 
+**request:** `ConnectChat` 
     
 </dd>
 </dl>
@@ -746,7 +686,7 @@ Starts connecting a website by signing in on its platform: on WordPress.com (`wo
 
 ```csharp
 await client.Channels.StartSiteSignInAsync(
-    new StartSiteSignIn { WorkspaceId = "workspaceId", Platform = OAuthSitePlatform.WordpressCom }
+    new StartSiteSignIn { Platform = OAuthSitePlatform.WordpressCom }
 );
 ```
 </dd>
@@ -802,12 +742,7 @@ Completes a website sign-in with what the platform sent back: the site becomes a
 
 ```csharp
 await client.Channels.CompleteSiteSignInAsync(
-    new SiteSignInCallback
-    {
-        WorkspaceId = "workspaceId",
-        Platform = OAuthSitePlatform.WordpressCom,
-        State = "state",
-    }
+    new SiteSignInCallback { Platform = OAuthSitePlatform.WordpressCom, State = "state" }
 );
 ```
 </dd>
@@ -862,9 +797,7 @@ Starts connecting an account of the platform: answers with the platform's sign-i
 <dd>
 
 ```csharp
-await client.Channels.ConnectAsync(
-    new ConnectChannel { WorkspaceId = "workspaceId", Platform = Platform.X }
-);
+await client.Channels.ConnectAsync(new ConnectChannel { Platform = Platform.X });
 ```
 </dd>
 </dl>
@@ -919,12 +852,7 @@ Completes a connection with what the platform sent back: the account becomes a c
 
 ```csharp
 await client.Channels.CompleteConnectAsync(
-    new ConnectCallback
-    {
-        WorkspaceId = "workspaceId",
-        Platform = Platform.X,
-        State = "state",
-    }
+    new ConnectCallback { Platform = Platform.X, State = "state" }
 );
 ```
 </dd>
@@ -982,7 +910,6 @@ Connects the accounts the member chose among those a completed sign-in listed: e
 await client.Channels.ChooseAccountsAsync(
     new ChooseAccounts
     {
-        WorkspaceId = "workspaceId",
         Platform = Platform.X,
         AccountIds = new List<string>() { "accountIds" },
         Selection = "selection",
@@ -1041,9 +968,7 @@ Starts reconnecting a channel whose token stopped working or is about to: answer
 <dd>
 
 ```csharp
-await client.Channels.ReconnectAsync(
-    new ReconnectChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.Channels.ReconnectAsync(new ReconnectChannelsRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -1097,9 +1022,7 @@ Disconnects a channel from the workspace: the channel and the tokens Peal holds 
 <dd>
 
 ```csharp
-await client.Channels.DisconnectAsync(
-    new DisconnectChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.Channels.DisconnectAsync(new DisconnectChannelsRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -1153,14 +1076,7 @@ Gives the channel the name the workspace calls it by (`label`, 60 characters at 
 <dd>
 
 ```csharp
-await client.Channels.UpdateAsync(
-    new ChannelUpdate
-    {
-        WorkspaceId = "workspaceId",
-        ChannelId = "channelId",
-        Label = null,
-    }
-);
+await client.Channels.UpdateAsync(new ChannelUpdate { ChannelId = "channelId", Label = null });
 ```
 </dd>
 </dl>
@@ -1214,9 +1130,7 @@ Turns the channel off: nothing goes out on it until it is turned back on. It kee
 <dd>
 
 ```csharp
-await client.Channels.DisableAsync(
-    new DisableChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.Channels.DisableAsync(new DisableChannelsRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -1270,9 +1184,7 @@ Turns a channel back on. It posts again at once, or has the status `refreshNeede
 <dd>
 
 ```csharp
-await client.Channels.EnableAsync(
-    new EnableChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.Channels.EnableAsync(new EnableChannelsRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -1327,7 +1239,7 @@ Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50
 <dd>
 
 ```csharp
-await client.Posts.DraftsAsync(new DraftsPostsRequest { WorkspaceId = "workspaceId" });
+await client.Posts.DraftsAsync(new DraftsPostsRequest());
 ```
 </dd>
 </dl>
@@ -1381,14 +1293,7 @@ Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 
 <dd>
 
 ```csharp
-await client.Posts.ListAsync(
-    new ListPostsRequest
-    {
-        WorkspaceId = "workspaceId",
-        From = "from",
-        To = "to",
-    }
-);
+await client.Posts.ListAsync(new ListPostsRequest { From = "from", To = "to" });
 ```
 </dd>
 </dl>
@@ -1415,7 +1320,7 @@ await client.Posts.ListAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.<a href="/src/Peal/Posts/PostsClient.cs">CreateAsync</a>(CreatePostsRequest { ... }) -> WithRawResponseTask&lt;Post&gt;</code></summary>
+<details><summary><code>client.Posts.<a href="/src/Peal/Posts/PostsClient.cs">CreateAsync</a>(PostDraft { ... }) -> WithRawResponseTask&lt;Post&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1443,24 +1348,20 @@ Creates a draft for some of the workspace's channels, possibly none yet, with op
 
 ```csharp
 await client.Posts.CreateAsync(
-    new CreatePostsRequest
+    new PostDraft
     {
-        WorkspaceId = "workspaceId",
-        Body = new PostDraft
+        ChannelIds = new List<string>() { "channelIds" },
+        Content = new PostContent
         {
-            ChannelIds = new List<string>() { "channelIds" },
-            Content = new PostContent
+            Media = new List<MediaAttachment>()
             {
-                Media = new List<MediaAttachment>()
-                {
-                    new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
-                },
-                Overrides = new List<TextOverride>()
-                {
-                    new TextOverride { ChannelId = "channelId", Text = "text" },
-                },
-                Text = "text",
+                new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
             },
+            Overrides = new List<TextOverride>()
+            {
+                new TextOverride { ChannelId = "channelId", Text = "text" },
+            },
+            Text = "text",
         },
     }
 );
@@ -1478,7 +1379,7 @@ await client.Posts.CreateAsync(
 <dl>
 <dd>
 
-**request:** `CreatePostsRequest` 
+**request:** `PostDraft` 
     
 </dd>
 </dl>
@@ -1517,7 +1418,7 @@ Lists the workspace's posts, whatever their state, a page at a time: 20 unless `
 <dd>
 
 ```csharp
-await client.Posts.SearchAsync(new SearchPostsRequest { WorkspaceId = "workspaceId" });
+await client.Posts.SearchAsync(new SearchPostsRequest());
 ```
 </dd>
 </dl>
@@ -1574,7 +1475,6 @@ Creates a post and sends it to some of the workspace's channels in one call: `wh
 await client.Posts.SendAsync(
     new NewPost
     {
-        WorkspaceId = "workspaceId",
         ChannelIds = new List<string>() { "channelIds" },
         Content = new PostContent
         {
@@ -1647,7 +1547,6 @@ Creates and sends up to 50 posts in one request, each as `send` would: one post 
 await client.Posts.BulkAsync(
     new BulkPosts
     {
-        WorkspaceId = "workspaceId",
         Posts = new List<BulkPost>()
         {
             new BulkPost
@@ -1723,7 +1622,7 @@ Creates and sends the posts a CSV file lists, one per row, at most 100 rows unde
 <dd>
 
 ```csharp
-await client.Posts.ImportAsync(new PostImport { WorkspaceId = "workspaceId", Csv = "csv" });
+await client.Posts.ImportAsync(new PostImport { Csv = "csv" });
 ```
 </dd>
 </dl>
@@ -1780,7 +1679,6 @@ Checks a post without making it, and changes nothing: send what `send` takes, or
 await client.Posts.ValidateAsync(
     new PostToValidate
     {
-        WorkspaceId = "workspaceId",
         ChannelIds = new List<string>() { "channelIds" },
         Content = new PostContent
         {
@@ -1849,7 +1747,7 @@ Answers with a post of the workspace. Needs post:read.
 <dd>
 
 ```csharp
-await client.Posts.GetAsync(new GetPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" });
+await client.Posts.GetAsync(new GetPostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -1906,7 +1804,6 @@ Replaces a draft's content, channels and options: options left out are removed. 
 await client.Posts.UpdateAsync(
     new UpdatePostsRequest
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         Body = new PostDraft
         {
@@ -1979,9 +1876,7 @@ Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Need
 <dd>
 
 ```csharp
-await client.Posts.DiscardAsync(
-    new DiscardPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Posts.DiscardAsync(new DiscardPostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -2035,9 +1930,7 @@ Answers with a post once it has gone out: it waits up to `wait` seconds (60 at m
 <dd>
 
 ```csharp
-await client.Posts.OutcomeAsync(
-    new OutcomePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Posts.OutcomeAsync(new OutcomePostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -2091,9 +1984,7 @@ Lists every attempt Peal made at publishing the post, by channel, round and atte
 <dd>
 
 ```csharp
-await client.Posts.AttemptsAsync(
-    new AttemptsPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Posts.AttemptsAsync(new AttemptsPostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -2150,7 +2041,6 @@ Files a post under these tags of the workspace, 10 at most, instead of those it 
 await client.Posts.TagAsync(
     new PostTags
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         TagIds = new List<string>() { "tagIds" },
     }
@@ -2208,9 +2098,7 @@ Makes a new draft that says what the post says, whatever the post's status: its 
 <dd>
 
 ```csharp
-await client.Posts.DuplicateAsync(
-    new DuplicatePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Posts.DuplicateAsync(new DuplicatePostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -2267,7 +2155,6 @@ Schedules a draft on some of the workspace's channels at an instant, kept with t
 await client.Posts.ScheduleAsync(
     new SchedulePost
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         At = "at",
         ChannelIds = new List<string>() { "channelIds" },
@@ -2330,7 +2217,6 @@ Moves a scheduled post, or one awaiting approval, to another instant, or schedul
 await client.Posts.RescheduleAsync(
     new ReschedulePostsRequest
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         Body = new PostSchedule { At = "at", TimeZone = "timeZone" },
     }
@@ -2388,7 +2274,7 @@ Puts a post on the next free slot of a queue (`queueId`, or the workspace's defa
 <dd>
 
 ```csharp
-await client.Posts.EnqueueAsync(new QueuePost { WorkspaceId = "workspaceId", PostId = "postId" });
+await client.Posts.EnqueueAsync(new QueuePost { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -2442,9 +2328,7 @@ Takes a scheduled post back to draft, so its text and media can change: it goes 
 <dd>
 
 ```csharp
-await client.Posts.UnscheduleAsync(
-    new UnschedulePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Posts.UnscheduleAsync(new UnschedulePostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -2498,14 +2382,7 @@ Sends the post again, now, on one channel where it failed or is unconfirmed: a n
 <dd>
 
 ```csharp
-await client.Posts.RepostAsync(
-    new RepostPostsRequest
-    {
-        WorkspaceId = "workspaceId",
-        PostId = "postId",
-        TargetId = "targetId",
-    }
-);
+await client.Posts.RepostAsync(new RepostPostsRequest { PostId = "postId", TargetId = "targetId" });
 ```
 </dd>
 </dl>
@@ -2560,12 +2437,7 @@ Takes one channel off a post that waits for its time (scheduled, or awaiting app
 
 ```csharp
 await client.Posts.RemoveTargetAsync(
-    new RemoveTargetPostsRequest
-    {
-        WorkspaceId = "workspaceId",
-        PostId = "postId",
-        TargetId = "targetId",
-    }
+    new RemoveTargetPostsRequest { PostId = "postId", TargetId = "targetId" }
 );
 ```
 </dd>
@@ -2623,7 +2495,6 @@ Says what you found on the platform for a post unconfirmed on one channel: `publ
 await client.Posts.ConfirmAsync(
     new ConfirmPostsRequest
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         TargetId = "targetId",
         Body = new TargetConfirmation(
@@ -2685,12 +2556,7 @@ Publishes the post on one channel without the parts that did not go out after it
 
 ```csharp
 await client.Posts.LeaveOutRestAsync(
-    new LeaveOutRestPostsRequest
-    {
-        WorkspaceId = "workspaceId",
-        PostId = "postId",
-        TargetId = "targetId",
-    }
+    new LeaveOutRestPostsRequest { PostId = "postId", TargetId = "targetId" }
 );
 ```
 </dd>
@@ -2746,12 +2612,7 @@ Deletes the post from one channel's platform, for everyone: every part of a thre
 
 ```csharp
 await client.Posts.UnpublishTargetAsync(
-    new UnpublishTargetPostsRequest
-    {
-        WorkspaceId = "workspaceId",
-        PostId = "postId",
-        TargetId = "targetId",
-    }
+    new UnpublishTargetPostsRequest { PostId = "postId", TargetId = "targetId" }
 );
 ```
 </dd>
@@ -2809,7 +2670,6 @@ Replaces the text of one part of the post (`part`, from 0, the post itself by de
 await client.Posts.EditTargetAsync(
     new LivePostEdit
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         TargetId = "targetId",
         Text = "text",
@@ -2868,9 +2728,7 @@ Deletes the post from every channel's platform where it can be, as unpublishing 
 <dd>
 
 ```csharp
-await client.Posts.UnpublishAsync(
-    new UnpublishPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Posts.UnpublishAsync(new UnpublishPostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -2924,9 +2782,7 @@ Lists the changes asked of the post once it was live (deleting it from a channel
 <dd>
 
 ```csharp
-await client.Posts.ChangesAsync(
-    new ChangesPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Posts.ChangesAsync(new ChangesPostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -2980,9 +2836,7 @@ Cancels a draft, a scheduled post or one awaiting approval. A post already publi
 <dd>
 
 ```csharp
-await client.Posts.CancelAsync(
-    new CancelPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Posts.CancelAsync(new CancelPostsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -3037,7 +2891,7 @@ Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 
 <dd>
 
 ```csharp
-await client.Articles.ListAsync(new ListArticlesRequest { WorkspaceId = "workspaceId" });
+await client.Articles.ListAsync(new ListArticlesRequest());
 ```
 </dd>
 </dl>
@@ -3094,7 +2948,6 @@ Writes an article for one of the workspace's websites (a channel connected with 
 await client.Articles.CreateAsync(
     new NewArticle
     {
-        WorkspaceId = "workspaceId",
         Body = new ArticleBody
         {
             Content = new List<object>() { },
@@ -3157,9 +3010,7 @@ Reads an article. Needs post:read.
 <dd>
 
 ```csharp
-await client.Articles.GetAsync(
-    new GetArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-);
+await client.Articles.GetAsync(new GetArticlesRequest { ArticleId = "articleId" });
 ```
 </dd>
 </dl>
@@ -3213,9 +3064,7 @@ Deletes the article from Peal, and its job when it waits to go out; never while 
 <dd>
 
 ```csharp
-await client.Articles.DeleteAsync(
-    new DeleteArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-);
+await client.Articles.DeleteAsync(new DeleteArticlesRequest { ArticleId = "articleId" });
 ```
 </dd>
 </dl>
@@ -3272,7 +3121,6 @@ Replaces what a draft, a scheduled article or one that failed says. A scheduled 
 await client.Articles.UpdateAsync(
     new UpdateArticlesRequest
     {
-        WorkspaceId = "workspaceId",
         ArticleId = "articleId",
         Body = new ArticleInput
         {
@@ -3341,7 +3189,6 @@ Schedules a draft, moves a scheduled article, or schedules one that failed again
 await client.Articles.ScheduleAsync(
     new ScheduleArticlesRequest
     {
-        WorkspaceId = "workspaceId",
         ArticleId = "articleId",
         Body = new ArticleTime { TimeZone = "timeZone" },
     }
@@ -3399,9 +3246,7 @@ Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 <dd>
 
 ```csharp
-await client.Articles.UnscheduleAsync(
-    new UnscheduleArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-);
+await client.Articles.UnscheduleAsync(new UnscheduleArticlesRequest { ArticleId = "articleId" });
 ```
 </dd>
 </dl>
@@ -3455,9 +3300,7 @@ Sends a failed article again now, or one that was unconfirmed once a member chec
 <dd>
 
 ```csharp
-await client.Articles.RetryAsync(
-    new RetryArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-);
+await client.Articles.RetryAsync(new RetryArticlesRequest { ArticleId = "articleId" });
 ```
 </dd>
 </dl>
@@ -3511,9 +3354,7 @@ Moves the article's post to the site's trash, where the site keeps it for a whil
 <dd>
 
 ```csharp
-await client.Articles.UnpublishAsync(
-    new UnpublishArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-);
+await client.Articles.UnpublishAsync(new UnpublishArticlesRequest { ArticleId = "articleId" });
 ```
 </dd>
 </dl>
@@ -3570,7 +3411,6 @@ Replaces what the article's post says on the site (title, body, excerpt, tags, c
 await client.Articles.UpdateOnSiteAsync(
     new UpdateOnSiteArticlesRequest
     {
-        WorkspaceId = "workspaceId",
         ArticleId = "articleId",
         Body = new ArticleInput
         {
@@ -3637,7 +3477,7 @@ Lists the workspace's media, newest first, 30 a page unless `limit` (at most 100
 <dd>
 
 ```csharp
-await client.Media.ListAsync(new ListMediaRequest { WorkspaceId = "workspaceId" });
+await client.Media.ListAsync(new ListMediaRequest());
 ```
 </dd>
 </dl>
@@ -3691,14 +3531,7 @@ Records pending media and signs the upload of its file: one PUT for an image or 
 <dd>
 
 ```csharp
-await client.Media.CreateAsync(
-    new NewUpload
-    {
-        WorkspaceId = "workspaceId",
-        ByteSize = 1000000,
-        ContentType = "contentType",
-    }
-);
+await client.Media.CreateAsync(new NewUpload { ByteSize = 1000000, ContentType = "contentType" });
 ```
 </dd>
 </dl>
@@ -3752,7 +3585,7 @@ Fetches a file from a public address, stores it as media of the workspace and pr
 <dd>
 
 ```csharp
-await client.Media.ImportFromUrlAsync(new MediaImport { WorkspaceId = "workspaceId", Url = "url" });
+await client.Media.ImportFromUrlAsync(new MediaImport { Url = "url" });
 ```
 </dd>
 </dl>
@@ -3806,9 +3639,7 @@ Shows one of the workspace's media. Needs media:read.
 <dd>
 
 ```csharp
-await client.Media.GetAsync(
-    new GetMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-);
+await client.Media.GetAsync(new GetMediaRequest { MediaId = "mediaId" });
 ```
 </dd>
 </dl>
@@ -3862,9 +3693,7 @@ Deletes the media and its file, and cancels its upload if it is still pending. D
 <dd>
 
 ```csharp
-await client.Media.DeleteAsync(
-    new DeleteMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-);
+await client.Media.DeleteAsync(new DeleteMediaRequest { MediaId = "mediaId" });
 ```
 </dd>
 </dl>
@@ -3918,14 +3747,7 @@ Sets the media's description, which platforms show to people who cannot see it. 
 <dd>
 
 ```csharp
-await client.Media.DescribeAsync(
-    new MediaDescription
-    {
-        WorkspaceId = "workspaceId",
-        MediaId = "mediaId",
-        AltText = null,
-    }
-);
+await client.Media.DescribeAsync(new MediaDescription { MediaId = "mediaId", AltText = null });
 ```
 </dd>
 </dl>
@@ -3979,9 +3801,7 @@ Checks that the file reached the store with the declared size and type, joining 
 <dd>
 
 ```csharp
-await client.Media.CompleteAsync(
-    new CompleteMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-);
+await client.Media.CompleteAsync(new CompleteMediaRequest { MediaId = "mediaId" });
 ```
 </dd>
 </dl>
@@ -4035,9 +3855,7 @@ Lists the posts that show the media: drafts, which lose it if it is deleted, and
 <dd>
 
 ```csharp
-await client.Media.UsageAsync(
-    new UsageMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-);
+await client.Media.UsageAsync(new UsageMediaRequest { MediaId = "mediaId" });
 ```
 </dd>
 </dl>
@@ -4092,9 +3910,7 @@ Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models
 <dd>
 
 ```csharp
-await client.MediaAudio.CreateVoiceoverAsync(
-    new VoiceoverRequest { WorkspaceId = "workspaceId", Text = "text" }
-);
+await client.MediaAudio.CreateVoiceoverAsync(new VoiceoverRequest { Text = "text" });
 ```
 </dd>
 </dl>
@@ -4148,9 +3964,7 @@ Sends a ready audio or video file of the media library, of at most 25000000 byte
 <dd>
 
 ```csharp
-await client.MediaAudio.TranscribeAsync(
-    new TranscriptionRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-);
+await client.MediaAudio.TranscribeAsync(new TranscriptionRequest { MediaId = "mediaId" });
 ```
 </dd>
 </dl>
@@ -4459,7 +4273,7 @@ await client.NotificationPreferences.UpdateAsync(new NotificationPreferencesChan
 </details>
 
 ## assistant
-<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">StatusAsync</a>(StatusAssistantRequest { ... }) -> WithRawResponseTask&lt;AssistantStatus&gt;</code></summary>
+<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">StatusAsync</a>() -> WithRawResponseTask&lt;AssistantStatus&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4486,23 +4300,8 @@ Tells whether the assistant writes for the workspace, so clients show it or hide
 <dd>
 
 ```csharp
-await client.Assistant.StatusAsync(new StatusAssistantRequest { WorkspaceId = "workspaceId" });
+await client.Assistant.StatusAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `StatusAssistantRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -4543,7 +4342,6 @@ Asks the language model to rewrite, shorten or translate a post's text, to sugge
 await client.Assistant.SuggestAsync(
     new SuggestionRequest
     {
-        WorkspaceId = "workspaceId",
         Action = new AssistantAction(
             new AssistantAction.Rewrite(
                 new AssistantActionRewrite { Tone = AssistantTone.Professional }
@@ -4606,12 +4404,7 @@ Asks for one image from the prompt, in the aspect asked for, and answers with it
 
 ```csharp
 await client.Assistant.GenerateImageAsync(
-    new ImageRequest
-    {
-        WorkspaceId = "workspaceId",
-        Aspect = ImageAspect.Square,
-        Prompt = "prompt",
-    }
+    new ImageRequest { Aspect = ImageAspect.Square, Prompt = "prompt" }
 );
 ```
 </dd>
@@ -4639,7 +4432,7 @@ await client.Assistant.GenerateImageAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">ImageProviderAsync</a>(ImageProviderAssistantRequest { ... }) -> WithRawResponseTask&lt;ImageProviderSetting&gt;</code></summary>
+<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">ImageProviderAsync</a>() -> WithRawResponseTask&lt;ImageProviderSetting&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4666,25 +4459,8 @@ Reads the image provider the workspace brought, a provider Peal knows by name (O
 <dd>
 
 ```csharp
-await client.Assistant.ImageProviderAsync(
-    new ImageProviderAssistantRequest { WorkspaceId = "workspaceId" }
-);
+await client.Assistant.ImageProviderAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ImageProviderAssistantRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -4722,9 +4498,7 @@ Sets the image provider the workspace brings, a provider Peal knows by name (Ope
 <dd>
 
 ```csharp
-await client.Assistant.SetImageProviderAsync(
-    new ImageProviderChange { WorkspaceId = "workspaceId", Model = "model" }
-);
+await client.Assistant.SetImageProviderAsync(new ImageProviderChange { Model = "model" });
 ```
 </dd>
 </dl>
@@ -4751,7 +4525,7 @@ await client.Assistant.SetImageProviderAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">RemoveImageProviderAsync</a>(RemoveImageProviderAssistantRequest { ... }) -> WithRawResponseTask</code></summary>
+<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">RemoveImageProviderAsync</a>() -> WithRawResponseTask</code></summary>
 <dl>
 <dd>
 
@@ -4778,25 +4552,8 @@ Removes the workspace's image provider and its key: images are made by the serve
 <dd>
 
 ```csharp
-await client.Assistant.RemoveImageProviderAsync(
-    new RemoveImageProviderAssistantRequest { WorkspaceId = "workspaceId" }
-);
+await client.Assistant.RemoveImageProviderAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `RemoveImageProviderAssistantRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -4807,7 +4564,7 @@ await client.Assistant.RemoveImageProviderAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">TextProviderAsync</a>(TextProviderAssistantRequest { ... }) -> WithRawResponseTask&lt;TextProviderSetting&gt;</code></summary>
+<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">TextProviderAsync</a>() -> WithRawResponseTask&lt;TextProviderSetting&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4834,25 +4591,8 @@ Reads the text provider the workspace brought, Anthropic's Messages API or an en
 <dd>
 
 ```csharp
-await client.Assistant.TextProviderAsync(
-    new TextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-);
+await client.Assistant.TextProviderAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `TextProviderAssistantRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -4890,9 +4630,7 @@ Sets the text provider the workspace brings, Anthropic's Messages API or an endp
 <dd>
 
 ```csharp
-await client.Assistant.SetTextProviderAsync(
-    new TextProviderChange { WorkspaceId = "workspaceId", Model = "model" }
-);
+await client.Assistant.SetTextProviderAsync(new TextProviderChange { Model = "model" });
 ```
 </dd>
 </dl>
@@ -4919,7 +4657,7 @@ await client.Assistant.SetTextProviderAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">RemoveTextProviderAsync</a>(RemoveTextProviderAssistantRequest { ... }) -> WithRawResponseTask</code></summary>
+<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">RemoveTextProviderAsync</a>() -> WithRawResponseTask</code></summary>
 <dl>
 <dd>
 
@@ -4946,25 +4684,8 @@ Removes the workspace's text provider and its key: the server's language model w
 <dd>
 
 ```csharp
-await client.Assistant.RemoveTextProviderAsync(
-    new RemoveTextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-);
+await client.Assistant.RemoveTextProviderAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `RemoveTextProviderAssistantRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -4975,7 +4696,7 @@ await client.Assistant.RemoveTextProviderAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">TestTextProviderAsync</a>(TestTextProviderAssistantRequest { ... }) -> WithRawResponseTask</code></summary>
+<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">TestTextProviderAsync</a>() -> WithRawResponseTask</code></summary>
 <dl>
 <dd>
 
@@ -5002,25 +4723,8 @@ Sends the workspace's text provider one short request, a rewrite of a fixed sent
 <dd>
 
 ```csharp
-await client.Assistant.TestTextProviderAsync(
-    new TestTextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-);
+await client.Assistant.TestTextProviderAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `TestTextProviderAssistantRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -5031,7 +4735,7 @@ await client.Assistant.TestTextProviderAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">ProvidersAsync</a>(ProvidersAssistantRequest { ... }) -> WithRawResponseTask&lt;AiProviderConnections&gt;</code></summary>
+<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">ProvidersAsync</a>() -> WithRawResponseTask&lt;AiProviderConnections&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5058,25 +4762,8 @@ Lists the AI providers the workspace connected with a key of its own: where each
 <dd>
 
 ```csharp
-await client.Assistant.ProvidersAsync(
-    new ProvidersAssistantRequest { WorkspaceId = "workspaceId" }
-);
+await client.Assistant.ProvidersAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ProvidersAssistantRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -5115,7 +4802,7 @@ Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `open
 
 ```csharp
 await client.Assistant.ConnectProviderAsync(
-    new AiProviderConnectionChange { WorkspaceId = "workspaceId", Provider = AiProvider.Anthropic }
+    new AiProviderConnectionChange { Provider = AiProvider.Anthropic }
 );
 ```
 </dd>
@@ -5171,11 +4858,7 @@ Removes the provider and its key, and the uses it served: the server's model wor
 
 ```csharp
 await client.Assistant.DisconnectProviderAsync(
-    new DisconnectProviderAssistantRequest
-    {
-        WorkspaceId = "workspaceId",
-        Provider = AiProvider.Anthropic,
-    }
+    new DisconnectProviderAssistantRequest { Provider = AiProvider.Anthropic }
 );
 ```
 </dd>
@@ -5230,9 +4913,7 @@ Sends a connected provider one short request for text, a rewrite of a fixed sent
 <dd>
 
 ```csharp
-await client.Assistant.TestProviderAsync(
-    new AiProviderTest { WorkspaceId = "workspaceId", Provider = AiProvider.Anthropic }
-);
+await client.Assistant.TestProviderAsync(new AiProviderTest { Provider = AiProvider.Anthropic });
 ```
 </dd>
 </dl>
@@ -5259,7 +4940,7 @@ await client.Assistant.TestProviderAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">ModelsAsync</a>(ModelsAssistantRequest { ... }) -> WithRawResponseTask&lt;AiCapabilityModels&gt;</code></summary>
+<details><summary><code>client.Assistant.<a href="/src/Peal/Assistant/AssistantClient.cs">ModelsAsync</a>() -> WithRawResponseTask&lt;AiCapabilityModels&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5286,23 +4967,8 @@ Tells, for each use (text, images, videos, voice-overs, transcripts, slide video
 <dd>
 
 ```csharp
-await client.Assistant.ModelsAsync(new ModelsAssistantRequest { WorkspaceId = "workspaceId" });
+await client.Assistant.ModelsAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ModelsAssistantRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -5341,12 +5007,7 @@ Chooses the provider and the model for one use: the provider must be connected (
 
 ```csharp
 await client.Assistant.SetModelAsync(
-    new AiCapabilityModelChange
-    {
-        WorkspaceId = "workspaceId",
-        Capability = AiCapability.Text,
-        Provider = AiProvider.Anthropic,
-    }
+    new AiCapabilityModelChange { Capability = AiCapability.Text, Provider = AiProvider.Anthropic }
 );
 ```
 </dd>
@@ -5402,7 +5063,7 @@ Leaves a use to the server's model, if it has one (`serverModel`), within the wo
 
 ```csharp
 await client.Assistant.UnsetModelAsync(
-    new UnsetModelAssistantRequest { WorkspaceId = "workspaceId", Capability = AiCapability.Text }
+    new UnsetModelAssistantRequest { Capability = AiCapability.Text }
 );
 ```
 </dd>
@@ -5458,9 +5119,7 @@ Lists the videos the workspace asked for, newest first, 50 at most, only those w
 <dd>
 
 ```csharp
-await client.VideoGenerations.ListAsync(
-    new ListVideoGenerationsRequest { WorkspaceId = "workspaceId" }
-);
+await client.VideoGenerations.ListAsync(new ListVideoGenerationsRequest());
 ```
 </dd>
 </dl>
@@ -5515,12 +5174,7 @@ Asks the provider the workspace chose for videos (`PUT .../assistant/models/vide
 
 ```csharp
 await client.VideoGenerations.CreateAsync(
-    new VideoGenerationRequest
-    {
-        WorkspaceId = "workspaceId",
-        Aspect = ImageAspect.Square,
-        Prompt = "prompt",
-    }
+    new VideoGenerationRequest { Aspect = ImageAspect.Square, Prompt = "prompt" }
 );
 ```
 </dd>
@@ -5576,7 +5230,7 @@ Reads where a video stands: queued, running, succeeded with its file (`mediaId`)
 
 ```csharp
 await client.VideoGenerations.GetAsync(
-    new GetVideoGenerationsRequest { WorkspaceId = "workspaceId", GenerationId = "generationId" }
+    new GetVideoGenerationsRequest { GenerationId = "generationId" }
 );
 ```
 </dd>
@@ -5632,7 +5286,7 @@ Lists the slide videos the workspace asked for, newest first, 50 at most, only t
 <dd>
 
 ```csharp
-await client.Slideshows.ListAsync(new ListSlideshowsRequest { WorkspaceId = "workspaceId" });
+await client.Slideshows.ListAsync(new ListSlideshowsRequest());
 ```
 </dd>
 </dl>
@@ -5689,7 +5343,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 await client.Slideshows.CreateAsync(
     new SlideshowRequest
     {
-        WorkspaceId = "workspaceId",
         Aspect = ImageAspect.Square,
         Slides = new List<Slide>() { new Slide { MediaId = "mediaId" } },
     }
@@ -5748,11 +5401,7 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```csharp
 await client.Slideshows.CreateFromEditAsync(
-    new EditRenderRequest
-    {
-        WorkspaceId = "workspaceId",
-        Edit = new Dictionary<string, object?>() { { "key", "value" } },
-    }
+    new EditRenderRequest { Edit = new Dictionary<string, object?>() { { "key", "value" } } }
 );
 ```
 </dd>
@@ -5807,9 +5456,7 @@ Reads where a slide video stands: queued, running, succeeded with its file (`med
 <dd>
 
 ```csharp
-await client.Slideshows.GetAsync(
-    new GetSlideshowsRequest { WorkspaceId = "workspaceId", SlideshowId = "slideshowId" }
-);
+await client.Slideshows.GetAsync(new GetSlideshowsRequest { SlideshowId = "slideshowId" });
 ```
 </dd>
 </dl>
@@ -5837,7 +5484,7 @@ await client.Slideshows.GetAsync(
 </details>
 
 ## members
-<details><summary><code>client.Members.<a href="/src/Peal/Members/MembersClient.cs">ListAsync</a>(ListMembersRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;WorkspaceMember&gt;&gt;</code></summary>
+<details><summary><code>client.Members.<a href="/src/Peal/Members/MembersClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;WorkspaceMember&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5864,23 +5511,8 @@ Lists the workspace's members, in the order they joined, with their name, email 
 <dd>
 
 ```csharp
-await client.Members.ListAsync(new ListMembersRequest { WorkspaceId = "workspaceId" });
+await client.Members.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListMembersRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -5892,7 +5524,7 @@ await client.Members.ListAsync(new ListMembersRequest { WorkspaceId = "workspace
 </details>
 
 ## invitations
-<details><summary><code>client.Invitations.<a href="/src/Peal/Invitations/InvitationsClient.cs">ListAsync</a>(ListInvitationsRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;Invitation&gt;&gt;</code></summary>
+<details><summary><code>client.Invitations.<a href="/src/Peal/Invitations/InvitationsClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;Invitation&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5919,23 +5551,8 @@ Lists the workspace's pending invitations, oldest first, expired ones included. 
 <dd>
 
 ```csharp
-await client.Invitations.ListAsync(new ListInvitationsRequest { WorkspaceId = "workspaceId" });
+await client.Invitations.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListInvitationsRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -5973,14 +5590,7 @@ Invites someone to the workspace with a role: Peal emails them a link that works
 <dd>
 
 ```csharp
-await client.Invitations.CreateAsync(
-    new NewInvitation
-    {
-        WorkspaceId = "workspaceId",
-        Email = "email",
-        Role = Role.Owner,
-    }
-);
+await client.Invitations.CreateAsync(new NewInvitation { Email = "email", Role = Role.Owner });
 ```
 </dd>
 </dl>
@@ -6035,7 +5645,7 @@ Revokes a pending invitation of the workspace: its link stops working at once. N
 
 ```csharp
 await client.Invitations.RevokeAsync(
-    new RevokeInvitationsRequest { WorkspaceId = "workspaceId", InvitationId = "invitationId" }
+    new RevokeInvitationsRequest { InvitationId = "invitationId" }
 );
 ```
 </dd>
@@ -6064,7 +5674,7 @@ await client.Invitations.RevokeAsync(
 </details>
 
 ## billing
-<details><summary><code>client.Billing.<a href="/src/Peal/Billing/BillingClient.cs">GetAsync</a>(GetBillingRequest { ... }) -> WithRawResponseTask&lt;Billing&gt;</code></summary>
+<details><summary><code>client.Billing.<a href="/src/Peal/Billing/BillingClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;Billing&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6091,23 +5701,8 @@ Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tie
 <dd>
 
 ```csharp
-await client.Billing.GetAsync(new GetBillingRequest { WorkspaceId = "workspaceId" });
+await client.Billing.GetAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `GetBillingRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -6118,7 +5713,7 @@ await client.Billing.GetAsync(new GetBillingRequest { WorkspaceId = "workspaceId
 </dl>
 </details>
 
-<details><summary><code>client.Billing.<a href="/src/Peal/Billing/BillingClient.cs">StandingAsync</a>(StandingBillingRequest { ... }) -> WithRawResponseTask&lt;Standing&gt;</code></summary>
+<details><summary><code>client.Billing.<a href="/src/Peal/Billing/BillingClient.cs">StandingAsync</a>() -> WithRawResponseTask&lt;Standing&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6145,23 +5740,8 @@ Answers where the workspace stands against its plan: what it holds beyond it, as
 <dd>
 
 ```csharp
-await client.Billing.StandingAsync(new StandingBillingRequest { WorkspaceId = "workspaceId" });
+await client.Billing.StandingAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `StandingBillingRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -6200,7 +5780,7 @@ Answers what the workspace uses of its plan now, and day by day from `from` to `
 <dd>
 
 ```csharp
-await client.Usage.GetAsync(new GetUsageRequest { WorkspaceId = "workspaceId" });
+await client.Usage.GetAsync(new GetUsageRequest());
 ```
 </dd>
 </dl>
@@ -6239,7 +5819,7 @@ await client.Usage.GetAsync(new GetUsageRequest { WorkspaceId = "workspaceId" })
 <dl>
 <dd>
 
-Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
 </dd>
 </dl>
 </dd>
@@ -6254,7 +5834,7 @@ Answers what the partner account uses across the workspaces it holds, from `from
 <dd>
 
 ```csharp
-await client.Usage.PartnerAsync(new PartnerUsageRequest { WorkspaceId = "workspaceId" });
+await client.Usage.PartnerAsync(new PartnerUsageRequest());
 ```
 </dd>
 </dl>
@@ -6312,7 +5892,6 @@ Sums up the posts published from `from` to `to`, both included and at most 366 d
 await client.Analytics.SummaryAsync(
     new SummaryAnalyticsRequest
     {
-        WorkspaceId = "workspaceId",
         From = "from",
         TimeZone = "timeZone",
         To = "to",
@@ -6371,9 +5950,7 @@ Answers a workspace's analytics over a range in one call: the totals of the post
 <dd>
 
 ```csharp
-await client.Analytics.DashboardAsync(
-    new DashboardAnalyticsRequest { WorkspaceId = "workspaceId", TimeZone = "timeZone" }
-);
+await client.Analytics.DashboardAsync(new DashboardAnalyticsRequest { TimeZone = "timeZone" });
 ```
 </dd>
 </dl>
@@ -6428,12 +6005,7 @@ Answers one channel's numbers day by day: its followers, the accounts it follows
 
 ```csharp
 await client.Analytics.ChannelAsync(
-    new ChannelAnalyticsRequest
-    {
-        WorkspaceId = "workspaceId",
-        ChannelId = "channelId",
-        TimeZone = "timeZone",
-    }
+    new ChannelAnalyticsRequest { ChannelId = "channelId", TimeZone = "timeZone" }
 );
 ```
 </dd>
@@ -6489,12 +6061,7 @@ Streams the workspace's analytics as a file: `kind=posts` lists each post publis
 
 ```csharp
 await client.Analytics.ExportAsync(
-    new ExportAnalyticsRequest
-    {
-        WorkspaceId = "workspaceId",
-        TimeZone = "timeZone",
-        Kind = AnalyticsExportKind.Posts,
-    }
+    new ExportAnalyticsRequest { TimeZone = "timeZone", Kind = AnalyticsExportKind.Posts }
 );
 ```
 </dd>
@@ -6550,12 +6117,7 @@ Answers when one channel's posts did best, by weekday and hour as `timeZone` (an
 
 ```csharp
 await client.Analytics.BestTimesAsync(
-    new BestTimesAnalyticsRequest
-    {
-        WorkspaceId = "workspaceId",
-        ChannelId = "channelId",
-        TimeZone = "timeZone",
-    }
+    new BestTimesAnalyticsRequest { ChannelId = "channelId", TimeZone = "timeZone" }
 );
 ```
 </dd>
@@ -6610,9 +6172,7 @@ Answers with the counts of a post on each channel it went live on, over time. A 
 <dd>
 
 ```csharp
-await client.Analytics.PostAsync(
-    new PostAnalyticsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Analytics.PostAsync(new PostAnalyticsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -6667,9 +6227,7 @@ Reads a TikTok channel's creator from TikTok: their nickname, the audiences the 
 <dd>
 
 ```csharp
-await client.Tiktok.CreatorAsync(
-    new CreatorTiktokRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.Tiktok.CreatorAsync(new CreatorTiktokRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -6697,7 +6255,7 @@ await client.Tiktok.CreatorAsync(
 </details>
 
 ## capabilities
-<details><summary><code>client.Capabilities.<a href="/src/Peal/Capabilities/CapabilitiesClient.cs">PlatformsAsync</a>(PlatformsCapabilitiesRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;PlatformCapabilities&gt;&gt;</code></summary>
+<details><summary><code>client.Capabilities.<a href="/src/Peal/Capabilities/CapabilitiesClient.cs">PlatformsAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;PlatformCapabilities&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6724,25 +6282,8 @@ Describes what a post may hold on every platform, in Peal's order, whether or no
 <dd>
 
 ```csharp
-await client.Capabilities.PlatformsAsync(
-    new PlatformsCapabilitiesRequest { WorkspaceId = "workspaceId" }
-);
+await client.Capabilities.PlatformsAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `PlatformsCapabilitiesRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -6780,9 +6321,7 @@ Describes what a post on this channel may hold: its platform's capabilities, and
 <dd>
 
 ```csharp
-await client.Capabilities.ChannelAsync(
-    new ChannelCapabilitiesRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.Capabilities.ChannelAsync(new ChannelCapabilitiesRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -6837,9 +6376,7 @@ Lists the lookups the channel has: what its platform tells about the account tha
 <dd>
 
 ```csharp
-await client.Lookups.ListAsync(
-    new ListLookupsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.Lookups.ListAsync(new ListLookupsRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -6893,14 +6430,7 @@ Runs one of the channel's lookups: asks the platform now, with the channel's tok
 <dd>
 
 ```csharp
-await client.Lookups.RunAsync(
-    new LookupInput
-    {
-        WorkspaceId = "workspaceId",
-        ChannelId = "channelId",
-        Name = "name",
-    }
-);
+await client.Lookups.RunAsync(new LookupInput { ChannelId = "channelId", Name = "name" });
 ```
 </dd>
 </dl>
@@ -6928,7 +6458,7 @@ await client.Lookups.RunAsync(
 </details>
 
 ## webhooks
-<details><summary><code>client.Webhooks.<a href="/src/Peal/Webhooks/WebhooksClient.cs">ListAsync</a>(ListWebhooksRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;WebhookEndpoint&gt;&gt;</code></summary>
+<details><summary><code>client.Webhooks.<a href="/src/Peal/Webhooks/WebhooksClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;WebhookEndpoint&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6955,23 +6485,8 @@ Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 <dd>
 
 ```csharp
-await client.Webhooks.ListAsync(new ListWebhooksRequest { WorkspaceId = "workspaceId" });
+await client.Webhooks.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListWebhooksRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -7012,7 +6527,6 @@ Adds a webhook endpoint to the workspace, and answers with its signing secret, w
 await client.Webhooks.CreateAsync(
     new NewWebhookEndpoint
     {
-        WorkspaceId = "workspaceId",
         EventTypes = new List<SubscribableWebhookEventType>()
         {
             SubscribableWebhookEventType.PostScheduled,
@@ -7073,9 +6587,7 @@ Lists the workspace's deliveries across its endpoints, newest first, 30 a page u
 <dd>
 
 ```csharp
-await client.Webhooks.SearchDeliveriesAsync(
-    new SearchDeliveriesWebhooksRequest { WorkspaceId = "workspaceId" }
-);
+await client.Webhooks.SearchDeliveriesAsync(new SearchDeliveriesWebhooksRequest());
 ```
 </dd>
 </dl>
@@ -7102,7 +6614,7 @@ await client.Webhooks.SearchDeliveriesAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.<a href="/src/Peal/Webhooks/WebhooksClient.cs">RedeliverManyAsync</a>(RedeliverManyWebhooksRequest { ... }) -> WithRawResponseTask&lt;WebhookBulkRedelivery&gt;</code></summary>
+<details><summary><code>client.Webhooks.<a href="/src/Peal/Webhooks/WebhooksClient.cs">RedeliverManyAsync</a>(OneOf&lt;WebhookRedeliveryByIds, WebhookRedeliveryOfFailed&gt; { ... }) -> WithRawResponseTask&lt;WebhookBulkRedelivery&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7130,11 +6642,7 @@ Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, o
 
 ```csharp
 await client.Webhooks.RedeliverManyAsync(
-    new RedeliverManyWebhooksRequest
-    {
-        WorkspaceId = "workspaceId",
-        Body = new WebhookRedeliveryByIds { DeliveryIds = new List<string>() { "deliveryIds" } },
-    }
+    new WebhookRedeliveryByIds { DeliveryIds = new List<string>() { "deliveryIds" } }
 );
 ```
 </dd>
@@ -7150,7 +6658,7 @@ await client.Webhooks.RedeliverManyAsync(
 <dl>
 <dd>
 
-**request:** `RedeliverManyWebhooksRequest` 
+**request:** `OneOf<WebhookRedeliveryByIds, WebhookRedeliveryOfFailed>` 
     
 </dd>
 </dl>
@@ -7189,9 +6697,7 @@ Shows one of the workspace's webhook endpoints. Needs webhook:read.
 <dd>
 
 ```csharp
-await client.Webhooks.GetAsync(
-    new GetWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
-);
+await client.Webhooks.GetAsync(new GetWebhooksRequest { EndpointId = "endpointId" });
 ```
 </dd>
 </dl>
@@ -7245,9 +6751,7 @@ Deletes an endpoint, its secret and its delivery log: nothing more is sent to it
 <dd>
 
 ```csharp
-await client.Webhooks.DeleteAsync(
-    new DeleteWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
-);
+await client.Webhooks.DeleteAsync(new DeleteWebhooksRequest { EndpointId = "endpointId" });
 ```
 </dd>
 </dl>
@@ -7301,9 +6805,7 @@ Changes an endpoint's address, description, events, filters or headers, or turns
 <dd>
 
 ```csharp
-await client.Webhooks.UpdateAsync(
-    new WebhookEndpointChange { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
-);
+await client.Webhooks.UpdateAsync(new WebhookEndpointChange { EndpointId = "endpointId" });
 ```
 </dd>
 </dl>
@@ -7358,7 +6860,7 @@ Replaces an endpoint's signing secret, and answers with the new one, which is no
 
 ```csharp
 await client.Webhooks.RotateSecretAsync(
-    new RotateSecretWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+    new RotateSecretWebhooksRequest { EndpointId = "endpointId" }
 );
 ```
 </dd>
@@ -7413,9 +6915,7 @@ Sends the endpoint a `webhook.test` event, or, with `eventType`, a sample of tha
 <dd>
 
 ```csharp
-await client.Webhooks.SendTestAsync(
-    new SendTestWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
-);
+await client.Webhooks.SendTestAsync(new SendTestWebhooksRequest { EndpointId = "endpointId" });
 ```
 </dd>
 </dl>
@@ -7470,7 +6970,7 @@ Lists the endpoint's deliveries, newest first, of a `status` and an `eventType` 
 
 ```csharp
 await client.Webhooks.ListDeliveriesAsync(
-    new ListDeliveriesWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+    new ListDeliveriesWebhooksRequest { EndpointId = "endpointId" }
 );
 ```
 </dd>
@@ -7526,12 +7026,7 @@ Sends the delivery's event to the endpoint again, as a new delivery of the same 
 
 ```csharp
 await client.Webhooks.RedeliverAsync(
-    new RedeliverWebhooksRequest
-    {
-        WorkspaceId = "workspaceId",
-        EndpointId = "endpointId",
-        DeliveryId = "deliveryId",
-    }
+    new RedeliverWebhooksRequest { EndpointId = "endpointId", DeliveryId = "deliveryId" }
 );
 ```
 </dd>
@@ -7587,7 +7082,7 @@ Lists the threads that have comments, one per post and channel: those with a com
 <dd>
 
 ```csharp
-await client.Inbox.ListThreadsAsync(new ListThreadsInboxRequest { WorkspaceId = "workspaceId" });
+await client.Inbox.ListThreadsAsync(new ListThreadsInboxRequest());
 ```
 </dd>
 </dl>
@@ -7641,9 +7136,7 @@ Shows a thread whole: its comments, oldest first, the replies sent from Peal, an
 <dd>
 
 ```csharp
-await client.Inbox.GetThreadAsync(
-    new GetThreadInboxRequest { WorkspaceId = "workspaceId", ThreadId = "threadId" }
-);
+await client.Inbox.GetThreadAsync(new GetThreadInboxRequest { ThreadId = "threadId" });
 ```
 </dd>
 </dl>
@@ -7697,9 +7190,7 @@ Says what a channel can do about the comments under its posts, from its platform
 <dd>
 
 ```csharp
-await client.Inbox.GetAbilitiesAsync(
-    new GetAbilitiesInboxRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.Inbox.GetAbilitiesAsync(new GetAbilitiesInboxRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -7753,14 +7244,7 @@ Answers a comment in public, as the channel's account: everyone who sees the pos
 <dd>
 
 ```csharp
-await client.Inbox.ReplyAsync(
-    new NewInboxReply
-    {
-        WorkspaceId = "workspaceId",
-        CommentId = "commentId",
-        Text = "text",
-    }
-);
+await client.Inbox.ReplyAsync(new NewInboxReply { CommentId = "commentId", Text = "text" });
 ```
 </dd>
 </dl>
@@ -7815,12 +7299,7 @@ Says a comment needs no answer (`answered: true`), or waits for one again (`fals
 
 ```csharp
 await client.Inbox.SetAnsweredAsync(
-    new SetAnsweredInboxRequest
-    {
-        WorkspaceId = "workspaceId",
-        CommentId = "commentId",
-        Answered = true,
-    }
+    new SetAnsweredInboxRequest { CommentId = "commentId", Answered = true }
 );
 ```
 </dd>
@@ -7876,12 +7355,7 @@ Asks the channel's account to hide or show a comment, like it or take the like b
 
 ```csharp
 await client.Inbox.ModerateAsync(
-    new ModerateInboxRequest
-    {
-        WorkspaceId = "workspaceId",
-        CommentId = "commentId",
-        Action = InboxModerationAction.Hide,
-    }
+    new ModerateInboxRequest { CommentId = "commentId", Action = InboxModerationAction.Hide }
 );
 ```
 </dd>
@@ -7937,12 +7411,7 @@ Records what someone found on the platform for an unconfirmed reply: it is there
 
 ```csharp
 await client.Inbox.ConfirmReplyAsync(
-    new ConfirmReplyInboxRequest
-    {
-        WorkspaceId = "workspaceId",
-        ReplyId = "replyId",
-        Sent = true,
-    }
+    new ConfirmReplyInboxRequest { ReplyId = "replyId", Sent = true }
 );
 ```
 </dd>
@@ -7997,9 +7466,7 @@ Deletes a reply sent from Peal from its platform, and answers with it, `withdraw
 <dd>
 
 ```csharp
-await client.Inbox.WithdrawReplyAsync(
-    new WithdrawReplyInboxRequest { WorkspaceId = "workspaceId", ReplyId = "replyId" }
-);
+await client.Inbox.WithdrawReplyAsync(new WithdrawReplyInboxRequest { ReplyId = "replyId" });
 ```
 </dd>
 </dl>
@@ -8054,9 +7521,7 @@ Lists the locations that have reviews, one per channel: those with a review wait
 <dd>
 
 ```csharp
-await client.InboxReviews.ListReviewThreadsAsync(
-    new ListReviewThreadsInboxReviewsRequest { WorkspaceId = "workspaceId" }
-);
+await client.InboxReviews.ListReviewThreadsAsync(new ListReviewThreadsInboxReviewsRequest());
 ```
 </dd>
 </dl>
@@ -8111,7 +7576,7 @@ Shows a location's reviews whole, the latest first, the replies sent from Peal, 
 
 ```csharp
 await client.InboxReviews.GetReviewThreadAsync(
-    new GetReviewThreadInboxReviewsRequest { WorkspaceId = "workspaceId", ThreadId = "threadId" }
+    new GetReviewThreadInboxReviewsRequest { ThreadId = "threadId" }
 );
 ```
 </dd>
@@ -8167,12 +7632,7 @@ Answers a review in public, as the location: the reply replaces the one the revi
 
 ```csharp
 await client.InboxReviews.ReplyToReviewAsync(
-    new NewInboxReviewReply
-    {
-        WorkspaceId = "workspaceId",
-        ReviewId = "reviewId",
-        Text = "text",
-    }
+    new NewInboxReviewReply { ReviewId = "reviewId", Text = "text" }
 );
 ```
 </dd>
@@ -8228,11 +7688,7 @@ Deletes the location's reply to a review from the platform, whoever wrote it, an
 
 ```csharp
 await client.InboxReviews.WithdrawReviewReplyAsync(
-    new WithdrawReviewReplyInboxReviewsRequest
-    {
-        WorkspaceId = "workspaceId",
-        ReviewId = "reviewId",
-    }
+    new WithdrawReviewReplyInboxReviewsRequest { ReviewId = "reviewId" }
 );
 ```
 </dd>
@@ -8288,12 +7744,7 @@ Says a review needs no answer (`answered: true`), or waits for one again (`false
 
 ```csharp
 await client.InboxReviews.SetReviewAnsweredAsync(
-    new SetReviewAnsweredInboxReviewsRequest
-    {
-        WorkspaceId = "workspaceId",
-        ReviewId = "reviewId",
-        Answered = true,
-    }
+    new SetReviewAnsweredInboxReviewsRequest { ReviewId = "reviewId", Answered = true }
 );
 ```
 </dd>
@@ -8349,9 +7800,7 @@ Lists the workspace's conversations, the latest message first, 30 a page unless 
 <dd>
 
 ```csharp
-await client.InboxMessages.ListConversationsAsync(
-    new ListConversationsInboxMessagesRequest { WorkspaceId = "workspaceId" }
-);
+await client.InboxMessages.ListConversationsAsync(new ListConversationsInboxMessagesRequest());
 ```
 </dd>
 </dl>
@@ -8406,11 +7855,7 @@ Shows a conversation: a page of its messages (the latest 100 unless `limit` says
 
 ```csharp
 await client.InboxMessages.GetConversationAsync(
-    new GetConversationInboxMessagesRequest
-    {
-        WorkspaceId = "workspaceId",
-        ConversationId = "conversationId",
-    }
+    new GetConversationInboxMessagesRequest { ConversationId = "conversationId" }
 );
 ```
 </dd>
@@ -8466,12 +7911,7 @@ Answers a conversation privately, as the channel's account: the message goes to 
 
 ```csharp
 await client.InboxMessages.SendMessageAsync(
-    new NewInboxMessage
-    {
-        WorkspaceId = "workspaceId",
-        ConversationId = "conversationId",
-        Text = "text",
-    }
+    new NewInboxMessage { ConversationId = "conversationId", Text = "text" }
 );
 ```
 </dd>
@@ -8527,12 +7967,7 @@ Sends the author of a comment under the workspace's post one private message, as
 
 ```csharp
 await client.InboxMessages.SendPrivateReplyAsync(
-    new NewInboxPrivateReply
-    {
-        WorkspaceId = "workspaceId",
-        CommentId = "commentId",
-        Text = "text",
-    }
+    new NewInboxPrivateReply { CommentId = "commentId", Text = "text" }
 );
 ```
 </dd>
@@ -8588,11 +8023,7 @@ Shows a private reply sent to a comment's author, and how it stands. Needs engag
 
 ```csharp
 await client.InboxMessages.GetPrivateReplyAsync(
-    new GetPrivateReplyInboxMessagesRequest
-    {
-        WorkspaceId = "workspaceId",
-        PrivateReplyId = "privateReplyId",
-    }
+    new GetPrivateReplyInboxMessagesRequest { PrivateReplyId = "privateReplyId" }
 );
 ```
 </dd>
@@ -8648,12 +8079,7 @@ Records what someone found in the person's conversation for an unconfirmed priva
 
 ```csharp
 await client.InboxMessages.ConfirmPrivateReplyAsync(
-    new ConfirmPrivateReplyInboxMessagesRequest
-    {
-        WorkspaceId = "workspaceId",
-        PrivateReplyId = "privateReplyId",
-        Went = true,
-    }
+    new ConfirmPrivateReplyInboxMessagesRequest { PrivateReplyId = "privateReplyId", Went = true }
 );
 ```
 </dd>
@@ -8709,12 +8135,7 @@ Says a conversation was read (`read: true`), or is unread again (`false`). Nothi
 
 ```csharp
 await client.InboxMessages.SetConversationReadAsync(
-    new SetConversationReadInboxMessagesRequest
-    {
-        WorkspaceId = "workspaceId",
-        ConversationId = "conversationId",
-        Read = true,
-    }
+    new SetConversationReadInboxMessagesRequest { ConversationId = "conversationId", Read = true }
 );
 ```
 </dd>
@@ -8742,7 +8163,7 @@ await client.InboxMessages.SetConversationReadAsync(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.<a href="/src/Peal/InboxMessages/InboxMessagesClient.cs">GetMessageSettingsAsync</a>(GetMessageSettingsInboxMessagesRequest { ... }) -> WithRawResponseTask&lt;InboxMessageSettings&gt;</code></summary>
+<details><summary><code>client.InboxMessages.<a href="/src/Peal/InboxMessages/InboxMessagesClient.cs">GetMessageSettingsAsync</a>() -> WithRawResponseTask&lt;InboxMessageSettings&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8769,25 +8190,8 @@ Lists the channels whose direct messages the workspace turned on, and the applic
 <dd>
 
 ```csharp
-await client.InboxMessages.GetMessageSettingsAsync(
-    new GetMessageSettingsInboxMessagesRequest { WorkspaceId = "workspaceId" }
-);
+await client.InboxMessages.GetMessageSettingsAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `GetMessageSettingsInboxMessagesRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -8826,12 +8230,7 @@ Turns a channel's direct messages on (`enabled: true`): Peal reads its conversat
 
 ```csharp
 await client.InboxMessages.SetChannelMessagesAsync(
-    new SetChannelMessagesInboxMessagesRequest
-    {
-        WorkspaceId = "workspaceId",
-        ChannelId = "channelId",
-        Enabled = true,
-    }
+    new SetChannelMessagesInboxMessagesRequest { ChannelId = "channelId", Enabled = true }
 );
 ```
 </dd>
@@ -8887,12 +8286,7 @@ Lets an application connected through OAuth (by its client id) read and answer t
 
 ```csharp
 await client.InboxMessages.SetMessageApplicationAsync(
-    new SetMessageApplicationInboxMessagesRequest
-    {
-        WorkspaceId = "workspaceId",
-        Allowed = true,
-        ClientId = "clientId",
-    }
+    new SetMessageApplicationInboxMessagesRequest { Allowed = true, ClientId = "clientId" }
 );
 ```
 </dd>
@@ -8948,12 +8342,7 @@ Records what someone found on the platform for an unconfirmed message: it is the
 
 ```csharp
 await client.InboxMessages.ConfirmMessageAsync(
-    new ConfirmMessageInboxMessagesRequest
-    {
-        WorkspaceId = "workspaceId",
-        MessageId = "messageId",
-        Sent = true,
-    }
+    new ConfirmMessageInboxMessagesRequest { MessageId = "messageId", Sent = true }
 );
 ```
 </dd>
@@ -8982,7 +8371,7 @@ await client.InboxMessages.ConfirmMessageAsync(
 </details>
 
 ## ads
-<details><summary><code>client.Ads.<a href="/src/Peal/Ads/AdsClient.cs">StatusAsync</a>(StatusAdsRequest { ... }) -> WithRawResponseTask&lt;AdsStatus&gt;</code></summary>
+<details><summary><code>client.Ads.<a href="/src/Peal/Ads/AdsClient.cs">StatusAsync</a>() -> WithRawResponseTask&lt;AdsStatus&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9009,23 +8398,8 @@ Says what this server offers of ads (`off`, `read` or `spend`) and on which netw
 <dd>
 
 ```csharp
-await client.Ads.StatusAsync(new StatusAdsRequest { WorkspaceId = "workspaceId" });
+await client.Ads.StatusAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `StatusAdsRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -9036,7 +8410,7 @@ await client.Ads.StatusAsync(new StatusAdsRequest { WorkspaceId = "workspaceId" 
 </dl>
 </details>
 
-<details><summary><code>client.Ads.<a href="/src/Peal/Ads/AdsClient.cs">ListConnectionsAsync</a>(ListConnectionsAdsRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;AdConnection&gt;&gt;</code></summary>
+<details><summary><code>client.Ads.<a href="/src/Peal/Ads/AdsClient.cs">ListConnectionsAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;AdConnection&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9063,25 +8437,8 @@ Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whet
 <dd>
 
 ```csharp
-await client.Ads.ListConnectionsAsync(
-    new ListConnectionsAdsRequest { WorkspaceId = "workspaceId" }
-);
+await client.Ads.ListConnectionsAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListConnectionsAdsRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -9119,9 +8476,7 @@ Starts a sign-in to an ad network and answers the page to send the member's brow
 <dd>
 
 ```csharp
-await client.Ads.ConnectAsync(
-    new ConnectAdsRequest { WorkspaceId = "workspaceId", Network = AdNetwork.Meta }
-);
+await client.Ads.ConnectAsync(new ConnectAdsRequest { Network = AdNetwork.Meta });
 ```
 </dd>
 </dl>
@@ -9176,12 +8531,7 @@ Completes a sign-in with what the network's page sent back, and answers the ad a
 
 ```csharp
 await client.Ads.CompleteConnectAsync(
-    new AdSignInCallback
-    {
-        WorkspaceId = "workspaceId",
-        Network = AdNetwork.Meta,
-        State = "state",
-    }
+    new AdSignInCallback { Network = AdNetwork.Meta, State = "state" }
 );
 ```
 </dd>
@@ -9237,7 +8587,7 @@ Lists the ad accounts a sign-in reaches now, as the network gives them: currency
 
 ```csharp
 await client.Ads.ReachableAccountsAsync(
-    new ReachableAccountsAdsRequest { WorkspaceId = "workspaceId", ConnectionId = "connectionId" }
+    new ReachableAccountsAdsRequest { ConnectionId = "connectionId" }
 );
 ```
 </dd>
@@ -9295,7 +8645,6 @@ Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the n
 await client.Ads.ConnectAccountsAsync(
     new AdAccountsToConnect
     {
-        WorkspaceId = "workspaceId",
         ConnectionId = "connectionId",
         ExternalIds = new List<string>() { "externalIds" },
     }
@@ -9353,9 +8702,7 @@ Removes a sign-in, its token, the ad accounts it connects and what was read of t
 <dd>
 
 ```csharp
-await client.Ads.DisconnectAsync(
-    new DisconnectAdsRequest { WorkspaceId = "workspaceId", ConnectionId = "connectionId" }
-);
+await client.Ads.DisconnectAsync(new DisconnectAdsRequest { ConnectionId = "connectionId" });
 ```
 </dd>
 </dl>
@@ -9382,7 +8729,7 @@ await client.Ads.DisconnectAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.<a href="/src/Peal/Ads/AdsClient.cs">ListAccountsAsync</a>(ListAccountsAdsRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;AdAccount&gt;&gt;</code></summary>
+<details><summary><code>client.Ads.<a href="/src/Peal/Ads/AdsClient.cs">ListAccountsAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;AdAccount&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9409,23 +8756,8 @@ Lists the workspace's connected ad accounts, oldest first, with whether each may
 <dd>
 
 ```csharp
-await client.Ads.ListAccountsAsync(new ListAccountsAdsRequest { WorkspaceId = "workspaceId" });
+await client.Ads.ListAccountsAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListAccountsAdsRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -9463,9 +8795,7 @@ Shows an ad account with what its boosts made through Peal commit in the current
 <dd>
 
 ```csharp
-await client.Ads.GetAccountAsync(
-    new GetAccountAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-);
+await client.Ads.GetAccountAsync(new GetAccountAdsRequest { AccountId = "accountId" });
 ```
 </dd>
 </dl>
@@ -9519,9 +8849,7 @@ Disconnects an ad account: what was read of it goes with it, and its boosts' rec
 <dd>
 
 ```csharp
-await client.Ads.RemoveAccountAsync(
-    new RemoveAccountAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-);
+await client.Ads.RemoveAccountAsync(new RemoveAccountAdsRequest { AccountId = "accountId" });
 ```
 </dd>
 </dl>
@@ -9576,12 +8904,7 @@ Decides whether an ad account may spend through Peal, and how much: `enabled` wi
 
 ```csharp
 await client.Ads.SetSpendingAsync(
-    new AdSpendingDecision
-    {
-        WorkspaceId = "workspaceId",
-        AccountId = "accountId",
-        Enabled = true,
-    }
+    new AdSpendingDecision { AccountId = "accountId", Enabled = true }
 );
 ```
 </dd>
@@ -9636,9 +8959,7 @@ Lists an ad account's campaigns as last read from its network (every hour on Met
 <dd>
 
 ```csharp
-await client.Ads.ListCampaignsAsync(
-    new ListCampaignsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-);
+await client.Ads.ListCampaignsAsync(new ListCampaignsAdsRequest { AccountId = "accountId" });
 ```
 </dd>
 </dl>
@@ -9692,9 +9013,7 @@ Lists an ad account's ads as last read, those of one campaign with `campaignId` 
 <dd>
 
 ```csharp
-await client.Ads.ListAdsAsync(
-    new ListAdsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-);
+await client.Ads.ListAdsAsync(new ListAdsAdsRequest { AccountId = "accountId" });
 ```
 </dd>
 </dl>
@@ -9748,9 +9067,7 @@ Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spe
 <dd>
 
 ```csharp
-await client.Ads.ListInsightsAsync(
-    new ListInsightsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-);
+await client.Ads.ListInsightsAsync(new ListInsightsAdsRequest { AccountId = "accountId" });
 ```
 </dd>
 </dl>
@@ -9804,9 +9121,7 @@ Shows a published post's organic counts on each channel beside what the ads that
 <dd>
 
 ```csharp
-await client.Ads.PostPerformanceAsync(
-    new PostPerformanceAdsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Ads.PostPerformanceAsync(new PostPerformanceAdsRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -9833,7 +9148,7 @@ await client.Ads.PostPerformanceAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.<a href="/src/Peal/Ads/AdsClient.cs">QuoteBoostAsync</a>(QuoteBoostAdsRequest { ... }) -> WithRawResponseTask&lt;BoostQuote&gt;</code></summary>
+<details><summary><code>client.Ads.<a href="/src/Peal/Ads/AdsClient.cs">QuoteBoostAsync</a>(NewBoost { ... }) -> WithRawResponseTask&lt;BoostQuote&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9861,25 +9176,21 @@ Checks a boost as `createBoost` would, and says what it would commit and the roo
 
 ```csharp
 await client.Ads.QuoteBoostAsync(
-    new QuoteBoostAdsRequest
+    new NewBoost
     {
-        WorkspaceId = "workspaceId",
-        Body = new NewBoost
+        AccountId = "accountId",
+        Audience = new BoostAudience
         {
-            AccountId = "accountId",
-            Audience = new BoostAudience
-            {
-                AgeMax = 1,
-                AgeMin = 1,
-                Countries = new List<string>() { "countries" },
-            },
-            Budget = new BoostBudget { Amount = 1000000, Kind = BoostBudgetKind.Total },
-            ChannelId = "channelId",
-            Currency = "currency",
-            EndsAt = "endsAt",
-            PostId = "postId",
-            SpecialAdCategory = SpecialAdCategory.None,
+            AgeMax = 1,
+            AgeMin = 1,
+            Countries = new List<string>() { "countries" },
         },
+        Budget = new BoostBudget { Amount = 1000000, Kind = BoostBudgetKind.Total },
+        ChannelId = "channelId",
+        Currency = "currency",
+        EndsAt = "endsAt",
+        PostId = "postId",
+        SpecialAdCategory = SpecialAdCategory.None,
     }
 );
 ```
@@ -9896,7 +9207,7 @@ await client.Ads.QuoteBoostAsync(
 <dl>
 <dd>
 
-**request:** `QuoteBoostAdsRequest` 
+**request:** `NewBoost` 
     
 </dd>
 </dl>
@@ -9935,7 +9246,7 @@ Lists the workspace's boosts, newest first, 50 a page, those of one post with `p
 <dd>
 
 ```csharp
-await client.Ads.ListBoostsAsync(new ListBoostsAdsRequest { WorkspaceId = "workspaceId" });
+await client.Ads.ListBoostsAsync(new ListBoostsAdsRequest());
 ```
 </dd>
 </dl>
@@ -9992,7 +9303,6 @@ await client.Ads.ListBoostsAsync(new ListBoostsAdsRequest { WorkspaceId = "works
 await client.Ads.CreateBoostAsync(
     new CreateBoostAdsRequest
     {
-        WorkspaceId = "workspaceId",
         IdempotencyKey = "idempotency-key",
         Body = new NewBoost
         {
@@ -10065,9 +9375,7 @@ Shows a boost and the journal of the requests Peal sent the network for it, each
 <dd>
 
 ```csharp
-await client.Ads.GetBoostAsync(
-    new GetBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
-);
+await client.Ads.GetBoostAsync(new GetBoostAdsRequest { BoostId = "boostId" });
 ```
 </dd>
 </dl>
@@ -10121,9 +9429,7 @@ Pauses a boost that runs or may run: its campaign is told to pause, and the boos
 <dd>
 
 ```csharp
-await client.Ads.PauseBoostAsync(
-    new PauseBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
-);
+await client.Ads.PauseBoostAsync(new PauseBoostAdsRequest { BoostId = "boostId" });
 ```
 </dd>
 </dl>
@@ -10177,9 +9483,7 @@ await client.Ads.PauseBoostAsync(
 <dd>
 
 ```csharp
-await client.Ads.ResumeBoostAsync(
-    new ResumeBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
-);
+await client.Ads.ResumeBoostAsync(new ResumeBoostAdsRequest { BoostId = "boostId" });
 ```
 </dd>
 </dl>
@@ -10233,9 +9537,7 @@ Stops a boost for good: its campaign is told to pause, and the boost is `stopped
 <dd>
 
 ```csharp
-await client.Ads.StopBoostAsync(
-    new StopBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
-);
+await client.Ads.StopBoostAsync(new StopBoostAdsRequest { BoostId = "boostId" });
 ```
 </dd>
 </dl>
@@ -10289,7 +9591,7 @@ Lists the ads audit trail, newest first, 100 a page: every decision about spendi
 <dd>
 
 ```csharp
-await client.Ads.AuditTrailAsync(new AuditTrailAdsRequest { WorkspaceId = "workspaceId" });
+await client.Ads.AuditTrailAsync(new AuditTrailAdsRequest());
 ```
 </dd>
 </dl>
@@ -10344,7 +9646,7 @@ Lists the requests that asked to change something in the workspace, newest first
 <dd>
 
 ```csharp
-await client.Activity.ListAsync(new ListActivityRequest { WorkspaceId = "workspaceId" });
+await client.Activity.ListAsync(new ListActivityRequest());
 ```
 </dd>
 </dl>
@@ -10858,7 +10160,7 @@ await client.PartnerUsage.GetAsync(new GetPartnerUsageRequest());
 </details>
 
 ## partnerAccount
-<details><summary><code>client.PartnerAccount.<a href="/src/Peal/PartnerAccount/PartnerAccountClient.cs">GetAsync</a>(GetPartnerAccountRequest { ... }) -> WithRawResponseTask&lt;PartnerStanding&gt;</code></summary>
+<details><summary><code>client.PartnerAccount.<a href="/src/Peal/PartnerAccount/PartnerAccountClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;PartnerStanding&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10885,23 +10187,8 @@ The workspace's partner account and what it holds, null when it has none, and wh
 <dd>
 
 ```csharp
-await client.PartnerAccount.GetAsync(new GetPartnerAccountRequest { WorkspaceId = "workspaceId" });
+await client.PartnerAccount.GetAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `GetPartnerAccountRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -10939,9 +10226,7 @@ Opens a partner account for the workspace, which becomes its home workspace, und
 <dd>
 
 ```csharp
-await client.PartnerAccount.OpenAsync(
-    new OpenPartner { WorkspaceId = "workspaceId", Name = "name" }
-);
+await client.PartnerAccount.OpenAsync(new OpenPartner { Name = "name" });
 ```
 </dd>
 </dl>
@@ -10968,7 +10253,7 @@ await client.PartnerAccount.OpenAsync(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.<a href="/src/Peal/PartnerAccount/PartnerAccountClient.cs">CloseAsync</a>(ClosePartnerAccountRequest { ... }) -> WithRawResponseTask</code></summary>
+<details><summary><code>client.PartnerAccount.<a href="/src/Peal/PartnerAccount/PartnerAccountClient.cs">CloseAsync</a>() -> WithRawResponseTask</code></summary>
 <dl>
 <dd>
 
@@ -10995,25 +10280,8 @@ Closes the workspace's partner account: its keys stop working at once. Refused w
 <dd>
 
 ```csharp
-await client.PartnerAccount.CloseAsync(
-    new ClosePartnerAccountRequest { WorkspaceId = "workspaceId" }
-);
+await client.PartnerAccount.CloseAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ClosePartnerAccountRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -11051,7 +10319,7 @@ Changes the partner account's name, its logo (an HTTPS URL, shown from that addr
 <dd>
 
 ```csharp
-await client.PartnerAccount.UpdateAsync(new PartnerChange { WorkspaceId = "workspaceId" });
+await client.PartnerAccount.UpdateAsync(new PartnerChange());
 ```
 </dd>
 </dl>
@@ -11078,7 +10346,7 @@ await client.PartnerAccount.UpdateAsync(new PartnerChange { WorkspaceId = "works
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.<a href="/src/Peal/PartnerAccount/PartnerAccountClient.cs">ListKeysAsync</a>(ListKeysPartnerAccountRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;PartnerKey&gt;&gt;</code></summary>
+<details><summary><code>client.PartnerAccount.<a href="/src/Peal/PartnerAccount/PartnerAccountClient.cs">ListKeysAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;PartnerKey&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11105,25 +10373,8 @@ Lists the partner account's keys. Needs partner:read.
 <dd>
 
 ```csharp
-await client.PartnerAccount.ListKeysAsync(
-    new ListKeysPartnerAccountRequest { WorkspaceId = "workspaceId" }
-);
+await client.PartnerAccount.ListKeysAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListKeysPartnerAccountRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -11164,7 +10415,6 @@ Creates a partner key, and answers with the key itself, which is not shown again
 await client.PartnerAccount.CreateKeyAsync(
     new NewPartnerKey
     {
-        WorkspaceId = "workspaceId",
         Name = "name",
         Permissions = new List<Permission>() { Permission.ActivityRead },
         Scopes = new List<PartnerScope>() { PartnerScope.WorkspacesRead },
@@ -11224,11 +10474,7 @@ Revokes a partner key: it stops working at once. Needs partner:manage.
 
 ```csharp
 await client.PartnerAccount.RevokeKeyAsync(
-    new RevokeKeyPartnerAccountRequest
-    {
-        WorkspaceId = "workspaceId",
-        PartnerKeyId = "partnerKeyId",
-    }
+    new RevokeKeyPartnerAccountRequest { PartnerKeyId = "partnerKeyId" }
 );
 ```
 </dd>
@@ -11283,9 +10529,7 @@ Answers, for each workspace the partner owns, what needs attention: its channels
 <dd>
 
 ```csharp
-await client.PartnerAccount.OverviewAsync(
-    new OverviewPartnerAccountRequest { WorkspaceId = "workspaceId" }
-);
+await client.PartnerAccount.OverviewAsync(new OverviewPartnerAccountRequest());
 ```
 </dd>
 </dl>
@@ -11339,9 +10583,7 @@ Lists the workspaces the partner account owns, newest first, each with the numbe
 <dd>
 
 ```csharp
-await client.PartnerAccount.ListWorkspacesAsync(
-    new ListWorkspacesPartnerAccountRequest { WorkspaceId = "workspaceId" }
-);
+await client.PartnerAccount.ListWorkspacesAsync(new ListWorkspacesPartnerAccountRequest());
 ```
 </dd>
 </dl>
@@ -11369,7 +10611,7 @@ await client.PartnerAccount.ListWorkspacesAsync(
 </details>
 
 ## connectLinks
-<details><summary><code>client.ConnectLinks.<a href="/src/Peal/ConnectLinks/ConnectLinksClient.cs">ListAsync</a>(ListConnectLinksRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;ConnectLink&gt;&gt;</code></summary>
+<details><summary><code>client.ConnectLinks.<a href="/src/Peal/ConnectLinks/ConnectLinksClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;ConnectLink&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11396,23 +10638,8 @@ Lists the workspace's connect links, newest first, the last 100: those waiting, 
 <dd>
 
 ```csharp
-await client.ConnectLinks.ListAsync(new ListConnectLinksRequest { WorkspaceId = "workspaceId" });
+await client.ConnectLinks.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListConnectLinksRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -11450,7 +10677,7 @@ Creates a link to hand to whoever owns an account of `platform`, or accounts of 
 <dd>
 
 ```csharp
-await client.ConnectLinks.CreateAsync(new NewConnectLink { WorkspaceId = "workspaceId" });
+await client.ConnectLinks.CreateAsync(new NewConnectLink());
 ```
 </dd>
 </dl>
@@ -11504,9 +10731,7 @@ One connect link of the workspace: where it stands, the channels it connected on
 <dd>
 
 ```csharp
-await client.ConnectLinks.GetAsync(
-    new GetConnectLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
-);
+await client.ConnectLinks.GetAsync(new GetConnectLinksRequest { LinkId = "linkId" });
 ```
 </dd>
 </dl>
@@ -11560,9 +10785,7 @@ Takes a connect link back: it opens nothing more, and a sign-in in progress thro
 <dd>
 
 ```csharp
-await client.ConnectLinks.RevokeAsync(
-    new RevokeConnectLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
-);
+await client.ConnectLinks.RevokeAsync(new RevokeConnectLinksRequest { LinkId = "linkId" });
 ```
 </dd>
 </dl>
@@ -11590,7 +10813,7 @@ await client.ConnectLinks.RevokeAsync(
 </details>
 
 ## review
-<details><summary><code>client.Review.<a href="/src/Peal/Review/ReviewClient.cs">SettingsAsync</a>(SettingsReviewRequest { ... }) -> WithRawResponseTask&lt;ReviewSettings&gt;</code></summary>
+<details><summary><code>client.Review.<a href="/src/Peal/Review/ReviewClient.cs">SettingsAsync</a>() -> WithRawResponseTask&lt;ReviewSettings&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11617,23 +10840,8 @@ Answers with the workspace's approval policy: which of its posts wait for an app
 <dd>
 
 ```csharp
-await client.Review.SettingsAsync(new SettingsReviewRequest { WorkspaceId = "workspaceId" });
+await client.Review.SettingsAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `SettingsReviewRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -11644,7 +10852,7 @@ await client.Review.SettingsAsync(new SettingsReviewRequest { WorkspaceId = "wor
 </dl>
 </details>
 
-<details><summary><code>client.Review.<a href="/src/Peal/Review/ReviewClient.cs">UpdateSettingsAsync</a>(UpdateSettingsReviewRequest { ... }) -> WithRawResponseTask&lt;ReviewSettings&gt;</code></summary>
+<details><summary><code>client.Review.<a href="/src/Peal/Review/ReviewClient.cs">UpdateSettingsAsync</a>(ReviewSettings { ... }) -> WithRawResponseTask&lt;ReviewSettings&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11672,11 +10880,7 @@ Chooses the workspace's approval policy. It applies to posts scheduled from then
 
 ```csharp
 await client.Review.UpdateSettingsAsync(
-    new UpdateSettingsReviewRequest
-    {
-        WorkspaceId = "workspaceId",
-        Body = new ReviewSettings { ApprovalPolicy = ApprovalPolicy.Never },
-    }
+    new ReviewSettings { ApprovalPolicy = ApprovalPolicy.Never }
 );
 ```
 </dd>
@@ -11692,7 +10896,7 @@ await client.Review.UpdateSettingsAsync(
 <dl>
 <dd>
 
-**request:** `UpdateSettingsReviewRequest` 
+**request:** `ReviewSettings` 
     
 </dd>
 </dl>
@@ -11704,7 +10908,7 @@ await client.Review.UpdateSettingsAsync(
 </dl>
 </details>
 
-<details><summary><code>client.Review.<a href="/src/Peal/Review/ReviewClient.cs">PendingAsync</a>(PendingReviewRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;ApprovalRequest&gt;&gt;</code></summary>
+<details><summary><code>client.Review.<a href="/src/Peal/Review/ReviewClient.cs">PendingAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;ApprovalRequest&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11731,23 +10935,8 @@ Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs
 <dd>
 
 ```csharp
-await client.Review.PendingAsync(new PendingReviewRequest { WorkspaceId = "workspaceId" });
+await client.Review.PendingAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `PendingReviewRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -11785,9 +10974,7 @@ Answers with a post's review: its comments, oldest first, and the approvals aske
 <dd>
 
 ```csharp
-await client.Review.ThreadAsync(
-    new ThreadReviewRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Review.ThreadAsync(new ThreadReviewRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -11841,14 +11028,7 @@ Comments on a post, starts a thread about one of its channels or some words of i
 <dd>
 
 ```csharp
-await client.Review.CommentAsync(
-    new NewComment
-    {
-        WorkspaceId = "workspaceId",
-        PostId = "postId",
-        Text = "text",
-    }
-);
+await client.Review.CommentAsync(new NewComment { PostId = "postId", Text = "text" });
 ```
 </dd>
 </dl>
@@ -11905,7 +11085,6 @@ Resolves the thread a comment started, or reopens it. An answer is not resolved:
 await client.Review.ResolveAsync(
     new ResolveReviewRequest
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         CommentId = "commentId",
         Resolved = true,
@@ -11967,7 +11146,6 @@ Approves a post that waits for an approval, as the reviewer was shown it: send t
 await client.Review.ApproveAsync(
     new ApprovalDecision
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         ApprovalId = "approvalId",
         SubjectHash = "subjectHash",
@@ -12029,7 +11207,6 @@ Sends a post that waits for an approval back to draft, with a comment that says 
 await client.Review.RequestChangesAsync(
     new ChangesRequest
     {
-        WorkspaceId = "workspaceId",
         PostId = "postId",
         ApprovalId = "approvalId",
         SubjectHash = "subjectHash",
@@ -12089,9 +11266,7 @@ Lists a post's review links, newest first, ended ones included. No token is show
 <dd>
 
 ```csharp
-await client.Review.LinksAsync(
-    new LinksReviewRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-);
+await client.Review.LinksAsync(new LinksReviewRequest { PostId = "postId" });
 ```
 </dd>
 </dl>
@@ -12146,12 +11321,7 @@ Makes a link that shows a draft, a post that waits for an approval or a schedule
 
 ```csharp
 await client.Review.CreateLinkAsync(
-    new NewReviewLink
-    {
-        WorkspaceId = "workspaceId",
-        PostId = "postId",
-        Access = ReviewLinkAccess.View,
-    }
+    new NewReviewLink { PostId = "postId", Access = ReviewLinkAccess.View }
 );
 ```
 </dd>
@@ -12206,9 +11376,7 @@ Ends a review link at once: whoever opens it is told it was revoked. Needs post:
 <dd>
 
 ```csharp
-await client.Review.RevokeLinkAsync(
-    new RevokeLinkReviewRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
-);
+await client.Review.RevokeLinkAsync(new RevokeLinkReviewRequest { LinkId = "linkId" });
 ```
 </dd>
 </dl>
@@ -12236,7 +11404,7 @@ await client.Review.RevokeLinkAsync(
 </details>
 
 ## tags
-<details><summary><code>client.Tags.<a href="/src/Peal/Tags/TagsClient.cs">ListAsync</a>(ListTagsRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;Tag&gt;&gt;</code></summary>
+<details><summary><code>client.Tags.<a href="/src/Peal/Tags/TagsClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;Tag&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12263,23 +11431,8 @@ Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`)
 <dd>
 
 ```csharp
-await client.Tags.ListAsync(new ListTagsRequest { WorkspaceId = "workspaceId" });
+await client.Tags.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListTagsRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -12290,7 +11443,7 @@ await client.Tags.ListAsync(new ListTagsRequest { WorkspaceId = "workspaceId" })
 </dl>
 </details>
 
-<details><summary><code>client.Tags.<a href="/src/Peal/Tags/TagsClient.cs">CreateAsync</a>(CreateTagsRequest { ... }) -> WithRawResponseTask&lt;Tag&gt;</code></summary>
+<details><summary><code>client.Tags.<a href="/src/Peal/Tags/TagsClient.cs">CreateAsync</a>(TagDetails { ... }) -> WithRawResponseTask&lt;Tag&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12317,13 +11470,7 @@ Adds a tag to the workspace: a name of 40 characters at most, on one line, which
 <dd>
 
 ```csharp
-await client.Tags.CreateAsync(
-    new CreateTagsRequest
-    {
-        WorkspaceId = "workspaceId",
-        Body = new TagDetails { Colour = TagColour.Gray, Name = "name" },
-    }
-);
+await client.Tags.CreateAsync(new TagDetails { Colour = TagColour.Gray, Name = "name" });
 ```
 </dd>
 </dl>
@@ -12338,7 +11485,7 @@ await client.Tags.CreateAsync(
 <dl>
 <dd>
 
-**request:** `CreateTagsRequest` 
+**request:** `TagDetails` 
     
 </dd>
 </dl>
@@ -12377,9 +11524,7 @@ Deletes a tag, and takes it off every post that had it; the posts stay. Needs po
 <dd>
 
 ```csharp
-await client.Tags.DeleteAsync(
-    new DeleteTagsRequest { WorkspaceId = "workspaceId", TagId = "tagId" }
-);
+await client.Tags.DeleteAsync(new DeleteTagsRequest { TagId = "tagId" });
 ```
 </dd>
 </dl>
@@ -12436,7 +11581,6 @@ Gives a tag another name or colour. Its posts keep it. Needs post:update.
 await client.Tags.UpdateAsync(
     new UpdateTagsRequest
     {
-        WorkspaceId = "workspaceId",
         TagId = "tagId",
         Body = new TagDetails { Colour = TagColour.Gray, Name = "name" },
     }
@@ -12468,7 +11612,7 @@ await client.Tags.UpdateAsync(
 </details>
 
 ## signatures
-<details><summary><code>client.Signatures.<a href="/src/Peal/Signatures/SignaturesClient.cs">ListAsync</a>(ListSignaturesRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;Signature&gt;&gt;</code></summary>
+<details><summary><code>client.Signatures.<a href="/src/Peal/Signatures/SignaturesClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;Signature&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12495,23 +11639,8 @@ Lists the workspace's signatures, oldest first. Needs post:read.
 <dd>
 
 ```csharp
-await client.Signatures.ListAsync(new ListSignaturesRequest { WorkspaceId = "workspaceId" });
+await client.Signatures.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListSignaturesRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -12522,7 +11651,7 @@ await client.Signatures.ListAsync(new ListSignaturesRequest { WorkspaceId = "wor
 </dl>
 </details>
 
-<details><summary><code>client.Signatures.<a href="/src/Peal/Signatures/SignaturesClient.cs">CreateAsync</a>(CreateSignaturesRequest { ... }) -> WithRawResponseTask&lt;Signature&gt;</code></summary>
+<details><summary><code>client.Signatures.<a href="/src/Peal/Signatures/SignaturesClient.cs">CreateAsync</a>(SignatureDetails { ... }) -> WithRawResponseTask&lt;Signature&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12549,13 +11678,7 @@ Adds a signature to the workspace: a name no other signature of the workspace ha
 <dd>
 
 ```csharp
-await client.Signatures.CreateAsync(
-    new CreateSignaturesRequest
-    {
-        WorkspaceId = "workspaceId",
-        Body = new SignatureDetails { Name = "name", Text = "text" },
-    }
-);
+await client.Signatures.CreateAsync(new SignatureDetails { Name = "name", Text = "text" });
 ```
 </dd>
 </dl>
@@ -12570,7 +11693,7 @@ await client.Signatures.CreateAsync(
 <dl>
 <dd>
 
-**request:** `CreateSignaturesRequest` 
+**request:** `SignatureDetails` 
     
 </dd>
 </dl>
@@ -12612,7 +11735,6 @@ Replaces a signature's name, text, scope and whether it is a default. Posts that
 await client.Signatures.UpdateAsync(
     new UpdateSignaturesRequest
     {
-        WorkspaceId = "workspaceId",
         SignatureId = "signatureId",
         Body = new SignatureDetails { Name = "name", Text = "text" },
     }
@@ -12670,9 +11792,7 @@ Deletes a signature. Posts that already hold its text keep it. Needs post:update
 <dd>
 
 ```csharp
-await client.Signatures.DeleteAsync(
-    new DeleteSignaturesRequest { WorkspaceId = "workspaceId", SignatureId = "signatureId" }
-);
+await client.Signatures.DeleteAsync(new DeleteSignaturesRequest { SignatureId = "signatureId" });
 ```
 </dd>
 </dl>
@@ -12700,7 +11820,7 @@ await client.Signatures.DeleteAsync(
 </details>
 
 ## channelSets
-<details><summary><code>client.ChannelSets.<a href="/src/Peal/ChannelSets/ChannelSetsClient.cs">ListAsync</a>(ListChannelSetsRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;ChannelSet&gt;&gt;</code></summary>
+<details><summary><code>client.ChannelSets.<a href="/src/Peal/ChannelSets/ChannelSetsClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;ChannelSet&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12727,23 +11847,8 @@ Lists the workspace's channel sets, oldest first, each with the channels it keep
 <dd>
 
 ```csharp
-await client.ChannelSets.ListAsync(new ListChannelSetsRequest { WorkspaceId = "workspaceId" });
+await client.ChannelSets.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListChannelSetsRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -12754,7 +11859,7 @@ await client.ChannelSets.ListAsync(new ListChannelSetsRequest { WorkspaceId = "w
 </dl>
 </details>
 
-<details><summary><code>client.ChannelSets.<a href="/src/Peal/ChannelSets/ChannelSetsClient.cs">CreateAsync</a>(CreateChannelSetsRequest { ... }) -> WithRawResponseTask&lt;ChannelSet&gt;</code></summary>
+<details><summary><code>client.ChannelSets.<a href="/src/Peal/ChannelSets/ChannelSetsClient.cs">CreateAsync</a>(ChannelSetDetails { ... }) -> WithRawResponseTask&lt;ChannelSet&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12782,14 +11887,10 @@ Saves a selection of the workspace's channels under a name no other set of the w
 
 ```csharp
 await client.ChannelSets.CreateAsync(
-    new CreateChannelSetsRequest
+    new ChannelSetDetails
     {
-        WorkspaceId = "workspaceId",
-        Body = new ChannelSetDetails
-        {
-            ChannelIds = new List<string>() { "channelIds" },
-            Name = "name",
-        },
+        ChannelIds = new List<string>() { "channelIds" },
+        Name = "name",
     }
 );
 ```
@@ -12806,7 +11907,7 @@ await client.ChannelSets.CreateAsync(
 <dl>
 <dd>
 
-**request:** `CreateChannelSetsRequest` 
+**request:** `ChannelSetDetails` 
     
 </dd>
 </dl>
@@ -12848,7 +11949,6 @@ Replaces a set's name, channels and options: every channel must be connected now
 await client.ChannelSets.UpdateAsync(
     new UpdateChannelSetsRequest
     {
-        WorkspaceId = "workspaceId",
         ChannelSetId = "channelSetId",
         Body = new ChannelSetDetails
         {
@@ -12911,7 +12011,7 @@ Deletes a channel set. Its channels, and the posts made with it, stay. Needs pos
 
 ```csharp
 await client.ChannelSets.DeleteAsync(
-    new DeleteChannelSetsRequest { WorkspaceId = "workspaceId", ChannelSetId = "channelSetId" }
+    new DeleteChannelSetsRequest { ChannelSetId = "channelSetId" }
 );
 ```
 </dd>
@@ -12940,7 +12040,7 @@ await client.ChannelSets.DeleteAsync(
 </details>
 
 ## queues
-<details><summary><code>client.Queues.<a href="/src/Peal/Queues/QueuesClient.cs">ListAsync</a>(ListQueuesRequest { ... }) -> WithRawResponseTask&lt;IEnumerable&lt;Queue&gt;&gt;</code></summary>
+<details><summary><code>client.Queues.<a href="/src/Peal/Queues/QueuesClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;IEnumerable&lt;Queue&gt;&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12967,23 +12067,8 @@ Lists the workspace's queues, the default first, then by name, each with its slo
 <dd>
 
 ```csharp
-await client.Queues.ListAsync(new ListQueuesRequest { WorkspaceId = "workspaceId" });
+await client.Queues.ListAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListQueuesRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -12994,7 +12079,7 @@ await client.Queues.ListAsync(new ListQueuesRequest { WorkspaceId = "workspaceId
 </dl>
 </details>
 
-<details><summary><code>client.Queues.<a href="/src/Peal/Queues/QueuesClient.cs">CreateAsync</a>(CreateQueuesRequest { ... }) -> WithRawResponseTask&lt;Queue&gt;</code></summary>
+<details><summary><code>client.Queues.<a href="/src/Peal/Queues/QueuesClient.cs">CreateAsync</a>(QueueDetails { ... }) -> WithRawResponseTask&lt;Queue&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13022,18 +12107,14 @@ Saves a queue. A slot is a weekday and a time of day (`HH:mm`) in the queue's IA
 
 ```csharp
 await client.Queues.CreateAsync(
-    new CreateQueuesRequest
+    new QueueDetails
     {
-        WorkspaceId = "workspaceId",
-        Body = new QueueDetails
+        Name = "name",
+        Slots = new List<QueueSlot>()
         {
-            Name = "name",
-            Slots = new List<QueueSlot>()
-            {
-                new QueueSlot { Day = Weekday.Monday, Time = "time" },
-            },
-            TimeZone = "timeZone",
+            new QueueSlot { Day = Weekday.Monday, Time = "time" },
         },
+        TimeZone = "timeZone",
     }
 );
 ```
@@ -13050,7 +12131,7 @@ await client.Queues.CreateAsync(
 <dl>
 <dd>
 
-**request:** `CreateQueuesRequest` 
+**request:** `QueueDetails` 
     
 </dd>
 </dl>
@@ -13089,9 +12170,7 @@ Answers with a queue of the workspace. Needs post:read and channel:read.
 <dd>
 
 ```csharp
-await client.Queues.GetAsync(
-    new GetQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-);
+await client.Queues.GetAsync(new GetQueuesRequest { QueueId = "queueId" });
 ```
 </dd>
 </dl>
@@ -13148,7 +12227,6 @@ Replaces a queue's name, zone, slots and channels: every channel must be connect
 await client.Queues.UpdateAsync(
     new UpdateQueuesRequest
     {
-        WorkspaceId = "workspaceId",
         QueueId = "queueId",
         Body = new QueueDetails
         {
@@ -13214,9 +12292,7 @@ Deletes a queue. The posts it placed stay scheduled at their times, and no longe
 <dd>
 
 ```csharp
-await client.Queues.DeleteAsync(
-    new DeleteQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-);
+await client.Queues.DeleteAsync(new DeleteQueuesRequest { QueueId = "queueId" });
 ```
 </dd>
 </dl>
@@ -13270,9 +12346,7 @@ Lists the queue's next `count` slots after now (10 unless given, 50 at most), ea
 <dd>
 
 ```csharp
-await client.Queues.SlotsAsync(
-    new SlotsQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-);
+await client.Queues.SlotsAsync(new SlotsQueuesRequest { QueueId = "queueId" });
 ```
 </dd>
 </dl>
@@ -13326,9 +12400,7 @@ Moves the posts that wait in the queue (scheduled or awaiting approval, after no
 <dd>
 
 ```csharp
-await client.Queues.ReshuffleAsync(
-    new ReshuffleQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-);
+await client.Queues.ReshuffleAsync(new ReshuffleQueuesRequest { QueueId = "queueId" });
 ```
 </dd>
 </dl>
@@ -13383,7 +12455,7 @@ Lists the workspace's recycling rules, oldest first, 50 a page unless `limit` (a
 <dd>
 
 ```csharp
-await client.Recycling.ListAsync(new ListRecyclingRequest { WorkspaceId = "workspaceId" });
+await client.Recycling.ListAsync(new ListRecyclingRequest());
 ```
 </dd>
 </dl>
@@ -13440,7 +12512,6 @@ Starts a rule that repeats a post that is scheduled, publishing or went out (del
 await client.Recycling.CreateAsync(
     new NewRecyclingRule
     {
-        WorkspaceId = "workspaceId",
         Every = new RecyclingInterval { Count = 1, Unit = RecyclingUnit.Days },
         PostId = "postId",
     }
@@ -13498,9 +12569,7 @@ Answers with a rule of the workspace and its next 3 posts to come, each with the
 <dd>
 
 ```csharp
-await client.Recycling.GetAsync(
-    new GetRecyclingRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.Recycling.GetAsync(new GetRecyclingRequest { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -13554,9 +12623,7 @@ Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay 
 <dd>
 
 ```csharp
-await client.Recycling.DeleteAsync(
-    new DeleteRecyclingRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.Recycling.DeleteAsync(new DeleteRecyclingRequest { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -13610,9 +12677,7 @@ Changes a rule's variants, its `count` or `until` (null takes it away), or pause
 <dd>
 
 ```csharp
-await client.Recycling.UpdateAsync(
-    new RecyclingRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.Recycling.UpdateAsync(new RecyclingRuleChange { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -13666,9 +12731,7 @@ Sets a paused rule going again, or one that ended for a reason that can be put r
 <dd>
 
 ```csharp
-await client.Recycling.ResumeAsync(
-    new RecyclingResume { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.Recycling.ResumeAsync(new RecyclingResume { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -13723,7 +12786,7 @@ Lists the workspace's follow-up rules, oldest first, 50 a page unless `limit` (a
 <dd>
 
 ```csharp
-await client.FollowUps.ListAsync(new ListFollowUpsRequest { WorkspaceId = "workspaceId" });
+await client.FollowUps.ListAsync(new ListFollowUpsRequest());
 ```
 </dd>
 </dl>
@@ -13777,7 +12840,7 @@ Starts a rule on a post (`postId`) or on every post a channel publishes from now
 <dd>
 
 ```csharp
-await client.FollowUps.CreateAsync(new NewFollowUpRule { WorkspaceId = "workspaceId", Likes = 1 });
+await client.FollowUps.CreateAsync(new NewFollowUpRule { Likes = 1 });
 ```
 </dd>
 </dl>
@@ -13831,9 +12894,7 @@ Answers with a rule of the workspace, what its channels can carry and its latest
 <dd>
 
 ```csharp
-await client.FollowUps.GetAsync(
-    new GetFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.FollowUps.GetAsync(new GetFollowUpsRequest { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -13887,9 +12948,7 @@ Stops a rule: it ends `stopped`, what it armed and did not send is given up, and
 <dd>
 
 ```csharp
-await client.FollowUps.DeleteAsync(
-    new DeleteFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.FollowUps.DeleteAsync(new DeleteFollowUpsRequest { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -13943,9 +13002,7 @@ Changes a rule's `likes`, its `comment` (null takes it away) or whether it repos
 <dd>
 
 ```csharp
-await client.FollowUps.UpdateAsync(
-    new FollowUpRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.FollowUps.UpdateAsync(new FollowUpRuleChange { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -13999,9 +13056,7 @@ Approves what a rule sends, for a rule whose starter's posts wait for an approva
 <dd>
 
 ```csharp
-await client.FollowUps.ApproveAsync(
-    new ApproveFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.FollowUps.ApproveAsync(new ApproveFollowUpsRequest { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -14056,9 +13111,7 @@ Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at 
 <dd>
 
 ```csharp
-await client.InboxRules.ListCommentRulesAsync(
-    new ListCommentRulesInboxRulesRequest { WorkspaceId = "workspaceId" }
-);
+await client.InboxRules.ListCommentRulesAsync(new ListCommentRulesInboxRulesRequest());
 ```
 </dd>
 </dl>
@@ -14115,7 +13168,6 @@ Starts a rule on the comments of a post that went out (`postId`) or of every pos
 await client.InboxRules.CreateCommentRuleAsync(
     new NewCommentRule
     {
-        WorkspaceId = "workspaceId",
         Keywords = new List<string>() { "keywords" },
         Reply = "reply",
     }
@@ -14174,7 +13226,7 @@ Answers a comment rule of the workspace, what its channels can carry and what it
 
 ```csharp
 await client.InboxRules.GetCommentRuleAsync(
-    new GetCommentRuleInboxRulesRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+    new GetCommentRuleInboxRulesRequest { RuleId = "ruleId" }
 );
 ```
 </dd>
@@ -14230,7 +13282,7 @@ Stops a rule: it answers nothing more; the replies it sent stay, and the inbox w
 
 ```csharp
 await client.InboxRules.DeleteCommentRuleAsync(
-    new DeleteCommentRuleInboxRulesRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+    new DeleteCommentRuleInboxRulesRequest { RuleId = "ruleId" }
 );
 ```
 </dd>
@@ -14285,9 +13337,7 @@ Changes a rule's keywords, reply or private reply (`privateReply` null takes it 
 <dd>
 
 ```csharp
-await client.InboxRules.UpdateCommentRuleAsync(
-    new CommentRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-);
+await client.InboxRules.UpdateCommentRuleAsync(new CommentRuleChange { RuleId = "ruleId" });
 ```
 </dd>
 </dl>
@@ -14342,7 +13392,7 @@ Lists the workspace's feeds, oldest first, 50 a page unless `limit` (at most 100
 <dd>
 
 ```csharp
-await client.Feeds.ListAsync(new ListFeedsRequest { WorkspaceId = "workspaceId" });
+await client.Feeds.ListAsync(new ListFeedsRequest());
 ```
 </dd>
 </dl>
@@ -14396,7 +13446,7 @@ Follows a feed at `url`: it is read once, and refused when it is not a feed; eve
 <dd>
 
 ```csharp
-await client.Feeds.CreateAsync(new NewFeed { WorkspaceId = "workspaceId", Url = "url" });
+await client.Feeds.CreateAsync(new NewFeed { Url = "url" });
 ```
 </dd>
 </dl>
@@ -14450,9 +13500,7 @@ Reads an address and answers its title and its 3 newest items, each with what `t
 <dd>
 
 ```csharp
-await client.Feeds.PreviewAsync(
-    new FeedPreviewRequest { WorkspaceId = "workspaceId", Url = "url" }
-);
+await client.Feeds.PreviewAsync(new FeedPreviewRequest { Url = "url" });
 ```
 </dd>
 </dl>
@@ -14506,7 +13554,7 @@ Answers with a feed of the workspace: its state, when it was last read and is ne
 <dd>
 
 ```csharp
-await client.Feeds.GetAsync(new GetFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" });
+await client.Feeds.GetAsync(new GetFeedsRequest { FeedId = "feedId" });
 ```
 </dd>
 </dl>
@@ -14560,9 +13608,7 @@ Stops following a feed and forgets what it read; the drafts and posts it made st
 <dd>
 
 ```csharp
-await client.Feeds.DeleteAsync(
-    new DeleteFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" }
-);
+await client.Feeds.DeleteAsync(new DeleteFeedsRequest { FeedId = "feedId" });
 ```
 </dd>
 </dl>
@@ -14616,7 +13662,7 @@ Changes a feed; what the request leaves out stays. A new `url` is read at once, 
 <dd>
 
 ```csharp
-await client.Feeds.UpdateAsync(new FeedChange { WorkspaceId = "workspaceId", FeedId = "feedId" });
+await client.Feeds.UpdateAsync(new FeedChange { FeedId = "feedId" });
 ```
 </dd>
 </dl>
@@ -14670,9 +13716,7 @@ Lists a feed's 50 newest items, newest first: when each was seen, the date it ga
 <dd>
 
 ```csharp
-await client.Feeds.ItemsAsync(
-    new ItemsFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" }
-);
+await client.Feeds.ItemsAsync(new ItemsFeedsRequest { FeedId = "feedId" });
 ```
 </dd>
 </dl>
@@ -14727,9 +13771,7 @@ Answers the options new posts take on the channel when they give none there, or 
 <dd>
 
 ```csharp
-await client.ChannelDefaults.GetAsync(
-    new GetChannelDefaultsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-);
+await client.ChannelDefaults.GetAsync(new GetChannelDefaultsRequest { ChannelId = "channelId" });
 ```
 </dd>
 </dl>
@@ -14786,7 +13828,6 @@ Keeps these as the channel's default options, instead of any it had: options of 
 await client.ChannelDefaults.SetAsync(
     new NewChannelDefaults
     {
-        WorkspaceId = "workspaceId",
         ChannelId = "channelId",
         Options = new TargetOptions(new TargetOptions.Youtube(new YouTubeOptions())),
     }
@@ -14845,7 +13886,7 @@ Leaves the channel without default options. Posts already made keep theirs. Need
 
 ```csharp
 await client.ChannelDefaults.ClearAsync(
-    new ClearChannelDefaultsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+    new ClearChannelDefaultsRequest { ChannelId = "channelId" }
 );
 ```
 </dd>
@@ -14874,7 +13915,7 @@ await client.ChannelDefaults.ClearAsync(
 </details>
 
 ## shortLinks
-<details><summary><code>client.ShortLinks.<a href="/src/Peal/ShortLinks/ShortLinksClient.cs">StatusAsync</a>(StatusShortLinksRequest { ... }) -> WithRawResponseTask&lt;ShortLinkStatus&gt;</code></summary>
+<details><summary><code>client.ShortLinks.<a href="/src/Peal/ShortLinks/ShortLinksClient.cs">StatusAsync</a>() -> WithRawResponseTask&lt;ShortLinkStatus&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14901,23 +13942,8 @@ Answers whether this server shortens links (`available`), what a short address s
 <dd>
 
 ```csharp
-await client.ShortLinks.StatusAsync(new StatusShortLinksRequest { WorkspaceId = "workspaceId" });
+await client.ShortLinks.StatusAsync();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `StatusShortLinksRequest` 
-    
 </dd>
 </dl>
 </dd>
@@ -14955,9 +13981,7 @@ Sets whether the workspace's new posts ask for short links unless they say other
 <dd>
 
 ```csharp
-await client.ShortLinks.SetDefaultAsync(
-    new ShortLinkSettings { WorkspaceId = "workspaceId", ByDefault = true }
-);
+await client.ShortLinks.SetDefaultAsync(new ShortLinkSettings { ByDefault = true });
 ```
 </dd>
 </dl>
@@ -15011,7 +14035,7 @@ Lists the workspace's short links, newest first, 50 a page unless `limit` (at mo
 <dd>
 
 ```csharp
-await client.ShortLinks.ListAsync(new ListShortLinksRequest { WorkspaceId = "workspaceId" });
+await client.ShortLinks.ListAsync(new ListShortLinksRequest());
 ```
 </dd>
 </dl>
@@ -15065,9 +14089,7 @@ Answers one short link with its clicks each day from `from` to `to` (UTC days, b
 <dd>
 
 ```csharp
-await client.ShortLinks.GetAsync(
-    new GetShortLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
-);
+await client.ShortLinks.GetAsync(new GetShortLinksRequest { LinkId = "linkId" });
 ```
 </dd>
 </dl>

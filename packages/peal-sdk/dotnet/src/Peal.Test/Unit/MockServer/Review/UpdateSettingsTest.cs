@@ -28,8 +28,7 @@ public class UpdateSettingsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/review/settings")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/review/settings")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
             )
@@ -41,11 +40,7 @@ public class UpdateSettingsTest : BaseMockServerTest
             );
 
         var response = await Client.Review.UpdateSettingsAsync(
-            new UpdateSettingsReviewRequest
-            {
-                WorkspaceId = "workspaceId",
-                Body = new ReviewSettings { ApprovalPolicy = ApprovalPolicy.Never },
-            }
+            new ReviewSettings { ApprovalPolicy = ApprovalPolicy.Never }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -69,8 +64,7 @@ public class UpdateSettingsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/review/settings")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/review/settings")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
             )
@@ -82,11 +76,7 @@ public class UpdateSettingsTest : BaseMockServerTest
             );
 
         var response = await Client.Review.UpdateSettingsAsync(
-            new UpdateSettingsReviewRequest
-            {
-                WorkspaceId = "workspaceId",
-                Body = new ReviewSettings { ApprovalPolicy = ApprovalPolicy.Never },
-            }
+            new ReviewSettings { ApprovalPolicy = ApprovalPolicy.Never }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

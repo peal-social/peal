@@ -51,21 +51,18 @@ public class RawAnalyticsClient {
     /**
      * Sums up the posts published from <code>from</code> to <code>to</code>, both included and at most 366 days, as days run in <code>timeZone</code> (an IANA zone such as Europe/Paris): their latest counts in all and by channel, what they gained each day, and the five with the most engagement (likes, reposts, replies and quotes). Counts are read from the platforms every hour for 48 hours after a post goes live, then every day until it is 30 days old. Needs analytics:read.
      */
-    public PealClientHttpResponse<AnalyticsSummary> summary(String workspaceId, SummaryAnalyticsRequest request) {
-        return summary(workspaceId, request, null);
+    public PealClientHttpResponse<AnalyticsSummary> summary(SummaryAnalyticsRequest request) {
+        return summary(request, null);
     }
 
     /**
      * Sums up the posts published from <code>from</code> to <code>to</code>, both included and at most 366 days, as days run in <code>timeZone</code> (an IANA zone such as Europe/Paris): their latest counts in all and by channel, what they gained each day, and the five with the most engagement (likes, reposts, replies and quotes). Counts are read from the platforms every hour for 48 hours after a post goes live, then every day until it is 30 days old. Needs analytics:read.
      */
     public PealClientHttpResponse<AnalyticsSummary> summary(
-            String workspaceId, SummaryAnalyticsRequest request, RequestOptions requestOptions) {
+            SummaryAnalyticsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("analytics")
-                .addPathSegments("summary");
+                .addPathSegments("api/v1/analytics/summary");
         QueryStringMapper.addQueryParameter(httpUrl, "from", request.getFrom(), false);
         QueryStringMapper.addQueryParameter(httpUrl, "timeZone", request.getTimeZone(), false);
         QueryStringMapper.addQueryParameter(httpUrl, "to", request.getTo(), false);
@@ -138,21 +135,18 @@ public class RawAnalyticsClient {
     /**
      * Answers a workspace's analytics over a range in one call: the totals of the posts published in it and of those published in the range before, of the same length, so a client shows the trend; followers at the end of each and their change; the same by channel and by platform; each day's gains, followers and account views; and the <code>topPosts</code> (5 unless said, 25 at most) with the most engagement. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. Followers are kept from the day a channel is connected, read once a day; a number a platform does not give is null, never zero. Needs analytics:read.
      */
-    public PealClientHttpResponse<AnalyticsDashboard> dashboard(String workspaceId, DashboardAnalyticsRequest request) {
-        return dashboard(workspaceId, request, null);
+    public PealClientHttpResponse<AnalyticsDashboard> dashboard(DashboardAnalyticsRequest request) {
+        return dashboard(request, null);
     }
 
     /**
      * Answers a workspace's analytics over a range in one call: the totals of the posts published in it and of those published in the range before, of the same length, so a client shows the trend; followers at the end of each and their change; the same by channel and by platform; each day's gains, followers and account views; and the <code>topPosts</code> (5 unless said, 25 at most) with the most engagement. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. Followers are kept from the day a channel is connected, read once a day; a number a platform does not give is null, never zero. Needs analytics:read.
      */
     public PealClientHttpResponse<AnalyticsDashboard> dashboard(
-            String workspaceId, DashboardAnalyticsRequest request, RequestOptions requestOptions) {
+            DashboardAnalyticsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("analytics")
-                .addPathSegments("dashboard");
+                .addPathSegments("api/v1/analytics/dashboard");
         if (request.getDays().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "days", request.getDays().get(), false);
@@ -238,21 +232,18 @@ public class RawAnalyticsClient {
     /**
      * Answers one channel's numbers day by day: its followers, the accounts it follows and its posts as read each UTC day, the views and reach its platform counted, and what its posts published in the range gained. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. A channel Peal has read nothing of answers days without numbers. Needs analytics:read.
      */
-    public PealClientHttpResponse<ChannelSeries> channel(
-            String workspaceId, String channelId, ChannelAnalyticsRequest request) {
-        return channel(workspaceId, channelId, request, null);
+    public PealClientHttpResponse<ChannelSeries> channel(String channelId, ChannelAnalyticsRequest request) {
+        return channel(channelId, request, null);
     }
 
     /**
      * Answers one channel's numbers day by day: its followers, the accounts it follows and its posts as read each UTC day, the views and reach its platform counted, and what its posts published in the range gained. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. A channel Peal has read nothing of answers days without numbers. Needs analytics:read.
      */
     public PealClientHttpResponse<ChannelSeries> channel(
-            String workspaceId, String channelId, ChannelAnalyticsRequest request, RequestOptions requestOptions) {
+            String channelId, ChannelAnalyticsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("analytics/channels")
+                .addPathSegments("api/v1/analytics/channels")
                 .addPathSegment(PathSegments.validate(channelId));
         if (request.getDays().isPresent()) {
             QueryStringMapper.addQueryParameter(
@@ -335,21 +326,17 @@ public class RawAnalyticsClient {
     /**
      * Streams the workspace's analytics as a file: <code>kind=posts</code> lists each post published in the range on each channel with its latest counts, <code>kind=accounts</code> each channel's account day by day. <code>format=csv</code> (the default) writes a header line then one line a row, as RFC 4180; <code>format=json</code> writes one JSON object a line (<code>application/x-ndjson</code>). A number a platform does not give is empty in CSV and null in JSON. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. Needs analytics:read.
      */
-    public PealClientHttpResponse<InputStream> export(String workspaceId, ExportAnalyticsRequest request) {
-        return export(workspaceId, request, null);
+    public PealClientHttpResponse<InputStream> export(ExportAnalyticsRequest request) {
+        return export(request, null);
     }
 
     /**
      * Streams the workspace's analytics as a file: <code>kind=posts</code> lists each post published in the range on each channel with its latest counts, <code>kind=accounts</code> each channel's account day by day. <code>format=csv</code> (the default) writes a header line then one line a row, as RFC 4180; <code>format=json</code> writes one JSON object a line (<code>application/x-ndjson</code>). A number a platform does not give is empty in CSV and null in JSON. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. Needs analytics:read.
      */
-    public PealClientHttpResponse<InputStream> export(
-            String workspaceId, ExportAnalyticsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<InputStream> export(ExportAnalyticsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("analytics")
-                .addPathSegments("export");
+                .addPathSegments("api/v1/analytics/export");
         if (request.getDays().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "days", request.getDays().get(), false);
@@ -436,21 +423,18 @@ public class RawAnalyticsClient {
     /**
      * Answers when one channel's posts did best, by weekday and hour as <code>timeZone</code> (an IANA zone) runs them, over the last <code>days</code> (30, 90 or 180, 90 unless given; fewer where the platform lets Peal keep less): for each hour, how many of its posts went live in it and the median of what each was given, likes, reposts, replies and quotes together, those the platform gives (<code>counted</code> is false where it gives none). It describes this channel's past and predicts nothing: counts of different platforms are never added, an hour with fewer than 3 posts has no median, and a channel with fewer than 20 posts in the range answers <code>enough: false</code> with no ranking. <code>best</code> lists at most 5 hours, by median then by posts. Posts younger than 48 hours are left out (<code>recent</code>), as are posts Peal deleted from the platform. Needs analytics:read.
      */
-    public PealClientHttpResponse<BestTimes> bestTimes(String workspaceId, BestTimesAnalyticsRequest request) {
-        return bestTimes(workspaceId, request, null);
+    public PealClientHttpResponse<BestTimes> bestTimes(BestTimesAnalyticsRequest request) {
+        return bestTimes(request, null);
     }
 
     /**
      * Answers when one channel's posts did best, by weekday and hour as <code>timeZone</code> (an IANA zone) runs them, over the last <code>days</code> (30, 90 or 180, 90 unless given; fewer where the platform lets Peal keep less): for each hour, how many of its posts went live in it and the median of what each was given, likes, reposts, replies and quotes together, those the platform gives (<code>counted</code> is false where it gives none). It describes this channel's past and predicts nothing: counts of different platforms are never added, an hour with fewer than 3 posts has no median, and a channel with fewer than 20 posts in the range answers <code>enough: false</code> with no ranking. <code>best</code> lists at most 5 hours, by median then by posts. Posts younger than 48 hours are left out (<code>recent</code>), as are posts Peal deleted from the platform. Needs analytics:read.
      */
     public PealClientHttpResponse<BestTimes> bestTimes(
-            String workspaceId, BestTimesAnalyticsRequest request, RequestOptions requestOptions) {
+            BestTimesAnalyticsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("analytics")
-                .addPathSegments("best-times");
+                .addPathSegments("api/v1/analytics/best-times");
         QueryStringMapper.addQueryParameter(httpUrl, "channelId", request.getChannelId(), false);
         if (request.getDays().isPresent()) {
             QueryStringMapper.addQueryParameter(
@@ -490,6 +474,9 @@ public class RawAnalyticsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -523,35 +510,32 @@ public class RawAnalyticsClient {
     /**
      * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
      */
-    public PealClientHttpResponse<PostAnalytics> post(String workspaceId, String postId) {
-        return post(workspaceId, postId, PostAnalyticsRequest.builder().build());
+    public PealClientHttpResponse<PostAnalytics> post(String postId) {
+        return post(postId, PostAnalyticsRequest.builder().build());
+    }
+
+    /**
+     * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
+     */
+    public PealClientHttpResponse<PostAnalytics> post(String postId, RequestOptions requestOptions) {
+        return post(postId, PostAnalyticsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
+     */
+    public PealClientHttpResponse<PostAnalytics> post(String postId, PostAnalyticsRequest request) {
+        return post(postId, request, null);
     }
 
     /**
      * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
      */
     public PealClientHttpResponse<PostAnalytics> post(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return post(workspaceId, postId, PostAnalyticsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
-     */
-    public PealClientHttpResponse<PostAnalytics> post(String workspaceId, String postId, PostAnalyticsRequest request) {
-        return post(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
-     */
-    public PealClientHttpResponse<PostAnalytics> post(
-            String workspaceId, String postId, PostAnalyticsRequest request, RequestOptions requestOptions) {
+            String postId, PostAnalyticsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("analytics/posts")
+                .addPathSegments("api/v1/analytics/posts")
                 .addPathSegment(PathSegments.validate(postId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -586,6 +570,9 @@ public class RawAnalyticsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         articleId: "articleId",
  *         body: {
  *             body: {
@@ -17,7 +16,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface UpdateArticlesRequest {
-    workspaceId: string;
     articleId: string;
     body: Peal.ArticleInput;
 }

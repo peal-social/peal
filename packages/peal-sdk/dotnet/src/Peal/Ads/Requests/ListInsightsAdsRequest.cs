@@ -7,9 +7,6 @@ namespace Peal;
 public record ListInsightsAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string AccountId { get; set; }
 
     [JsonIgnore]

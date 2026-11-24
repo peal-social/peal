@@ -7,9 +7,6 @@ namespace Peal;
 public record SearchPostsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? AuthorId { get; set; }
 
     [JsonIgnore]

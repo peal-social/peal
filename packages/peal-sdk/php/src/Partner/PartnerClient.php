@@ -85,7 +85,7 @@ class PartnerClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner",
+                    path: "api/v1/partner",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -147,7 +147,7 @@ class PartnerClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner/overview",
+                    path: "api/v1/partner/overview",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -216,7 +216,7 @@ class PartnerClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner/workspaces",
+                    path: "api/v1/partner/workspaces",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -279,7 +279,7 @@ class PartnerClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner/workspaces",
+                    path: "api/v1/partner/workspaces",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -336,7 +336,7 @@ class PartnerClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner/workspaces/{$workspaceId}",
+                    path: "api/v1/partner/workspaces/{$workspaceId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -390,7 +390,7 @@ class PartnerClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner/workspaces/{$workspaceId}",
+                    path: "api/v1/partner/workspaces/{$workspaceId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -442,7 +442,7 @@ class PartnerClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner/workspaces/{$workspaceId}",
+                    path: "api/v1/partner/workspaces/{$workspaceId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -509,7 +509,7 @@ class PartnerClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner/workspaces/{$workspaceId}/channels/{$channelId}/move",
+                    path: "api/v1/partner/workspaces/{$workspaceId}/channels/{$channelId}/move",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,

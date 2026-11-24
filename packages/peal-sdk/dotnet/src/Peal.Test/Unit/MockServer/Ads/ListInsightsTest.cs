@@ -72,7 +72,7 @@ public class ListInsightsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/accounts/accountId/insights")
+                    .WithPath("/api/v1/ads/accounts/accountId/insights")
                     .UsingGet()
             )
             .RespondWith(
@@ -83,7 +83,7 @@ public class ListInsightsTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ListInsightsAsync(
-            new ListInsightsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
+            new ListInsightsAdsRequest { AccountId = "accountId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -140,7 +140,7 @@ public class ListInsightsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/accounts/accountId/insights")
+                    .WithPath("/api/v1/ads/accounts/accountId/insights")
                     .UsingGet()
             )
             .RespondWith(
@@ -151,7 +151,7 @@ public class ListInsightsTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ListInsightsAsync(
-            new ListInsightsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
+            new ListInsightsAdsRequest { AccountId = "accountId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

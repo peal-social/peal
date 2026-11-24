@@ -40,16 +40,14 @@ export class InboxReviewsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.inboxReviews.listReviewThreads({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.inboxReviews.listReviewThreads()
      */
-    public listReviewThreads(request: Peal.ListReviewThreadsInboxReviewsRequest, requestOptions?: InboxReviewsClient.RequestOptions): core.HttpResponsePromise<Peal.InboxReviewThreadPage> {
+    public listReviewThreads(request: Peal.ListReviewThreadsInboxReviewsRequest = {}, requestOptions?: InboxReviewsClient.RequestOptions): core.HttpResponsePromise<Peal.InboxReviewThreadPage> {
         return core.HttpResponsePromise.fromPromise(this.__listReviewThreads(request, requestOptions));
     }
 
-    private async __listReviewThreads(request: Peal.ListReviewThreadsInboxReviewsRequest, requestOptions?: InboxReviewsClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReviewThreadPage>> {
-        const { workspaceId, channelId, cursor, limit, unanswered } = request;
+    private async __listReviewThreads(request: Peal.ListReviewThreadsInboxReviewsRequest = {}, requestOptions?: InboxReviewsClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReviewThreadPage>> {
+        const { channelId, cursor, limit, unanswered } = request;
         const _queryParams: Record<string, unknown> = {
             channelId,
             cursor,
@@ -57,9 +55,9 @@ export class InboxReviewsClient {
             unanswered: unanswered != null ? unanswered : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/reviews/threads`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/inbox/reviews/threads"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -88,7 +86,7 @@ export class InboxReviewsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/reviews/threads");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/reviews/threads");
     }
 
     /**
@@ -97,6 +95,7 @@ export class InboxReviewsClient {
      * @param {Peal.GetReviewThreadInboxReviewsRequest} request
      * @param {InboxReviewsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -106,7 +105,6 @@ export class InboxReviewsClient {
      *
      * @example
      *     await client.inboxReviews.getReviewThread({
-     *         workspaceId: "workspaceId",
      *         threadId: "threadId"
      *     })
      */
@@ -115,11 +113,11 @@ export class InboxReviewsClient {
     }
 
     private async __getReviewThread(request: Peal.GetReviewThreadInboxReviewsRequest, requestOptions?: InboxReviewsClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReviewThreadDetail>> {
-        const { workspaceId, threadId } = request;
+        const { threadId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/reviews/threads/${core.url.encodePathParam(threadId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/reviews/threads/${core.url.encodePathParam(threadId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -135,6 +133,7 @@ export class InboxReviewsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -147,7 +146,7 @@ export class InboxReviewsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/reviews/threads/{threadId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/reviews/threads/{threadId}");
     }
 
     /**
@@ -156,6 +155,7 @@ export class InboxReviewsClient {
      * @param {Peal.NewInboxReviewReply} request
      * @param {InboxReviewsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -167,7 +167,6 @@ export class InboxReviewsClient {
      *
      * @example
      *     await client.inboxReviews.replyToReview({
-     *         workspaceId: "workspaceId",
      *         reviewId: "reviewId",
      *         text: "text"
      *     })
@@ -177,11 +176,11 @@ export class InboxReviewsClient {
     }
 
     private async __replyToReview(request: Peal.NewInboxReviewReply, requestOptions?: InboxReviewsClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReviewReply>> {
-        const { workspaceId, reviewId, "idempotency-key": idempotencyKey, ..._body } = request;
+        const { reviewId, "idempotency-key": idempotencyKey, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/reviews/${core.url.encodePathParam(reviewId, errors.PealError)}/reply`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/reviews/${core.url.encodePathParam(reviewId, errors.PealError)}/reply`),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
@@ -200,6 +199,7 @@ export class InboxReviewsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -214,7 +214,7 @@ export class InboxReviewsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/inbox/reviews/{reviewId}/reply");
     }
 
     /**
@@ -223,6 +223,7 @@ export class InboxReviewsClient {
      * @param {Peal.WithdrawReviewReplyInboxReviewsRequest} request
      * @param {InboxReviewsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -234,7 +235,6 @@ export class InboxReviewsClient {
      *
      * @example
      *     await client.inboxReviews.withdrawReviewReply({
-     *         workspaceId: "workspaceId",
      *         reviewId: "reviewId"
      *     })
      */
@@ -243,11 +243,11 @@ export class InboxReviewsClient {
     }
 
     private async __withdrawReviewReply(request: Peal.WithdrawReviewReplyInboxReviewsRequest, requestOptions?: InboxReviewsClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReview>> {
-        const { workspaceId, reviewId } = request;
+        const { reviewId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/reviews/${core.url.encodePathParam(reviewId, errors.PealError)}/reply`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/reviews/${core.url.encodePathParam(reviewId, errors.PealError)}/reply`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -263,6 +263,7 @@ export class InboxReviewsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -277,7 +278,7 @@ export class InboxReviewsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/reply");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/inbox/reviews/{reviewId}/reply");
     }
 
     /**
@@ -286,6 +287,7 @@ export class InboxReviewsClient {
      * @param {Peal.SetReviewAnsweredInboxReviewsRequest} request
      * @param {InboxReviewsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -295,7 +297,6 @@ export class InboxReviewsClient {
      *
      * @example
      *     await client.inboxReviews.setReviewAnswered({
-     *         workspaceId: "workspaceId",
      *         reviewId: "reviewId",
      *         answered: true
      *     })
@@ -305,11 +306,11 @@ export class InboxReviewsClient {
     }
 
     private async __setReviewAnswered(request: Peal.SetReviewAnsweredInboxReviewsRequest, requestOptions?: InboxReviewsClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReview>> {
-        const { workspaceId, reviewId, ..._body } = request;
+        const { reviewId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/reviews/${core.url.encodePathParam(reviewId, errors.PealError)}/answered`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/reviews/${core.url.encodePathParam(reviewId, errors.PealError)}/answered`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -328,6 +329,7 @@ export class InboxReviewsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -340,6 +342,6 @@ export class InboxReviewsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/reviews/{reviewId}/answered");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/reviews/{reviewId}/answered");
     }
 }

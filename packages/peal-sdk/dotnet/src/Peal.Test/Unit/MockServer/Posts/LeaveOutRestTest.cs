@@ -315,9 +315,7 @@ public class LeaveOutRestTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/posts/postId/targets/targetId/leave-out-rest"
-                    )
+                    .WithPath("/api/v1/posts/postId/targets/targetId/leave-out-rest")
                     .UsingPost()
             )
             .RespondWith(
@@ -328,12 +326,7 @@ public class LeaveOutRestTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.LeaveOutRestAsync(
-            new LeaveOutRestPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                TargetId = "targetId",
-            }
+            new LeaveOutRestPostsRequest { PostId = "postId", TargetId = "targetId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -456,9 +449,7 @@ public class LeaveOutRestTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/posts/postId/targets/targetId/leave-out-rest"
-                    )
+                    .WithPath("/api/v1/posts/postId/targets/targetId/leave-out-rest")
                     .UsingPost()
             )
             .RespondWith(
@@ -469,12 +460,7 @@ public class LeaveOutRestTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.LeaveOutRestAsync(
-            new LeaveOutRestPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                TargetId = "targetId",
-            }
+            new LeaveOutRestPostsRequest { PostId = "postId", TargetId = "targetId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

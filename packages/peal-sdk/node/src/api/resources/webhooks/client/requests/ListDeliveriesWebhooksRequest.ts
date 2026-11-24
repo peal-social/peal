@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         endpointId: "endpointId"
  *     }
  */
 export interface ListDeliveriesWebhooksRequest {
-    workspaceId: string;
     endpointId: string;
     cursor?: string;
     limit?: string;

@@ -7,9 +7,6 @@ namespace Peal;
 public record NewChannelDefaults
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ChannelId { get; set; }
 
     [JsonPropertyName("options")]

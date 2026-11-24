@@ -30,16 +30,12 @@ class RawInvitationsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[Invitation]]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[Invitation]]:
         """
         Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -49,7 +45,7 @@ class RawInvitationsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/invitations",
+            "api/v1/invitations",
             method="GET",
             request_options=request_options,
         )
@@ -63,6 +59,17 @@ class RawInvitationsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -117,15 +124,13 @@ class RawInvitationsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create(
-        self, workspace_id: str, *, email: str, role: Role, request_options: typing.Optional[RequestOptions] = None
+        self, *, email: str, role: Role, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Invitation]:
         """
         Invites someone to the workspace with a role: Peal emails them a link that works for 7 days, in their language when they have an account, in the inviter's otherwise. A pending invitation to the same address is revoked, and its link stops working. Only owners invite owners. On a server that bills, the members and the other pending invitations must leave room in the workspace's plan (PlanLimitReached). Needs invitation:create, and a member in person: not an API key, nor staff impersonating one.
 
         Parameters
         ----------
-        workspace_id : str
-
         email : str
 
         role : Role
@@ -142,7 +147,7 @@ class RawInvitationsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/invitations",
+            "api/v1/invitations",
             method="POST",
             json={
                 "email": email,
@@ -251,15 +256,13 @@ class RawInvitationsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def revoke(
-        self, workspace_id: str, invitation_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, invitation_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
 
         Parameters
         ----------
-        workspace_id : str
-
         invitation_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -270,13 +273,24 @@ class RawInvitationsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/invitations/{encode_path_param(invitation_id)}",
+            f"api/v1/invitations/{encode_path_param(invitation_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -336,15 +350,13 @@ class AsyncRawInvitationsClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[Invitation]]:
         """
         Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -354,7 +366,7 @@ class AsyncRawInvitationsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/invitations",
+            "api/v1/invitations",
             method="GET",
             request_options=request_options,
         )
@@ -368,6 +380,17 @@ class AsyncRawInvitationsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -422,15 +445,13 @@ class AsyncRawInvitationsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create(
-        self, workspace_id: str, *, email: str, role: Role, request_options: typing.Optional[RequestOptions] = None
+        self, *, email: str, role: Role, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Invitation]:
         """
         Invites someone to the workspace with a role: Peal emails them a link that works for 7 days, in their language when they have an account, in the inviter's otherwise. A pending invitation to the same address is revoked, and its link stops working. Only owners invite owners. On a server that bills, the members and the other pending invitations must leave room in the workspace's plan (PlanLimitReached). Needs invitation:create, and a member in person: not an API key, nor staff impersonating one.
 
         Parameters
         ----------
-        workspace_id : str
-
         email : str
 
         role : Role
@@ -447,7 +468,7 @@ class AsyncRawInvitationsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/invitations",
+            "api/v1/invitations",
             method="POST",
             json={
                 "email": email,
@@ -556,15 +577,13 @@ class AsyncRawInvitationsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def revoke(
-        self, workspace_id: str, invitation_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, invitation_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
 
         Parameters
         ----------
-        workspace_id : str
-
         invitation_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -575,13 +594,24 @@ class AsyncRawInvitationsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/invitations/{encode_path_param(invitation_id)}",
+            f"api/v1/invitations/{encode_path_param(invitation_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

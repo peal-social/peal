@@ -7,9 +7,6 @@ namespace Peal;
 public record ListAdsAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string AccountId { get; set; }
 
     [JsonIgnore]

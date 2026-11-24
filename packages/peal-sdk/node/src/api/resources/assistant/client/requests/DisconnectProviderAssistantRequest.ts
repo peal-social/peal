@@ -5,11 +5,9 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         provider: "anthropic"
  *     }
  */
 export interface DisconnectProviderAssistantRequest {
-    workspaceId: string;
     provider: Peal.AiProvider;
 }

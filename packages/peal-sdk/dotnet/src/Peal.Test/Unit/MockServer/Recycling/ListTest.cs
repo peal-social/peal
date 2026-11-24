@@ -232,10 +232,7 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/recycling").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -244,9 +241,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Recycling.ListAsync(
-            new ListRecyclingRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Recycling.ListAsync(new ListRecyclingRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -303,10 +298,7 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/recycling").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -315,9 +307,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Recycling.ListAsync(
-            new ListRecyclingRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Recycling.ListAsync(new ListRecyclingRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

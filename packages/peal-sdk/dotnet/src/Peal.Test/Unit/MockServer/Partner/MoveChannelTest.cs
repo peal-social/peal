@@ -41,7 +41,7 @@ public class MoveChannelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces/workspaceId/channels/channelId/move")
+                    .WithPath("/api/v1/partner/workspaces/workspaceId/channels/channelId/move")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -96,7 +96,7 @@ public class MoveChannelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces/workspaceId/channels/channelId/move")
+                    .WithPath("/api/v1/partner/workspaces/workspaceId/channels/channelId/move")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)

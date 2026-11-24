@@ -4,8 +4,6 @@ module Peal
   module MediaAudio
     module Types
       class VoiceoverRequest < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :text, -> { String }, optional: false, nullable: false
 
         field :voice, -> { String }, optional: true, nullable: false

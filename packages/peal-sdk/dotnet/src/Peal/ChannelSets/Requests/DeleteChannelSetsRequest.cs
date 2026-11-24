@@ -7,9 +7,6 @@ namespace Peal;
 public record DeleteChannelSetsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ChannelSetId { get; set; }
 
     /// <inheritdoc />

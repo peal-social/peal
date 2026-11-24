@@ -4,8 +4,6 @@ module Peal
   module Posts
     module Types
       class NewPost < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :wait, -> { String }, optional: true, nullable: false
 
         field :idempotency_key, -> { String }, optional: true, nullable: false, api_name: "idempotency-key"

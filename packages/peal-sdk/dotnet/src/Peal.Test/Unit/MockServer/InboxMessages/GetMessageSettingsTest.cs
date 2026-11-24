@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -45,7 +44,7 @@ public class GetMessageSettingsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/settings")
+                    .WithPath("/api/v1/inbox/messages/settings")
                     .UsingGet()
             )
             .RespondWith(
@@ -55,9 +54,7 @@ public class GetMessageSettingsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.InboxMessages.GetMessageSettingsAsync(
-            new GetMessageSettingsInboxMessagesRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.InboxMessages.GetMessageSettingsAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -87,7 +84,7 @@ public class GetMessageSettingsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/settings")
+                    .WithPath("/api/v1/inbox/messages/settings")
                     .UsingGet()
             )
             .RespondWith(
@@ -97,9 +94,7 @@ public class GetMessageSettingsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.InboxMessages.GetMessageSettingsAsync(
-            new GetMessageSettingsInboxMessagesRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.InboxMessages.GetMessageSettingsAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

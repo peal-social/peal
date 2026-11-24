@@ -162,10 +162,7 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/follow-ups")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/follow-ups").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -174,9 +171,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.FollowUps.ListAsync(
-            new ListFollowUpsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.FollowUps.ListAsync(new ListFollowUpsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -230,10 +225,7 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/follow-ups")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/follow-ups").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -242,9 +234,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.FollowUps.ListAsync(
-            new ListFollowUpsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.FollowUps.ListAsync(new ListFollowUpsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

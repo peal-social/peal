@@ -51,7 +51,7 @@ public class StopBoostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts/boostId/stop")
+                    .WithPath("/api/v1/ads/boosts/boostId/stop")
                     .UsingPost()
             )
             .RespondWith(
@@ -62,7 +62,7 @@ public class StopBoostTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.StopBoostAsync(
-            new StopBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
+            new StopBoostAdsRequest { BoostId = "boostId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -108,7 +108,7 @@ public class StopBoostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts/boostId/stop")
+                    .WithPath("/api/v1/ads/boosts/boostId/stop")
                     .UsingPost()
             )
             .RespondWith(
@@ -119,7 +119,7 @@ public class StopBoostTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.StopBoostAsync(
-            new StopBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
+            new StopBoostAdsRequest { BoostId = "boostId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

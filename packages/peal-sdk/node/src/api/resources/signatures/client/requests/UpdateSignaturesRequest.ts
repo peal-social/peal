@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         signatureId: "signatureId",
  *         body: {
  *             name: "name",
@@ -14,7 +13,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface UpdateSignaturesRequest {
-    workspaceId: string;
     signatureId: string;
     body: Peal.SignatureDetails;
 }

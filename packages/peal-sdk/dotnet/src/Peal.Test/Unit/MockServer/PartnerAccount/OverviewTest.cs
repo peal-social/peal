@@ -68,7 +68,7 @@ public class OverviewTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner/overview")
+                    .WithPath("/api/v1/partner-account/overview")
                     .UsingGet()
             )
             .RespondWith(
@@ -79,7 +79,7 @@ public class OverviewTest : BaseMockServerTest
             );
 
         var response = await Client.PartnerAccount.OverviewAsync(
-            new OverviewPartnerAccountRequest { WorkspaceId = "workspaceId" }
+            new OverviewPartnerAccountRequest()
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -123,7 +123,7 @@ public class OverviewTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner/overview")
+                    .WithPath("/api/v1/partner-account/overview")
                     .UsingGet()
             )
             .RespondWith(
@@ -134,7 +134,7 @@ public class OverviewTest : BaseMockServerTest
             );
 
         var response = await Client.PartnerAccount.OverviewAsync(
-            new OverviewPartnerAccountRequest { WorkspaceId = "workspaceId" }
+            new OverviewPartnerAccountRequest()
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

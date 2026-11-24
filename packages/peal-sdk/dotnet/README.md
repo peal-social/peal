@@ -46,11 +46,10 @@ Instantiate and use the client with the following:
 ```csharp
 using Peal;
 
-var client = new PealClient("TOKEN");
+var client = new PealClient("TOKEN", "WORKSPACE");
 await client.ApiKeys.CreateAsync(
     new NewApiKey
     {
-        WorkspaceId = "workspaceId",
         Name = "name",
         Permissions = new List<Permission>() { Permission.ActivityRead },
     }

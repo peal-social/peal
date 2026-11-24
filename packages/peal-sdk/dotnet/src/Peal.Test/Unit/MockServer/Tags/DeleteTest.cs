@@ -15,15 +15,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/tags/tagId")
+                    .WithPath("/api/v1/tags/tagId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Tags.DeleteAsync(
-                new DeleteTagsRequest { WorkspaceId = "workspaceId", TagId = "tagId" }
-            )
+            await Client.Tags.DeleteAsync(new DeleteTagsRequest { TagId = "tagId" })
         );
     }
 
@@ -34,15 +32,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/tags/tagId")
+                    .WithPath("/api/v1/tags/tagId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Tags.DeleteAsync(
-                new DeleteTagsRequest { WorkspaceId = "workspaceId", TagId = "tagId" }
-            )
+            await Client.Tags.DeleteAsync(new DeleteTagsRequest { TagId = "tagId" })
         );
     }
 }

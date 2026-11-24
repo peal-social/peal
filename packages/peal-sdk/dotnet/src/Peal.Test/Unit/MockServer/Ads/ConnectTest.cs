@@ -22,7 +22,7 @@ public class ConnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/meta")
+                    .WithPath("/api/v1/ads/connections/meta")
                     .UsingPost()
             )
             .RespondWith(
@@ -33,7 +33,7 @@ public class ConnectTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ConnectAsync(
-            new ConnectAdsRequest { WorkspaceId = "workspaceId", Network = AdNetwork.Meta }
+            new ConnectAdsRequest { Network = AdNetwork.Meta }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -51,7 +51,7 @@ public class ConnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/meta")
+                    .WithPath("/api/v1/ads/connections/meta")
                     .UsingPost()
             )
             .RespondWith(
@@ -62,7 +62,7 @@ public class ConnectTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ConnectAsync(
-            new ConnectAdsRequest { WorkspaceId = "workspaceId", Network = AdNetwork.Meta }
+            new ConnectAdsRequest { Network = AdNetwork.Meta }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

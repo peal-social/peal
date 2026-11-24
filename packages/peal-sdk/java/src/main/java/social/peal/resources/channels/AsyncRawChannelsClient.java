@@ -41,21 +41,19 @@ import social.peal.resources.channels.requests.ChannelUpdate;
 import social.peal.resources.channels.requests.ChooseAccounts;
 import social.peal.resources.channels.requests.ConnectCallback;
 import social.peal.resources.channels.requests.ConnectChannel;
-import social.peal.resources.channels.requests.ConnectChatChannelsRequest;
 import social.peal.resources.channels.requests.ConnectSite;
 import social.peal.resources.channels.requests.ConnectSiteWithKey;
 import social.peal.resources.channels.requests.DisableChannelsRequest;
 import social.peal.resources.channels.requests.DisconnectChannelsRequest;
 import social.peal.resources.channels.requests.EnableChannelsRequest;
 import social.peal.resources.channels.requests.FindChannelsRequest;
-import social.peal.resources.channels.requests.ListChannelsRequest;
-import social.peal.resources.channels.requests.PlatformsChannelsRequest;
 import social.peal.resources.channels.requests.ReconnectChannelsRequest;
 import social.peal.resources.channels.requests.SiteSignInCallback;
 import social.peal.resources.channels.requests.StartSiteSignIn;
 import social.peal.types.Authorization;
 import social.peal.types.Channel;
 import social.peal.types.ChannelPage;
+import social.peal.types.ConnectChat;
 import social.peal.types.ConnectOutcome;
 import social.peal.types.ConnectablePlatforms;
 import social.peal.types.OAuthSitePlatform;
@@ -72,47 +70,28 @@ public class AsyncRawChannelsClient {
     /**
      * Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<Channel>>> list(String workspaceId) {
-        return list(workspaceId, ListChannelsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<Channel>>> list() {
+        return list(null);
     }
 
     /**
      * Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<Channel>>> list(
-            String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListChannelsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<Channel>>> list(
-            String workspaceId, ListChannelsRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<Channel>>> list(
-            String workspaceId, ListChannelsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<List<Channel>>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels");
+                .addPathSegments("api/v1/channels");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -142,6 +121,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -195,37 +179,32 @@ public class AsyncRawChannelsClient {
     /**
      * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ChannelPage>> find(String workspaceId) {
-        return find(workspaceId, FindChannelsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ChannelPage>> find() {
+        return find(FindChannelsRequest.builder().build());
+    }
+
+    /**
+     * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<ChannelPage>> find(RequestOptions requestOptions) {
+        return find(FindChannelsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<ChannelPage>> find(FindChannelsRequest request) {
+        return find(request, null);
     }
 
     /**
      * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelPage>> find(
-            String workspaceId, RequestOptions requestOptions) {
-        return find(workspaceId, FindChannelsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ChannelPage>> find(
-            String workspaceId, FindChannelsRequest request) {
-        return find(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ChannelPage>> find(
-            String workspaceId, FindChannelsRequest request, RequestOptions requestOptions) {
+            FindChannelsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
-                .addPathSegments("search");
+                .addPathSegments("api/v1/channels/search");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -341,48 +320,28 @@ public class AsyncRawChannelsClient {
     /**
      * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> platforms(String workspaceId) {
-        return platforms(workspaceId, PlatformsChannelsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> platforms() {
+        return platforms(null);
     }
 
     /**
      * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> platforms(
-            String workspaceId, RequestOptions requestOptions) {
-        return platforms(workspaceId, PlatformsChannelsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
-     */
-    public CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> platforms(
-            String workspaceId, PlatformsChannelsRequest request) {
-        return platforms(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
-     */
-    public CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> platforms(
-            String workspaceId, PlatformsChannelsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> platforms(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
-                .addPathSegments("platforms");
+                .addPathSegments("api/v1/channels/platforms");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -411,6 +370,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -464,21 +428,18 @@ public class AsyncRawChannelsClient {
     /**
      * Connects a website, to publish articles to it: a WordPress site, by its address, the login name of the user Peal publishes as and an application password made for Peal on that user's profile page. Peal finds the site's REST API, checks the user may publish posts and upload files, and keeps the password encrypted. The site must be on HTTPS at a public address (SiteNotConnected <code>addressNotAllowed</code>); one that has no WordPress REST API is <code>notWordPress</code>, a refused password <code>credentialsRefused</code>, a user who may not publish <code>cannotPublish</code>. A site that does not answer, or fails on its side, is PlatformUnreachable. The REST API must be on the same site as the home page (<code>addressNotAllowed</code>). A site the workspace has already, at the same home page, is reconnected with the new password, even where its API's address changed. A site counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the site is called. A workspace tries 30 times an hour at most (SiteConnectLimited). Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Channel>> connectSite(String workspaceId, ConnectSite request) {
-        return connectSite(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Channel>> connectSite(ConnectSite request) {
+        return connectSite(request, null);
     }
 
     /**
      * Connects a website, to publish articles to it: a WordPress site, by its address, the login name of the user Peal publishes as and an application password made for Peal on that user's profile page. Peal finds the site's REST API, checks the user may publish posts and upload files, and keeps the password encrypted. The site must be on HTTPS at a public address (SiteNotConnected <code>addressNotAllowed</code>); one that has no WordPress REST API is <code>notWordPress</code>, a refused password <code>credentialsRefused</code>, a user who may not publish <code>cannotPublish</code>. A site that does not answer, or fails on its side, is PlatformUnreachable. The REST API must be on the same site as the home page (<code>addressNotAllowed</code>). A site the workspace has already, at the same home page, is reconnected with the new password, even where its API's address changed. A site counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the site is called. A workspace tries 30 times an hour at most (SiteConnectLimited). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> connectSite(
-            String workspaceId, ConnectSite request, RequestOptions requestOptions) {
+            ConnectSite request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
-                .addPathSegments("websites");
+                .addPathSegments("api/v1/channels/websites");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -522,6 +483,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -590,22 +556,18 @@ public class AsyncRawChannelsClient {
     /**
      * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (<code>devto</code>), an API key from the account's settings (Extensions); on Hashnode (<code>hashnode</code>), a personal access token from the account's settings (Developer) and the publication's address in <code>publication</code>, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected <code>credentialsRefused</code>; a Hashnode publication that is not found is <code>publicationNotFound</code>, one of a team that lists the member as a contributor <code>cannotPublish</code> (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several <code>publicationRequired</code>, and one without Hashnode's Pro plan, which its API needs for every request, <code>planRequired</code>; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Channel>> connectSiteWithKey(
-            String workspaceId, ConnectSiteWithKey request) {
-        return connectSiteWithKey(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Channel>> connectSiteWithKey(ConnectSiteWithKey request) {
+        return connectSiteWithKey(request, null);
     }
 
     /**
      * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (<code>devto</code>), an API key from the account's settings (Extensions); on Hashnode (<code>hashnode</code>), a personal access token from the account's settings (Developer) and the publication's address in <code>publication</code>, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected <code>credentialsRefused</code>; a Hashnode publication that is not found is <code>publicationNotFound</code>, one of a team that lists the member as a contributor <code>cannotPublish</code> (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several <code>publicationRequired</code>, and one without Hashnode's Pro plan, which its API needs for every request, <code>planRequired</code>; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> connectSiteWithKey(
-            String workspaceId, ConnectSiteWithKey request, RequestOptions requestOptions) {
+            ConnectSiteWithKey request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels/websites")
-                .addPathSegments("keys");
+                .addPathSegments("api/v1/channels/websites/keys");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -649,6 +611,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -717,22 +684,18 @@ public class AsyncRawChannelsClient {
     /**
      * Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (<code>discord</code>) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (<code>telegram</code>) by the token of the member's own bot and the chat, its public name (<code>@name</code>) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected <code>addressNotAWebhook</code>, before any call; a webhook Discord does not have <code>webhookNotFound</code>, one that does not post messages <code>webhookKindNotSupported</code>; a bot's token Telegram refuses <code>credentialsRefused</code>, a chat it does not know or the bot is not in <code>chatNotFound</code>, a private chat <code>chatKindNotSupported</code>, and a chat the bot may not post in <code>cannotPost</code> (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With <code>channelId</code>, it reconnects that channel, and the secret must reach its chat again (ConnectFailed <code>accountMismatch</code>). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed <code>notConfigured</code>. Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Channel>> connectChat(
-            String workspaceId, ConnectChatChannelsRequest request) {
-        return connectChat(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Channel>> connectChat(ConnectChat request) {
+        return connectChat(request, null);
     }
 
     /**
      * Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (<code>discord</code>) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (<code>telegram</code>) by the token of the member's own bot and the chat, its public name (<code>@name</code>) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected <code>addressNotAWebhook</code>, before any call; a webhook Discord does not have <code>webhookNotFound</code>, one that does not post messages <code>webhookKindNotSupported</code>; a bot's token Telegram refuses <code>credentialsRefused</code>, a chat it does not know or the bot is not in <code>chatNotFound</code>, a private chat <code>chatKindNotSupported</code>, and a chat the bot may not post in <code>cannotPost</code> (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With <code>channelId</code>, it reconnects that channel, and the secret must reach its chat again (ConnectFailed <code>accountMismatch</code>). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed <code>notConfigured</code>. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> connectChat(
-            String workspaceId, ConnectChatChannelsRequest request, RequestOptions requestOptions) {
+            ConnectChat request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
-                .addPathSegments("chats");
+                .addPathSegments("api/v1/channels/chats");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -742,7 +705,7 @@ public class AsyncRawChannelsClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -776,6 +739,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -844,37 +812,34 @@ public class AsyncRawChannelsClient {
     /**
      * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Authorization>> startSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform) {
-        return startSiteSignIn(workspaceId, platform, StartSiteSignIn.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Authorization>> startSiteSignIn(OAuthSitePlatform platform) {
+        return startSiteSignIn(platform, StartSiteSignIn.builder().build());
     }
 
     /**
      * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Authorization>> startSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, RequestOptions requestOptions) {
-        return startSiteSignIn(workspaceId, platform, StartSiteSignIn.builder().build(), requestOptions);
+            OAuthSitePlatform platform, RequestOptions requestOptions) {
+        return startSiteSignIn(platform, StartSiteSignIn.builder().build(), requestOptions);
     }
 
     /**
      * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Authorization>> startSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, StartSiteSignIn request) {
-        return startSiteSignIn(workspaceId, platform, request, null);
+            OAuthSitePlatform platform, StartSiteSignIn request) {
+        return startSiteSignIn(platform, request, null);
     }
 
     /**
      * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Authorization>> startSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, StartSiteSignIn request, RequestOptions requestOptions) {
+            OAuthSitePlatform platform, StartSiteSignIn request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels/websites/sign-in")
+                .addPathSegments("api/v1/channels/websites/sign-in")
                 .addPathSegment(PathSegments.validate(platform.toString()));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -920,6 +885,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -989,20 +959,18 @@ public class AsyncRawChannelsClient {
      * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected <code>cannotPublish</code>; a reconnect that reached another site ConnectFailed <code>accountMismatch</code>. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> completeSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, SiteSignInCallback request) {
-        return completeSiteSignIn(workspaceId, platform, request, null);
+            OAuthSitePlatform platform, SiteSignInCallback request) {
+        return completeSiteSignIn(platform, request, null);
     }
 
     /**
      * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected <code>cannotPublish</code>; a reconnect that reached another site ConnectFailed <code>accountMismatch</code>. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> completeSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, SiteSignInCallback request, RequestOptions requestOptions) {
+            OAuthSitePlatform platform, SiteSignInCallback request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels/websites/sign-in")
+                .addPathSegments("api/v1/channels/websites/sign-in")
                 .addPathSegment(PathSegments.validate(platform.toString()))
                 .addPathSegments("callback");
         if (requestOptions != null) {
@@ -1048,6 +1016,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1116,36 +1089,33 @@ public class AsyncRawChannelsClient {
     /**
      * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Authorization>> connect(String workspaceId, Platform platform) {
-        return connect(workspaceId, platform, ConnectChannel.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Authorization>> connect(Platform platform) {
+        return connect(platform, ConnectChannel.builder().build());
     }
 
     /**
      * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Authorization>> connect(
-            String workspaceId, Platform platform, RequestOptions requestOptions) {
-        return connect(workspaceId, platform, ConnectChannel.builder().build(), requestOptions);
+            Platform platform, RequestOptions requestOptions) {
+        return connect(platform, ConnectChannel.builder().build(), requestOptions);
+    }
+
+    /**
+     * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
+     */
+    public CompletableFuture<PealClientHttpResponse<Authorization>> connect(Platform platform, ConnectChannel request) {
+        return connect(platform, request, null);
     }
 
     /**
      * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Authorization>> connect(
-            String workspaceId, Platform platform, ConnectChannel request) {
-        return connect(workspaceId, platform, request, null);
-    }
-
-    /**
-     * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
-     */
-    public CompletableFuture<PealClientHttpResponse<Authorization>> connect(
-            String workspaceId, Platform platform, ConnectChannel request, RequestOptions requestOptions) {
+            Platform platform, ConnectChannel request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels/connect")
+                .addPathSegments("api/v1/channels/connect")
                 .addPathSegment(PathSegments.validate(platform.toString()));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1191,6 +1161,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1260,20 +1235,18 @@ public class AsyncRawChannelsClient {
      * Completes a connection with what the platform sent back: the account becomes a channel of the workspace, or the channel it reconnects takes its new tokens. When the sign-in reached several accounts, as the Pages a Facebook user manages, the answer lists them instead, to choose with chooseAccounts. Only the member who started the connection can complete it, once. A new account needs room in the workspace's plan (PlanLimitReached), and, on a server that bills, an X account a payment method (UsageAllowanceReached <code>xApi</code>). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<ConnectOutcome>> completeConnect(
-            String workspaceId, Platform platform, ConnectCallback request) {
-        return completeConnect(workspaceId, platform, request, null);
+            Platform platform, ConnectCallback request) {
+        return completeConnect(platform, request, null);
     }
 
     /**
      * Completes a connection with what the platform sent back: the account becomes a channel of the workspace, or the channel it reconnects takes its new tokens. When the sign-in reached several accounts, as the Pages a Facebook user manages, the answer lists them instead, to choose with chooseAccounts. Only the member who started the connection can complete it, once. A new account needs room in the workspace's plan (PlanLimitReached), and, on a server that bills, an X account a payment method (UsageAllowanceReached <code>xApi</code>). Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<ConnectOutcome>> completeConnect(
-            String workspaceId, Platform platform, ConnectCallback request, RequestOptions requestOptions) {
+            Platform platform, ConnectCallback request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels/connect")
+                .addPathSegments("api/v1/channels/connect")
                 .addPathSegment(PathSegments.validate(platform.toString()))
                 .addPathSegments("callback");
         if (requestOptions != null) {
@@ -1320,6 +1293,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1389,20 +1367,18 @@ public class AsyncRawChannelsClient {
      * Connects the accounts the member chose among those a completed sign-in listed: each becomes a channel of the workspace, or reconnects the one it has. The new accounts chosen need room in the workspace's plan, all of them: otherwise none is connected (PlanLimitReached), and the choice can be made again with fewer. Only the member who completed the sign-in can choose, within 15 minutes, and once an account is connected: a choice that failed before connecting any can be made again. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<List<Channel>>> chooseAccounts(
-            String workspaceId, Platform platform, ChooseAccounts request) {
-        return chooseAccounts(workspaceId, platform, request, null);
+            Platform platform, ChooseAccounts request) {
+        return chooseAccounts(platform, request, null);
     }
 
     /**
      * Connects the accounts the member chose among those a completed sign-in listed: each becomes a channel of the workspace, or reconnects the one it has. The new accounts chosen need room in the workspace's plan, all of them: otherwise none is connected (PlanLimitReached), and the choice can be made again with fewer. Only the member who completed the sign-in can choose, within 15 minutes, and once an account is connected: a choice that failed before connecting any can be made again. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<List<Channel>>> chooseAccounts(
-            String workspaceId, Platform platform, ChooseAccounts request, RequestOptions requestOptions) {
+            Platform platform, ChooseAccounts request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels/connect")
+                .addPathSegments("api/v1/channels/connect")
                 .addPathSegment(PathSegments.validate(platform.toString()))
                 .addPathSegments("accounts");
         if (requestOptions != null) {
@@ -1450,6 +1426,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1518,38 +1499,34 @@ public class AsyncRawChannelsClient {
     /**
      * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Authorization>> reconnect(String workspaceId, String channelId) {
-        return reconnect(
-                workspaceId, channelId, ReconnectChannelsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Authorization>> reconnect(String channelId) {
+        return reconnect(channelId, ReconnectChannelsRequest.builder().build());
     }
 
     /**
      * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Authorization>> reconnect(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return reconnect(
-                workspaceId, channelId, ReconnectChannelsRequest.builder().build(), requestOptions);
+            String channelId, RequestOptions requestOptions) {
+        return reconnect(channelId, ReconnectChannelsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Authorization>> reconnect(
-            String workspaceId, String channelId, ReconnectChannelsRequest request) {
-        return reconnect(workspaceId, channelId, request, null);
+            String channelId, ReconnectChannelsRequest request) {
+        return reconnect(channelId, request, null);
     }
 
     /**
      * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Authorization>> reconnect(
-            String workspaceId, String channelId, ReconnectChannelsRequest request, RequestOptions requestOptions) {
+            String channelId, ReconnectChannelsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("reconnect");
         if (request.getMessages().isPresent()) {
@@ -1598,6 +1575,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1661,38 +1643,33 @@ public class AsyncRawChannelsClient {
     /**
      * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> disconnect(String workspaceId, String channelId) {
-        return disconnect(
-                workspaceId, channelId, DisconnectChannelsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> disconnect(String channelId) {
+        return disconnect(channelId, DisconnectChannelsRequest.builder().build());
+    }
+
+    /**
+     * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> disconnect(String channelId, RequestOptions requestOptions) {
+        return disconnect(channelId, DisconnectChannelsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> disconnect(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return disconnect(
-                workspaceId, channelId, DisconnectChannelsRequest.builder().build(), requestOptions);
+            String channelId, DisconnectChannelsRequest request) {
+        return disconnect(channelId, request, null);
     }
 
     /**
      * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> disconnect(
-            String workspaceId, String channelId, DisconnectChannelsRequest request) {
-        return disconnect(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> disconnect(
-            String workspaceId, String channelId, DisconnectChannelsRequest request, RequestOptions requestOptions) {
+            String channelId, DisconnectChannelsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1734,6 +1711,11 @@ public class AsyncRawChannelsClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1787,21 +1769,18 @@ public class AsyncRawChannelsClient {
     /**
      * Gives the channel the name the workspace calls it by (<code>label</code>, 60 characters at most, on one line), or takes it back with null. The name is Peal's own: it is shown beside the handle and name the platform gives the account, which stay, and is sent to no platform. Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Channel>> update(
-            String workspaceId, String channelId, ChannelUpdate request) {
-        return update(workspaceId, channelId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Channel>> update(String channelId, ChannelUpdate request) {
+        return update(channelId, request, null);
     }
 
     /**
      * Gives the channel the name the workspace calls it by (<code>label</code>, 60 characters at most, on one line), or takes it back with null. The name is Peal's own: it is shown beside the handle and name the platform gives the account, which stay, and is sent to no platform. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> update(
-            String workspaceId, String channelId, ChannelUpdate request, RequestOptions requestOptions) {
+            String channelId, ChannelUpdate request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1846,6 +1825,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1899,36 +1883,33 @@ public class AsyncRawChannelsClient {
     /**
      * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Channel>> disable(String workspaceId, String channelId) {
-        return disable(workspaceId, channelId, DisableChannelsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Channel>> disable(String channelId) {
+        return disable(channelId, DisableChannelsRequest.builder().build());
+    }
+
+    /**
+     * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
+     */
+    public CompletableFuture<PealClientHttpResponse<Channel>> disable(String channelId, RequestOptions requestOptions) {
+        return disable(channelId, DisableChannelsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> disable(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return disable(workspaceId, channelId, DisableChannelsRequest.builder().build(), requestOptions);
+            String channelId, DisableChannelsRequest request) {
+        return disable(channelId, request, null);
     }
 
     /**
      * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> disable(
-            String workspaceId, String channelId, DisableChannelsRequest request) {
-        return disable(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
-     */
-    public CompletableFuture<PealClientHttpResponse<Channel>> disable(
-            String workspaceId, String channelId, DisableChannelsRequest request, RequestOptions requestOptions) {
+            String channelId, DisableChannelsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("disable");
         if (requestOptions != null) {
@@ -1968,6 +1949,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2021,36 +2007,32 @@ public class AsyncRawChannelsClient {
     /**
      * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
      */
-    public CompletableFuture<PealClientHttpResponse<Channel>> enable(String workspaceId, String channelId) {
-        return enable(workspaceId, channelId, EnableChannelsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Channel>> enable(String channelId) {
+        return enable(channelId, EnableChannelsRequest.builder().build());
+    }
+
+    /**
+     * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
+     */
+    public CompletableFuture<PealClientHttpResponse<Channel>> enable(String channelId, RequestOptions requestOptions) {
+        return enable(channelId, EnableChannelsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
+     */
+    public CompletableFuture<PealClientHttpResponse<Channel>> enable(String channelId, EnableChannelsRequest request) {
+        return enable(channelId, request, null);
     }
 
     /**
      * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
      */
     public CompletableFuture<PealClientHttpResponse<Channel>> enable(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return enable(workspaceId, channelId, EnableChannelsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
-     */
-    public CompletableFuture<PealClientHttpResponse<Channel>> enable(
-            String workspaceId, String channelId, EnableChannelsRequest request) {
-        return enable(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
-     */
-    public CompletableFuture<PealClientHttpResponse<Channel>> enable(
-            String workspaceId, String channelId, EnableChannelsRequest request, RequestOptions requestOptions) {
+            String channelId, EnableChannelsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("enable");
         if (requestOptions != null) {
@@ -2090,6 +2072,11 @@ public class AsyncRawChannelsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListRecyclingRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListRecyclingRequest{}
 //	_, err := client.Recycling.List(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.NewRecyclingRule{
-//	    WorkspaceID: "workspaceId",
 //	    Every: &peal.RecyclingInterval{
 //	        Count: 1,
 //	        Unit: peal.RecyclingUnitDays,
@@ -98,7 +95,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.GetRecyclingRequest{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	_, err := client.Recycling.Get(
@@ -126,7 +122,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.DeleteRecyclingRequest{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	err := client.Recycling.Delete(
@@ -154,7 +149,6 @@ func (c *Client) Delete(
 // Example:
 //
 //	request := &peal.RecyclingRuleChange{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	_, err := client.Recycling.Update(
@@ -182,7 +176,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.RecyclingResume{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	_, err := client.Recycling.Resume(

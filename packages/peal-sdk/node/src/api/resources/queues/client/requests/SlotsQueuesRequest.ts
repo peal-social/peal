@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         queueId: "queueId"
  *     }
  */
 export interface SlotsQueuesRequest {
-    workspaceId: string;
     queueId: string;
     count?: string;
 }

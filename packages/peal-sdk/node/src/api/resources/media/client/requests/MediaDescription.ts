@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         mediaId: "mediaId",
  *         altText: null
  *     }
  */
 export interface MediaDescription {
-    workspaceId: string;
     mediaId: string;
     altText: string | null;
 }

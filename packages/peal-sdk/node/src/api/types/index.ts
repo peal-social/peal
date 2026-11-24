@@ -865,6 +865,7 @@ export * from "./Weekday.js";
 export * from "./WorkspaceBusyEncoded.js";
 export * from "./WorkspaceMember.js";
 export * from "./WorkspaceNotFoundEncoded.js";
+export * from "./WorkspaceRequiredEncoded.js";
 export * from "./WorkspaceUsageReport.js";
 export * from "./XOptions.js";
 export * from "./XReplySettings.js";

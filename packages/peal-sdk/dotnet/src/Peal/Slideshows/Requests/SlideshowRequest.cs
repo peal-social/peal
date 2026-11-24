@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record SlideshowRequest
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("aspect")]
     public required ImageAspect Aspect { get; set; }
 

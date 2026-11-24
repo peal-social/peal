@@ -64,7 +64,7 @@ public class SearchDeliveriesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/deliveries")
+                    .WithPath("/api/v1/webhooks/deliveries")
                     .UsingGet()
             )
             .RespondWith(
@@ -75,7 +75,7 @@ public class SearchDeliveriesTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.SearchDeliveriesAsync(
-            new SearchDeliveriesWebhooksRequest { WorkspaceId = "workspaceId" }
+            new SearchDeliveriesWebhooksRequest()
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -115,7 +115,7 @@ public class SearchDeliveriesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/deliveries")
+                    .WithPath("/api/v1/webhooks/deliveries")
                     .UsingGet()
             )
             .RespondWith(
@@ -126,7 +126,7 @@ public class SearchDeliveriesTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.SearchDeliveriesAsync(
-            new SearchDeliveriesWebhooksRequest { WorkspaceId = "workspaceId" }
+            new SearchDeliveriesWebhooksRequest()
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

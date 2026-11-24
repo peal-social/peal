@@ -26,7 +26,7 @@ public class StartSiteSignInTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/websites/sign-in/wordpressCom")
+                    .WithPath("/api/v1/channels/websites/sign-in/wordpressCom")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -39,12 +39,7 @@ public class StartSiteSignInTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.StartSiteSignInAsync(
-            new StartSiteSignIn
-            {
-                WorkspaceId = "workspaceId",
-                Platform = OAuthSitePlatform.WordpressCom,
-                ChannelId = null,
-            }
+            new StartSiteSignIn { Platform = OAuthSitePlatform.WordpressCom, ChannelId = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -66,7 +61,7 @@ public class StartSiteSignInTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/websites/sign-in/wordpressCom")
+                    .WithPath("/api/v1/channels/websites/sign-in/wordpressCom")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -79,11 +74,7 @@ public class StartSiteSignInTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.StartSiteSignInAsync(
-            new StartSiteSignIn
-            {
-                WorkspaceId = "workspaceId",
-                Platform = OAuthSitePlatform.WordpressCom,
-            }
+            new StartSiteSignIn { Platform = OAuthSitePlatform.WordpressCom }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

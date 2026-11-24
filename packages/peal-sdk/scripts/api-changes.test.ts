@@ -4,6 +4,7 @@ import { Predicate, Schema as SchemaModule } from "effect";
 import type { Schema } from "effect";
 
 import { apiChanges, lineOf, operationCount } from "./api-changes.ts";
+import type { PathMove } from "./api-changes.ts";
 
 type JsonObject = Schema.JsonObject;
 
@@ -470,5 +471,109 @@ describe("what a client sends may not be narrowed, nor what it is promised taken
   it("finds a document that lists no operation at all", () => {
     expect(operationCount({})).toBe(0);
     expect(operationCount(released())).toBe(2);
+  });
+});
+
+// The posts' operations under another path, as an edit.
+const renamed = (from: string, to: string): Edit => [
+  "paths",
+  (found) =>
+    isObject(found)
+      ? Object.fromEntries(
+          Object.entries(found).map(([key, value]) => [
+            key === from ? to : key,
+            value,
+          ])
+        )
+      : found,
+];
+
+// The breaking changes, with these moves declared.
+const breakingWith = (
+  before: JsonObject,
+  after: JsonObject,
+  moves: readonly PathMove[]
+) =>
+  apiChanges(before, after, moves)
+    .filter(({ kind }) => kind === "breaking")
+    .map(lineOf);
+
+describe("a move of operations decided on", () => {
+  const workspaceParameter = {
+    in: "path",
+    name: "workspaceId",
+    required: true,
+    schema: { type: "string" },
+  };
+
+  // The released posts, under a workspace's path that names it.
+  const underWorkspace = changed(
+    [`${list}>parameters`, adding(workspaceParameter)],
+    [`${create}>parameters`, adding(workspaceParameter)],
+    renamed("/api/posts", "/api/workspaces/{workspaceId}/posts")
+  );
+
+  // The same, under /api/v1, and changed as `edits` say.
+  const v1 = (...edits: readonly Edit[]) =>
+    changed(...edits, renamed("/api/posts", "/api/v1/posts"));
+
+  const move = {
+    dropping: "workspaceId",
+    from: "/api/workspaces/{workspaceId}",
+    to: "/api/v1",
+  };
+
+  it("compares each operation at its new place, without the parameter it drops", () => {
+    expect(apiChanges(underWorkspace, v1(), [move])).toEqual([
+      {
+        kind: "move",
+        move,
+        what: "moved from GET /api/workspaces/{workspaceId}/posts to GET /api/v1/posts",
+        where: "posts.list",
+      },
+      {
+        kind: "move",
+        move,
+        what: "moved from POST /api/workspaces/{workspaceId}/posts to POST /api/v1/posts",
+        where: "posts.create",
+      },
+    ]);
+  });
+
+  it("still finds every other change of a moved operation", () => {
+    expect(
+      breakingWith(
+        underWorkspace,
+        v1(
+          [`${list}>parameters>1>required`, true],
+          [`${create}>operationId`, "posts.make"]
+        ),
+        [move]
+      )
+    ).toEqual([
+      "posts.list: query parameter limit was optional, and is now required",
+      "posts.create is now called posts.make: the SDKs' method changes name",
+    ]);
+  });
+
+  it("drops only the parameter it names, and moves nothing it was not declared for", () => {
+    expect(
+      breakingWith(underWorkspace, v1(), [{ from: move.from, to: move.to }])
+    ).toEqual([
+      "posts.list: path parameter workspaceId is no longer taken",
+      "posts.create: path parameter workspaceId is no longer taken",
+    ]);
+
+    const gone = [
+      "posts.list is gone (GET /api/workspaces/{workspaceId}/posts)",
+      "posts.create is gone (POST /api/workspaces/{workspaceId}/posts)",
+    ];
+
+    expect(breakingWith(underWorkspace, v1(), [])).toEqual(gone);
+    expect(
+      breakingWith(underWorkspace, v1(), [
+        { ...move, from: "/api/teams/{teamId}" },
+      ])
+    ).toEqual(gone);
   });
 });

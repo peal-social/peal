@@ -32,8 +32,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/tags")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/tags")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -45,11 +44,7 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Tags.CreateAsync(
-            new CreateTagsRequest
-            {
-                WorkspaceId = "workspaceId",
-                Body = new TagDetails { Colour = TagColour.Gray, Name = "x" },
-            }
+            new TagDetails { Colour = TagColour.Gray, Name = "x" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -77,8 +72,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/tags")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/tags")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -90,11 +84,7 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Tags.CreateAsync(
-            new CreateTagsRequest
-            {
-                WorkspaceId = "workspaceId",
-                Body = new TagDetails { Colour = TagColour.Gray, Name = "name" },
-            }
+            new TagDetails { Colour = TagColour.Gray, Name = "name" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

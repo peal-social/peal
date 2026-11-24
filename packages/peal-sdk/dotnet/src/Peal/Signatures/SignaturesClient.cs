@@ -13,7 +13,6 @@ public partial class SignaturesClient : ISignaturesClient
     }
 
     private async Task<WithRawResponse<IEnumerable<Signature>>> ListAsyncCore(
-        ListSignaturesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class SignaturesClient : ISignaturesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/signatures",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/signatures",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class SignaturesClient : ISignaturesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -155,7 +163,7 @@ public partial class SignaturesClient : ISignaturesClient
     }
 
     private async Task<WithRawResponse<Signature>> CreateAsyncCore(
-        CreateSignaturesRequest request,
+        SignatureDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -174,14 +182,10 @@ public partial class SignaturesClient : ISignaturesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/signatures",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/signatures",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                     RetriesDisabled = true,
                 },
@@ -231,6 +235,18 @@ public partial class SignaturesClient : ISignaturesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -344,8 +360,7 @@ public partial class SignaturesClient : ISignaturesClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/signatures/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/signatures/{0}",
                         ValueConvert.ToPathParameterString(request.SignatureId)
                     ),
                     Body = request.Body,
@@ -400,6 +415,18 @@ public partial class SignaturesClient : ISignaturesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -513,8 +540,7 @@ public partial class SignaturesClient : ISignaturesClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/signatures/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/signatures/{0}",
                         ValueConvert.ToPathParameterString(request.SignatureId)
                     ),
                     QueryString = _queryString,
@@ -541,6 +567,18 @@ public partial class SignaturesClient : ISignaturesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -613,16 +651,15 @@ public partial class SignaturesClient : ISignaturesClient
     /// Lists the workspace's signatures, oldest first. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Signatures.ListAsync(new ListSignaturesRequest { WorkspaceId = "workspaceId" });
+    /// await client.Signatures.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<Signature>> ListAsync(
-        ListSignaturesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<Signature>>(
-            ListAsyncCore(request, options, cancellationToken)
+            ListAsyncCore(options, cancellationToken)
         );
     }
 
@@ -630,16 +667,10 @@ public partial class SignaturesClient : ISignaturesClient
     /// Adds a signature to the workspace: a name no other signature of the workspace has whatever its case, a text of 2000 characters at most, and the `scope` it is meant for (the whole `workspace`, a `platform`, or one `channel` of the workspace). With `isDefault`, new posts that ask for the default signatures take it in its scope, and the signature that was the default of that scope is one no longer. A signature is text of the post once added: it counts against each platform's limit when the post is scheduled. A workspace keeps 50 signatures at most. Needs post:update, and channel:read for a channel's.
     /// </summary>
     /// <example><code>
-    /// await client.Signatures.CreateAsync(
-    ///     new CreateSignaturesRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new SignatureDetails { Name = "name", Text = "text" },
-    ///     }
-    /// );
+    /// await client.Signatures.CreateAsync(new SignatureDetails { Name = "name", Text = "text" });
     /// </code></example>
     public WithRawResponseTask<Signature> CreateAsync(
-        CreateSignaturesRequest request,
+        SignatureDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -656,7 +687,6 @@ public partial class SignaturesClient : ISignaturesClient
     /// await client.Signatures.UpdateAsync(
     ///     new UpdateSignaturesRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         SignatureId = "signatureId",
     ///         Body = new SignatureDetails { Name = "name", Text = "text" },
     ///     }
@@ -677,9 +707,7 @@ public partial class SignaturesClient : ISignaturesClient
     /// Deletes a signature. Posts that already hold its text keep it. Needs post:update.
     /// </summary>
     /// <example><code>
-    /// await client.Signatures.DeleteAsync(
-    ///     new DeleteSignaturesRequest { WorkspaceId = "workspaceId", SignatureId = "signatureId" }
-    /// );
+    /// await client.Signatures.DeleteAsync(new DeleteSignaturesRequest { SignatureId = "signatureId" });
     /// </code></example>
     public WithRawResponseTask DeleteAsync(
         DeleteSignaturesRequest request,

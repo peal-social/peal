@@ -10,19 +10,17 @@ import (
 )
 
 var (
-	listActivityRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listActivityRequestFieldActor       = big.NewInt(1 << 1)
-	listActivityRequestFieldCursor      = big.NewInt(1 << 2)
-	listActivityRequestFieldLimit       = big.NewInt(1 << 3)
-	listActivityRequestFieldOperation   = big.NewInt(1 << 4)
+	listActivityRequestFieldActor     = big.NewInt(1 << 0)
+	listActivityRequestFieldCursor    = big.NewInt(1 << 1)
+	listActivityRequestFieldLimit     = big.NewInt(1 << 2)
+	listActivityRequestFieldOperation = big.NewInt(1 << 3)
 )
 
 type ListActivityRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Actor       *string `json:"-" url:"actor,omitempty"`
-	Cursor      *string `json:"-" url:"cursor,omitempty"`
-	Limit       *string `json:"-" url:"limit,omitempty"`
-	Operation   *string `json:"-" url:"operation,omitempty"`
+	Actor     *string `json:"-" url:"actor,omitempty"`
+	Cursor    *string `json:"-" url:"cursor,omitempty"`
+	Limit     *string `json:"-" url:"limit,omitempty"`
+	Operation *string `json:"-" url:"operation,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -35,13 +33,6 @@ func (l *ListActivityRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListActivityRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listActivityRequestFieldWorkspaceID)
 }
 
 // SetActor sets the Actor field and marks it as non-optional;

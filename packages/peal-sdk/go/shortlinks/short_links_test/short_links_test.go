@@ -88,19 +88,15 @@ func TestShortLinksStatusWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.StatusShortLinksRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.ShortLinks.Status(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestShortLinksStatusWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestShortLinksStatusWithWireMock", "GET", "/api/workspaces/workspaceId/short-links/status", nil, 1)
+	VerifyRequestCount(t, "TestShortLinksStatusWithWireMock", "GET", "/api/v1/short-links/status", nil, 1)
 }
 
 func TestShortLinksSetDefaultWithWireMock(
@@ -115,8 +111,7 @@ func TestShortLinksSetDefaultWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ShortLinkSettings{
-		WorkspaceID: "workspaceId",
-		ByDefault:   true,
+		ByDefault: true,
 	}
 	_, invocationErr := client.ShortLinks.SetDefault(
 		context.TODO(),
@@ -127,7 +122,7 @@ func TestShortLinksSetDefaultWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestShortLinksSetDefaultWithWireMock", "PUT", "/api/workspaces/workspaceId/short-links/settings", nil, 1)
+	VerifyRequestCount(t, "TestShortLinksSetDefaultWithWireMock", "PUT", "/api/v1/short-links/settings", nil, 1)
 }
 
 func TestShortLinksListWithWireMock(
@@ -141,9 +136,7 @@ func TestShortLinksListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListShortLinksRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListShortLinksRequest{}
 	_, invocationErr := client.ShortLinks.List(
 		context.TODO(),
 		request,
@@ -153,7 +146,7 @@ func TestShortLinksListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestShortLinksListWithWireMock", "GET", "/api/workspaces/workspaceId/short-links", nil, 1)
+	VerifyRequestCount(t, "TestShortLinksListWithWireMock", "GET", "/api/v1/short-links", nil, 1)
 }
 
 func TestShortLinksGetWithWireMock(
@@ -168,8 +161,7 @@ func TestShortLinksGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetShortLinksRequest{
-		WorkspaceID: "workspaceId",
-		LinkID:      "linkId",
+		LinkID: "linkId",
 	}
 	_, invocationErr := client.ShortLinks.Get(
 		context.TODO(),
@@ -180,5 +172,5 @@ func TestShortLinksGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestShortLinksGetWithWireMock", "GET", "/api/workspaces/workspaceId/short-links/linkId", nil, 1)
+	VerifyRequestCount(t, "TestShortLinksGetWithWireMock", "GET", "/api/v1/short-links/linkId", nil, 1)
 }

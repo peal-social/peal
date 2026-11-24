@@ -7,9 +7,6 @@ namespace Peal;
 public record CommentRuleChange
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string RuleId { get; set; }
 
     [JsonPropertyName("keywords")]

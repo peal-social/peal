@@ -81,7 +81,7 @@ public class CreateCommentRuleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules")
+                    .WithPath("/api/v1/inbox/rules")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -96,7 +96,6 @@ public class CreateCommentRuleTest : BaseMockServerTest
         var response = await Client.InboxRules.CreateCommentRuleAsync(
             new NewCommentRule
             {
-                WorkspaceId = "workspaceId",
                 ChannelId = null,
                 Keywords = new List<string>() { "keywords", "keywords" },
                 PostId = null,
@@ -161,7 +160,7 @@ public class CreateCommentRuleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules")
+                    .WithPath("/api/v1/inbox/rules")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -176,7 +175,6 @@ public class CreateCommentRuleTest : BaseMockServerTest
         var response = await Client.InboxRules.CreateCommentRuleAsync(
             new NewCommentRule
             {
-                WorkspaceId = "workspaceId",
                 Keywords = new List<string>() { "keywords" },
                 Reply = "reply",
             }

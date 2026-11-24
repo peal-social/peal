@@ -88,7 +88,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channel-sets/channelSetId")
+                    .WithPath("/api/v1/channel-sets/channelSetId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -103,7 +103,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.ChannelSets.UpdateAsync(
             new UpdateChannelSetsRequest
             {
-                WorkspaceId = "workspaceId",
                 ChannelSetId = "channelSetId",
                 Body = new ChannelSetDetails
                 {
@@ -154,7 +153,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channel-sets/channelSetId")
+                    .WithPath("/api/v1/channel-sets/channelSetId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -169,7 +168,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.ChannelSets.UpdateAsync(
             new UpdateChannelSetsRequest
             {
-                WorkspaceId = "workspaceId",
                 ChannelSetId = "channelSetId",
                 Body = new ChannelSetDetails
                 {

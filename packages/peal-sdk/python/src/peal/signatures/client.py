@@ -27,16 +27,12 @@ class SignaturesClient:
         """
         return self._raw_client
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[Signature]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Signature]:
         """
         Lists the workspace's signatures, oldest first. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -50,18 +46,16 @@ class SignaturesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.signatures.list(
-            workspace_id="workspaceId",
-        )
+        client.signatures.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         text: str,
@@ -74,8 +68,6 @@ class SignaturesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         text : str
@@ -97,22 +89,21 @@ class SignaturesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.signatures.create(
-            workspace_id="workspaceId",
             name="name",
             text="text",
         )
         """
         _response = self._raw_client.create(
-            workspace_id, name=name, text=text, is_default=is_default, scope=scope, request_options=request_options
+            name=name, text=text, is_default=is_default, scope=scope, request_options=request_options
         )
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         signature_id: str,
         *,
         name: str,
@@ -126,8 +117,6 @@ class SignaturesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         signature_id : str
 
         name : str
@@ -151,36 +140,26 @@ class SignaturesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.signatures.update(
-            workspace_id="workspaceId",
             signature_id="signatureId",
             name="name",
             text="text",
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
-            signature_id,
-            name=name,
-            text=text,
-            is_default=is_default,
-            scope=scope,
-            request_options=request_options,
+            signature_id, name=name, text=text, is_default=is_default, scope=scope, request_options=request_options
         )
         return _response.data
 
-    def delete(
-        self, workspace_id: str, signature_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, signature_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a signature. Posts that already hold its text keep it. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         signature_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -195,14 +174,14 @@ class SignaturesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.signatures.delete(
-            workspace_id="workspaceId",
             signature_id="signatureId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, signature_id, request_options=request_options)
+        _response = self._raw_client.delete(signature_id, request_options=request_options)
         return _response.data
 
 
@@ -221,16 +200,12 @@ class AsyncSignaturesClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[Signature]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Signature]:
         """
         Lists the workspace's signatures, oldest first. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -246,24 +221,22 @@ class AsyncSignaturesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.signatures.list(
-                workspace_id="workspaceId",
-            )
+            await client.signatures.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         text: str,
@@ -276,8 +249,6 @@ class AsyncSignaturesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         text : str
@@ -301,13 +272,13 @@ class AsyncSignaturesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.signatures.create(
-                workspace_id="workspaceId",
                 name="name",
                 text="text",
             )
@@ -316,13 +287,12 @@ class AsyncSignaturesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id, name=name, text=text, is_default=is_default, scope=scope, request_options=request_options
+            name=name, text=text, is_default=is_default, scope=scope, request_options=request_options
         )
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         signature_id: str,
         *,
         name: str,
@@ -336,8 +306,6 @@ class AsyncSignaturesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         signature_id : str
 
         name : str
@@ -363,13 +331,13 @@ class AsyncSignaturesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.signatures.update(
-                workspace_id="workspaceId",
                 signature_id="signatureId",
                 name="name",
                 text="text",
@@ -379,26 +347,16 @@ class AsyncSignaturesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
-            signature_id,
-            name=name,
-            text=text,
-            is_default=is_default,
-            scope=scope,
-            request_options=request_options,
+            signature_id, name=name, text=text, is_default=is_default, scope=scope, request_options=request_options
         )
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, signature_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, signature_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a signature. Posts that already hold its text keep it. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         signature_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -415,18 +373,18 @@ class AsyncSignaturesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.signatures.delete(
-                workspace_id="workspaceId",
                 signature_id="signatureId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, signature_id, request_options=request_options)
+        _response = await self._raw_client.delete(signature_id, request_options=request_options)
         return _response.data

@@ -86,10 +86,7 @@ public class ListBoostsTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/ads/boosts").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -98,9 +95,7 @@ public class ListBoostsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Ads.ListBoostsAsync(
-            new ListBoostsAdsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Ads.ListBoostsAsync(new ListBoostsAdsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -148,10 +143,7 @@ public class ListBoostsTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/ads/boosts").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -160,9 +152,7 @@ public class ListBoostsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Ads.ListBoostsAsync(
-            new ListBoostsAdsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Ads.ListBoostsAsync(new ListBoostsAdsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

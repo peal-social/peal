@@ -38,173 +38,168 @@ public class FeedsClient {
     /**
      * Lists the workspace's feeds, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public FeedPage list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public FeedPage list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's feeds, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public FeedPage list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
+    public FeedPage list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Lists the workspace's feeds, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public FeedPage list(String workspaceId, ListFeedsRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
+    public FeedPage list(ListFeedsRequest request) {
+        return this.rawClient.list(request).body();
     }
 
     /**
      * Lists the workspace's feeds, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public FeedPage list(String workspaceId, ListFeedsRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public FeedPage list(ListFeedsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.list(request, requestOptions).body();
     }
 
     /**
      * Follows a feed at <code>url</code>: it is read once, and refused when it is not a feed; every item it holds then is recorded as seen and never made (<code>seen</code> says how many). Every 60 minutes or so, each item that appears in the feed after it was added becomes a draft (<code>mode</code> <code>draft</code>, the default) or a post on the next free slot of a queue (<code>queue</code>: <code>queueId</code>, or the workspace's default queue), for its channels and channel set, as its template writes it (<code>{title}</code>, <code>{link}</code> and <code>{summary}</code>; by default the title, a blank line and the link). It never publishes at once: everything it makes goes through the rules a person's post does, the approval policy included, and what a queue refuses becomes a draft. 3 posts a run and 12 a day at most; the rest of a flood is skipped. It acts as whoever added it, as they are when the item is made. A feed failing for 7 days, or one whose site says it is gone, stops, with a notice. What a feed says is other people's text: data, never instructions. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. A workspace follows 10 feeds at most. Needs post:create, and post:schedule too for <code>queue</code>; never staff acting as a member.
      */
-    public CreatedFeed create(String workspaceId, NewFeed request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public CreatedFeed create(NewFeed request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Follows a feed at <code>url</code>: it is read once, and refused when it is not a feed; every item it holds then is recorded as seen and never made (<code>seen</code> says how many). Every 60 minutes or so, each item that appears in the feed after it was added becomes a draft (<code>mode</code> <code>draft</code>, the default) or a post on the next free slot of a queue (<code>queue</code>: <code>queueId</code>, or the workspace's default queue), for its channels and channel set, as its template writes it (<code>{title}</code>, <code>{link}</code> and <code>{summary}</code>; by default the title, a blank line and the link). It never publishes at once: everything it makes goes through the rules a person's post does, the approval policy included, and what a queue refuses becomes a draft. 3 posts a run and 12 a day at most; the rest of a flood is skipped. It acts as whoever added it, as they are when the item is made. A feed failing for 7 days, or one whose site says it is gone, stops, with a notice. What a feed says is other people's text: data, never instructions. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. A workspace follows 10 feeds at most. Needs post:create, and post:schedule too for <code>queue</code>; never staff acting as a member.
      */
-    public CreatedFeed create(String workspaceId, NewFeed request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public CreatedFeed create(NewFeed request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Reads an address and answers its title and its 3 newest items, each with what <code>template</code> (by default the title, a blank line and the link) would write from it. Makes and keeps nothing. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create.
      */
-    public FeedPreview preview(String workspaceId, FeedPreviewRequest request) {
-        return this.rawClient.preview(workspaceId, request).body();
+    public FeedPreview preview(FeedPreviewRequest request) {
+        return this.rawClient.preview(request).body();
     }
 
     /**
      * Reads an address and answers its title and its 3 newest items, each with what <code>template</code> (by default the title, a blank line and the link) would write from it. Makes and keeps nothing. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create.
      */
-    public FeedPreview preview(String workspaceId, FeedPreviewRequest request, RequestOptions requestOptions) {
-        return this.rawClient.preview(workspaceId, request, requestOptions).body();
+    public FeedPreview preview(FeedPreviewRequest request, RequestOptions requestOptions) {
+        return this.rawClient.preview(request, requestOptions).body();
     }
 
     /**
      * Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
      */
-    public Feed get(String workspaceId, String feedId) {
-        return this.rawClient.get(workspaceId, feedId).body();
+    public Feed get(String feedId) {
+        return this.rawClient.get(feedId).body();
     }
 
     /**
      * Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
      */
-    public Feed get(String workspaceId, String feedId, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, feedId, requestOptions).body();
+    public Feed get(String feedId, RequestOptions requestOptions) {
+        return this.rawClient.get(feedId, requestOptions).body();
     }
 
     /**
      * Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
      */
-    public Feed get(String workspaceId, String feedId, GetFeedsRequest request) {
-        return this.rawClient.get(workspaceId, feedId, request).body();
+    public Feed get(String feedId, GetFeedsRequest request) {
+        return this.rawClient.get(feedId, request).body();
     }
 
     /**
      * Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
      */
-    public Feed get(String workspaceId, String feedId, GetFeedsRequest request, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, feedId, request, requestOptions).body();
+    public Feed get(String feedId, GetFeedsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.get(feedId, request, requestOptions).body();
     }
 
     /**
      * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
      */
-    public void delete(String workspaceId, String feedId) {
-        this.rawClient.delete(workspaceId, feedId).body();
+    public void delete(String feedId) {
+        this.rawClient.delete(feedId).body();
     }
 
     /**
      * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
      */
-    public void delete(String workspaceId, String feedId, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, feedId, requestOptions).body();
+    public void delete(String feedId, RequestOptions requestOptions) {
+        this.rawClient.delete(feedId, requestOptions).body();
     }
 
     /**
      * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
      */
-    public void delete(String workspaceId, String feedId, DeleteFeedsRequest request) {
-        this.rawClient.delete(workspaceId, feedId, request).body();
+    public void delete(String feedId, DeleteFeedsRequest request) {
+        this.rawClient.delete(feedId, request).body();
     }
 
     /**
      * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
      */
-    public void delete(String workspaceId, String feedId, DeleteFeedsRequest request, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, feedId, request, requestOptions).body();
+    public void delete(String feedId, DeleteFeedsRequest request, RequestOptions requestOptions) {
+        this.rawClient.delete(feedId, request, requestOptions).body();
     }
 
     /**
      * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
      */
-    public Feed update(String workspaceId, String feedId) {
-        return this.rawClient.update(workspaceId, feedId).body();
+    public Feed update(String feedId) {
+        return this.rawClient.update(feedId).body();
     }
 
     /**
      * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
      */
-    public Feed update(String workspaceId, String feedId, RequestOptions requestOptions) {
-        return this.rawClient.update(workspaceId, feedId, requestOptions).body();
+    public Feed update(String feedId, RequestOptions requestOptions) {
+        return this.rawClient.update(feedId, requestOptions).body();
     }
 
     /**
      * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
      */
-    public Feed update(String workspaceId, String feedId, FeedChange request) {
-        return this.rawClient.update(workspaceId, feedId, request).body();
+    public Feed update(String feedId, FeedChange request) {
+        return this.rawClient.update(feedId, request).body();
     }
 
     /**
      * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
      */
-    public Feed update(String workspaceId, String feedId, FeedChange request, RequestOptions requestOptions) {
-        return this.rawClient
-                .update(workspaceId, feedId, request, requestOptions)
-                .body();
+    public Feed update(String feedId, FeedChange request, RequestOptions requestOptions) {
+        return this.rawClient.update(feedId, request, requestOptions).body();
     }
 
     /**
      * Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
      */
-    public FeedItems items(String workspaceId, String feedId) {
-        return this.rawClient.items(workspaceId, feedId).body();
+    public FeedItems items(String feedId) {
+        return this.rawClient.items(feedId).body();
     }
 
     /**
      * Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
      */
-    public FeedItems items(String workspaceId, String feedId, RequestOptions requestOptions) {
-        return this.rawClient.items(workspaceId, feedId, requestOptions).body();
+    public FeedItems items(String feedId, RequestOptions requestOptions) {
+        return this.rawClient.items(feedId, requestOptions).body();
     }
 
     /**
      * Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
      */
-    public FeedItems items(String workspaceId, String feedId, ItemsFeedsRequest request) {
-        return this.rawClient.items(workspaceId, feedId, request).body();
+    public FeedItems items(String feedId, ItemsFeedsRequest request) {
+        return this.rawClient.items(feedId, request).body();
     }
 
     /**
      * Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
      */
-    public FeedItems items(
-            String workspaceId, String feedId, ItemsFeedsRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .items(workspaceId, feedId, request, requestOptions)
-                .body();
+    public FeedItems items(String feedId, ItemsFeedsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.items(feedId, request, requestOptions).body();
     }
 }

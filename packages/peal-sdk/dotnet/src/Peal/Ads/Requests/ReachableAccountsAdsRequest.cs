@@ -7,9 +7,6 @@ namespace Peal;
 public record ReachableAccountsAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ConnectionId { get; set; }
 
     /// <inheritdoc />

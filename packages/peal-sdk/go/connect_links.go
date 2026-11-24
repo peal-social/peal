@@ -10,18 +10,16 @@ import (
 )
 
 var (
-	newConnectLinkFieldWorkspaceID    = big.NewInt(1 << 0)
-	newConnectLinkFieldChannelID      = big.NewInt(1 << 1)
-	newConnectLinkFieldConnection     = big.NewInt(1 << 2)
-	newConnectLinkFieldExpiresInHours = big.NewInt(1 << 3)
-	newConnectLinkFieldLocale         = big.NewInt(1 << 4)
-	newConnectLinkFieldPlatform       = big.NewInt(1 << 5)
-	newConnectLinkFieldPlatforms      = big.NewInt(1 << 6)
-	newConnectLinkFieldReturnURL      = big.NewInt(1 << 7)
+	newConnectLinkFieldChannelID      = big.NewInt(1 << 0)
+	newConnectLinkFieldConnection     = big.NewInt(1 << 1)
+	newConnectLinkFieldExpiresInHours = big.NewInt(1 << 2)
+	newConnectLinkFieldLocale         = big.NewInt(1 << 3)
+	newConnectLinkFieldPlatform       = big.NewInt(1 << 4)
+	newConnectLinkFieldPlatforms      = big.NewInt(1 << 5)
+	newConnectLinkFieldReturnURL      = big.NewInt(1 << 6)
 )
 
 type NewConnectLink struct {
-	WorkspaceID    string             `json:"-" url:"-"`
 	ChannelID      *string            `json:"channelId,omitempty" url:"-"`
 	Connection     *ChannelConnection `json:"connection,omitempty" url:"-"`
 	ExpiresInHours *int               `json:"expiresInHours,omitempty" url:"-"`
@@ -41,13 +39,6 @@ func (n *NewConnectLink) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewConnectLink) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newConnectLinkFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -121,13 +112,11 @@ func (n *NewConnectLink) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	getConnectLinksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getConnectLinksRequestFieldLinkID      = big.NewInt(1 << 1)
+	getConnectLinksRequestFieldLinkID = big.NewInt(1 << 0)
 )
 
 type GetConnectLinksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	LinkID      string `json:"-" url:"-"`
+	LinkID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -142,13 +131,6 @@ func (g *GetConnectLinksRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetConnectLinksRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getConnectLinksRequestFieldWorkspaceID)
-}
-
 // SetLinkID sets the LinkID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetConnectLinksRequest) SetLinkID(linkID string) {
@@ -157,40 +139,11 @@ func (g *GetConnectLinksRequest) SetLinkID(linkID string) {
 }
 
 var (
-	listConnectLinksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListConnectLinksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListConnectLinksRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListConnectLinksRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listConnectLinksRequestFieldWorkspaceID)
-}
-
-var (
-	revokeConnectLinksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	revokeConnectLinksRequestFieldLinkID      = big.NewInt(1 << 1)
+	revokeConnectLinksRequestFieldLinkID = big.NewInt(1 << 0)
 )
 
 type RevokeConnectLinksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	LinkID      string `json:"-" url:"-"`
+	LinkID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -203,13 +156,6 @@ func (r *RevokeConnectLinksRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RevokeConnectLinksRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(revokeConnectLinksRequestFieldWorkspaceID)
 }
 
 // SetLinkID sets the LinkID field and marks it as non-optional;

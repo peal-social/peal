@@ -10,13 +10,11 @@ import (
 )
 
 var (
-	attemptsPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	attemptsPostsRequestFieldPostID      = big.NewInt(1 << 1)
+	attemptsPostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type AttemptsPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (a *AttemptsPostsRequest) require(field *big.Int) {
 	a.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *AttemptsPostsRequest) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(attemptsPostsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (a *AttemptsPostsRequest) SetPostID(postID string) {
@@ -47,13 +38,11 @@ func (a *AttemptsPostsRequest) SetPostID(postID string) {
 
 var (
 	bulkPostsFieldIdempotencyKey = big.NewInt(1 << 0)
-	bulkPostsFieldWorkspaceID    = big.NewInt(1 << 1)
-	bulkPostsFieldPosts          = big.NewInt(1 << 2)
+	bulkPostsFieldPosts          = big.NewInt(1 << 1)
 )
 
 type BulkPosts struct {
 	IdempotencyKey *string     `json:"-" url:"-"`
-	WorkspaceID    string      `json:"-" url:"-"`
 	Posts          []*BulkPost `json:"posts" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -74,13 +63,6 @@ func (b *BulkPosts) require(field *big.Int) {
 func (b *BulkPosts) SetIdempotencyKey(idempotencyKey *string) {
 	b.IdempotencyKey = idempotencyKey
 	b.require(bulkPostsFieldIdempotencyKey)
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BulkPosts) SetWorkspaceID(workspaceID string) {
-	b.WorkspaceID = workspaceID
-	b.require(bulkPostsFieldWorkspaceID)
 }
 
 // SetPosts sets the Posts field and marks it as non-optional;
@@ -112,13 +94,11 @@ func (b *BulkPosts) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	cancelPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	cancelPostsRequestFieldPostID      = big.NewInt(1 << 1)
+	cancelPostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type CancelPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -133,13 +113,6 @@ func (c *CancelPostsRequest) require(field *big.Int) {
 	c.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CancelPostsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(cancelPostsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (c *CancelPostsRequest) SetPostID(postID string) {
@@ -148,13 +121,11 @@ func (c *CancelPostsRequest) SetPostID(postID string) {
 }
 
 var (
-	changesPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	changesPostsRequestFieldPostID      = big.NewInt(1 << 1)
+	changesPostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type ChangesPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -169,13 +140,6 @@ func (c *ChangesPostsRequest) require(field *big.Int) {
 	c.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ChangesPostsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(changesPostsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (c *ChangesPostsRequest) SetPostID(postID string) {
@@ -184,16 +148,14 @@ func (c *ChangesPostsRequest) SetPostID(postID string) {
 }
 
 var (
-	confirmPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	confirmPostsRequestFieldPostID      = big.NewInt(1 << 1)
-	confirmPostsRequestFieldTargetID    = big.NewInt(1 << 2)
+	confirmPostsRequestFieldPostID   = big.NewInt(1 << 0)
+	confirmPostsRequestFieldTargetID = big.NewInt(1 << 1)
 )
 
 type ConfirmPostsRequest struct {
-	WorkspaceID string              `json:"-" url:"-"`
-	PostID      string              `json:"-" url:"-"`
-	TargetID    string              `json:"-" url:"-"`
-	Body        *TargetConfirmation `json:"-" url:"-"`
+	PostID   string              `json:"-" url:"-"`
+	TargetID string              `json:"-" url:"-"`
+	Body     *TargetConfirmation `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -206,13 +168,6 @@ func (c *ConfirmPostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ConfirmPostsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(confirmPostsRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -243,54 +198,11 @@ func (c *ConfirmPostsRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	createPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type CreatePostsRequest struct {
-	WorkspaceID string     `json:"-" url:"-"`
-	Body        *PostDraft `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (c *CreatePostsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CreatePostsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(createPostsRequestFieldWorkspaceID)
-}
-
-func (c *CreatePostsRequest) UnmarshalJSON(data []byte) error {
-	body := new(PostDraft)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	c.Body = body
-	return nil
-}
-
-func (c *CreatePostsRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.Body)
-}
-
-var (
-	discardPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	discardPostsRequestFieldPostID      = big.NewInt(1 << 1)
+	discardPostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type DiscardPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -305,13 +217,6 @@ func (d *DiscardPostsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DiscardPostsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(discardPostsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DiscardPostsRequest) SetPostID(postID string) {
@@ -320,15 +225,13 @@ func (d *DiscardPostsRequest) SetPostID(postID string) {
 }
 
 var (
-	draftsPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	draftsPostsRequestFieldCursor      = big.NewInt(1 << 1)
-	draftsPostsRequestFieldLimit       = big.NewInt(1 << 2)
+	draftsPostsRequestFieldCursor = big.NewInt(1 << 0)
+	draftsPostsRequestFieldLimit  = big.NewInt(1 << 1)
 )
 
 type DraftsPostsRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Cursor      *string `json:"-" url:"cursor,omitempty"`
-	Limit       *string `json:"-" url:"limit,omitempty"`
+	Cursor *string `json:"-" url:"cursor,omitempty"`
+	Limit  *string `json:"-" url:"limit,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -341,13 +244,6 @@ func (d *DraftsPostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	d.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DraftsPostsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(draftsPostsRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -365,13 +261,11 @@ func (d *DraftsPostsRequest) SetLimit(limit *string) {
 }
 
 var (
-	duplicatePostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	duplicatePostsRequestFieldPostID      = big.NewInt(1 << 1)
+	duplicatePostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type DuplicatePostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -386,13 +280,6 @@ func (d *DuplicatePostsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DuplicatePostsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(duplicatePostsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DuplicatePostsRequest) SetPostID(postID string) {
@@ -401,21 +288,19 @@ func (d *DuplicatePostsRequest) SetPostID(postID string) {
 }
 
 var (
-	livePostEditFieldWorkspaceID = big.NewInt(1 << 0)
-	livePostEditFieldPostID      = big.NewInt(1 << 1)
-	livePostEditFieldTargetID    = big.NewInt(1 << 2)
-	livePostEditFieldWait        = big.NewInt(1 << 3)
-	livePostEditFieldPart        = big.NewInt(1 << 4)
-	livePostEditFieldText        = big.NewInt(1 << 5)
+	livePostEditFieldPostID   = big.NewInt(1 << 0)
+	livePostEditFieldTargetID = big.NewInt(1 << 1)
+	livePostEditFieldWait     = big.NewInt(1 << 2)
+	livePostEditFieldPart     = big.NewInt(1 << 3)
+	livePostEditFieldText     = big.NewInt(1 << 4)
 )
 
 type LivePostEdit struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	PostID      string  `json:"-" url:"-"`
-	TargetID    string  `json:"-" url:"-"`
-	Wait        *string `json:"-" url:"wait,omitempty"`
-	Part        *int    `json:"part,omitempty" url:"-"`
-	Text        string  `json:"text" url:"-"`
+	PostID   string  `json:"-" url:"-"`
+	TargetID string  `json:"-" url:"-"`
+	Wait     *string `json:"-" url:"wait,omitempty"`
+	Part     *int    `json:"part,omitempty" url:"-"`
+	Text     string  `json:"text" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -428,13 +313,6 @@ func (l *LivePostEdit) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LivePostEdit) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(livePostEditFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -494,17 +372,15 @@ func (l *LivePostEdit) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	queuePostFieldWorkspaceID = big.NewInt(1 << 0)
-	queuePostFieldPostID      = big.NewInt(1 << 1)
-	queuePostFieldChannelIDs  = big.NewInt(1 << 2)
-	queuePostFieldQueueID     = big.NewInt(1 << 3)
+	queuePostFieldPostID     = big.NewInt(1 << 0)
+	queuePostFieldChannelIDs = big.NewInt(1 << 1)
+	queuePostFieldQueueID    = big.NewInt(1 << 2)
 )
 
 type QueuePost struct {
-	WorkspaceID string   `json:"-" url:"-"`
-	PostID      string   `json:"-" url:"-"`
-	ChannelIDs  []string `json:"channelIds,omitempty" url:"-"`
-	QueueID     *string  `json:"queueId,omitempty" url:"-"`
+	PostID     string   `json:"-" url:"-"`
+	ChannelIDs []string `json:"channelIds,omitempty" url:"-"`
+	QueueID    *string  `json:"queueId,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -517,13 +393,6 @@ func (q *QueuePost) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	q.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (q *QueuePost) SetWorkspaceID(workspaceID string) {
-	q.WorkspaceID = workspaceID
-	q.require(queuePostFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -569,13 +438,11 @@ func (q *QueuePost) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	getPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getPostsRequestFieldPostID      = big.NewInt(1 << 1)
+	getPostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type GetPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -590,13 +457,6 @@ func (g *GetPostsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetPostsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getPostsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetPostsRequest) SetPostID(postID string) {
@@ -606,14 +466,12 @@ func (g *GetPostsRequest) SetPostID(postID string) {
 
 var (
 	postImportFieldIdempotencyKey = big.NewInt(1 << 0)
-	postImportFieldWorkspaceID    = big.NewInt(1 << 1)
-	postImportFieldCsv            = big.NewInt(1 << 2)
-	postImportFieldDryRun         = big.NewInt(1 << 3)
+	postImportFieldCsv            = big.NewInt(1 << 1)
+	postImportFieldDryRun         = big.NewInt(1 << 2)
 )
 
 type PostImport struct {
 	IdempotencyKey *string `json:"-" url:"-"`
-	WorkspaceID    string  `json:"-" url:"-"`
 	Csv            string  `json:"csv" url:"-"`
 	DryRun         *bool   `json:"dryRun,omitempty" url:"-"`
 
@@ -635,13 +493,6 @@ func (p *PostImport) require(field *big.Int) {
 func (p *PostImport) SetIdempotencyKey(idempotencyKey *string) {
 	p.IdempotencyKey = idempotencyKey
 	p.require(postImportFieldIdempotencyKey)
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostImport) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(postImportFieldWorkspaceID)
 }
 
 // SetCsv sets the Csv field and marks it as non-optional;
@@ -680,15 +531,13 @@ func (p *PostImport) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	leaveOutRestPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	leaveOutRestPostsRequestFieldPostID      = big.NewInt(1 << 1)
-	leaveOutRestPostsRequestFieldTargetID    = big.NewInt(1 << 2)
+	leaveOutRestPostsRequestFieldPostID   = big.NewInt(1 << 0)
+	leaveOutRestPostsRequestFieldTargetID = big.NewInt(1 << 1)
 )
 
 type LeaveOutRestPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
-	TargetID    string `json:"-" url:"-"`
+	PostID   string `json:"-" url:"-"`
+	TargetID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -701,13 +550,6 @@ func (l *LeaveOutRestPostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LeaveOutRestPostsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(leaveOutRestPostsRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -725,15 +567,13 @@ func (l *LeaveOutRestPostsRequest) SetTargetID(targetID string) {
 }
 
 var (
-	listPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listPostsRequestFieldFrom        = big.NewInt(1 << 1)
-	listPostsRequestFieldTo          = big.NewInt(1 << 2)
+	listPostsRequestFieldFrom = big.NewInt(1 << 0)
+	listPostsRequestFieldTo   = big.NewInt(1 << 1)
 )
 
 type ListPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	From        string `json:"-" url:"from"`
-	To          string `json:"-" url:"to"`
+	From string `json:"-" url:"from"`
+	To   string `json:"-" url:"to"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -746,13 +586,6 @@ func (l *ListPostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListPostsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listPostsRequestFieldWorkspaceID)
 }
 
 // SetFrom sets the From field and marks it as non-optional;
@@ -770,15 +603,13 @@ func (l *ListPostsRequest) SetTo(to string) {
 }
 
 var (
-	outcomePostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	outcomePostsRequestFieldPostID      = big.NewInt(1 << 1)
-	outcomePostsRequestFieldWait        = big.NewInt(1 << 2)
+	outcomePostsRequestFieldPostID = big.NewInt(1 << 0)
+	outcomePostsRequestFieldWait   = big.NewInt(1 << 1)
 )
 
 type OutcomePostsRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	PostID      string  `json:"-" url:"-"`
-	Wait        *string `json:"-" url:"wait,omitempty"`
+	PostID string  `json:"-" url:"-"`
+	Wait   *string `json:"-" url:"wait,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -791,13 +622,6 @@ func (o *OutcomePostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	o.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (o *OutcomePostsRequest) SetWorkspaceID(workspaceID string) {
-	o.WorkspaceID = workspaceID
-	o.require(outcomePostsRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -815,15 +639,13 @@ func (o *OutcomePostsRequest) SetWait(wait *string) {
 }
 
 var (
-	removeTargetPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	removeTargetPostsRequestFieldPostID      = big.NewInt(1 << 1)
-	removeTargetPostsRequestFieldTargetID    = big.NewInt(1 << 2)
+	removeTargetPostsRequestFieldPostID   = big.NewInt(1 << 0)
+	removeTargetPostsRequestFieldTargetID = big.NewInt(1 << 1)
 )
 
 type RemoveTargetPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
-	TargetID    string `json:"-" url:"-"`
+	PostID   string `json:"-" url:"-"`
+	TargetID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -836,13 +658,6 @@ func (r *RemoveTargetPostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RemoveTargetPostsRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(removeTargetPostsRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -860,15 +675,13 @@ func (r *RemoveTargetPostsRequest) SetTargetID(targetID string) {
 }
 
 var (
-	repostPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	repostPostsRequestFieldPostID      = big.NewInt(1 << 1)
-	repostPostsRequestFieldTargetID    = big.NewInt(1 << 2)
+	repostPostsRequestFieldPostID   = big.NewInt(1 << 0)
+	repostPostsRequestFieldTargetID = big.NewInt(1 << 1)
 )
 
 type RepostPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
-	TargetID    string `json:"-" url:"-"`
+	PostID   string `json:"-" url:"-"`
+	TargetID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -881,13 +694,6 @@ func (r *RepostPostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RepostPostsRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(repostPostsRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -905,14 +711,12 @@ func (r *RepostPostsRequest) SetTargetID(targetID string) {
 }
 
 var (
-	reschedulePostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	reschedulePostsRequestFieldPostID      = big.NewInt(1 << 1)
+	reschedulePostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type ReschedulePostsRequest struct {
-	WorkspaceID string        `json:"-" url:"-"`
-	PostID      string        `json:"-" url:"-"`
-	Body        *PostSchedule `json:"-" url:"-"`
+	PostID string        `json:"-" url:"-"`
+	Body   *PostSchedule `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -925,13 +729,6 @@ func (r *ReschedulePostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReschedulePostsRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(reschedulePostsRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -955,19 +752,17 @@ func (r *ReschedulePostsRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	schedulePostFieldWorkspaceID = big.NewInt(1 << 0)
-	schedulePostFieldPostID      = big.NewInt(1 << 1)
-	schedulePostFieldAt          = big.NewInt(1 << 2)
-	schedulePostFieldChannelIDs  = big.NewInt(1 << 3)
-	schedulePostFieldTimeZone    = big.NewInt(1 << 4)
+	schedulePostFieldPostID     = big.NewInt(1 << 0)
+	schedulePostFieldAt         = big.NewInt(1 << 1)
+	schedulePostFieldChannelIDs = big.NewInt(1 << 2)
+	schedulePostFieldTimeZone   = big.NewInt(1 << 3)
 )
 
 type SchedulePost struct {
-	WorkspaceID string   `json:"-" url:"-"`
-	PostID      string   `json:"-" url:"-"`
-	At          string   `json:"at" url:"-"`
-	ChannelIDs  []string `json:"channelIds" url:"-"`
-	TimeZone    string   `json:"timeZone" url:"-"`
+	PostID     string   `json:"-" url:"-"`
+	At         string   `json:"at" url:"-"`
+	ChannelIDs []string `json:"channelIds" url:"-"`
+	TimeZone   string   `json:"timeZone" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -980,13 +775,6 @@ func (s *SchedulePost) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SchedulePost) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(schedulePostFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -1039,26 +827,24 @@ func (s *SchedulePost) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	searchPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	searchPostsRequestFieldAuthorID    = big.NewInt(1 << 1)
-	searchPostsRequestFieldChannelID   = big.NewInt(1 << 2)
-	searchPostsRequestFieldCreatedVia  = big.NewInt(1 << 3)
-	searchPostsRequestFieldCursor      = big.NewInt(1 << 4)
-	searchPostsRequestFieldFrom        = big.NewInt(1 << 5)
-	searchPostsRequestFieldLimit       = big.NewInt(1 << 6)
-	searchPostsRequestFieldOutcome     = big.NewInt(1 << 7)
-	searchPostsRequestFieldPlatform    = big.NewInt(1 << 8)
-	searchPostsRequestFieldQueueID     = big.NewInt(1 << 9)
-	searchPostsRequestFieldRecyclingID = big.NewInt(1 << 10)
-	searchPostsRequestFieldRemoved     = big.NewInt(1 << 11)
-	searchPostsRequestFieldSort        = big.NewInt(1 << 12)
-	searchPostsRequestFieldStatus      = big.NewInt(1 << 13)
-	searchPostsRequestFieldTagID       = big.NewInt(1 << 14)
-	searchPostsRequestFieldTo          = big.NewInt(1 << 15)
+	searchPostsRequestFieldAuthorID    = big.NewInt(1 << 0)
+	searchPostsRequestFieldChannelID   = big.NewInt(1 << 1)
+	searchPostsRequestFieldCreatedVia  = big.NewInt(1 << 2)
+	searchPostsRequestFieldCursor      = big.NewInt(1 << 3)
+	searchPostsRequestFieldFrom        = big.NewInt(1 << 4)
+	searchPostsRequestFieldLimit       = big.NewInt(1 << 5)
+	searchPostsRequestFieldOutcome     = big.NewInt(1 << 6)
+	searchPostsRequestFieldPlatform    = big.NewInt(1 << 7)
+	searchPostsRequestFieldQueueID     = big.NewInt(1 << 8)
+	searchPostsRequestFieldRecyclingID = big.NewInt(1 << 9)
+	searchPostsRequestFieldRemoved     = big.NewInt(1 << 10)
+	searchPostsRequestFieldSort        = big.NewInt(1 << 11)
+	searchPostsRequestFieldStatus      = big.NewInt(1 << 12)
+	searchPostsRequestFieldTagID       = big.NewInt(1 << 13)
+	searchPostsRequestFieldTo          = big.NewInt(1 << 14)
 )
 
 type SearchPostsRequest struct {
-	WorkspaceID string                     `json:"-" url:"-"`
 	AuthorID    *string                    `json:"-" url:"authorId,omitempty"`
 	ChannelID   *string                    `json:"-" url:"channelId,omitempty"`
 	CreatedVia  *PostOriginVia             `json:"-" url:"createdVia,omitempty"`
@@ -1086,13 +872,6 @@ func (s *SearchPostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(searchPostsRequestFieldWorkspaceID)
 }
 
 // SetAuthorID sets the AuthorID field and marks it as non-optional;
@@ -1202,23 +981,21 @@ func (s *SearchPostsRequest) SetTo(to *string) {
 
 var (
 	newPostFieldIdempotencyKey    = big.NewInt(1 << 0)
-	newPostFieldWorkspaceID       = big.NewInt(1 << 1)
-	newPostFieldWait              = big.NewInt(1 << 2)
-	newPostFieldAllowDuplicate    = big.NewInt(1 << 3)
-	newPostFieldChannelIDs        = big.NewInt(1 << 4)
-	newPostFieldChannelSets       = big.NewInt(1 << 5)
-	newPostFieldContent           = big.NewInt(1 << 6)
-	newPostFieldDefaultSignatures = big.NewInt(1 << 7)
-	newPostFieldOptions           = big.NewInt(1 << 8)
-	newPostFieldShortenLinks      = big.NewInt(1 << 9)
-	newPostFieldSignatureID       = big.NewInt(1 << 10)
-	newPostFieldTagIDs            = big.NewInt(1 << 11)
-	newPostFieldWhen              = big.NewInt(1 << 12)
+	newPostFieldWait              = big.NewInt(1 << 1)
+	newPostFieldAllowDuplicate    = big.NewInt(1 << 2)
+	newPostFieldChannelIDs        = big.NewInt(1 << 3)
+	newPostFieldChannelSets       = big.NewInt(1 << 4)
+	newPostFieldContent           = big.NewInt(1 << 5)
+	newPostFieldDefaultSignatures = big.NewInt(1 << 6)
+	newPostFieldOptions           = big.NewInt(1 << 7)
+	newPostFieldShortenLinks      = big.NewInt(1 << 8)
+	newPostFieldSignatureID       = big.NewInt(1 << 9)
+	newPostFieldTagIDs            = big.NewInt(1 << 10)
+	newPostFieldWhen              = big.NewInt(1 << 11)
 )
 
 type NewPost struct {
 	IdempotencyKey    *string           `json:"-" url:"-"`
-	WorkspaceID       string            `json:"-" url:"-"`
 	Wait              *string           `json:"-" url:"wait,omitempty"`
 	AllowDuplicate    *bool             `json:"allowDuplicate,omitempty" url:"-"`
 	ChannelIDs        []string          `json:"channelIds" url:"-"`
@@ -1249,13 +1026,6 @@ func (n *NewPost) require(field *big.Int) {
 func (n *NewPost) SetIdempotencyKey(idempotencyKey *string) {
 	n.IdempotencyKey = idempotencyKey
 	n.require(newPostFieldIdempotencyKey)
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newPostFieldWorkspaceID)
 }
 
 // SetWait sets the Wait field and marks it as non-optional;
@@ -1357,15 +1127,13 @@ func (n *NewPost) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	postTagsFieldWorkspaceID = big.NewInt(1 << 0)
-	postTagsFieldPostID      = big.NewInt(1 << 1)
-	postTagsFieldTagIDs      = big.NewInt(1 << 2)
+	postTagsFieldPostID = big.NewInt(1 << 0)
+	postTagsFieldTagIDs = big.NewInt(1 << 1)
 )
 
 type PostTags struct {
-	WorkspaceID string   `json:"-" url:"-"`
-	PostID      string   `json:"-" url:"-"`
-	TagIDs      []string `json:"tagIds" url:"-"`
+	PostID string   `json:"-" url:"-"`
+	TagIDs []string `json:"tagIds" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1378,13 +1146,6 @@ func (p *PostTags) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	p.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTags) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(postTagsFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -17879,13 +17640,11 @@ func (s SearchPostsRequestRemoved) Ptr() *SearchPostsRequestRemoved {
 }
 
 var (
-	unpublishPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	unpublishPostsRequestFieldPostID      = big.NewInt(1 << 1)
+	unpublishPostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type UnpublishPostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -17900,13 +17659,6 @@ func (u *UnpublishPostsRequest) require(field *big.Int) {
 	u.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UnpublishPostsRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(unpublishPostsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (u *UnpublishPostsRequest) SetPostID(postID string) {
@@ -17915,17 +17667,15 @@ func (u *UnpublishPostsRequest) SetPostID(postID string) {
 }
 
 var (
-	unpublishTargetPostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	unpublishTargetPostsRequestFieldPostID      = big.NewInt(1 << 1)
-	unpublishTargetPostsRequestFieldTargetID    = big.NewInt(1 << 2)
-	unpublishTargetPostsRequestFieldWait        = big.NewInt(1 << 3)
+	unpublishTargetPostsRequestFieldPostID   = big.NewInt(1 << 0)
+	unpublishTargetPostsRequestFieldTargetID = big.NewInt(1 << 1)
+	unpublishTargetPostsRequestFieldWait     = big.NewInt(1 << 2)
 )
 
 type UnpublishTargetPostsRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	PostID      string  `json:"-" url:"-"`
-	TargetID    string  `json:"-" url:"-"`
-	Wait        *string `json:"-" url:"wait,omitempty"`
+	PostID   string  `json:"-" url:"-"`
+	TargetID string  `json:"-" url:"-"`
+	Wait     *string `json:"-" url:"wait,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -17938,13 +17688,6 @@ func (u *UnpublishTargetPostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UnpublishTargetPostsRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(unpublishTargetPostsRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -17969,13 +17712,11 @@ func (u *UnpublishTargetPostsRequest) SetWait(wait *string) {
 }
 
 var (
-	unschedulePostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	unschedulePostsRequestFieldPostID      = big.NewInt(1 << 1)
+	unschedulePostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type UnschedulePostsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -17990,13 +17731,6 @@ func (u *UnschedulePostsRequest) require(field *big.Int) {
 	u.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UnschedulePostsRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(unschedulePostsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (u *UnschedulePostsRequest) SetPostID(postID string) {
@@ -18005,14 +17739,12 @@ func (u *UnschedulePostsRequest) SetPostID(postID string) {
 }
 
 var (
-	updatePostsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	updatePostsRequestFieldPostID      = big.NewInt(1 << 1)
+	updatePostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type UpdatePostsRequest struct {
-	WorkspaceID string     `json:"-" url:"-"`
-	PostID      string     `json:"-" url:"-"`
-	Body        *PostDraft `json:"-" url:"-"`
+	PostID string     `json:"-" url:"-"`
+	Body   *PostDraft `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -18025,13 +17757,6 @@ func (u *UpdatePostsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UpdatePostsRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(updatePostsRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -18055,20 +17780,18 @@ func (u *UpdatePostsRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	postToValidateFieldWorkspaceID       = big.NewInt(1 << 0)
-	postToValidateFieldAllowDuplicate    = big.NewInt(1 << 1)
-	postToValidateFieldChannelIDs        = big.NewInt(1 << 2)
-	postToValidateFieldChannelSets       = big.NewInt(1 << 3)
-	postToValidateFieldContent           = big.NewInt(1 << 4)
-	postToValidateFieldDefaultSignatures = big.NewInt(1 << 5)
-	postToValidateFieldOptions           = big.NewInt(1 << 6)
-	postToValidateFieldShortenLinks      = big.NewInt(1 << 7)
-	postToValidateFieldSignatureID       = big.NewInt(1 << 8)
-	postToValidateFieldWhen              = big.NewInt(1 << 9)
+	postToValidateFieldAllowDuplicate    = big.NewInt(1 << 0)
+	postToValidateFieldChannelIDs        = big.NewInt(1 << 1)
+	postToValidateFieldChannelSets       = big.NewInt(1 << 2)
+	postToValidateFieldContent           = big.NewInt(1 << 3)
+	postToValidateFieldDefaultSignatures = big.NewInt(1 << 4)
+	postToValidateFieldOptions           = big.NewInt(1 << 5)
+	postToValidateFieldShortenLinks      = big.NewInt(1 << 6)
+	postToValidateFieldSignatureID       = big.NewInt(1 << 7)
+	postToValidateFieldWhen              = big.NewInt(1 << 8)
 )
 
 type PostToValidate struct {
-	WorkspaceID       string            `json:"-" url:"-"`
 	AllowDuplicate    *bool             `json:"allowDuplicate,omitempty" url:"-"`
 	ChannelIDs        []string          `json:"channelIds" url:"-"`
 	ChannelSets       []string          `json:"channelSets,omitempty" url:"-"`
@@ -18090,13 +17813,6 @@ func (p *PostToValidate) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	p.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostToValidate) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(postToValidateFieldWorkspaceID)
 }
 
 // SetAllowDuplicate sets the AllowDuplicate field and marks it as non-optional;

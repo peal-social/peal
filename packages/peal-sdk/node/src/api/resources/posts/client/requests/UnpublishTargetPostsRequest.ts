@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         targetId: "targetId"
  *     }
  */
 export interface UnpublishTargetPostsRequest {
-    workspaceId: string;
     postId: string;
     targetId: string;
     wait?: string;

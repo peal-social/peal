@@ -43,10 +43,7 @@ func (r *RawClient) Drafts(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/drafts",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/posts/drafts"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -95,10 +92,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/posts"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -138,7 +132,7 @@ func (r *RawClient) List(
 
 func (r *RawClient) Create(
 	ctx context.Context,
-	request *peal.CreatePostsRequest,
+	request *peal.PostDraft,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.Post], error) {
 	options := core.NewRequestOptions(opts...)
@@ -147,15 +141,11 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/posts"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.Post
 	raw, err := r.caller.Call(
 		ctx,
@@ -194,10 +184,7 @@ func (r *RawClient) Search(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/search",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/posts/search"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -246,10 +233,7 @@ func (r *RawClient) Send(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/send",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/posts/send"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -303,10 +287,7 @@ func (r *RawClient) Bulk(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/bulk",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/posts/bulk"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -353,10 +334,7 @@ func (r *RawClient) Import(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/import",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/posts/import"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -403,10 +381,7 @@ func (r *RawClient) Validate(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/validate",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/posts/validate"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -451,8 +426,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -497,8 +471,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -545,8 +518,7 @@ func (r *RawClient) Discard(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -589,8 +561,7 @@ func (r *RawClient) Outcome(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/outcome",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/outcome",
 		request.PostID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -642,8 +613,7 @@ func (r *RawClient) Attempts(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/attempts",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/attempts",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -688,8 +658,7 @@ func (r *RawClient) Tag(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/tags",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/tags",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -736,8 +705,7 @@ func (r *RawClient) Duplicate(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/duplicate",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/duplicate",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -782,8 +750,7 @@ func (r *RawClient) Schedule(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/schedule",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/schedule",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -830,8 +797,7 @@ func (r *RawClient) Reschedule(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/reschedule",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/reschedule",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -878,8 +844,7 @@ func (r *RawClient) Enqueue(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/queue",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/queue",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -926,8 +891,7 @@ func (r *RawClient) Unschedule(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/unschedule",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/unschedule",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -972,8 +936,7 @@ func (r *RawClient) Repost(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/targets/%v/repost",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/targets/%v/repost",
 		request.PostID,
 		request.TargetID,
 	)
@@ -1019,8 +982,7 @@ func (r *RawClient) RemoveTarget(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/targets/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/targets/%v",
 		request.PostID,
 		request.TargetID,
 	)
@@ -1066,8 +1028,7 @@ func (r *RawClient) Confirm(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/targets/%v/confirm",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/targets/%v/confirm",
 		request.PostID,
 		request.TargetID,
 	)
@@ -1115,8 +1076,7 @@ func (r *RawClient) LeaveOutRest(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/targets/%v/leave-out-rest",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/targets/%v/leave-out-rest",
 		request.PostID,
 		request.TargetID,
 	)
@@ -1162,8 +1122,7 @@ func (r *RawClient) UnpublishTarget(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/targets/%v/unpublish",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/targets/%v/unpublish",
 		request.PostID,
 		request.TargetID,
 	)
@@ -1216,8 +1175,7 @@ func (r *RawClient) EditTarget(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/targets/%v/edit",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/targets/%v/edit",
 		request.PostID,
 		request.TargetID,
 	)
@@ -1272,8 +1230,7 @@ func (r *RawClient) Unpublish(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/unpublish",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/unpublish",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -1318,8 +1275,7 @@ func (r *RawClient) Changes(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/changes",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/changes",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -1364,8 +1320,7 @@ func (r *RawClient) Cancel(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/cancel",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/cancel",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(

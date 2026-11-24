@@ -10,13 +10,11 @@ import (
 )
 
 var (
-	clearChannelDefaultsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	clearChannelDefaultsRequestFieldChannelID   = big.NewInt(1 << 1)
+	clearChannelDefaultsRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type ClearChannelDefaultsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (c *ClearChannelDefaultsRequest) require(field *big.Int) {
 	c.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ClearChannelDefaultsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(clearChannelDefaultsRequestFieldWorkspaceID)
-}
-
 // SetChannelID sets the ChannelID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (c *ClearChannelDefaultsRequest) SetChannelID(channelID string) {
@@ -46,13 +37,11 @@ func (c *ClearChannelDefaultsRequest) SetChannelID(channelID string) {
 }
 
 var (
-	getChannelDefaultsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getChannelDefaultsRequestFieldChannelID   = big.NewInt(1 << 1)
+	getChannelDefaultsRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type GetChannelDefaultsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -67,13 +56,6 @@ func (g *GetChannelDefaultsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetChannelDefaultsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getChannelDefaultsRequestFieldWorkspaceID)
-}
-
 // SetChannelID sets the ChannelID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetChannelDefaultsRequest) SetChannelID(channelID string) {
@@ -82,15 +64,13 @@ func (g *GetChannelDefaultsRequest) SetChannelID(channelID string) {
 }
 
 var (
-	newChannelDefaultsFieldWorkspaceID = big.NewInt(1 << 0)
-	newChannelDefaultsFieldChannelID   = big.NewInt(1 << 1)
-	newChannelDefaultsFieldOptions     = big.NewInt(1 << 2)
+	newChannelDefaultsFieldChannelID = big.NewInt(1 << 0)
+	newChannelDefaultsFieldOptions   = big.NewInt(1 << 1)
 )
 
 type NewChannelDefaults struct {
-	WorkspaceID string         `json:"-" url:"-"`
-	ChannelID   string         `json:"-" url:"-"`
-	Options     *TargetOptions `json:"options" url:"-"`
+	ChannelID string         `json:"-" url:"-"`
+	Options   *TargetOptions `json:"options" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -103,13 +83,6 @@ func (n *NewChannelDefaults) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewChannelDefaults) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newChannelDefaultsFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;

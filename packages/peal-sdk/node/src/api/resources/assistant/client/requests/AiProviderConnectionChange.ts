@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         provider: "anthropic"
  *     }
  */
 export interface AiProviderConnectionChange {
-    workspaceId: string;
     provider: Peal.AiProvider;
     apiKey?: string;
     baseUrl?: string;

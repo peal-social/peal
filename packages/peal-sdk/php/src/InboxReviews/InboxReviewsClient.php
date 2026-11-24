@@ -61,12 +61,10 @@ class InboxReviewsClient
      * Example:
      * ```php
      * $client->inboxReviews->listReviewThreads(
-     *     'workspaceId',
      *     new ListReviewThreadsInboxReviewsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListReviewThreadsInboxReviewsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -80,7 +78,7 @@ class InboxReviewsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listReviewThreads(string $workspaceId, ListReviewThreadsInboxReviewsRequest $request = new ListReviewThreadsInboxReviewsRequest(), ?array $options = null): ?InboxReviewThreadPage
+    public function listReviewThreads(ListReviewThreadsInboxReviewsRequest $request = new ListReviewThreadsInboxReviewsRequest(), ?array $options = null): ?InboxReviewThreadPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -100,7 +98,7 @@ class InboxReviewsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/reviews/threads",
+                    path: "api/v1/inbox/reviews/threads",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -132,12 +130,10 @@ class InboxReviewsClient
      * Example:
      * ```php
      * $client->inboxReviews->getReviewThread(
-     *     'workspaceId',
      *     'threadId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $threadId
      * @param ?array{
      *   baseUrl?: string,
@@ -151,14 +147,14 @@ class InboxReviewsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getReviewThread(string $workspaceId, string $threadId, ?array $options = null): ?InboxReviewThreadDetail
+    public function getReviewThread(string $threadId, ?array $options = null): ?InboxReviewThreadDetail
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/reviews/threads/{$threadId}",
+                    path: "api/v1/inbox/reviews/threads/{$threadId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -189,7 +185,6 @@ class InboxReviewsClient
      * Example:
      * ```php
      * $client->inboxReviews->replyToReview(
-     *     'workspaceId',
      *     'reviewId',
      *     new NewInboxReviewReply([
      *         'text' => 'text',
@@ -197,7 +192,6 @@ class InboxReviewsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $reviewId
      * @param NewInboxReviewReply $request
      * @param ?array{
@@ -212,7 +206,7 @@ class InboxReviewsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function replyToReview(string $workspaceId, string $reviewId, NewInboxReviewReply $request, ?array $options = null): ?InboxReviewReply
+    public function replyToReview(string $reviewId, NewInboxReviewReply $request, ?array $options = null): ?InboxReviewReply
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -223,7 +217,7 @@ class InboxReviewsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/reviews/{$reviewId}/reply",
+                    path: "api/v1/inbox/reviews/{$reviewId}/reply",
                     method: HttpMethod::PUT,
                     headers: $headers,
                     body: $request,
@@ -256,12 +250,10 @@ class InboxReviewsClient
      * Example:
      * ```php
      * $client->inboxReviews->withdrawReviewReply(
-     *     'workspaceId',
      *     'reviewId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $reviewId
      * @param ?array{
      *   baseUrl?: string,
@@ -275,14 +267,14 @@ class InboxReviewsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function withdrawReviewReply(string $workspaceId, string $reviewId, ?array $options = null): ?InboxReview
+    public function withdrawReviewReply(string $reviewId, ?array $options = null): ?InboxReview
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/reviews/{$reviewId}/reply",
+                    path: "api/v1/inbox/reviews/{$reviewId}/reply",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -313,7 +305,6 @@ class InboxReviewsClient
      * Example:
      * ```php
      * $client->inboxReviews->setReviewAnswered(
-     *     'workspaceId',
      *     'reviewId',
      *     new SetReviewAnsweredInboxReviewsRequest([
      *         'answered' => true,
@@ -321,7 +312,6 @@ class InboxReviewsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $reviewId
      * @param SetReviewAnsweredInboxReviewsRequest $request
      * @param ?array{
@@ -336,7 +326,7 @@ class InboxReviewsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setReviewAnswered(string $workspaceId, string $reviewId, SetReviewAnsweredInboxReviewsRequest $request, ?array $options = null): ?InboxReview
+    public function setReviewAnswered(string $reviewId, SetReviewAnsweredInboxReviewsRequest $request, ?array $options = null): ?InboxReview
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -344,7 +334,7 @@ class InboxReviewsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/reviews/{$reviewId}/answered",
+                    path: "api/v1/inbox/reviews/{$reviewId}/answered",
                     method: HttpMethod::POST,
                     body: $request,
                 ),

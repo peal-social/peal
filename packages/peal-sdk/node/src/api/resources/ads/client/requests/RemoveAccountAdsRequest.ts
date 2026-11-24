@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         accountId: "accountId"
  *     }
  */
 export interface RemoveAccountAdsRequest {
-    workspaceId: string;
     accountId: string;
 }

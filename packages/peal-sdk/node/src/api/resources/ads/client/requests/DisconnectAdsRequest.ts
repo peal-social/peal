@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         connectionId: "connectionId"
  *     }
  */
 export interface DisconnectAdsRequest {
-    workspaceId: string;
     connectionId: string;
 }

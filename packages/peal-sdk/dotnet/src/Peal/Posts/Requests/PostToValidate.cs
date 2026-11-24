@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record PostToValidate
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("allowDuplicate")]
     public bool? AllowDuplicate { get; set; }
 

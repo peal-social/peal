@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -37,7 +36,7 @@ public class ModelsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/models")
+                    .WithPath("/api/v1/assistant/models")
                     .UsingGet()
             )
             .RespondWith(
@@ -47,9 +46,7 @@ public class ModelsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Assistant.ModelsAsync(
-            new ModelsAssistantRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Assistant.ModelsAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -74,7 +71,7 @@ public class ModelsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/models")
+                    .WithPath("/api/v1/assistant/models")
                     .UsingGet()
             )
             .RespondWith(
@@ -84,9 +81,7 @@ public class ModelsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Assistant.ModelsAsync(
-            new ModelsAssistantRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Assistant.ModelsAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

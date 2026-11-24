@@ -31,7 +31,6 @@ class VideoGenerationsClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         status: typing.Optional[VideoGenerationStatus] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -41,8 +40,6 @@ class VideoGenerationsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         status : typing.Optional[VideoGenerationStatus]
 
         request_options : typing.Optional[RequestOptions]
@@ -58,18 +55,16 @@ class VideoGenerationsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.video_generations.list(
-            workspace_id="workspaceId",
-        )
+        client.video_generations.list()
         """
-        _response = self._raw_client.list(workspace_id, status=status, request_options=request_options)
+        _response = self._raw_client.list(status=status, request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         aspect: ImageAspect,
         prompt: str,
@@ -82,8 +77,6 @@ class VideoGenerationsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         aspect : ImageAspect
 
         prompt : str
@@ -105,16 +98,15 @@ class VideoGenerationsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.video_generations.create(
-            workspace_id="workspaceId",
             aspect="square",
             prompt="prompt",
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             aspect=aspect,
             prompt=prompt,
             duration_seconds=duration_seconds,
@@ -123,16 +115,12 @@ class VideoGenerationsClient:
         )
         return _response.data
 
-    def get(
-        self, workspace_id: str, generation_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> VideoGeneration:
+    def get(self, generation_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> VideoGeneration:
         """
         Reads where a video stands: queued, running, succeeded with its file (`mediaId`), or failed with why (`reason`). Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         generation_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -148,14 +136,14 @@ class VideoGenerationsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.video_generations.get(
-            workspace_id="workspaceId",
             generation_id="generationId",
         )
         """
-        _response = self._raw_client.get(workspace_id, generation_id, request_options=request_options)
+        _response = self._raw_client.get(generation_id, request_options=request_options)
         return _response.data
 
 
@@ -176,7 +164,6 @@ class AsyncVideoGenerationsClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         status: typing.Optional[VideoGenerationStatus] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -186,8 +173,6 @@ class AsyncVideoGenerationsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         status : typing.Optional[VideoGenerationStatus]
 
         request_options : typing.Optional[RequestOptions]
@@ -205,24 +190,22 @@ class AsyncVideoGenerationsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.video_generations.list(
-                workspace_id="workspaceId",
-            )
+            await client.video_generations.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, status=status, request_options=request_options)
+        _response = await self._raw_client.list(status=status, request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         aspect: ImageAspect,
         prompt: str,
@@ -235,8 +218,6 @@ class AsyncVideoGenerationsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         aspect : ImageAspect
 
         prompt : str
@@ -260,13 +241,13 @@ class AsyncVideoGenerationsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.video_generations.create(
-                workspace_id="workspaceId",
                 aspect="square",
                 prompt="prompt",
             )
@@ -275,7 +256,6 @@ class AsyncVideoGenerationsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             aspect=aspect,
             prompt=prompt,
             duration_seconds=duration_seconds,
@@ -285,15 +265,13 @@ class AsyncVideoGenerationsClient:
         return _response.data
 
     async def get(
-        self, workspace_id: str, generation_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, generation_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> VideoGeneration:
         """
         Reads where a video stands: queued, running, succeeded with its file (`mediaId`), or failed with why (`reason`). Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         generation_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -311,18 +289,18 @@ class AsyncVideoGenerationsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.video_generations.get(
-                workspace_id="workspaceId",
                 generation_id="generationId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, generation_id, request_options=request_options)
+        _response = await self._raw_client.get(generation_id, request_options=request_options)
         return _response.data

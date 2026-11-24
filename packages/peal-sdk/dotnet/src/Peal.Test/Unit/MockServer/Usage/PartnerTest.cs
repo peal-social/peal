@@ -188,7 +188,7 @@ public class PartnerTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/usage/partner")
+                    .WithPath("/api/v1/usage/partner")
                     .UsingGet()
             )
             .RespondWith(
@@ -198,9 +198,7 @@ public class PartnerTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Usage.PartnerAsync(
-            new PartnerUsageRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Usage.PartnerAsync(new PartnerUsageRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -302,7 +300,7 @@ public class PartnerTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/usage/partner")
+                    .WithPath("/api/v1/usage/partner")
                     .UsingGet()
             )
             .RespondWith(
@@ -312,9 +310,7 @@ public class PartnerTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Usage.PartnerAsync(
-            new PartnerUsageRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Usage.PartnerAsync(new PartnerUsageRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

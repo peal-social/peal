@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         url: "url"
  *     }
  */
 export interface FeedPreviewRequest {
-    workspaceId: string;
     template?: string;
     url: string;
 }

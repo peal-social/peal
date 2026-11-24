@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.StatusAssistantRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Assistant.Status(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Status(
 	ctx context.Context,
-	request *peal.StatusAssistantRequest,
 	opts ...option.RequestOption,
 ) (*peal.AssistantStatus, error) {
 	response, err := c.WithRawResponse.Status(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -66,7 +60,6 @@ func (c *Client) Status(
 // Example:
 //
 //	request := &peal.SuggestionRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Action: &peal.AssistantAction{
 //	        Rewrite: &peal.AssistantActionRewrite{
 //	            Tone: peal.AssistantToneProfessional,
@@ -99,7 +92,6 @@ func (c *Client) Suggest(
 // Example:
 //
 //	request := &peal.ImageRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Aspect: peal.ImageAspectSquare,
 //	    Prompt: "prompt",
 //	}
@@ -127,21 +119,15 @@ func (c *Client) GenerateImage(
 //
 // Example:
 //
-//	request := &peal.ImageProviderAssistantRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Assistant.ImageProvider(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) ImageProvider(
 	ctx context.Context,
-	request *peal.ImageProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) (*peal.ImageProviderSetting, error) {
 	response, err := c.WithRawResponse.ImageProvider(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -155,7 +141,6 @@ func (c *Client) ImageProvider(
 // Example:
 //
 //	request := &peal.ImageProviderChange{
-//	    WorkspaceID: "workspaceId",
 //	    Model: "model",
 //	}
 //	_, err := client.Assistant.SetImageProvider(
@@ -182,21 +167,15 @@ func (c *Client) SetImageProvider(
 //
 // Example:
 //
-//	request := &peal.RemoveImageProviderAssistantRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	err := client.Assistant.RemoveImageProvider(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) RemoveImageProvider(
 	ctx context.Context,
-	request *peal.RemoveImageProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) error {
 	_, err := c.WithRawResponse.RemoveImageProvider(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -209,21 +188,15 @@ func (c *Client) RemoveImageProvider(
 //
 // Example:
 //
-//	request := &peal.TextProviderAssistantRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Assistant.TextProvider(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) TextProvider(
 	ctx context.Context,
-	request *peal.TextProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) (*peal.TextProviderSetting, error) {
 	response, err := c.WithRawResponse.TextProvider(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -237,7 +210,6 @@ func (c *Client) TextProvider(
 // Example:
 //
 //	request := &peal.TextProviderChange{
-//	    WorkspaceID: "workspaceId",
 //	    Model: "model",
 //	}
 //	_, err := client.Assistant.SetTextProvider(
@@ -264,21 +236,15 @@ func (c *Client) SetTextProvider(
 //
 // Example:
 //
-//	request := &peal.RemoveTextProviderAssistantRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	err := client.Assistant.RemoveTextProvider(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) RemoveTextProvider(
 	ctx context.Context,
-	request *peal.RemoveTextProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) error {
 	_, err := c.WithRawResponse.RemoveTextProvider(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -291,21 +257,15 @@ func (c *Client) RemoveTextProvider(
 //
 // Example:
 //
-//	request := &peal.TestTextProviderAssistantRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	err := client.Assistant.TestTextProvider(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) TestTextProvider(
 	ctx context.Context,
-	request *peal.TestTextProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) error {
 	_, err := c.WithRawResponse.TestTextProvider(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -318,21 +278,15 @@ func (c *Client) TestTextProvider(
 //
 // Example:
 //
-//	request := &peal.ProvidersAssistantRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Assistant.Providers(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Providers(
 	ctx context.Context,
-	request *peal.ProvidersAssistantRequest,
 	opts ...option.RequestOption,
 ) (*peal.AiProviderConnections, error) {
 	response, err := c.WithRawResponse.Providers(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -346,7 +300,6 @@ func (c *Client) Providers(
 // Example:
 //
 //	request := &peal.AiProviderConnectionChange{
-//	    WorkspaceID: "workspaceId",
 //	    Provider: peal.AiProviderAnthropic,
 //	}
 //	_, err := client.Assistant.ConnectProvider(
@@ -374,7 +327,6 @@ func (c *Client) ConnectProvider(
 // Example:
 //
 //	request := &peal.DisconnectProviderAssistantRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Provider: peal.AiProviderAnthropic,
 //	}
 //	err := client.Assistant.DisconnectProvider(
@@ -402,7 +354,6 @@ func (c *Client) DisconnectProvider(
 // Example:
 //
 //	request := &peal.AiProviderTest{
-//	    WorkspaceID: "workspaceId",
 //	    Provider: peal.AiProviderAnthropic,
 //	}
 //	err := client.Assistant.TestProvider(
@@ -429,21 +380,15 @@ func (c *Client) TestProvider(
 //
 // Example:
 //
-//	request := &peal.ModelsAssistantRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Assistant.Models(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Models(
 	ctx context.Context,
-	request *peal.ModelsAssistantRequest,
 	opts ...option.RequestOption,
 ) (*peal.AiCapabilityModels, error) {
 	response, err := c.WithRawResponse.Models(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -457,7 +402,6 @@ func (c *Client) Models(
 // Example:
 //
 //	request := &peal.AiCapabilityModelChange{
-//	    WorkspaceID: "workspaceId",
 //	    Capability: peal.AiCapabilityText,
 //	    Provider: peal.AiProviderAnthropic,
 //	}
@@ -486,7 +430,6 @@ func (c *Client) SetModel(
 // Example:
 //
 //	request := &peal.UnsetModelAssistantRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Capability: peal.AiCapabilityText,
 //	}
 //	err := client.Assistant.UnsetModel(

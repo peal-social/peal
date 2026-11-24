@@ -10,6 +10,7 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..errors.bad_request_error import BadRequestError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
@@ -25,15 +26,13 @@ class RawCapabilitiesClient:
         self._client_wrapper = client_wrapper
 
     def platforms(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[PlatformCapabilities]]:
         """
         Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -43,7 +42,7 @@ class RawCapabilitiesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/platforms/capabilities",
+            "api/v1/platforms/capabilities",
             method="GET",
             request_options=request_options,
         )
@@ -57,6 +56,17 @@ class RawCapabilitiesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -111,15 +121,13 @@ class RawCapabilitiesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def channel(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ChannelCapabilities]:
         """
         Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, `account` says why and the platform's capabilities are answered alone. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -131,7 +139,7 @@ class RawCapabilitiesClient:
             ChannelCapabilities
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/capabilities",
+            f"api/v1/channels/{encode_path_param(channel_id)}/capabilities",
             method="GET",
             request_options=request_options,
         )
@@ -145,6 +153,17 @@ class RawCapabilitiesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -204,15 +223,13 @@ class AsyncRawCapabilitiesClient:
         self._client_wrapper = client_wrapper
 
     async def platforms(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[PlatformCapabilities]]:
         """
         Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -222,7 +239,7 @@ class AsyncRawCapabilitiesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/platforms/capabilities",
+            "api/v1/platforms/capabilities",
             method="GET",
             request_options=request_options,
         )
@@ -236,6 +253,17 @@ class AsyncRawCapabilitiesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -290,15 +318,13 @@ class AsyncRawCapabilitiesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def channel(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ChannelCapabilities]:
         """
         Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, `account` says why and the platform's capabilities are answered alone. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -310,7 +336,7 @@ class AsyncRawCapabilitiesClient:
             ChannelCapabilities
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/capabilities",
+            f"api/v1/channels/{encode_path_param(channel_id)}/capabilities",
             method="GET",
             request_options=request_options,
         )
@@ -324,6 +350,17 @@ class AsyncRawCapabilitiesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

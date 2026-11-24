@@ -45,7 +45,7 @@ public class AccountTest : BaseMockServerTest
             """;
 
         Server
-            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/partner").UsingGet())
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/partner").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -88,7 +88,7 @@ public class AccountTest : BaseMockServerTest
             """;
 
         Server
-            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/partner").UsingGet())
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/partner").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()

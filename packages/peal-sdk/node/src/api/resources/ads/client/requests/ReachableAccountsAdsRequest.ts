@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         connectionId: "connectionId"
  *     }
  */
 export interface ReachableAccountsAdsRequest {
-    workspaceId: string;
     connectionId: string;
 }

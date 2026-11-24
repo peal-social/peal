@@ -33,7 +33,6 @@ class MediaClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         kind: typing.Optional[MediaKind] = None,
@@ -46,8 +45,6 @@ class MediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         kind : typing.Optional[MediaKind]
@@ -69,20 +66,16 @@ class MediaClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.media.list(
-            workspace_id="workspaceId",
-        )
+        client.media.list()
         """
-        _response = self._raw_client.list(
-            workspace_id, cursor=cursor, kind=kind, limit=limit, q=q, request_options=request_options
-        )
+        _response = self._raw_client.list(cursor=cursor, kind=kind, limit=limit, q=q, request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         byte_size: int,
         content_type: str,
@@ -95,8 +88,6 @@ class MediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         byte_size : int
 
         content_type : str
@@ -118,16 +109,15 @@ class MediaClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media.create(
-            workspace_id="workspaceId",
             byte_size=1000000,
             content_type="contentType",
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             byte_size=byte_size,
             content_type=content_type,
             alt_text=alt_text,
@@ -138,7 +128,6 @@ class MediaClient:
 
     def import_from_url(
         self,
-        workspace_id: str,
         *,
         url: str,
         alt_text: typing.Optional[str] = OMIT,
@@ -149,8 +138,6 @@ class MediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         alt_text : typing.Optional[str]
@@ -168,28 +155,22 @@ class MediaClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media.import_from_url(
-            workspace_id="workspaceId",
             url="url",
         )
         """
-        _response = self._raw_client.import_from_url(
-            workspace_id, url=url, alt_text=alt_text, request_options=request_options
-        )
+        _response = self._raw_client.import_from_url(url=url, alt_text=alt_text, request_options=request_options)
         return _response.data
 
-    def get(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Media:
+    def get(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Media:
         """
         Shows one of the workspace's media. Needs media:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -205,26 +186,22 @@ class MediaClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media.get(
-            workspace_id="workspaceId",
             media_id="mediaId",
         )
         """
-        _response = self._raw_client.get(workspace_id, media_id, request_options=request_options)
+        _response = self._raw_client.get(media_id, request_options=request_options)
         return _response.data
 
-    def delete(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (`MediaInUse`, listing them): take them back to draft first. Needs media:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -239,19 +216,18 @@ class MediaClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media.delete(
-            workspace_id="workspaceId",
             media_id="mediaId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, media_id, request_options=request_options)
+        _response = self._raw_client.delete(media_id, request_options=request_options)
         return _response.data
 
     def describe(
         self,
-        workspace_id: str,
         media_id: str,
         *,
         alt_text: typing.Optional[str] = OMIT,
@@ -262,8 +238,6 @@ class MediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         alt_text : typing.Optional[str]
@@ -281,28 +255,22 @@ class MediaClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media.describe(
-            workspace_id="workspaceId",
             media_id="mediaId",
         )
         """
-        _response = self._raw_client.describe(
-            workspace_id, media_id, alt_text=alt_text, request_options=request_options
-        )
+        _response = self._raw_client.describe(media_id, alt_text=alt_text, request_options=request_options)
         return _response.data
 
-    def complete(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Media:
+    def complete(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Media:
         """
         Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (`tooLarge`, `tooManyPages`, `unreadable`), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached `mediaStorage`). Needs media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -318,26 +286,22 @@ class MediaClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media.complete(
-            workspace_id="workspaceId",
             media_id="mediaId",
         )
         """
-        _response = self._raw_client.complete(workspace_id, media_id, request_options=request_options)
+        _response = self._raw_client.complete(media_id, request_options=request_options)
         return _response.data
 
-    def usage(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> MediaUsage:
+    def usage(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> MediaUsage:
         """
         Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -353,14 +317,14 @@ class MediaClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media.usage(
-            workspace_id="workspaceId",
             media_id="mediaId",
         )
         """
-        _response = self._raw_client.usage(workspace_id, media_id, request_options=request_options)
+        _response = self._raw_client.usage(media_id, request_options=request_options)
         return _response.data
 
 
@@ -381,7 +345,6 @@ class AsyncMediaClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         kind: typing.Optional[MediaKind] = None,
@@ -394,8 +357,6 @@ class AsyncMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         kind : typing.Optional[MediaKind]
@@ -419,26 +380,24 @@ class AsyncMediaClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.media.list(
-                workspace_id="workspaceId",
-            )
+            await client.media.list()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list(
-            workspace_id, cursor=cursor, kind=kind, limit=limit, q=q, request_options=request_options
+            cursor=cursor, kind=kind, limit=limit, q=q, request_options=request_options
         )
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         byte_size: int,
         content_type: str,
@@ -451,8 +410,6 @@ class AsyncMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         byte_size : int
 
         content_type : str
@@ -476,13 +433,13 @@ class AsyncMediaClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media.create(
-                workspace_id="workspaceId",
                 byte_size=1000000,
                 content_type="contentType",
             )
@@ -491,7 +448,6 @@ class AsyncMediaClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             byte_size=byte_size,
             content_type=content_type,
             alt_text=alt_text,
@@ -502,7 +458,6 @@ class AsyncMediaClient:
 
     async def import_from_url(
         self,
-        workspace_id: str,
         *,
         url: str,
         alt_text: typing.Optional[str] = OMIT,
@@ -513,8 +468,6 @@ class AsyncMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         alt_text : typing.Optional[str]
@@ -534,34 +487,28 @@ class AsyncMediaClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media.import_from_url(
-                workspace_id="workspaceId",
                 url="url",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.import_from_url(
-            workspace_id, url=url, alt_text=alt_text, request_options=request_options
-        )
+        _response = await self._raw_client.import_from_url(url=url, alt_text=alt_text, request_options=request_options)
         return _response.data
 
-    async def get(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Media:
+    async def get(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Media:
         """
         Shows one of the workspace's media. Needs media:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -579,32 +526,28 @@ class AsyncMediaClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media.get(
-                workspace_id="workspaceId",
                 media_id="mediaId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, media_id, request_options=request_options)
+        _response = await self._raw_client.get(media_id, request_options=request_options)
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (`MediaInUse`, listing them): take them back to draft first. Needs media:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -621,25 +564,24 @@ class AsyncMediaClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media.delete(
-                workspace_id="workspaceId",
                 media_id="mediaId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, media_id, request_options=request_options)
+        _response = await self._raw_client.delete(media_id, request_options=request_options)
         return _response.data
 
     async def describe(
         self,
-        workspace_id: str,
         media_id: str,
         *,
         alt_text: typing.Optional[str] = OMIT,
@@ -650,8 +592,6 @@ class AsyncMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         alt_text : typing.Optional[str]
@@ -671,34 +611,28 @@ class AsyncMediaClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media.describe(
-                workspace_id="workspaceId",
                 media_id="mediaId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.describe(
-            workspace_id, media_id, alt_text=alt_text, request_options=request_options
-        )
+        _response = await self._raw_client.describe(media_id, alt_text=alt_text, request_options=request_options)
         return _response.data
 
-    async def complete(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Media:
+    async def complete(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Media:
         """
         Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (`tooLarge`, `tooManyPages`, `unreadable`), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached `mediaStorage`). Needs media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -716,32 +650,28 @@ class AsyncMediaClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media.complete(
-                workspace_id="workspaceId",
                 media_id="mediaId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.complete(workspace_id, media_id, request_options=request_options)
+        _response = await self._raw_client.complete(media_id, request_options=request_options)
         return _response.data
 
-    async def usage(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> MediaUsage:
+    async def usage(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> MediaUsage:
         """
         Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -759,18 +689,18 @@ class AsyncMediaClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media.usage(
-                workspace_id="workspaceId",
                 media_id="mediaId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.usage(workspace_id, media_id, request_options=request_options)
+        _response = await self._raw_client.usage(media_id, request_options=request_options)
         return _response.data

@@ -248,7 +248,7 @@ async fn main() {
 </details>
 
 ## apiKeys
-<details><summary><code>client.api_keys.<a href="/src/api/resources/api_keys/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;ApiKey&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.api_keys.<a href="/src/api/resources/api_keys/client.rs">list</a>() -> Result&lt;Vec&lt;ApiKey&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -284,24 +284,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client.api_keys.list(&"workspaceId".to_string(), None).await;
+    client.api_keys.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -312,7 +297,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="/src/api/resources/api_keys/client.rs">create</a>(workspace_id: String, request: NewApiKey) -> Result&lt;CreatedApiKey, ApiError&gt;</code></summary>
+<details><summary><code>client.api_keys.<a href="/src/api/resources/api_keys/client.rs">create</a>(request: NewApiKey) -> Result&lt;CreatedApiKey, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -351,7 +336,6 @@ async fn main() {
     client
         .api_keys
         .create(
-            &"workspaceId".to_string(),
             &NewApiKey {
                 name: "name".to_string(),
                 permissions: vec![Permission::ActivityRead],
@@ -371,14 +355,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -411,7 +387,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="/src/api/resources/api_keys/client.rs">revoke</a>(workspace_id: String, api_key_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.api_keys.<a href="/src/api/resources/api_keys/client.rs">revoke</a>(api_key_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -447,10 +423,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .api_keys
-        .revoke(&"workspaceId".to_string(), &"apiKeyId".to_string(), None)
-        .await;
+    client.api_keys.revoke(&"apiKeyId".to_string(), None).await;
 }
 ```
 </dd>
@@ -462,14 +435,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -487,7 +452,7 @@ async fn main() {
 </details>
 
 ## channels
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;Channel&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">list</a>() -> Result&lt;Vec&lt;Channel&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -523,24 +488,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client.channels.list(&"workspaceId".to_string(), None).await;
+    client.channels.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -551,7 +501,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">find</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, platform: Option&lt;Option&lt;Platform&gt;&gt;, q: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;ChannelStatusName&gt;&gt;) -> Result&lt;ChannelPage, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">find</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, platform: Option&lt;Option&lt;Platform&gt;&gt;, q: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;ChannelStatusName&gt;&gt;) -> Result&lt;ChannelPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -590,7 +540,6 @@ async fn main() {
     client
         .channels
         .find(
-            &"workspaceId".to_string(),
             &FindQueryRequest {
                 ..Default::default()
             },
@@ -608,14 +557,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -664,7 +605,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">platforms</a>(workspace_id: String) -> Result&lt;ConnectablePlatforms, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">platforms</a>() -> Result&lt;ConnectablePlatforms, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -700,27 +641,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .channels
-        .platforms(&"workspaceId".to_string(), None)
-        .await;
+    client.channels.platforms(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -731,7 +654,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">connect_site</a>(workspace_id: String, request: ConnectSite) -> Result&lt;Channel, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">connect_site</a>(request: ConnectSite) -> Result&lt;Channel, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -770,7 +693,6 @@ async fn main() {
     client
         .channels
         .connect_site(
-            &"workspaceId".to_string(),
             &ConnectSite {
                 address: "address".to_string(),
                 application_password: "applicationPassword".to_string(),
@@ -791,14 +713,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -839,7 +753,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">connect_site_with_key</a>(workspace_id: String, request: ConnectSiteWithKey) -> Result&lt;Channel, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">connect_site_with_key</a>(request: ConnectSiteWithKey) -> Result&lt;Channel, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -878,7 +792,6 @@ async fn main() {
     client
         .channels
         .connect_site_with_key(
-            &"workspaceId".to_string(),
             &ConnectSiteWithKey {
                 api_key: "apiKey".to_string(),
                 platform: KeySitePlatform::Devto,
@@ -898,14 +811,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -938,7 +843,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">connect_chat</a>(workspace_id: String, request: ConnectChat) -> Result&lt;Channel, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">connect_chat</a>(request: ConnectChat) -> Result&lt;Channel, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -977,7 +882,6 @@ async fn main() {
     client
         .channels
         .connect_chat(
-            &"workspaceId".to_string(),
             &ConnectChat::Discord {
                 data: ConnectDiscordChat {
                     webhook_url: "webhookUrl".to_string(),
@@ -994,27 +898,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">start_site_sign_in</a>(workspace_id: String, platform: OAuthSitePlatform, request: StartSiteSignIn) -> Result&lt;Authorization, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">start_site_sign_in</a>(platform: OAuthSitePlatform, request: StartSiteSignIn) -> Result&lt;Authorization, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1053,7 +942,6 @@ async fn main() {
     client
         .channels
         .start_site_sign_in(
-            &"workspaceId".to_string(),
             &OAuthSitePlatform::WordpressCom,
             &StartSiteSignIn {
                 ..Default::default()
@@ -1072,14 +960,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1104,7 +984,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">complete_site_sign_in</a>(workspace_id: String, platform: OAuthSitePlatform, request: SiteSignInCallback) -> Result&lt;Channel, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">complete_site_sign_in</a>(platform: OAuthSitePlatform, request: SiteSignInCallback) -> Result&lt;Channel, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1143,7 +1023,6 @@ async fn main() {
     client
         .channels
         .complete_site_sign_in(
-            &"workspaceId".to_string(),
             &OAuthSitePlatform::WordpressCom,
             &SiteSignInCallback {
                 state: "state".to_string(),
@@ -1164,14 +1043,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1212,7 +1083,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">connect</a>(workspace_id: String, platform: Platform, request: ConnectChannel) -> Result&lt;Authorization, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">connect</a>(platform: Platform, request: ConnectChannel) -> Result&lt;Authorization, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1251,7 +1122,6 @@ async fn main() {
     client
         .channels
         .connect(
-            &"workspaceId".to_string(),
             &Platform::X,
             &ConnectChannel {
                 ..Default::default()
@@ -1270,14 +1140,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1318,7 +1180,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">complete_connect</a>(workspace_id: String, platform: Platform, request: ConnectCallback) -> Result&lt;ConnectOutcome, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">complete_connect</a>(platform: Platform, request: ConnectCallback) -> Result&lt;ConnectOutcome, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1357,7 +1219,6 @@ async fn main() {
     client
         .channels
         .complete_connect(
-            &"workspaceId".to_string(),
             &Platform::X,
             &ConnectCallback {
                 state: "state".to_string(),
@@ -1379,14 +1240,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1435,7 +1288,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">choose_accounts</a>(workspace_id: String, platform: Platform, request: ChooseAccounts) -> Result&lt;Vec&lt;Channel&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">choose_accounts</a>(platform: Platform, request: ChooseAccounts) -> Result&lt;Vec&lt;Channel&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1474,7 +1327,6 @@ async fn main() {
     client
         .channels
         .choose_accounts(
-            &"workspaceId".to_string(),
             &Platform::X,
             &ChooseAccounts {
                 account_ids: vec!["accountIds".to_string()],
@@ -1494,14 +1346,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1534,7 +1378,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">reconnect</a>(workspace_id: String, channel_id: String, messages: Option&lt;Option&lt;ReconnectChannelsRequestMessages&gt;&gt;, reposts: Option&lt;Option&lt;ReconnectChannelsRequestReposts&gt;&gt;) -> Result&lt;Authorization, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">reconnect</a>(channel_id: String, messages: Option&lt;Option&lt;ReconnectChannelsRequestMessages&gt;&gt;, reposts: Option&lt;Option&lt;ReconnectChannelsRequestReposts&gt;&gt;) -> Result&lt;Authorization, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1573,7 +1417,6 @@ async fn main() {
     client
         .channels
         .reconnect(
-            &"workspaceId".to_string(),
             &"channelId".to_string(),
             &ReconnectQueryRequest {
                 ..Default::default()
@@ -1592,14 +1435,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1632,7 +1467,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">disconnect</a>(workspace_id: String, channel_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">disconnect</a>(channel_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1670,7 +1505,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .channels
-        .disconnect(&"workspaceId".to_string(), &"channelId".to_string(), None)
+        .disconnect(&"channelId".to_string(), None)
         .await;
 }
 ```
@@ -1687,14 +1522,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channel_id:** `String` 
     
 </dd>
@@ -1707,7 +1534,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">update</a>(workspace_id: String, channel_id: String, request: ChannelUpdate) -> Result&lt;Channel, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">update</a>(channel_id: String, request: ChannelUpdate) -> Result&lt;Channel, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1746,7 +1573,6 @@ async fn main() {
     client
         .channels
         .update(
-            &"workspaceId".to_string(),
             &"channelId".to_string(),
             &ChannelUpdate {
                 ..Default::default()
@@ -1765,14 +1591,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1797,7 +1615,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">disable</a>(workspace_id: String, channel_id: String) -> Result&lt;Channel, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">disable</a>(channel_id: String) -> Result&lt;Channel, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1835,7 +1653,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .channels
-        .disable(&"workspaceId".to_string(), &"channelId".to_string(), None)
+        .disable(&"channelId".to_string(), None)
         .await;
 }
 ```
@@ -1852,14 +1670,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channel_id:** `String` 
     
 </dd>
@@ -1872,7 +1682,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">enable</a>(workspace_id: String, channel_id: String) -> Result&lt;Channel, ApiError&gt;</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client.rs">enable</a>(channel_id: String) -> Result&lt;Channel, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1908,10 +1718,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .channels
-        .enable(&"workspaceId".to_string(), &"channelId".to_string(), None)
-        .await;
+    client.channels.enable(&"channelId".to_string(), None).await;
 }
 ```
 </dd>
@@ -1923,14 +1730,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1948,7 +1747,7 @@ async fn main() {
 </details>
 
 ## posts
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">drafts</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;DraftPage, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">drafts</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;DraftPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -1987,7 +1786,6 @@ async fn main() {
     client
         .posts
         .drafts(
-            &"workspaceId".to_string(),
             &DraftsQueryRequest {
                 ..Default::default()
             },
@@ -2005,14 +1803,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2037,7 +1827,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">list</a>(workspace_id: String, from: Option&lt;String&gt;, to: Option&lt;String&gt;) -> Result&lt;Vec&lt;Post&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">list</a>(from: Option&lt;String&gt;, to: Option&lt;String&gt;) -> Result&lt;Vec&lt;Post&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -2076,7 +1866,6 @@ async fn main() {
     client
         .posts
         .list(
-            &"workspaceId".to_string(),
             &PostsListQueryRequest {
                 from: "from".to_string(),
                 to: "to".to_string(),
@@ -2095,14 +1884,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2127,7 +1908,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">create</a>(workspace_id: String, request: PostDraft) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">create</a>(request: PostDraft) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -2166,7 +1947,6 @@ async fn main() {
     client
         .posts
         .create(
-            &"workspaceId".to_string(),
             &PostDraft {
                 channel_ids: vec!["channelIds".to_string()],
                 content: PostContent {
@@ -2195,27 +1975,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">search</a>(workspace_id: String, author_id: Option&lt;Option&lt;String&gt;&gt;, channel_id: Option&lt;Option&lt;String&gt;&gt;, created_via: Option&lt;Option&lt;PostOriginVia&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, outcome: Option&lt;Option&lt;PostOutcome&gt;&gt;, platform: Option&lt;Option&lt;Platform&gt;&gt;, queue_id: Option&lt;Option&lt;String&gt;&gt;, recycling_id: Option&lt;Option&lt;String&gt;&gt;, removed: Option&lt;Option&lt;SearchPostsRequestRemoved&gt;&gt;, sort: Option&lt;Option&lt;PostSort&gt;&gt;, status: Option&lt;Option&lt;PostStatus&gt;&gt;, tag_id: Option&lt;Option&lt;String&gt;&gt;, to: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;PostPage, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">search</a>(author_id: Option&lt;Option&lt;String&gt;&gt;, channel_id: Option&lt;Option&lt;String&gt;&gt;, created_via: Option&lt;Option&lt;PostOriginVia&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, outcome: Option&lt;Option&lt;PostOutcome&gt;&gt;, platform: Option&lt;Option&lt;Platform&gt;&gt;, queue_id: Option&lt;Option&lt;String&gt;&gt;, recycling_id: Option&lt;Option&lt;String&gt;&gt;, removed: Option&lt;Option&lt;SearchPostsRequestRemoved&gt;&gt;, sort: Option&lt;Option&lt;PostSort&gt;&gt;, status: Option&lt;Option&lt;PostStatus&gt;&gt;, tag_id: Option&lt;Option&lt;String&gt;&gt;, to: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;PostPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -2254,7 +2019,6 @@ async fn main() {
     client
         .posts
         .search(
-            &"workspaceId".to_string(),
             &SearchQueryRequest {
                 ..Default::default()
             },
@@ -2272,14 +2036,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2408,7 +2164,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">send</a>(workspace_id: String, request: NewPost, wait: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">send</a>(request: NewPost, wait: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -2447,7 +2203,6 @@ async fn main() {
     client
         .posts
         .send(
-            &"workspaceId".to_string(),
             &NewPost {
                 channel_ids: vec!["channelIds".to_string()],
                 content: PostContent {
@@ -2492,14 +2247,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2596,7 +2343,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">bulk</a>(workspace_id: String, request: BulkPosts) -> Result&lt;BulkResult, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">bulk</a>(request: BulkPosts) -> Result&lt;BulkResult, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -2635,7 +2382,6 @@ async fn main() {
     client
         .posts
         .bulk(
-            &"workspaceId".to_string(),
             &BulkPosts {
                 posts: vec![BulkPost {
                     allow_duplicate: None,
@@ -2686,14 +2432,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **posts:** `Vec<BulkPost>` 
     
 </dd>
@@ -2706,7 +2444,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">import</a>(workspace_id: String, request: PostImport) -> Result&lt;ImportResult, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">import</a>(request: PostImport) -> Result&lt;ImportResult, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -2745,7 +2483,6 @@ async fn main() {
     client
         .posts
         .import(
-            &"workspaceId".to_string(),
             &PostImport {
                 csv: "csv".to_string(),
                 dry_run: None,
@@ -2764,14 +2501,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2796,7 +2525,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">validate</a>(workspace_id: String, request: PostToValidate) -> Result&lt;PostValidation, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">validate</a>(request: PostToValidate) -> Result&lt;PostValidation, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -2835,7 +2564,6 @@ async fn main() {
     client
         .posts
         .validate(
-            &"workspaceId".to_string(),
             &PostToValidate {
                 channel_ids: vec!["channelIds".to_string()],
                 content: PostContent {
@@ -2874,14 +2602,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2962,7 +2682,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">get</a>(workspace_id: String, post_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">get</a>(post_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -2998,10 +2718,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .posts
-        .get(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.posts.get(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -3013,14 +2730,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3037,7 +2746,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">update</a>(workspace_id: String, post_id: String, request: PostDraft) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">update</a>(post_id: String, request: PostDraft) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3076,7 +2785,6 @@ async fn main() {
     client
         .posts
         .update(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &PostDraft {
                 channel_ids: vec!["channelIds".to_string()],
@@ -3114,14 +2822,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **post_id:** `String` 
     
 </dd>
@@ -3134,7 +2834,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">discard</a>(workspace_id: String, post_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">discard</a>(post_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3170,10 +2870,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .posts
-        .discard(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.posts.discard(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -3185,14 +2882,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3209,7 +2898,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">outcome</a>(workspace_id: String, post_id: String, wait: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">outcome</a>(post_id: String, wait: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3248,7 +2937,6 @@ async fn main() {
     client
         .posts
         .outcome(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &OutcomeQueryRequest {
                 ..Default::default()
@@ -3267,14 +2955,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3299,7 +2979,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">attempts</a>(workspace_id: String, post_id: String) -> Result&lt;Vec&lt;PublicationAttempt&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">attempts</a>(post_id: String) -> Result&lt;Vec&lt;PublicationAttempt&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3335,10 +3015,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .posts
-        .attempts(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.posts.attempts(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -3350,14 +3027,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3374,7 +3043,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">tag</a>(workspace_id: String, post_id: String, request: PostTags) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">tag</a>(post_id: String, request: PostTags) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3413,7 +3082,6 @@ async fn main() {
     client
         .posts
         .tag(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &PostTags {
                 tag_ids: vec!["tagIds".to_string()],
@@ -3432,14 +3100,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3464,7 +3124,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">duplicate</a>(workspace_id: String, post_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">duplicate</a>(post_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3500,10 +3160,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .posts
-        .duplicate(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.posts.duplicate(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -3515,14 +3172,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3539,7 +3188,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">schedule</a>(workspace_id: String, post_id: String, request: SchedulePost) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">schedule</a>(post_id: String, request: SchedulePost) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3578,7 +3227,6 @@ async fn main() {
     client
         .posts
         .schedule(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &SchedulePost {
                 at: "at".to_string(),
@@ -3599,14 +3247,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3647,7 +3287,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">reschedule</a>(workspace_id: String, post_id: String, request: PostSchedule) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">reschedule</a>(post_id: String, request: PostSchedule) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3686,7 +3326,6 @@ async fn main() {
     client
         .posts
         .reschedule(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &PostSchedule {
                 at: "at".to_string(),
@@ -3711,14 +3350,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **post_id:** `String` 
     
 </dd>
@@ -3731,7 +3362,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">enqueue</a>(workspace_id: String, post_id: String, request: QueuePost) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">enqueue</a>(post_id: String, request: QueuePost) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3770,7 +3401,6 @@ async fn main() {
     client
         .posts
         .enqueue(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &QueuePost {
                 ..Default::default()
@@ -3789,14 +3419,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3829,7 +3451,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">unschedule</a>(workspace_id: String, post_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">unschedule</a>(post_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3865,10 +3487,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .posts
-        .unschedule(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.posts.unschedule(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -3880,14 +3499,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3904,7 +3515,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">repost</a>(workspace_id: String, post_id: String, target_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">repost</a>(post_id: String, target_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -3942,12 +3553,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .posts
-        .repost(
-            &"workspaceId".to_string(),
-            &"postId".to_string(),
-            &"targetId".to_string(),
-            None,
-        )
+        .repost(&"postId".to_string(), &"targetId".to_string(), None)
         .await;
 }
 ```
@@ -3960,14 +3566,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3992,7 +3590,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">remove_target</a>(workspace_id: String, post_id: String, target_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">remove_target</a>(post_id: String, target_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4030,12 +3628,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .posts
-        .remove_target(
-            &"workspaceId".to_string(),
-            &"postId".to_string(),
-            &"targetId".to_string(),
-            None,
-        )
+        .remove_target(&"postId".to_string(), &"targetId".to_string(), None)
         .await;
 }
 ```
@@ -4048,14 +3641,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4080,7 +3665,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">confirm</a>(workspace_id: String, post_id: String, target_id: String, request: TargetConfirmation) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">confirm</a>(post_id: String, target_id: String, request: TargetConfirmation) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4119,7 +3704,6 @@ async fn main() {
     client
         .posts
         .confirm(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &"targetId".to_string(),
             &TargetConfirmation::Published {
@@ -4146,14 +3730,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **post_id:** `String` 
     
 </dd>
@@ -4174,7 +3750,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">leave_out_rest</a>(workspace_id: String, post_id: String, target_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">leave_out_rest</a>(post_id: String, target_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4212,12 +3788,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .posts
-        .leave_out_rest(
-            &"workspaceId".to_string(),
-            &"postId".to_string(),
-            &"targetId".to_string(),
-            None,
-        )
+        .leave_out_rest(&"postId".to_string(), &"targetId".to_string(), None)
         .await;
 }
 ```
@@ -4230,14 +3801,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4262,7 +3825,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">unpublish_target</a>(workspace_id: String, post_id: String, target_id: String, wait: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;LivePostChange, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">unpublish_target</a>(post_id: String, target_id: String, wait: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;LivePostChange, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4301,7 +3864,6 @@ async fn main() {
     client
         .posts
         .unpublish_target(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &"targetId".to_string(),
             &UnpublishTargetQueryRequest {
@@ -4321,14 +3883,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4361,7 +3915,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">edit_target</a>(workspace_id: String, post_id: String, target_id: String, request: LivePostEdit, wait: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;LivePostChange, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">edit_target</a>(post_id: String, target_id: String, request: LivePostEdit, wait: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;LivePostChange, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4400,7 +3954,6 @@ async fn main() {
     client
         .posts
         .edit_target(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &"targetId".to_string(),
             &LivePostEdit {
@@ -4422,14 +3975,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4478,7 +4023,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">unpublish</a>(workspace_id: String, post_id: String) -> Result&lt;PostUnpublish, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">unpublish</a>(post_id: String) -> Result&lt;PostUnpublish, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4514,10 +4059,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .posts
-        .unpublish(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.posts.unpublish(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -4529,14 +4071,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4553,7 +4087,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">changes</a>(workspace_id: String, post_id: String) -> Result&lt;LivePostChanges, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">changes</a>(post_id: String) -> Result&lt;LivePostChanges, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4589,10 +4123,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .posts
-        .changes(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.posts.changes(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -4604,14 +4135,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4628,7 +4151,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">cancel</a>(workspace_id: String, post_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
+<details><summary><code>client.posts.<a href="/src/api/resources/posts/client.rs">cancel</a>(post_id: String) -> Result&lt;Post, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4664,10 +4187,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .posts
-        .cancel(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.posts.cancel(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -4679,14 +4199,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4704,7 +4216,7 @@ async fn main() {
 </details>
 
 ## articles
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">list</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;ArticleStateName&gt;&gt;) -> Result&lt;ArticlePage, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">list</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;ArticleStateName&gt;&gt;) -> Result&lt;ArticlePage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4743,7 +4255,6 @@ async fn main() {
     client
         .articles
         .list(
-            &"workspaceId".to_string(),
             &ArticlesListQueryRequest {
                 ..Default::default()
             },
@@ -4761,14 +4272,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4801,7 +4304,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">create</a>(workspace_id: String, request: NewArticle) -> Result&lt;Article, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">create</a>(request: NewArticle) -> Result&lt;Article, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4840,7 +4343,6 @@ async fn main() {
     client
         .articles
         .create(
-            &"workspaceId".to_string(),
             &NewArticle {
                 body: ArticleBody {
                     content: vec![],
@@ -4869,14 +4371,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4957,7 +4451,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">get</a>(workspace_id: String, article_id: String) -> Result&lt;Article, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">get</a>(article_id: String) -> Result&lt;Article, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -4993,10 +4487,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .articles
-        .get(&"workspaceId".to_string(), &"articleId".to_string(), None)
-        .await;
+    client.articles.get(&"articleId".to_string(), None).await;
 }
 ```
 </dd>
@@ -5008,14 +4499,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5032,7 +4515,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">delete</a>(workspace_id: String, article_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">delete</a>(article_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5068,10 +4551,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .articles
-        .delete(&"workspaceId".to_string(), &"articleId".to_string(), None)
-        .await;
+    client.articles.delete(&"articleId".to_string(), None).await;
 }
 ```
 </dd>
@@ -5083,14 +4563,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5107,7 +4579,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">update</a>(workspace_id: String, article_id: String, request: ArticleInput) -> Result&lt;Article, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">update</a>(article_id: String, request: ArticleInput) -> Result&lt;Article, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5146,7 +4618,6 @@ async fn main() {
     client
         .articles
         .update(
-            &"workspaceId".to_string(),
             &"articleId".to_string(),
             &ArticleInput {
                 body: ArticleBody {
@@ -5178,14 +4649,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **article_id:** `String` 
     
 </dd>
@@ -5198,7 +4661,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">schedule</a>(workspace_id: String, article_id: String, request: ArticleTime) -> Result&lt;Article, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">schedule</a>(article_id: String, request: ArticleTime) -> Result&lt;Article, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5237,7 +4700,6 @@ async fn main() {
     client
         .articles
         .schedule(
-            &"workspaceId".to_string(),
             &"articleId".to_string(),
             &ArticleTime {
                 time_zone: "timeZone".to_string(),
@@ -5261,14 +4723,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **article_id:** `String` 
     
 </dd>
@@ -5281,7 +4735,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">unschedule</a>(workspace_id: String, article_id: String) -> Result&lt;Article, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">unschedule</a>(article_id: String) -> Result&lt;Article, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5319,7 +4773,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .articles
-        .unschedule(&"workspaceId".to_string(), &"articleId".to_string(), None)
+        .unschedule(&"articleId".to_string(), None)
         .await;
 }
 ```
@@ -5336,14 +4790,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **article_id:** `String` 
     
 </dd>
@@ -5356,7 +4802,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">retry</a>(workspace_id: String, article_id: String) -> Result&lt;Article, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">retry</a>(article_id: String) -> Result&lt;Article, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5392,10 +4838,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .articles
-        .retry(&"workspaceId".to_string(), &"articleId".to_string(), None)
-        .await;
+    client.articles.retry(&"articleId".to_string(), None).await;
 }
 ```
 </dd>
@@ -5407,14 +4850,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5431,7 +4866,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">unpublish</a>(workspace_id: String, article_id: String) -> Result&lt;Article, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">unpublish</a>(article_id: String) -> Result&lt;Article, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5469,7 +4904,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .articles
-        .unpublish(&"workspaceId".to_string(), &"articleId".to_string(), None)
+        .unpublish(&"articleId".to_string(), None)
         .await;
 }
 ```
@@ -5486,14 +4921,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **article_id:** `String` 
     
 </dd>
@@ -5506,7 +4933,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">update_on_site</a>(workspace_id: String, article_id: String, request: ArticleInput) -> Result&lt;Article, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">update_on_site</a>(article_id: String, request: ArticleInput) -> Result&lt;Article, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5545,7 +4972,6 @@ async fn main() {
     client
         .articles
         .update_on_site(
-            &"workspaceId".to_string(),
             &"articleId".to_string(),
             &ArticleInput {
                 body: ArticleBody {
@@ -5577,14 +5003,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **article_id:** `String` 
     
 </dd>
@@ -5598,7 +5016,7 @@ async fn main() {
 </details>
 
 ## media
-<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">list</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, kind: Option&lt;Option&lt;MediaKind&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, q: Option&lt;Option&lt;MediaQuery&gt;&gt;) -> Result&lt;MediaPage, ApiError&gt;</code></summary>
+<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">list</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, kind: Option&lt;Option&lt;MediaKind&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, q: Option&lt;Option&lt;MediaQuery&gt;&gt;) -> Result&lt;MediaPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5637,7 +5055,6 @@ async fn main() {
     client
         .media
         .list(
-            &"workspaceId".to_string(),
             &MediaListQueryRequest {
                 ..Default::default()
             },
@@ -5655,14 +5072,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5703,7 +5112,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">create</a>(workspace_id: String, request: NewUpload) -> Result&lt;PreparedUpload, ApiError&gt;</code></summary>
+<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">create</a>(request: NewUpload) -> Result&lt;PreparedUpload, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5742,7 +5151,6 @@ async fn main() {
     client
         .media
         .create(
-            &"workspaceId".to_string(),
             &NewUpload {
                 byte_size: 1000000,
                 content_type: "contentType".to_string(),
@@ -5763,14 +5171,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5811,7 +5211,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">import_from_url</a>(workspace_id: String, request: MediaImport) -> Result&lt;Media, ApiError&gt;</code></summary>
+<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">import_from_url</a>(request: MediaImport) -> Result&lt;Media, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5850,7 +5250,6 @@ async fn main() {
     client
         .media
         .import_from_url(
-            &"workspaceId".to_string(),
             &MediaImport {
                 url: "url".to_string(),
                 alt_text: None,
@@ -5869,14 +5268,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5901,7 +5292,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">get</a>(workspace_id: String, media_id: String) -> Result&lt;Media, ApiError&gt;</code></summary>
+<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">get</a>(media_id: String) -> Result&lt;Media, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -5937,10 +5328,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .media
-        .get(&"workspaceId".to_string(), &"mediaId".to_string(), None)
-        .await;
+    client.media.get(&"mediaId".to_string(), None).await;
 }
 ```
 </dd>
@@ -5952,14 +5340,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5976,7 +5356,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">delete</a>(workspace_id: String, media_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">delete</a>(media_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6012,10 +5392,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .media
-        .delete(&"workspaceId".to_string(), &"mediaId".to_string(), None)
-        .await;
+    client.media.delete(&"mediaId".to_string(), None).await;
 }
 ```
 </dd>
@@ -6027,14 +5404,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6051,7 +5420,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">describe</a>(workspace_id: String, media_id: String, request: MediaDescription) -> Result&lt;Media, ApiError&gt;</code></summary>
+<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">describe</a>(media_id: String, request: MediaDescription) -> Result&lt;Media, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6090,7 +5459,6 @@ async fn main() {
     client
         .media
         .describe(
-            &"workspaceId".to_string(),
             &"mediaId".to_string(),
             &MediaDescription {
                 ..Default::default()
@@ -6109,14 +5477,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6141,7 +5501,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">complete</a>(workspace_id: String, media_id: String) -> Result&lt;Media, ApiError&gt;</code></summary>
+<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">complete</a>(media_id: String) -> Result&lt;Media, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6177,10 +5537,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .media
-        .complete(&"workspaceId".to_string(), &"mediaId".to_string(), None)
-        .await;
+    client.media.complete(&"mediaId".to_string(), None).await;
 }
 ```
 </dd>
@@ -6192,14 +5549,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6216,7 +5565,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">usage</a>(workspace_id: String, media_id: String) -> Result&lt;MediaUsage, ApiError&gt;</code></summary>
+<details><summary><code>client.media.<a href="/src/api/resources/media/client.rs">usage</a>(media_id: String) -> Result&lt;MediaUsage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6252,10 +5601,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .media
-        .usage(&"workspaceId".to_string(), &"mediaId".to_string(), None)
-        .await;
+    client.media.usage(&"mediaId".to_string(), None).await;
 }
 ```
 </dd>
@@ -6267,14 +5613,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6292,7 +5630,7 @@ async fn main() {
 </details>
 
 ## mediaAudio
-<details><summary><code>client.media_audio.<a href="/src/api/resources/media_audio/client.rs">create_voiceover</a>(workspace_id: String, request: VoiceoverRequest) -> Result&lt;Media, ApiError&gt;</code></summary>
+<details><summary><code>client.media_audio.<a href="/src/api/resources/media_audio/client.rs">create_voiceover</a>(request: VoiceoverRequest) -> Result&lt;Media, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6331,7 +5669,6 @@ async fn main() {
     client
         .media_audio
         .create_voiceover(
-            &"workspaceId".to_string(),
             &VoiceoverRequest {
                 text: "text".to_string(),
                 voice: None,
@@ -6350,14 +5687,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6382,7 +5711,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.media_audio.<a href="/src/api/resources/media_audio/client.rs">transcribe</a>(workspace_id: String, media_id: String, request: TranscriptionRequest) -> Result&lt;Transcript, ApiError&gt;</code></summary>
+<details><summary><code>client.media_audio.<a href="/src/api/resources/media_audio/client.rs">transcribe</a>(media_id: String, request: TranscriptionRequest) -> Result&lt;Transcript, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6421,7 +5750,6 @@ async fn main() {
     client
         .media_audio
         .transcribe(
-            &"workspaceId".to_string(),
             &"mediaId".to_string(),
             &TranscriptionRequest {
                 ..Default::default()
@@ -6440,14 +5768,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6854,7 +6174,7 @@ async fn main() {
 </details>
 
 ## assistant
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">status</a>(workspace_id: String) -> Result&lt;AssistantStatus, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">status</a>() -> Result&lt;AssistantStatus, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6890,27 +6210,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .assistant
-        .status(&"workspaceId".to_string(), None)
-        .await;
+    client.assistant.status(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -6921,7 +6223,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">suggest</a>(workspace_id: String, request: SuggestionRequest) -> Result&lt;Suggestion, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">suggest</a>(request: SuggestionRequest) -> Result&lt;Suggestion, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -6960,7 +6262,6 @@ async fn main() {
     client
         .assistant
         .suggest(
-            &"workspaceId".to_string(),
             &SuggestionRequest {
                 action: AssistantAction::Rewrite {
                     data: AssistantActionRewrite {
@@ -6987,14 +6288,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **action:** `AssistantAction` 
     
 </dd>
@@ -7015,7 +6308,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">generate_image</a>(workspace_id: String, request: ImageRequest) -> Result&lt;Media, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">generate_image</a>(request: ImageRequest) -> Result&lt;Media, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7054,7 +6347,6 @@ async fn main() {
     client
         .assistant
         .generate_image(
-            &"workspaceId".to_string(),
             &ImageRequest {
                 aspect: ImageAspect::Square,
                 prompt: "prompt".to_string(),
@@ -7073,14 +6365,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7105,7 +6389,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">image_provider</a>(workspace_id: String) -> Result&lt;ImageProviderSetting, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">image_provider</a>() -> Result&lt;ImageProviderSetting, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7141,27 +6425,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .assistant
-        .image_provider(&"workspaceId".to_string(), None)
-        .await;
+    client.assistant.image_provider(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -7172,7 +6438,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">set_image_provider</a>(workspace_id: String, request: ImageProviderChange) -> Result&lt;ImageProvider, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">set_image_provider</a>(request: ImageProviderChange) -> Result&lt;ImageProvider, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7211,7 +6477,6 @@ async fn main() {
     client
         .assistant
         .set_image_provider(
-            &"workspaceId".to_string(),
             &ImageProviderChange {
                 model: "model".to_string(),
                 api_key: None,
@@ -7232,14 +6497,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7280,7 +6537,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">remove_image_provider</a>(workspace_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">remove_image_provider</a>() -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7316,27 +6573,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .assistant
-        .remove_image_provider(&"workspaceId".to_string(), None)
-        .await;
+    client.assistant.remove_image_provider(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -7347,7 +6586,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">text_provider</a>(workspace_id: String) -> Result&lt;TextProviderSetting, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">text_provider</a>() -> Result&lt;TextProviderSetting, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7383,27 +6622,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .assistant
-        .text_provider(&"workspaceId".to_string(), None)
-        .await;
+    client.assistant.text_provider(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -7414,7 +6635,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">set_text_provider</a>(workspace_id: String, request: TextProviderChange) -> Result&lt;TextProvider, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">set_text_provider</a>(request: TextProviderChange) -> Result&lt;TextProvider, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7453,7 +6674,6 @@ async fn main() {
     client
         .assistant
         .set_text_provider(
-            &"workspaceId".to_string(),
             &TextProviderChange {
                 model: "model".to_string(),
                 api_key: None,
@@ -7475,14 +6695,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7531,7 +6743,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">remove_text_provider</a>(workspace_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">remove_text_provider</a>() -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7567,27 +6779,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .assistant
-        .remove_text_provider(&"workspaceId".to_string(), None)
-        .await;
+    client.assistant.remove_text_provider(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -7598,7 +6792,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">test_text_provider</a>(workspace_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">test_text_provider</a>() -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7634,27 +6828,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .assistant
-        .test_text_provider(&"workspaceId".to_string(), None)
-        .await;
+    client.assistant.test_text_provider(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -7665,7 +6841,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">providers</a>(workspace_id: String) -> Result&lt;AiProviderConnections, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">providers</a>() -> Result&lt;AiProviderConnections, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7701,27 +6877,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .assistant
-        .providers(&"workspaceId".to_string(), None)
-        .await;
+    client.assistant.providers(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -7732,7 +6890,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">connect_provider</a>(workspace_id: String, provider: AiProvider, request: AiProviderConnectionChange) -> Result&lt;AiProviderConnection, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">connect_provider</a>(provider: AiProvider, request: AiProviderConnectionChange) -> Result&lt;AiProviderConnection, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7771,7 +6929,6 @@ async fn main() {
     client
         .assistant
         .connect_provider(
-            &"workspaceId".to_string(),
             &AiProvider::Anthropic,
             &AiProviderConnectionChange {
                 ..Default::default()
@@ -7790,14 +6947,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7830,7 +6979,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">disconnect_provider</a>(workspace_id: String, provider: AiProvider) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">disconnect_provider</a>(provider: AiProvider) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7868,7 +7017,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .assistant
-        .disconnect_provider(&"workspaceId".to_string(), &AiProvider::Anthropic, None)
+        .disconnect_provider(&AiProvider::Anthropic, None)
         .await;
 }
 ```
@@ -7885,14 +7034,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **provider:** `AiProvider` 
     
 </dd>
@@ -7905,7 +7046,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">test_provider</a>(workspace_id: String, provider: AiProvider, request: AiProviderTest) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">test_provider</a>(provider: AiProvider, request: AiProviderTest) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7944,7 +7085,6 @@ async fn main() {
     client
         .assistant
         .test_provider(
-            &"workspaceId".to_string(),
             &AiProvider::Anthropic,
             &AiProviderTest {
                 ..Default::default()
@@ -7963,14 +7103,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7995,7 +7127,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">models</a>(workspace_id: String) -> Result&lt;AiCapabilityModels, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">models</a>() -> Result&lt;AiCapabilityModels, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8031,27 +7163,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .assistant
-        .models(&"workspaceId".to_string(), None)
-        .await;
+    client.assistant.models(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -8062,7 +7176,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">set_model</a>(workspace_id: String, capability: AiCapability, request: AiCapabilityModelChange) -> Result&lt;AiCapabilityModel, ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">set_model</a>(capability: AiCapability, request: AiCapabilityModelChange) -> Result&lt;AiCapabilityModel, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8101,7 +7215,6 @@ async fn main() {
     client
         .assistant
         .set_model(
-            &"workspaceId".to_string(),
             &AiCapability::Text,
             &AiCapabilityModelChange {
                 provider: AiProvider::Anthropic,
@@ -8121,14 +7234,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8161,7 +7266,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">unset_model</a>(workspace_id: String, capability: AiCapability) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client.rs">unset_model</a>(capability: AiCapability) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8199,7 +7304,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .assistant
-        .unset_model(&"workspaceId".to_string(), &AiCapability::Text, None)
+        .unset_model(&AiCapability::Text, None)
         .await;
 }
 ```
@@ -8212,14 +7317,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8237,7 +7334,7 @@ async fn main() {
 </details>
 
 ## videoGenerations
-<details><summary><code>client.video_generations.<a href="/src/api/resources/video_generations/client.rs">list</a>(workspace_id: String, status: Option&lt;Option&lt;VideoGenerationStatus&gt;&gt;) -> Result&lt;VideoGenerations, ApiError&gt;</code></summary>
+<details><summary><code>client.video_generations.<a href="/src/api/resources/video_generations/client.rs">list</a>(status: Option&lt;Option&lt;VideoGenerationStatus&gt;&gt;) -> Result&lt;VideoGenerations, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8276,7 +7373,6 @@ async fn main() {
     client
         .video_generations
         .list(
-            &"workspaceId".to_string(),
             &VideoGenerationsListQueryRequest {
                 ..Default::default()
             },
@@ -8298,14 +7394,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **status:** `Option<VideoGenerationStatus>` 
     
 </dd>
@@ -8318,7 +7406,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.video_generations.<a href="/src/api/resources/video_generations/client.rs">create</a>(workspace_id: String, request: VideoGenerationRequest) -> Result&lt;VideoGeneration, ApiError&gt;</code></summary>
+<details><summary><code>client.video_generations.<a href="/src/api/resources/video_generations/client.rs">create</a>(request: VideoGenerationRequest) -> Result&lt;VideoGeneration, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8357,7 +7445,6 @@ async fn main() {
     client
         .video_generations
         .create(
-            &"workspaceId".to_string(),
             &VideoGenerationRequest {
                 aspect: ImageAspect::Square,
                 prompt: "prompt".to_string(),
@@ -8378,14 +7465,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8426,7 +7505,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.video_generations.<a href="/src/api/resources/video_generations/client.rs">get</a>(workspace_id: String, generation_id: String) -> Result&lt;VideoGeneration, ApiError&gt;</code></summary>
+<details><summary><code>client.video_generations.<a href="/src/api/resources/video_generations/client.rs">get</a>(generation_id: String) -> Result&lt;VideoGeneration, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8464,11 +7543,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .video_generations
-        .get(
-            &"workspaceId".to_string(),
-            &"generationId".to_string(),
-            None,
-        )
+        .get(&"generationId".to_string(), None)
         .await;
 }
 ```
@@ -8481,14 +7556,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8506,7 +7573,7 @@ async fn main() {
 </details>
 
 ## slideshows
-<details><summary><code>client.slideshows.<a href="/src/api/resources/slideshows/client.rs">list</a>(workspace_id: String, status: Option&lt;Option&lt;SlideshowStatus&gt;&gt;) -> Result&lt;Slideshows, ApiError&gt;</code></summary>
+<details><summary><code>client.slideshows.<a href="/src/api/resources/slideshows/client.rs">list</a>(status: Option&lt;Option&lt;SlideshowStatus&gt;&gt;) -> Result&lt;Slideshows, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8545,7 +7612,6 @@ async fn main() {
     client
         .slideshows
         .list(
-            &"workspaceId".to_string(),
             &SlideshowsListQueryRequest {
                 ..Default::default()
             },
@@ -8567,14 +7633,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **status:** `Option<SlideshowStatus>` 
     
 </dd>
@@ -8587,7 +7645,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="/src/api/resources/slideshows/client.rs">create</a>(workspace_id: String, request: SlideshowRequest) -> Result&lt;Slideshow, ApiError&gt;</code></summary>
+<details><summary><code>client.slideshows.<a href="/src/api/resources/slideshows/client.rs">create</a>(request: SlideshowRequest) -> Result&lt;Slideshow, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8626,7 +7684,6 @@ async fn main() {
     client
         .slideshows
         .create(
-            &"workspaceId".to_string(),
             &SlideshowRequest {
                 aspect: ImageAspect::Square,
                 slides: vec![Slide {
@@ -8651,14 +7708,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8707,7 +7756,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="/src/api/resources/slideshows/client.rs">create_from_edit</a>(workspace_id: String, request: EditRenderRequest) -> Result&lt;Slideshow, ApiError&gt;</code></summary>
+<details><summary><code>client.slideshows.<a href="/src/api/resources/slideshows/client.rs">create_from_edit</a>(request: EditRenderRequest) -> Result&lt;Slideshow, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8746,7 +7795,6 @@ async fn main() {
     client
         .slideshows
         .create_from_edit(
-            &"workspaceId".to_string(),
             &EditRenderRequest {
                 edit: HashMap::from([("key".to_string(), serde_json::json!("value"))]),
             },
@@ -8768,14 +7816,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **edit:** `std::collections::HashMap<String, serde_json::Value>` 
     
 </dd>
@@ -8788,7 +7828,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="/src/api/resources/slideshows/client.rs">get</a>(workspace_id: String, slideshow_id: String) -> Result&lt;Slideshow, ApiError&gt;</code></summary>
+<details><summary><code>client.slideshows.<a href="/src/api/resources/slideshows/client.rs">get</a>(slideshow_id: String) -> Result&lt;Slideshow, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8826,7 +7866,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .slideshows
-        .get(&"workspaceId".to_string(), &"slideshowId".to_string(), None)
+        .get(&"slideshowId".to_string(), None)
         .await;
 }
 ```
@@ -8839,14 +7879,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8864,7 +7896,7 @@ async fn main() {
 </details>
 
 ## members
-<details><summary><code>client.members.<a href="/src/api/resources/members/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;WorkspaceMember&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.members.<a href="/src/api/resources/members/client.rs">list</a>() -> Result&lt;Vec&lt;WorkspaceMember&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8900,24 +7932,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client.members.list(&"workspaceId".to_string(), None).await;
+    client.members.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -8929,7 +7946,7 @@ async fn main() {
 </details>
 
 ## invitations
-<details><summary><code>client.invitations.<a href="/src/api/resources/invitations/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;Invitation&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.invitations.<a href="/src/api/resources/invitations/client.rs">list</a>() -> Result&lt;Vec&lt;Invitation&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -8965,27 +7982,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .invitations
-        .list(&"workspaceId".to_string(), None)
-        .await;
+    client.invitations.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -8996,7 +7995,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.invitations.<a href="/src/api/resources/invitations/client.rs">create</a>(workspace_id: String, request: NewInvitation) -> Result&lt;Invitation, ApiError&gt;</code></summary>
+<details><summary><code>client.invitations.<a href="/src/api/resources/invitations/client.rs">create</a>(request: NewInvitation) -> Result&lt;Invitation, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9035,7 +8034,6 @@ async fn main() {
     client
         .invitations
         .create(
-            &"workspaceId".to_string(),
             &NewInvitation {
                 email: "email".to_string(),
                 role: Role::Owner,
@@ -9054,14 +8052,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9086,7 +8076,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.invitations.<a href="/src/api/resources/invitations/client.rs">revoke</a>(workspace_id: String, invitation_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.invitations.<a href="/src/api/resources/invitations/client.rs">revoke</a>(invitation_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9124,11 +8114,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .invitations
-        .revoke(
-            &"workspaceId".to_string(),
-            &"invitationId".to_string(),
-            None,
-        )
+        .revoke(&"invitationId".to_string(), None)
         .await;
 }
 ```
@@ -9141,14 +8127,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9166,7 +8144,7 @@ async fn main() {
 </details>
 
 ## billing
-<details><summary><code>client.billing.<a href="/src/api/resources/billing/client.rs">get</a>(workspace_id: String) -> Result&lt;Billing, ApiError&gt;</code></summary>
+<details><summary><code>client.billing.<a href="/src/api/resources/billing/client.rs">get</a>() -> Result&lt;Billing, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9202,24 +8180,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client.billing.get(&"workspaceId".to_string(), None).await;
+    client.billing.get(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -9230,7 +8193,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="/src/api/resources/billing/client.rs">standing</a>(workspace_id: String) -> Result&lt;Standing, ApiError&gt;</code></summary>
+<details><summary><code>client.billing.<a href="/src/api/resources/billing/client.rs">standing</a>() -> Result&lt;Standing, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9266,27 +8229,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .billing
-        .standing(&"workspaceId".to_string(), None)
-        .await;
+    client.billing.standing(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -9298,7 +8243,7 @@ async fn main() {
 </details>
 
 ## usage
-<details><summary><code>client.usage.<a href="/src/api/resources/usage/client.rs">get</a>(workspace_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;WorkspaceUsageReport, ApiError&gt;</code></summary>
+<details><summary><code>client.usage.<a href="/src/api/resources/usage/client.rs">get</a>(from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;WorkspaceUsageReport, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9337,7 +8282,6 @@ async fn main() {
     client
         .usage
         .get(
-            &"workspaceId".to_string(),
             &UsageGetQueryRequest {
                 ..Default::default()
             },
@@ -9355,14 +8299,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9387,7 +8323,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.usage.<a href="/src/api/resources/usage/client.rs">partner</a>(workspace_id: String, before: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;PartnerUsageReport, ApiError&gt;</code></summary>
+<details><summary><code>client.usage.<a href="/src/api/resources/usage/client.rs">partner</a>(before: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;PartnerUsageReport, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9399,7 +8335,7 @@ async fn main() {
 <dl>
 <dd>
 
-Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
 </dd>
 </dl>
 </dd>
@@ -9426,7 +8362,6 @@ async fn main() {
     client
         .usage
         .partner(
-            &"workspaceId".to_string(),
             &PartnerQueryRequest {
                 ..Default::default()
             },
@@ -9444,14 +8379,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9493,7 +8420,7 @@ async fn main() {
 </details>
 
 ## analytics
-<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">summary</a>(workspace_id: String, from: Option&lt;CalendarDay&gt;, time_zone: Option&lt;String&gt;, to: Option&lt;CalendarDay&gt;) -> Result&lt;AnalyticsSummary, ApiError&gt;</code></summary>
+<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">summary</a>(from: Option&lt;CalendarDay&gt;, time_zone: Option&lt;String&gt;, to: Option&lt;CalendarDay&gt;) -> Result&lt;AnalyticsSummary, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9532,7 +8459,6 @@ async fn main() {
     client
         .analytics
         .summary(
-            &"workspaceId".to_string(),
             &SummaryQueryRequest {
                 from: CalendarDay("from".to_string()),
                 time_zone: "timeZone".to_string(),
@@ -9552,14 +8478,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9592,7 +8510,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">dashboard</a>(workspace_id: String, days: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, time_zone: Option&lt;String&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;, top_posts: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;AnalyticsDashboard, ApiError&gt;</code></summary>
+<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">dashboard</a>(days: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, time_zone: Option&lt;String&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;, top_posts: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;AnalyticsDashboard, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9631,7 +8549,6 @@ async fn main() {
     client
         .analytics
         .dashboard(
-            &"workspaceId".to_string(),
             &DashboardQueryRequest {
                 time_zone: "timeZone".to_string(),
                 days: None,
@@ -9653,14 +8570,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9709,7 +8618,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">channel</a>(workspace_id: String, channel_id: String, days: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, time_zone: Option&lt;String&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;ChannelSeries, ApiError&gt;</code></summary>
+<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">channel</a>(channel_id: String, days: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, time_zone: Option&lt;String&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;ChannelSeries, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9748,7 +8657,6 @@ async fn main() {
     client
         .analytics
         .channel(
-            &"workspaceId".to_string(),
             &"channelId".to_string(),
             &ChannelQueryRequest {
                 time_zone: "timeZone".to_string(),
@@ -9770,14 +8678,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9826,7 +8726,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">export</a>(workspace_id: String, days: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, time_zone: Option&lt;String&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;, format: Option&lt;Option&lt;AnalyticsExportFormat&gt;&gt;, kind: Option&lt;AnalyticsExportKind&gt;) -> Result&lt;Vec&lt;u8&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">export</a>(days: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, time_zone: Option&lt;String&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;, format: Option&lt;Option&lt;AnalyticsExportFormat&gt;&gt;, kind: Option&lt;AnalyticsExportKind&gt;) -> Result&lt;Vec&lt;u8&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9865,7 +8765,6 @@ async fn main() {
     client
         .analytics
         .export(
-            &"workspaceId".to_string(),
             &ExportQueryRequest {
                 time_zone: "timeZone".to_string(),
                 kind: AnalyticsExportKind::Posts,
@@ -9888,14 +8787,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9952,7 +8843,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">best_times</a>(workspace_id: String, channel_id: Option&lt;String&gt;, days: Option&lt;Option&lt;String&gt;&gt;, time_zone: Option&lt;String&gt;) -> Result&lt;BestTimes, ApiError&gt;</code></summary>
+<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">best_times</a>(channel_id: Option&lt;String&gt;, days: Option&lt;Option&lt;String&gt;&gt;, time_zone: Option&lt;String&gt;) -> Result&lt;BestTimes, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -9991,7 +8882,6 @@ async fn main() {
     client
         .analytics
         .best_times(
-            &"workspaceId".to_string(),
             &BestTimesQueryRequest {
                 channel_id: "channelId".to_string(),
                 time_zone: "timeZone".to_string(),
@@ -10011,14 +8901,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10051,7 +8933,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">post</a>(workspace_id: String, post_id: String) -> Result&lt;PostAnalytics, ApiError&gt;</code></summary>
+<details><summary><code>client.analytics.<a href="/src/api/resources/analytics/client.rs">post</a>(post_id: String) -> Result&lt;PostAnalytics, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10087,10 +8969,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .analytics
-        .post(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.analytics.post(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -10102,14 +8981,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10127,7 +8998,7 @@ async fn main() {
 </details>
 
 ## tiktok
-<details><summary><code>client.tiktok.<a href="/src/api/resources/tiktok/client.rs">creator</a>(workspace_id: String, channel_id: String) -> Result&lt;TikTokAccount, ApiError&gt;</code></summary>
+<details><summary><code>client.tiktok.<a href="/src/api/resources/tiktok/client.rs">creator</a>(channel_id: String) -> Result&lt;TikTokAccount, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10163,10 +9034,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .tiktok
-        .creator(&"workspaceId".to_string(), &"channelId".to_string(), None)
-        .await;
+    client.tiktok.creator(&"channelId".to_string(), None).await;
 }
 ```
 </dd>
@@ -10178,14 +9046,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10203,7 +9063,7 @@ async fn main() {
 </details>
 
 ## capabilities
-<details><summary><code>client.capabilities.<a href="/src/api/resources/capabilities/client.rs">platforms</a>(workspace_id: String) -> Result&lt;Vec&lt;PlatformCapabilities&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.capabilities.<a href="/src/api/resources/capabilities/client.rs">platforms</a>() -> Result&lt;Vec&lt;PlatformCapabilities&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10239,27 +9099,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .capabilities
-        .platforms(&"workspaceId".to_string(), None)
-        .await;
+    client.capabilities.platforms(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -10270,7 +9112,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="/src/api/resources/capabilities/client.rs">channel</a>(workspace_id: String, channel_id: String) -> Result&lt;ChannelCapabilities, ApiError&gt;</code></summary>
+<details><summary><code>client.capabilities.<a href="/src/api/resources/capabilities/client.rs">channel</a>(channel_id: String) -> Result&lt;ChannelCapabilities, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10308,7 +9150,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .capabilities
-        .channel(&"workspaceId".to_string(), &"channelId".to_string(), None)
+        .channel(&"channelId".to_string(), None)
         .await;
 }
 ```
@@ -10321,14 +9163,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10346,7 +9180,7 @@ async fn main() {
 </details>
 
 ## lookups
-<details><summary><code>client.lookups.<a href="/src/api/resources/lookups/client.rs">list</a>(workspace_id: String, channel_id: String) -> Result&lt;Vec&lt;LookupDescription&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.lookups.<a href="/src/api/resources/lookups/client.rs">list</a>(channel_id: String) -> Result&lt;Vec&lt;LookupDescription&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10382,10 +9216,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .lookups
-        .list(&"workspaceId".to_string(), &"channelId".to_string(), None)
-        .await;
+    client.lookups.list(&"channelId".to_string(), None).await;
 }
 ```
 </dd>
@@ -10397,14 +9228,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10421,7 +9244,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.lookups.<a href="/src/api/resources/lookups/client.rs">run</a>(workspace_id: String, channel_id: String, name: String, request: LookupInput) -> Result&lt;LookupResult, ApiError&gt;</code></summary>
+<details><summary><code>client.lookups.<a href="/src/api/resources/lookups/client.rs">run</a>(channel_id: String, name: String, request: LookupInput) -> Result&lt;LookupResult, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10460,7 +9283,6 @@ async fn main() {
     client
         .lookups
         .run(
-            &"workspaceId".to_string(),
             &"channelId".to_string(),
             &"name".to_string(),
             &LookupInput {
@@ -10480,14 +9302,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10561,7 +9375,7 @@ async fn main() {
 </details>
 
 ## webhooks
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;WebhookEndpoint&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">list</a>() -> Result&lt;Vec&lt;WebhookEndpoint&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10597,24 +9411,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client.webhooks.list(&"workspaceId".to_string(), None).await;
+    client.webhooks.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -10625,7 +9424,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">create</a>(workspace_id: String, request: NewWebhookEndpoint) -> Result&lt;WebhookEndpointSecret, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">create</a>(request: NewWebhookEndpoint) -> Result&lt;WebhookEndpointSecret, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10664,7 +9463,6 @@ async fn main() {
     client
         .webhooks
         .create(
-            &"workspaceId".to_string(),
             &NewWebhookEndpoint {
                 event_types: vec![SubscribableWebhookEventType::PostScheduled],
                 url: "url".to_string(),
@@ -10689,14 +9487,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10769,7 +9559,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">search_deliveries</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, event_type: Option&lt;Option&lt;WebhookEventType&gt;&gt;, status: Option&lt;Option&lt;WebhookDeliveryStatus&gt;&gt;, endpoint_id: Option&lt;Option&lt;String&gt;&gt;, since: Option&lt;Option&lt;String&gt;&gt;, until: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;WebhookDeliveryPage, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">search_deliveries</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, event_type: Option&lt;Option&lt;WebhookEventType&gt;&gt;, status: Option&lt;Option&lt;WebhookDeliveryStatus&gt;&gt;, endpoint_id: Option&lt;Option&lt;String&gt;&gt;, since: Option&lt;Option&lt;String&gt;&gt;, until: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;WebhookDeliveryPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10808,7 +9598,6 @@ async fn main() {
     client
         .webhooks
         .search_deliveries(
-            &"workspaceId".to_string(),
             &SearchDeliveriesQueryRequest {
                 ..Default::default()
             },
@@ -10826,14 +9615,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10898,7 +9679,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">redeliver_many</a>(workspace_id: String, request: WebhookRedeliveryRequest) -> Result&lt;WebhookBulkRedelivery, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">redeliver_many</a>(request: WebhookRedeliveryRequest) -> Result&lt;WebhookBulkRedelivery, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -10937,7 +9718,6 @@ async fn main() {
     client
         .webhooks
         .redeliver_many(
-            &"workspaceId".to_string(),
             &WebhookRedeliveryRequest::WebhookRedeliveryByIds(WebhookRedeliveryByIds {
                 delivery_ids: vec!["deliveryIds".to_string()],
                 ..Default::default()
@@ -10952,27 +9732,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">get</a>(workspace_id: String, endpoint_id: String) -> Result&lt;WebhookEndpoint, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">get</a>(endpoint_id: String) -> Result&lt;WebhookEndpoint, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11008,10 +9773,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .webhooks
-        .get(&"workspaceId".to_string(), &"endpointId".to_string(), None)
-        .await;
+    client.webhooks.get(&"endpointId".to_string(), None).await;
 }
 ```
 </dd>
@@ -11023,14 +9785,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11047,7 +9801,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">delete</a>(workspace_id: String, endpoint_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">delete</a>(endpoint_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11085,7 +9839,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .webhooks
-        .delete(&"workspaceId".to_string(), &"endpointId".to_string(), None)
+        .delete(&"endpointId".to_string(), None)
         .await;
 }
 ```
@@ -11102,14 +9856,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **endpoint_id:** `String` 
     
 </dd>
@@ -11122,7 +9868,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">update</a>(workspace_id: String, endpoint_id: String, request: WebhookEndpointChange) -> Result&lt;WebhookEndpoint, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">update</a>(endpoint_id: String, request: WebhookEndpointChange) -> Result&lt;WebhookEndpoint, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11161,7 +9907,6 @@ async fn main() {
     client
         .webhooks
         .update(
-            &"workspaceId".to_string(),
             &"endpointId".to_string(),
             &WebhookEndpointChange {
                 ..Default::default()
@@ -11180,14 +9925,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11260,7 +9997,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">rotate_secret</a>(workspace_id: String, endpoint_id: String) -> Result&lt;WebhookEndpointSecret, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">rotate_secret</a>(endpoint_id: String) -> Result&lt;WebhookEndpointSecret, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11298,7 +10035,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .webhooks
-        .rotate_secret(&"workspaceId".to_string(), &"endpointId".to_string(), None)
+        .rotate_secret(&"endpointId".to_string(), None)
         .await;
 }
 ```
@@ -11315,14 +10052,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **endpoint_id:** `String` 
     
 </dd>
@@ -11335,7 +10064,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">send_test</a>(workspace_id: String, endpoint_id: String, event_type: Option&lt;Option&lt;SubscribableWebhookEventType&gt;&gt;) -> Result&lt;WebhookDelivery, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">send_test</a>(endpoint_id: String, event_type: Option&lt;Option&lt;SubscribableWebhookEventType&gt;&gt;) -> Result&lt;WebhookDelivery, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11374,7 +10103,6 @@ async fn main() {
     client
         .webhooks
         .send_test(
-            &"workspaceId".to_string(),
             &"endpointId".to_string(),
             &SendTestQueryRequest {
                 ..Default::default()
@@ -11393,14 +10121,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11425,7 +10145,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">list_deliveries</a>(workspace_id: String, endpoint_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, event_type: Option&lt;Option&lt;WebhookEventType&gt;&gt;, status: Option&lt;Option&lt;WebhookDeliveryStatus&gt;&gt;) -> Result&lt;WebhookDeliveryPage, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">list_deliveries</a>(endpoint_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, event_type: Option&lt;Option&lt;WebhookEventType&gt;&gt;, status: Option&lt;Option&lt;WebhookDeliveryStatus&gt;&gt;) -> Result&lt;WebhookDeliveryPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11464,7 +10184,6 @@ async fn main() {
     client
         .webhooks
         .list_deliveries(
-            &"workspaceId".to_string(),
             &"endpointId".to_string(),
             &ListDeliveriesQueryRequest {
                 ..Default::default()
@@ -11483,14 +10202,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11539,7 +10250,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">redeliver</a>(workspace_id: String, endpoint_id: String, delivery_id: String) -> Result&lt;WebhookDelivery, ApiError&gt;</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client.rs">redeliver</a>(endpoint_id: String, delivery_id: String) -> Result&lt;WebhookDelivery, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11577,12 +10288,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .webhooks
-        .redeliver(
-            &"workspaceId".to_string(),
-            &"endpointId".to_string(),
-            &"deliveryId".to_string(),
-            None,
-        )
+        .redeliver(&"endpointId".to_string(), &"deliveryId".to_string(), None)
         .await;
 }
 ```
@@ -11595,14 +10301,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11628,7 +10326,7 @@ async fn main() {
 </details>
 
 ## inbox
-<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">list_threads</a>(workspace_id: String, channel_id: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, post_id: Option&lt;Option&lt;String&gt;&gt;, unanswered: Option&lt;Option&lt;ListThreadsInboxRequestUnanswered&gt;&gt;) -> Result&lt;InboxThreadPage, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">list_threads</a>(channel_id: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, post_id: Option&lt;Option&lt;String&gt;&gt;, unanswered: Option&lt;Option&lt;ListThreadsInboxRequestUnanswered&gt;&gt;) -> Result&lt;InboxThreadPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11667,7 +10365,6 @@ async fn main() {
     client
         .inbox
         .list_threads(
-            &"workspaceId".to_string(),
             &ListThreadsQueryRequest {
                 ..Default::default()
             },
@@ -11685,14 +10382,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11741,7 +10430,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">get_thread</a>(workspace_id: String, thread_id: String) -> Result&lt;InboxThreadDetail, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">get_thread</a>(thread_id: String) -> Result&lt;InboxThreadDetail, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11777,10 +10466,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .inbox
-        .get_thread(&"workspaceId".to_string(), &"threadId".to_string(), None)
-        .await;
+    client.inbox.get_thread(&"threadId".to_string(), None).await;
 }
 ```
 </dd>
@@ -11792,14 +10478,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11816,7 +10494,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">get_abilities</a>(workspace_id: String, channel_id: String) -> Result&lt;InboxAbilities, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">get_abilities</a>(channel_id: String) -> Result&lt;InboxAbilities, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11854,7 +10532,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .inbox
-        .get_abilities(&"workspaceId".to_string(), &"channelId".to_string(), None)
+        .get_abilities(&"channelId".to_string(), None)
         .await;
 }
 ```
@@ -11871,14 +10549,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channel_id:** `String` 
     
 </dd>
@@ -11891,7 +10561,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">reply</a>(workspace_id: String, comment_id: String, request: NewInboxReply) -> Result&lt;InboxReply, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">reply</a>(comment_id: String, request: NewInboxReply) -> Result&lt;InboxReply, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -11930,7 +10600,6 @@ async fn main() {
     client
         .inbox
         .reply(
-            &"workspaceId".to_string(),
             &"commentId".to_string(),
             &NewInboxReply {
                 text: "text".to_string(),
@@ -11949,14 +10618,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11981,7 +10642,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">set_answered</a>(workspace_id: String, comment_id: String, request: SetAnsweredInboxRequest) -> Result&lt;InboxComment, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">set_answered</a>(comment_id: String, request: SetAnsweredInboxRequest) -> Result&lt;InboxComment, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12020,7 +10681,6 @@ async fn main() {
     client
         .inbox
         .set_answered(
-            &"workspaceId".to_string(),
             &"commentId".to_string(),
             &SetAnsweredInboxRequest { answered: true },
             None,
@@ -12037,14 +10697,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12069,7 +10721,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">moderate</a>(workspace_id: String, comment_id: String, request: ModerateInboxRequest) -> Result&lt;InboxComment, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">moderate</a>(comment_id: String, request: ModerateInboxRequest) -> Result&lt;InboxComment, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12108,7 +10760,6 @@ async fn main() {
     client
         .inbox
         .moderate(
-            &"workspaceId".to_string(),
             &"commentId".to_string(),
             &ModerateInboxRequest {
                 action: InboxModerationAction::Hide,
@@ -12127,14 +10778,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12159,7 +10802,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">confirm_reply</a>(workspace_id: String, reply_id: String, request: ConfirmReplyInboxRequest) -> Result&lt;InboxReply, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">confirm_reply</a>(reply_id: String, request: ConfirmReplyInboxRequest) -> Result&lt;InboxReply, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12198,7 +10841,6 @@ async fn main() {
     client
         .inbox
         .confirm_reply(
-            &"workspaceId".to_string(),
             &"replyId".to_string(),
             &ConfirmReplyInboxRequest { sent: true },
             None,
@@ -12215,14 +10857,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12247,7 +10881,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">withdraw_reply</a>(workspace_id: String, reply_id: String) -> Result&lt;InboxReply, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox.<a href="/src/api/resources/inbox/client.rs">withdraw_reply</a>(reply_id: String) -> Result&lt;InboxReply, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12285,7 +10919,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .inbox
-        .withdraw_reply(&"workspaceId".to_string(), &"replyId".to_string(), None)
+        .withdraw_reply(&"replyId".to_string(), None)
         .await;
 }
 ```
@@ -12298,14 +10932,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12323,7 +10949,7 @@ async fn main() {
 </details>
 
 ## inboxReviews
-<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">list_review_threads</a>(workspace_id: String, channel_id: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, unanswered: Option&lt;Option&lt;ListReviewThreadsInboxReviewsRequestUnanswered&gt;&gt;) -> Result&lt;InboxReviewThreadPage, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">list_review_threads</a>(channel_id: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, unanswered: Option&lt;Option&lt;ListReviewThreadsInboxReviewsRequestUnanswered&gt;&gt;) -> Result&lt;InboxReviewThreadPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12362,7 +10988,6 @@ async fn main() {
     client
         .inbox_reviews
         .list_review_threads(
-            &"workspaceId".to_string(),
             &ListReviewThreadsQueryRequest {
                 ..Default::default()
             },
@@ -12380,14 +11005,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12428,7 +11045,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">get_review_thread</a>(workspace_id: String, thread_id: String) -> Result&lt;InboxReviewThreadDetail, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">get_review_thread</a>(thread_id: String) -> Result&lt;InboxReviewThreadDetail, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12466,7 +11083,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .inbox_reviews
-        .get_review_thread(&"workspaceId".to_string(), &"threadId".to_string(), None)
+        .get_review_thread(&"threadId".to_string(), None)
         .await;
 }
 ```
@@ -12483,14 +11100,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **thread_id:** `String` 
     
 </dd>
@@ -12503,7 +11112,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">reply_to_review</a>(workspace_id: String, review_id: String, request: NewInboxReviewReply) -> Result&lt;InboxReviewReply, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">reply_to_review</a>(review_id: String, request: NewInboxReviewReply) -> Result&lt;InboxReviewReply, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12542,7 +11151,6 @@ async fn main() {
     client
         .inbox_reviews
         .reply_to_review(
-            &"workspaceId".to_string(),
             &"reviewId".to_string(),
             &NewInboxReviewReply {
                 text: "text".to_string(),
@@ -12561,14 +11169,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12593,7 +11193,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">withdraw_review_reply</a>(workspace_id: String, review_id: String) -> Result&lt;InboxReview, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">withdraw_review_reply</a>(review_id: String) -> Result&lt;InboxReview, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12631,7 +11231,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .inbox_reviews
-        .withdraw_review_reply(&"workspaceId".to_string(), &"reviewId".to_string(), None)
+        .withdraw_review_reply(&"reviewId".to_string(), None)
         .await;
 }
 ```
@@ -12648,14 +11248,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **review_id:** `String` 
     
 </dd>
@@ -12668,7 +11260,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">set_review_answered</a>(workspace_id: String, review_id: String, request: SetReviewAnsweredInboxReviewsRequest) -> Result&lt;InboxReview, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/src/api/resources/inbox_reviews/client.rs">set_review_answered</a>(review_id: String, request: SetReviewAnsweredInboxReviewsRequest) -> Result&lt;InboxReview, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12707,7 +11299,6 @@ async fn main() {
     client
         .inbox_reviews
         .set_review_answered(
-            &"workspaceId".to_string(),
             &"reviewId".to_string(),
             &SetReviewAnsweredInboxReviewsRequest { answered: true },
             None,
@@ -12724,14 +11315,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12757,7 +11340,7 @@ async fn main() {
 </details>
 
 ## inboxMessages
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">list_conversations</a>(workspace_id: String, channel_id: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, unread: Option&lt;Option&lt;ListConversationsInboxMessagesRequestUnread&gt;&gt;) -> Result&lt;InboxConversationPage, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">list_conversations</a>(channel_id: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, unread: Option&lt;Option&lt;ListConversationsInboxMessagesRequestUnread&gt;&gt;) -> Result&lt;InboxConversationPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12796,7 +11379,6 @@ async fn main() {
     client
         .inbox_messages
         .list_conversations(
-            &"workspaceId".to_string(),
             &ListConversationsQueryRequest {
                 ..Default::default()
             },
@@ -12814,14 +11396,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12862,7 +11436,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">get_conversation</a>(workspace_id: String, conversation_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;InboxConversationDetail, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">get_conversation</a>(conversation_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;InboxConversationDetail, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12901,7 +11475,6 @@ async fn main() {
     client
         .inbox_messages
         .get_conversation(
-            &"workspaceId".to_string(),
             &"conversationId".to_string(),
             &GetConversationQueryRequest {
                 ..Default::default()
@@ -12920,14 +11493,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12960,7 +11525,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">send_message</a>(workspace_id: String, conversation_id: String, request: NewInboxMessage) -> Result&lt;InboxOutgoingMessage, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">send_message</a>(conversation_id: String, request: NewInboxMessage) -> Result&lt;InboxOutgoingMessage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -12999,7 +11564,6 @@ async fn main() {
     client
         .inbox_messages
         .send_message(
-            &"workspaceId".to_string(),
             &"conversationId".to_string(),
             &NewInboxMessage {
                 text: "text".to_string(),
@@ -13018,14 +11582,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13050,7 +11606,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">send_private_reply</a>(workspace_id: String, request: NewInboxPrivateReply) -> Result&lt;InboxPrivateReply, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">send_private_reply</a>(request: NewInboxPrivateReply) -> Result&lt;InboxPrivateReply, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13089,7 +11645,6 @@ async fn main() {
     client
         .inbox_messages
         .send_private_reply(
-            &"workspaceId".to_string(),
             &NewInboxPrivateReply {
                 comment_id: "commentId".to_string(),
                 text: "text".to_string(),
@@ -13108,14 +11663,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13140,7 +11687,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">get_private_reply</a>(workspace_id: String, private_reply_id: String) -> Result&lt;InboxPrivateReply, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">get_private_reply</a>(private_reply_id: String) -> Result&lt;InboxPrivateReply, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13178,11 +11725,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .inbox_messages
-        .get_private_reply(
-            &"workspaceId".to_string(),
-            &"privateReplyId".to_string(),
-            None,
-        )
+        .get_private_reply(&"privateReplyId".to_string(), None)
         .await;
 }
 ```
@@ -13199,14 +11742,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **private_reply_id:** `String` 
     
 </dd>
@@ -13219,7 +11754,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">confirm_private_reply</a>(workspace_id: String, private_reply_id: String, request: ConfirmPrivateReplyInboxMessagesRequest) -> Result&lt;InboxPrivateReply, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">confirm_private_reply</a>(private_reply_id: String, request: ConfirmPrivateReplyInboxMessagesRequest) -> Result&lt;InboxPrivateReply, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13258,7 +11793,6 @@ async fn main() {
     client
         .inbox_messages
         .confirm_private_reply(
-            &"workspaceId".to_string(),
             &"privateReplyId".to_string(),
             &ConfirmPrivateReplyInboxMessagesRequest { went: true },
             None,
@@ -13275,14 +11809,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13307,7 +11833,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">set_conversation_read</a>(workspace_id: String, conversation_id: String, request: SetConversationReadInboxMessagesRequest) -> Result&lt;InboxConversation, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">set_conversation_read</a>(conversation_id: String, request: SetConversationReadInboxMessagesRequest) -> Result&lt;InboxConversation, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13346,7 +11872,6 @@ async fn main() {
     client
         .inbox_messages
         .set_conversation_read(
-            &"workspaceId".to_string(),
             &"conversationId".to_string(),
             &SetConversationReadInboxMessagesRequest { read: true },
             None,
@@ -13363,14 +11888,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13395,7 +11912,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">get_message_settings</a>(workspace_id: String) -> Result&lt;InboxMessageSettings, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">get_message_settings</a>() -> Result&lt;InboxMessageSettings, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13431,27 +11948,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .inbox_messages
-        .get_message_settings(&"workspaceId".to_string(), None)
-        .await;
+    client.inbox_messages.get_message_settings(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -13462,7 +11961,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">set_channel_messages</a>(workspace_id: String, channel_id: String, request: SetChannelMessagesInboxMessagesRequest) -> Result&lt;InboxMessageSettings, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">set_channel_messages</a>(channel_id: String, request: SetChannelMessagesInboxMessagesRequest) -> Result&lt;InboxMessageSettings, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13501,7 +12000,6 @@ async fn main() {
     client
         .inbox_messages
         .set_channel_messages(
-            &"workspaceId".to_string(),
             &"channelId".to_string(),
             &SetChannelMessagesInboxMessagesRequest { enabled: true },
             None,
@@ -13518,14 +12016,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13550,7 +12040,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">set_message_application</a>(workspace_id: String, request: SetMessageApplicationInboxMessagesRequest) -> Result&lt;InboxMessageSettings, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">set_message_application</a>(request: SetMessageApplicationInboxMessagesRequest) -> Result&lt;InboxMessageSettings, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13589,7 +12079,6 @@ async fn main() {
     client
         .inbox_messages
         .set_message_application(
-            &"workspaceId".to_string(),
             &SetMessageApplicationInboxMessagesRequest {
                 allowed: true,
                 client_id: "clientId".to_string(),
@@ -13608,14 +12097,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13640,7 +12121,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">confirm_message</a>(workspace_id: String, message_id: String, request: ConfirmMessageInboxMessagesRequest) -> Result&lt;InboxOutgoingMessage, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/src/api/resources/inbox_messages/client.rs">confirm_message</a>(message_id: String, request: ConfirmMessageInboxMessagesRequest) -> Result&lt;InboxOutgoingMessage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13679,7 +12160,6 @@ async fn main() {
     client
         .inbox_messages
         .confirm_message(
-            &"workspaceId".to_string(),
             &"messageId".to_string(),
             &ConfirmMessageInboxMessagesRequest { sent: true },
             None,
@@ -13696,14 +12176,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13729,7 +12201,7 @@ async fn main() {
 </details>
 
 ## ads
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">status</a>(workspace_id: String) -> Result&lt;AdsStatus, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">status</a>() -> Result&lt;AdsStatus, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13765,24 +12237,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client.ads.status(&"workspaceId".to_string(), None).await;
+    client.ads.status(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -13793,7 +12250,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_connections</a>(workspace_id: String) -> Result&lt;Vec&lt;AdConnection&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_connections</a>() -> Result&lt;Vec&lt;AdConnection&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13829,27 +12286,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .ads
-        .list_connections(&"workspaceId".to_string(), None)
-        .await;
+    client.ads.list_connections(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -13860,7 +12299,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">connect</a>(workspace_id: String, network: AdNetwork) -> Result&lt;AdSignIn, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">connect</a>(network: AdNetwork) -> Result&lt;AdSignIn, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13896,10 +12335,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .ads
-        .connect(&"workspaceId".to_string(), &AdNetwork::Meta, None)
-        .await;
+    client.ads.connect(&AdNetwork::Meta, None).await;
 }
 ```
 </dd>
@@ -13911,14 +12347,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13935,7 +12363,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">complete_connect</a>(workspace_id: String, network: AdNetwork, request: AdSignInCallback) -> Result&lt;AdSignInResult, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">complete_connect</a>(network: AdNetwork, request: AdSignInCallback) -> Result&lt;AdSignInResult, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -13974,7 +12402,6 @@ async fn main() {
     client
         .ads
         .complete_connect(
-            &"workspaceId".to_string(),
             &AdNetwork::Meta,
             &AdSignInCallback {
                 state: "state".to_string(),
@@ -13995,14 +12422,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14043,7 +12462,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">reachable_accounts</a>(workspace_id: String, connection_id: String) -> Result&lt;Vec&lt;ReachableAdAccount&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">reachable_accounts</a>(connection_id: String) -> Result&lt;Vec&lt;ReachableAdAccount&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14081,11 +12500,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .ads
-        .reachable_accounts(
-            &"workspaceId".to_string(),
-            &"connectionId".to_string(),
-            None,
-        )
+        .reachable_accounts(&"connectionId".to_string(), None)
         .await;
 }
 ```
@@ -14102,14 +12517,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **connection_id:** `String` 
     
 </dd>
@@ -14122,7 +12529,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">connect_accounts</a>(workspace_id: String, connection_id: String, request: AdAccountsToConnect) -> Result&lt;Vec&lt;AdAccount&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">connect_accounts</a>(connection_id: String, request: AdAccountsToConnect) -> Result&lt;Vec&lt;AdAccount&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14161,7 +12568,6 @@ async fn main() {
     client
         .ads
         .connect_accounts(
-            &"workspaceId".to_string(),
             &"connectionId".to_string(),
             &AdAccountsToConnect {
                 external_ids: vec!["externalIds".to_string()],
@@ -14180,14 +12586,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14212,7 +12610,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">disconnect</a>(workspace_id: String, connection_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">disconnect</a>(connection_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14250,11 +12648,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .ads
-        .disconnect(
-            &"workspaceId".to_string(),
-            &"connectionId".to_string(),
-            None,
-        )
+        .disconnect(&"connectionId".to_string(), None)
         .await;
 }
 ```
@@ -14271,14 +12665,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **connection_id:** `String` 
     
 </dd>
@@ -14291,7 +12677,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_accounts</a>(workspace_id: String) -> Result&lt;Vec&lt;AdAccount&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_accounts</a>() -> Result&lt;Vec&lt;AdAccount&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14327,27 +12713,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .ads
-        .list_accounts(&"workspaceId".to_string(), None)
-        .await;
+    client.ads.list_accounts(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -14358,7 +12726,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">get_account</a>(workspace_id: String, account_id: String) -> Result&lt;AdSpending, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">get_account</a>(account_id: String) -> Result&lt;AdSpending, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14394,10 +12762,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .ads
-        .get_account(&"workspaceId".to_string(), &"accountId".to_string(), None)
-        .await;
+    client.ads.get_account(&"accountId".to_string(), None).await;
 }
 ```
 </dd>
@@ -14409,14 +12774,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14433,7 +12790,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">remove_account</a>(workspace_id: String, account_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">remove_account</a>(account_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14471,7 +12828,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .ads
-        .remove_account(&"workspaceId".to_string(), &"accountId".to_string(), None)
+        .remove_account(&"accountId".to_string(), None)
         .await;
 }
 ```
@@ -14488,14 +12845,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **account_id:** `String` 
     
 </dd>
@@ -14508,7 +12857,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">set_spending</a>(workspace_id: String, account_id: String, request: AdSpendingDecision) -> Result&lt;AdSpending, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">set_spending</a>(account_id: String, request: AdSpendingDecision) -> Result&lt;AdSpending, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14547,7 +12896,6 @@ async fn main() {
     client
         .ads
         .set_spending(
-            &"workspaceId".to_string(),
             &"accountId".to_string(),
             &AdSpendingDecision {
                 enabled: true,
@@ -14567,14 +12915,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14607,7 +12947,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_campaigns</a>(workspace_id: String, account_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;AdCampaignReport, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_campaigns</a>(account_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;AdCampaignReport, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14646,7 +12986,6 @@ async fn main() {
     client
         .ads
         .list_campaigns(
-            &"workspaceId".to_string(),
             &"accountId".to_string(),
             &ListCampaignsQueryRequest {
                 ..Default::default()
@@ -14665,14 +13004,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14705,7 +13036,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_ads</a>(workspace_id: String, account_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;, campaign_id: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;AdReport, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_ads</a>(account_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;, campaign_id: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;AdReport, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14744,7 +13075,6 @@ async fn main() {
     client
         .ads
         .list_ads(
-            &"workspaceId".to_string(),
             &"accountId".to_string(),
             &ListAdsQueryRequest {
                 ..Default::default()
@@ -14763,14 +13093,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14811,7 +13133,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_insights</a>(workspace_id: String, account_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;AdInsightReport, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_insights</a>(account_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;AdInsightReport, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14850,7 +13172,6 @@ async fn main() {
     client
         .ads
         .list_insights(
-            &"workspaceId".to_string(),
             &"accountId".to_string(),
             &ListInsightsQueryRequest {
                 ..Default::default()
@@ -14869,14 +13190,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14909,7 +13222,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">post_performance</a>(workspace_id: String, post_id: String) -> Result&lt;PostAdPerformance, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">post_performance</a>(post_id: String) -> Result&lt;PostAdPerformance, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -14947,7 +13260,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .ads
-        .post_performance(&"workspaceId".to_string(), &"postId".to_string(), None)
+        .post_performance(&"postId".to_string(), None)
         .await;
 }
 ```
@@ -14964,14 +13277,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **post_id:** `String` 
     
 </dd>
@@ -14984,7 +13289,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">quote_boost</a>(workspace_id: String, request: NewBoost) -> Result&lt;BoostQuote, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">quote_boost</a>(request: NewBoost) -> Result&lt;BoostQuote, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15023,7 +13328,6 @@ async fn main() {
     client
         .ads
         .quote_boost(
-            &"workspaceId".to_string(),
             &NewBoost {
                 account_id: "accountId".to_string(),
                 audience: BoostAudience {
@@ -15055,27 +13359,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_boosts</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, post_id: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;BoostPage, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">list_boosts</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, post_id: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;BoostPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15114,7 +13403,6 @@ async fn main() {
     client
         .ads
         .list_boosts(
-            &"workspaceId".to_string(),
             &ListBoostsQueryRequest {
                 ..Default::default()
             },
@@ -15132,14 +13420,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15164,7 +13444,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">create_boost</a>(workspace_id: String, request: NewBoost) -> Result&lt;Boost, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">create_boost</a>(request: NewBoost) -> Result&lt;Boost, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15203,7 +13483,6 @@ async fn main() {
     client
         .ads
         .create_boost(
-            &"workspaceId".to_string(),
             &NewBoost {
                 account_id: "accountId".to_string(),
                 audience: BoostAudience {
@@ -15235,27 +13514,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">get_boost</a>(workspace_id: String, boost_id: String) -> Result&lt;BoostDetail, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">get_boost</a>(boost_id: String) -> Result&lt;BoostDetail, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15291,10 +13555,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .ads
-        .get_boost(&"workspaceId".to_string(), &"boostId".to_string(), None)
-        .await;
+    client.ads.get_boost(&"boostId".to_string(), None).await;
 }
 ```
 </dd>
@@ -15306,14 +13567,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15330,7 +13583,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">pause_boost</a>(workspace_id: String, boost_id: String) -> Result&lt;Boost, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">pause_boost</a>(boost_id: String) -> Result&lt;Boost, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15366,10 +13619,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .ads
-        .pause_boost(&"workspaceId".to_string(), &"boostId".to_string(), None)
-        .await;
+    client.ads.pause_boost(&"boostId".to_string(), None).await;
 }
 ```
 </dd>
@@ -15381,14 +13631,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15405,7 +13647,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">resume_boost</a>(workspace_id: String, boost_id: String) -> Result&lt;Boost, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">resume_boost</a>(boost_id: String) -> Result&lt;Boost, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15441,10 +13683,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .ads
-        .resume_boost(&"workspaceId".to_string(), &"boostId".to_string(), None)
-        .await;
+    client.ads.resume_boost(&"boostId".to_string(), None).await;
 }
 ```
 </dd>
@@ -15456,14 +13695,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15480,7 +13711,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">stop_boost</a>(workspace_id: String, boost_id: String) -> Result&lt;Boost, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">stop_boost</a>(boost_id: String) -> Result&lt;Boost, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15516,10 +13747,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .ads
-        .stop_boost(&"workspaceId".to_string(), &"boostId".to_string(), None)
-        .await;
+    client.ads.stop_boost(&"boostId".to_string(), None).await;
 }
 ```
 </dd>
@@ -15531,14 +13759,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15555,7 +13775,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">audit_trail</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;AdAuditPage, ApiError&gt;</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client.rs">audit_trail</a>(cursor: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;AdAuditPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15594,7 +13814,6 @@ async fn main() {
     client
         .ads
         .audit_trail(
-            &"workspaceId".to_string(),
             &AuditTrailQueryRequest {
                 ..Default::default()
             },
@@ -15616,14 +13835,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **cursor:** `Option<String>` 
     
 </dd>
@@ -15637,7 +13848,7 @@ async fn main() {
 </details>
 
 ## activity
-<details><summary><code>client.activity.<a href="/src/api/resources/activity/client.rs">list</a>(workspace_id: String, actor: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, operation: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;ActivityPage, ApiError&gt;</code></summary>
+<details><summary><code>client.activity.<a href="/src/api/resources/activity/client.rs">list</a>(actor: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, operation: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;ActivityPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -15676,7 +13887,6 @@ async fn main() {
     client
         .activity
         .list(
-            &"workspaceId".to_string(),
             &ActivityListQueryRequest {
                 ..Default::default()
             },
@@ -15694,14 +13904,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16460,7 +14662,7 @@ async fn main() {
 </details>
 
 ## partnerAccount
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">get</a>(workspace_id: String) -> Result&lt;PartnerStanding, ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">get</a>() -> Result&lt;PartnerStanding, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -16496,27 +14698,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .partner_account
-        .get(&"workspaceId".to_string(), None)
-        .await;
+    client.partner_account.get(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -16527,7 +14711,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">open</a>(workspace_id: String, request: OpenPartner) -> Result&lt;Partner, ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">open</a>(request: OpenPartner) -> Result&lt;Partner, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -16566,7 +14750,6 @@ async fn main() {
     client
         .partner_account
         .open(
-            &"workspaceId".to_string(),
             &OpenPartner {
                 name: "name".to_string(),
             },
@@ -16588,14 +14771,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **name:** `String` 
     
 </dd>
@@ -16608,7 +14783,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">close</a>(workspace_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">close</a>() -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -16644,27 +14819,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .partner_account
-        .close(&"workspaceId".to_string(), None)
-        .await;
+    client.partner_account.close(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -16675,7 +14832,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">update</a>(workspace_id: String, request: PartnerChange) -> Result&lt;Partner, ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">update</a>(request: PartnerChange) -> Result&lt;Partner, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -16714,7 +14871,6 @@ async fn main() {
     client
         .partner_account
         .update(
-            &"workspaceId".to_string(),
             &PartnerChange {
                 ..Default::default()
             },
@@ -16732,14 +14888,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16780,7 +14928,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">list_keys</a>(workspace_id: String) -> Result&lt;Vec&lt;PartnerKey&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">list_keys</a>() -> Result&lt;Vec&lt;PartnerKey&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -16816,27 +14964,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .partner_account
-        .list_keys(&"workspaceId".to_string(), None)
-        .await;
+    client.partner_account.list_keys(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -16847,7 +14977,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">create_key</a>(workspace_id: String, request: NewPartnerKey) -> Result&lt;CreatedPartnerKey, ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">create_key</a>(request: NewPartnerKey) -> Result&lt;CreatedPartnerKey, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -16886,7 +15016,6 @@ async fn main() {
     client
         .partner_account
         .create_key(
-            &"workspaceId".to_string(),
             &NewPartnerKey {
                 name: "name".to_string(),
                 permissions: vec![Permission::ActivityRead],
@@ -16907,14 +15036,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16955,7 +15076,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">revoke_key</a>(workspace_id: String, partner_key_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">revoke_key</a>(partner_key_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -16993,11 +15114,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .partner_account
-        .revoke_key(
-            &"workspaceId".to_string(),
-            &"partnerKeyId".to_string(),
-            None,
-        )
+        .revoke_key(&"partnerKeyId".to_string(), None)
         .await;
 }
 ```
@@ -17014,14 +15131,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **partner_key_id:** `String` 
     
 </dd>
@@ -17034,7 +15143,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">overview</a>(workspace_id: String, before: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;PartnerHealth, ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">overview</a>(before: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;PartnerHealth, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17073,7 +15182,6 @@ async fn main() {
     client
         .partner_account
         .overview(
-            &"workspaceId".to_string(),
             &PartnerAccountOverviewQueryRequest {
                 ..Default::default()
             },
@@ -17091,14 +15199,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17123,7 +15223,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">list_workspaces</a>(workspace_id: String, before: Option&lt;Option&lt;String&gt;&gt;, external_id: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, name: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;CustomerWorkspacePage, ApiError&gt;</code></summary>
+<details><summary><code>client.partner_account.<a href="/src/api/resources/partner_account/client.rs">list_workspaces</a>(before: Option&lt;Option&lt;String&gt;&gt;, external_id: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, name: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;CustomerWorkspacePage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17162,7 +15262,6 @@ async fn main() {
     client
         .partner_account
         .list_workspaces(
-            &"workspaceId".to_string(),
             &PartnerAccountListWorkspacesQueryRequest {
                 ..Default::default()
             },
@@ -17180,14 +15279,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17229,7 +15320,7 @@ async fn main() {
 </details>
 
 ## connectLinks
-<details><summary><code>client.connect_links.<a href="/src/api/resources/connect_links/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;ConnectLink&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.connect_links.<a href="/src/api/resources/connect_links/client.rs">list</a>() -> Result&lt;Vec&lt;ConnectLink&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17265,27 +15356,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .connect_links
-        .list(&"workspaceId".to_string(), None)
-        .await;
+    client.connect_links.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -17296,7 +15369,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="/src/api/resources/connect_links/client.rs">create</a>(workspace_id: String, request: NewConnectLink) -> Result&lt;CreatedConnectLink, ApiError&gt;</code></summary>
+<details><summary><code>client.connect_links.<a href="/src/api/resources/connect_links/client.rs">create</a>(request: NewConnectLink) -> Result&lt;CreatedConnectLink, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17335,7 +15408,6 @@ async fn main() {
     client
         .connect_links
         .create(
-            &"workspaceId".to_string(),
             &NewConnectLink {
                 ..Default::default()
             },
@@ -17353,14 +15425,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17425,7 +15489,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="/src/api/resources/connect_links/client.rs">get</a>(workspace_id: String, link_id: String) -> Result&lt;ConnectLink, ApiError&gt;</code></summary>
+<details><summary><code>client.connect_links.<a href="/src/api/resources/connect_links/client.rs">get</a>(link_id: String) -> Result&lt;ConnectLink, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17461,10 +15525,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .connect_links
-        .get(&"workspaceId".to_string(), &"linkId".to_string(), None)
-        .await;
+    client.connect_links.get(&"linkId".to_string(), None).await;
 }
 ```
 </dd>
@@ -17476,14 +15537,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17500,7 +15553,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="/src/api/resources/connect_links/client.rs">revoke</a>(workspace_id: String, link_id: String) -> Result&lt;ConnectLink, ApiError&gt;</code></summary>
+<details><summary><code>client.connect_links.<a href="/src/api/resources/connect_links/client.rs">revoke</a>(link_id: String) -> Result&lt;ConnectLink, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17538,7 +15591,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .connect_links
-        .revoke(&"workspaceId".to_string(), &"linkId".to_string(), None)
+        .revoke(&"linkId".to_string(), None)
         .await;
 }
 ```
@@ -17551,14 +15604,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17576,7 +15621,7 @@ async fn main() {
 </details>
 
 ## review
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">settings</a>(workspace_id: String) -> Result&lt;ReviewSettings, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">settings</a>() -> Result&lt;ReviewSettings, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17612,27 +15657,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .review
-        .settings(&"workspaceId".to_string(), None)
-        .await;
+    client.review.settings(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -17643,7 +15670,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">update_settings</a>(workspace_id: String, request: ReviewSettings) -> Result&lt;ReviewSettings, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">update_settings</a>(request: ReviewSettings) -> Result&lt;ReviewSettings, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17682,7 +15709,6 @@ async fn main() {
     client
         .review
         .update_settings(
-            &"workspaceId".to_string(),
             &ReviewSettings {
                 approval_policy: ApprovalPolicy::Never,
             },
@@ -17696,27 +15722,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">pending</a>(workspace_id: String) -> Result&lt;Vec&lt;ApprovalRequest&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">pending</a>() -> Result&lt;Vec&lt;ApprovalRequest&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17752,27 +15763,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .review
-        .pending(&"workspaceId".to_string(), None)
-        .await;
+    client.review.pending(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -17783,7 +15776,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">thread</a>(workspace_id: String, post_id: String) -> Result&lt;PostReview, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">thread</a>(post_id: String) -> Result&lt;PostReview, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17819,10 +15812,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .review
-        .thread(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.review.thread(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -17834,14 +15824,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17858,7 +15840,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">comment</a>(workspace_id: String, post_id: String, request: NewComment) -> Result&lt;ReviewComment, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">comment</a>(post_id: String, request: NewComment) -> Result&lt;ReviewComment, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -17897,7 +15879,6 @@ async fn main() {
     client
         .review
         .comment(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &NewComment {
                 text: "text".to_string(),
@@ -17918,14 +15899,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17966,7 +15939,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">resolve</a>(workspace_id: String, post_id: String, comment_id: String, request: ResolveReviewRequest) -> Result&lt;ReviewComment, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">resolve</a>(post_id: String, comment_id: String, request: ResolveReviewRequest) -> Result&lt;ReviewComment, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18005,7 +15978,6 @@ async fn main() {
     client
         .review
         .resolve(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &"commentId".to_string(),
             &ResolveReviewRequest { resolved: true },
@@ -18023,14 +15995,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18063,7 +16027,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">approve</a>(workspace_id: String, post_id: String, request: ApprovalDecision) -> Result&lt;ApprovalOutcome, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">approve</a>(post_id: String, request: ApprovalDecision) -> Result&lt;ApprovalOutcome, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18102,7 +16066,6 @@ async fn main() {
     client
         .review
         .approve(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &ApprovalDecision {
                 approval_id: "approvalId".to_string(),
@@ -18122,14 +16085,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18162,7 +16117,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">request_changes</a>(workspace_id: String, post_id: String, request: ChangesRequest) -> Result&lt;ChangesOutcome, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">request_changes</a>(post_id: String, request: ChangesRequest) -> Result&lt;ChangesOutcome, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18201,7 +16156,6 @@ async fn main() {
     client
         .review
         .request_changes(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &ChangesRequest {
                 approval_id: "approvalId".to_string(),
@@ -18222,14 +16176,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18270,7 +16216,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">links</a>(workspace_id: String, post_id: String) -> Result&lt;Vec&lt;ReviewLink&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">links</a>(post_id: String) -> Result&lt;Vec&lt;ReviewLink&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18306,10 +16252,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .review
-        .links(&"workspaceId".to_string(), &"postId".to_string(), None)
-        .await;
+    client.review.links(&"postId".to_string(), None).await;
 }
 ```
 </dd>
@@ -18321,14 +16264,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18345,7 +16280,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">create_link</a>(workspace_id: String, post_id: String, request: NewReviewLink) -> Result&lt;CreatedReviewLink, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">create_link</a>(post_id: String, request: NewReviewLink) -> Result&lt;CreatedReviewLink, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18384,7 +16319,6 @@ async fn main() {
     client
         .review
         .create_link(
-            &"workspaceId".to_string(),
             &"postId".to_string(),
             &NewReviewLink {
                 access: ReviewLinkAccess::View,
@@ -18404,14 +16338,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18444,7 +16370,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">revoke_link</a>(workspace_id: String, link_id: String) -> Result&lt;ReviewLink, ApiError&gt;</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client.rs">revoke_link</a>(link_id: String) -> Result&lt;ReviewLink, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18480,10 +16406,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .review
-        .revoke_link(&"workspaceId".to_string(), &"linkId".to_string(), None)
-        .await;
+    client.review.revoke_link(&"linkId".to_string(), None).await;
 }
 ```
 </dd>
@@ -18495,14 +16418,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18520,7 +16435,7 @@ async fn main() {
 </details>
 
 ## tags
-<details><summary><code>client.tags.<a href="/src/api/resources/tags/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;Tag&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.tags.<a href="/src/api/resources/tags/client.rs">list</a>() -> Result&lt;Vec&lt;Tag&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18556,24 +16471,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client.tags.list(&"workspaceId".to_string(), None).await;
+    client.tags.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -18584,7 +16484,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="/src/api/resources/tags/client.rs">create</a>(workspace_id: String, request: TagDetails) -> Result&lt;Tag, ApiError&gt;</code></summary>
+<details><summary><code>client.tags.<a href="/src/api/resources/tags/client.rs">create</a>(request: TagDetails) -> Result&lt;Tag, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18623,7 +16523,6 @@ async fn main() {
     client
         .tags
         .create(
-            &"workspaceId".to_string(),
             &TagDetails {
                 colour: TagColour::Gray,
                 name: "name".to_string(),
@@ -18638,27 +16537,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="/src/api/resources/tags/client.rs">delete</a>(workspace_id: String, tag_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.tags.<a href="/src/api/resources/tags/client.rs">delete</a>(tag_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18694,10 +16578,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .tags
-        .delete(&"workspaceId".to_string(), &"tagId".to_string(), None)
-        .await;
+    client.tags.delete(&"tagId".to_string(), None).await;
 }
 ```
 </dd>
@@ -18709,14 +16590,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18733,7 +16606,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="/src/api/resources/tags/client.rs">update</a>(workspace_id: String, tag_id: String, request: TagDetails) -> Result&lt;Tag, ApiError&gt;</code></summary>
+<details><summary><code>client.tags.<a href="/src/api/resources/tags/client.rs">update</a>(tag_id: String, request: TagDetails) -> Result&lt;Tag, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18772,7 +16645,6 @@ async fn main() {
     client
         .tags
         .update(
-            &"workspaceId".to_string(),
             &"tagId".to_string(),
             &TagDetails {
                 colour: TagColour::Gray,
@@ -18796,14 +16668,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **tag_id:** `String` 
     
 </dd>
@@ -18817,7 +16681,7 @@ async fn main() {
 </details>
 
 ## signatures
-<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;Signature&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client.rs">list</a>() -> Result&lt;Vec&lt;Signature&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18853,27 +16717,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .signatures
-        .list(&"workspaceId".to_string(), None)
-        .await;
+    client.signatures.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -18884,7 +16730,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client.rs">create</a>(workspace_id: String, request: SignatureDetails) -> Result&lt;Signature, ApiError&gt;</code></summary>
+<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client.rs">create</a>(request: SignatureDetails) -> Result&lt;Signature, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18923,7 +16769,6 @@ async fn main() {
     client
         .signatures
         .create(
-            &"workspaceId".to_string(),
             &SignatureDetails {
                 name: "name".to_string(),
                 text: "text".to_string(),
@@ -18939,27 +16784,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client.rs">update</a>(workspace_id: String, signature_id: String, request: SignatureDetails) -> Result&lt;Signature, ApiError&gt;</code></summary>
+<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client.rs">update</a>(signature_id: String, request: SignatureDetails) -> Result&lt;Signature, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -18998,7 +16828,6 @@ async fn main() {
     client
         .signatures
         .update(
-            &"workspaceId".to_string(),
             &"signatureId".to_string(),
             &SignatureDetails {
                 name: "name".to_string(),
@@ -19023,14 +16852,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **signature_id:** `String` 
     
 </dd>
@@ -19043,7 +16864,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client.rs">delete</a>(workspace_id: String, signature_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client.rs">delete</a>(signature_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19081,7 +16902,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .signatures
-        .delete(&"workspaceId".to_string(), &"signatureId".to_string(), None)
+        .delete(&"signatureId".to_string(), None)
         .await;
 }
 ```
@@ -19094,14 +16915,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19119,7 +16932,7 @@ async fn main() {
 </details>
 
 ## channelSets
-<details><summary><code>client.channel_sets.<a href="/src/api/resources/channel_sets/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;ChannelSet&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.channel_sets.<a href="/src/api/resources/channel_sets/client.rs">list</a>() -> Result&lt;Vec&lt;ChannelSet&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19155,27 +16968,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .channel_sets
-        .list(&"workspaceId".to_string(), None)
-        .await;
+    client.channel_sets.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -19186,7 +16981,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="/src/api/resources/channel_sets/client.rs">create</a>(workspace_id: String, request: ChannelSetDetails) -> Result&lt;ChannelSet, ApiError&gt;</code></summary>
+<details><summary><code>client.channel_sets.<a href="/src/api/resources/channel_sets/client.rs">create</a>(request: ChannelSetDetails) -> Result&lt;ChannelSet, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19225,7 +17020,6 @@ async fn main() {
     client
         .channel_sets
         .create(
-            &"workspaceId".to_string(),
             &ChannelSetDetails {
                 channel_ids: vec!["channelIds".to_string()],
                 name: "name".to_string(),
@@ -19241,27 +17035,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="/src/api/resources/channel_sets/client.rs">update</a>(workspace_id: String, channel_set_id: String, request: ChannelSetDetails) -> Result&lt;ChannelSet, ApiError&gt;</code></summary>
+<details><summary><code>client.channel_sets.<a href="/src/api/resources/channel_sets/client.rs">update</a>(channel_set_id: String, request: ChannelSetDetails) -> Result&lt;ChannelSet, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19300,7 +17079,6 @@ async fn main() {
     client
         .channel_sets
         .update(
-            &"workspaceId".to_string(),
             &"channelSetId".to_string(),
             &ChannelSetDetails {
                 channel_ids: vec!["channelIds".to_string()],
@@ -19325,14 +17103,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channel_set_id:** `String` 
     
 </dd>
@@ -19345,7 +17115,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="/src/api/resources/channel_sets/client.rs">delete</a>(workspace_id: String, channel_set_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.channel_sets.<a href="/src/api/resources/channel_sets/client.rs">delete</a>(channel_set_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19383,11 +17153,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .channel_sets
-        .delete(
-            &"workspaceId".to_string(),
-            &"channelSetId".to_string(),
-            None,
-        )
+        .delete(&"channelSetId".to_string(), None)
         .await;
 }
 ```
@@ -19400,14 +17166,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19425,7 +17183,7 @@ async fn main() {
 </details>
 
 ## queues
-<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">list</a>(workspace_id: String) -> Result&lt;Vec&lt;Queue&gt;, ApiError&gt;</code></summary>
+<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">list</a>() -> Result&lt;Vec&lt;Queue&gt;, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19461,24 +17219,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client.queues.list(&"workspaceId".to_string(), None).await;
+    client.queues.list(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -19489,7 +17232,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">create</a>(workspace_id: String, request: QueueDetails) -> Result&lt;Queue, ApiError&gt;</code></summary>
+<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">create</a>(request: QueueDetails) -> Result&lt;Queue, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19528,7 +17271,6 @@ async fn main() {
     client
         .queues
         .create(
-            &"workspaceId".to_string(),
             &QueueDetails {
                 name: "name".to_string(),
                 slots: vec![QueueSlot {
@@ -19548,27 +17290,12 @@ async fn main() {
 </dd>
 </dl>
 
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
 
 </dd>
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">get</a>(workspace_id: String, queue_id: String) -> Result&lt;Queue, ApiError&gt;</code></summary>
+<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">get</a>(queue_id: String) -> Result&lt;Queue, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19604,10 +17331,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .queues
-        .get(&"workspaceId".to_string(), &"queueId".to_string(), None)
-        .await;
+    client.queues.get(&"queueId".to_string(), None).await;
 }
 ```
 </dd>
@@ -19619,14 +17343,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19643,7 +17359,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">update</a>(workspace_id: String, queue_id: String, request: QueueDetails) -> Result&lt;Queue, ApiError&gt;</code></summary>
+<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">update</a>(queue_id: String, request: QueueDetails) -> Result&lt;Queue, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19682,7 +17398,6 @@ async fn main() {
     client
         .queues
         .update(
-            &"workspaceId".to_string(),
             &"queueId".to_string(),
             &QueueDetails {
                 name: "name".to_string(),
@@ -19711,14 +17426,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queue_id:** `String` 
     
 </dd>
@@ -19731,7 +17438,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">delete</a>(workspace_id: String, queue_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">delete</a>(queue_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19767,10 +17474,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .queues
-        .delete(&"workspaceId".to_string(), &"queueId".to_string(), None)
-        .await;
+    client.queues.delete(&"queueId".to_string(), None).await;
 }
 ```
 </dd>
@@ -19782,14 +17486,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19806,7 +17502,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">slots</a>(workspace_id: String, queue_id: String, count: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;QueuePreview, ApiError&gt;</code></summary>
+<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">slots</a>(queue_id: String, count: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;QueuePreview, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19845,7 +17541,6 @@ async fn main() {
     client
         .queues
         .slots(
-            &"workspaceId".to_string(),
             &"queueId".to_string(),
             &SlotsQueryRequest {
                 ..Default::default()
@@ -19864,14 +17559,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19896,7 +17583,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">reshuffle</a>(workspace_id: String, queue_id: String) -> Result&lt;QueueReshuffle, ApiError&gt;</code></summary>
+<details><summary><code>client.queues.<a href="/src/api/resources/queues/client.rs">reshuffle</a>(queue_id: String) -> Result&lt;QueueReshuffle, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -19932,10 +17619,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .queues
-        .reshuffle(&"workspaceId".to_string(), &"queueId".to_string(), None)
-        .await;
+    client.queues.reshuffle(&"queueId".to_string(), None).await;
 }
 ```
 </dd>
@@ -19947,14 +17631,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19972,7 +17648,7 @@ async fn main() {
 </details>
 
 ## recycling
-<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">list</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;RecyclingStatus&gt;&gt;) -> Result&lt;RecyclingRulePage, ApiError&gt;</code></summary>
+<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">list</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;RecyclingStatus&gt;&gt;) -> Result&lt;RecyclingRulePage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20011,7 +17687,6 @@ async fn main() {
     client
         .recycling
         .list(
-            &"workspaceId".to_string(),
             &RecyclingListQueryRequest {
                 ..Default::default()
             },
@@ -20029,14 +17704,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20069,7 +17736,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">create</a>(workspace_id: String, request: NewRecyclingRule) -> Result&lt;RecyclingRule, ApiError&gt;</code></summary>
+<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">create</a>(request: NewRecyclingRule) -> Result&lt;RecyclingRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20108,7 +17775,6 @@ async fn main() {
     client
         .recycling
         .create(
-            &"workspaceId".to_string(),
             &NewRecyclingRule {
                 every: RecyclingInterval {
                     count: 1,
@@ -20134,14 +17800,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20198,7 +17856,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">get</a>(workspace_id: String, rule_id: String) -> Result&lt;RecyclingRule, ApiError&gt;</code></summary>
+<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">get</a>(rule_id: String) -> Result&lt;RecyclingRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20234,10 +17892,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .recycling
-        .get(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-        .await;
+    client.recycling.get(&"ruleId".to_string(), None).await;
 }
 ```
 </dd>
@@ -20249,14 +17904,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20273,7 +17920,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">delete</a>(workspace_id: String, rule_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">delete</a>(rule_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20309,10 +17956,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .recycling
-        .delete(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-        .await;
+    client.recycling.delete(&"ruleId".to_string(), None).await;
 }
 ```
 </dd>
@@ -20324,14 +17968,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20348,7 +17984,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">update</a>(workspace_id: String, rule_id: String, request: RecyclingRuleChange) -> Result&lt;RecyclingRule, ApiError&gt;</code></summary>
+<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">update</a>(rule_id: String, request: RecyclingRuleChange) -> Result&lt;RecyclingRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20387,7 +18023,6 @@ async fn main() {
     client
         .recycling
         .update(
-            &"workspaceId".to_string(),
             &"ruleId".to_string(),
             &RecyclingRuleChange {
                 ..Default::default()
@@ -20406,14 +18041,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20462,7 +18089,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">resume</a>(workspace_id: String, rule_id: String, request: RecyclingResume) -> Result&lt;RecyclingRule, ApiError&gt;</code></summary>
+<details><summary><code>client.recycling.<a href="/src/api/resources/recycling/client.rs">resume</a>(rule_id: String, request: RecyclingResume) -> Result&lt;RecyclingRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20501,7 +18128,6 @@ async fn main() {
     client
         .recycling
         .resume(
-            &"workspaceId".to_string(),
             &"ruleId".to_string(),
             &RecyclingResume {
                 ..Default::default()
@@ -20520,14 +18146,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20553,7 +18171,7 @@ async fn main() {
 </details>
 
 ## followUps
-<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">list</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, post_id: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;FollowUpRuleStatus&gt;&gt;) -> Result&lt;FollowUpRulePage, ApiError&gt;</code></summary>
+<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">list</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, post_id: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;FollowUpRuleStatus&gt;&gt;) -> Result&lt;FollowUpRulePage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20592,7 +18210,6 @@ async fn main() {
     client
         .follow_ups
         .list(
-            &"workspaceId".to_string(),
             &FollowUpsListQueryRequest {
                 ..Default::default()
             },
@@ -20610,14 +18227,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20658,7 +18267,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">create</a>(workspace_id: String, request: NewFollowUpRule) -> Result&lt;FollowUpRule, ApiError&gt;</code></summary>
+<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">create</a>(request: NewFollowUpRule) -> Result&lt;FollowUpRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20697,7 +18306,6 @@ async fn main() {
     client
         .follow_ups
         .create(
-            &"workspaceId".to_string(),
             &NewFollowUpRule {
                 likes: 1,
                 channel_id: None,
@@ -20719,14 +18327,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20775,7 +18375,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">get</a>(workspace_id: String, rule_id: String) -> Result&lt;FollowUpRule, ApiError&gt;</code></summary>
+<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">get</a>(rule_id: String) -> Result&lt;FollowUpRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20811,10 +18411,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .follow_ups
-        .get(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-        .await;
+    client.follow_ups.get(&"ruleId".to_string(), None).await;
 }
 ```
 </dd>
@@ -20826,14 +18423,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20850,7 +18439,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">delete</a>(workspace_id: String, rule_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">delete</a>(rule_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20886,10 +18475,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .follow_ups
-        .delete(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-        .await;
+    client.follow_ups.delete(&"ruleId".to_string(), None).await;
 }
 ```
 </dd>
@@ -20901,14 +18487,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20925,7 +18503,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">update</a>(workspace_id: String, rule_id: String, request: FollowUpRuleChange) -> Result&lt;FollowUpRule, ApiError&gt;</code></summary>
+<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">update</a>(rule_id: String, request: FollowUpRuleChange) -> Result&lt;FollowUpRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -20964,7 +18542,6 @@ async fn main() {
     client
         .follow_ups
         .update(
-            &"workspaceId".to_string(),
             &"ruleId".to_string(),
             &FollowUpRuleChange {
                 ..Default::default()
@@ -20983,14 +18560,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21039,7 +18608,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">approve</a>(workspace_id: String, rule_id: String) -> Result&lt;FollowUpRule, ApiError&gt;</code></summary>
+<details><summary><code>client.follow_ups.<a href="/src/api/resources/follow_ups/client.rs">approve</a>(rule_id: String) -> Result&lt;FollowUpRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21075,10 +18644,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .follow_ups
-        .approve(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-        .await;
+    client.follow_ups.approve(&"ruleId".to_string(), None).await;
 }
 ```
 </dd>
@@ -21090,14 +18656,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21115,7 +18673,7 @@ async fn main() {
 </details>
 
 ## inboxRules
-<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">list_comment_rules</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;CommentRuleStatus&gt;&gt;) -> Result&lt;CommentRulePage, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">list_comment_rules</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;CommentRuleStatus&gt;&gt;) -> Result&lt;CommentRulePage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21154,7 +18712,6 @@ async fn main() {
     client
         .inbox_rules
         .list_comment_rules(
-            &"workspaceId".to_string(),
             &ListCommentRulesQueryRequest {
                 ..Default::default()
             },
@@ -21172,14 +18729,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21212,7 +18761,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">create_comment_rule</a>(workspace_id: String, request: NewCommentRule) -> Result&lt;CommentRule, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">create_comment_rule</a>(request: NewCommentRule) -> Result&lt;CommentRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21251,7 +18800,6 @@ async fn main() {
     client
         .inbox_rules
         .create_comment_rule(
-            &"workspaceId".to_string(),
             &NewCommentRule {
                 keywords: vec!["keywords".to_string()],
                 reply: "reply".to_string(),
@@ -21273,14 +18821,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21329,7 +18869,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">get_comment_rule</a>(workspace_id: String, rule_id: String) -> Result&lt;CommentRule, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">get_comment_rule</a>(rule_id: String) -> Result&lt;CommentRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21367,7 +18907,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .inbox_rules
-        .get_comment_rule(&"workspaceId".to_string(), &"ruleId".to_string(), None)
+        .get_comment_rule(&"ruleId".to_string(), None)
         .await;
 }
 ```
@@ -21384,14 +18924,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **rule_id:** `String` 
     
 </dd>
@@ -21404,7 +18936,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">delete_comment_rule</a>(workspace_id: String, rule_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">delete_comment_rule</a>(rule_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21442,7 +18974,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .inbox_rules
-        .delete_comment_rule(&"workspaceId".to_string(), &"ruleId".to_string(), None)
+        .delete_comment_rule(&"ruleId".to_string(), None)
         .await;
 }
 ```
@@ -21459,14 +18991,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **rule_id:** `String` 
     
 </dd>
@@ -21479,7 +19003,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">update_comment_rule</a>(workspace_id: String, rule_id: String, request: CommentRuleChange) -> Result&lt;CommentRule, ApiError&gt;</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/src/api/resources/inbox_rules/client.rs">update_comment_rule</a>(rule_id: String, request: CommentRuleChange) -> Result&lt;CommentRule, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21518,7 +19042,6 @@ async fn main() {
     client
         .inbox_rules
         .update_comment_rule(
-            &"workspaceId".to_string(),
             &"ruleId".to_string(),
             &CommentRuleChange {
                 ..Default::default()
@@ -21537,14 +19060,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21594,7 +19109,7 @@ async fn main() {
 </details>
 
 ## feeds
-<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">list</a>(workspace_id: String, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;FeedPage, ApiError&gt;</code></summary>
+<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">list</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;FeedPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21633,7 +19148,6 @@ async fn main() {
     client
         .feeds
         .list(
-            &"workspaceId".to_string(),
             &FeedsListQueryRequest {
                 ..Default::default()
             },
@@ -21651,14 +19165,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21683,7 +19189,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">create</a>(workspace_id: String, request: NewFeed) -> Result&lt;CreatedFeed, ApiError&gt;</code></summary>
+<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">create</a>(request: NewFeed) -> Result&lt;CreatedFeed, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21722,7 +19228,6 @@ async fn main() {
     client
         .feeds
         .create(
-            &"workspaceId".to_string(),
             &NewFeed {
                 url: "url".to_string(),
                 attach_picture: None,
@@ -21746,14 +19251,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21818,7 +19315,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">preview</a>(workspace_id: String, request: FeedPreviewRequest) -> Result&lt;FeedPreview, ApiError&gt;</code></summary>
+<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">preview</a>(request: FeedPreviewRequest) -> Result&lt;FeedPreview, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21857,7 +19354,6 @@ async fn main() {
     client
         .feeds
         .preview(
-            &"workspaceId".to_string(),
             &FeedPreviewRequest {
                 url: "url".to_string(),
                 template: None,
@@ -21876,14 +19372,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21908,7 +19396,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">get</a>(workspace_id: String, feed_id: String) -> Result&lt;Feed, ApiError&gt;</code></summary>
+<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">get</a>(feed_id: String) -> Result&lt;Feed, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -21944,10 +19432,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .feeds
-        .get(&"workspaceId".to_string(), &"feedId".to_string(), None)
-        .await;
+    client.feeds.get(&"feedId".to_string(), None).await;
 }
 ```
 </dd>
@@ -21959,14 +19444,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21983,7 +19460,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">delete</a>(workspace_id: String, feed_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">delete</a>(feed_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22019,10 +19496,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .feeds
-        .delete(&"workspaceId".to_string(), &"feedId".to_string(), None)
-        .await;
+    client.feeds.delete(&"feedId".to_string(), None).await;
 }
 ```
 </dd>
@@ -22034,14 +19508,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22058,7 +19524,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">update</a>(workspace_id: String, feed_id: String, request: FeedChange) -> Result&lt;Feed, ApiError&gt;</code></summary>
+<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">update</a>(feed_id: String, request: FeedChange) -> Result&lt;Feed, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22097,7 +19563,6 @@ async fn main() {
     client
         .feeds
         .update(
-            &"workspaceId".to_string(),
             &"feedId".to_string(),
             &FeedChange {
                 ..Default::default()
@@ -22116,14 +19581,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22204,7 +19661,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">items</a>(workspace_id: String, feed_id: String) -> Result&lt;FeedItems, ApiError&gt;</code></summary>
+<details><summary><code>client.feeds.<a href="/src/api/resources/feeds/client.rs">items</a>(feed_id: String) -> Result&lt;FeedItems, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22240,10 +19697,7 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .feeds
-        .items(&"workspaceId".to_string(), &"feedId".to_string(), None)
-        .await;
+    client.feeds.items(&"feedId".to_string(), None).await;
 }
 ```
 </dd>
@@ -22255,14 +19709,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22280,7 +19726,7 @@ async fn main() {
 </details>
 
 ## channelDefaults
-<details><summary><code>client.channel_defaults.<a href="/src/api/resources/channel_defaults/client.rs">get</a>(workspace_id: String, channel_id: String) -> Result&lt;ChannelDefaults, ApiError&gt;</code></summary>
+<details><summary><code>client.channel_defaults.<a href="/src/api/resources/channel_defaults/client.rs">get</a>(channel_id: String) -> Result&lt;ChannelDefaults, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22318,7 +19764,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .channel_defaults
-        .get(&"workspaceId".to_string(), &"channelId".to_string(), None)
+        .get(&"channelId".to_string(), None)
         .await;
 }
 ```
@@ -22335,14 +19781,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channel_id:** `String` 
     
 </dd>
@@ -22355,7 +19793,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channel_defaults.<a href="/src/api/resources/channel_defaults/client.rs">set</a>(workspace_id: String, channel_id: String, request: NewChannelDefaults) -> Result&lt;ChannelDefaults, ApiError&gt;</code></summary>
+<details><summary><code>client.channel_defaults.<a href="/src/api/resources/channel_defaults/client.rs">set</a>(channel_id: String, request: NewChannelDefaults) -> Result&lt;ChannelDefaults, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22394,7 +19832,6 @@ async fn main() {
     client
         .channel_defaults
         .set(
-            &"workspaceId".to_string(),
             &"channelId".to_string(),
             &NewChannelDefaults {
                 options: TargetOptions::Youtube {
@@ -22421,14 +19858,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channel_id:** `String` 
     
 </dd>
@@ -22449,7 +19878,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.channel_defaults.<a href="/src/api/resources/channel_defaults/client.rs">clear</a>(workspace_id: String, channel_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
+<details><summary><code>client.channel_defaults.<a href="/src/api/resources/channel_defaults/client.rs">clear</a>(channel_id: String) -> Result&lt;(), ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22487,7 +19916,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .channel_defaults
-        .clear(&"workspaceId".to_string(), &"channelId".to_string(), None)
+        .clear(&"channelId".to_string(), None)
         .await;
 }
 ```
@@ -22500,14 +19929,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22525,7 +19946,7 @@ async fn main() {
 </details>
 
 ## shortLinks
-<details><summary><code>client.short_links.<a href="/src/api/resources/short_links/client.rs">status</a>(workspace_id: String) -> Result&lt;ShortLinkStatus, ApiError&gt;</code></summary>
+<details><summary><code>client.short_links.<a href="/src/api/resources/short_links/client.rs">status</a>() -> Result&lt;ShortLinkStatus, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22561,27 +19982,9 @@ async fn main() {
         ..Default::default()
     };
     let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .short_links
-        .status(&"workspaceId".to_string(), None)
-        .await;
+    client.short_links.status(None).await;
 }
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
 </dd>
 </dl>
 </dd>
@@ -22592,7 +19995,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="/src/api/resources/short_links/client.rs">set_default</a>(workspace_id: String, request: ShortLinkSettings) -> Result&lt;ShortLinkStatus, ApiError&gt;</code></summary>
+<details><summary><code>client.short_links.<a href="/src/api/resources/short_links/client.rs">set_default</a>(request: ShortLinkSettings) -> Result&lt;ShortLinkStatus, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22630,11 +20033,7 @@ async fn main() {
     let client = PealClient::new(config).expect("Failed to build client");
     client
         .short_links
-        .set_default(
-            &"workspaceId".to_string(),
-            &ShortLinkSettings { by_default: true },
-            None,
-        )
+        .set_default(&ShortLinkSettings { by_default: true }, None)
         .await;
 }
 ```
@@ -22651,14 +20050,6 @@ async fn main() {
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **by_default:** `bool` 
     
 </dd>
@@ -22671,7 +20062,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="/src/api/resources/short_links/client.rs">list</a>(workspace_id: String, channel_id: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, post_id: Option&lt;Option&lt;String&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;ShortLinkPage, ApiError&gt;</code></summary>
+<details><summary><code>client.short_links.<a href="/src/api/resources/short_links/client.rs">list</a>(channel_id: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, post_id: Option&lt;Option&lt;String&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;ShortLinkPage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22710,7 +20101,6 @@ async fn main() {
     client
         .short_links
         .list(
-            &"workspaceId".to_string(),
             &ShortLinksListQueryRequest {
                 ..Default::default()
             },
@@ -22728,14 +20118,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22792,7 +20174,7 @@ async fn main() {
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="/src/api/resources/short_links/client.rs">get</a>(workspace_id: String, link_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;ShortLinkReport, ApiError&gt;</code></summary>
+<details><summary><code>client.short_links.<a href="/src/api/resources/short_links/client.rs">get</a>(link_id: String, from: Option&lt;Option&lt;CalendarDay&gt;&gt;, to: Option&lt;Option&lt;CalendarDay&gt;&gt;) -> Result&lt;ShortLinkReport, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -22831,7 +20213,6 @@ async fn main() {
     client
         .short_links
         .get(
-            &"workspaceId".to_string(),
             &"linkId".to_string(),
             &ShortLinksGetQueryRequest {
                 ..Default::default()
@@ -22850,14 +20231,6 @@ async fn main() {
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>

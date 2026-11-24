@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         linkId: "linkId"
  *     }
  */
 export interface GetConnectLinksRequest {
-    workspaceId: string;
     linkId: string;
 }

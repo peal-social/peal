@@ -40,9 +40,7 @@ import social.peal.errors.UnprocessableEntityError;
 import social.peal.resources.webhooks.requests.DeleteWebhooksRequest;
 import social.peal.resources.webhooks.requests.GetWebhooksRequest;
 import social.peal.resources.webhooks.requests.ListDeliveriesWebhooksRequest;
-import social.peal.resources.webhooks.requests.ListWebhooksRequest;
 import social.peal.resources.webhooks.requests.NewWebhookEndpoint;
-import social.peal.resources.webhooks.requests.RedeliverManyWebhooksRequest;
 import social.peal.resources.webhooks.requests.RedeliverWebhooksRequest;
 import social.peal.resources.webhooks.requests.RotateSecretWebhooksRequest;
 import social.peal.resources.webhooks.requests.SearchDeliveriesWebhooksRequest;
@@ -54,6 +52,7 @@ import social.peal.types.WebhookDelivery;
 import social.peal.types.WebhookDeliveryPage;
 import social.peal.types.WebhookEndpoint;
 import social.peal.types.WebhookEndpointSecret;
+import social.peal.types.WebhookRedeliveryRequest;
 
 public class AsyncRawWebhooksClient {
     protected final ClientOptions clientOptions;
@@ -65,47 +64,28 @@ public class AsyncRawWebhooksClient {
     /**
      * Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<WebhookEndpoint>>> list(String workspaceId) {
-        return list(workspaceId, ListWebhooksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<WebhookEndpoint>>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<WebhookEndpoint>>> list(
-            String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListWebhooksRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<WebhookEndpoint>>> list(
-            String workspaceId, ListWebhooksRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<WebhookEndpoint>>> list(
-            String workspaceId, ListWebhooksRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<List<WebhookEndpoint>>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks");
+                .addPathSegments("api/v1/webhooks");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -135,6 +115,11 @@ public class AsyncRawWebhooksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -188,21 +173,18 @@ public class AsyncRawWebhooksClient {
     /**
      * Adds a webhook endpoint to the workspace, and answers with its signing secret, which is not shown again. Its address must be HTTPS on the default port, on a public host, without credentials; Peal follows no redirect from it. A workspace has 10 endpoints at most, whatever its plan. With <code>scope</code> <code>partner</code>, in the home workspace of a partner account, the endpoint also hears what happens in every workspace the partner owns, each event naming its workspace and carrying the partner's own id for it (<code>workspaceExternalId</code>); any other workspace answers 404 <code>PartnerNotFound</code>. <code>channelIds</code> (50 at most) narrows it to the events about those channels: an event of one channel when it is listed, an event of a whole post when one of its channels is, and an event about no channel (a file, a boost) whatever it lists; leave such types out of <code>eventTypes</code> when they are not wanted. <code>workspaceIds</code> (200 at most), on a <code>partner</code> endpoint only, narrows it to those workspaces, the home workspace only if listed. Ids are checked for their shape only: one that names nothing matches nothing, and a filter stays as saved when what it names is gone. Filters apply when each event happens. <code>headers</code> (5 at most) go with every delivery beside Peal's own, which they never replace, for a gateway in front of the receiver that wants a token: a name is an HTTP token, once whatever its case, neither <code>host</code>, <code>user-agent</code>, <code>cookie</code>, <code>expect</code>, <code>accept-encoding</code>, a connection's own, nor any <code>content-</code> or <code>webhook-</code> name; a value is visible ASCII on one line, 1024 characters at most. Values are write-only: the endpoint shows their names (<code>headerNames</code>), never them, and sends them only to the origin (scheme, host and port) of the <code>url</code> they were given with. The signature does not cover them. Needs webhook:manage.
      */
-    public CompletableFuture<PealClientHttpResponse<WebhookEndpointSecret>> create(
-            String workspaceId, NewWebhookEndpoint request) {
-        return create(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<WebhookEndpointSecret>> create(NewWebhookEndpoint request) {
+        return create(request, null);
     }
 
     /**
      * Adds a webhook endpoint to the workspace, and answers with its signing secret, which is not shown again. Its address must be HTTPS on the default port, on a public host, without credentials; Peal follows no redirect from it. A workspace has 10 endpoints at most, whatever its plan. With <code>scope</code> <code>partner</code>, in the home workspace of a partner account, the endpoint also hears what happens in every workspace the partner owns, each event naming its workspace and carrying the partner's own id for it (<code>workspaceExternalId</code>); any other workspace answers 404 <code>PartnerNotFound</code>. <code>channelIds</code> (50 at most) narrows it to the events about those channels: an event of one channel when it is listed, an event of a whole post when one of its channels is, and an event about no channel (a file, a boost) whatever it lists; leave such types out of <code>eventTypes</code> when they are not wanted. <code>workspaceIds</code> (200 at most), on a <code>partner</code> endpoint only, narrows it to those workspaces, the home workspace only if listed. Ids are checked for their shape only: one that names nothing matches nothing, and a filter stays as saved when what it names is gone. Filters apply when each event happens. <code>headers</code> (5 at most) go with every delivery beside Peal's own, which they never replace, for a gateway in front of the receiver that wants a token: a name is an HTTP token, once whatever its case, neither <code>host</code>, <code>user-agent</code>, <code>cookie</code>, <code>expect</code>, <code>accept-encoding</code>, a connection's own, nor any <code>content-</code> or <code>webhook-</code> name; a value is visible ASCII on one line, 1024 characters at most. Values are write-only: the endpoint shows their names (<code>headerNames</code>), never them, and sends them only to the origin (scheme, host and port) of the <code>url</code> they were given with. The signature does not cover them. Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpointSecret>> create(
-            String workspaceId, NewWebhookEndpoint request, RequestOptions requestOptions) {
+            NewWebhookEndpoint request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks");
+                .addPathSegments("api/v1/webhooks");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -247,6 +229,11 @@ public class AsyncRawWebhooksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -315,39 +302,34 @@ public class AsyncRawWebhooksClient {
     /**
      * Lists the workspace's deliveries across its endpoints, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise, filtered by <code>status</code>, <code>endpointId</code>, <code>eventType</code>, and when they were made: <code>since</code> (included) and <code>until</code> (excluded). The deliveries of a <code>partner</code> endpoint include those of the partner's other workspaces, each naming its workspace (<code>workspaceId</code>, <code>workspaceExternalId</code>). A delivery that failed for good (<code>failed</code>) stays 30 days, with the receiver's last answer: send it again with <code>POST …/webhooks/deliveries/redeliver</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs webhook:read.
      */
-    public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> searchDeliveries(String workspaceId) {
-        return searchDeliveries(
-                workspaceId, SearchDeliveriesWebhooksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> searchDeliveries() {
+        return searchDeliveries(SearchDeliveriesWebhooksRequest.builder().build());
     }
 
     /**
      * Lists the workspace's deliveries across its endpoints, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise, filtered by <code>status</code>, <code>endpointId</code>, <code>eventType</code>, and when they were made: <code>since</code> (included) and <code>until</code> (excluded). The deliveries of a <code>partner</code> endpoint include those of the partner's other workspaces, each naming its workspace (<code>workspaceId</code>, <code>workspaceExternalId</code>). A delivery that failed for good (<code>failed</code>) stays 30 days, with the receiver's last answer: send it again with <code>POST …/webhooks/deliveries/redeliver</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> searchDeliveries(
-            String workspaceId, RequestOptions requestOptions) {
-        return searchDeliveries(
-                workspaceId, SearchDeliveriesWebhooksRequest.builder().build(), requestOptions);
+            RequestOptions requestOptions) {
+        return searchDeliveries(SearchDeliveriesWebhooksRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the workspace's deliveries across its endpoints, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise, filtered by <code>status</code>, <code>endpointId</code>, <code>eventType</code>, and when they were made: <code>since</code> (included) and <code>until</code> (excluded). The deliveries of a <code>partner</code> endpoint include those of the partner's other workspaces, each naming its workspace (<code>workspaceId</code>, <code>workspaceExternalId</code>). A delivery that failed for good (<code>failed</code>) stays 30 days, with the receiver's last answer: send it again with <code>POST …/webhooks/deliveries/redeliver</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> searchDeliveries(
-            String workspaceId, SearchDeliveriesWebhooksRequest request) {
-        return searchDeliveries(workspaceId, request, null);
+            SearchDeliveriesWebhooksRequest request) {
+        return searchDeliveries(request, null);
     }
 
     /**
      * Lists the workspace's deliveries across its endpoints, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise, filtered by <code>status</code>, <code>endpointId</code>, <code>eventType</code>, and when they were made: <code>since</code> (included) and <code>until</code> (excluded). The deliveries of a <code>partner</code> endpoint include those of the partner's other workspaces, each naming its workspace (<code>workspaceId</code>, <code>workspaceExternalId</code>). A delivery that failed for good (<code>failed</code>) stays 30 days, with the receiver's last answer: send it again with <code>POST …/webhooks/deliveries/redeliver</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> searchDeliveries(
-            String workspaceId, SearchDeliveriesWebhooksRequest request, RequestOptions requestOptions) {
+            SearchDeliveriesWebhooksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks")
-                .addPathSegments("deliveries");
+                .addPathSegments("api/v1/webhooks/deliveries");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -474,21 +456,18 @@ public class AsyncRawWebhooksClient {
      * Sends many deliveries again, 100 a call at most: those named by <code>deliveryIds</code>, or the failed deliveries of the endpoint <code>endpointId</code> (made from <code>since</code>, before <code>until</code>, of <code>eventType</code>, each left out for any), oldest first, the last of each event only. Each goes to its own endpoint whatever the endpoint's filters are now, as a new delivery of the same event: the same <code>webhook-id</code> and body, signed anew. A delivery is skipped when its endpoint is off, when it is not the workspace's, and when its event was sent again since and that delivery is pending or went through, so calling again after a partial run sends nothing twice; <code>remaining</code> says how many more failed deliveries the selection holds. The new deliveries of an endpoint start a quarter of a second apart. A workspace sends 1000 deliveries again this way an hour, apart from the test events and single sends: a call that would pass it sends nothing (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookBulkRedelivery>> redeliverMany(
-            String workspaceId, RedeliverManyWebhooksRequest request) {
-        return redeliverMany(workspaceId, request, null);
+            WebhookRedeliveryRequest request) {
+        return redeliverMany(request, null);
     }
 
     /**
      * Sends many deliveries again, 100 a call at most: those named by <code>deliveryIds</code>, or the failed deliveries of the endpoint <code>endpointId</code> (made from <code>since</code>, before <code>until</code>, of <code>eventType</code>, each left out for any), oldest first, the last of each event only. Each goes to its own endpoint whatever the endpoint's filters are now, as a new delivery of the same event: the same <code>webhook-id</code> and body, signed anew. A delivery is skipped when its endpoint is off, when it is not the workspace's, and when its event was sent again since and that delivery is pending or went through, so calling again after a partial run sends nothing twice; <code>remaining</code> says how many more failed deliveries the selection holds. The new deliveries of an endpoint start a quarter of a second apart. A workspace sends 1000 deliveries again this way an hour, apart from the test events and single sends: a call that would pass it sends nothing (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookBulkRedelivery>> redeliverMany(
-            String workspaceId, RedeliverManyWebhooksRequest request, RequestOptions requestOptions) {
+            WebhookRedeliveryRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks/deliveries")
-                .addPathSegments("redeliver");
+                .addPathSegments("api/v1/webhooks/deliveries/redeliver");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -498,7 +477,7 @@ public class AsyncRawWebhooksClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -533,6 +512,11 @@ public class AsyncRawWebhooksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -586,36 +570,34 @@ public class AsyncRawWebhooksClient {
     /**
      * Shows one of the workspace's webhook endpoints. Needs webhook:read.
      */
-    public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> get(String workspaceId, String endpointId) {
-        return get(workspaceId, endpointId, GetWebhooksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> get(String endpointId) {
+        return get(endpointId, GetWebhooksRequest.builder().build());
     }
 
     /**
      * Shows one of the workspace's webhook endpoints. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> get(
-            String workspaceId, String endpointId, RequestOptions requestOptions) {
-        return get(workspaceId, endpointId, GetWebhooksRequest.builder().build(), requestOptions);
+            String endpointId, RequestOptions requestOptions) {
+        return get(endpointId, GetWebhooksRequest.builder().build(), requestOptions);
     }
 
     /**
      * Shows one of the workspace's webhook endpoints. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> get(
-            String workspaceId, String endpointId, GetWebhooksRequest request) {
-        return get(workspaceId, endpointId, request, null);
+            String endpointId, GetWebhooksRequest request) {
+        return get(endpointId, request, null);
     }
 
     /**
      * Shows one of the workspace's webhook endpoints. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> get(
-            String workspaceId, String endpointId, GetWebhooksRequest request, RequestOptions requestOptions) {
+            String endpointId, GetWebhooksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks")
+                .addPathSegments("api/v1/webhooks")
                 .addPathSegment(PathSegments.validate(endpointId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -656,6 +638,11 @@ public class AsyncRawWebhooksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -709,36 +696,32 @@ public class AsyncRawWebhooksClient {
     /**
      * Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(String workspaceId, String endpointId) {
-        return delete(workspaceId, endpointId, DeleteWebhooksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String endpointId) {
+        return delete(endpointId, DeleteWebhooksRequest.builder().build());
+    }
+
+    /**
+     * Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String endpointId, RequestOptions requestOptions) {
+        return delete(endpointId, DeleteWebhooksRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String endpointId, DeleteWebhooksRequest request) {
+        return delete(endpointId, request, null);
     }
 
     /**
      * Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String endpointId, RequestOptions requestOptions) {
-        return delete(workspaceId, endpointId, DeleteWebhooksRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String endpointId, DeleteWebhooksRequest request) {
-        return delete(workspaceId, endpointId, request, null);
-    }
-
-    /**
-     * Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String endpointId, DeleteWebhooksRequest request, RequestOptions requestOptions) {
+            String endpointId, DeleteWebhooksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks")
+                .addPathSegments("api/v1/webhooks")
                 .addPathSegment(PathSegments.validate(endpointId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -780,6 +763,11 @@ public class AsyncRawWebhooksClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -833,36 +821,34 @@ public class AsyncRawWebhooksClient {
     /**
      * Changes an endpoint's address, description, events, filters or headers, or turns it off or back on: what is left out stays as it is, and an empty filter hears everything again; <code>workspaceIds</code> is for an endpoint of the <code>partner</code> scope only (422 <code>WebhookFilterRefused</code>). <code>headers</code> replaces every header it had, <code>[]</code> removing them all: a header given without <code>value</code> keeps the value it has under that name, as none is ever shown, and one it does not have needs a value. A value is sent only to the origin (scheme, host and port) it was given for: a new <code>url</code> on another origin, on an endpoint with headers, needs <code>headers</code> in the same request, each with its <code>value</code>, or <code>[]</code> (422 <code>WebhookHeaderValuesRequired</code>). Filters apply to the events that happen after the change. Turned off, it is sent nothing, its pending deliveries fail, and events that happen meanwhile are not kept for it. Turning it back on forgets the failures that turned it off. Needs webhook:manage.
      */
-    public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> update(String workspaceId, String endpointId) {
-        return update(workspaceId, endpointId, WebhookEndpointChange.builder().build());
+    public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> update(String endpointId) {
+        return update(endpointId, WebhookEndpointChange.builder().build());
     }
 
     /**
      * Changes an endpoint's address, description, events, filters or headers, or turns it off or back on: what is left out stays as it is, and an empty filter hears everything again; <code>workspaceIds</code> is for an endpoint of the <code>partner</code> scope only (422 <code>WebhookFilterRefused</code>). <code>headers</code> replaces every header it had, <code>[]</code> removing them all: a header given without <code>value</code> keeps the value it has under that name, as none is ever shown, and one it does not have needs a value. A value is sent only to the origin (scheme, host and port) it was given for: a new <code>url</code> on another origin, on an endpoint with headers, needs <code>headers</code> in the same request, each with its <code>value</code>, or <code>[]</code> (422 <code>WebhookHeaderValuesRequired</code>). Filters apply to the events that happen after the change. Turned off, it is sent nothing, its pending deliveries fail, and events that happen meanwhile are not kept for it. Turning it back on forgets the failures that turned it off. Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> update(
-            String workspaceId, String endpointId, RequestOptions requestOptions) {
-        return update(workspaceId, endpointId, WebhookEndpointChange.builder().build(), requestOptions);
+            String endpointId, RequestOptions requestOptions) {
+        return update(endpointId, WebhookEndpointChange.builder().build(), requestOptions);
     }
 
     /**
      * Changes an endpoint's address, description, events, filters or headers, or turns it off or back on: what is left out stays as it is, and an empty filter hears everything again; <code>workspaceIds</code> is for an endpoint of the <code>partner</code> scope only (422 <code>WebhookFilterRefused</code>). <code>headers</code> replaces every header it had, <code>[]</code> removing them all: a header given without <code>value</code> keeps the value it has under that name, as none is ever shown, and one it does not have needs a value. A value is sent only to the origin (scheme, host and port) it was given for: a new <code>url</code> on another origin, on an endpoint with headers, needs <code>headers</code> in the same request, each with its <code>value</code>, or <code>[]</code> (422 <code>WebhookHeaderValuesRequired</code>). Filters apply to the events that happen after the change. Turned off, it is sent nothing, its pending deliveries fail, and events that happen meanwhile are not kept for it. Turning it back on forgets the failures that turned it off. Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> update(
-            String workspaceId, String endpointId, WebhookEndpointChange request) {
-        return update(workspaceId, endpointId, request, null);
+            String endpointId, WebhookEndpointChange request) {
+        return update(endpointId, request, null);
     }
 
     /**
      * Changes an endpoint's address, description, events, filters or headers, or turns it off or back on: what is left out stays as it is, and an empty filter hears everything again; <code>workspaceIds</code> is for an endpoint of the <code>partner</code> scope only (422 <code>WebhookFilterRefused</code>). <code>headers</code> replaces every header it had, <code>[]</code> removing them all: a header given without <code>value</code> keeps the value it has under that name, as none is ever shown, and one it does not have needs a value. A value is sent only to the origin (scheme, host and port) it was given for: a new <code>url</code> on another origin, on an endpoint with headers, needs <code>headers</code> in the same request, each with its <code>value</code>, or <code>[]</code> (422 <code>WebhookHeaderValuesRequired</code>). Filters apply to the events that happen after the change. Turned off, it is sent nothing, its pending deliveries fail, and events that happen meanwhile are not kept for it. Turning it back on forgets the failures that turned it off. Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpoint>> update(
-            String workspaceId, String endpointId, WebhookEndpointChange request, RequestOptions requestOptions) {
+            String endpointId, WebhookEndpointChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks")
+                .addPathSegments("api/v1/webhooks")
                 .addPathSegment(PathSegments.validate(endpointId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -908,6 +894,11 @@ public class AsyncRawWebhooksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -971,39 +962,34 @@ public class AsyncRawWebhooksClient {
     /**
      * Replaces an endpoint's signing secret, and answers with the new one, which is not shown again. For 24 hours each delivery carries two signatures, one per secret, so the receiver changes its own without missing any; the old one then signs nothing more. Needs webhook:manage.
      */
-    public CompletableFuture<PealClientHttpResponse<WebhookEndpointSecret>> rotateSecret(
-            String workspaceId, String endpointId) {
-        return rotateSecret(
-                workspaceId, endpointId, RotateSecretWebhooksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<WebhookEndpointSecret>> rotateSecret(String endpointId) {
+        return rotateSecret(endpointId, RotateSecretWebhooksRequest.builder().build());
     }
 
     /**
      * Replaces an endpoint's signing secret, and answers with the new one, which is not shown again. For 24 hours each delivery carries two signatures, one per secret, so the receiver changes its own without missing any; the old one then signs nothing more. Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpointSecret>> rotateSecret(
-            String workspaceId, String endpointId, RequestOptions requestOptions) {
-        return rotateSecret(
-                workspaceId, endpointId, RotateSecretWebhooksRequest.builder().build(), requestOptions);
+            String endpointId, RequestOptions requestOptions) {
+        return rotateSecret(endpointId, RotateSecretWebhooksRequest.builder().build(), requestOptions);
     }
 
     /**
      * Replaces an endpoint's signing secret, and answers with the new one, which is not shown again. For 24 hours each delivery carries two signatures, one per secret, so the receiver changes its own without missing any; the old one then signs nothing more. Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpointSecret>> rotateSecret(
-            String workspaceId, String endpointId, RotateSecretWebhooksRequest request) {
-        return rotateSecret(workspaceId, endpointId, request, null);
+            String endpointId, RotateSecretWebhooksRequest request) {
+        return rotateSecret(endpointId, request, null);
     }
 
     /**
      * Replaces an endpoint's signing secret, and answers with the new one, which is not shown again. For 24 hours each delivery carries two signatures, one per secret, so the receiver changes its own without missing any; the old one then signs nothing more. Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookEndpointSecret>> rotateSecret(
-            String workspaceId, String endpointId, RotateSecretWebhooksRequest request, RequestOptions requestOptions) {
+            String endpointId, RotateSecretWebhooksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks")
+                .addPathSegments("api/v1/webhooks")
                 .addPathSegment(PathSegments.validate(endpointId))
                 .addPathSegments("secret");
         if (requestOptions != null) {
@@ -1044,6 +1030,11 @@ public class AsyncRawWebhooksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1102,38 +1093,34 @@ public class AsyncRawWebhooksClient {
     /**
      * Sends the endpoint a <code>webhook.test</code> event, or, with <code>eventType</code>, a sample of that type: its real shape, with ids that name nothing, the workspace's own id and <code>sample: true</code>, which the receiver must never act on. Either goes whatever the endpoint subscribes to or filters. It answers with the delivery, still pending: read the endpoint's deliveries to see how it ended. A workspace sends 30 test events and deliveries again an hour at most (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
-    public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> sendTest(String workspaceId, String endpointId) {
-        return sendTest(
-                workspaceId, endpointId, SendTestWebhooksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> sendTest(String endpointId) {
+        return sendTest(endpointId, SendTestWebhooksRequest.builder().build());
     }
 
     /**
      * Sends the endpoint a <code>webhook.test</code> event, or, with <code>eventType</code>, a sample of that type: its real shape, with ids that name nothing, the workspace's own id and <code>sample: true</code>, which the receiver must never act on. Either goes whatever the endpoint subscribes to or filters. It answers with the delivery, still pending: read the endpoint's deliveries to see how it ended. A workspace sends 30 test events and deliveries again an hour at most (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> sendTest(
-            String workspaceId, String endpointId, RequestOptions requestOptions) {
-        return sendTest(
-                workspaceId, endpointId, SendTestWebhooksRequest.builder().build(), requestOptions);
+            String endpointId, RequestOptions requestOptions) {
+        return sendTest(endpointId, SendTestWebhooksRequest.builder().build(), requestOptions);
     }
 
     /**
      * Sends the endpoint a <code>webhook.test</code> event, or, with <code>eventType</code>, a sample of that type: its real shape, with ids that name nothing, the workspace's own id and <code>sample: true</code>, which the receiver must never act on. Either goes whatever the endpoint subscribes to or filters. It answers with the delivery, still pending: read the endpoint's deliveries to see how it ended. A workspace sends 30 test events and deliveries again an hour at most (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> sendTest(
-            String workspaceId, String endpointId, SendTestWebhooksRequest request) {
-        return sendTest(workspaceId, endpointId, request, null);
+            String endpointId, SendTestWebhooksRequest request) {
+        return sendTest(endpointId, request, null);
     }
 
     /**
      * Sends the endpoint a <code>webhook.test</code> event, or, with <code>eventType</code>, a sample of that type: its real shape, with ids that name nothing, the workspace's own id and <code>sample: true</code>, which the receiver must never act on. Either goes whatever the endpoint subscribes to or filters. It answers with the delivery, still pending: read the endpoint's deliveries to see how it ended. A workspace sends 30 test events and deliveries again an hour at most (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> sendTest(
-            String workspaceId, String endpointId, SendTestWebhooksRequest request, RequestOptions requestOptions) {
+            String endpointId, SendTestWebhooksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks")
+                .addPathSegments("api/v1/webhooks")
                 .addPathSegment(PathSegments.validate(endpointId))
                 .addPathSegments("test");
         if (request.getEventType().isPresent()) {
@@ -1178,6 +1165,11 @@ public class AsyncRawWebhooksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1236,42 +1228,36 @@ public class AsyncRawWebhooksClient {
     /**
      * Lists the endpoint's deliveries, newest first, of a <code>status</code> and an <code>eventType</code> when given, 30 a page unless <code>limit</code> (at most 100) says otherwise: each one's status, the receiver's last answer, how many attempts were made and when the next one is. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. A delivery is kept 30 days. Needs webhook:read.
      */
-    public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> listDeliveries(
-            String workspaceId, String endpointId) {
+    public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> listDeliveries(String endpointId) {
         return listDeliveries(
-                workspaceId, endpointId, ListDeliveriesWebhooksRequest.builder().build());
+                endpointId, ListDeliveriesWebhooksRequest.builder().build());
     }
 
     /**
      * Lists the endpoint's deliveries, newest first, of a <code>status</code> and an <code>eventType</code> when given, 30 a page unless <code>limit</code> (at most 100) says otherwise: each one's status, the receiver's last answer, how many attempts were made and when the next one is. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. A delivery is kept 30 days. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> listDeliveries(
-            String workspaceId, String endpointId, RequestOptions requestOptions) {
+            String endpointId, RequestOptions requestOptions) {
         return listDeliveries(
-                workspaceId, endpointId, ListDeliveriesWebhooksRequest.builder().build(), requestOptions);
+                endpointId, ListDeliveriesWebhooksRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the endpoint's deliveries, newest first, of a <code>status</code> and an <code>eventType</code> when given, 30 a page unless <code>limit</code> (at most 100) says otherwise: each one's status, the receiver's last answer, how many attempts were made and when the next one is. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. A delivery is kept 30 days. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> listDeliveries(
-            String workspaceId, String endpointId, ListDeliveriesWebhooksRequest request) {
-        return listDeliveries(workspaceId, endpointId, request, null);
+            String endpointId, ListDeliveriesWebhooksRequest request) {
+        return listDeliveries(endpointId, request, null);
     }
 
     /**
      * Lists the endpoint's deliveries, newest first, of a <code>status</code> and an <code>eventType</code> when given, 30 a page unless <code>limit</code> (at most 100) says otherwise: each one's status, the receiver's last answer, how many attempts were made and when the next one is. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. A delivery is kept 30 days. Needs webhook:read.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDeliveryPage>> listDeliveries(
-            String workspaceId,
-            String endpointId,
-            ListDeliveriesWebhooksRequest request,
-            RequestOptions requestOptions) {
+            String endpointId, ListDeliveriesWebhooksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks")
+                .addPathSegments("api/v1/webhooks")
                 .addPathSegment(PathSegments.validate(endpointId))
                 .addPathSegments("deliveries");
         if (request.getCursor().isPresent()) {
@@ -1387,50 +1373,36 @@ public class AsyncRawWebhooksClient {
     /**
      * Sends the delivery's event to the endpoint again, as a new delivery of the same event: the receiver gets the same <code>webhook-id</code> and body, with a new timestamp and signature. A workspace sends 30 test events and deliveries again an hour at most (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
-    public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> redeliver(
-            String workspaceId, String endpointId, String deliveryId) {
+    public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> redeliver(String endpointId, String deliveryId) {
         return redeliver(
-                workspaceId,
-                endpointId,
-                deliveryId,
-                RedeliverWebhooksRequest.builder().build());
+                endpointId, deliveryId, RedeliverWebhooksRequest.builder().build());
     }
 
     /**
      * Sends the delivery's event to the endpoint again, as a new delivery of the same event: the receiver gets the same <code>webhook-id</code> and body, with a new timestamp and signature. A workspace sends 30 test events and deliveries again an hour at most (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> redeliver(
-            String workspaceId, String endpointId, String deliveryId, RequestOptions requestOptions) {
+            String endpointId, String deliveryId, RequestOptions requestOptions) {
         return redeliver(
-                workspaceId,
-                endpointId,
-                deliveryId,
-                RedeliverWebhooksRequest.builder().build(),
-                requestOptions);
+                endpointId, deliveryId, RedeliverWebhooksRequest.builder().build(), requestOptions);
     }
 
     /**
      * Sends the delivery's event to the endpoint again, as a new delivery of the same event: the receiver gets the same <code>webhook-id</code> and body, with a new timestamp and signature. A workspace sends 30 test events and deliveries again an hour at most (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> redeliver(
-            String workspaceId, String endpointId, String deliveryId, RedeliverWebhooksRequest request) {
-        return redeliver(workspaceId, endpointId, deliveryId, request, null);
+            String endpointId, String deliveryId, RedeliverWebhooksRequest request) {
+        return redeliver(endpointId, deliveryId, request, null);
     }
 
     /**
      * Sends the delivery's event to the endpoint again, as a new delivery of the same event: the receiver gets the same <code>webhook-id</code> and body, with a new timestamp and signature. A workspace sends 30 test events and deliveries again an hour at most (429 <code>TooManyWebhookSends</code>). Needs webhook:manage.
      */
     public CompletableFuture<PealClientHttpResponse<WebhookDelivery>> redeliver(
-            String workspaceId,
-            String endpointId,
-            String deliveryId,
-            RedeliverWebhooksRequest request,
-            RequestOptions requestOptions) {
+            String endpointId, String deliveryId, RedeliverWebhooksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("webhooks")
+                .addPathSegments("api/v1/webhooks")
                 .addPathSegment(PathSegments.validate(endpointId))
                 .addPathSegments("deliveries")
                 .addPathSegment(PathSegments.validate(deliveryId))
@@ -1473,6 +1445,11 @@ public class AsyncRawWebhooksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

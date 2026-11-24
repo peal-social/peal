@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         aspect: "square",
  *         slides: [{
  *                 mediaId: "mediaId"
@@ -13,7 +12,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface SlideshowRequest {
-    workspaceId: string;
     aspect: Peal.ImageAspect;
     secondsPerSlide?: number;
     slides: Peal.Slide[];

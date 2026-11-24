@@ -26,36 +26,36 @@ public final class BadRequestErrorBody {
         return value.visit(visitor);
     }
 
-    public static BadRequestErrorBody badRequest(EffectHttpApiErrorBadRequestEncoded value) {
-        return new BadRequestErrorBody(new BadRequestValue(value));
-    }
-
     public static BadRequestErrorBody invalidDateRange(InvalidDateRangeEncoded value) {
         return new BadRequestErrorBody(new InvalidDateRangeValue(value));
     }
 
-    public boolean isBadRequest() {
-        return value instanceof BadRequestValue;
+    public static BadRequestErrorBody workspaceRequired(WorkspaceRequiredEncoded value) {
+        return new BadRequestErrorBody(new WorkspaceRequiredValue(value));
     }
 
     public boolean isInvalidDateRange() {
         return value instanceof InvalidDateRangeValue;
     }
 
-    public boolean _isUnknown() {
-        return value instanceof _UnknownValue;
+    public boolean isWorkspaceRequired() {
+        return value instanceof WorkspaceRequiredValue;
     }
 
-    public Optional<EffectHttpApiErrorBadRequestEncoded> getBadRequest() {
-        if (isBadRequest()) {
-            return Optional.of(((BadRequestValue) value).value);
-        }
-        return Optional.empty();
+    public boolean _isUnknown() {
+        return value instanceof _UnknownValue;
     }
 
     public Optional<InvalidDateRangeEncoded> getInvalidDateRange() {
         if (isInvalidDateRange()) {
             return Optional.of(((InvalidDateRangeValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<WorkspaceRequiredEncoded> getWorkspaceRequired() {
+        if (isWorkspaceRequired()) {
+            return Optional.of(((WorkspaceRequiredValue) value).value);
         }
         return Optional.empty();
     }
@@ -89,58 +89,18 @@ public final class BadRequestErrorBody {
     }
 
     public interface Visitor<T> {
-        T visitBadRequest(EffectHttpApiErrorBadRequestEncoded badRequest);
-
         T visitInvalidDateRange(InvalidDateRangeEncoded invalidDateRange);
+
+        T visitWorkspaceRequired(WorkspaceRequiredEncoded workspaceRequired);
 
         T _visitUnknown(Object unknownType);
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_tag", visible = true, defaultImpl = _UnknownValue.class)
-    @JsonSubTypes({@JsonSubTypes.Type(BadRequestValue.class), @JsonSubTypes.Type(InvalidDateRangeValue.class)})
+    @JsonSubTypes({@JsonSubTypes.Type(InvalidDateRangeValue.class), @JsonSubTypes.Type(WorkspaceRequiredValue.class)})
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
         <T> T visit(Visitor<T> visitor);
-    }
-
-    @JsonTypeName("BadRequest")
-    @JsonIgnoreProperties("_tag")
-    private static final class BadRequestValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private EffectHttpApiErrorBadRequestEncoded value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private BadRequestValue() {}
-
-        private BadRequestValue(EffectHttpApiErrorBadRequestEncoded value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitBadRequest(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof BadRequestValue && equalTo((BadRequestValue) other);
-        }
-
-        private boolean equalTo(BadRequestValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "BadRequestErrorBody{" + "value: " + value + "}";
-        }
     }
 
     @JsonTypeName("InvalidDateRange")
@@ -169,6 +129,46 @@ public final class BadRequestErrorBody {
         }
 
         private boolean equalTo(InvalidDateRangeValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "BadRequestErrorBody{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("WorkspaceRequired")
+    @JsonIgnoreProperties("_tag")
+    private static final class WorkspaceRequiredValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private WorkspaceRequiredEncoded value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private WorkspaceRequiredValue() {}
+
+        private WorkspaceRequiredValue(WorkspaceRequiredEncoded value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitWorkspaceRequired(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof WorkspaceRequiredValue && equalTo((WorkspaceRequiredValue) other);
+        }
+
+        private boolean equalTo(WorkspaceRequiredValue other) {
             return value.equals(other.value);
         }
 

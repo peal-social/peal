@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListArticlesRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListArticlesRequest{}
 //	_, err := client.Articles.List(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.NewArticle{
-//	    WorkspaceID: "workspaceId",
 //	    Body: &peal.ArticleBody{
 //	        Content: []any{},
 //	        Type: peal.ArticleBodyTypeDoc,
@@ -99,7 +96,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.GetArticlesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ArticleID: "articleId",
 //	}
 //	_, err := client.Articles.Get(
@@ -127,7 +123,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.DeleteArticlesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ArticleID: "articleId",
 //	}
 //	err := client.Articles.Delete(
@@ -155,7 +150,6 @@ func (c *Client) Delete(
 // Example:
 //
 //	request := &peal.UpdateArticlesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ArticleID: "articleId",
 //	    Body: &peal.ArticleInput{
 //	        Body: &peal.ArticleBody{
@@ -190,7 +184,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.ScheduleArticlesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ArticleID: "articleId",
 //	    Body: &peal.ArticleTime{
 //	        TimeZone: "timeZone",
@@ -221,7 +214,6 @@ func (c *Client) Schedule(
 // Example:
 //
 //	request := &peal.UnscheduleArticlesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ArticleID: "articleId",
 //	}
 //	_, err := client.Articles.Unschedule(
@@ -249,7 +241,6 @@ func (c *Client) Unschedule(
 // Example:
 //
 //	request := &peal.RetryArticlesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ArticleID: "articleId",
 //	}
 //	_, err := client.Articles.Retry(
@@ -277,7 +268,6 @@ func (c *Client) Retry(
 // Example:
 //
 //	request := &peal.UnpublishArticlesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ArticleID: "articleId",
 //	}
 //	_, err := client.Articles.Unpublish(
@@ -305,7 +295,6 @@ func (c *Client) Unpublish(
 // Example:
 //
 //	request := &peal.UpdateOnSiteArticlesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ArticleID: "articleId",
 //	    Body: &peal.ArticleInput{
 //	        Body: &peal.ArticleBody{

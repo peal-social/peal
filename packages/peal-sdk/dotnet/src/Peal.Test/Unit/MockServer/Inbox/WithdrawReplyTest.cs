@@ -31,7 +31,7 @@ public class WithdrawReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/replies/replyId")
+                    .WithPath("/api/v1/inbox/replies/replyId")
                     .UsingDelete()
             )
             .RespondWith(
@@ -42,7 +42,7 @@ public class WithdrawReplyTest : BaseMockServerTest
             );
 
         var response = await Client.Inbox.WithdrawReplyAsync(
-            new WithdrawReplyInboxRequest { WorkspaceId = "workspaceId", ReplyId = "replyId" }
+            new WithdrawReplyInboxRequest { ReplyId = "replyId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -69,7 +69,7 @@ public class WithdrawReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/replies/replyId")
+                    .WithPath("/api/v1/inbox/replies/replyId")
                     .UsingDelete()
             )
             .RespondWith(
@@ -80,7 +80,7 @@ public class WithdrawReplyTest : BaseMockServerTest
             );
 
         var response = await Client.Inbox.WithdrawReplyAsync(
-            new WithdrawReplyInboxRequest { WorkspaceId = "workspaceId", ReplyId = "replyId" }
+            new WithdrawReplyInboxRequest { ReplyId = "replyId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

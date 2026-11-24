@@ -228,8 +228,8 @@ if typing.TYPE_CHECKING:
     )
     from .bad_request_error_body import (
         BadRequestErrorBody,
-        BadRequestErrorBody_BadRequest,
         BadRequestErrorBody_InvalidDateRange,
+        BadRequestErrorBody_WorkspaceRequired,
     )
     from .best_times import BestTimes
     from .best_times_hour import BestTimesHour
@@ -633,9 +633,7 @@ if typing.TYPE_CHECKING:
     from .instagram_options import InstagramOptions
     from .instagram_trial_reel import InstagramTrialReel
     from .invalid_date_range_encoded import InvalidDateRangeEncoded
-    from .invalid_date_range_encoded_tag import InvalidDateRangeEncodedTag
     from .invalid_time_range_encoded import InvalidTimeRangeEncoded
-    from .invalid_time_range_encoded_tag import InvalidTimeRangeEncodedTag
     from .invalid_time_zone_encoded import InvalidTimeZoneEncoded
     from .invalid_time_zone_encoded_tag import InvalidTimeZoneEncodedTag
     from .invitation import Invitation
@@ -1247,6 +1245,8 @@ if typing.TYPE_CHECKING:
     from .workspace_member import WorkspaceMember
     from .workspace_not_found_encoded import WorkspaceNotFoundEncoded
     from .workspace_not_found_encoded_tag import WorkspaceNotFoundEncodedTag
+    from .workspace_required_encoded import WorkspaceRequiredEncoded
+    from .workspace_required_encoded_tag import WorkspaceRequiredEncodedTag
     from .workspace_usage_report import WorkspaceUsageReport
     from .x_options import XOptions
     from .x_reply_settings import XReplySettings
@@ -1468,8 +1468,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "BadGatewayErrorBody_AssistantFailed": ".bad_gateway_error_body",
     "BadGatewayErrorBody_TextProviderRefused": ".bad_gateway_error_body",
     "BadRequestErrorBody": ".bad_request_error_body",
-    "BadRequestErrorBody_BadRequest": ".bad_request_error_body",
     "BadRequestErrorBody_InvalidDateRange": ".bad_request_error_body",
+    "BadRequestErrorBody_WorkspaceRequired": ".bad_request_error_body",
     "BestTimes": ".best_times",
     "BestTimesHour": ".best_times_hour",
     "BestTimesHourMedian": ".best_times_hour_median",
@@ -1874,9 +1874,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "InstagramOptions": ".instagram_options",
     "InstagramTrialReel": ".instagram_trial_reel",
     "InvalidDateRangeEncoded": ".invalid_date_range_encoded",
-    "InvalidDateRangeEncodedTag": ".invalid_date_range_encoded_tag",
     "InvalidTimeRangeEncoded": ".invalid_time_range_encoded",
-    "InvalidTimeRangeEncodedTag": ".invalid_time_range_encoded_tag",
     "InvalidTimeZoneEncoded": ".invalid_time_zone_encoded",
     "InvalidTimeZoneEncodedTag": ".invalid_time_zone_encoded_tag",
     "Invitation": ".invitation",
@@ -2473,6 +2471,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "WorkspaceMember": ".workspace_member",
     "WorkspaceNotFoundEncoded": ".workspace_not_found_encoded",
     "WorkspaceNotFoundEncodedTag": ".workspace_not_found_encoded_tag",
+    "WorkspaceRequiredEncoded": ".workspace_required_encoded",
+    "WorkspaceRequiredEncodedTag": ".workspace_required_encoded_tag",
     "WorkspaceUsageReport": ".workspace_usage_report",
     "XOptions": ".x_options",
     "XReplySettings": ".x_reply_settings",
@@ -2718,8 +2718,8 @@ __all__ = [
     "BadGatewayErrorBody_AssistantFailed",
     "BadGatewayErrorBody_TextProviderRefused",
     "BadRequestErrorBody",
-    "BadRequestErrorBody_BadRequest",
     "BadRequestErrorBody_InvalidDateRange",
+    "BadRequestErrorBody_WorkspaceRequired",
     "BestTimes",
     "BestTimesHour",
     "BestTimesHourMedian",
@@ -3124,9 +3124,7 @@ __all__ = [
     "InstagramOptions",
     "InstagramTrialReel",
     "InvalidDateRangeEncoded",
-    "InvalidDateRangeEncodedTag",
     "InvalidTimeRangeEncoded",
-    "InvalidTimeRangeEncodedTag",
     "InvalidTimeZoneEncoded",
     "InvalidTimeZoneEncodedTag",
     "Invitation",
@@ -3723,6 +3721,8 @@ __all__ = [
     "WorkspaceMember",
     "WorkspaceNotFoundEncoded",
     "WorkspaceNotFoundEncodedTag",
+    "WorkspaceRequiredEncoded",
+    "WorkspaceRequiredEncodedTag",
     "WorkspaceUsageReport",
     "XOptions",
     "XReplySettings",

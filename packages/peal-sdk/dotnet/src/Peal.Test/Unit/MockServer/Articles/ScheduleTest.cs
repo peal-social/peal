@@ -58,7 +58,7 @@ public class ScheduleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId/schedule")
+                    .WithPath("/api/v1/articles/articleId/schedule")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -73,7 +73,6 @@ public class ScheduleTest : BaseMockServerTest
         var response = await Client.Articles.ScheduleAsync(
             new ScheduleArticlesRequest
             {
-                WorkspaceId = "workspaceId",
                 ArticleId = "articleId",
                 Body = new ArticleTime { At = null, TimeZone = "timeZone" },
             }
@@ -125,7 +124,7 @@ public class ScheduleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId/schedule")
+                    .WithPath("/api/v1/articles/articleId/schedule")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -140,7 +139,6 @@ public class ScheduleTest : BaseMockServerTest
         var response = await Client.Articles.ScheduleAsync(
             new ScheduleArticlesRequest
             {
-                WorkspaceId = "workspaceId",
                 ArticleId = "articleId",
                 Body = new ArticleTime { TimeZone = "timeZone" },
             }

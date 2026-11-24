@@ -43,10 +43,7 @@ func (r *RawClient) ListThreads(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/threads",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/inbox/threads"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -96,8 +93,7 @@ func (r *RawClient) GetThread(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/threads/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/threads/%v",
 		request.ThreadID,
 	)
 	headers := internal.MergeHeaders(
@@ -142,8 +138,7 @@ func (r *RawClient) GetAbilities(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/channels/%v/abilities",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/channels/%v/abilities",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(
@@ -188,8 +183,7 @@ func (r *RawClient) Reply(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/comments/%v/replies",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/comments/%v/replies",
 		request.CommentID,
 	)
 	headers := internal.MergeHeaders(
@@ -239,8 +233,7 @@ func (r *RawClient) SetAnswered(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/comments/%v/answered",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/comments/%v/answered",
 		request.CommentID,
 	)
 	headers := internal.MergeHeaders(
@@ -287,8 +280,7 @@ func (r *RawClient) Moderate(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/comments/%v/moderation",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/comments/%v/moderation",
 		request.CommentID,
 	)
 	headers := internal.MergeHeaders(
@@ -335,8 +327,7 @@ func (r *RawClient) ConfirmReply(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/replies/%v/confirmation",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/replies/%v/confirmation",
 		request.ReplyID,
 	)
 	headers := internal.MergeHeaders(
@@ -383,8 +374,7 @@ func (r *RawClient) WithdrawReply(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/replies/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/replies/%v",
 		request.ReplyID,
 	)
 	headers := internal.MergeHeaders(

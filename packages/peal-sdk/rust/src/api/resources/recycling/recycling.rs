@@ -38,7 +38,6 @@ impl RecyclingClient {
     ///     client
     ///         .recycling
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &RecyclingListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl RecyclingClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &RecyclingListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<RecyclingRulePage, ApiError> {
@@ -63,7 +61,7 @@ impl RecyclingClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/recycling", workspace_id),
+                "api/v1/recycling",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -100,7 +98,6 @@ impl RecyclingClient {
     ///     client
     ///         .recycling
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewRecyclingRule {
     ///                 every: RecyclingInterval {
     ///                     count: 1,
@@ -119,7 +116,6 @@ impl RecyclingClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewRecyclingRule,
         options: Option<RequestOptions>,
     ) -> Result<RecyclingRule, ApiError> {
@@ -134,7 +130,7 @@ impl RecyclingClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/recycling", workspace_id),
+                "api/v1/recycling",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -164,15 +160,11 @@ impl RecyclingClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .recycling
-    ///         .get(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-    ///         .await;
+    ///     client.recycling.get(&"ruleId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<RecyclingRule, ApiError> {
@@ -186,7 +178,7 @@ impl RecyclingClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/recycling/{}", workspace_id, rule_id),
+                &format!("api/v1/recycling/{}", rule_id),
                 None,
                 None,
                 options,
@@ -216,15 +208,11 @@ impl RecyclingClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .recycling
-    ///         .delete(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-    ///         .await;
+    ///     client.recycling.delete(&"ruleId".to_string(), None).await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -238,7 +226,7 @@ impl RecyclingClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/recycling/{}", workspace_id, rule_id),
+                &format!("api/v1/recycling/{}", rule_id),
                 None,
                 None,
                 options,
@@ -271,7 +259,6 @@ impl RecyclingClient {
     ///     client
     ///         .recycling
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"ruleId".to_string(),
     ///             &RecyclingRuleChange {
     ///                 ..Default::default()
@@ -283,7 +270,6 @@ impl RecyclingClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         request: &RecyclingRuleChange,
         options: Option<RequestOptions>,
@@ -299,7 +285,7 @@ impl RecyclingClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/recycling/{}", workspace_id, rule_id),
+                &format!("api/v1/recycling/{}", rule_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -332,7 +318,6 @@ impl RecyclingClient {
     ///     client
     ///         .recycling
     ///         .resume(
-    ///             &"workspaceId".to_string(),
     ///             &"ruleId".to_string(),
     ///             &RecyclingResume {
     ///                 ..Default::default()
@@ -344,7 +329,6 @@ impl RecyclingClient {
     /// ```
     pub async fn resume(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         request: &RecyclingResume,
         options: Option<RequestOptions>,
@@ -360,10 +344,7 @@ impl RecyclingClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/recycling/{}/resume",
-                    workspace_id, rule_id
-                ),
+                &format!("api/v1/recycling/{}/resume", rule_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

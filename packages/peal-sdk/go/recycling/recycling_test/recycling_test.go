@@ -88,9 +88,7 @@ func TestRecyclingListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListRecyclingRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListRecyclingRequest{}
 	_, invocationErr := client.Recycling.List(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestRecyclingListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestRecyclingListWithWireMock", "GET", "/api/workspaces/workspaceId/recycling", nil, 1)
+	VerifyRequestCount(t, "TestRecyclingListWithWireMock", "GET", "/api/v1/recycling", nil, 1)
 }
 
 func TestRecyclingCreateWithWireMock(
@@ -115,7 +113,6 @@ func TestRecyclingCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewRecyclingRule{
-		WorkspaceID: "workspaceId",
 		Every: &peal.RecyclingInterval{
 			Count: 1,
 			Unit:  peal.RecyclingUnitDays,
@@ -131,7 +128,7 @@ func TestRecyclingCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestRecyclingCreateWithWireMock", "POST", "/api/workspaces/workspaceId/recycling", nil, 1)
+	VerifyRequestCount(t, "TestRecyclingCreateWithWireMock", "POST", "/api/v1/recycling", nil, 1)
 }
 
 func TestRecyclingGetWithWireMock(
@@ -146,8 +143,7 @@ func TestRecyclingGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetRecyclingRequest{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	_, invocationErr := client.Recycling.Get(
 		context.TODO(),
@@ -158,7 +154,7 @@ func TestRecyclingGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestRecyclingGetWithWireMock", "GET", "/api/workspaces/workspaceId/recycling/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestRecyclingGetWithWireMock", "GET", "/api/v1/recycling/ruleId", nil, 1)
 }
 
 func TestRecyclingDeleteWithWireMock(
@@ -173,8 +169,7 @@ func TestRecyclingDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteRecyclingRequest{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	invocationErr := client.Recycling.Delete(
 		context.TODO(),
@@ -185,7 +180,7 @@ func TestRecyclingDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestRecyclingDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/recycling/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestRecyclingDeleteWithWireMock", "DELETE", "/api/v1/recycling/ruleId", nil, 1)
 }
 
 func TestRecyclingUpdateWithWireMock(
@@ -200,8 +195,7 @@ func TestRecyclingUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RecyclingRuleChange{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	_, invocationErr := client.Recycling.Update(
 		context.TODO(),
@@ -212,7 +206,7 @@ func TestRecyclingUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestRecyclingUpdateWithWireMock", "PATCH", "/api/workspaces/workspaceId/recycling/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestRecyclingUpdateWithWireMock", "PATCH", "/api/v1/recycling/ruleId", nil, 1)
 }
 
 func TestRecyclingResumeWithWireMock(
@@ -227,8 +221,7 @@ func TestRecyclingResumeWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RecyclingResume{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	_, invocationErr := client.Recycling.Resume(
 		context.TODO(),
@@ -239,5 +232,5 @@ func TestRecyclingResumeWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestRecyclingResumeWithWireMock", "POST", "/api/workspaces/workspaceId/recycling/ruleId/resume", nil, 1)
+	VerifyRequestCount(t, "TestRecyclingResumeWithWireMock", "POST", "/api/v1/recycling/ruleId/resume", nil, 1)
 }

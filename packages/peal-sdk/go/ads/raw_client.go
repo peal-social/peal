@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) Status(
 	ctx context.Context,
-	request *peal.StatusAdsRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.AdsStatus], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) Status(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/ads"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -79,7 +75,6 @@ func (r *RawClient) Status(
 
 func (r *RawClient) ListConnections(
 	ctx context.Context,
-	request *peal.ListConnectionsAdsRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.AdConnection], error) {
 	options := core.NewRequestOptions(opts...)
@@ -88,10 +83,7 @@ func (r *RawClient) ListConnections(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/connections",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/ads/connections"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -134,8 +126,7 @@ func (r *RawClient) Connect(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/connections/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/connections/%v",
 		request.Network,
 	)
 	headers := internal.MergeHeaders(
@@ -180,8 +171,7 @@ func (r *RawClient) CompleteConnect(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/connections/%v/callback",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/connections/%v/callback",
 		request.Network,
 	)
 	headers := internal.MergeHeaders(
@@ -228,8 +218,7 @@ func (r *RawClient) ReachableAccounts(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/connections/%v/accounts",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/connections/%v/accounts",
 		request.ConnectionID,
 	)
 	headers := internal.MergeHeaders(
@@ -274,8 +263,7 @@ func (r *RawClient) ConnectAccounts(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/connections/%v/accounts",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/connections/%v/accounts",
 		request.ConnectionID,
 	)
 	headers := internal.MergeHeaders(
@@ -322,8 +310,7 @@ func (r *RawClient) Disconnect(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/connections/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/connections/%v",
 		request.ConnectionID,
 	)
 	headers := internal.MergeHeaders(
@@ -356,7 +343,6 @@ func (r *RawClient) Disconnect(
 
 func (r *RawClient) ListAccounts(
 	ctx context.Context,
-	request *peal.ListAccountsAdsRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.AdAccount], error) {
 	options := core.NewRequestOptions(opts...)
@@ -365,10 +351,7 @@ func (r *RawClient) ListAccounts(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/accounts",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/ads/accounts"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -411,8 +394,7 @@ func (r *RawClient) GetAccount(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/accounts/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/accounts/%v",
 		request.AccountID,
 	)
 	headers := internal.MergeHeaders(
@@ -457,8 +439,7 @@ func (r *RawClient) RemoveAccount(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/accounts/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/accounts/%v",
 		request.AccountID,
 	)
 	headers := internal.MergeHeaders(
@@ -501,8 +482,7 @@ func (r *RawClient) SetSpending(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/accounts/%v/spending",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/accounts/%v/spending",
 		request.AccountID,
 	)
 	headers := internal.MergeHeaders(
@@ -549,8 +529,7 @@ func (r *RawClient) ListCampaigns(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/accounts/%v/campaigns",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/accounts/%v/campaigns",
 		request.AccountID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -602,8 +581,7 @@ func (r *RawClient) ListAds(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/accounts/%v/ads",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/accounts/%v/ads",
 		request.AccountID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -655,8 +633,7 @@ func (r *RawClient) ListInsights(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/accounts/%v/insights",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/accounts/%v/insights",
 		request.AccountID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -708,8 +685,7 @@ func (r *RawClient) PostPerformance(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/posts/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/posts/%v",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -744,7 +720,7 @@ func (r *RawClient) PostPerformance(
 
 func (r *RawClient) QuoteBoost(
 	ctx context.Context,
-	request *peal.QuoteBoostAdsRequest,
+	request *peal.NewBoost,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.BoostQuote], error) {
 	options := core.NewRequestOptions(opts...)
@@ -753,15 +729,11 @@ func (r *RawClient) QuoteBoost(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/boosts/quote",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/ads/boosts/quote"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.BoostQuote
 	raw, err := r.caller.Call(
 		ctx,
@@ -800,10 +772,7 @@ func (r *RawClient) ListBoosts(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/boosts",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/ads/boosts"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -852,10 +821,7 @@ func (r *RawClient) CreateBoost(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/boosts",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/ads/boosts"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -901,8 +867,7 @@ func (r *RawClient) GetBoost(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/boosts/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/boosts/%v",
 		request.BoostID,
 	)
 	headers := internal.MergeHeaders(
@@ -947,8 +912,7 @@ func (r *RawClient) PauseBoost(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/boosts/%v/pause",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/boosts/%v/pause",
 		request.BoostID,
 	)
 	headers := internal.MergeHeaders(
@@ -993,8 +957,7 @@ func (r *RawClient) ResumeBoost(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/boosts/%v/resume",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/boosts/%v/resume",
 		request.BoostID,
 	)
 	headers := internal.MergeHeaders(
@@ -1039,8 +1002,7 @@ func (r *RawClient) StopBoost(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/boosts/%v/stop",
-		request.WorkspaceID,
+		baseURL+"/api/v1/ads/boosts/%v/stop",
 		request.BoostID,
 	)
 	headers := internal.MergeHeaders(
@@ -1084,10 +1046,7 @@ func (r *RawClient) AuditTrail(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/ads/audit",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/ads/audit"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err

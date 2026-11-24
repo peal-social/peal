@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         body: {
  *             content: [],
  *             type: "doc"
@@ -15,7 +14,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface NewArticle {
-    workspaceId: string;
     body: Peal.ArticleBody;
     categories?: string[];
     coverMediaId?: string | null;

@@ -55,7 +55,7 @@ public class FindTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/search")
+                    .WithPath("/api/v1/channels/search")
                     .UsingGet()
             )
             .RespondWith(
@@ -65,9 +65,7 @@ public class FindTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Channels.FindAsync(
-            new FindChannelsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Channels.FindAsync(new FindChannelsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -104,7 +102,7 @@ public class FindTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/search")
+                    .WithPath("/api/v1/channels/search")
                     .UsingGet()
             )
             .RespondWith(
@@ -114,9 +112,7 @@ public class FindTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Channels.FindAsync(
-            new FindChannelsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Channels.FindAsync(new FindChannelsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

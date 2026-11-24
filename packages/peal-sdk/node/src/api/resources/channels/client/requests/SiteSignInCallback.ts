@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         platform: "wordpressCom",
  *         state: "state"
  *     }
  */
 export interface SiteSignInCallback {
-    workspaceId: string;
     platform: Peal.OAuthSitePlatform;
     code?: string;
     error?: string;

@@ -58,7 +58,7 @@ public class CommentTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/comments")
+                    .WithPath("/api/v1/posts/postId/comments")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -73,7 +73,6 @@ public class CommentTest : BaseMockServerTest
         var response = await Client.Review.CommentAsync(
             new NewComment
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 Anchor = null,
                 ParentId = null,
@@ -132,7 +131,7 @@ public class CommentTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/comments")
+                    .WithPath("/api/v1/posts/postId/comments")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -145,12 +144,7 @@ public class CommentTest : BaseMockServerTest
             );
 
         var response = await Client.Review.CommentAsync(
-            new NewComment
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                Text = "text",
-            }
+            new NewComment { PostId = "postId", Text = "text" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

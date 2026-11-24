@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelIds: ["channelIds"],
  *         content: {
  *             media: [{
@@ -24,7 +23,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface NewPost {
-    workspaceId: string;
     wait?: string;
     "idempotency-key"?: string;
     allowDuplicate?: boolean;

@@ -15,18 +15,14 @@ public class RevokeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/invitations/invitationId")
+                    .WithPath("/api/v1/invitations/invitationId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Invitations.RevokeAsync(
-                new RevokeInvitationsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    InvitationId = "invitationId",
-                }
+                new RevokeInvitationsRequest { InvitationId = "invitationId" }
             )
         );
     }
@@ -38,18 +34,14 @@ public class RevokeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/invitations/invitationId")
+                    .WithPath("/api/v1/invitations/invitationId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Invitations.RevokeAsync(
-                new RevokeInvitationsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    InvitationId = "invitationId",
-                }
+                new RevokeInvitationsRequest { InvitationId = "invitationId" }
             )
         );
     }

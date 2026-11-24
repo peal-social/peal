@@ -7,9 +7,6 @@ namespace Peal;
 public record SendTestWebhooksRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string EndpointId { get; set; }
 
     [JsonIgnore]

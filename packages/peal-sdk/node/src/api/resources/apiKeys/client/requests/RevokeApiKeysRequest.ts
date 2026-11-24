@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         apiKeyId: "apiKeyId"
  *     }
  */
 export interface RevokeApiKeysRequest {
-    workspaceId: string;
     apiKeyId: string;
 }

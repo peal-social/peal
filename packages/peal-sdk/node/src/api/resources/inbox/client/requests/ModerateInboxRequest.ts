@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         commentId: "commentId",
  *         action: "hide"
  *     }
  */
 export interface ModerateInboxRequest {
-    workspaceId: string;
     commentId: string;
     action: Peal.InboxModerationAction;
 }

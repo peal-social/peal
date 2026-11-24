@@ -315,7 +315,7 @@ public class DuplicateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/duplicate")
+                    .WithPath("/api/v1/posts/postId/duplicate")
                     .UsingPost()
             )
             .RespondWith(
@@ -326,7 +326,7 @@ public class DuplicateTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.DuplicateAsync(
-            new DuplicatePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new DuplicatePostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -449,7 +449,7 @@ public class DuplicateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/duplicate")
+                    .WithPath("/api/v1/posts/postId/duplicate")
                     .UsingPost()
             )
             .RespondWith(
@@ -460,7 +460,7 @@ public class DuplicateTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.DuplicateAsync(
-            new DuplicatePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new DuplicatePostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

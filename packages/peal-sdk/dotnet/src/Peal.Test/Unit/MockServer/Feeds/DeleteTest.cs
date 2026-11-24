@@ -15,15 +15,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds/feedId")
+                    .WithPath("/api/v1/feeds/feedId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Feeds.DeleteAsync(
-                new DeleteFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" }
-            )
+            await Client.Feeds.DeleteAsync(new DeleteFeedsRequest { FeedId = "feedId" })
         );
     }
 
@@ -34,15 +32,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds/feedId")
+                    .WithPath("/api/v1/feeds/feedId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Feeds.DeleteAsync(
-                new DeleteFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" }
-            )
+            await Client.Feeds.DeleteAsync(new DeleteFeedsRequest { FeedId = "feedId" })
         );
     }
 }

@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record TextProviderChange
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("apiKey")]
     public string? ApiKey { get; set; }
 

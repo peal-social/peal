@@ -13,7 +13,6 @@ public partial class CapabilitiesClient : ICapabilitiesClient
     }
 
     private async Task<WithRawResponse<IEnumerable<PlatformCapabilities>>> PlatformsAsyncCore(
-        PlatformsCapabilitiesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class CapabilitiesClient : ICapabilitiesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/platforms/capabilities",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/platforms/capabilities",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -88,6 +84,18 @@ public partial class CapabilitiesClient : ICapabilitiesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -177,8 +185,7 @@ public partial class CapabilitiesClient : ICapabilitiesClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/capabilities",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/capabilities",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -231,6 +238,18 @@ public partial class CapabilitiesClient : ICapabilitiesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -303,18 +322,15 @@ public partial class CapabilitiesClient : ICapabilitiesClient
     /// Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Capabilities.PlatformsAsync(
-    ///     new PlatformsCapabilitiesRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Capabilities.PlatformsAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<PlatformCapabilities>> PlatformsAsync(
-        PlatformsCapabilitiesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<PlatformCapabilities>>(
-            PlatformsAsyncCore(request, options, cancellationToken)
+            PlatformsAsyncCore(options, cancellationToken)
         );
     }
 
@@ -322,9 +338,7 @@ public partial class CapabilitiesClient : ICapabilitiesClient
     /// Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, `account` says why and the platform's capabilities are answered alone. Needs channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Capabilities.ChannelAsync(
-    ///     new ChannelCapabilitiesRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-    /// );
+    /// await client.Capabilities.ChannelAsync(new ChannelCapabilitiesRequest { ChannelId = "channelId" });
     /// </code></example>
     public WithRawResponseTask<ChannelCapabilities> ChannelAsync(
         ChannelCapabilitiesRequest request,

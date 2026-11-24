@@ -13,24 +13,22 @@ module Peal
       # Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.channels.list(workspace_id: "workspaceId")
+      #   client.channels.list
       #
       # @return [Array[Peal::Types::Channel]]
-      def list(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels",
+          path: "api/v1/channels",
           request_options: request_options
         )
         begin
@@ -65,7 +63,6 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
       # @option params [Peal::Types::Platform, nil] :platform
@@ -73,7 +70,7 @@ module Peal
       # @option params [Peal::Types::ChannelStatusName, nil] :status
       #
       # @example
-      #   client.channels.find(workspace_id: "workspaceId")
+      #   client.channels.find
       #
       # @return [Peal::Types::ChannelPage]
       def find(request_options: {}, **params)
@@ -88,7 +85,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/search",
+          path: "api/v1/channels/search",
           query: query_params,
           request_options: request_options
         )
@@ -116,24 +113,22 @@ module Peal
       # and the websites in `sites`. Needs channel:connect.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.channels.platforms(workspace_id: "workspaceId")
+      #   client.channels.platforms
       #
       # @return [Peal::Types::ConnectablePlatforms]
-      def platforms(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def platforms(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/platforms",
+          path: "api/v1/channels/platforms",
           request_options: request_options
         )
         begin
@@ -172,11 +167,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.channels.connect_site(
-      #     workspace_id: "workspaceId",
       #     address: "address",
       #     application_password: "applicationPassword",
       #     platform: "wordpress",
@@ -186,15 +179,11 @@ module Peal
       # @return [Peal::Types::Channel]
       def connect_site(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Channels::Types::ConnectSite.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/websites",
-          body: body,
+          path: "api/v1/channels/websites",
+          body: Peal::Channels::Types::ConnectSite.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -238,11 +227,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.channels.connect_site_with_key(
-      #     workspace_id: "workspaceId",
       #     api_key: "apiKey",
       #     platform: "devto"
       #   )
@@ -250,15 +237,11 @@ module Peal
       # @return [Peal::Types::Channel]
       def connect_site_with_key(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Channels::Types::ConnectSiteWithKey.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/websites/keys",
-          body: body,
+          path: "api/v1/channels/websites/keys",
+          body: Peal::Channels::Types::ConnectSiteWithKey.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -304,22 +287,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.channels.connect_chat(workspace_id: "workspaceId")
+      #   client.channels.connect_chat
       #
       # @return [Peal::Types::Channel]
       def connect_chat(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/chats",
-          body: Peal::Types::ConnectChat.new(body_params).to_h,
+          path: "api/v1/channels/chats",
+          body: Peal::Types::ConnectChat.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -357,26 +336,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::OAuthSitePlatform] :platform
       #
       # @example
-      #   client.channels.start_site_sign_in(
-      #     workspace_id: "workspaceId",
-      #     platform: "wordpressCom"
-      #   )
+      #   client.channels.start_site_sign_in(platform: "wordpressCom")
       #
       # @return [Peal::Types::Authorization]
       def start_site_sign_in(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Channels::Types::StartSiteSignIn.new(params).to_h
-        non_body_param_names = %w[workspaceId platform]
+        non_body_param_names = %w[platform]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/websites/sign-in/#{URI.encode_uri_component(params[:platform].to_s)}",
+          path: "api/v1/channels/websites/sign-in/#{URI.encode_uri_component(params[:platform].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -412,12 +387,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::OAuthSitePlatform] :platform
       #
       # @example
       #   client.channels.complete_site_sign_in(
-      #     workspace_id: "workspaceId",
       #     platform: "wordpressCom",
       #     state: "state"
       #   )
@@ -426,13 +399,13 @@ module Peal
       def complete_site_sign_in(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Channels::Types::SiteSignInCallback.new(params).to_h
-        non_body_param_names = %w[workspaceId platform]
+        non_body_param_names = %w[platform]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/websites/sign-in/#{URI.encode_uri_component(params[:platform].to_s)}/callback",
+          path: "api/v1/channels/websites/sign-in/#{URI.encode_uri_component(params[:platform].to_s)}/callback",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -471,26 +444,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::Platform] :platform
       #
       # @example
-      #   client.channels.connect(
-      #     workspace_id: "workspaceId",
-      #     platform: "x"
-      #   )
+      #   client.channels.connect(platform: "x")
       #
       # @return [Peal::Types::Authorization]
       def connect(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Channels::Types::ConnectChannel.new(params).to_h
-        non_body_param_names = %w[workspaceId platform]
+        non_body_param_names = %w[platform]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/connect/#{URI.encode_uri_component(params[:platform].to_s)}",
+          path: "api/v1/channels/connect/#{URI.encode_uri_component(params[:platform].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -526,12 +495,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::Platform] :platform
       #
       # @example
       #   client.channels.complete_connect(
-      #     workspace_id: "workspaceId",
       #     platform: "x",
       #     state: "state"
       #   )
@@ -540,13 +507,13 @@ module Peal
       def complete_connect(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Channels::Types::ConnectCallback.new(params).to_h
-        non_body_param_names = %w[workspaceId platform]
+        non_body_param_names = %w[platform]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/connect/#{URI.encode_uri_component(params[:platform].to_s)}/callback",
+          path: "api/v1/channels/connect/#{URI.encode_uri_component(params[:platform].to_s)}/callback",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -582,12 +549,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::Platform] :platform
       #
       # @example
       #   client.channels.choose_accounts(
-      #     workspace_id: "workspaceId",
       #     platform: "x",
       #     account_ids: ["accountIds"],
       #     selection: "selection"
@@ -597,13 +562,13 @@ module Peal
       def choose_accounts(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Channels::Types::ChooseAccounts.new(params).to_h
-        non_body_param_names = %w[workspaceId platform]
+        non_body_param_names = %w[platform]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/connect/#{URI.encode_uri_component(params[:platform].to_s)}/accounts",
+          path: "api/v1/channels/connect/#{URI.encode_uri_component(params[:platform].to_s)}/accounts",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -644,16 +609,12 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       # @option params [Peal::Channels::Types::ReconnectChannelsRequestMessages, nil] :messages
       # @option params [Peal::Channels::Types::ReconnectChannelsRequestReposts, nil] :reposts
       #
       # @example
-      #   client.channels.reconnect(
-      #     workspace_id: "workspaceId",
-      #     channel_id: "channelId"
-      #   )
+      #   client.channels.reconnect(channel_id: "channelId")
       #
       # @return [Peal::Types::Authorization]
       def reconnect(request_options: {}, **params)
@@ -665,7 +626,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/reconnect",
+          path: "api/v1/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/reconnect",
           query: query_params,
           request_options: request_options,
           max_retries: 0
@@ -698,14 +659,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       #
       # @example
-      #   client.channels.disconnect(
-      #     workspace_id: "workspaceId",
-      #     channel_id: "channelId"
-      #   )
+      #   client.channels.disconnect(channel_id: "channelId")
       #
       # @return [untyped]
       def disconnect(request_options: {}, **params)
@@ -713,7 +670,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}",
+          path: "api/v1/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -743,12 +700,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       #
       # @example
       #   client.channels.update(
-      #     workspace_id: "workspaceId",
       #     channel_id: "channelId",
       #     label: nil
       #   )
@@ -757,13 +712,13 @@ module Peal
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Channels::Types::ChannelUpdate.new(params).to_h
-        non_body_param_names = %w[workspaceId channelId]
+        non_body_param_names = %w[channelId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}",
+          path: "api/v1/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -798,14 +753,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       #
       # @example
-      #   client.channels.disable(
-      #     workspace_id: "workspaceId",
-      #     channel_id: "channelId"
-      #   )
+      #   client.channels.disable(channel_id: "channelId")
       #
       # @return [Peal::Types::Channel]
       def disable(request_options: {}, **params)
@@ -813,7 +764,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/disable",
+          path: "api/v1/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/disable",
           request_options: request_options,
           max_retries: 0
         )
@@ -846,14 +797,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       #
       # @example
-      #   client.channels.enable(
-      #     workspace_id: "workspaceId",
-      #     channel_id: "channelId"
-      #   )
+      #   client.channels.enable(channel_id: "channelId")
       #
       # @return [Peal::Types::Channel]
       def enable(request_options: {}, **params)
@@ -861,7 +808,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/enable",
+          path: "api/v1/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/enable",
           request_options: request_options,
           max_retries: 0
         )

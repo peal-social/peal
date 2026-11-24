@@ -36,9 +36,7 @@ public class SendMessageTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/conversations/conversationId/messages"
-                    )
+                    .WithPath("/api/v1/inbox/messages/conversations/conversationId/messages")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -51,12 +49,7 @@ public class SendMessageTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.SendMessageAsync(
-            new NewInboxMessage
-            {
-                WorkspaceId = "workspaceId",
-                ConversationId = "conversationId",
-                Text = "x",
-            }
+            new NewInboxMessage { ConversationId = "conversationId", Text = "x" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -88,9 +81,7 @@ public class SendMessageTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/conversations/conversationId/messages"
-                    )
+                    .WithPath("/api/v1/inbox/messages/conversations/conversationId/messages")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -103,12 +94,7 @@ public class SendMessageTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.SendMessageAsync(
-            new NewInboxMessage
-            {
-                WorkspaceId = "workspaceId",
-                ConversationId = "conversationId",
-                Text = "text",
-            }
+            new NewInboxMessage { ConversationId = "conversationId", Text = "text" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

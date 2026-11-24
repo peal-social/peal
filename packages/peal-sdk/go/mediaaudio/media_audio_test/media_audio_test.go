@@ -89,8 +89,7 @@ func TestMediaAudioCreateVoiceoverWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.VoiceoverRequest{
-		WorkspaceID: "workspaceId",
-		Text:        "text",
+		Text: "text",
 	}
 	_, invocationErr := client.MediaAudio.CreateVoiceover(
 		context.TODO(),
@@ -101,7 +100,7 @@ func TestMediaAudioCreateVoiceoverWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaAudioCreateVoiceoverWithWireMock", "POST", "/api/workspaces/workspaceId/media/voiceovers", nil, 1)
+	VerifyRequestCount(t, "TestMediaAudioCreateVoiceoverWithWireMock", "POST", "/api/v1/media/voiceovers", nil, 1)
 }
 
 func TestMediaAudioTranscribeWithWireMock(
@@ -116,8 +115,7 @@ func TestMediaAudioTranscribeWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.TranscriptionRequest{
-		WorkspaceID: "workspaceId",
-		MediaID:     "mediaId",
+		MediaID: "mediaId",
 	}
 	_, invocationErr := client.MediaAudio.Transcribe(
 		context.TODO(),
@@ -128,5 +126,5 @@ func TestMediaAudioTranscribeWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaAudioTranscribeWithWireMock", "POST", "/api/workspaces/workspaceId/media/mediaId/transcription", nil, 1)
+	VerifyRequestCount(t, "TestMediaAudioTranscribeWithWireMock", "POST", "/api/v1/media/mediaId/transcription", nil, 1)
 }

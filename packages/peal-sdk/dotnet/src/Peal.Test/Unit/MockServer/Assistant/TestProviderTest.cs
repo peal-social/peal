@@ -19,7 +19,7 @@ public class TestProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/providers/anthropic/test")
+                    .WithPath("/api/v1/assistant/providers/anthropic/test")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -28,12 +28,7 @@ public class TestProviderTest : BaseMockServerTest
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Assistant.TestProviderAsync(
-                new AiProviderTest
-                {
-                    WorkspaceId = "workspaceId",
-                    Provider = AiProvider.Anthropic,
-                    Model = null,
-                }
+                new AiProviderTest { Provider = AiProvider.Anthropic, Model = null }
             )
         );
     }
@@ -49,7 +44,7 @@ public class TestProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/providers/anthropic/test")
+                    .WithPath("/api/v1/assistant/providers/anthropic/test")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -58,7 +53,7 @@ public class TestProviderTest : BaseMockServerTest
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Assistant.TestProviderAsync(
-                new AiProviderTest { WorkspaceId = "workspaceId", Provider = AiProvider.Anthropic }
+                new AiProviderTest { Provider = AiProvider.Anthropic }
             )
         );
     }

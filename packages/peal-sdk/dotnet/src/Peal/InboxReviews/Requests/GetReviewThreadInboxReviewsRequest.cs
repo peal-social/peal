@@ -7,9 +7,6 @@ namespace Peal;
 public record GetReviewThreadInboxReviewsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ThreadId { get; set; }
 
     /// <inheritdoc />

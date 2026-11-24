@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.PlatformsCapabilitiesRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Capabilities.Platforms(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Platforms(
 	ctx context.Context,
-	request *peal.PlatformsCapabilitiesRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.PlatformCapabilities, error) {
 	response, err := c.WithRawResponse.Platforms(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -66,7 +60,6 @@ func (c *Client) Platforms(
 // Example:
 //
 //	request := &peal.ChannelCapabilitiesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.Capabilities.Channel(

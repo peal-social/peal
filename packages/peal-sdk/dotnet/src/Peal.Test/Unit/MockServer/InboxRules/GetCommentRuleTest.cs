@@ -71,7 +71,7 @@ public class GetCommentRuleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules/ruleId")
+                    .WithPath("/api/v1/inbox/rules/ruleId")
                     .UsingGet()
             )
             .RespondWith(
@@ -82,7 +82,7 @@ public class GetCommentRuleTest : BaseMockServerTest
             );
 
         var response = await Client.InboxRules.GetCommentRuleAsync(
-            new GetCommentRuleInboxRulesRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new GetCommentRuleInboxRulesRequest { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -132,7 +132,7 @@ public class GetCommentRuleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules/ruleId")
+                    .WithPath("/api/v1/inbox/rules/ruleId")
                     .UsingGet()
             )
             .RespondWith(
@@ -143,7 +143,7 @@ public class GetCommentRuleTest : BaseMockServerTest
             );
 
         var response = await Client.InboxRules.GetCommentRuleAsync(
-            new GetCommentRuleInboxRulesRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new GetCommentRuleInboxRulesRequest { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -10,13 +10,11 @@ import (
 )
 
 var (
-	channelCapabilitiesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	channelCapabilitiesRequestFieldChannelID   = big.NewInt(1 << 1)
+	channelCapabilitiesRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type ChannelCapabilitiesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,45 +29,11 @@ func (c *ChannelCapabilitiesRequest) require(field *big.Int) {
 	c.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ChannelCapabilitiesRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(channelCapabilitiesRequestFieldWorkspaceID)
-}
-
 // SetChannelID sets the ChannelID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (c *ChannelCapabilitiesRequest) SetChannelID(channelID string) {
 	c.ChannelID = channelID
 	c.require(channelCapabilitiesRequestFieldChannelID)
-}
-
-var (
-	platformsCapabilitiesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type PlatformsCapabilitiesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (p *PlatformsCapabilitiesRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PlatformsCapabilitiesRequest) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(platformsCapabilitiesRequestFieldWorkspaceID)
 }
 
 type AccountRestriction struct {

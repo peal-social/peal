@@ -13,7 +13,6 @@ public partial class AssistantClient : IAssistantClient
     }
 
     private async Task<WithRawResponse<AssistantStatus>> StatusAsyncCore(
-        StatusAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -174,10 +182,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/suggestions",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/suggestions",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -231,6 +236,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -367,10 +384,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/images",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/images",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -424,6 +438,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -541,7 +567,6 @@ public partial class AssistantClient : IAssistantClient
     }
 
     private async Task<WithRawResponse<ImageProviderSetting>> ImageProviderAsyncCore(
-        ImageProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -560,10 +585,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/image-provider",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/image-provider",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -614,6 +636,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -702,10 +736,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Put,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/image-provider",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/image-provider",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -758,6 +789,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -851,7 +894,6 @@ public partial class AssistantClient : IAssistantClient
     }
 
     private async Task<RawResponse> RemoveImageProviderAsyncCore(
-        RemoveImageProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -870,10 +912,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Delete,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/image-provider",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/image-provider",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -898,6 +937,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -967,7 +1018,6 @@ public partial class AssistantClient : IAssistantClient
     }
 
     private async Task<WithRawResponse<TextProviderSetting>> TextProviderAsyncCore(
-        TextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -986,10 +1036,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/text-provider",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/text-provider",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -1040,6 +1087,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1128,10 +1187,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Put,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/text-provider",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/text-provider",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -1184,6 +1240,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1277,7 +1345,6 @@ public partial class AssistantClient : IAssistantClient
     }
 
     private async Task<RawResponse> RemoveTextProviderAsyncCore(
-        RemoveTextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1296,10 +1363,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Delete,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/text-provider",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/text-provider",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -1324,6 +1388,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1393,7 +1469,6 @@ public partial class AssistantClient : IAssistantClient
     }
 
     private async Task<RawResponse> TestTextProviderAsyncCore(
-        TestTextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1412,10 +1487,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/text-provider/test",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/text-provider/test",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -1441,6 +1513,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1522,7 +1606,6 @@ public partial class AssistantClient : IAssistantClient
     }
 
     private async Task<WithRawResponse<AiProviderConnections>> ProvidersAsyncCore(
-        ProvidersAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1541,10 +1624,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/providers",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/providers",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -1595,6 +1675,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1684,8 +1776,7 @@ public partial class AssistantClient : IAssistantClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/assistant/providers/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/assistant/providers/{0}",
                         ValueConvert.ToPathParameterString(request.Provider)
                     ),
                     Body = request,
@@ -1740,6 +1831,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1853,8 +1956,7 @@ public partial class AssistantClient : IAssistantClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/assistant/providers/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/assistant/providers/{0}",
                         ValueConvert.ToPathParameterString(request.Provider)
                     ),
                     QueryString = _queryString,
@@ -1881,6 +1983,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1970,8 +2084,7 @@ public partial class AssistantClient : IAssistantClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/assistant/providers/{1}/test",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/assistant/providers/{0}/test",
                         ValueConvert.ToPathParameterString(request.Provider)
                     ),
                     Body = request,
@@ -2001,6 +2114,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2094,7 +2219,6 @@ public partial class AssistantClient : IAssistantClient
     }
 
     private async Task<WithRawResponse<AiCapabilityModels>> ModelsAsyncCore(
-        ModelsAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -2113,10 +2237,7 @@ public partial class AssistantClient : IAssistantClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/assistant/models",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/assistant/models",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -2167,6 +2288,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2256,8 +2389,7 @@ public partial class AssistantClient : IAssistantClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/assistant/models/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/assistant/models/{0}",
                         ValueConvert.ToPathParameterString(request.Capability)
                     ),
                     Body = request,
@@ -2312,6 +2444,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2413,8 +2557,7 @@ public partial class AssistantClient : IAssistantClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/assistant/models/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/assistant/models/{0}",
                         ValueConvert.ToPathParameterString(request.Capability)
                     ),
                     QueryString = _queryString,
@@ -2441,6 +2584,18 @@ public partial class AssistantClient : IAssistantClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2513,16 +2668,15 @@ public partial class AssistantClient : IAssistantClient
     /// Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (`source`: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (`images.source`: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, `month` and `images.month` tell the billing account's month of the server's models (included, used, price and ceiling), and `reason` `paymentMethod` why they are off without a payment method. Needs assistant:use.
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.StatusAsync(new StatusAssistantRequest { WorkspaceId = "workspaceId" });
+    /// await client.Assistant.StatusAsync();
     /// </code></example>
     public WithRawResponseTask<AssistantStatus> StatusAsync(
-        StatusAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<AssistantStatus>(
-            StatusAsyncCore(request, options, cancellationToken)
+            StatusAsyncCore(options, cancellationToken)
         );
     }
 
@@ -2533,7 +2687,6 @@ public partial class AssistantClient : IAssistantClient
     /// await client.Assistant.SuggestAsync(
     ///     new SuggestionRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Action = new AssistantAction(
     ///             new AssistantAction.Rewrite(
     ///                 new AssistantActionRewrite { Tone = AssistantTone.Professional }
@@ -2559,12 +2712,7 @@ public partial class AssistantClient : IAssistantClient
     /// </summary>
     /// <example><code>
     /// await client.Assistant.GenerateImageAsync(
-    ///     new ImageRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Aspect = ImageAspect.Square,
-    ///         Prompt = "prompt",
-    ///     }
+    ///     new ImageRequest { Aspect = ImageAspect.Square, Prompt = "prompt" }
     /// );
     /// </code></example>
     public WithRawResponseTask<Media> GenerateImageAsync(
@@ -2582,18 +2730,15 @@ public partial class AssistantClient : IAssistantClient
     /// Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.ImageProviderAsync(
-    ///     new ImageProviderAssistantRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Assistant.ImageProviderAsync();
     /// </code></example>
     public WithRawResponseTask<ImageProviderSetting> ImageProviderAsync(
-        ImageProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<ImageProviderSetting>(
-            ImageProviderAsyncCore(request, options, cancellationToken)
+            ImageProviderAsyncCore(options, cancellationToken)
         );
     }
 
@@ -2601,9 +2746,7 @@ public partial class AssistantClient : IAssistantClient
     /// Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to `baseUrl` (the provider's own address when left out) with `apiKey`, through the API `provider` names (`openai-compatible` when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.SetImageProviderAsync(
-    ///     new ImageProviderChange { WorkspaceId = "workspaceId", Model = "model" }
-    /// );
+    /// await client.Assistant.SetImageProviderAsync(new ImageProviderChange { Model = "model" });
     /// </code></example>
     public WithRawResponseTask<ImageProvider> SetImageProviderAsync(
         ImageProviderChange request,
@@ -2620,37 +2763,29 @@ public partial class AssistantClient : IAssistantClient
     /// Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.RemoveImageProviderAsync(
-    ///     new RemoveImageProviderAssistantRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Assistant.RemoveImageProviderAsync();
     /// </code></example>
     public WithRawResponseTask RemoveImageProviderAsync(
-        RemoveImageProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask(
-            RemoveImageProviderAsyncCore(request, options, cancellationToken)
-        );
+        return new WithRawResponseTask(RemoveImageProviderAsyncCore(options, cancellationToken));
     }
 
     /// <summary>
     /// Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.TextProviderAsync(
-    ///     new TextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Assistant.TextProviderAsync();
     /// </code></example>
     public WithRawResponseTask<TextProviderSetting> TextProviderAsync(
-        TextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<TextProviderSetting>(
-            TextProviderAsyncCore(request, options, cancellationToken)
+            TextProviderAsyncCore(options, cancellationToken)
         );
     }
 
@@ -2658,9 +2793,7 @@ public partial class AssistantClient : IAssistantClient
     /// Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to `baseUrl` with `apiKey`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with `POST .../text-provider/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.SetTextProviderAsync(
-    ///     new TextProviderChange { WorkspaceId = "workspaceId", Model = "model" }
-    /// );
+    /// await client.Assistant.SetTextProviderAsync(new TextProviderChange { Model = "model" });
     /// </code></example>
     public WithRawResponseTask<TextProvider> SetTextProviderAsync(
         TextProviderChange request,
@@ -2677,56 +2810,43 @@ public partial class AssistantClient : IAssistantClient
     /// Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.RemoveTextProviderAsync(
-    ///     new RemoveTextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Assistant.RemoveTextProviderAsync();
     /// </code></example>
     public WithRawResponseTask RemoveTextProviderAsync(
-        RemoveTextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask(
-            RemoveTextProviderAsyncCore(request, options, cancellationToken)
-        );
+        return new WithRawResponseTask(RemoveTextProviderAsyncCore(options, cancellationToken));
     }
 
     /// <summary>
     /// Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.TestTextProviderAsync(
-    ///     new TestTextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Assistant.TestTextProviderAsync();
     /// </code></example>
     public WithRawResponseTask TestTextProviderAsync(
-        TestTextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask(
-            TestTextProviderAsyncCore(request, options, cancellationToken)
-        );
+        return new WithRawResponseTask(TestTextProviderAsyncCore(options, cancellationToken));
     }
 
     /// <summary>
     /// Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.ProvidersAsync(
-    ///     new ProvidersAssistantRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Assistant.ProvidersAsync();
     /// </code></example>
     public WithRawResponseTask<AiProviderConnections> ProvidersAsync(
-        ProvidersAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<AiProviderConnections>(
-            ProvidersAsyncCore(request, options, cancellationToken)
+            ProvidersAsyncCore(options, cancellationToken)
         );
     }
 
@@ -2735,7 +2855,7 @@ public partial class AssistantClient : IAssistantClient
     /// </summary>
     /// <example><code>
     /// await client.Assistant.ConnectProviderAsync(
-    ///     new AiProviderConnectionChange { WorkspaceId = "workspaceId", Provider = AiProvider.Anthropic }
+    ///     new AiProviderConnectionChange { Provider = AiProvider.Anthropic }
     /// );
     /// </code></example>
     public WithRawResponseTask<AiProviderConnection> ConnectProviderAsync(
@@ -2754,11 +2874,7 @@ public partial class AssistantClient : IAssistantClient
     /// </summary>
     /// <example><code>
     /// await client.Assistant.DisconnectProviderAsync(
-    ///     new DisconnectProviderAssistantRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Provider = AiProvider.Anthropic,
-    ///     }
+    ///     new DisconnectProviderAssistantRequest { Provider = AiProvider.Anthropic }
     /// );
     /// </code></example>
     public WithRawResponseTask DisconnectProviderAsync(
@@ -2776,9 +2892,7 @@ public partial class AssistantClient : IAssistantClient
     /// Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with `model` (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.TestProviderAsync(
-    ///     new AiProviderTest { WorkspaceId = "workspaceId", Provider = AiProvider.Anthropic }
-    /// );
+    /// await client.Assistant.TestProviderAsync(new AiProviderTest { Provider = AiProvider.Anthropic });
     /// </code></example>
     public WithRawResponseTask TestProviderAsync(
         AiProviderTest request,
@@ -2793,16 +2907,15 @@ public partial class AssistantClient : IAssistantClient
     /// Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
     /// </summary>
     /// <example><code>
-    /// await client.Assistant.ModelsAsync(new ModelsAssistantRequest { WorkspaceId = "workspaceId" });
+    /// await client.Assistant.ModelsAsync();
     /// </code></example>
     public WithRawResponseTask<AiCapabilityModels> ModelsAsync(
-        ModelsAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<AiCapabilityModels>(
-            ModelsAsyncCore(request, options, cancellationToken)
+            ModelsAsyncCore(options, cancellationToken)
         );
     }
 
@@ -2811,12 +2924,7 @@ public partial class AssistantClient : IAssistantClient
     /// </summary>
     /// <example><code>
     /// await client.Assistant.SetModelAsync(
-    ///     new AiCapabilityModelChange
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Capability = AiCapability.Text,
-    ///         Provider = AiProvider.Anthropic,
-    ///     }
+    ///     new AiCapabilityModelChange { Capability = AiCapability.Text, Provider = AiProvider.Anthropic }
     /// );
     /// </code></example>
     public WithRawResponseTask<AiCapabilityModel> SetModelAsync(
@@ -2835,7 +2943,7 @@ public partial class AssistantClient : IAssistantClient
     /// </summary>
     /// <example><code>
     /// await client.Assistant.UnsetModelAsync(
-    ///     new UnsetModelAssistantRequest { WorkspaceId = "workspaceId", Capability = AiCapability.Text }
+    ///     new UnsetModelAssistantRequest { Capability = AiCapability.Text }
     /// );
     /// </code></example>
     public WithRawResponseTask UnsetModelAsync(

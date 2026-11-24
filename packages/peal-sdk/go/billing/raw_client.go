@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) Get(
 	ctx context.Context,
-	request *peal.GetBillingRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.Billing], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) Get(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/billing",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/billing"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -79,7 +75,6 @@ func (r *RawClient) Get(
 
 func (r *RawClient) Standing(
 	ctx context.Context,
-	request *peal.StandingBillingRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.Standing], error) {
 	options := core.NewRequestOptions(opts...)
@@ -88,10 +83,7 @@ func (r *RawClient) Standing(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/billing/standing",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/billing/standing"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),

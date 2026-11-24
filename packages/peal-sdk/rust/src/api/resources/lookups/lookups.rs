@@ -35,15 +35,11 @@ impl LookupsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .lookups
-    ///         .list(&"workspaceId".to_string(), &"channelId".to_string(), None)
-    ///         .await;
+    ///     client.lookups.list(&"channelId".to_string(), None).await;
     /// }
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<LookupDescription>, ApiError> {
@@ -57,10 +53,7 @@ impl LookupsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/channels/{}/lookups",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/lookups", channel_id),
                 None,
                 None,
                 options,
@@ -93,7 +86,6 @@ impl LookupsClient {
     ///     client
     ///         .lookups
     ///         .run(
-    ///             &"workspaceId".to_string(),
     ///             &"channelId".to_string(),
     ///             &"name".to_string(),
     ///             &LookupInput {
@@ -106,7 +98,6 @@ impl LookupsClient {
     /// ```
     pub async fn run(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         name: &str,
         request: &LookupInput,
@@ -123,10 +114,7 @@ impl LookupsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/{}/lookups/{}",
-                    workspace_id, channel_id, name
-                ),
+                &format!("api/v1/channels/{}/lookups/{}", channel_id, name),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

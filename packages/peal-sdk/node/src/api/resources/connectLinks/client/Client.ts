@@ -28,9 +28,9 @@ export class ConnectLinksClient {
     /**
      * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
      *
-     * @param {Peal.ListConnectLinksRequest} request
      * @param {ConnectLinksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class ConnectLinksClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.connectLinks.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.connectLinks.list()
      */
-    public list(request: Peal.ListConnectLinksRequest, requestOptions?: ConnectLinksClient.RequestOptions): core.HttpResponsePromise<Peal.ConnectLink[]> {
-        return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
+    public list(requestOptions?: ConnectLinksClient.RequestOptions): core.HttpResponsePromise<Peal.ConnectLink[]> {
+        return core.HttpResponsePromise.fromPromise(this.__list(requestOptions));
     }
 
-    private async __list(request: Peal.ListConnectLinksRequest, requestOptions?: ConnectLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ConnectLink[]>> {
-        const { workspaceId } = request;
+    private async __list(requestOptions?: ConnectLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ConnectLink[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/connect-links`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/connect-links"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class ConnectLinksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,7 +78,7 @@ export class ConnectLinksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/connect-links");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/connect-links");
     }
 
     /**
@@ -89,6 +87,7 @@ export class ConnectLinksClient {
      * @param {Peal.NewConnectLink} request
      * @param {ConnectLinksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -98,26 +97,23 @@ export class ConnectLinksClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.connectLinks.create({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.connectLinks.create()
      */
-    public create(request: Peal.NewConnectLink, requestOptions?: ConnectLinksClient.RequestOptions): core.HttpResponsePromise<Peal.CreatedConnectLink> {
+    public create(request: Peal.NewConnectLink = {}, requestOptions?: ConnectLinksClient.RequestOptions): core.HttpResponsePromise<Peal.CreatedConnectLink> {
         return core.HttpResponsePromise.fromPromise(this.__create(request, requestOptions));
     }
 
-    private async __create(request: Peal.NewConnectLink, requestOptions?: ConnectLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.CreatedConnectLink>> {
-        const { workspaceId, ..._body } = request;
+    private async __create(request: Peal.NewConnectLink = {}, requestOptions?: ConnectLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.CreatedConnectLink>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/connect-links`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/connect-links"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -130,6 +126,7 @@ export class ConnectLinksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -143,7 +140,7 @@ export class ConnectLinksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/connect-links");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/connect-links");
     }
 
     /**
@@ -152,6 +149,7 @@ export class ConnectLinksClient {
      * @param {Peal.GetConnectLinksRequest} request
      * @param {ConnectLinksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -161,7 +159,6 @@ export class ConnectLinksClient {
      *
      * @example
      *     await client.connectLinks.get({
-     *         workspaceId: "workspaceId",
      *         linkId: "linkId"
      *     })
      */
@@ -170,11 +167,11 @@ export class ConnectLinksClient {
     }
 
     private async __get(request: Peal.GetConnectLinksRequest, requestOptions?: ConnectLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ConnectLink>> {
-        const { workspaceId, linkId } = request;
+        const { linkId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/connect-links/${core.url.encodePathParam(linkId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/connect-links/${core.url.encodePathParam(linkId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -190,6 +187,7 @@ export class ConnectLinksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -202,7 +200,7 @@ export class ConnectLinksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/connect-links/{linkId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/connect-links/{linkId}");
     }
 
     /**
@@ -211,6 +209,7 @@ export class ConnectLinksClient {
      * @param {Peal.RevokeConnectLinksRequest} request
      * @param {ConnectLinksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -220,7 +219,6 @@ export class ConnectLinksClient {
      *
      * @example
      *     await client.connectLinks.revoke({
-     *         workspaceId: "workspaceId",
      *         linkId: "linkId"
      *     })
      */
@@ -229,11 +227,11 @@ export class ConnectLinksClient {
     }
 
     private async __revoke(request: Peal.RevokeConnectLinksRequest, requestOptions?: ConnectLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ConnectLink>> {
-        const { workspaceId, linkId } = request;
+        const { linkId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/connect-links/${core.url.encodePathParam(linkId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/connect-links/${core.url.encodePathParam(linkId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -249,6 +247,7 @@ export class ConnectLinksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -261,6 +260,6 @@ export class ConnectLinksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/connect-links/{linkId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/connect-links/{linkId}");
     }
 }

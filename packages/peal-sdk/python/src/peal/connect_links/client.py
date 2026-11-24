@@ -30,16 +30,12 @@ class ConnectLinksClient:
         """
         return self._raw_client
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ConnectLink]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[ConnectLink]:
         """
         Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -53,18 +49,16 @@ class ConnectLinksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.connect_links.list(
-            workspace_id="workspaceId",
-        )
+        client.connect_links.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = OMIT,
         connection: typing.Optional[ChannelConnection] = OMIT,
@@ -80,8 +74,6 @@ class ConnectLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         connection : typing.Optional[ChannelConnection]
@@ -109,14 +101,12 @@ class ConnectLinksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.connect_links.create(
-            workspace_id="workspaceId",
-        )
+        client.connect_links.create()
         """
         _response = self._raw_client.create(
-            workspace_id,
             channel_id=channel_id,
             connection=connection,
             expires_in_hours=expires_in_hours,
@@ -128,16 +118,12 @@ class ConnectLinksClient:
         )
         return _response.data
 
-    def get(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ConnectLink:
+    def get(self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ConnectLink:
         """
         One connect link of the workspace: where it stands, the channels it connected once `completed`, and how its last sign-in failed. Read it when a browser comes back to your return address, or on `channel.connected`. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -153,26 +139,22 @@ class ConnectLinksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.connect_links.get(
-            workspace_id="workspaceId",
             link_id="linkId",
         )
         """
-        _response = self._raw_client.get(workspace_id, link_id, request_options=request_options)
+        _response = self._raw_client.get(link_id, request_options=request_options)
         return _response.data
 
-    def revoke(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ConnectLink:
+    def revoke(self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ConnectLink:
         """
         Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -188,14 +170,14 @@ class ConnectLinksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.connect_links.revoke(
-            workspace_id="workspaceId",
             link_id="linkId",
         )
         """
-        _response = self._raw_client.revoke(workspace_id, link_id, request_options=request_options)
+        _response = self._raw_client.revoke(link_id, request_options=request_options)
         return _response.data
 
 
@@ -214,16 +196,12 @@ class AsyncConnectLinksClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ConnectLink]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[ConnectLink]:
         """
         Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -239,24 +217,22 @@ class AsyncConnectLinksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.connect_links.list(
-                workspace_id="workspaceId",
-            )
+            await client.connect_links.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = OMIT,
         connection: typing.Optional[ChannelConnection] = OMIT,
@@ -272,8 +248,6 @@ class AsyncConnectLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         connection : typing.Optional[ChannelConnection]
@@ -303,20 +277,18 @@ class AsyncConnectLinksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.connect_links.create(
-                workspace_id="workspaceId",
-            )
+            await client.connect_links.create()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             channel_id=channel_id,
             connection=connection,
             expires_in_hours=expires_in_hours,
@@ -328,16 +300,12 @@ class AsyncConnectLinksClient:
         )
         return _response.data
 
-    async def get(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ConnectLink:
+    async def get(self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ConnectLink:
         """
         One connect link of the workspace: where it stands, the channels it connected once `completed`, and how its last sign-in failed. Read it when a browser comes back to your return address, or on `channel.connected`. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -355,32 +323,28 @@ class AsyncConnectLinksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.connect_links.get(
-                workspace_id="workspaceId",
                 link_id="linkId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, link_id, request_options=request_options)
+        _response = await self._raw_client.get(link_id, request_options=request_options)
         return _response.data
 
-    async def revoke(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ConnectLink:
+    async def revoke(self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ConnectLink:
         """
         Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -398,18 +362,18 @@ class AsyncConnectLinksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.connect_links.revoke(
-                workspace_id="workspaceId",
                 link_id="linkId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.revoke(workspace_id, link_id, request_options=request_options)
+        _response = await self._raw_client.revoke(link_id, request_options=request_options)
         return _response.data

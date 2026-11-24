@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         queueId: "queueId",
  *         body: {
  *             name: "name",
@@ -18,7 +17,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface UpdateQueuesRequest {
-    workspaceId: string;
     queueId: string;
     body: Peal.QueueDetails;
 }

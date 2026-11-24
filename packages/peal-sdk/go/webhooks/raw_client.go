@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListWebhooksRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.WebhookEndpoint], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/webhooks"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -88,10 +84,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/webhooks"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -135,10 +128,7 @@ func (r *RawClient) SearchDeliveries(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/deliveries",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/webhooks/deliveries"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -178,7 +168,7 @@ func (r *RawClient) SearchDeliveries(
 
 func (r *RawClient) RedeliverMany(
 	ctx context.Context,
-	request *peal.RedeliverManyWebhooksRequest,
+	request *peal.WebhookRedeliveryRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.WebhookBulkRedelivery], error) {
 	options := core.NewRequestOptions(opts...)
@@ -187,15 +177,11 @@ func (r *RawClient) RedeliverMany(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/deliveries/redeliver",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/webhooks/deliveries/redeliver"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.WebhookBulkRedelivery
 	raw, err := r.caller.Call(
 		ctx,
@@ -235,8 +221,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/webhooks/%v",
 		request.EndpointID,
 	)
 	headers := internal.MergeHeaders(
@@ -281,8 +266,7 @@ func (r *RawClient) Delete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/webhooks/%v",
 		request.EndpointID,
 	)
 	headers := internal.MergeHeaders(
@@ -325,8 +309,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/webhooks/%v",
 		request.EndpointID,
 	)
 	headers := internal.MergeHeaders(
@@ -373,8 +356,7 @@ func (r *RawClient) RotateSecret(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/%v/secret",
-		request.WorkspaceID,
+		baseURL+"/api/v1/webhooks/%v/secret",
 		request.EndpointID,
 	)
 	headers := internal.MergeHeaders(
@@ -419,8 +401,7 @@ func (r *RawClient) SendTest(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/%v/test",
-		request.WorkspaceID,
+		baseURL+"/api/v1/webhooks/%v/test",
 		request.EndpointID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -472,8 +453,7 @@ func (r *RawClient) ListDeliveries(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/%v/deliveries",
-		request.WorkspaceID,
+		baseURL+"/api/v1/webhooks/%v/deliveries",
 		request.EndpointID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -525,8 +505,7 @@ func (r *RawClient) Redeliver(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/webhooks/%v/deliveries/%v/redeliver",
-		request.WorkspaceID,
+		baseURL+"/api/v1/webhooks/%v/deliveries/%v/redeliver",
 		request.EndpointID,
 		request.DeliveryID,
 	)

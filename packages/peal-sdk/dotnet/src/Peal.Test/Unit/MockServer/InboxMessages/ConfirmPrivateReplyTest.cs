@@ -36,9 +36,7 @@ public class ConfirmPrivateReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/private-replies/privateReplyId/confirm"
-                    )
+                    .WithPath("/api/v1/inbox/messages/private-replies/privateReplyId/confirm")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -53,7 +51,6 @@ public class ConfirmPrivateReplyTest : BaseMockServerTest
         var response = await Client.InboxMessages.ConfirmPrivateReplyAsync(
             new ConfirmPrivateReplyInboxMessagesRequest
             {
-                WorkspaceId = "workspaceId",
                 PrivateReplyId = "privateReplyId",
                 Went = true,
             }
@@ -88,9 +85,7 @@ public class ConfirmPrivateReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/private-replies/privateReplyId/confirm"
-                    )
+                    .WithPath("/api/v1/inbox/messages/private-replies/privateReplyId/confirm")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -105,7 +100,6 @@ public class ConfirmPrivateReplyTest : BaseMockServerTest
         var response = await Client.InboxMessages.ConfirmPrivateReplyAsync(
             new ConfirmPrivateReplyInboxMessagesRequest
             {
-                WorkspaceId = "workspaceId",
                 PrivateReplyId = "privateReplyId",
                 Went = true,
             }

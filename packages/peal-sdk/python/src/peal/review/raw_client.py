@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -40,16 +41,12 @@ class RawReviewClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def settings(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[ReviewSettings]:
+    def settings(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[ReviewSettings]:
         """
         Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -59,7 +56,7 @@ class RawReviewClient:
             ReviewSettings
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/review/settings",
+            "api/v1/review/settings",
             method="GET",
             request_options=request_options,
         )
@@ -73,6 +70,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -127,19 +135,13 @@ class RawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_settings(
-        self,
-        workspace_id: str,
-        *,
-        approval_policy: ApprovalPolicy,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, approval_policy: ApprovalPolicy, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ReviewSettings]:
         """
         Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         approval_policy : ApprovalPolicy
 
         request_options : typing.Optional[RequestOptions]
@@ -151,13 +153,10 @@ class RawReviewClient:
             ReviewSettings
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/review/settings",
+            "api/v1/review/settings",
             method="PUT",
             json={
                 "approvalPolicy": approval_policy,
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -172,6 +171,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -226,15 +236,13 @@ class RawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def pending(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[ApprovalRequest]]:
         """
         Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -244,7 +252,7 @@ class RawReviewClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/approvals",
+            "api/v1/approvals",
             method="GET",
             request_options=request_options,
         )
@@ -258,6 +266,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -312,15 +331,13 @@ class RawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def thread(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[PostReview]:
         """
         Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -332,7 +349,7 @@ class RawReviewClient:
             PostReview
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/review",
+            f"api/v1/posts/{encode_path_param(post_id)}/review",
             method="GET",
             request_options=request_options,
         )
@@ -346,6 +363,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -401,7 +429,6 @@ class RawReviewClient:
 
     def comment(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         text: str,
@@ -414,8 +441,6 @@ class RawReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         text : str
@@ -436,7 +461,7 @@ class RawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/comments",
+            f"api/v1/posts/{encode_path_param(post_id)}/comments",
             method="POST",
             json={
                 "anchor": convert_and_respect_annotation_metadata(
@@ -461,6 +486,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -526,21 +562,13 @@ class RawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def resolve(
-        self,
-        workspace_id: str,
-        post_id: str,
-        comment_id: str,
-        *,
-        resolved: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, comment_id: str, *, resolved: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ReviewComment]:
         """
         Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, `parent`). Needs post:create or post:approve, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         comment_id : str
@@ -559,7 +587,7 @@ class RawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/comments/{encode_path_param(comment_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}/comments/{encode_path_param(comment_id)}",
             method="PATCH",
             json={
                 "resolved": resolved,
@@ -580,6 +608,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -646,7 +685,6 @@ class RawReviewClient:
 
     def approve(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         approval_id: str,
@@ -658,8 +696,6 @@ class RawReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         approval_id : str
@@ -678,7 +714,7 @@ class RawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/approve",
+            f"api/v1/posts/{encode_path_param(post_id)}/approve",
             method="POST",
             json={
                 "approvalId": approval_id,
@@ -700,6 +736,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -777,7 +824,6 @@ class RawReviewClient:
 
     def request_changes(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         approval_id: str,
@@ -790,8 +836,6 @@ class RawReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         approval_id : str
@@ -812,7 +856,7 @@ class RawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/request-changes",
+            f"api/v1/posts/{encode_path_param(post_id)}/request-changes",
             method="POST",
             json={
                 "approvalId": approval_id,
@@ -835,6 +879,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -911,15 +966,13 @@ class RawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def links(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[ReviewLink]]:
         """
         Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -931,7 +984,7 @@ class RawReviewClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/review-links",
+            f"api/v1/posts/{encode_path_param(post_id)}/review-links",
             method="GET",
             request_options=request_options,
         )
@@ -945,6 +998,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1000,7 +1064,6 @@ class RawReviewClient:
 
     def create_link(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         access: ReviewLinkAccess,
@@ -1012,8 +1075,6 @@ class RawReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         access : ReviewLinkAccess
@@ -1032,7 +1093,7 @@ class RawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/review-links",
+            f"api/v1/posts/{encode_path_param(post_id)}/review-links",
             method="POST",
             json={
                 "access": access,
@@ -1054,6 +1115,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1119,15 +1191,13 @@ class RawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def revoke_link(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ReviewLink]:
         """
         Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1139,7 +1209,7 @@ class RawReviewClient:
             ReviewLink
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/review-links/{encode_path_param(link_id)}",
+            f"api/v1/review-links/{encode_path_param(link_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1153,6 +1223,17 @@ class RawReviewClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1212,15 +1293,13 @@ class AsyncRawReviewClient:
         self._client_wrapper = client_wrapper
 
     async def settings(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ReviewSettings]:
         """
         Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1230,7 +1309,7 @@ class AsyncRawReviewClient:
             ReviewSettings
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/review/settings",
+            "api/v1/review/settings",
             method="GET",
             request_options=request_options,
         )
@@ -1244,6 +1323,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1298,19 +1388,13 @@ class AsyncRawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_settings(
-        self,
-        workspace_id: str,
-        *,
-        approval_policy: ApprovalPolicy,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, approval_policy: ApprovalPolicy, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ReviewSettings]:
         """
         Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         approval_policy : ApprovalPolicy
 
         request_options : typing.Optional[RequestOptions]
@@ -1322,13 +1406,10 @@ class AsyncRawReviewClient:
             ReviewSettings
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/review/settings",
+            "api/v1/review/settings",
             method="PUT",
             json={
                 "approvalPolicy": approval_policy,
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -1343,6 +1424,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1397,15 +1489,13 @@ class AsyncRawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def pending(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[ApprovalRequest]]:
         """
         Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1415,7 +1505,7 @@ class AsyncRawReviewClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/approvals",
+            "api/v1/approvals",
             method="GET",
             request_options=request_options,
         )
@@ -1429,6 +1519,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1483,15 +1584,13 @@ class AsyncRawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def thread(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[PostReview]:
         """
         Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1503,7 +1602,7 @@ class AsyncRawReviewClient:
             PostReview
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/review",
+            f"api/v1/posts/{encode_path_param(post_id)}/review",
             method="GET",
             request_options=request_options,
         )
@@ -1517,6 +1616,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1572,7 +1682,6 @@ class AsyncRawReviewClient:
 
     async def comment(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         text: str,
@@ -1585,8 +1694,6 @@ class AsyncRawReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         text : str
@@ -1607,7 +1714,7 @@ class AsyncRawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/comments",
+            f"api/v1/posts/{encode_path_param(post_id)}/comments",
             method="POST",
             json={
                 "anchor": convert_and_respect_annotation_metadata(
@@ -1632,6 +1739,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1697,21 +1815,13 @@ class AsyncRawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def resolve(
-        self,
-        workspace_id: str,
-        post_id: str,
-        comment_id: str,
-        *,
-        resolved: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, comment_id: str, *, resolved: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ReviewComment]:
         """
         Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, `parent`). Needs post:create or post:approve, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         comment_id : str
@@ -1730,7 +1840,7 @@ class AsyncRawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/comments/{encode_path_param(comment_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}/comments/{encode_path_param(comment_id)}",
             method="PATCH",
             json={
                 "resolved": resolved,
@@ -1751,6 +1861,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1817,7 +1938,6 @@ class AsyncRawReviewClient:
 
     async def approve(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         approval_id: str,
@@ -1829,8 +1949,6 @@ class AsyncRawReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         approval_id : str
@@ -1849,7 +1967,7 @@ class AsyncRawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/approve",
+            f"api/v1/posts/{encode_path_param(post_id)}/approve",
             method="POST",
             json={
                 "approvalId": approval_id,
@@ -1871,6 +1989,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1948,7 +2077,6 @@ class AsyncRawReviewClient:
 
     async def request_changes(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         approval_id: str,
@@ -1961,8 +2089,6 @@ class AsyncRawReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         approval_id : str
@@ -1983,7 +2109,7 @@ class AsyncRawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/request-changes",
+            f"api/v1/posts/{encode_path_param(post_id)}/request-changes",
             method="POST",
             json={
                 "approvalId": approval_id,
@@ -2006,6 +2132,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2082,15 +2219,13 @@ class AsyncRawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def links(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[ReviewLink]]:
         """
         Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2102,7 +2237,7 @@ class AsyncRawReviewClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/review-links",
+            f"api/v1/posts/{encode_path_param(post_id)}/review-links",
             method="GET",
             request_options=request_options,
         )
@@ -2116,6 +2251,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2171,7 +2317,6 @@ class AsyncRawReviewClient:
 
     async def create_link(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         access: ReviewLinkAccess,
@@ -2183,8 +2328,6 @@ class AsyncRawReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         access : ReviewLinkAccess
@@ -2203,7 +2346,7 @@ class AsyncRawReviewClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/review-links",
+            f"api/v1/posts/{encode_path_param(post_id)}/review-links",
             method="POST",
             json={
                 "access": access,
@@ -2225,6 +2368,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2290,15 +2444,13 @@ class AsyncRawReviewClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def revoke_link(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ReviewLink]:
         """
         Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2310,7 +2462,7 @@ class AsyncRawReviewClient:
             ReviewLink
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/review-links/{encode_path_param(link_id)}",
+            f"api/v1/review-links/{encode_path_param(link_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2324,6 +2476,17 @@ class AsyncRawReviewClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

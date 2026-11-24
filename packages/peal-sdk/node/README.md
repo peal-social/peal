@@ -43,9 +43,8 @@ Instantiate and use the client with the following:
 ```typescript
 import { PealClient } from "peal-sdk";
 
-const client = new PealClient({ token: "YOUR_TOKEN" });
+const client = new PealClient({ token: "YOUR_TOKEN", workspace: "YOUR_WORKSPACE" });
 await client.apiKeys.create({
-    workspaceId: "workspaceId",
     name: "name",
     permissions: ["activity:read"]
 });
@@ -71,7 +70,7 @@ following namespace:
 ```typescript
 import { Peal } from "peal-sdk";
 
-const request: Peal.ListApiKeysRequest = {
+const request: Peal.NewApiKey = {
     ...
 };
 ```

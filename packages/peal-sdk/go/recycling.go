@@ -10,23 +10,21 @@ import (
 )
 
 var (
-	newRecyclingRuleFieldWorkspaceID = big.NewInt(1 << 0)
-	newRecyclingRuleFieldCount       = big.NewInt(1 << 1)
-	newRecyclingRuleFieldEvery       = big.NewInt(1 << 2)
-	newRecyclingRuleFieldPostID      = big.NewInt(1 << 3)
-	newRecyclingRuleFieldQueueID     = big.NewInt(1 << 4)
-	newRecyclingRuleFieldUntil       = big.NewInt(1 << 5)
-	newRecyclingRuleFieldVariants    = big.NewInt(1 << 6)
+	newRecyclingRuleFieldCount    = big.NewInt(1 << 0)
+	newRecyclingRuleFieldEvery    = big.NewInt(1 << 1)
+	newRecyclingRuleFieldPostID   = big.NewInt(1 << 2)
+	newRecyclingRuleFieldQueueID  = big.NewInt(1 << 3)
+	newRecyclingRuleFieldUntil    = big.NewInt(1 << 4)
+	newRecyclingRuleFieldVariants = big.NewInt(1 << 5)
 )
 
 type NewRecyclingRule struct {
-	WorkspaceID string              `json:"-" url:"-"`
-	Count       *int                `json:"count,omitempty" url:"-"`
-	Every       *RecyclingInterval  `json:"every" url:"-"`
-	PostID      string              `json:"postId" url:"-"`
-	QueueID     *string             `json:"queueId,omitempty" url:"-"`
-	Until       *CalendarDay        `json:"until,omitempty" url:"-"`
-	Variants    []*RecyclingVariant `json:"variants,omitempty" url:"-"`
+	Count    *int                `json:"count,omitempty" url:"-"`
+	Every    *RecyclingInterval  `json:"every" url:"-"`
+	PostID   string              `json:"postId" url:"-"`
+	QueueID  *string             `json:"queueId,omitempty" url:"-"`
+	Until    *CalendarDay        `json:"until,omitempty" url:"-"`
+	Variants []*RecyclingVariant `json:"variants,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -39,13 +37,6 @@ func (n *NewRecyclingRule) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewRecyclingRule) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newRecyclingRuleFieldWorkspaceID)
 }
 
 // SetCount sets the Count field and marks it as non-optional;
@@ -112,13 +103,11 @@ func (n *NewRecyclingRule) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	deleteRecyclingRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteRecyclingRequestFieldRuleID      = big.NewInt(1 << 1)
+	deleteRecyclingRequestFieldRuleID = big.NewInt(1 << 0)
 )
 
 type DeleteRecyclingRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	RuleID      string `json:"-" url:"-"`
+	RuleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -133,13 +122,6 @@ func (d *DeleteRecyclingRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteRecyclingRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteRecyclingRequestFieldWorkspaceID)
-}
-
 // SetRuleID sets the RuleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteRecyclingRequest) SetRuleID(ruleID string) {
@@ -148,13 +130,11 @@ func (d *DeleteRecyclingRequest) SetRuleID(ruleID string) {
 }
 
 var (
-	getRecyclingRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getRecyclingRequestFieldRuleID      = big.NewInt(1 << 1)
+	getRecyclingRequestFieldRuleID = big.NewInt(1 << 0)
 )
 
 type GetRecyclingRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	RuleID      string `json:"-" url:"-"`
+	RuleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -169,13 +149,6 @@ func (g *GetRecyclingRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetRecyclingRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getRecyclingRequestFieldWorkspaceID)
-}
-
 // SetRuleID sets the RuleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetRecyclingRequest) SetRuleID(ruleID string) {
@@ -184,17 +157,15 @@ func (g *GetRecyclingRequest) SetRuleID(ruleID string) {
 }
 
 var (
-	listRecyclingRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listRecyclingRequestFieldCursor      = big.NewInt(1 << 1)
-	listRecyclingRequestFieldLimit       = big.NewInt(1 << 2)
-	listRecyclingRequestFieldStatus      = big.NewInt(1 << 3)
+	listRecyclingRequestFieldCursor = big.NewInt(1 << 0)
+	listRecyclingRequestFieldLimit  = big.NewInt(1 << 1)
+	listRecyclingRequestFieldStatus = big.NewInt(1 << 2)
 )
 
 type ListRecyclingRequest struct {
-	WorkspaceID string           `json:"-" url:"-"`
-	Cursor      *string          `json:"-" url:"cursor,omitempty"`
-	Limit       *string          `json:"-" url:"limit,omitempty"`
-	Status      *RecyclingStatus `json:"-" url:"status,omitempty"`
+	Cursor *string          `json:"-" url:"cursor,omitempty"`
+	Limit  *string          `json:"-" url:"limit,omitempty"`
+	Status *RecyclingStatus `json:"-" url:"status,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -207,13 +178,6 @@ func (l *ListRecyclingRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListRecyclingRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listRecyclingRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -238,15 +202,13 @@ func (l *ListRecyclingRequest) SetStatus(status *RecyclingStatus) {
 }
 
 var (
-	recyclingResumeFieldWorkspaceID = big.NewInt(1 << 0)
-	recyclingResumeFieldRuleID      = big.NewInt(1 << 1)
-	recyclingResumeFieldVariants    = big.NewInt(1 << 2)
+	recyclingResumeFieldRuleID   = big.NewInt(1 << 0)
+	recyclingResumeFieldVariants = big.NewInt(1 << 1)
 )
 
 type RecyclingResume struct {
-	WorkspaceID string              `json:"-" url:"-"`
-	RuleID      string              `json:"-" url:"-"`
-	Variants    []*RecyclingVariant `json:"variants,omitempty" url:"-"`
+	RuleID   string              `json:"-" url:"-"`
+	Variants []*RecyclingVariant `json:"variants,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -259,13 +221,6 @@ func (r *RecyclingResume) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RecyclingResume) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(recyclingResumeFieldWorkspaceID)
 }
 
 // SetRuleID sets the RuleID field and marks it as non-optional;
@@ -1325,21 +1280,19 @@ func (r *RecyclingVariant) String() string {
 }
 
 var (
-	recyclingRuleChangeFieldWorkspaceID = big.NewInt(1 << 0)
-	recyclingRuleChangeFieldRuleID      = big.NewInt(1 << 1)
-	recyclingRuleChangeFieldCount       = big.NewInt(1 << 2)
-	recyclingRuleChangeFieldPaused      = big.NewInt(1 << 3)
-	recyclingRuleChangeFieldUntil       = big.NewInt(1 << 4)
-	recyclingRuleChangeFieldVariants    = big.NewInt(1 << 5)
+	recyclingRuleChangeFieldRuleID   = big.NewInt(1 << 0)
+	recyclingRuleChangeFieldCount    = big.NewInt(1 << 1)
+	recyclingRuleChangeFieldPaused   = big.NewInt(1 << 2)
+	recyclingRuleChangeFieldUntil    = big.NewInt(1 << 3)
+	recyclingRuleChangeFieldVariants = big.NewInt(1 << 4)
 )
 
 type RecyclingRuleChange struct {
-	WorkspaceID string              `json:"-" url:"-"`
-	RuleID      string              `json:"-" url:"-"`
-	Count       *int                `json:"count,omitempty" url:"-"`
-	Paused      *bool               `json:"paused,omitempty" url:"-"`
-	Until       *CalendarDay        `json:"until,omitempty" url:"-"`
-	Variants    []*RecyclingVariant `json:"variants,omitempty" url:"-"`
+	RuleID   string              `json:"-" url:"-"`
+	Count    *int                `json:"count,omitempty" url:"-"`
+	Paused   *bool               `json:"paused,omitempty" url:"-"`
+	Until    *CalendarDay        `json:"until,omitempty" url:"-"`
+	Variants []*RecyclingVariant `json:"variants,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1352,13 +1305,6 @@ func (r *RecyclingRuleChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RecyclingRuleChange) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(recyclingRuleChangeFieldWorkspaceID)
 }
 
 // SetRuleID sets the RuleID field and marks it as non-optional;

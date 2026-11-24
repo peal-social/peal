@@ -56,12 +56,10 @@ class ActivityClient
      * Example:
      * ```php
      * $client->activity->list(
-     *     'workspaceId',
      *     new ListActivityRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListActivityRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -75,7 +73,7 @@ class ActivityClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListActivityRequest $request = new ListActivityRequest(), ?array $options = null): ?ActivityPage
+    public function list(ListActivityRequest $request = new ListActivityRequest(), ?array $options = null): ?ActivityPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -95,7 +93,7 @@ class ActivityClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/activity",
+                    path: "api/v1/activity",
                     method: HttpMethod::GET,
                     query: $query,
                 ),

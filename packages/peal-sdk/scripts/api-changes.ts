@@ -14,14 +14,29 @@ type Json = Schema.Json;
 
 type JsonObject = Schema.JsonObject;
 
+/**
+ * A move of operations that was decided on: every operation under `from`
+ * answers under `to` instead, the rest of its path the same, without the
+ * path parameter `dropping` names when it gives one. The operations are
+ * compared at their new place, so every other difference is still found.
+ */
+export interface PathMove {
+  readonly dropping?: string;
+  readonly from: string;
+  readonly to: string;
+}
+
 /** One difference between two documents. */
 export interface ApiChange {
   /**
    * `breaking`: a client of the first document may fail against the second.
    * `deprecation`: an operation announced as going away. `addition`:
-   * something a client may start using.
+   * something a client may start using. `move`: an operation a declared
+   * move took to its new place (`move`).
    */
-  readonly kind: "addition" | "breaking" | "deprecation";
+  readonly kind: "addition" | "breaking" | "deprecation" | "move";
+  /** The declared move that took the operation, for a `move`. */
+  readonly move?: PathMove;
   /** What changed, in words. */
   readonly what: string;
   /** Where: an operation (`posts.list`), then the place in it. */
@@ -407,6 +422,50 @@ interface Operation {
   readonly operation: JsonObject;
 }
 
+// Where a declared move takes a route (`GET /api/x/{id}/y`), if one does.
+const movedRoute = (
+  route: string,
+  moves: readonly PathMove[]
+): { readonly move: PathMove; readonly route: string } | undefined => {
+  const space = route.indexOf(" ");
+  const method = route.slice(0, space);
+  const path = route.slice(space + 1);
+
+  const move = moves.find(
+    ({ from }) => path === from || path.startsWith(`${from}/`)
+  );
+
+  return move === undefined
+    ? undefined
+    : { move, route: `${method} ${move.to}${path.slice(move.from.length)}` };
+};
+
+// The operation without the path parameter a move drops.
+const withoutParameter = (
+  operation: JsonObject,
+  dropping: string | undefined
+): JsonObject => {
+  const { parameters } = operation;
+
+  if (dropping === undefined || !isJsonArray(parameters)) {
+    return operation;
+  }
+
+  const kept = parameters.filter(
+    (parameter) =>
+      !(
+        isJsonObject(parameter) &&
+        parameter["in"] === "path" &&
+        parameter["name"] === dropping
+      )
+  );
+
+  return Object.fromEntries([
+    ...Object.entries(operation).filter(([key]) => key !== "parameters"),
+    ["parameters", kept],
+  ]);
+};
+
 // A document's operations, by method and path.
 const operationsOf = (document: JsonObject): ReadonlyMap<string, Operation> =>
   new Map(
@@ -779,25 +838,52 @@ const changedSchemas = (
  * Every difference between two documents of the API, the first being the
  * one clients were written against: operations, their parameters, bodies
  * and answers, then the named schemas. A change that shows in both
- * directions of a schema is listed once.
+ * directions of a schema is listed once. An operation gone from its place
+ * that a declared move (`moves`) finds at its new one is a `move`, and is
+ * compared there.
  */
 export const apiChanges = (
   before: JsonObject,
-  after: JsonObject
+  after: JsonObject,
+  moves: readonly PathMove[] = []
 ): readonly ApiChange[] => {
   const operationsBefore = operationsOf(before);
   const operationsAfter = operationsOf(after);
+  const movedTo = new Set<string>();
 
   const changes = [
     ...[...operationsBefore].flatMap(([route, { id, operation }]) => {
       const same = operationsAfter.get(route);
 
-      return same === undefined
-        ? [change("breaking", id, `is gone (${route})`)]
-        : operationChanges(operation, same.operation, id);
+      if (same !== undefined) {
+        return operationChanges(operation, same.operation, id);
+      }
+
+      const moved = movedRoute(route, moves);
+
+      const there =
+        moved === undefined ? undefined : operationsAfter.get(moved.route);
+
+      if (moved === undefined || there === undefined) {
+        return [change("breaking", id, `is gone (${route})`)];
+      }
+
+      movedTo.add(moved.route);
+
+      return [
+        {
+          ...change("move", id, `moved from ${route} to ${moved.route}`),
+          move: moved.move,
+        },
+        ...operationChanges(
+          withoutParameter(operation, moved.move.dropping),
+          there.operation,
+          id
+        ),
+      ];
     }),
     ...[...operationsAfter].flatMap(([route, { id }]) =>
-      operationsBefore.has(route)
+      operationsBefore.has(route) || movedTo.has(route)
         ? []
         : [change("addition", id, `is a new operation (${route})`)]
     ),

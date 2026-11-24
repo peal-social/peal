@@ -10,15 +10,13 @@ import (
 )
 
 var (
-	videoGenerationRequestFieldWorkspaceID     = big.NewInt(1 << 0)
-	videoGenerationRequestFieldAspect          = big.NewInt(1 << 1)
-	videoGenerationRequestFieldDurationSeconds = big.NewInt(1 << 2)
-	videoGenerationRequestFieldImageMediaID    = big.NewInt(1 << 3)
-	videoGenerationRequestFieldPrompt          = big.NewInt(1 << 4)
+	videoGenerationRequestFieldAspect          = big.NewInt(1 << 0)
+	videoGenerationRequestFieldDurationSeconds = big.NewInt(1 << 1)
+	videoGenerationRequestFieldImageMediaID    = big.NewInt(1 << 2)
+	videoGenerationRequestFieldPrompt          = big.NewInt(1 << 3)
 )
 
 type VideoGenerationRequest struct {
-	WorkspaceID     string      `json:"-" url:"-"`
 	Aspect          ImageAspect `json:"aspect" url:"-"`
 	DurationSeconds *int        `json:"durationSeconds,omitempty" url:"-"`
 	ImageMediaID    *string     `json:"imageMediaId,omitempty" url:"-"`
@@ -35,13 +33,6 @@ func (v *VideoGenerationRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	v.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (v *VideoGenerationRequest) SetWorkspaceID(workspaceID string) {
-	v.WorkspaceID = workspaceID
-	v.require(videoGenerationRequestFieldWorkspaceID)
 }
 
 // SetAspect sets the Aspect field and marks it as non-optional;
@@ -94,12 +85,10 @@ func (v *VideoGenerationRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	getVideoGenerationsRequestFieldWorkspaceID  = big.NewInt(1 << 0)
-	getVideoGenerationsRequestFieldGenerationID = big.NewInt(1 << 1)
+	getVideoGenerationsRequestFieldGenerationID = big.NewInt(1 << 0)
 )
 
 type GetVideoGenerationsRequest struct {
-	WorkspaceID  string `json:"-" url:"-"`
 	GenerationID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -115,13 +104,6 @@ func (g *GetVideoGenerationsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetVideoGenerationsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getVideoGenerationsRequestFieldWorkspaceID)
-}
-
 // SetGenerationID sets the GenerationID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetVideoGenerationsRequest) SetGenerationID(generationID string) {
@@ -130,13 +112,11 @@ func (g *GetVideoGenerationsRequest) SetGenerationID(generationID string) {
 }
 
 var (
-	listVideoGenerationsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listVideoGenerationsRequestFieldStatus      = big.NewInt(1 << 1)
+	listVideoGenerationsRequestFieldStatus = big.NewInt(1 << 0)
 )
 
 type ListVideoGenerationsRequest struct {
-	WorkspaceID string                 `json:"-" url:"-"`
-	Status      *VideoGenerationStatus `json:"-" url:"status,omitempty"`
+	Status *VideoGenerationStatus `json:"-" url:"status,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -149,13 +129,6 @@ func (l *ListVideoGenerationsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListVideoGenerationsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listVideoGenerationsRequestFieldWorkspaceID)
 }
 
 // SetStatus sets the Status field and marks it as non-optional;

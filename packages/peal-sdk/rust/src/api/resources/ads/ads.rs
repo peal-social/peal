@@ -35,14 +35,10 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client.ads.status(&"workspaceId".to_string(), None).await;
+    ///     client.ads.status(None).await;
     /// }
     /// ```
-    pub async fn status(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<AdsStatus, ApiError> {
+    pub async fn status(&self, options: Option<RequestOptions>) -> Result<AdsStatus, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -51,13 +47,7 @@ impl AdsClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/ads", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/ads", None, None, options)
             .await
     }
 
@@ -83,15 +73,11 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .ads
-    ///         .list_connections(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.ads.list_connections(None).await;
     /// }
     /// ```
     pub async fn list_connections(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<AdConnection>, ApiError> {
         let options = {
@@ -102,13 +88,7 @@ impl AdsClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/ads/connections", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/ads/connections", None, None, options)
             .await
     }
 
@@ -134,15 +114,11 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .ads
-    ///         .connect(&"workspaceId".to_string(), &AdNetwork::Meta, None)
-    ///         .await;
+    ///     client.ads.connect(&AdNetwork::Meta, None).await;
     /// }
     /// ```
     pub async fn connect(
         &self,
-        workspace_id: &str,
         network: &AdNetwork,
         options: Option<RequestOptions>,
     ) -> Result<AdSignIn, ApiError> {
@@ -157,10 +133,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/ads/connections/{}",
-                    workspace_id, network
-                ),
+                &format!("api/v1/ads/connections/{}", network),
                 None,
                 None,
                 options,
@@ -193,7 +166,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .complete_connect(
-    ///             &"workspaceId".to_string(),
     ///             &AdNetwork::Meta,
     ///             &AdSignInCallback {
     ///                 state: "state".to_string(),
@@ -207,7 +179,6 @@ impl AdsClient {
     /// ```
     pub async fn complete_connect(
         &self,
-        workspace_id: &str,
         network: &AdNetwork,
         request: &AdSignInCallback,
         options: Option<RequestOptions>,
@@ -223,10 +194,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/ads/connections/{}/callback",
-                    workspace_id, network
-                ),
+                &format!("api/v1/ads/connections/{}/callback", network),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -258,17 +226,12 @@ impl AdsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .ads
-    ///         .reachable_accounts(
-    ///             &"workspaceId".to_string(),
-    ///             &"connectionId".to_string(),
-    ///             None,
-    ///         )
+    ///         .reachable_accounts(&"connectionId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn reachable_accounts(
         &self,
-        workspace_id: &str,
         connection_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<ReachableAdAccount>, ApiError> {
@@ -282,10 +245,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/ads/connections/{}/accounts",
-                    workspace_id, connection_id
-                ),
+                &format!("api/v1/ads/connections/{}/accounts", connection_id),
                 None,
                 None,
                 options,
@@ -318,7 +278,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .connect_accounts(
-    ///             &"workspaceId".to_string(),
     ///             &"connectionId".to_string(),
     ///             &AdAccountsToConnect {
     ///                 external_ids: vec!["externalIds".to_string()],
@@ -330,7 +289,6 @@ impl AdsClient {
     /// ```
     pub async fn connect_accounts(
         &self,
-        workspace_id: &str,
         connection_id: &str,
         request: &AdAccountsToConnect,
         options: Option<RequestOptions>,
@@ -346,10 +304,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/ads/connections/{}/accounts",
-                    workspace_id, connection_id
-                ),
+                &format!("api/v1/ads/connections/{}/accounts", connection_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -381,17 +336,12 @@ impl AdsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .ads
-    ///         .disconnect(
-    ///             &"workspaceId".to_string(),
-    ///             &"connectionId".to_string(),
-    ///             None,
-    ///         )
+    ///         .disconnect(&"connectionId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn disconnect(
         &self,
-        workspace_id: &str,
         connection_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -405,10 +355,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/ads/connections/{}",
-                    workspace_id, connection_id
-                ),
+                &format!("api/v1/ads/connections/{}", connection_id),
                 None,
                 None,
                 options,
@@ -438,15 +385,11 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .ads
-    ///         .list_accounts(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.ads.list_accounts(None).await;
     /// }
     /// ```
     pub async fn list_accounts(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<AdAccount>, ApiError> {
         let options = {
@@ -457,13 +400,7 @@ impl AdsClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/ads/accounts", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/ads/accounts", None, None, options)
             .await
     }
 
@@ -489,15 +426,11 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .ads
-    ///         .get_account(&"workspaceId".to_string(), &"accountId".to_string(), None)
-    ///         .await;
+    ///     client.ads.get_account(&"accountId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get_account(
         &self,
-        workspace_id: &str,
         account_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<AdSpending, ApiError> {
@@ -511,10 +444,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/ads/accounts/{}",
-                    workspace_id, account_id
-                ),
+                &format!("api/v1/ads/accounts/{}", account_id),
                 None,
                 None,
                 options,
@@ -546,13 +476,12 @@ impl AdsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .ads
-    ///         .remove_account(&"workspaceId".to_string(), &"accountId".to_string(), None)
+    ///         .remove_account(&"accountId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn remove_account(
         &self,
-        workspace_id: &str,
         account_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -566,10 +495,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/ads/accounts/{}",
-                    workspace_id, account_id
-                ),
+                &format!("api/v1/ads/accounts/{}", account_id),
                 None,
                 None,
                 options,
@@ -602,7 +528,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .set_spending(
-    ///             &"workspaceId".to_string(),
     ///             &"accountId".to_string(),
     ///             &AdSpendingDecision {
     ///                 enabled: true,
@@ -615,7 +540,6 @@ impl AdsClient {
     /// ```
     pub async fn set_spending(
         &self,
-        workspace_id: &str,
         account_id: &str,
         request: &AdSpendingDecision,
         options: Option<RequestOptions>,
@@ -630,10 +554,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/ads/accounts/{}/spending",
-                    workspace_id, account_id
-                ),
+                &format!("api/v1/ads/accounts/{}/spending", account_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -666,7 +587,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .list_campaigns(
-    ///             &"workspaceId".to_string(),
     ///             &"accountId".to_string(),
     ///             &ListCampaignsQueryRequest {
     ///                 ..Default::default()
@@ -678,7 +598,6 @@ impl AdsClient {
     /// ```
     pub async fn list_campaigns(
         &self,
-        workspace_id: &str,
         account_id: &str,
         request: &ListCampaignsQueryRequest,
         options: Option<RequestOptions>,
@@ -693,10 +612,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/ads/accounts/{}/campaigns",
-                    workspace_id, account_id
-                ),
+                &format!("api/v1/ads/accounts/{}/campaigns", account_id),
                 None,
                 QueryBuilder::new()
                     .serialize("from", request.from.clone())
@@ -732,7 +648,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .list_ads(
-    ///             &"workspaceId".to_string(),
     ///             &"accountId".to_string(),
     ///             &ListAdsQueryRequest {
     ///                 ..Default::default()
@@ -744,7 +659,6 @@ impl AdsClient {
     /// ```
     pub async fn list_ads(
         &self,
-        workspace_id: &str,
         account_id: &str,
         request: &ListAdsQueryRequest,
         options: Option<RequestOptions>,
@@ -759,10 +673,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/ads/accounts/{}/ads",
-                    workspace_id, account_id
-                ),
+                &format!("api/v1/ads/accounts/{}/ads", account_id),
                 None,
                 QueryBuilder::new()
                     .serialize("from", request.from.clone())
@@ -799,7 +710,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .list_insights(
-    ///             &"workspaceId".to_string(),
     ///             &"accountId".to_string(),
     ///             &ListInsightsQueryRequest {
     ///                 ..Default::default()
@@ -811,7 +721,6 @@ impl AdsClient {
     /// ```
     pub async fn list_insights(
         &self,
-        workspace_id: &str,
         account_id: &str,
         request: &ListInsightsQueryRequest,
         options: Option<RequestOptions>,
@@ -826,10 +735,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/ads/accounts/{}/insights",
-                    workspace_id, account_id
-                ),
+                &format!("api/v1/ads/accounts/{}/insights", account_id),
                 None,
                 QueryBuilder::new()
                     .serialize("from", request.from.clone())
@@ -864,13 +770,12 @@ impl AdsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .ads
-    ///         .post_performance(&"workspaceId".to_string(), &"postId".to_string(), None)
+    ///         .post_performance(&"postId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn post_performance(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<PostAdPerformance, ApiError> {
@@ -884,7 +789,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/ads/posts/{}", workspace_id, post_id),
+                &format!("api/v1/ads/posts/{}", post_id),
                 None,
                 None,
                 options,
@@ -917,7 +822,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .quote_boost(
-    ///             &"workspaceId".to_string(),
     ///             &NewBoost {
     ///                 account_id: "accountId".to_string(),
     ///                 audience: BoostAudience {
@@ -946,7 +850,6 @@ impl AdsClient {
     /// ```
     pub async fn quote_boost(
         &self,
-        workspace_id: &str,
         request: &NewBoost,
         options: Option<RequestOptions>,
     ) -> Result<BoostQuote, ApiError> {
@@ -961,7 +864,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/ads/boosts/quote", workspace_id),
+                "api/v1/ads/boosts/quote",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -994,7 +897,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .list_boosts(
-    ///             &"workspaceId".to_string(),
     ///             &ListBoostsQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -1005,7 +907,6 @@ impl AdsClient {
     /// ```
     pub async fn list_boosts(
         &self,
-        workspace_id: &str,
         request: &ListBoostsQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<BoostPage, ApiError> {
@@ -1019,7 +920,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/ads/boosts", workspace_id),
+                "api/v1/ads/boosts",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -1055,7 +956,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .create_boost(
-    ///             &"workspaceId".to_string(),
     ///             &NewBoost {
     ///                 account_id: "accountId".to_string(),
     ///                 audience: BoostAudience {
@@ -1084,7 +984,6 @@ impl AdsClient {
     /// ```
     pub async fn create_boost(
         &self,
-        workspace_id: &str,
         request: &NewBoost,
         options: Option<RequestOptions>,
     ) -> Result<Boost, ApiError> {
@@ -1099,7 +998,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/ads/boosts", workspace_id),
+                "api/v1/ads/boosts",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -1129,15 +1028,11 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .ads
-    ///         .get_boost(&"workspaceId".to_string(), &"boostId".to_string(), None)
-    ///         .await;
+    ///     client.ads.get_boost(&"boostId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get_boost(
         &self,
-        workspace_id: &str,
         boost_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<BoostDetail, ApiError> {
@@ -1151,7 +1046,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/ads/boosts/{}", workspace_id, boost_id),
+                &format!("api/v1/ads/boosts/{}", boost_id),
                 None,
                 None,
                 options,
@@ -1181,15 +1076,11 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .ads
-    ///         .pause_boost(&"workspaceId".to_string(), &"boostId".to_string(), None)
-    ///         .await;
+    ///     client.ads.pause_boost(&"boostId".to_string(), None).await;
     /// }
     /// ```
     pub async fn pause_boost(
         &self,
-        workspace_id: &str,
         boost_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Boost, ApiError> {
@@ -1204,10 +1095,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/ads/boosts/{}/pause",
-                    workspace_id, boost_id
-                ),
+                &format!("api/v1/ads/boosts/{}/pause", boost_id),
                 None,
                 None,
                 options,
@@ -1237,15 +1125,11 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .ads
-    ///         .resume_boost(&"workspaceId".to_string(), &"boostId".to_string(), None)
-    ///         .await;
+    ///     client.ads.resume_boost(&"boostId".to_string(), None).await;
     /// }
     /// ```
     pub async fn resume_boost(
         &self,
-        workspace_id: &str,
         boost_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Boost, ApiError> {
@@ -1260,10 +1144,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/ads/boosts/{}/resume",
-                    workspace_id, boost_id
-                ),
+                &format!("api/v1/ads/boosts/{}/resume", boost_id),
                 None,
                 None,
                 options,
@@ -1293,15 +1174,11 @@ impl AdsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .ads
-    ///         .stop_boost(&"workspaceId".to_string(), &"boostId".to_string(), None)
-    ///         .await;
+    ///     client.ads.stop_boost(&"boostId".to_string(), None).await;
     /// }
     /// ```
     pub async fn stop_boost(
         &self,
-        workspace_id: &str,
         boost_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Boost, ApiError> {
@@ -1316,10 +1193,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/ads/boosts/{}/stop",
-                    workspace_id, boost_id
-                ),
+                &format!("api/v1/ads/boosts/{}/stop", boost_id),
                 None,
                 None,
                 options,
@@ -1352,7 +1226,6 @@ impl AdsClient {
     ///     client
     ///         .ads
     ///         .audit_trail(
-    ///             &"workspaceId".to_string(),
     ///             &AuditTrailQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -1363,7 +1236,6 @@ impl AdsClient {
     /// ```
     pub async fn audit_trail(
         &self,
-        workspace_id: &str,
         request: &AuditTrailQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<AdAuditPage, ApiError> {
@@ -1377,7 +1249,7 @@ impl AdsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/ads/audit", workspace_id),
+                "api/v1/ads/audit",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())

@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         from: "from",
  *         to: "to"
  *     }
  */
 export interface ListPostsRequest {
-    workspaceId: string;
     from: string;
     to: string;
 }

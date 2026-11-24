@@ -13,7 +13,7 @@ use Peal\Core\Client\HttpMethod;
 use Peal\Core\Json\JsonDecoder;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Peal\ChannelSets\Requests\CreateChannelSetsRequest;
+use Peal\Types\ChannelSetDetails;
 use Peal\ChannelSets\Requests\UpdateChannelSetsRequest;
 
 class ChannelSetsClient
@@ -57,12 +57,9 @@ class ChannelSetsClient
      *
      * Example:
      * ```php
-     * $client->channelSets->list(
-     *     'workspaceId',
-     * );
+     * $client->channelSets->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -75,14 +72,14 @@ class ChannelSetsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channel-sets",
+                    path: "api/v1/channel-sets",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -113,20 +110,16 @@ class ChannelSetsClient
      * Example:
      * ```php
      * $client->channelSets->create(
-     *     'workspaceId',
-     *     new CreateChannelSetsRequest([
-     *         'body' => new ChannelSetDetails([
-     *             'channelIds' => [
-     *                 'channelIds',
-     *             ],
-     *             'name' => 'name',
-     *         ]),
+     *     new ChannelSetDetails([
+     *         'channelIds' => [
+     *             'channelIds',
+     *         ],
+     *         'name' => 'name',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param CreateChannelSetsRequest $request
+     * @param ChannelSetDetails $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -139,7 +132,7 @@ class ChannelSetsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, CreateChannelSetsRequest $request, ?array $options = null): ?ChannelSet
+    public function create(ChannelSetDetails $request, ?array $options = null): ?ChannelSet
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -147,9 +140,9 @@ class ChannelSetsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channel-sets",
+                    path: "api/v1/channel-sets",
                     method: HttpMethod::POST,
-                    body: $request->body,
+                    body: $request,
                 ),
                 $options,
             );
@@ -179,7 +172,6 @@ class ChannelSetsClient
      * Example:
      * ```php
      * $client->channelSets->update(
-     *     'workspaceId',
      *     'channelSetId',
      *     new UpdateChannelSetsRequest([
      *         'body' => new ChannelSetDetails([
@@ -192,7 +184,6 @@ class ChannelSetsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelSetId
      * @param UpdateChannelSetsRequest $request
      * @param ?array{
@@ -207,14 +198,14 @@ class ChannelSetsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $channelSetId, UpdateChannelSetsRequest $request, ?array $options = null): ?ChannelSet
+    public function update(string $channelSetId, UpdateChannelSetsRequest $request, ?array $options = null): ?ChannelSet
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channel-sets/{$channelSetId}",
+                    path: "api/v1/channel-sets/{$channelSetId}",
                     method: HttpMethod::PUT,
                     body: $request->body,
                 ),
@@ -246,12 +237,10 @@ class ChannelSetsClient
      * Example:
      * ```php
      * $client->channelSets->delete(
-     *     'workspaceId',
      *     'channelSetId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelSetId
      * @param ?array{
      *   baseUrl?: string,
@@ -264,14 +253,14 @@ class ChannelSetsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $channelSetId, ?array $options = null): void
+    public function delete(string $channelSetId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channel-sets/{$channelSetId}",
+                    path: "api/v1/channel-sets/{$channelSetId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

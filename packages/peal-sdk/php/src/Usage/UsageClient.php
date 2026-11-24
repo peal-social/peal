@@ -58,12 +58,10 @@ class UsageClient
      * Example:
      * ```php
      * $client->usage->get(
-     *     'workspaceId',
      *     new GetUsageRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param GetUsageRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -77,7 +75,7 @@ class UsageClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, GetUsageRequest $request = new GetUsageRequest(), ?array $options = null): ?WorkspaceUsageReport
+    public function get(GetUsageRequest $request = new GetUsageRequest(), ?array $options = null): ?WorkspaceUsageReport
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -91,7 +89,7 @@ class UsageClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/usage",
+                    path: "api/v1/usage",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -118,17 +116,15 @@ class UsageClient
     }
 
     /**
-     * Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+     * Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
      *
      * Example:
      * ```php
      * $client->usage->partner(
-     *     'workspaceId',
      *     new PartnerUsageRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param PartnerUsageRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -142,7 +138,7 @@ class UsageClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function partner(string $workspaceId, PartnerUsageRequest $request = new PartnerUsageRequest(), ?array $options = null): ?PartnerUsageReport
+    public function partner(PartnerUsageRequest $request = new PartnerUsageRequest(), ?array $options = null): ?PartnerUsageReport
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -162,7 +158,7 @@ class UsageClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/usage/partner",
+                    path: "api/v1/usage/partner",
                     method: HttpMethod::GET,
                     query: $query,
                 ),

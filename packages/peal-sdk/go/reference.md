@@ -208,7 +208,7 @@ _, err := client.Credential.Get(
 </details>
 
 ## apiKeys
-<details><summary><code>client.APIKeys.List(WorkspaceID) -> []*peal.APIKey</code></summary>
+<details><summary><code>client.APIKeys.List() -> []*peal.APIKey</code></summary>
 <dl>
 <dd>
 
@@ -235,29 +235,10 @@ Lists the workspace's API keys, with the member who made each. Needs apiKey:read
 <dd>
 
 ```go
-request := &peal.ListAPIKeysRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.APIKeys.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -268,7 +249,7 @@ _, err := client.APIKeys.List(
 </dl>
 </details>
 
-<details><summary><code>client.APIKeys.Create(WorkspaceID, request) -> *peal.CreatedAPIKey</code></summary>
+<details><summary><code>client.APIKeys.Create(request) -> *peal.CreatedAPIKey</code></summary>
 <dl>
 <dd>
 
@@ -296,7 +277,6 @@ Creates an API key for the workspace with some of the caller's permissions, and 
 
 ```go
 request := &peal.NewAPIKey{
-    WorkspaceID: "workspaceId",
     Name: "name",
     Permissions: []peal.Permission{
         peal.PermissionActivityRead,
@@ -316,14 +296,6 @@ _, err := client.APIKeys.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -356,7 +328,7 @@ _, err := client.APIKeys.Create(
 </dl>
 </details>
 
-<details><summary><code>client.APIKeys.Revoke(WorkspaceID, APIKeyID) -> error</code></summary>
+<details><summary><code>client.APIKeys.Revoke(APIKeyID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -384,7 +356,6 @@ Revokes an API key of the workspace: it stops working at once. Needs apiKey:dele
 
 ```go
 request := &peal.RevokeAPIKeysRequest{
-    WorkspaceID: "workspaceId",
     APIKeyID: "apiKeyId",
 }
 err := client.APIKeys.Revoke(
@@ -405,14 +376,6 @@ err := client.APIKeys.Revoke(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **apiKeyID:** `string` 
     
 </dd>
@@ -426,7 +389,7 @@ err := client.APIKeys.Revoke(
 </details>
 
 ## channels
-<details><summary><code>client.Channels.List(WorkspaceID) -> []*peal.Channel</code></summary>
+<details><summary><code>client.Channels.List() -> []*peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -453,29 +416,10 @@ Lists the channels connected to the workspace, oldest first. Their tokens are ne
 <dd>
 
 ```go
-request := &peal.ListChannelsRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Channels.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -486,7 +430,7 @@ _, err := client.Channels.List(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.Find(WorkspaceID) -> *peal.ChannelPage</code></summary>
+<details><summary><code>client.Channels.Find() -> *peal.ChannelPage</code></summary>
 <dl>
 <dd>
 
@@ -513,9 +457,7 @@ Lists the workspace's channels a page at a time, oldest first: 50 unless `limit`
 <dd>
 
 ```go
-request := &peal.FindChannelsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.FindChannelsRequest{}
 _, err := client.Channels.Find(
     context.TODO(),
     request,
@@ -530,14 +472,6 @@ _, err := client.Channels.Find(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -586,7 +520,7 @@ _, err := client.Channels.Find(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.Platforms(WorkspaceID) -> *peal.ConnectablePlatforms</code></summary>
+<details><summary><code>client.Channels.Platforms() -> *peal.ConnectablePlatforms</code></summary>
 <dl>
 <dd>
 
@@ -613,29 +547,10 @@ Lists the platforms this server can connect accounts of, in Peal's order. A plat
 <dd>
 
 ```go
-request := &peal.PlatformsChannelsRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Channels.Platforms(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -646,7 +561,7 @@ _, err := client.Channels.Platforms(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.ConnectSite(WorkspaceID, request) -> *peal.Channel</code></summary>
+<details><summary><code>client.Channels.ConnectSite(request) -> *peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -674,7 +589,6 @@ Connects a website, to publish articles to it: a WordPress site, by its address,
 
 ```go
 request := &peal.ConnectSite{
-    WorkspaceID: "workspaceId",
     Address: "address",
     ApplicationPassword: "applicationPassword",
     Platform: peal.SitePlatformWordpress,
@@ -694,14 +608,6 @@ _, err := client.Channels.ConnectSite(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -742,7 +648,7 @@ _, err := client.Channels.ConnectSite(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.ConnectSiteWithKey(WorkspaceID, request) -> *peal.Channel</code></summary>
+<details><summary><code>client.Channels.ConnectSiteWithKey(request) -> *peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -770,7 +676,6 @@ Connects an account on a publishing platform, to publish articles to it, with a 
 
 ```go
 request := &peal.ConnectSiteWithKey{
-    WorkspaceID: "workspaceId",
     APIKey: "apiKey",
     Platform: peal.KeySitePlatformDevto,
 }
@@ -788,14 +693,6 @@ _, err := client.Channels.ConnectSiteWithKey(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -828,7 +725,7 @@ _, err := client.Channels.ConnectSiteWithKey(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.ConnectChat(WorkspaceID, request) -> *peal.Channel</code></summary>
+<details><summary><code>client.Channels.ConnectChat(request) -> *peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -855,12 +752,9 @@ Connects a chat, to post to it, with a secret its member pastes, no sign-in page
 <dd>
 
 ```go
-request := &peal.ConnectChatChannelsRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.ConnectChat{
-        Discord: &peal.ConnectDiscordChat{
-            WebhookURL: "webhookUrl",
-        },
+request := &peal.ConnectChat{
+    Discord: &peal.ConnectDiscordChat{
+        WebhookURL: "webhookUrl",
     },
 }
 _, err := client.Channels.ConnectChat(
@@ -881,14 +775,6 @@ _, err := client.Channels.ConnectChat(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.ConnectChat` 
     
 </dd>
@@ -901,7 +787,7 @@ _, err := client.Channels.ConnectChat(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.StartSiteSignIn(WorkspaceID, Platform, request) -> *peal.Authorization</code></summary>
+<details><summary><code>client.Channels.StartSiteSignIn(Platform, request) -> *peal.Authorization</code></summary>
 <dl>
 <dd>
 
@@ -929,7 +815,6 @@ Starts connecting a website by signing in on its platform: on WordPress.com (`wo
 
 ```go
 request := &peal.StartSiteSignIn{
-    WorkspaceID: "workspaceId",
     Platform: peal.OAuthSitePlatformWordpressCom,
 }
 _, err := client.Channels.StartSiteSignIn(
@@ -946,14 +831,6 @@ _, err := client.Channels.StartSiteSignIn(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -978,7 +855,7 @@ _, err := client.Channels.StartSiteSignIn(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.CompleteSiteSignIn(WorkspaceID, Platform, request) -> *peal.Channel</code></summary>
+<details><summary><code>client.Channels.CompleteSiteSignIn(Platform, request) -> *peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -1006,7 +883,6 @@ Completes a website sign-in with what the platform sent back: the site becomes a
 
 ```go
 request := &peal.SiteSignInCallback{
-    WorkspaceID: "workspaceId",
     Platform: peal.OAuthSitePlatformWordpressCom,
     State: "state",
 }
@@ -1024,14 +900,6 @@ _, err := client.Channels.CompleteSiteSignIn(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1072,7 +940,7 @@ _, err := client.Channels.CompleteSiteSignIn(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.Connect(WorkspaceID, Platform, request) -> *peal.Authorization</code></summary>
+<details><summary><code>client.Channels.Connect(Platform, request) -> *peal.Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1100,7 +968,6 @@ Starts connecting an account of the platform: answers with the platform's sign-i
 
 ```go
 request := &peal.ConnectChannel{
-    WorkspaceID: "workspaceId",
     Platform: peal.PlatformX,
 }
 _, err := client.Channels.Connect(
@@ -1117,14 +984,6 @@ _, err := client.Channels.Connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1165,7 +1024,7 @@ _, err := client.Channels.Connect(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.CompleteConnect(WorkspaceID, Platform, request) -> *peal.ConnectOutcome</code></summary>
+<details><summary><code>client.Channels.CompleteConnect(Platform, request) -> *peal.ConnectOutcome</code></summary>
 <dl>
 <dd>
 
@@ -1193,7 +1052,6 @@ Completes a connection with what the platform sent back: the account becomes a c
 
 ```go
 request := &peal.ConnectCallback{
-    WorkspaceID: "workspaceId",
     Platform: peal.PlatformX,
     State: "state",
 }
@@ -1211,14 +1069,6 @@ _, err := client.Channels.CompleteConnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1267,7 +1117,7 @@ _, err := client.Channels.CompleteConnect(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.ChooseAccounts(WorkspaceID, Platform, request) -> []*peal.Channel</code></summary>
+<details><summary><code>client.Channels.ChooseAccounts(Platform, request) -> []*peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -1295,7 +1145,6 @@ Connects the accounts the member chose among those a completed sign-in listed: e
 
 ```go
 request := &peal.ChooseAccounts{
-    WorkspaceID: "workspaceId",
     Platform: peal.PlatformX,
     AccountIDs: []string{
         "accountIds",
@@ -1316,14 +1165,6 @@ _, err := client.Channels.ChooseAccounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1356,7 +1197,7 @@ _, err := client.Channels.ChooseAccounts(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.Reconnect(WorkspaceID, ChannelID) -> *peal.Authorization</code></summary>
+<details><summary><code>client.Channels.Reconnect(ChannelID) -> *peal.Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1384,7 +1225,6 @@ Starts reconnecting a channel whose token stopped working or is about to: answer
 
 ```go
 request := &peal.ReconnectChannelsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.Channels.Reconnect(
@@ -1401,14 +1241,6 @@ _, err := client.Channels.Reconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1441,7 +1273,7 @@ _, err := client.Channels.Reconnect(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.Disconnect(WorkspaceID, ChannelID) -> error</code></summary>
+<details><summary><code>client.Channels.Disconnect(ChannelID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -1469,7 +1301,6 @@ Disconnects a channel from the workspace: the channel and the tokens Peal holds 
 
 ```go
 request := &peal.DisconnectChannelsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 err := client.Channels.Disconnect(
@@ -1490,14 +1321,6 @@ err := client.Channels.Disconnect(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -1510,7 +1333,7 @@ err := client.Channels.Disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.Update(WorkspaceID, ChannelID, request) -> *peal.Channel</code></summary>
+<details><summary><code>client.Channels.Update(ChannelID, request) -> *peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -1538,7 +1361,6 @@ Gives the channel the name the workspace calls it by (`label`, 60 characters at 
 
 ```go
 request := &peal.ChannelUpdate{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.Channels.Update(
@@ -1555,14 +1377,6 @@ _, err := client.Channels.Update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1587,7 +1401,7 @@ _, err := client.Channels.Update(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.Disable(WorkspaceID, ChannelID) -> *peal.Channel</code></summary>
+<details><summary><code>client.Channels.Disable(ChannelID) -> *peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -1615,7 +1429,6 @@ Turns the channel off: nothing goes out on it until it is turned back on. It kee
 
 ```go
 request := &peal.DisableChannelsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.Channels.Disable(
@@ -1636,14 +1449,6 @@ _, err := client.Channels.Disable(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -1656,7 +1461,7 @@ _, err := client.Channels.Disable(
 </dl>
 </details>
 
-<details><summary><code>client.Channels.Enable(WorkspaceID, ChannelID) -> *peal.Channel</code></summary>
+<details><summary><code>client.Channels.Enable(ChannelID) -> *peal.Channel</code></summary>
 <dl>
 <dd>
 
@@ -1684,7 +1489,6 @@ Turns a channel back on. It posts again at once, or has the status `refreshNeede
 
 ```go
 request := &peal.EnableChannelsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.Channels.Enable(
@@ -1705,14 +1509,6 @@ _, err := client.Channels.Enable(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -1726,7 +1522,7 @@ _, err := client.Channels.Enable(
 </details>
 
 ## posts
-<details><summary><code>client.Posts.Drafts(WorkspaceID) -> *peal.DraftPage</code></summary>
+<details><summary><code>client.Posts.Drafts() -> *peal.DraftPage</code></summary>
 <dl>
 <dd>
 
@@ -1753,9 +1549,7 @@ Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50
 <dd>
 
 ```go
-request := &peal.DraftsPostsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.DraftsPostsRequest{}
 _, err := client.Posts.Drafts(
     context.TODO(),
     request,
@@ -1770,14 +1564,6 @@ _, err := client.Posts.Drafts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1802,7 +1588,7 @@ _, err := client.Posts.Drafts(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.List(WorkspaceID) -> []*peal.Post</code></summary>
+<details><summary><code>client.Posts.List() -> []*peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -1830,7 +1616,6 @@ Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 
 
 ```go
 request := &peal.ListPostsRequest{
-    WorkspaceID: "workspaceId",
     From: "from",
     To: "to",
 }
@@ -1848,14 +1633,6 @@ _, err := client.Posts.List(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1880,7 +1657,7 @@ _, err := client.Posts.List(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Create(WorkspaceID, request) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Create(request) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -1907,27 +1684,24 @@ Creates a draft for some of the workspace's channels, possibly none yet, with op
 <dd>
 
 ```go
-request := &peal.CreatePostsRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.PostDraft{
-        ChannelIDs: []string{
-            "channelIds",
-        },
-        Content: &peal.PostContent{
-            Media: []*peal.MediaAttachment{
-                &peal.MediaAttachment{
-                    AltText: "altText",
-                    MediaID: "mediaId",
-                },
+request := &peal.PostDraft{
+    ChannelIDs: []string{
+        "channelIds",
+    },
+    Content: &peal.PostContent{
+        Media: []*peal.MediaAttachment{
+            &peal.MediaAttachment{
+                AltText: "altText",
+                MediaID: "mediaId",
             },
-            Overrides: []*peal.TextOverride{
-                &peal.TextOverride{
-                    ChannelID: "channelId",
-                    Text: "text",
-                },
-            },
-            Text: "text",
         },
+        Overrides: []*peal.TextOverride{
+            &peal.TextOverride{
+                ChannelID: "channelId",
+                Text: "text",
+            },
+        },
+        Text: "text",
     },
 }
 _, err := client.Posts.Create(
@@ -1948,14 +1722,6 @@ _, err := client.Posts.Create(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.PostDraft` 
     
 </dd>
@@ -1968,7 +1734,7 @@ _, err := client.Posts.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Search(WorkspaceID) -> *peal.PostPage</code></summary>
+<details><summary><code>client.Posts.Search() -> *peal.PostPage</code></summary>
 <dl>
 <dd>
 
@@ -1995,9 +1761,7 @@ Lists the workspace's posts, whatever their state, a page at a time: 20 unless `
 <dd>
 
 ```go
-request := &peal.SearchPostsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.SearchPostsRequest{}
 _, err := client.Posts.Search(
     context.TODO(),
     request,
@@ -2012,14 +1776,6 @@ _, err := client.Posts.Search(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2148,7 +1904,7 @@ _, err := client.Posts.Search(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Send(WorkspaceID, request) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Send(request) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -2176,7 +1932,6 @@ Creates a post and sends it to some of the workspace's channels in one call: `wh
 
 ```go
 request := &peal.NewPost{
-    WorkspaceID: "workspaceId",
     ChannelIDs: []string{
         "channelIds",
     },
@@ -2213,14 +1968,6 @@ _, err := client.Posts.Send(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2325,7 +2072,7 @@ _, err := client.Posts.Send(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Bulk(WorkspaceID, request) -> *peal.BulkResult</code></summary>
+<details><summary><code>client.Posts.Bulk(request) -> *peal.BulkResult</code></summary>
 <dl>
 <dd>
 
@@ -2353,7 +2100,6 @@ Creates and sends up to 50 posts in one request, each as `send` would: one post 
 
 ```go
 request := &peal.BulkPosts{
-    WorkspaceID: "workspaceId",
     Posts: []*peal.BulkPost{
         &peal.BulkPost{
             ChannelIDs: []string{
@@ -2398,14 +2144,6 @@ _, err := client.Posts.Bulk(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **idempotencyKey:** `*string` 
     
 </dd>
@@ -2426,7 +2164,7 @@ _, err := client.Posts.Bulk(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Import(WorkspaceID, request) -> *peal.ImportResult</code></summary>
+<details><summary><code>client.Posts.Import(request) -> *peal.ImportResult</code></summary>
 <dl>
 <dd>
 
@@ -2454,7 +2192,6 @@ Creates and sends the posts a CSV file lists, one per row, at most 100 rows unde
 
 ```go
 request := &peal.PostImport{
-    WorkspaceID: "workspaceId",
     Csv: "csv",
 }
 _, err := client.Posts.Import(
@@ -2471,14 +2208,6 @@ _, err := client.Posts.Import(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2511,7 +2240,7 @@ _, err := client.Posts.Import(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Validate(WorkspaceID, request) -> *peal.PostValidation</code></summary>
+<details><summary><code>client.Posts.Validate(request) -> *peal.PostValidation</code></summary>
 <dl>
 <dd>
 
@@ -2539,7 +2268,6 @@ Checks a post without making it, and changes nothing: send what `send` takes, or
 
 ```go
 request := &peal.PostToValidate{
-    WorkspaceID: "workspaceId",
     ChannelIDs: []string{
         "channelIds",
     },
@@ -2573,14 +2301,6 @@ _, err := client.Posts.Validate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2661,7 +2381,7 @@ _, err := client.Posts.Validate(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Get(WorkspaceID, PostID) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Get(PostID) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -2689,7 +2409,6 @@ Answers with a post of the workspace. Needs post:read.
 
 ```go
 request := &peal.GetPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Get(
@@ -2710,14 +2429,6 @@ _, err := client.Posts.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -2730,7 +2441,7 @@ _, err := client.Posts.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Update(WorkspaceID, PostID, request) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Update(PostID, request) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -2758,7 +2469,6 @@ Replaces a draft's content, channels and options: options left out are removed. 
 
 ```go
 request := &peal.UpdatePostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     Body: &peal.PostDraft{
         ChannelIDs: []string{
@@ -2799,14 +2509,6 @@ _, err := client.Posts.Update(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -2827,7 +2529,7 @@ _, err := client.Posts.Update(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Discard(WorkspaceID, PostID) -> error</code></summary>
+<details><summary><code>client.Posts.Discard(PostID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -2855,7 +2557,6 @@ Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Need
 
 ```go
 request := &peal.DiscardPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 err := client.Posts.Discard(
@@ -2876,14 +2577,6 @@ err := client.Posts.Discard(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -2896,7 +2589,7 @@ err := client.Posts.Discard(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Outcome(WorkspaceID, PostID) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Outcome(PostID) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -2924,7 +2617,6 @@ Answers with a post once it has gone out: it waits up to `wait` seconds (60 at m
 
 ```go
 request := &peal.OutcomePostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Outcome(
@@ -2941,14 +2633,6 @@ _, err := client.Posts.Outcome(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2973,7 +2657,7 @@ _, err := client.Posts.Outcome(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Attempts(WorkspaceID, PostID) -> []*peal.PublicationAttempt</code></summary>
+<details><summary><code>client.Posts.Attempts(PostID) -> []*peal.PublicationAttempt</code></summary>
 <dl>
 <dd>
 
@@ -3001,7 +2685,6 @@ Lists every attempt Peal made at publishing the post, by channel, round and atte
 
 ```go
 request := &peal.AttemptsPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Attempts(
@@ -3022,14 +2705,6 @@ _, err := client.Posts.Attempts(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -3042,7 +2717,7 @@ _, err := client.Posts.Attempts(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Tag(WorkspaceID, PostID, request) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Tag(PostID, request) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3070,7 +2745,6 @@ Files a post under these tags of the workspace, 10 at most, instead of those it 
 
 ```go
 request := &peal.PostTags{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     TagIDs: []string{
         "tagIds",
@@ -3090,14 +2764,6 @@ _, err := client.Posts.Tag(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3122,7 +2788,7 @@ _, err := client.Posts.Tag(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Duplicate(WorkspaceID, PostID) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Duplicate(PostID) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3150,7 +2816,6 @@ Makes a new draft that says what the post says, whatever the post's status: its 
 
 ```go
 request := &peal.DuplicatePostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Duplicate(
@@ -3171,14 +2836,6 @@ _, err := client.Posts.Duplicate(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -3191,7 +2848,7 @@ _, err := client.Posts.Duplicate(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Schedule(WorkspaceID, PostID, request) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Schedule(PostID, request) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3219,7 +2876,6 @@ Schedules a draft on some of the workspace's channels at an instant, kept with t
 
 ```go
 request := &peal.SchedulePost{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     At: "at",
     ChannelIDs: []string{
@@ -3241,14 +2897,6 @@ _, err := client.Posts.Schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3289,7 +2937,7 @@ _, err := client.Posts.Schedule(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Reschedule(WorkspaceID, PostID, request) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Reschedule(PostID, request) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3317,7 +2965,6 @@ Moves a scheduled post, or one awaiting approval, to another instant, or schedul
 
 ```go
 request := &peal.ReschedulePostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     Body: &peal.PostSchedule{
         At: "at",
@@ -3342,14 +2989,6 @@ _, err := client.Posts.Reschedule(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -3370,7 +3009,7 @@ _, err := client.Posts.Reschedule(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Enqueue(WorkspaceID, PostID, request) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Enqueue(PostID, request) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3398,7 +3037,6 @@ Puts a post on the next free slot of a queue (`queueId`, or the workspace's defa
 
 ```go
 request := &peal.QueuePost{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Enqueue(
@@ -3415,14 +3053,6 @@ _, err := client.Posts.Enqueue(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3455,7 +3085,7 @@ _, err := client.Posts.Enqueue(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Unschedule(WorkspaceID, PostID) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Unschedule(PostID) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3483,7 +3113,6 @@ Takes a scheduled post back to draft, so its text and media can change: it goes 
 
 ```go
 request := &peal.UnschedulePostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Unschedule(
@@ -3504,14 +3133,6 @@ _, err := client.Posts.Unschedule(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -3524,7 +3145,7 @@ _, err := client.Posts.Unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Repost(WorkspaceID, PostID, TargetID) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Repost(PostID, TargetID) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3552,7 +3173,6 @@ Sends the post again, now, on one channel where it failed or is unconfirmed: a n
 
 ```go
 request := &peal.RepostPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     TargetID: "targetId",
 }
@@ -3570,14 +3190,6 @@ _, err := client.Posts.Repost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3602,7 +3214,7 @@ _, err := client.Posts.Repost(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.RemoveTarget(WorkspaceID, PostID, TargetID) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.RemoveTarget(PostID, TargetID) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3630,7 +3242,6 @@ Takes one channel off a post that waits for its time (scheduled, or awaiting app
 
 ```go
 request := &peal.RemoveTargetPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     TargetID: "targetId",
 }
@@ -3648,14 +3259,6 @@ _, err := client.Posts.RemoveTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3680,7 +3283,7 @@ _, err := client.Posts.RemoveTarget(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Confirm(WorkspaceID, PostID, TargetID, request) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Confirm(PostID, TargetID, request) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3708,7 +3311,6 @@ Says what you found on the platform for a post unconfirmed on one channel: `publ
 
 ```go
 request := &peal.ConfirmPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     TargetID: "targetId",
     Body: &peal.TargetConfirmation{
@@ -3729,14 +3331,6 @@ _, err := client.Posts.Confirm(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3769,7 +3363,7 @@ _, err := client.Posts.Confirm(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.LeaveOutRest(WorkspaceID, PostID, TargetID) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.LeaveOutRest(PostID, TargetID) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -3797,7 +3391,6 @@ Publishes the post on one channel without the parts that did not go out after it
 
 ```go
 request := &peal.LeaveOutRestPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     TargetID: "targetId",
 }
@@ -3815,14 +3408,6 @@ _, err := client.Posts.LeaveOutRest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3847,7 +3432,7 @@ _, err := client.Posts.LeaveOutRest(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.UnpublishTarget(WorkspaceID, PostID, TargetID) -> *peal.LivePostChange</code></summary>
+<details><summary><code>client.Posts.UnpublishTarget(PostID, TargetID) -> *peal.LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -3875,7 +3460,6 @@ Deletes the post from one channel's platform, for everyone: every part of a thre
 
 ```go
 request := &peal.UnpublishTargetPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     TargetID: "targetId",
 }
@@ -3893,14 +3477,6 @@ _, err := client.Posts.UnpublishTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3933,7 +3509,7 @@ _, err := client.Posts.UnpublishTarget(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.EditTarget(WorkspaceID, PostID, TargetID, request) -> *peal.LivePostChange</code></summary>
+<details><summary><code>client.Posts.EditTarget(PostID, TargetID, request) -> *peal.LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -3961,7 +3537,6 @@ Replaces the text of one part of the post (`part`, from 0, the post itself by de
 
 ```go
 request := &peal.LivePostEdit{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     TargetID: "targetId",
     Text: "text",
@@ -3980,14 +3555,6 @@ _, err := client.Posts.EditTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4036,7 +3603,7 @@ _, err := client.Posts.EditTarget(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Unpublish(WorkspaceID, PostID) -> *peal.PostUnpublish</code></summary>
+<details><summary><code>client.Posts.Unpublish(PostID) -> *peal.PostUnpublish</code></summary>
 <dl>
 <dd>
 
@@ -4064,7 +3631,6 @@ Deletes the post from every channel's platform where it can be, as unpublishing 
 
 ```go
 request := &peal.UnpublishPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Unpublish(
@@ -4085,14 +3651,6 @@ _, err := client.Posts.Unpublish(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -4105,7 +3663,7 @@ _, err := client.Posts.Unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Changes(WorkspaceID, PostID) -> *peal.LivePostChanges</code></summary>
+<details><summary><code>client.Posts.Changes(PostID) -> *peal.LivePostChanges</code></summary>
 <dl>
 <dd>
 
@@ -4133,7 +3691,6 @@ Lists the changes asked of the post once it was live (deleting it from a channel
 
 ```go
 request := &peal.ChangesPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Changes(
@@ -4154,14 +3711,6 @@ _, err := client.Posts.Changes(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -4174,7 +3723,7 @@ _, err := client.Posts.Changes(
 </dl>
 </details>
 
-<details><summary><code>client.Posts.Cancel(WorkspaceID, PostID) -> *peal.Post</code></summary>
+<details><summary><code>client.Posts.Cancel(PostID) -> *peal.Post</code></summary>
 <dl>
 <dd>
 
@@ -4202,7 +3751,6 @@ Cancels a draft, a scheduled post or one awaiting approval. A post already publi
 
 ```go
 request := &peal.CancelPostsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Posts.Cancel(
@@ -4223,14 +3771,6 @@ _, err := client.Posts.Cancel(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -4244,7 +3784,7 @@ _, err := client.Posts.Cancel(
 </details>
 
 ## articles
-<details><summary><code>client.Articles.List(WorkspaceID) -> *peal.ArticlePage</code></summary>
+<details><summary><code>client.Articles.List() -> *peal.ArticlePage</code></summary>
 <dl>
 <dd>
 
@@ -4271,9 +3811,7 @@ Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 
 <dd>
 
 ```go
-request := &peal.ListArticlesRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListArticlesRequest{}
 _, err := client.Articles.List(
     context.TODO(),
     request,
@@ -4288,14 +3826,6 @@ _, err := client.Articles.List(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4328,7 +3858,7 @@ _, err := client.Articles.List(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.Create(WorkspaceID, request) -> *peal.Article</code></summary>
+<details><summary><code>client.Articles.Create(request) -> *peal.Article</code></summary>
 <dl>
 <dd>
 
@@ -4356,7 +3886,6 @@ Writes an article for one of the workspace's websites (a channel connected with 
 
 ```go
 request := &peal.NewArticle{
-    WorkspaceID: "workspaceId",
     Body: &peal.ArticleBody{
         Content: []any{},
         Type: peal.ArticleBodyTypeDoc,
@@ -4378,14 +3907,6 @@ _, err := client.Articles.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4466,7 +3987,7 @@ _, err := client.Articles.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.Get(WorkspaceID, ArticleID) -> *peal.Article</code></summary>
+<details><summary><code>client.Articles.Get(ArticleID) -> *peal.Article</code></summary>
 <dl>
 <dd>
 
@@ -4494,7 +4015,6 @@ Reads an article. Needs post:read.
 
 ```go
 request := &peal.GetArticlesRequest{
-    WorkspaceID: "workspaceId",
     ArticleID: "articleId",
 }
 _, err := client.Articles.Get(
@@ -4515,14 +4035,6 @@ _, err := client.Articles.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleID:** `string` 
     
 </dd>
@@ -4535,7 +4047,7 @@ _, err := client.Articles.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.Delete(WorkspaceID, ArticleID) -> error</code></summary>
+<details><summary><code>client.Articles.Delete(ArticleID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -4563,7 +4075,6 @@ Deletes the article from Peal, and its job when it waits to go out; never while 
 
 ```go
 request := &peal.DeleteArticlesRequest{
-    WorkspaceID: "workspaceId",
     ArticleID: "articleId",
 }
 err := client.Articles.Delete(
@@ -4584,14 +4095,6 @@ err := client.Articles.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleID:** `string` 
     
 </dd>
@@ -4604,7 +4107,7 @@ err := client.Articles.Delete(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.Update(WorkspaceID, ArticleID, request) -> *peal.Article</code></summary>
+<details><summary><code>client.Articles.Update(ArticleID, request) -> *peal.Article</code></summary>
 <dl>
 <dd>
 
@@ -4632,7 +4135,6 @@ Replaces what a draft, a scheduled article or one that failed says. A scheduled 
 
 ```go
 request := &peal.UpdateArticlesRequest{
-    WorkspaceID: "workspaceId",
     ArticleID: "articleId",
     Body: &peal.ArticleInput{
         Body: &peal.ArticleBody{
@@ -4660,14 +4162,6 @@ _, err := client.Articles.Update(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleID:** `string` 
     
 </dd>
@@ -4688,7 +4182,7 @@ _, err := client.Articles.Update(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.Schedule(WorkspaceID, ArticleID, request) -> *peal.Article</code></summary>
+<details><summary><code>client.Articles.Schedule(ArticleID, request) -> *peal.Article</code></summary>
 <dl>
 <dd>
 
@@ -4716,7 +4210,6 @@ Schedules a draft, moves a scheduled article, or schedules one that failed again
 
 ```go
 request := &peal.ScheduleArticlesRequest{
-    WorkspaceID: "workspaceId",
     ArticleID: "articleId",
     Body: &peal.ArticleTime{
         TimeZone: "timeZone",
@@ -4736,14 +4229,6 @@ _, err := client.Articles.Schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4768,7 +4253,7 @@ _, err := client.Articles.Schedule(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.Unschedule(WorkspaceID, ArticleID) -> *peal.Article</code></summary>
+<details><summary><code>client.Articles.Unschedule(ArticleID) -> *peal.Article</code></summary>
 <dl>
 <dd>
 
@@ -4796,7 +4281,6 @@ Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 
 ```go
 request := &peal.UnscheduleArticlesRequest{
-    WorkspaceID: "workspaceId",
     ArticleID: "articleId",
 }
 _, err := client.Articles.Unschedule(
@@ -4817,14 +4301,6 @@ _, err := client.Articles.Unschedule(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleID:** `string` 
     
 </dd>
@@ -4837,7 +4313,7 @@ _, err := client.Articles.Unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.Retry(WorkspaceID, ArticleID) -> *peal.Article</code></summary>
+<details><summary><code>client.Articles.Retry(ArticleID) -> *peal.Article</code></summary>
 <dl>
 <dd>
 
@@ -4865,7 +4341,6 @@ Sends a failed article again now, or one that was unconfirmed once a member chec
 
 ```go
 request := &peal.RetryArticlesRequest{
-    WorkspaceID: "workspaceId",
     ArticleID: "articleId",
 }
 _, err := client.Articles.Retry(
@@ -4886,14 +4361,6 @@ _, err := client.Articles.Retry(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleID:** `string` 
     
 </dd>
@@ -4906,7 +4373,7 @@ _, err := client.Articles.Retry(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.Unpublish(WorkspaceID, ArticleID) -> *peal.Article</code></summary>
+<details><summary><code>client.Articles.Unpublish(ArticleID) -> *peal.Article</code></summary>
 <dl>
 <dd>
 
@@ -4934,7 +4401,6 @@ Moves the article's post to the site's trash, where the site keeps it for a whil
 
 ```go
 request := &peal.UnpublishArticlesRequest{
-    WorkspaceID: "workspaceId",
     ArticleID: "articleId",
 }
 _, err := client.Articles.Unpublish(
@@ -4955,14 +4421,6 @@ _, err := client.Articles.Unpublish(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleID:** `string` 
     
 </dd>
@@ -4975,7 +4433,7 @@ _, err := client.Articles.Unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.Articles.UpdateOnSite(WorkspaceID, ArticleID, request) -> *peal.Article</code></summary>
+<details><summary><code>client.Articles.UpdateOnSite(ArticleID, request) -> *peal.Article</code></summary>
 <dl>
 <dd>
 
@@ -5003,7 +4461,6 @@ Replaces what the article's post says on the site (title, body, excerpt, tags, c
 
 ```go
 request := &peal.UpdateOnSiteArticlesRequest{
-    WorkspaceID: "workspaceId",
     ArticleID: "articleId",
     Body: &peal.ArticleInput{
         Body: &peal.ArticleBody{
@@ -5031,14 +4488,6 @@ _, err := client.Articles.UpdateOnSite(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **articleID:** `string` 
     
 </dd>
@@ -5060,7 +4509,7 @@ _, err := client.Articles.UpdateOnSite(
 </details>
 
 ## media
-<details><summary><code>client.Media.List(WorkspaceID) -> *peal.MediaPage</code></summary>
+<details><summary><code>client.Media.List() -> *peal.MediaPage</code></summary>
 <dl>
 <dd>
 
@@ -5087,9 +4536,7 @@ Lists the workspace's media, newest first, 30 a page unless `limit` (at most 100
 <dd>
 
 ```go
-request := &peal.ListMediaRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListMediaRequest{}
 _, err := client.Media.List(
     context.TODO(),
     request,
@@ -5104,14 +4551,6 @@ _, err := client.Media.List(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5152,7 +4591,7 @@ _, err := client.Media.List(
 </dl>
 </details>
 
-<details><summary><code>client.Media.Create(WorkspaceID, request) -> *peal.PreparedUpload</code></summary>
+<details><summary><code>client.Media.Create(request) -> *peal.PreparedUpload</code></summary>
 <dl>
 <dd>
 
@@ -5180,7 +4619,6 @@ Records pending media and signs the upload of its file: one PUT for an image or 
 
 ```go
 request := &peal.NewUpload{
-    WorkspaceID: "workspaceId",
     ByteSize: int64(1000000),
     ContentType: "contentType",
 }
@@ -5198,14 +4636,6 @@ _, err := client.Media.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5246,7 +4676,7 @@ _, err := client.Media.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Media.ImportFromURL(WorkspaceID, request) -> *peal.Media</code></summary>
+<details><summary><code>client.Media.ImportFromURL(request) -> *peal.Media</code></summary>
 <dl>
 <dd>
 
@@ -5274,7 +4704,6 @@ Fetches a file from a public address, stores it as media of the workspace and pr
 
 ```go
 request := &peal.MediaImport{
-    WorkspaceID: "workspaceId",
     URL: "url",
 }
 _, err := client.Media.ImportFromURL(
@@ -5291,14 +4720,6 @@ _, err := client.Media.ImportFromURL(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5323,7 +4744,7 @@ _, err := client.Media.ImportFromURL(
 </dl>
 </details>
 
-<details><summary><code>client.Media.Get(WorkspaceID, MediaID) -> *peal.Media</code></summary>
+<details><summary><code>client.Media.Get(MediaID) -> *peal.Media</code></summary>
 <dl>
 <dd>
 
@@ -5351,7 +4772,6 @@ Shows one of the workspace's media. Needs media:read.
 
 ```go
 request := &peal.GetMediaRequest{
-    WorkspaceID: "workspaceId",
     MediaID: "mediaId",
 }
 _, err := client.Media.Get(
@@ -5372,14 +4792,6 @@ _, err := client.Media.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **mediaID:** `string` 
     
 </dd>
@@ -5392,7 +4804,7 @@ _, err := client.Media.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Media.Delete(WorkspaceID, MediaID) -> error</code></summary>
+<details><summary><code>client.Media.Delete(MediaID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -5420,7 +4832,6 @@ Deletes the media and its file, and cancels its upload if it is still pending. D
 
 ```go
 request := &peal.DeleteMediaRequest{
-    WorkspaceID: "workspaceId",
     MediaID: "mediaId",
 }
 err := client.Media.Delete(
@@ -5441,14 +4852,6 @@ err := client.Media.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **mediaID:** `string` 
     
 </dd>
@@ -5461,7 +4864,7 @@ err := client.Media.Delete(
 </dl>
 </details>
 
-<details><summary><code>client.Media.Describe(WorkspaceID, MediaID, request) -> *peal.Media</code></summary>
+<details><summary><code>client.Media.Describe(MediaID, request) -> *peal.Media</code></summary>
 <dl>
 <dd>
 
@@ -5489,7 +4892,6 @@ Sets the media's description, which platforms show to people who cannot see it. 
 
 ```go
 request := &peal.MediaDescription{
-    WorkspaceID: "workspaceId",
     MediaID: "mediaId",
 }
 _, err := client.Media.Describe(
@@ -5506,14 +4908,6 @@ _, err := client.Media.Describe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5538,7 +4932,7 @@ _, err := client.Media.Describe(
 </dl>
 </details>
 
-<details><summary><code>client.Media.Complete(WorkspaceID, MediaID) -> *peal.Media</code></summary>
+<details><summary><code>client.Media.Complete(MediaID) -> *peal.Media</code></summary>
 <dl>
 <dd>
 
@@ -5566,7 +4960,6 @@ Checks that the file reached the store with the declared size and type, joining 
 
 ```go
 request := &peal.CompleteMediaRequest{
-    WorkspaceID: "workspaceId",
     MediaID: "mediaId",
 }
 _, err := client.Media.Complete(
@@ -5587,14 +4980,6 @@ _, err := client.Media.Complete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **mediaID:** `string` 
     
 </dd>
@@ -5607,7 +4992,7 @@ _, err := client.Media.Complete(
 </dl>
 </details>
 
-<details><summary><code>client.Media.Usage(WorkspaceID, MediaID) -> *peal.MediaUsage</code></summary>
+<details><summary><code>client.Media.Usage(MediaID) -> *peal.MediaUsage</code></summary>
 <dl>
 <dd>
 
@@ -5635,7 +5020,6 @@ Lists the posts that show the media: drafts, which lose it if it is deleted, and
 
 ```go
 request := &peal.UsageMediaRequest{
-    WorkspaceID: "workspaceId",
     MediaID: "mediaId",
 }
 _, err := client.Media.Usage(
@@ -5656,14 +5040,6 @@ _, err := client.Media.Usage(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **mediaID:** `string` 
     
 </dd>
@@ -5677,7 +5053,7 @@ _, err := client.Media.Usage(
 </details>
 
 ## mediaAudio
-<details><summary><code>client.MediaAudio.CreateVoiceover(WorkspaceID, request) -> *peal.Media</code></summary>
+<details><summary><code>client.MediaAudio.CreateVoiceover(request) -> *peal.Media</code></summary>
 <dl>
 <dd>
 
@@ -5705,7 +5081,6 @@ Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models
 
 ```go
 request := &peal.VoiceoverRequest{
-    WorkspaceID: "workspaceId",
     Text: "text",
 }
 _, err := client.MediaAudio.CreateVoiceover(
@@ -5722,14 +5097,6 @@ _, err := client.MediaAudio.CreateVoiceover(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5754,7 +5121,7 @@ _, err := client.MediaAudio.CreateVoiceover(
 </dl>
 </details>
 
-<details><summary><code>client.MediaAudio.Transcribe(WorkspaceID, MediaID, request) -> *peal.Transcript</code></summary>
+<details><summary><code>client.MediaAudio.Transcribe(MediaID, request) -> *peal.Transcript</code></summary>
 <dl>
 <dd>
 
@@ -5782,7 +5149,6 @@ Sends a ready audio or video file of the media library, of at most 25000000 byte
 
 ```go
 request := &peal.TranscriptionRequest{
-    WorkspaceID: "workspaceId",
     MediaID: "mediaId",
 }
 _, err := client.MediaAudio.Transcribe(
@@ -5799,14 +5165,6 @@ _, err := client.MediaAudio.Transcribe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6151,7 +5509,7 @@ _, err := client.NotificationPreferences.Update(
 </details>
 
 ## assistant
-<details><summary><code>client.Assistant.Status(WorkspaceID) -> *peal.AssistantStatus</code></summary>
+<details><summary><code>client.Assistant.Status() -> *peal.AssistantStatus</code></summary>
 <dl>
 <dd>
 
@@ -6178,29 +5536,10 @@ Tells whether the assistant writes for the workspace, so clients show it or hide
 <dd>
 
 ```go
-request := &peal.StatusAssistantRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Assistant.Status(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6211,7 +5550,7 @@ _, err := client.Assistant.Status(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.Suggest(WorkspaceID, request) -> *peal.Suggestion</code></summary>
+<details><summary><code>client.Assistant.Suggest(request) -> *peal.Suggestion</code></summary>
 <dl>
 <dd>
 
@@ -6239,7 +5578,6 @@ Asks the language model to rewrite, shorten or translate a post's text, to sugge
 
 ```go
 request := &peal.SuggestionRequest{
-    WorkspaceID: "workspaceId",
     Action: &peal.AssistantAction{
         Rewrite: &peal.AssistantActionRewrite{
             Tone: peal.AssistantToneProfessional,
@@ -6265,14 +5603,6 @@ _, err := client.Assistant.Suggest(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **action:** `*peal.AssistantAction` 
     
 </dd>
@@ -6293,7 +5623,7 @@ _, err := client.Assistant.Suggest(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.GenerateImage(WorkspaceID, request) -> *peal.Media</code></summary>
+<details><summary><code>client.Assistant.GenerateImage(request) -> *peal.Media</code></summary>
 <dl>
 <dd>
 
@@ -6321,7 +5651,6 @@ Asks for one image from the prompt, in the aspect asked for, and answers with it
 
 ```go
 request := &peal.ImageRequest{
-    WorkspaceID: "workspaceId",
     Aspect: peal.ImageAspectSquare,
     Prompt: "prompt",
 }
@@ -6339,14 +5668,6 @@ _, err := client.Assistant.GenerateImage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6371,7 +5692,7 @@ _, err := client.Assistant.GenerateImage(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.ImageProvider(WorkspaceID) -> *peal.ImageProviderSetting</code></summary>
+<details><summary><code>client.Assistant.ImageProvider() -> *peal.ImageProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -6398,29 +5719,10 @@ Reads the image provider the workspace brought, a provider Peal knows by name (O
 <dd>
 
 ```go
-request := &peal.ImageProviderAssistantRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Assistant.ImageProvider(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6431,7 +5733,7 @@ _, err := client.Assistant.ImageProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.SetImageProvider(WorkspaceID, request) -> *peal.ImageProvider</code></summary>
+<details><summary><code>client.Assistant.SetImageProvider(request) -> *peal.ImageProvider</code></summary>
 <dl>
 <dd>
 
@@ -6459,7 +5761,6 @@ Sets the image provider the workspace brings, a provider Peal knows by name (Ope
 
 ```go
 request := &peal.ImageProviderChange{
-    WorkspaceID: "workspaceId",
     Model: "model",
 }
 _, err := client.Assistant.SetImageProvider(
@@ -6476,14 +5777,6 @@ _, err := client.Assistant.SetImageProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6524,7 +5817,7 @@ _, err := client.Assistant.SetImageProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.RemoveImageProvider(WorkspaceID) -> error</code></summary>
+<details><summary><code>client.Assistant.RemoveImageProvider() -> error</code></summary>
 <dl>
 <dd>
 
@@ -6551,29 +5844,10 @@ Removes the workspace's image provider and its key: images are made by the serve
 <dd>
 
 ```go
-request := &peal.RemoveImageProviderAssistantRequest{
-    WorkspaceID: "workspaceId",
-}
 err := client.Assistant.RemoveImageProvider(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6584,7 +5858,7 @@ err := client.Assistant.RemoveImageProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.TextProvider(WorkspaceID) -> *peal.TextProviderSetting</code></summary>
+<details><summary><code>client.Assistant.TextProvider() -> *peal.TextProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -6611,29 +5885,10 @@ Reads the text provider the workspace brought, Anthropic's Messages API or an en
 <dd>
 
 ```go
-request := &peal.TextProviderAssistantRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Assistant.TextProvider(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6644,7 +5899,7 @@ _, err := client.Assistant.TextProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.SetTextProvider(WorkspaceID, request) -> *peal.TextProvider</code></summary>
+<details><summary><code>client.Assistant.SetTextProvider(request) -> *peal.TextProvider</code></summary>
 <dl>
 <dd>
 
@@ -6672,7 +5927,6 @@ Sets the text provider the workspace brings, Anthropic's Messages API or an endp
 
 ```go
 request := &peal.TextProviderChange{
-    WorkspaceID: "workspaceId",
     Model: "model",
 }
 _, err := client.Assistant.SetTextProvider(
@@ -6689,14 +5943,6 @@ _, err := client.Assistant.SetTextProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6745,7 +5991,7 @@ _, err := client.Assistant.SetTextProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.RemoveTextProvider(WorkspaceID) -> error</code></summary>
+<details><summary><code>client.Assistant.RemoveTextProvider() -> error</code></summary>
 <dl>
 <dd>
 
@@ -6772,29 +6018,10 @@ Removes the workspace's text provider and its key: the server's language model w
 <dd>
 
 ```go
-request := &peal.RemoveTextProviderAssistantRequest{
-    WorkspaceID: "workspaceId",
-}
 err := client.Assistant.RemoveTextProvider(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6805,7 +6032,7 @@ err := client.Assistant.RemoveTextProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.TestTextProvider(WorkspaceID) -> error</code></summary>
+<details><summary><code>client.Assistant.TestTextProvider() -> error</code></summary>
 <dl>
 <dd>
 
@@ -6832,29 +6059,10 @@ Sends the workspace's text provider one short request, a rewrite of a fixed sent
 <dd>
 
 ```go
-request := &peal.TestTextProviderAssistantRequest{
-    WorkspaceID: "workspaceId",
-}
 err := client.Assistant.TestTextProvider(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6865,7 +6073,7 @@ err := client.Assistant.TestTextProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.Providers(WorkspaceID) -> *peal.AiProviderConnections</code></summary>
+<details><summary><code>client.Assistant.Providers() -> *peal.AiProviderConnections</code></summary>
 <dl>
 <dd>
 
@@ -6892,29 +6100,10 @@ Lists the AI providers the workspace connected with a key of its own: where each
 <dd>
 
 ```go
-request := &peal.ProvidersAssistantRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Assistant.Providers(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6925,7 +6114,7 @@ _, err := client.Assistant.Providers(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.ConnectProvider(WorkspaceID, Provider, request) -> *peal.AiProviderConnection</code></summary>
+<details><summary><code>client.Assistant.ConnectProvider(Provider, request) -> *peal.AiProviderConnection</code></summary>
 <dl>
 <dd>
 
@@ -6953,7 +6142,6 @@ Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `open
 
 ```go
 request := &peal.AiProviderConnectionChange{
-    WorkspaceID: "workspaceId",
     Provider: peal.AiProviderAnthropic,
 }
 _, err := client.Assistant.ConnectProvider(
@@ -6970,14 +6158,6 @@ _, err := client.Assistant.ConnectProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7010,7 +6190,7 @@ _, err := client.Assistant.ConnectProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.DisconnectProvider(WorkspaceID, Provider) -> error</code></summary>
+<details><summary><code>client.Assistant.DisconnectProvider(Provider) -> error</code></summary>
 <dl>
 <dd>
 
@@ -7038,7 +6218,6 @@ Removes the provider and its key, and the uses it served: the server's model wor
 
 ```go
 request := &peal.DisconnectProviderAssistantRequest{
-    WorkspaceID: "workspaceId",
     Provider: peal.AiProviderAnthropic,
 }
 err := client.Assistant.DisconnectProvider(
@@ -7059,14 +6238,6 @@ err := client.Assistant.DisconnectProvider(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **provider:** `*peal.AiProvider` 
     
 </dd>
@@ -7079,7 +6250,7 @@ err := client.Assistant.DisconnectProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.TestProvider(WorkspaceID, Provider, request) -> error</code></summary>
+<details><summary><code>client.Assistant.TestProvider(Provider, request) -> error</code></summary>
 <dl>
 <dd>
 
@@ -7107,7 +6278,6 @@ Sends a connected provider one short request for text, a rewrite of a fixed sent
 
 ```go
 request := &peal.AiProviderTest{
-    WorkspaceID: "workspaceId",
     Provider: peal.AiProviderAnthropic,
 }
 err := client.Assistant.TestProvider(
@@ -7124,14 +6294,6 @@ err := client.Assistant.TestProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7156,7 +6318,7 @@ err := client.Assistant.TestProvider(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.Models(WorkspaceID) -> *peal.AiCapabilityModels</code></summary>
+<details><summary><code>client.Assistant.Models() -> *peal.AiCapabilityModels</code></summary>
 <dl>
 <dd>
 
@@ -7183,29 +6345,10 @@ Tells, for each use (text, images, videos, voice-overs, transcripts, slide video
 <dd>
 
 ```go
-request := &peal.ModelsAssistantRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Assistant.Models(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -7216,7 +6359,7 @@ _, err := client.Assistant.Models(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.SetModel(WorkspaceID, Capability, request) -> *peal.AiCapabilityModel</code></summary>
+<details><summary><code>client.Assistant.SetModel(Capability, request) -> *peal.AiCapabilityModel</code></summary>
 <dl>
 <dd>
 
@@ -7244,7 +6387,6 @@ Chooses the provider and the model for one use: the provider must be connected (
 
 ```go
 request := &peal.AiCapabilityModelChange{
-    WorkspaceID: "workspaceId",
     Capability: peal.AiCapabilityText,
     Provider: peal.AiProviderAnthropic,
 }
@@ -7262,14 +6404,6 @@ _, err := client.Assistant.SetModel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7302,7 +6436,7 @@ _, err := client.Assistant.SetModel(
 </dl>
 </details>
 
-<details><summary><code>client.Assistant.UnsetModel(WorkspaceID, Capability) -> error</code></summary>
+<details><summary><code>client.Assistant.UnsetModel(Capability) -> error</code></summary>
 <dl>
 <dd>
 
@@ -7330,7 +6464,6 @@ Leaves a use to the server's model, if it has one (`serverModel`), within the wo
 
 ```go
 request := &peal.UnsetModelAssistantRequest{
-    WorkspaceID: "workspaceId",
     Capability: peal.AiCapabilityText,
 }
 err := client.Assistant.UnsetModel(
@@ -7351,14 +6484,6 @@ err := client.Assistant.UnsetModel(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **capability:** `*peal.AiCapability` 
     
 </dd>
@@ -7372,7 +6497,7 @@ err := client.Assistant.UnsetModel(
 </details>
 
 ## videoGenerations
-<details><summary><code>client.VideoGenerations.List(WorkspaceID) -> *peal.VideoGenerations</code></summary>
+<details><summary><code>client.VideoGenerations.List() -> *peal.VideoGenerations</code></summary>
 <dl>
 <dd>
 
@@ -7399,9 +6524,7 @@ Lists the videos the workspace asked for, newest first, 50 at most, only those w
 <dd>
 
 ```go
-request := &peal.ListVideoGenerationsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListVideoGenerationsRequest{}
 _, err := client.VideoGenerations.List(
     context.TODO(),
     request,
@@ -7420,14 +6543,6 @@ _, err := client.VideoGenerations.List(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **status:** `*peal.VideoGenerationStatus` 
     
 </dd>
@@ -7440,7 +6555,7 @@ _, err := client.VideoGenerations.List(
 </dl>
 </details>
 
-<details><summary><code>client.VideoGenerations.Create(WorkspaceID, request) -> *peal.VideoGeneration</code></summary>
+<details><summary><code>client.VideoGenerations.Create(request) -> *peal.VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -7468,7 +6583,6 @@ Asks the provider the workspace chose for videos (`PUT .../assistant/models/vide
 
 ```go
 request := &peal.VideoGenerationRequest{
-    WorkspaceID: "workspaceId",
     Aspect: peal.ImageAspectSquare,
     Prompt: "prompt",
 }
@@ -7486,14 +6600,6 @@ _, err := client.VideoGenerations.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7534,7 +6640,7 @@ _, err := client.VideoGenerations.Create(
 </dl>
 </details>
 
-<details><summary><code>client.VideoGenerations.Get(WorkspaceID, GenerationID) -> *peal.VideoGeneration</code></summary>
+<details><summary><code>client.VideoGenerations.Get(GenerationID) -> *peal.VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -7562,7 +6668,6 @@ Reads where a video stands: queued, running, succeeded with its file (`mediaId`)
 
 ```go
 request := &peal.GetVideoGenerationsRequest{
-    WorkspaceID: "workspaceId",
     GenerationID: "generationId",
 }
 _, err := client.VideoGenerations.Get(
@@ -7583,14 +6688,6 @@ _, err := client.VideoGenerations.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **generationID:** `string` 
     
 </dd>
@@ -7604,7 +6701,7 @@ _, err := client.VideoGenerations.Get(
 </details>
 
 ## slideshows
-<details><summary><code>client.Slideshows.List(WorkspaceID) -> *peal.Slideshows</code></summary>
+<details><summary><code>client.Slideshows.List() -> *peal.Slideshows</code></summary>
 <dl>
 <dd>
 
@@ -7631,9 +6728,7 @@ Lists the slide videos the workspace asked for, newest first, 50 at most, only t
 <dd>
 
 ```go
-request := &peal.ListSlideshowsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListSlideshowsRequest{}
 _, err := client.Slideshows.List(
     context.TODO(),
     request,
@@ -7652,14 +6747,6 @@ _, err := client.Slideshows.List(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **status:** `*peal.SlideshowStatus` 
     
 </dd>
@@ -7672,7 +6759,7 @@ _, err := client.Slideshows.List(
 </dl>
 </details>
 
-<details><summary><code>client.Slideshows.Create(WorkspaceID, request) -> *peal.Slideshow</code></summary>
+<details><summary><code>client.Slideshows.Create(request) -> *peal.Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7700,7 +6787,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```go
 request := &peal.SlideshowRequest{
-    WorkspaceID: "workspaceId",
     Aspect: peal.ImageAspectSquare,
     Slides: []*peal.Slide{
         &peal.Slide{
@@ -7722,14 +6808,6 @@ _, err := client.Slideshows.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7778,7 +6856,7 @@ _, err := client.Slideshows.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Slideshows.CreateFromEdit(WorkspaceID, request) -> *peal.Slideshow</code></summary>
+<details><summary><code>client.Slideshows.CreateFromEdit(request) -> *peal.Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7806,7 +6884,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```go
 request := &peal.EditRenderRequest{
-    WorkspaceID: "workspaceId",
     Edit: map[string]any{
         "key": "value",
     },
@@ -7829,14 +6906,6 @@ _, err := client.Slideshows.CreateFromEdit(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **edit:** `map[string]any` 
     
 </dd>
@@ -7849,7 +6918,7 @@ _, err := client.Slideshows.CreateFromEdit(
 </dl>
 </details>
 
-<details><summary><code>client.Slideshows.Get(WorkspaceID, SlideshowID) -> *peal.Slideshow</code></summary>
+<details><summary><code>client.Slideshows.Get(SlideshowID) -> *peal.Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7877,7 +6946,6 @@ Reads where a slide video stands: queued, running, succeeded with its file (`med
 
 ```go
 request := &peal.GetSlideshowsRequest{
-    WorkspaceID: "workspaceId",
     SlideshowID: "slideshowId",
 }
 _, err := client.Slideshows.Get(
@@ -7898,14 +6966,6 @@ _, err := client.Slideshows.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **slideshowID:** `string` 
     
 </dd>
@@ -7919,7 +6979,7 @@ _, err := client.Slideshows.Get(
 </details>
 
 ## members
-<details><summary><code>client.Members.List(WorkspaceID) -> []*peal.WorkspaceMember</code></summary>
+<details><summary><code>client.Members.List() -> []*peal.WorkspaceMember</code></summary>
 <dl>
 <dd>
 
@@ -7946,29 +7006,10 @@ Lists the workspace's members, in the order they joined, with their name, email 
 <dd>
 
 ```go
-request := &peal.ListMembersRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Members.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -7980,7 +7021,7 @@ _, err := client.Members.List(
 </details>
 
 ## invitations
-<details><summary><code>client.Invitations.List(WorkspaceID) -> []*peal.Invitation</code></summary>
+<details><summary><code>client.Invitations.List() -> []*peal.Invitation</code></summary>
 <dl>
 <dd>
 
@@ -8007,29 +7048,10 @@ Lists the workspace's pending invitations, oldest first, expired ones included. 
 <dd>
 
 ```go
-request := &peal.ListInvitationsRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Invitations.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -8040,7 +7062,7 @@ _, err := client.Invitations.List(
 </dl>
 </details>
 
-<details><summary><code>client.Invitations.Create(WorkspaceID, request) -> *peal.Invitation</code></summary>
+<details><summary><code>client.Invitations.Create(request) -> *peal.Invitation</code></summary>
 <dl>
 <dd>
 
@@ -8068,7 +7090,6 @@ Invites someone to the workspace with a role: Peal emails them a link that works
 
 ```go
 request := &peal.NewInvitation{
-    WorkspaceID: "workspaceId",
     Email: "email",
     Role: peal.RoleOwner,
 }
@@ -8086,14 +7107,6 @@ _, err := client.Invitations.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8118,7 +7131,7 @@ _, err := client.Invitations.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Invitations.Revoke(WorkspaceID, InvitationID) -> error</code></summary>
+<details><summary><code>client.Invitations.Revoke(InvitationID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -8146,7 +7159,6 @@ Revokes a pending invitation of the workspace: its link stops working at once. N
 
 ```go
 request := &peal.RevokeInvitationsRequest{
-    WorkspaceID: "workspaceId",
     InvitationID: "invitationId",
 }
 err := client.Invitations.Revoke(
@@ -8167,14 +7179,6 @@ err := client.Invitations.Revoke(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **invitationID:** `string` 
     
 </dd>
@@ -8188,7 +7192,7 @@ err := client.Invitations.Revoke(
 </details>
 
 ## billing
-<details><summary><code>client.Billing.Get(WorkspaceID) -> *peal.Billing</code></summary>
+<details><summary><code>client.Billing.Get() -> *peal.Billing</code></summary>
 <dl>
 <dd>
 
@@ -8215,29 +7219,10 @@ Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tie
 <dd>
 
 ```go
-request := &peal.GetBillingRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Billing.Get(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -8248,7 +7233,7 @@ _, err := client.Billing.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Billing.Standing(WorkspaceID) -> *peal.Standing</code></summary>
+<details><summary><code>client.Billing.Standing() -> *peal.Standing</code></summary>
 <dl>
 <dd>
 
@@ -8275,29 +7260,10 @@ Answers where the workspace stands against its plan: what it holds beyond it, as
 <dd>
 
 ```go
-request := &peal.StandingBillingRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Billing.Standing(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -8309,7 +7275,7 @@ _, err := client.Billing.Standing(
 </details>
 
 ## usage
-<details><summary><code>client.Usage.Get(WorkspaceID) -> *peal.WorkspaceUsageReport</code></summary>
+<details><summary><code>client.Usage.Get() -> *peal.WorkspaceUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -8336,9 +7302,7 @@ Answers what the workspace uses of its plan now, and day by day from `from` to `
 <dd>
 
 ```go
-request := &peal.GetUsageRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.GetUsageRequest{}
 _, err := client.Usage.Get(
     context.TODO(),
     request,
@@ -8353,14 +7317,6 @@ _, err := client.Usage.Get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8385,7 +7341,7 @@ _, err := client.Usage.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Usage.Partner(WorkspaceID) -> *peal.PartnerUsageReport</code></summary>
+<details><summary><code>client.Usage.Partner() -> *peal.PartnerUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -8397,7 +7353,7 @@ _, err := client.Usage.Get(
 <dl>
 <dd>
 
-Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
 </dd>
 </dl>
 </dd>
@@ -8412,9 +7368,7 @@ Answers what the partner account uses across the workspaces it holds, from `from
 <dd>
 
 ```go
-request := &peal.PartnerUsageRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.PartnerUsageRequest{}
 _, err := client.Usage.Partner(
     context.TODO(),
     request,
@@ -8429,14 +7383,6 @@ _, err := client.Usage.Partner(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8478,7 +7424,7 @@ _, err := client.Usage.Partner(
 </details>
 
 ## analytics
-<details><summary><code>client.Analytics.Summary(WorkspaceID) -> *peal.AnalyticsSummary</code></summary>
+<details><summary><code>client.Analytics.Summary() -> *peal.AnalyticsSummary</code></summary>
 <dl>
 <dd>
 
@@ -8506,7 +7452,6 @@ Sums up the posts published from `from` to `to`, both included and at most 366 d
 
 ```go
 request := &peal.SummaryAnalyticsRequest{
-    WorkspaceID: "workspaceId",
     From: "from",
     TimeZone: "timeZone",
     To: "to",
@@ -8525,14 +7470,6 @@ _, err := client.Analytics.Summary(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8565,7 +7502,7 @@ _, err := client.Analytics.Summary(
 </dl>
 </details>
 
-<details><summary><code>client.Analytics.Dashboard(WorkspaceID) -> *peal.AnalyticsDashboard</code></summary>
+<details><summary><code>client.Analytics.Dashboard() -> *peal.AnalyticsDashboard</code></summary>
 <dl>
 <dd>
 
@@ -8593,7 +7530,6 @@ Answers a workspace's analytics over a range in one call: the totals of the post
 
 ```go
 request := &peal.DashboardAnalyticsRequest{
-    WorkspaceID: "workspaceId",
     TimeZone: "timeZone",
 }
 _, err := client.Analytics.Dashboard(
@@ -8610,14 +7546,6 @@ _, err := client.Analytics.Dashboard(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8666,7 +7594,7 @@ _, err := client.Analytics.Dashboard(
 </dl>
 </details>
 
-<details><summary><code>client.Analytics.Channel(WorkspaceID, ChannelID) -> *peal.ChannelSeries</code></summary>
+<details><summary><code>client.Analytics.Channel(ChannelID) -> *peal.ChannelSeries</code></summary>
 <dl>
 <dd>
 
@@ -8694,7 +7622,6 @@ Answers one channel's numbers day by day: its followers, the accounts it follows
 
 ```go
 request := &peal.ChannelAnalyticsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
     TimeZone: "timeZone",
 }
@@ -8712,14 +7639,6 @@ _, err := client.Analytics.Channel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8768,7 +7687,7 @@ _, err := client.Analytics.Channel(
 </dl>
 </details>
 
-<details><summary><code>client.Analytics.Export(WorkspaceID) -> string</code></summary>
+<details><summary><code>client.Analytics.Export() -> string</code></summary>
 <dl>
 <dd>
 
@@ -8796,7 +7715,6 @@ Streams the workspace's analytics as a file: `kind=posts` lists each post publis
 
 ```go
 request := &peal.ExportAnalyticsRequest{
-    WorkspaceID: "workspaceId",
     TimeZone: "timeZone",
     Kind: peal.AnalyticsExportKindPosts,
 }
@@ -8814,14 +7732,6 @@ _, err := client.Analytics.Export(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8878,7 +7788,7 @@ _, err := client.Analytics.Export(
 </dl>
 </details>
 
-<details><summary><code>client.Analytics.BestTimes(WorkspaceID) -> *peal.BestTimes</code></summary>
+<details><summary><code>client.Analytics.BestTimes() -> *peal.BestTimes</code></summary>
 <dl>
 <dd>
 
@@ -8906,7 +7816,6 @@ Answers when one channel's posts did best, by weekday and hour as `timeZone` (an
 
 ```go
 request := &peal.BestTimesAnalyticsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
     TimeZone: "timeZone",
 }
@@ -8924,14 +7833,6 @@ _, err := client.Analytics.BestTimes(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8964,7 +7865,7 @@ _, err := client.Analytics.BestTimes(
 </dl>
 </details>
 
-<details><summary><code>client.Analytics.Post(WorkspaceID, PostID) -> *peal.PostAnalytics</code></summary>
+<details><summary><code>client.Analytics.Post(PostID) -> *peal.PostAnalytics</code></summary>
 <dl>
 <dd>
 
@@ -8992,7 +7893,6 @@ Answers with the counts of a post on each channel it went live on, over time. A 
 
 ```go
 request := &peal.PostAnalyticsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Analytics.Post(
@@ -9013,14 +7913,6 @@ _, err := client.Analytics.Post(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -9034,7 +7926,7 @@ _, err := client.Analytics.Post(
 </details>
 
 ## tiktok
-<details><summary><code>client.Tiktok.Creator(WorkspaceID, ChannelID) -> *peal.TikTokAccount</code></summary>
+<details><summary><code>client.Tiktok.Creator(ChannelID) -> *peal.TikTokAccount</code></summary>
 <dl>
 <dd>
 
@@ -9062,7 +7954,6 @@ Reads a TikTok channel's creator from TikTok: their nickname, the audiences the 
 
 ```go
 request := &peal.CreatorTiktokRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.Tiktok.Creator(
@@ -9083,14 +7974,6 @@ _, err := client.Tiktok.Creator(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -9104,7 +7987,7 @@ _, err := client.Tiktok.Creator(
 </details>
 
 ## capabilities
-<details><summary><code>client.Capabilities.Platforms(WorkspaceID) -> []*peal.PlatformCapabilities</code></summary>
+<details><summary><code>client.Capabilities.Platforms() -> []*peal.PlatformCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -9131,29 +8014,10 @@ Describes what a post may hold on every platform, in Peal's order, whether or no
 <dd>
 
 ```go
-request := &peal.PlatformsCapabilitiesRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Capabilities.Platforms(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -9164,7 +8028,7 @@ _, err := client.Capabilities.Platforms(
 </dl>
 </details>
 
-<details><summary><code>client.Capabilities.Channel(WorkspaceID, ChannelID) -> *peal.ChannelCapabilities</code></summary>
+<details><summary><code>client.Capabilities.Channel(ChannelID) -> *peal.ChannelCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -9192,7 +8056,6 @@ Describes what a post on this channel may hold: its platform's capabilities, and
 
 ```go
 request := &peal.ChannelCapabilitiesRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.Capabilities.Channel(
@@ -9213,14 +8076,6 @@ _, err := client.Capabilities.Channel(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -9234,7 +8089,7 @@ _, err := client.Capabilities.Channel(
 </details>
 
 ## lookups
-<details><summary><code>client.Lookups.List(WorkspaceID, ChannelID) -> []*peal.LookupDescription</code></summary>
+<details><summary><code>client.Lookups.List(ChannelID) -> []*peal.LookupDescription</code></summary>
 <dl>
 <dd>
 
@@ -9262,7 +8117,6 @@ Lists the lookups the channel has: what its platform tells about the account tha
 
 ```go
 request := &peal.ListLookupsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.Lookups.List(
@@ -9283,14 +8137,6 @@ _, err := client.Lookups.List(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -9303,7 +8149,7 @@ _, err := client.Lookups.List(
 </dl>
 </details>
 
-<details><summary><code>client.Lookups.Run(WorkspaceID, ChannelID, Name, request) -> *peal.LookupResult</code></summary>
+<details><summary><code>client.Lookups.Run(ChannelID, Name, request) -> *peal.LookupResult</code></summary>
 <dl>
 <dd>
 
@@ -9331,7 +8177,6 @@ Runs one of the channel's lookups: asks the platform now, with the channel's tok
 
 ```go
 request := &peal.LookupInput{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
     Name: "name",
 }
@@ -9349,14 +8194,6 @@ _, err := client.Lookups.Run(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9430,7 +8267,7 @@ _, err := client.Lookups.Run(
 </details>
 
 ## webhooks
-<details><summary><code>client.Webhooks.List(WorkspaceID) -> []*peal.WebhookEndpoint</code></summary>
+<details><summary><code>client.Webhooks.List() -> []*peal.WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -9457,29 +8294,10 @@ Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 <dd>
 
 ```go
-request := &peal.ListWebhooksRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Webhooks.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -9490,7 +8308,7 @@ _, err := client.Webhooks.List(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.Create(WorkspaceID, request) -> *peal.WebhookEndpointSecret</code></summary>
+<details><summary><code>client.Webhooks.Create(request) -> *peal.WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -9518,7 +8336,6 @@ Adds a webhook endpoint to the workspace, and answers with its signing secret, w
 
 ```go
 request := &peal.NewWebhookEndpoint{
-    WorkspaceID: "workspaceId",
     EventTypes: []peal.SubscribableWebhookEventType{
         peal.SubscribableWebhookEventTypePostScheduled,
     },
@@ -9538,14 +8355,6 @@ _, err := client.Webhooks.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9618,7 +8427,7 @@ _, err := client.Webhooks.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.SearchDeliveries(WorkspaceID) -> *peal.WebhookDeliveryPage</code></summary>
+<details><summary><code>client.Webhooks.SearchDeliveries() -> *peal.WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -9645,9 +8454,7 @@ Lists the workspace's deliveries across its endpoints, newest first, 30 a page u
 <dd>
 
 ```go
-request := &peal.SearchDeliveriesWebhooksRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.SearchDeliveriesWebhooksRequest{}
 _, err := client.Webhooks.SearchDeliveries(
     context.TODO(),
     request,
@@ -9662,14 +8469,6 @@ _, err := client.Webhooks.SearchDeliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9734,7 +8533,7 @@ _, err := client.Webhooks.SearchDeliveries(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.RedeliverMany(WorkspaceID, request) -> *peal.WebhookBulkRedelivery</code></summary>
+<details><summary><code>client.Webhooks.RedeliverMany(request) -> *peal.WebhookBulkRedelivery</code></summary>
 <dl>
 <dd>
 
@@ -9761,13 +8560,10 @@ Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, o
 <dd>
 
 ```go
-request := &peal.RedeliverManyWebhooksRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.WebhookRedeliveryRequest{
-        WebhookRedeliveryByIDs: &peal.WebhookRedeliveryByIDs{
-            DeliveryIDs: []string{
-                "deliveryIds",
-            },
+request := &peal.WebhookRedeliveryRequest{
+    WebhookRedeliveryByIDs: &peal.WebhookRedeliveryByIDs{
+        DeliveryIDs: []string{
+            "deliveryIds",
         },
     },
 }
@@ -9789,14 +8585,6 @@ _, err := client.Webhooks.RedeliverMany(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.WebhookRedeliveryRequest` 
     
 </dd>
@@ -9809,7 +8597,7 @@ _, err := client.Webhooks.RedeliverMany(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.Get(WorkspaceID, EndpointID) -> *peal.WebhookEndpoint</code></summary>
+<details><summary><code>client.Webhooks.Get(EndpointID) -> *peal.WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -9837,7 +8625,6 @@ Shows one of the workspace's webhook endpoints. Needs webhook:read.
 
 ```go
 request := &peal.GetWebhooksRequest{
-    WorkspaceID: "workspaceId",
     EndpointID: "endpointId",
 }
 _, err := client.Webhooks.Get(
@@ -9858,14 +8645,6 @@ _, err := client.Webhooks.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **endpointID:** `string` 
     
 </dd>
@@ -9878,7 +8657,7 @@ _, err := client.Webhooks.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.Delete(WorkspaceID, EndpointID) -> error</code></summary>
+<details><summary><code>client.Webhooks.Delete(EndpointID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -9906,7 +8685,6 @@ Deletes an endpoint, its secret and its delivery log: nothing more is sent to it
 
 ```go
 request := &peal.DeleteWebhooksRequest{
-    WorkspaceID: "workspaceId",
     EndpointID: "endpointId",
 }
 err := client.Webhooks.Delete(
@@ -9927,14 +8705,6 @@ err := client.Webhooks.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **endpointID:** `string` 
     
 </dd>
@@ -9947,7 +8717,7 @@ err := client.Webhooks.Delete(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.Update(WorkspaceID, EndpointID, request) -> *peal.WebhookEndpoint</code></summary>
+<details><summary><code>client.Webhooks.Update(EndpointID, request) -> *peal.WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -9975,7 +8745,6 @@ Changes an endpoint's address, description, events, filters or headers, or turns
 
 ```go
 request := &peal.WebhookEndpointChange{
-    WorkspaceID: "workspaceId",
     EndpointID: "endpointId",
 }
 _, err := client.Webhooks.Update(
@@ -9992,14 +8761,6 @@ _, err := client.Webhooks.Update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10072,7 +8833,7 @@ _, err := client.Webhooks.Update(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.RotateSecret(WorkspaceID, EndpointID) -> *peal.WebhookEndpointSecret</code></summary>
+<details><summary><code>client.Webhooks.RotateSecret(EndpointID) -> *peal.WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -10100,7 +8861,6 @@ Replaces an endpoint's signing secret, and answers with the new one, which is no
 
 ```go
 request := &peal.RotateSecretWebhooksRequest{
-    WorkspaceID: "workspaceId",
     EndpointID: "endpointId",
 }
 _, err := client.Webhooks.RotateSecret(
@@ -10121,14 +8881,6 @@ _, err := client.Webhooks.RotateSecret(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **endpointID:** `string` 
     
 </dd>
@@ -10141,7 +8893,7 @@ _, err := client.Webhooks.RotateSecret(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.SendTest(WorkspaceID, EndpointID) -> *peal.WebhookDelivery</code></summary>
+<details><summary><code>client.Webhooks.SendTest(EndpointID) -> *peal.WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -10169,7 +8921,6 @@ Sends the endpoint a `webhook.test` event, or, with `eventType`, a sample of tha
 
 ```go
 request := &peal.SendTestWebhooksRequest{
-    WorkspaceID: "workspaceId",
     EndpointID: "endpointId",
 }
 _, err := client.Webhooks.SendTest(
@@ -10186,14 +8937,6 @@ _, err := client.Webhooks.SendTest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10218,7 +8961,7 @@ _, err := client.Webhooks.SendTest(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.ListDeliveries(WorkspaceID, EndpointID) -> *peal.WebhookDeliveryPage</code></summary>
+<details><summary><code>client.Webhooks.ListDeliveries(EndpointID) -> *peal.WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -10246,7 +8989,6 @@ Lists the endpoint's deliveries, newest first, of a `status` and an `eventType` 
 
 ```go
 request := &peal.ListDeliveriesWebhooksRequest{
-    WorkspaceID: "workspaceId",
     EndpointID: "endpointId",
 }
 _, err := client.Webhooks.ListDeliveries(
@@ -10263,14 +9005,6 @@ _, err := client.Webhooks.ListDeliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10319,7 +9053,7 @@ _, err := client.Webhooks.ListDeliveries(
 </dl>
 </details>
 
-<details><summary><code>client.Webhooks.Redeliver(WorkspaceID, EndpointID, DeliveryID) -> *peal.WebhookDelivery</code></summary>
+<details><summary><code>client.Webhooks.Redeliver(EndpointID, DeliveryID) -> *peal.WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -10347,7 +9081,6 @@ Sends the delivery's event to the endpoint again, as a new delivery of the same 
 
 ```go
 request := &peal.RedeliverWebhooksRequest{
-    WorkspaceID: "workspaceId",
     EndpointID: "endpointId",
     DeliveryID: "deliveryId",
 }
@@ -10365,14 +9098,6 @@ _, err := client.Webhooks.Redeliver(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10398,7 +9123,7 @@ _, err := client.Webhooks.Redeliver(
 </details>
 
 ## inbox
-<details><summary><code>client.Inbox.ListThreads(WorkspaceID) -> *peal.InboxThreadPage</code></summary>
+<details><summary><code>client.Inbox.ListThreads() -> *peal.InboxThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -10425,9 +9150,7 @@ Lists the threads that have comments, one per post and channel: those with a com
 <dd>
 
 ```go
-request := &peal.ListThreadsInboxRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListThreadsInboxRequest{}
 _, err := client.Inbox.ListThreads(
     context.TODO(),
     request,
@@ -10442,14 +9165,6 @@ _, err := client.Inbox.ListThreads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10498,7 +9213,7 @@ _, err := client.Inbox.ListThreads(
 </dl>
 </details>
 
-<details><summary><code>client.Inbox.GetThread(WorkspaceID, ThreadID) -> *peal.InboxThreadDetail</code></summary>
+<details><summary><code>client.Inbox.GetThread(ThreadID) -> *peal.InboxThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -10526,7 +9241,6 @@ Shows a thread whole: its comments, oldest first, the replies sent from Peal, an
 
 ```go
 request := &peal.GetThreadInboxRequest{
-    WorkspaceID: "workspaceId",
     ThreadID: "threadId",
 }
 _, err := client.Inbox.GetThread(
@@ -10547,14 +9261,6 @@ _, err := client.Inbox.GetThread(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **threadID:** `string` 
     
 </dd>
@@ -10567,7 +9273,7 @@ _, err := client.Inbox.GetThread(
 </dl>
 </details>
 
-<details><summary><code>client.Inbox.GetAbilities(WorkspaceID, ChannelID) -> *peal.InboxAbilities</code></summary>
+<details><summary><code>client.Inbox.GetAbilities(ChannelID) -> *peal.InboxAbilities</code></summary>
 <dl>
 <dd>
 
@@ -10595,7 +9301,6 @@ Says what a channel can do about the comments under its posts, from its platform
 
 ```go
 request := &peal.GetAbilitiesInboxRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.Inbox.GetAbilities(
@@ -10616,14 +9321,6 @@ _, err := client.Inbox.GetAbilities(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -10636,7 +9333,7 @@ _, err := client.Inbox.GetAbilities(
 </dl>
 </details>
 
-<details><summary><code>client.Inbox.Reply(WorkspaceID, CommentID, request) -> *peal.InboxReply</code></summary>
+<details><summary><code>client.Inbox.Reply(CommentID, request) -> *peal.InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10664,7 +9361,6 @@ Answers a comment in public, as the channel's account: everyone who sees the pos
 
 ```go
 request := &peal.NewInboxReply{
-    WorkspaceID: "workspaceId",
     CommentID: "commentId",
     Text: "text",
 }
@@ -10682,14 +9378,6 @@ _, err := client.Inbox.Reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10722,7 +9410,7 @@ _, err := client.Inbox.Reply(
 </dl>
 </details>
 
-<details><summary><code>client.Inbox.SetAnswered(WorkspaceID, CommentID, request) -> *peal.InboxComment</code></summary>
+<details><summary><code>client.Inbox.SetAnswered(CommentID, request) -> *peal.InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -10750,7 +9438,6 @@ Says a comment needs no answer (`answered: true`), or waits for one again (`fals
 
 ```go
 request := &peal.SetAnsweredInboxRequest{
-    WorkspaceID: "workspaceId",
     CommentID: "commentId",
     Answered: true,
 }
@@ -10768,14 +9455,6 @@ _, err := client.Inbox.SetAnswered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10800,7 +9479,7 @@ _, err := client.Inbox.SetAnswered(
 </dl>
 </details>
 
-<details><summary><code>client.Inbox.Moderate(WorkspaceID, CommentID, request) -> *peal.InboxComment</code></summary>
+<details><summary><code>client.Inbox.Moderate(CommentID, request) -> *peal.InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -10828,7 +9507,6 @@ Asks the channel's account to hide or show a comment, like it or take the like b
 
 ```go
 request := &peal.ModerateInboxRequest{
-    WorkspaceID: "workspaceId",
     CommentID: "commentId",
     Action: peal.InboxModerationActionHide,
 }
@@ -10846,14 +9524,6 @@ _, err := client.Inbox.Moderate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10878,7 +9548,7 @@ _, err := client.Inbox.Moderate(
 </dl>
 </details>
 
-<details><summary><code>client.Inbox.ConfirmReply(WorkspaceID, ReplyID, request) -> *peal.InboxReply</code></summary>
+<details><summary><code>client.Inbox.ConfirmReply(ReplyID, request) -> *peal.InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10906,7 +9576,6 @@ Records what someone found on the platform for an unconfirmed reply: it is there
 
 ```go
 request := &peal.ConfirmReplyInboxRequest{
-    WorkspaceID: "workspaceId",
     ReplyID: "replyId",
     Sent: true,
 }
@@ -10924,14 +9593,6 @@ _, err := client.Inbox.ConfirmReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10956,7 +9617,7 @@ _, err := client.Inbox.ConfirmReply(
 </dl>
 </details>
 
-<details><summary><code>client.Inbox.WithdrawReply(WorkspaceID, ReplyID) -> *peal.InboxReply</code></summary>
+<details><summary><code>client.Inbox.WithdrawReply(ReplyID) -> *peal.InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10984,7 +9645,6 @@ Deletes a reply sent from Peal from its platform, and answers with it, `withdraw
 
 ```go
 request := &peal.WithdrawReplyInboxRequest{
-    WorkspaceID: "workspaceId",
     ReplyID: "replyId",
 }
 _, err := client.Inbox.WithdrawReply(
@@ -11005,14 +9665,6 @@ _, err := client.Inbox.WithdrawReply(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **replyID:** `string` 
     
 </dd>
@@ -11026,7 +9678,7 @@ _, err := client.Inbox.WithdrawReply(
 </details>
 
 ## inboxReviews
-<details><summary><code>client.InboxReviews.ListReviewThreads(WorkspaceID) -> *peal.InboxReviewThreadPage</code></summary>
+<details><summary><code>client.InboxReviews.ListReviewThreads() -> *peal.InboxReviewThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -11053,9 +9705,7 @@ Lists the locations that have reviews, one per channel: those with a review wait
 <dd>
 
 ```go
-request := &peal.ListReviewThreadsInboxReviewsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListReviewThreadsInboxReviewsRequest{}
 _, err := client.InboxReviews.ListReviewThreads(
     context.TODO(),
     request,
@@ -11070,14 +9720,6 @@ _, err := client.InboxReviews.ListReviewThreads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11118,7 +9760,7 @@ _, err := client.InboxReviews.ListReviewThreads(
 </dl>
 </details>
 
-<details><summary><code>client.InboxReviews.GetReviewThread(WorkspaceID, ThreadID) -> *peal.InboxReviewThreadDetail</code></summary>
+<details><summary><code>client.InboxReviews.GetReviewThread(ThreadID) -> *peal.InboxReviewThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -11146,7 +9788,6 @@ Shows a location's reviews whole, the latest first, the replies sent from Peal, 
 
 ```go
 request := &peal.GetReviewThreadInboxReviewsRequest{
-    WorkspaceID: "workspaceId",
     ThreadID: "threadId",
 }
 _, err := client.InboxReviews.GetReviewThread(
@@ -11167,14 +9808,6 @@ _, err := client.InboxReviews.GetReviewThread(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **threadID:** `string` 
     
 </dd>
@@ -11187,7 +9820,7 @@ _, err := client.InboxReviews.GetReviewThread(
 </dl>
 </details>
 
-<details><summary><code>client.InboxReviews.ReplyToReview(WorkspaceID, ReviewID, request) -> *peal.InboxReviewReply</code></summary>
+<details><summary><code>client.InboxReviews.ReplyToReview(ReviewID, request) -> *peal.InboxReviewReply</code></summary>
 <dl>
 <dd>
 
@@ -11215,7 +9848,6 @@ Answers a review in public, as the location: the reply replaces the one the revi
 
 ```go
 request := &peal.NewInboxReviewReply{
-    WorkspaceID: "workspaceId",
     ReviewID: "reviewId",
     Text: "text",
 }
@@ -11233,14 +9865,6 @@ _, err := client.InboxReviews.ReplyToReview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11273,7 +9897,7 @@ _, err := client.InboxReviews.ReplyToReview(
 </dl>
 </details>
 
-<details><summary><code>client.InboxReviews.WithdrawReviewReply(WorkspaceID, ReviewID) -> *peal.InboxReview</code></summary>
+<details><summary><code>client.InboxReviews.WithdrawReviewReply(ReviewID) -> *peal.InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -11301,7 +9925,6 @@ Deletes the location's reply to a review from the platform, whoever wrote it, an
 
 ```go
 request := &peal.WithdrawReviewReplyInboxReviewsRequest{
-    WorkspaceID: "workspaceId",
     ReviewID: "reviewId",
 }
 _, err := client.InboxReviews.WithdrawReviewReply(
@@ -11322,14 +9945,6 @@ _, err := client.InboxReviews.WithdrawReviewReply(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **reviewID:** `string` 
     
 </dd>
@@ -11342,7 +9957,7 @@ _, err := client.InboxReviews.WithdrawReviewReply(
 </dl>
 </details>
 
-<details><summary><code>client.InboxReviews.SetReviewAnswered(WorkspaceID, ReviewID, request) -> *peal.InboxReview</code></summary>
+<details><summary><code>client.InboxReviews.SetReviewAnswered(ReviewID, request) -> *peal.InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -11370,7 +9985,6 @@ Says a review needs no answer (`answered: true`), or waits for one again (`false
 
 ```go
 request := &peal.SetReviewAnsweredInboxReviewsRequest{
-    WorkspaceID: "workspaceId",
     ReviewID: "reviewId",
     Answered: true,
 }
@@ -11388,14 +10002,6 @@ _, err := client.InboxReviews.SetReviewAnswered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11421,7 +10027,7 @@ _, err := client.InboxReviews.SetReviewAnswered(
 </details>
 
 ## inboxMessages
-<details><summary><code>client.InboxMessages.ListConversations(WorkspaceID) -> *peal.InboxConversationPage</code></summary>
+<details><summary><code>client.InboxMessages.ListConversations() -> *peal.InboxConversationPage</code></summary>
 <dl>
 <dd>
 
@@ -11448,9 +10054,7 @@ Lists the workspace's conversations, the latest message first, 30 a page unless 
 <dd>
 
 ```go
-request := &peal.ListConversationsInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListConversationsInboxMessagesRequest{}
 _, err := client.InboxMessages.ListConversations(
     context.TODO(),
     request,
@@ -11465,14 +10069,6 @@ _, err := client.InboxMessages.ListConversations(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11513,7 +10109,7 @@ _, err := client.InboxMessages.ListConversations(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.GetConversation(WorkspaceID, ConversationID) -> *peal.InboxConversationDetail</code></summary>
+<details><summary><code>client.InboxMessages.GetConversation(ConversationID) -> *peal.InboxConversationDetail</code></summary>
 <dl>
 <dd>
 
@@ -11541,7 +10137,6 @@ Shows a conversation: a page of its messages (the latest 100 unless `limit` says
 
 ```go
 request := &peal.GetConversationInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
     ConversationID: "conversationId",
 }
 _, err := client.InboxMessages.GetConversation(
@@ -11558,14 +10153,6 @@ _, err := client.InboxMessages.GetConversation(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11598,7 +10185,7 @@ _, err := client.InboxMessages.GetConversation(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.SendMessage(WorkspaceID, ConversationID, request) -> *peal.InboxOutgoingMessage</code></summary>
+<details><summary><code>client.InboxMessages.SendMessage(ConversationID, request) -> *peal.InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -11626,7 +10213,6 @@ Answers a conversation privately, as the channel's account: the message goes to 
 
 ```go
 request := &peal.NewInboxMessage{
-    WorkspaceID: "workspaceId",
     ConversationID: "conversationId",
     Text: "text",
 }
@@ -11644,14 +10230,6 @@ _, err := client.InboxMessages.SendMessage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11684,7 +10262,7 @@ _, err := client.InboxMessages.SendMessage(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.SendPrivateReply(WorkspaceID, request) -> *peal.InboxPrivateReply</code></summary>
+<details><summary><code>client.InboxMessages.SendPrivateReply(request) -> *peal.InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11712,7 +10290,6 @@ Sends the author of a comment under the workspace's post one private message, as
 
 ```go
 request := &peal.NewInboxPrivateReply{
-    WorkspaceID: "workspaceId",
     CommentID: "commentId",
     Text: "text",
 }
@@ -11730,14 +10307,6 @@ _, err := client.InboxMessages.SendPrivateReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11770,7 +10339,7 @@ _, err := client.InboxMessages.SendPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.GetPrivateReply(WorkspaceID, PrivateReplyID) -> *peal.InboxPrivateReply</code></summary>
+<details><summary><code>client.InboxMessages.GetPrivateReply(PrivateReplyID) -> *peal.InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11798,7 +10367,6 @@ Shows a private reply sent to a comment's author, and how it stands. Needs engag
 
 ```go
 request := &peal.GetPrivateReplyInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
     PrivateReplyID: "privateReplyId",
 }
 _, err := client.InboxMessages.GetPrivateReply(
@@ -11819,14 +10387,6 @@ _, err := client.InboxMessages.GetPrivateReply(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **privateReplyID:** `string` 
     
 </dd>
@@ -11839,7 +10399,7 @@ _, err := client.InboxMessages.GetPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.ConfirmPrivateReply(WorkspaceID, PrivateReplyID, request) -> *peal.InboxPrivateReply</code></summary>
+<details><summary><code>client.InboxMessages.ConfirmPrivateReply(PrivateReplyID, request) -> *peal.InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11867,7 +10427,6 @@ Records what someone found in the person's conversation for an unconfirmed priva
 
 ```go
 request := &peal.ConfirmPrivateReplyInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
     PrivateReplyID: "privateReplyId",
     Went: true,
 }
@@ -11885,14 +10444,6 @@ _, err := client.InboxMessages.ConfirmPrivateReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11917,7 +10468,7 @@ _, err := client.InboxMessages.ConfirmPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.SetConversationRead(WorkspaceID, ConversationID, request) -> *peal.InboxConversation</code></summary>
+<details><summary><code>client.InboxMessages.SetConversationRead(ConversationID, request) -> *peal.InboxConversation</code></summary>
 <dl>
 <dd>
 
@@ -11945,7 +10496,6 @@ Says a conversation was read (`read: true`), or is unread again (`false`). Nothi
 
 ```go
 request := &peal.SetConversationReadInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
     ConversationID: "conversationId",
     Read: true,
 }
@@ -11963,14 +10513,6 @@ _, err := client.InboxMessages.SetConversationRead(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11995,7 +10537,7 @@ _, err := client.InboxMessages.SetConversationRead(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.GetMessageSettings(WorkspaceID) -> *peal.InboxMessageSettings</code></summary>
+<details><summary><code>client.InboxMessages.GetMessageSettings() -> *peal.InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -12022,29 +10564,10 @@ Lists the channels whose direct messages the workspace turned on, and the applic
 <dd>
 
 ```go
-request := &peal.GetMessageSettingsInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.InboxMessages.GetMessageSettings(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -12055,7 +10578,7 @@ _, err := client.InboxMessages.GetMessageSettings(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.SetChannelMessages(WorkspaceID, ChannelID, request) -> *peal.InboxMessageSettings</code></summary>
+<details><summary><code>client.InboxMessages.SetChannelMessages(ChannelID, request) -> *peal.InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -12083,7 +10606,6 @@ Turns a channel's direct messages on (`enabled: true`): Peal reads its conversat
 
 ```go
 request := &peal.SetChannelMessagesInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
     Enabled: true,
 }
@@ -12101,14 +10623,6 @@ _, err := client.InboxMessages.SetChannelMessages(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12133,7 +10647,7 @@ _, err := client.InboxMessages.SetChannelMessages(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.SetMessageApplication(WorkspaceID, request) -> *peal.InboxMessageSettings</code></summary>
+<details><summary><code>client.InboxMessages.SetMessageApplication(request) -> *peal.InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -12161,7 +10675,6 @@ Lets an application connected through OAuth (by its client id) read and answer t
 
 ```go
 request := &peal.SetMessageApplicationInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
     Allowed: true,
     ClientID: "clientId",
 }
@@ -12179,14 +10692,6 @@ _, err := client.InboxMessages.SetMessageApplication(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12211,7 +10716,7 @@ _, err := client.InboxMessages.SetMessageApplication(
 </dl>
 </details>
 
-<details><summary><code>client.InboxMessages.ConfirmMessage(WorkspaceID, MessageID, request) -> *peal.InboxOutgoingMessage</code></summary>
+<details><summary><code>client.InboxMessages.ConfirmMessage(MessageID, request) -> *peal.InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -12239,7 +10744,6 @@ Records what someone found on the platform for an unconfirmed message: it is the
 
 ```go
 request := &peal.ConfirmMessageInboxMessagesRequest{
-    WorkspaceID: "workspaceId",
     MessageID: "messageId",
     Sent: true,
 }
@@ -12257,14 +10761,6 @@ _, err := client.InboxMessages.ConfirmMessage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12290,7 +10786,7 @@ _, err := client.InboxMessages.ConfirmMessage(
 </details>
 
 ## ads
-<details><summary><code>client.Ads.Status(WorkspaceID) -> *peal.AdsStatus</code></summary>
+<details><summary><code>client.Ads.Status() -> *peal.AdsStatus</code></summary>
 <dl>
 <dd>
 
@@ -12317,29 +10813,10 @@ Says what this server offers of ads (`off`, `read` or `spend`) and on which netw
 <dd>
 
 ```go
-request := &peal.StatusAdsRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Ads.Status(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -12350,7 +10827,7 @@ _, err := client.Ads.Status(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ListConnections(WorkspaceID) -> []*peal.AdConnection</code></summary>
+<details><summary><code>client.Ads.ListConnections() -> []*peal.AdConnection</code></summary>
 <dl>
 <dd>
 
@@ -12377,29 +10854,10 @@ Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whet
 <dd>
 
 ```go
-request := &peal.ListConnectionsAdsRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Ads.ListConnections(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -12410,7 +10868,7 @@ _, err := client.Ads.ListConnections(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.Connect(WorkspaceID, Network) -> *peal.AdSignIn</code></summary>
+<details><summary><code>client.Ads.Connect(Network) -> *peal.AdSignIn</code></summary>
 <dl>
 <dd>
 
@@ -12438,7 +10896,6 @@ Starts a sign-in to an ad network and answers the page to send the member's brow
 
 ```go
 request := &peal.ConnectAdsRequest{
-    WorkspaceID: "workspaceId",
     Network: peal.AdNetworkMeta,
 }
 _, err := client.Ads.Connect(
@@ -12459,14 +10916,6 @@ _, err := client.Ads.Connect(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **network:** `*peal.AdNetwork` 
     
 </dd>
@@ -12479,7 +10928,7 @@ _, err := client.Ads.Connect(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.CompleteConnect(WorkspaceID, Network, request) -> *peal.AdSignInResult</code></summary>
+<details><summary><code>client.Ads.CompleteConnect(Network, request) -> *peal.AdSignInResult</code></summary>
 <dl>
 <dd>
 
@@ -12507,7 +10956,6 @@ Completes a sign-in with what the network's page sent back, and answers the ad a
 
 ```go
 request := &peal.AdSignInCallback{
-    WorkspaceID: "workspaceId",
     Network: peal.AdNetworkMeta,
     State: "state",
 }
@@ -12525,14 +10973,6 @@ _, err := client.Ads.CompleteConnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12573,7 +11013,7 @@ _, err := client.Ads.CompleteConnect(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ReachableAccounts(WorkspaceID, ConnectionID) -> []*peal.ReachableAdAccount</code></summary>
+<details><summary><code>client.Ads.ReachableAccounts(ConnectionID) -> []*peal.ReachableAdAccount</code></summary>
 <dl>
 <dd>
 
@@ -12601,7 +11041,6 @@ Lists the ad accounts a sign-in reaches now, as the network gives them: currency
 
 ```go
 request := &peal.ReachableAccountsAdsRequest{
-    WorkspaceID: "workspaceId",
     ConnectionID: "connectionId",
 }
 _, err := client.Ads.ReachableAccounts(
@@ -12622,14 +11061,6 @@ _, err := client.Ads.ReachableAccounts(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **connectionID:** `string` 
     
 </dd>
@@ -12642,7 +11073,7 @@ _, err := client.Ads.ReachableAccounts(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ConnectAccounts(WorkspaceID, ConnectionID, request) -> []*peal.AdAccount</code></summary>
+<details><summary><code>client.Ads.ConnectAccounts(ConnectionID, request) -> []*peal.AdAccount</code></summary>
 <dl>
 <dd>
 
@@ -12670,7 +11101,6 @@ Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the n
 
 ```go
 request := &peal.AdAccountsToConnect{
-    WorkspaceID: "workspaceId",
     ConnectionID: "connectionId",
     ExternalIDs: []string{
         "externalIds",
@@ -12690,14 +11120,6 @@ _, err := client.Ads.ConnectAccounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12722,7 +11144,7 @@ _, err := client.Ads.ConnectAccounts(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.Disconnect(WorkspaceID, ConnectionID) -> error</code></summary>
+<details><summary><code>client.Ads.Disconnect(ConnectionID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -12750,7 +11172,6 @@ Removes a sign-in, its token, the ad accounts it connects and what was read of t
 
 ```go
 request := &peal.DisconnectAdsRequest{
-    WorkspaceID: "workspaceId",
     ConnectionID: "connectionId",
 }
 err := client.Ads.Disconnect(
@@ -12771,14 +11192,6 @@ err := client.Ads.Disconnect(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **connectionID:** `string` 
     
 </dd>
@@ -12791,7 +11204,7 @@ err := client.Ads.Disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ListAccounts(WorkspaceID) -> []*peal.AdAccount</code></summary>
+<details><summary><code>client.Ads.ListAccounts() -> []*peal.AdAccount</code></summary>
 <dl>
 <dd>
 
@@ -12818,29 +11231,10 @@ Lists the workspace's connected ad accounts, oldest first, with whether each may
 <dd>
 
 ```go
-request := &peal.ListAccountsAdsRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Ads.ListAccounts(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -12851,7 +11245,7 @@ _, err := client.Ads.ListAccounts(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.GetAccount(WorkspaceID, AccountID) -> *peal.AdSpending</code></summary>
+<details><summary><code>client.Ads.GetAccount(AccountID) -> *peal.AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -12879,7 +11273,6 @@ Shows an ad account with what its boosts made through Peal commit in the current
 
 ```go
 request := &peal.GetAccountAdsRequest{
-    WorkspaceID: "workspaceId",
     AccountID: "accountId",
 }
 _, err := client.Ads.GetAccount(
@@ -12900,14 +11293,6 @@ _, err := client.Ads.GetAccount(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **accountID:** `string` 
     
 </dd>
@@ -12920,7 +11305,7 @@ _, err := client.Ads.GetAccount(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.RemoveAccount(WorkspaceID, AccountID) -> error</code></summary>
+<details><summary><code>client.Ads.RemoveAccount(AccountID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -12948,7 +11333,6 @@ Disconnects an ad account: what was read of it goes with it, and its boosts' rec
 
 ```go
 request := &peal.RemoveAccountAdsRequest{
-    WorkspaceID: "workspaceId",
     AccountID: "accountId",
 }
 err := client.Ads.RemoveAccount(
@@ -12969,14 +11353,6 @@ err := client.Ads.RemoveAccount(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **accountID:** `string` 
     
 </dd>
@@ -12989,7 +11365,7 @@ err := client.Ads.RemoveAccount(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.SetSpending(WorkspaceID, AccountID, request) -> *peal.AdSpending</code></summary>
+<details><summary><code>client.Ads.SetSpending(AccountID, request) -> *peal.AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -13017,7 +11393,6 @@ Decides whether an ad account may spend through Peal, and how much: `enabled` wi
 
 ```go
 request := &peal.AdSpendingDecision{
-    WorkspaceID: "workspaceId",
     AccountID: "accountId",
     Enabled: true,
 }
@@ -13035,14 +11410,6 @@ _, err := client.Ads.SetSpending(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13075,7 +11442,7 @@ _, err := client.Ads.SetSpending(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ListCampaigns(WorkspaceID, AccountID) -> *peal.AdCampaignReport</code></summary>
+<details><summary><code>client.Ads.ListCampaigns(AccountID) -> *peal.AdCampaignReport</code></summary>
 <dl>
 <dd>
 
@@ -13103,7 +11470,6 @@ Lists an ad account's campaigns as last read from its network (every hour on Met
 
 ```go
 request := &peal.ListCampaignsAdsRequest{
-    WorkspaceID: "workspaceId",
     AccountID: "accountId",
 }
 _, err := client.Ads.ListCampaigns(
@@ -13120,14 +11486,6 @@ _, err := client.Ads.ListCampaigns(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13160,7 +11518,7 @@ _, err := client.Ads.ListCampaigns(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ListAds(WorkspaceID, AccountID) -> *peal.AdReport</code></summary>
+<details><summary><code>client.Ads.ListAds(AccountID) -> *peal.AdReport</code></summary>
 <dl>
 <dd>
 
@@ -13188,7 +11546,6 @@ Lists an ad account's ads as last read, those of one campaign with `campaignId` 
 
 ```go
 request := &peal.ListAdsAdsRequest{
-    WorkspaceID: "workspaceId",
     AccountID: "accountId",
 }
 _, err := client.Ads.ListAds(
@@ -13205,14 +11562,6 @@ _, err := client.Ads.ListAds(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13253,7 +11602,7 @@ _, err := client.Ads.ListAds(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ListInsights(WorkspaceID, AccountID) -> *peal.AdInsightReport</code></summary>
+<details><summary><code>client.Ads.ListInsights(AccountID) -> *peal.AdInsightReport</code></summary>
 <dl>
 <dd>
 
@@ -13281,7 +11630,6 @@ Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spe
 
 ```go
 request := &peal.ListInsightsAdsRequest{
-    WorkspaceID: "workspaceId",
     AccountID: "accountId",
 }
 _, err := client.Ads.ListInsights(
@@ -13298,14 +11646,6 @@ _, err := client.Ads.ListInsights(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13338,7 +11678,7 @@ _, err := client.Ads.ListInsights(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.PostPerformance(WorkspaceID, PostID) -> *peal.PostAdPerformance</code></summary>
+<details><summary><code>client.Ads.PostPerformance(PostID) -> *peal.PostAdPerformance</code></summary>
 <dl>
 <dd>
 
@@ -13366,7 +11706,6 @@ Shows a published post's organic counts on each channel beside what the ads that
 
 ```go
 request := &peal.PostPerformanceAdsRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Ads.PostPerformance(
@@ -13387,14 +11726,6 @@ _, err := client.Ads.PostPerformance(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -13407,7 +11738,7 @@ _, err := client.Ads.PostPerformance(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.QuoteBoost(WorkspaceID, request) -> *peal.BoostQuote</code></summary>
+<details><summary><code>client.Ads.QuoteBoost(request) -> *peal.BoostQuote</code></summary>
 <dl>
 <dd>
 
@@ -13434,27 +11765,24 @@ Checks a boost as `createBoost` would, and says what it would commit and the roo
 <dd>
 
 ```go
-request := &peal.QuoteBoostAdsRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.NewBoost{
-        AccountID: "accountId",
-        Audience: &peal.BoostAudience{
-            AgeMax: 1,
-            AgeMin: 1,
-            Countries: []string{
-                "countries",
-            },
+request := &peal.NewBoost{
+    AccountID: "accountId",
+    Audience: &peal.BoostAudience{
+        AgeMax: 1,
+        AgeMin: 1,
+        Countries: []string{
+            "countries",
         },
-        Budget: &peal.BoostBudget{
-            Amount: int64(1000000),
-            Kind: peal.BoostBudgetKindTotal,
-        },
-        ChannelID: "channelId",
-        Currency: "currency",
-        EndsAt: "endsAt",
-        PostID: "postId",
-        SpecialAdCategory: peal.SpecialAdCategoryNone,
     },
+    Budget: &peal.BoostBudget{
+        Amount: int64(1000000),
+        Kind: peal.BoostBudgetKindTotal,
+    },
+    ChannelID: "channelId",
+    Currency: "currency",
+    EndsAt: "endsAt",
+    PostID: "postId",
+    SpecialAdCategory: peal.SpecialAdCategoryNone,
 }
 _, err := client.Ads.QuoteBoost(
     context.TODO(),
@@ -13474,14 +11802,6 @@ _, err := client.Ads.QuoteBoost(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.NewBoost` 
     
 </dd>
@@ -13494,7 +11814,7 @@ _, err := client.Ads.QuoteBoost(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ListBoosts(WorkspaceID) -> *peal.BoostPage</code></summary>
+<details><summary><code>client.Ads.ListBoosts() -> *peal.BoostPage</code></summary>
 <dl>
 <dd>
 
@@ -13521,9 +11841,7 @@ Lists the workspace's boosts, newest first, 50 a page, those of one post with `p
 <dd>
 
 ```go
-request := &peal.ListBoostsAdsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListBoostsAdsRequest{}
 _, err := client.Ads.ListBoosts(
     context.TODO(),
     request,
@@ -13538,14 +11856,6 @@ _, err := client.Ads.ListBoosts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13570,7 +11880,7 @@ _, err := client.Ads.ListBoosts(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.CreateBoost(WorkspaceID, request) -> *peal.Boost</code></summary>
+<details><summary><code>client.Ads.CreateBoost(request) -> *peal.Boost</code></summary>
 <dl>
 <dd>
 
@@ -13598,7 +11908,6 @@ _, err := client.Ads.ListBoosts(
 
 ```go
 request := &peal.CreateBoostAdsRequest{
-    WorkspaceID: "workspaceId",
     IdempotencyKey: "idempotency-key",
     Body: &peal.NewBoost{
         AccountID: "accountId",
@@ -13638,14 +11947,6 @@ _, err := client.Ads.CreateBoost(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **idempotencyKey:** `string` 
     
 </dd>
@@ -13666,7 +11967,7 @@ _, err := client.Ads.CreateBoost(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.GetBoost(WorkspaceID, BoostID) -> *peal.BoostDetail</code></summary>
+<details><summary><code>client.Ads.GetBoost(BoostID) -> *peal.BoostDetail</code></summary>
 <dl>
 <dd>
 
@@ -13694,7 +11995,6 @@ Shows a boost and the journal of the requests Peal sent the network for it, each
 
 ```go
 request := &peal.GetBoostAdsRequest{
-    WorkspaceID: "workspaceId",
     BoostID: "boostId",
 }
 _, err := client.Ads.GetBoost(
@@ -13715,14 +12015,6 @@ _, err := client.Ads.GetBoost(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **boostID:** `string` 
     
 </dd>
@@ -13735,7 +12027,7 @@ _, err := client.Ads.GetBoost(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.PauseBoost(WorkspaceID, BoostID) -> *peal.Boost</code></summary>
+<details><summary><code>client.Ads.PauseBoost(BoostID) -> *peal.Boost</code></summary>
 <dl>
 <dd>
 
@@ -13763,7 +12055,6 @@ Pauses a boost that runs or may run: its campaign is told to pause, and the boos
 
 ```go
 request := &peal.PauseBoostAdsRequest{
-    WorkspaceID: "workspaceId",
     BoostID: "boostId",
 }
 _, err := client.Ads.PauseBoost(
@@ -13784,14 +12075,6 @@ _, err := client.Ads.PauseBoost(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **boostID:** `string` 
     
 </dd>
@@ -13804,7 +12087,7 @@ _, err := client.Ads.PauseBoost(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.ResumeBoost(WorkspaceID, BoostID) -> *peal.Boost</code></summary>
+<details><summary><code>client.Ads.ResumeBoost(BoostID) -> *peal.Boost</code></summary>
 <dl>
 <dd>
 
@@ -13832,7 +12115,6 @@ _, err := client.Ads.PauseBoost(
 
 ```go
 request := &peal.ResumeBoostAdsRequest{
-    WorkspaceID: "workspaceId",
     BoostID: "boostId",
 }
 _, err := client.Ads.ResumeBoost(
@@ -13853,14 +12135,6 @@ _, err := client.Ads.ResumeBoost(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **boostID:** `string` 
     
 </dd>
@@ -13873,7 +12147,7 @@ _, err := client.Ads.ResumeBoost(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.StopBoost(WorkspaceID, BoostID) -> *peal.Boost</code></summary>
+<details><summary><code>client.Ads.StopBoost(BoostID) -> *peal.Boost</code></summary>
 <dl>
 <dd>
 
@@ -13901,7 +12175,6 @@ Stops a boost for good: its campaign is told to pause, and the boost is `stopped
 
 ```go
 request := &peal.StopBoostAdsRequest{
-    WorkspaceID: "workspaceId",
     BoostID: "boostId",
 }
 _, err := client.Ads.StopBoost(
@@ -13922,14 +12195,6 @@ _, err := client.Ads.StopBoost(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **boostID:** `string` 
     
 </dd>
@@ -13942,7 +12207,7 @@ _, err := client.Ads.StopBoost(
 </dl>
 </details>
 
-<details><summary><code>client.Ads.AuditTrail(WorkspaceID) -> *peal.AdAuditPage</code></summary>
+<details><summary><code>client.Ads.AuditTrail() -> *peal.AdAuditPage</code></summary>
 <dl>
 <dd>
 
@@ -13969,9 +12234,7 @@ Lists the ads audit trail, newest first, 100 a page: every decision about spendi
 <dd>
 
 ```go
-request := &peal.AuditTrailAdsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.AuditTrailAdsRequest{}
 _, err := client.Ads.AuditTrail(
     context.TODO(),
     request,
@@ -13990,14 +12253,6 @@ _, err := client.Ads.AuditTrail(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **cursor:** `*string` 
     
 </dd>
@@ -14011,7 +12266,7 @@ _, err := client.Ads.AuditTrail(
 </details>
 
 ## activity
-<details><summary><code>client.Activity.List(WorkspaceID) -> *peal.ActivityPage</code></summary>
+<details><summary><code>client.Activity.List() -> *peal.ActivityPage</code></summary>
 <dl>
 <dd>
 
@@ -14038,9 +12293,7 @@ Lists the requests that asked to change something in the workspace, newest first
 <dd>
 
 ```go
-request := &peal.ListActivityRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListActivityRequest{}
 _, err := client.Activity.List(
     context.TODO(),
     request,
@@ -14055,14 +12308,6 @@ _, err := client.Activity.List(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14735,7 +12980,7 @@ _, err := client.PartnerUsage.Get(
 </details>
 
 ## partnerAccount
-<details><summary><code>client.PartnerAccount.Get(WorkspaceID) -> *peal.PartnerStanding</code></summary>
+<details><summary><code>client.PartnerAccount.Get() -> *peal.PartnerStanding</code></summary>
 <dl>
 <dd>
 
@@ -14762,29 +13007,10 @@ The workspace's partner account and what it holds, null when it has none, and wh
 <dd>
 
 ```go
-request := &peal.GetPartnerAccountRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.PartnerAccount.Get(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -14795,7 +13021,7 @@ _, err := client.PartnerAccount.Get(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.Open(WorkspaceID, request) -> *peal.Partner</code></summary>
+<details><summary><code>client.PartnerAccount.Open(request) -> *peal.Partner</code></summary>
 <dl>
 <dd>
 
@@ -14823,7 +13049,6 @@ Opens a partner account for the workspace, which becomes its home workspace, und
 
 ```go
 request := &peal.OpenPartner{
-    WorkspaceID: "workspaceId",
     Name: "name",
 }
 _, err := client.PartnerAccount.Open(
@@ -14844,14 +13069,6 @@ _, err := client.PartnerAccount.Open(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **name:** `string` 
     
 </dd>
@@ -14864,7 +13081,7 @@ _, err := client.PartnerAccount.Open(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.Close(WorkspaceID) -> error</code></summary>
+<details><summary><code>client.PartnerAccount.Close() -> error</code></summary>
 <dl>
 <dd>
 
@@ -14891,29 +13108,10 @@ Closes the workspace's partner account: its keys stop working at once. Refused w
 <dd>
 
 ```go
-request := &peal.ClosePartnerAccountRequest{
-    WorkspaceID: "workspaceId",
-}
 err := client.PartnerAccount.Close(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -14924,7 +13122,7 @@ err := client.PartnerAccount.Close(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.Update(WorkspaceID, request) -> *peal.Partner</code></summary>
+<details><summary><code>client.PartnerAccount.Update(request) -> *peal.Partner</code></summary>
 <dl>
 <dd>
 
@@ -14951,9 +13149,7 @@ Changes the partner account's name, its logo (an HTTPS URL, shown from that addr
 <dd>
 
 ```go
-request := &peal.PartnerChange{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.PartnerChange{}
 _, err := client.PartnerAccount.Update(
     context.TODO(),
     request,
@@ -14968,14 +13164,6 @@ _, err := client.PartnerAccount.Update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15016,7 +13204,7 @@ _, err := client.PartnerAccount.Update(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.ListKeys(WorkspaceID) -> []*peal.PartnerKey</code></summary>
+<details><summary><code>client.PartnerAccount.ListKeys() -> []*peal.PartnerKey</code></summary>
 <dl>
 <dd>
 
@@ -15043,29 +13231,10 @@ Lists the partner account's keys. Needs partner:read.
 <dd>
 
 ```go
-request := &peal.ListKeysPartnerAccountRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.PartnerAccount.ListKeys(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -15076,7 +13245,7 @@ _, err := client.PartnerAccount.ListKeys(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.CreateKey(WorkspaceID, request) -> *peal.CreatedPartnerKey</code></summary>
+<details><summary><code>client.PartnerAccount.CreateKey(request) -> *peal.CreatedPartnerKey</code></summary>
 <dl>
 <dd>
 
@@ -15104,7 +13273,6 @@ Creates a partner key, and answers with the key itself, which is not shown again
 
 ```go
 request := &peal.NewPartnerKey{
-    WorkspaceID: "workspaceId",
     Name: "name",
     Permissions: []peal.Permission{
         peal.PermissionActivityRead,
@@ -15127,14 +13295,6 @@ _, err := client.PartnerAccount.CreateKey(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15175,7 +13335,7 @@ _, err := client.PartnerAccount.CreateKey(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.RevokeKey(WorkspaceID, PartnerKeyID) -> error</code></summary>
+<details><summary><code>client.PartnerAccount.RevokeKey(PartnerKeyID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -15203,7 +13363,6 @@ Revokes a partner key: it stops working at once. Needs partner:manage.
 
 ```go
 request := &peal.RevokeKeyPartnerAccountRequest{
-    WorkspaceID: "workspaceId",
     PartnerKeyID: "partnerKeyId",
 }
 err := client.PartnerAccount.RevokeKey(
@@ -15224,14 +13383,6 @@ err := client.PartnerAccount.RevokeKey(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **partnerKeyID:** `string` 
     
 </dd>
@@ -15244,7 +13395,7 @@ err := client.PartnerAccount.RevokeKey(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.Overview(WorkspaceID) -> *peal.PartnerHealth</code></summary>
+<details><summary><code>client.PartnerAccount.Overview() -> *peal.PartnerHealth</code></summary>
 <dl>
 <dd>
 
@@ -15271,9 +13422,7 @@ Answers, for each workspace the partner owns, what needs attention: its channels
 <dd>
 
 ```go
-request := &peal.OverviewPartnerAccountRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.OverviewPartnerAccountRequest{}
 _, err := client.PartnerAccount.Overview(
     context.TODO(),
     request,
@@ -15288,14 +13437,6 @@ _, err := client.PartnerAccount.Overview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15320,7 +13461,7 @@ _, err := client.PartnerAccount.Overview(
 </dl>
 </details>
 
-<details><summary><code>client.PartnerAccount.ListWorkspaces(WorkspaceID) -> *peal.CustomerWorkspacePage</code></summary>
+<details><summary><code>client.PartnerAccount.ListWorkspaces() -> *peal.CustomerWorkspacePage</code></summary>
 <dl>
 <dd>
 
@@ -15347,9 +13488,7 @@ Lists the workspaces the partner account owns, newest first, each with the numbe
 <dd>
 
 ```go
-request := &peal.ListWorkspacesPartnerAccountRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListWorkspacesPartnerAccountRequest{}
 _, err := client.PartnerAccount.ListWorkspaces(
     context.TODO(),
     request,
@@ -15364,14 +13503,6 @@ _, err := client.PartnerAccount.ListWorkspaces(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15413,7 +13544,7 @@ _, err := client.PartnerAccount.ListWorkspaces(
 </details>
 
 ## connectLinks
-<details><summary><code>client.ConnectLinks.List(WorkspaceID) -> []*peal.ConnectLink</code></summary>
+<details><summary><code>client.ConnectLinks.List() -> []*peal.ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15440,29 +13571,10 @@ Lists the workspace's connect links, newest first, the last 100: those waiting, 
 <dd>
 
 ```go
-request := &peal.ListConnectLinksRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.ConnectLinks.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -15473,7 +13585,7 @@ _, err := client.ConnectLinks.List(
 </dl>
 </details>
 
-<details><summary><code>client.ConnectLinks.Create(WorkspaceID, request) -> *peal.CreatedConnectLink</code></summary>
+<details><summary><code>client.ConnectLinks.Create(request) -> *peal.CreatedConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15500,9 +13612,7 @@ Creates a link to hand to whoever owns an account of `platform`, or accounts of 
 <dd>
 
 ```go
-request := &peal.NewConnectLink{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.NewConnectLink{}
 _, err := client.ConnectLinks.Create(
     context.TODO(),
     request,
@@ -15517,14 +13627,6 @@ _, err := client.ConnectLinks.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15589,7 +13691,7 @@ _, err := client.ConnectLinks.Create(
 </dl>
 </details>
 
-<details><summary><code>client.ConnectLinks.Get(WorkspaceID, LinkID) -> *peal.ConnectLink</code></summary>
+<details><summary><code>client.ConnectLinks.Get(LinkID) -> *peal.ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15617,7 +13719,6 @@ One connect link of the workspace: where it stands, the channels it connected on
 
 ```go
 request := &peal.GetConnectLinksRequest{
-    WorkspaceID: "workspaceId",
     LinkID: "linkId",
 }
 _, err := client.ConnectLinks.Get(
@@ -15638,14 +13739,6 @@ _, err := client.ConnectLinks.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **linkID:** `string` 
     
 </dd>
@@ -15658,7 +13751,7 @@ _, err := client.ConnectLinks.Get(
 </dl>
 </details>
 
-<details><summary><code>client.ConnectLinks.Revoke(WorkspaceID, LinkID) -> *peal.ConnectLink</code></summary>
+<details><summary><code>client.ConnectLinks.Revoke(LinkID) -> *peal.ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15686,7 +13779,6 @@ Takes a connect link back: it opens nothing more, and a sign-in in progress thro
 
 ```go
 request := &peal.RevokeConnectLinksRequest{
-    WorkspaceID: "workspaceId",
     LinkID: "linkId",
 }
 _, err := client.ConnectLinks.Revoke(
@@ -15707,14 +13799,6 @@ _, err := client.ConnectLinks.Revoke(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **linkID:** `string` 
     
 </dd>
@@ -15728,7 +13812,7 @@ _, err := client.ConnectLinks.Revoke(
 </details>
 
 ## review
-<details><summary><code>client.Review.Settings(WorkspaceID) -> *peal.ReviewSettings</code></summary>
+<details><summary><code>client.Review.Settings() -> *peal.ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -15755,29 +13839,10 @@ Answers with the workspace's approval policy: which of its posts wait for an app
 <dd>
 
 ```go
-request := &peal.SettingsReviewRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Review.Settings(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -15788,7 +13853,7 @@ _, err := client.Review.Settings(
 </dl>
 </details>
 
-<details><summary><code>client.Review.UpdateSettings(WorkspaceID, request) -> *peal.ReviewSettings</code></summary>
+<details><summary><code>client.Review.UpdateSettings(request) -> *peal.ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -15815,11 +13880,8 @@ Chooses the workspace's approval policy. It applies to posts scheduled from then
 <dd>
 
 ```go
-request := &peal.UpdateSettingsReviewRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.ReviewSettings{
-        ApprovalPolicy: peal.ApprovalPolicyNever,
-    },
+request := &peal.ReviewSettings{
+    ApprovalPolicy: peal.ApprovalPolicyNever,
 }
 _, err := client.Review.UpdateSettings(
     context.TODO(),
@@ -15839,14 +13901,6 @@ _, err := client.Review.UpdateSettings(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.ReviewSettings` 
     
 </dd>
@@ -15859,7 +13913,7 @@ _, err := client.Review.UpdateSettings(
 </dl>
 </details>
 
-<details><summary><code>client.Review.Pending(WorkspaceID) -> []*peal.ApprovalRequest</code></summary>
+<details><summary><code>client.Review.Pending() -> []*peal.ApprovalRequest</code></summary>
 <dl>
 <dd>
 
@@ -15886,29 +13940,10 @@ Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs
 <dd>
 
 ```go
-request := &peal.PendingReviewRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Review.Pending(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -15919,7 +13954,7 @@ _, err := client.Review.Pending(
 </dl>
 </details>
 
-<details><summary><code>client.Review.Thread(WorkspaceID, PostID) -> *peal.PostReview</code></summary>
+<details><summary><code>client.Review.Thread(PostID) -> *peal.PostReview</code></summary>
 <dl>
 <dd>
 
@@ -15947,7 +13982,6 @@ Answers with a post's review: its comments, oldest first, and the approvals aske
 
 ```go
 request := &peal.ThreadReviewRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Review.Thread(
@@ -15968,14 +14002,6 @@ _, err := client.Review.Thread(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -15988,7 +14014,7 @@ _, err := client.Review.Thread(
 </dl>
 </details>
 
-<details><summary><code>client.Review.Comment(WorkspaceID, PostID, request) -> *peal.ReviewComment</code></summary>
+<details><summary><code>client.Review.Comment(PostID, request) -> *peal.ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -16016,7 +14042,6 @@ Comments on a post, starts a thread about one of its channels or some words of i
 
 ```go
 request := &peal.NewComment{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     Text: "text",
 }
@@ -16034,14 +14059,6 @@ _, err := client.Review.Comment(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16082,7 +14099,7 @@ _, err := client.Review.Comment(
 </dl>
 </details>
 
-<details><summary><code>client.Review.Resolve(WorkspaceID, PostID, CommentID, request) -> *peal.ReviewComment</code></summary>
+<details><summary><code>client.Review.Resolve(PostID, CommentID, request) -> *peal.ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -16110,7 +14127,6 @@ Resolves the thread a comment started, or reopens it. An answer is not resolved:
 
 ```go
 request := &peal.ResolveReviewRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     CommentID: "commentId",
     Resolved: true,
@@ -16129,14 +14145,6 @@ _, err := client.Review.Resolve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16169,7 +14177,7 @@ _, err := client.Review.Resolve(
 </dl>
 </details>
 
-<details><summary><code>client.Review.Approve(WorkspaceID, PostID, request) -> *peal.ApprovalOutcome</code></summary>
+<details><summary><code>client.Review.Approve(PostID, request) -> *peal.ApprovalOutcome</code></summary>
 <dl>
 <dd>
 
@@ -16197,7 +14205,6 @@ Approves a post that waits for an approval, as the reviewer was shown it: send t
 
 ```go
 request := &peal.ApprovalDecision{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     ApprovalID: "approvalId",
     SubjectHash: "subjectHash",
@@ -16216,14 +14223,6 @@ _, err := client.Review.Approve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16256,7 +14255,7 @@ _, err := client.Review.Approve(
 </dl>
 </details>
 
-<details><summary><code>client.Review.RequestChanges(WorkspaceID, PostID, request) -> *peal.ChangesOutcome</code></summary>
+<details><summary><code>client.Review.RequestChanges(PostID, request) -> *peal.ChangesOutcome</code></summary>
 <dl>
 <dd>
 
@@ -16284,7 +14283,6 @@ Sends a post that waits for an approval back to draft, with a comment that says 
 
 ```go
 request := &peal.ChangesRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     ApprovalID: "approvalId",
     SubjectHash: "subjectHash",
@@ -16304,14 +14302,6 @@ _, err := client.Review.RequestChanges(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16352,7 +14342,7 @@ _, err := client.Review.RequestChanges(
 </dl>
 </details>
 
-<details><summary><code>client.Review.Links(WorkspaceID, PostID) -> []*peal.ReviewLink</code></summary>
+<details><summary><code>client.Review.Links(PostID) -> []*peal.ReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -16380,7 +14370,6 @@ Lists a post's review links, newest first, ended ones included. No token is show
 
 ```go
 request := &peal.LinksReviewRequest{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
 }
 _, err := client.Review.Links(
@@ -16401,14 +14390,6 @@ _, err := client.Review.Links(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **postID:** `string` 
     
 </dd>
@@ -16421,7 +14402,7 @@ _, err := client.Review.Links(
 </dl>
 </details>
 
-<details><summary><code>client.Review.CreateLink(WorkspaceID, PostID, request) -> *peal.CreatedReviewLink</code></summary>
+<details><summary><code>client.Review.CreateLink(PostID, request) -> *peal.CreatedReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -16449,7 +14430,6 @@ Makes a link that shows a draft, a post that waits for an approval or a schedule
 
 ```go
 request := &peal.NewReviewLink{
-    WorkspaceID: "workspaceId",
     PostID: "postId",
     Access: peal.ReviewLinkAccessView,
 }
@@ -16467,14 +14447,6 @@ _, err := client.Review.CreateLink(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16507,7 +14479,7 @@ _, err := client.Review.CreateLink(
 </dl>
 </details>
 
-<details><summary><code>client.Review.RevokeLink(WorkspaceID, LinkID) -> *peal.ReviewLink</code></summary>
+<details><summary><code>client.Review.RevokeLink(LinkID) -> *peal.ReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -16535,7 +14507,6 @@ Ends a review link at once: whoever opens it is told it was revoked. Needs post:
 
 ```go
 request := &peal.RevokeLinkReviewRequest{
-    WorkspaceID: "workspaceId",
     LinkID: "linkId",
 }
 _, err := client.Review.RevokeLink(
@@ -16556,14 +14527,6 @@ _, err := client.Review.RevokeLink(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **linkID:** `string` 
     
 </dd>
@@ -16577,7 +14540,7 @@ _, err := client.Review.RevokeLink(
 </details>
 
 ## tags
-<details><summary><code>client.Tags.List(WorkspaceID) -> []*peal.Tag</code></summary>
+<details><summary><code>client.Tags.List() -> []*peal.Tag</code></summary>
 <dl>
 <dd>
 
@@ -16604,29 +14567,10 @@ Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`)
 <dd>
 
 ```go
-request := &peal.ListTagsRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Tags.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -16637,7 +14581,7 @@ _, err := client.Tags.List(
 </dl>
 </details>
 
-<details><summary><code>client.Tags.Create(WorkspaceID, request) -> *peal.Tag</code></summary>
+<details><summary><code>client.Tags.Create(request) -> *peal.Tag</code></summary>
 <dl>
 <dd>
 
@@ -16664,12 +14608,9 @@ Adds a tag to the workspace: a name of 40 characters at most, on one line, which
 <dd>
 
 ```go
-request := &peal.CreateTagsRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.TagDetails{
-        Colour: peal.TagColourGray,
-        Name: "name",
-    },
+request := &peal.TagDetails{
+    Colour: peal.TagColourGray,
+    Name: "name",
 }
 _, err := client.Tags.Create(
     context.TODO(),
@@ -16689,14 +14630,6 @@ _, err := client.Tags.Create(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.TagDetails` 
     
 </dd>
@@ -16709,7 +14642,7 @@ _, err := client.Tags.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Tags.Delete(WorkspaceID, TagID) -> error</code></summary>
+<details><summary><code>client.Tags.Delete(TagID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -16737,7 +14670,6 @@ Deletes a tag, and takes it off every post that had it; the posts stay. Needs po
 
 ```go
 request := &peal.DeleteTagsRequest{
-    WorkspaceID: "workspaceId",
     TagID: "tagId",
 }
 err := client.Tags.Delete(
@@ -16758,14 +14690,6 @@ err := client.Tags.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **tagID:** `string` 
     
 </dd>
@@ -16778,7 +14702,7 @@ err := client.Tags.Delete(
 </dl>
 </details>
 
-<details><summary><code>client.Tags.Update(WorkspaceID, TagID, request) -> *peal.Tag</code></summary>
+<details><summary><code>client.Tags.Update(TagID, request) -> *peal.Tag</code></summary>
 <dl>
 <dd>
 
@@ -16806,7 +14730,6 @@ Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
 ```go
 request := &peal.UpdateTagsRequest{
-    WorkspaceID: "workspaceId",
     TagID: "tagId",
     Body: &peal.TagDetails{
         Colour: peal.TagColourGray,
@@ -16827,14 +14750,6 @@ _, err := client.Tags.Update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16860,7 +14775,7 @@ _, err := client.Tags.Update(
 </details>
 
 ## signatures
-<details><summary><code>client.Signatures.List(WorkspaceID) -> []*peal.Signature</code></summary>
+<details><summary><code>client.Signatures.List() -> []*peal.Signature</code></summary>
 <dl>
 <dd>
 
@@ -16887,29 +14802,10 @@ Lists the workspace's signatures, oldest first. Needs post:read.
 <dd>
 
 ```go
-request := &peal.ListSignaturesRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Signatures.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -16920,7 +14816,7 @@ _, err := client.Signatures.List(
 </dl>
 </details>
 
-<details><summary><code>client.Signatures.Create(WorkspaceID, request) -> *peal.Signature</code></summary>
+<details><summary><code>client.Signatures.Create(request) -> *peal.Signature</code></summary>
 <dl>
 <dd>
 
@@ -16947,12 +14843,9 @@ Adds a signature to the workspace: a name no other signature of the workspace ha
 <dd>
 
 ```go
-request := &peal.CreateSignaturesRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.SignatureDetails{
-        Name: "name",
-        Text: "text",
-    },
+request := &peal.SignatureDetails{
+    Name: "name",
+    Text: "text",
 }
 _, err := client.Signatures.Create(
     context.TODO(),
@@ -16972,14 +14865,6 @@ _, err := client.Signatures.Create(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.SignatureDetails` 
     
 </dd>
@@ -16992,7 +14877,7 @@ _, err := client.Signatures.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Signatures.Update(WorkspaceID, SignatureID, request) -> *peal.Signature</code></summary>
+<details><summary><code>client.Signatures.Update(SignatureID, request) -> *peal.Signature</code></summary>
 <dl>
 <dd>
 
@@ -17020,7 +14905,6 @@ Replaces a signature's name, text, scope and whether it is a default. Posts that
 
 ```go
 request := &peal.UpdateSignaturesRequest{
-    WorkspaceID: "workspaceId",
     SignatureID: "signatureId",
     Body: &peal.SignatureDetails{
         Name: "name",
@@ -17045,14 +14929,6 @@ _, err := client.Signatures.Update(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **signatureID:** `string` 
     
 </dd>
@@ -17073,7 +14949,7 @@ _, err := client.Signatures.Update(
 </dl>
 </details>
 
-<details><summary><code>client.Signatures.Delete(WorkspaceID, SignatureID) -> error</code></summary>
+<details><summary><code>client.Signatures.Delete(SignatureID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -17101,7 +14977,6 @@ Deletes a signature. Posts that already hold its text keep it. Needs post:update
 
 ```go
 request := &peal.DeleteSignaturesRequest{
-    WorkspaceID: "workspaceId",
     SignatureID: "signatureId",
 }
 err := client.Signatures.Delete(
@@ -17122,14 +14997,6 @@ err := client.Signatures.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **signatureID:** `string` 
     
 </dd>
@@ -17143,7 +15010,7 @@ err := client.Signatures.Delete(
 </details>
 
 ## channelSets
-<details><summary><code>client.ChannelSets.List(WorkspaceID) -> []*peal.ChannelSet</code></summary>
+<details><summary><code>client.ChannelSets.List() -> []*peal.ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -17170,29 +15037,10 @@ Lists the workspace's channel sets, oldest first, each with the channels it keep
 <dd>
 
 ```go
-request := &peal.ListChannelSetsRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.ChannelSets.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -17203,7 +15051,7 @@ _, err := client.ChannelSets.List(
 </dl>
 </details>
 
-<details><summary><code>client.ChannelSets.Create(WorkspaceID, request) -> *peal.ChannelSet</code></summary>
+<details><summary><code>client.ChannelSets.Create(request) -> *peal.ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -17230,14 +15078,11 @@ Saves a selection of the workspace's channels under a name no other set of the w
 <dd>
 
 ```go
-request := &peal.CreateChannelSetsRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.ChannelSetDetails{
-        ChannelIDs: []string{
-            "channelIds",
-        },
-        Name: "name",
+request := &peal.ChannelSetDetails{
+    ChannelIDs: []string{
+        "channelIds",
     },
+    Name: "name",
 }
 _, err := client.ChannelSets.Create(
     context.TODO(),
@@ -17257,14 +15102,6 @@ _, err := client.ChannelSets.Create(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.ChannelSetDetails` 
     
 </dd>
@@ -17277,7 +15114,7 @@ _, err := client.ChannelSets.Create(
 </dl>
 </details>
 
-<details><summary><code>client.ChannelSets.Update(WorkspaceID, ChannelSetID, request) -> *peal.ChannelSet</code></summary>
+<details><summary><code>client.ChannelSets.Update(ChannelSetID, request) -> *peal.ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -17305,7 +15142,6 @@ Replaces a set's name, channels and options: every channel must be connected now
 
 ```go
 request := &peal.UpdateChannelSetsRequest{
-    WorkspaceID: "workspaceId",
     ChannelSetID: "channelSetId",
     Body: &peal.ChannelSetDetails{
         ChannelIDs: []string{
@@ -17332,14 +15168,6 @@ _, err := client.ChannelSets.Update(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelSetID:** `string` 
     
 </dd>
@@ -17360,7 +15188,7 @@ _, err := client.ChannelSets.Update(
 </dl>
 </details>
 
-<details><summary><code>client.ChannelSets.Delete(WorkspaceID, ChannelSetID) -> error</code></summary>
+<details><summary><code>client.ChannelSets.Delete(ChannelSetID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -17388,7 +15216,6 @@ Deletes a channel set. Its channels, and the posts made with it, stay. Needs pos
 
 ```go
 request := &peal.DeleteChannelSetsRequest{
-    WorkspaceID: "workspaceId",
     ChannelSetID: "channelSetId",
 }
 err := client.ChannelSets.Delete(
@@ -17409,14 +15236,6 @@ err := client.ChannelSets.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelSetID:** `string` 
     
 </dd>
@@ -17430,7 +15249,7 @@ err := client.ChannelSets.Delete(
 </details>
 
 ## queues
-<details><summary><code>client.Queues.List(WorkspaceID) -> []*peal.Queue</code></summary>
+<details><summary><code>client.Queues.List() -> []*peal.Queue</code></summary>
 <dl>
 <dd>
 
@@ -17457,29 +15276,10 @@ Lists the workspace's queues, the default first, then by name, each with its slo
 <dd>
 
 ```go
-request := &peal.ListQueuesRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.Queues.List(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -17490,7 +15290,7 @@ _, err := client.Queues.List(
 </dl>
 </details>
 
-<details><summary><code>client.Queues.Create(WorkspaceID, request) -> *peal.Queue</code></summary>
+<details><summary><code>client.Queues.Create(request) -> *peal.Queue</code></summary>
 <dl>
 <dd>
 
@@ -17517,18 +15317,15 @@ Saves a queue. A slot is a weekday and a time of day (`HH:mm`) in the queue's IA
 <dd>
 
 ```go
-request := &peal.CreateQueuesRequest{
-    WorkspaceID: "workspaceId",
-    Body: &peal.QueueDetails{
-        Name: "name",
-        Slots: []*peal.QueueSlot{
-            &peal.QueueSlot{
-                Day: peal.WeekdayMonday,
-                Time: "time",
-            },
+request := &peal.QueueDetails{
+    Name: "name",
+    Slots: []*peal.QueueSlot{
+        &peal.QueueSlot{
+            Day: peal.WeekdayMonday,
+            Time: "time",
         },
-        TimeZone: "timeZone",
     },
+    TimeZone: "timeZone",
 }
 _, err := client.Queues.Create(
     context.TODO(),
@@ -17548,14 +15345,6 @@ _, err := client.Queues.Create(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `*peal.QueueDetails` 
     
 </dd>
@@ -17568,7 +15357,7 @@ _, err := client.Queues.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Queues.Get(WorkspaceID, QueueID) -> *peal.Queue</code></summary>
+<details><summary><code>client.Queues.Get(QueueID) -> *peal.Queue</code></summary>
 <dl>
 <dd>
 
@@ -17596,7 +15385,6 @@ Answers with a queue of the workspace. Needs post:read and channel:read.
 
 ```go
 request := &peal.GetQueuesRequest{
-    WorkspaceID: "workspaceId",
     QueueID: "queueId",
 }
 _, err := client.Queues.Get(
@@ -17617,14 +15405,6 @@ _, err := client.Queues.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queueID:** `string` 
     
 </dd>
@@ -17637,7 +15417,7 @@ _, err := client.Queues.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Queues.Update(WorkspaceID, QueueID, request) -> *peal.Queue</code></summary>
+<details><summary><code>client.Queues.Update(QueueID, request) -> *peal.Queue</code></summary>
 <dl>
 <dd>
 
@@ -17665,7 +15445,6 @@ Replaces a queue's name, zone, slots and channels: every channel must be connect
 
 ```go
 request := &peal.UpdateQueuesRequest{
-    WorkspaceID: "workspaceId",
     QueueID: "queueId",
     Body: &peal.QueueDetails{
         Name: "name",
@@ -17696,14 +15475,6 @@ _, err := client.Queues.Update(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queueID:** `string` 
     
 </dd>
@@ -17724,7 +15495,7 @@ _, err := client.Queues.Update(
 </dl>
 </details>
 
-<details><summary><code>client.Queues.Delete(WorkspaceID, QueueID) -> error</code></summary>
+<details><summary><code>client.Queues.Delete(QueueID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -17752,7 +15523,6 @@ Deletes a queue. The posts it placed stay scheduled at their times, and no longe
 
 ```go
 request := &peal.DeleteQueuesRequest{
-    WorkspaceID: "workspaceId",
     QueueID: "queueId",
 }
 err := client.Queues.Delete(
@@ -17773,14 +15543,6 @@ err := client.Queues.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queueID:** `string` 
     
 </dd>
@@ -17793,7 +15555,7 @@ err := client.Queues.Delete(
 </dl>
 </details>
 
-<details><summary><code>client.Queues.Slots(WorkspaceID, QueueID) -> *peal.QueuePreview</code></summary>
+<details><summary><code>client.Queues.Slots(QueueID) -> *peal.QueuePreview</code></summary>
 <dl>
 <dd>
 
@@ -17821,7 +15583,6 @@ Lists the queue's next `count` slots after now (10 unless given, 50 at most), ea
 
 ```go
 request := &peal.SlotsQueuesRequest{
-    WorkspaceID: "workspaceId",
     QueueID: "queueId",
 }
 _, err := client.Queues.Slots(
@@ -17838,14 +15599,6 @@ _, err := client.Queues.Slots(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17870,7 +15623,7 @@ _, err := client.Queues.Slots(
 </dl>
 </details>
 
-<details><summary><code>client.Queues.Reshuffle(WorkspaceID, QueueID) -> *peal.QueueReshuffle</code></summary>
+<details><summary><code>client.Queues.Reshuffle(QueueID) -> *peal.QueueReshuffle</code></summary>
 <dl>
 <dd>
 
@@ -17898,7 +15651,6 @@ Moves the posts that wait in the queue (scheduled or awaiting approval, after no
 
 ```go
 request := &peal.ReshuffleQueuesRequest{
-    WorkspaceID: "workspaceId",
     QueueID: "queueId",
 }
 _, err := client.Queues.Reshuffle(
@@ -17919,14 +15671,6 @@ _, err := client.Queues.Reshuffle(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **queueID:** `string` 
     
 </dd>
@@ -17940,7 +15684,7 @@ _, err := client.Queues.Reshuffle(
 </details>
 
 ## recycling
-<details><summary><code>client.Recycling.List(WorkspaceID) -> *peal.RecyclingRulePage</code></summary>
+<details><summary><code>client.Recycling.List() -> *peal.RecyclingRulePage</code></summary>
 <dl>
 <dd>
 
@@ -17967,9 +15711,7 @@ Lists the workspace's recycling rules, oldest first, 50 a page unless `limit` (a
 <dd>
 
 ```go
-request := &peal.ListRecyclingRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListRecyclingRequest{}
 _, err := client.Recycling.List(
     context.TODO(),
     request,
@@ -17984,14 +15726,6 @@ _, err := client.Recycling.List(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18024,7 +15758,7 @@ _, err := client.Recycling.List(
 </dl>
 </details>
 
-<details><summary><code>client.Recycling.Create(WorkspaceID, request) -> *peal.RecyclingRule</code></summary>
+<details><summary><code>client.Recycling.Create(request) -> *peal.RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18052,7 +15786,6 @@ Starts a rule that repeats a post that is scheduled, publishing or went out (del
 
 ```go
 request := &peal.NewRecyclingRule{
-    WorkspaceID: "workspaceId",
     Every: &peal.RecyclingInterval{
         Count: 1,
         Unit: peal.RecyclingUnitDays,
@@ -18073,14 +15806,6 @@ _, err := client.Recycling.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18137,7 +15862,7 @@ _, err := client.Recycling.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Recycling.Get(WorkspaceID, RuleID) -> *peal.RecyclingRule</code></summary>
+<details><summary><code>client.Recycling.Get(RuleID) -> *peal.RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18165,7 +15890,6 @@ Answers with a rule of the workspace and its next 3 posts to come, each with the
 
 ```go
 request := &peal.GetRecyclingRequest{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 _, err := client.Recycling.Get(
@@ -18186,14 +15910,6 @@ _, err := client.Recycling.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleID:** `string` 
     
 </dd>
@@ -18206,7 +15922,7 @@ _, err := client.Recycling.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Recycling.Delete(WorkspaceID, RuleID) -> error</code></summary>
+<details><summary><code>client.Recycling.Delete(RuleID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -18234,7 +15950,6 @@ Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay 
 
 ```go
 request := &peal.DeleteRecyclingRequest{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 err := client.Recycling.Delete(
@@ -18255,14 +15970,6 @@ err := client.Recycling.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleID:** `string` 
     
 </dd>
@@ -18275,7 +15982,7 @@ err := client.Recycling.Delete(
 </dl>
 </details>
 
-<details><summary><code>client.Recycling.Update(WorkspaceID, RuleID, request) -> *peal.RecyclingRule</code></summary>
+<details><summary><code>client.Recycling.Update(RuleID, request) -> *peal.RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18303,7 +16010,6 @@ Changes a rule's variants, its `count` or `until` (null takes it away), or pause
 
 ```go
 request := &peal.RecyclingRuleChange{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 _, err := client.Recycling.Update(
@@ -18320,14 +16026,6 @@ _, err := client.Recycling.Update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18376,7 +16074,7 @@ _, err := client.Recycling.Update(
 </dl>
 </details>
 
-<details><summary><code>client.Recycling.Resume(WorkspaceID, RuleID, request) -> *peal.RecyclingRule</code></summary>
+<details><summary><code>client.Recycling.Resume(RuleID, request) -> *peal.RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18404,7 +16102,6 @@ Sets a paused rule going again, or one that ended for a reason that can be put r
 
 ```go
 request := &peal.RecyclingResume{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 _, err := client.Recycling.Resume(
@@ -18421,14 +16118,6 @@ _, err := client.Recycling.Resume(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18454,7 +16143,7 @@ _, err := client.Recycling.Resume(
 </details>
 
 ## followUps
-<details><summary><code>client.FollowUps.List(WorkspaceID) -> *peal.FollowUpRulePage</code></summary>
+<details><summary><code>client.FollowUps.List() -> *peal.FollowUpRulePage</code></summary>
 <dl>
 <dd>
 
@@ -18481,9 +16170,7 @@ Lists the workspace's follow-up rules, oldest first, 50 a page unless `limit` (a
 <dd>
 
 ```go
-request := &peal.ListFollowUpsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListFollowUpsRequest{}
 _, err := client.FollowUps.List(
     context.TODO(),
     request,
@@ -18498,14 +16185,6 @@ _, err := client.FollowUps.List(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18546,7 +16225,7 @@ _, err := client.FollowUps.List(
 </dl>
 </details>
 
-<details><summary><code>client.FollowUps.Create(WorkspaceID, request) -> *peal.FollowUpRule</code></summary>
+<details><summary><code>client.FollowUps.Create(request) -> *peal.FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18574,7 +16253,6 @@ Starts a rule on a post (`postId`) or on every post a channel publishes from now
 
 ```go
 request := &peal.NewFollowUpRule{
-    WorkspaceID: "workspaceId",
     Likes: 1,
 }
 _, err := client.FollowUps.Create(
@@ -18591,14 +16269,6 @@ _, err := client.FollowUps.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18647,7 +16317,7 @@ _, err := client.FollowUps.Create(
 </dl>
 </details>
 
-<details><summary><code>client.FollowUps.Get(WorkspaceID, RuleID) -> *peal.FollowUpRule</code></summary>
+<details><summary><code>client.FollowUps.Get(RuleID) -> *peal.FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18675,7 +16345,6 @@ Answers with a rule of the workspace, what its channels can carry and its latest
 
 ```go
 request := &peal.GetFollowUpsRequest{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 _, err := client.FollowUps.Get(
@@ -18696,14 +16365,6 @@ _, err := client.FollowUps.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleID:** `string` 
     
 </dd>
@@ -18716,7 +16377,7 @@ _, err := client.FollowUps.Get(
 </dl>
 </details>
 
-<details><summary><code>client.FollowUps.Delete(WorkspaceID, RuleID) -> error</code></summary>
+<details><summary><code>client.FollowUps.Delete(RuleID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -18744,7 +16405,6 @@ Stops a rule: it ends `stopped`, what it armed and did not send is given up, and
 
 ```go
 request := &peal.DeleteFollowUpsRequest{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 err := client.FollowUps.Delete(
@@ -18765,14 +16425,6 @@ err := client.FollowUps.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleID:** `string` 
     
 </dd>
@@ -18785,7 +16437,7 @@ err := client.FollowUps.Delete(
 </dl>
 </details>
 
-<details><summary><code>client.FollowUps.Update(WorkspaceID, RuleID, request) -> *peal.FollowUpRule</code></summary>
+<details><summary><code>client.FollowUps.Update(RuleID, request) -> *peal.FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18813,7 +16465,6 @@ Changes a rule's `likes`, its `comment` (null takes it away) or whether it repos
 
 ```go
 request := &peal.FollowUpRuleChange{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 _, err := client.FollowUps.Update(
@@ -18830,14 +16481,6 @@ _, err := client.FollowUps.Update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18886,7 +16529,7 @@ _, err := client.FollowUps.Update(
 </dl>
 </details>
 
-<details><summary><code>client.FollowUps.Approve(WorkspaceID, RuleID) -> *peal.FollowUpRule</code></summary>
+<details><summary><code>client.FollowUps.Approve(RuleID) -> *peal.FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18914,7 +16557,6 @@ Approves what a rule sends, for a rule whose starter's posts wait for an approva
 
 ```go
 request := &peal.ApproveFollowUpsRequest{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 _, err := client.FollowUps.Approve(
@@ -18935,14 +16577,6 @@ _, err := client.FollowUps.Approve(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleID:** `string` 
     
 </dd>
@@ -18956,7 +16590,7 @@ _, err := client.FollowUps.Approve(
 </details>
 
 ## inboxRules
-<details><summary><code>client.InboxRules.ListCommentRules(WorkspaceID) -> *peal.CommentRulePage</code></summary>
+<details><summary><code>client.InboxRules.ListCommentRules() -> *peal.CommentRulePage</code></summary>
 <dl>
 <dd>
 
@@ -18983,9 +16617,7 @@ Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at 
 <dd>
 
 ```go
-request := &peal.ListCommentRulesInboxRulesRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListCommentRulesInboxRulesRequest{}
 _, err := client.InboxRules.ListCommentRules(
     context.TODO(),
     request,
@@ -19000,14 +16632,6 @@ _, err := client.InboxRules.ListCommentRules(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19040,7 +16664,7 @@ _, err := client.InboxRules.ListCommentRules(
 </dl>
 </details>
 
-<details><summary><code>client.InboxRules.CreateCommentRule(WorkspaceID, request) -> *peal.CommentRule</code></summary>
+<details><summary><code>client.InboxRules.CreateCommentRule(request) -> *peal.CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -19068,7 +16692,6 @@ Starts a rule on the comments of a post that went out (`postId`) or of every pos
 
 ```go
 request := &peal.NewCommentRule{
-    WorkspaceID: "workspaceId",
     Keywords: []string{
         "keywords",
     },
@@ -19088,14 +16711,6 @@ _, err := client.InboxRules.CreateCommentRule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19144,7 +16759,7 @@ _, err := client.InboxRules.CreateCommentRule(
 </dl>
 </details>
 
-<details><summary><code>client.InboxRules.GetCommentRule(WorkspaceID, RuleID) -> *peal.CommentRule</code></summary>
+<details><summary><code>client.InboxRules.GetCommentRule(RuleID) -> *peal.CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -19172,7 +16787,6 @@ Answers a comment rule of the workspace, what its channels can carry and what it
 
 ```go
 request := &peal.GetCommentRuleInboxRulesRequest{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 _, err := client.InboxRules.GetCommentRule(
@@ -19193,14 +16807,6 @@ _, err := client.InboxRules.GetCommentRule(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleID:** `string` 
     
 </dd>
@@ -19213,7 +16819,7 @@ _, err := client.InboxRules.GetCommentRule(
 </dl>
 </details>
 
-<details><summary><code>client.InboxRules.DeleteCommentRule(WorkspaceID, RuleID) -> error</code></summary>
+<details><summary><code>client.InboxRules.DeleteCommentRule(RuleID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -19241,7 +16847,6 @@ Stops a rule: it answers nothing more; the replies it sent stay, and the inbox w
 
 ```go
 request := &peal.DeleteCommentRuleInboxRulesRequest{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 err := client.InboxRules.DeleteCommentRule(
@@ -19262,14 +16867,6 @@ err := client.InboxRules.DeleteCommentRule(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **ruleID:** `string` 
     
 </dd>
@@ -19282,7 +16879,7 @@ err := client.InboxRules.DeleteCommentRule(
 </dl>
 </details>
 
-<details><summary><code>client.InboxRules.UpdateCommentRule(WorkspaceID, RuleID, request) -> *peal.CommentRule</code></summary>
+<details><summary><code>client.InboxRules.UpdateCommentRule(RuleID, request) -> *peal.CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -19310,7 +16907,6 @@ Changes a rule's keywords, reply or private reply (`privateReply` null takes it 
 
 ```go
 request := &peal.CommentRuleChange{
-    WorkspaceID: "workspaceId",
     RuleID: "ruleId",
 }
 _, err := client.InboxRules.UpdateCommentRule(
@@ -19327,14 +16923,6 @@ _, err := client.InboxRules.UpdateCommentRule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19384,7 +16972,7 @@ _, err := client.InboxRules.UpdateCommentRule(
 </details>
 
 ## feeds
-<details><summary><code>client.Feeds.List(WorkspaceID) -> *peal.FeedPage</code></summary>
+<details><summary><code>client.Feeds.List() -> *peal.FeedPage</code></summary>
 <dl>
 <dd>
 
@@ -19411,9 +16999,7 @@ Lists the workspace's feeds, oldest first, 50 a page unless `limit` (at most 100
 <dd>
 
 ```go
-request := &peal.ListFeedsRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListFeedsRequest{}
 _, err := client.Feeds.List(
     context.TODO(),
     request,
@@ -19428,14 +17014,6 @@ _, err := client.Feeds.List(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19460,7 +17038,7 @@ _, err := client.Feeds.List(
 </dl>
 </details>
 
-<details><summary><code>client.Feeds.Create(WorkspaceID, request) -> *peal.CreatedFeed</code></summary>
+<details><summary><code>client.Feeds.Create(request) -> *peal.CreatedFeed</code></summary>
 <dl>
 <dd>
 
@@ -19488,7 +17066,6 @@ Follows a feed at `url`: it is read once, and refused when it is not a feed; eve
 
 ```go
 request := &peal.NewFeed{
-    WorkspaceID: "workspaceId",
     URL: "url",
 }
 _, err := client.Feeds.Create(
@@ -19505,14 +17082,6 @@ _, err := client.Feeds.Create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19577,7 +17146,7 @@ _, err := client.Feeds.Create(
 </dl>
 </details>
 
-<details><summary><code>client.Feeds.Preview(WorkspaceID, request) -> *peal.FeedPreview</code></summary>
+<details><summary><code>client.Feeds.Preview(request) -> *peal.FeedPreview</code></summary>
 <dl>
 <dd>
 
@@ -19605,7 +17174,6 @@ Reads an address and answers its title and its 3 newest items, each with what `t
 
 ```go
 request := &peal.FeedPreviewRequest{
-    WorkspaceID: "workspaceId",
     URL: "url",
 }
 _, err := client.Feeds.Preview(
@@ -19622,14 +17190,6 @@ _, err := client.Feeds.Preview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19654,7 +17214,7 @@ _, err := client.Feeds.Preview(
 </dl>
 </details>
 
-<details><summary><code>client.Feeds.Get(WorkspaceID, FeedID) -> *peal.Feed</code></summary>
+<details><summary><code>client.Feeds.Get(FeedID) -> *peal.Feed</code></summary>
 <dl>
 <dd>
 
@@ -19682,7 +17242,6 @@ Answers with a feed of the workspace: its state, when it was last read and is ne
 
 ```go
 request := &peal.GetFeedsRequest{
-    WorkspaceID: "workspaceId",
     FeedID: "feedId",
 }
 _, err := client.Feeds.Get(
@@ -19703,14 +17262,6 @@ _, err := client.Feeds.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **feedID:** `string` 
     
 </dd>
@@ -19723,7 +17274,7 @@ _, err := client.Feeds.Get(
 </dl>
 </details>
 
-<details><summary><code>client.Feeds.Delete(WorkspaceID, FeedID) -> error</code></summary>
+<details><summary><code>client.Feeds.Delete(FeedID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -19751,7 +17302,6 @@ Stops following a feed and forgets what it read; the drafts and posts it made st
 
 ```go
 request := &peal.DeleteFeedsRequest{
-    WorkspaceID: "workspaceId",
     FeedID: "feedId",
 }
 err := client.Feeds.Delete(
@@ -19772,14 +17322,6 @@ err := client.Feeds.Delete(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **feedID:** `string` 
     
 </dd>
@@ -19792,7 +17334,7 @@ err := client.Feeds.Delete(
 </dl>
 </details>
 
-<details><summary><code>client.Feeds.Update(WorkspaceID, FeedID, request) -> *peal.Feed</code></summary>
+<details><summary><code>client.Feeds.Update(FeedID, request) -> *peal.Feed</code></summary>
 <dl>
 <dd>
 
@@ -19820,7 +17362,6 @@ Changes a feed; what the request leaves out stays. A new `url` is read at once, 
 
 ```go
 request := &peal.FeedChange{
-    WorkspaceID: "workspaceId",
     FeedID: "feedId",
 }
 _, err := client.Feeds.Update(
@@ -19837,14 +17378,6 @@ _, err := client.Feeds.Update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19925,7 +17458,7 @@ _, err := client.Feeds.Update(
 </dl>
 </details>
 
-<details><summary><code>client.Feeds.Items(WorkspaceID, FeedID) -> *peal.FeedItems</code></summary>
+<details><summary><code>client.Feeds.Items(FeedID) -> *peal.FeedItems</code></summary>
 <dl>
 <dd>
 
@@ -19953,7 +17486,6 @@ Lists a feed's 50 newest items, newest first: when each was seen, the date it ga
 
 ```go
 request := &peal.ItemsFeedsRequest{
-    WorkspaceID: "workspaceId",
     FeedID: "feedId",
 }
 _, err := client.Feeds.Items(
@@ -19974,14 +17506,6 @@ _, err := client.Feeds.Items(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **feedID:** `string` 
     
 </dd>
@@ -19995,7 +17519,7 @@ _, err := client.Feeds.Items(
 </details>
 
 ## channelDefaults
-<details><summary><code>client.ChannelDefaults.Get(WorkspaceID, ChannelID) -> *peal.ChannelDefaults</code></summary>
+<details><summary><code>client.ChannelDefaults.Get(ChannelID) -> *peal.ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -20023,7 +17547,6 @@ Answers the options new posts take on the channel when they give none there, or 
 
 ```go
 request := &peal.GetChannelDefaultsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 _, err := client.ChannelDefaults.Get(
@@ -20044,14 +17567,6 @@ _, err := client.ChannelDefaults.Get(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -20064,7 +17579,7 @@ _, err := client.ChannelDefaults.Get(
 </dl>
 </details>
 
-<details><summary><code>client.ChannelDefaults.Set(WorkspaceID, ChannelID, request) -> *peal.ChannelDefaults</code></summary>
+<details><summary><code>client.ChannelDefaults.Set(ChannelID, request) -> *peal.ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -20092,7 +17607,6 @@ Keeps these as the channel's default options, instead of any it had: options of 
 
 ```go
 request := &peal.NewChannelDefaults{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
     Options: &peal.TargetOptions{
         Youtube: &peal.YouTubeOptions{},
@@ -20112,14 +17626,6 @@ _, err := client.ChannelDefaults.Set(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20144,7 +17650,7 @@ _, err := client.ChannelDefaults.Set(
 </dl>
 </details>
 
-<details><summary><code>client.ChannelDefaults.Clear(WorkspaceID, ChannelID) -> error</code></summary>
+<details><summary><code>client.ChannelDefaults.Clear(ChannelID) -> error</code></summary>
 <dl>
 <dd>
 
@@ -20172,7 +17678,6 @@ Leaves the channel without default options. Posts already made keep theirs. Need
 
 ```go
 request := &peal.ClearChannelDefaultsRequest{
-    WorkspaceID: "workspaceId",
     ChannelID: "channelId",
 }
 err := client.ChannelDefaults.Clear(
@@ -20193,14 +17698,6 @@ err := client.ChannelDefaults.Clear(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **channelID:** `string` 
     
 </dd>
@@ -20214,7 +17711,7 @@ err := client.ChannelDefaults.Clear(
 </details>
 
 ## shortLinks
-<details><summary><code>client.ShortLinks.Status(WorkspaceID) -> *peal.ShortLinkStatus</code></summary>
+<details><summary><code>client.ShortLinks.Status() -> *peal.ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -20241,29 +17738,10 @@ Answers whether this server shortens links (`available`), what a short address s
 <dd>
 
 ```go
-request := &peal.StatusShortLinksRequest{
-    WorkspaceID: "workspaceId",
-}
 _, err := client.ShortLinks.Status(
     context.TODO(),
-    request,
 )
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -20274,7 +17752,7 @@ _, err := client.ShortLinks.Status(
 </dl>
 </details>
 
-<details><summary><code>client.ShortLinks.SetDefault(WorkspaceID, request) -> *peal.ShortLinkStatus</code></summary>
+<details><summary><code>client.ShortLinks.SetDefault(request) -> *peal.ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -20302,7 +17780,6 @@ Sets whether the workspace's new posts ask for short links unless they say other
 
 ```go
 request := &peal.ShortLinkSettings{
-    WorkspaceID: "workspaceId",
     ByDefault: true,
 }
 _, err := client.ShortLinks.SetDefault(
@@ -20323,14 +17800,6 @@ _, err := client.ShortLinks.SetDefault(
 <dl>
 <dd>
 
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **byDefault:** `bool` 
     
 </dd>
@@ -20343,7 +17812,7 @@ _, err := client.ShortLinks.SetDefault(
 </dl>
 </details>
 
-<details><summary><code>client.ShortLinks.List(WorkspaceID) -> *peal.ShortLinkPage</code></summary>
+<details><summary><code>client.ShortLinks.List() -> *peal.ShortLinkPage</code></summary>
 <dl>
 <dd>
 
@@ -20370,9 +17839,7 @@ Lists the workspace's short links, newest first, 50 a page unless `limit` (at mo
 <dd>
 
 ```go
-request := &peal.ListShortLinksRequest{
-    WorkspaceID: "workspaceId",
-}
+request := &peal.ListShortLinksRequest{}
 _, err := client.ShortLinks.List(
     context.TODO(),
     request,
@@ -20387,14 +17854,6 @@ _, err := client.ShortLinks.List(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20451,7 +17910,7 @@ _, err := client.ShortLinks.List(
 </dl>
 </details>
 
-<details><summary><code>client.ShortLinks.Get(WorkspaceID, LinkID) -> *peal.ShortLinkReport</code></summary>
+<details><summary><code>client.ShortLinks.Get(LinkID) -> *peal.ShortLinkReport</code></summary>
 <dl>
 <dd>
 
@@ -20479,7 +17938,6 @@ Answers one short link with its clicks each day from `from` to `to` (UTC days, b
 
 ```go
 request := &peal.GetShortLinksRequest{
-    WorkspaceID: "workspaceId",
     LinkID: "linkId",
 }
 _, err := client.ShortLinks.Get(
@@ -20496,14 +17954,6 @@ _, err := client.ShortLinks.Get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspaceID:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>

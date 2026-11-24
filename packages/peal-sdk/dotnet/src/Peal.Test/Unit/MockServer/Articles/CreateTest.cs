@@ -70,7 +70,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles")
+                    .WithPath("/api/v1/articles")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -85,7 +85,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Articles.CreateAsync(
             new NewArticle
             {
-                WorkspaceId = "workspaceId",
                 Body = new ArticleBody
                 {
                     Content = new List<object>()
@@ -157,7 +156,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles")
+                    .WithPath("/api/v1/articles")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -172,7 +171,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Articles.CreateAsync(
             new NewArticle
             {
-                WorkspaceId = "workspaceId",
                 Body = new ArticleBody
                 {
                     Content = new List<object>() { },

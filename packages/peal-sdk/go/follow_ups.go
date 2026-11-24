@@ -10,13 +10,11 @@ import (
 )
 
 var (
-	approveFollowUpsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	approveFollowUpsRequestFieldRuleID      = big.NewInt(1 << 1)
+	approveFollowUpsRequestFieldRuleID = big.NewInt(1 << 0)
 )
 
 type ApproveFollowUpsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	RuleID      string `json:"-" url:"-"`
+	RuleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (a *ApproveFollowUpsRequest) require(field *big.Int) {
 	a.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *ApproveFollowUpsRequest) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(approveFollowUpsRequestFieldWorkspaceID)
-}
-
 // SetRuleID sets the RuleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (a *ApproveFollowUpsRequest) SetRuleID(ruleID string) {
@@ -46,21 +37,19 @@ func (a *ApproveFollowUpsRequest) SetRuleID(ruleID string) {
 }
 
 var (
-	newFollowUpRuleFieldWorkspaceID = big.NewInt(1 << 0)
-	newFollowUpRuleFieldChannelID   = big.NewInt(1 << 1)
-	newFollowUpRuleFieldComment     = big.NewInt(1 << 2)
-	newFollowUpRuleFieldLikes       = big.NewInt(1 << 3)
-	newFollowUpRuleFieldPostID      = big.NewInt(1 << 4)
-	newFollowUpRuleFieldRepost      = big.NewInt(1 << 5)
+	newFollowUpRuleFieldChannelID = big.NewInt(1 << 0)
+	newFollowUpRuleFieldComment   = big.NewInt(1 << 1)
+	newFollowUpRuleFieldLikes     = big.NewInt(1 << 2)
+	newFollowUpRuleFieldPostID    = big.NewInt(1 << 3)
+	newFollowUpRuleFieldRepost    = big.NewInt(1 << 4)
 )
 
 type NewFollowUpRule struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	ChannelID   *string `json:"channelId,omitempty" url:"-"`
-	Comment     *string `json:"comment,omitempty" url:"-"`
-	Likes       int     `json:"likes" url:"-"`
-	PostID      *string `json:"postId,omitempty" url:"-"`
-	Repost      *bool   `json:"repost,omitempty" url:"-"`
+	ChannelID *string `json:"channelId,omitempty" url:"-"`
+	Comment   *string `json:"comment,omitempty" url:"-"`
+	Likes     int     `json:"likes" url:"-"`
+	PostID    *string `json:"postId,omitempty" url:"-"`
+	Repost    *bool   `json:"repost,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -73,13 +62,6 @@ func (n *NewFollowUpRule) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewFollowUpRule) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newFollowUpRuleFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -139,13 +121,11 @@ func (n *NewFollowUpRule) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	deleteFollowUpsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteFollowUpsRequestFieldRuleID      = big.NewInt(1 << 1)
+	deleteFollowUpsRequestFieldRuleID = big.NewInt(1 << 0)
 )
 
 type DeleteFollowUpsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	RuleID      string `json:"-" url:"-"`
+	RuleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -160,13 +140,6 @@ func (d *DeleteFollowUpsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteFollowUpsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteFollowUpsRequestFieldWorkspaceID)
-}
-
 // SetRuleID sets the RuleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteFollowUpsRequest) SetRuleID(ruleID string) {
@@ -175,13 +148,11 @@ func (d *DeleteFollowUpsRequest) SetRuleID(ruleID string) {
 }
 
 var (
-	getFollowUpsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getFollowUpsRequestFieldRuleID      = big.NewInt(1 << 1)
+	getFollowUpsRequestFieldRuleID = big.NewInt(1 << 0)
 )
 
 type GetFollowUpsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	RuleID      string `json:"-" url:"-"`
+	RuleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -196,13 +167,6 @@ func (g *GetFollowUpsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetFollowUpsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getFollowUpsRequestFieldWorkspaceID)
-}
-
 // SetRuleID sets the RuleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetFollowUpsRequest) SetRuleID(ruleID string) {
@@ -211,19 +175,17 @@ func (g *GetFollowUpsRequest) SetRuleID(ruleID string) {
 }
 
 var (
-	listFollowUpsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listFollowUpsRequestFieldCursor      = big.NewInt(1 << 1)
-	listFollowUpsRequestFieldLimit       = big.NewInt(1 << 2)
-	listFollowUpsRequestFieldPostID      = big.NewInt(1 << 3)
-	listFollowUpsRequestFieldStatus      = big.NewInt(1 << 4)
+	listFollowUpsRequestFieldCursor = big.NewInt(1 << 0)
+	listFollowUpsRequestFieldLimit  = big.NewInt(1 << 1)
+	listFollowUpsRequestFieldPostID = big.NewInt(1 << 2)
+	listFollowUpsRequestFieldStatus = big.NewInt(1 << 3)
 )
 
 type ListFollowUpsRequest struct {
-	WorkspaceID string              `json:"-" url:"-"`
-	Cursor      *string             `json:"-" url:"cursor,omitempty"`
-	Limit       *string             `json:"-" url:"limit,omitempty"`
-	PostID      *string             `json:"-" url:"postId,omitempty"`
-	Status      *FollowUpRuleStatus `json:"-" url:"status,omitempty"`
+	Cursor *string             `json:"-" url:"cursor,omitempty"`
+	Limit  *string             `json:"-" url:"limit,omitempty"`
+	PostID *string             `json:"-" url:"postId,omitempty"`
+	Status *FollowUpRuleStatus `json:"-" url:"status,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -236,13 +198,6 @@ func (l *ListFollowUpsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListFollowUpsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listFollowUpsRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -1381,21 +1336,19 @@ func (f FollowUpStatus) Ptr() *FollowUpStatus {
 }
 
 var (
-	followUpRuleChangeFieldWorkspaceID = big.NewInt(1 << 0)
-	followUpRuleChangeFieldRuleID      = big.NewInt(1 << 1)
-	followUpRuleChangeFieldComment     = big.NewInt(1 << 2)
-	followUpRuleChangeFieldLikes       = big.NewInt(1 << 3)
-	followUpRuleChangeFieldPaused      = big.NewInt(1 << 4)
-	followUpRuleChangeFieldRepost      = big.NewInt(1 << 5)
+	followUpRuleChangeFieldRuleID  = big.NewInt(1 << 0)
+	followUpRuleChangeFieldComment = big.NewInt(1 << 1)
+	followUpRuleChangeFieldLikes   = big.NewInt(1 << 2)
+	followUpRuleChangeFieldPaused  = big.NewInt(1 << 3)
+	followUpRuleChangeFieldRepost  = big.NewInt(1 << 4)
 )
 
 type FollowUpRuleChange struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	RuleID      string  `json:"-" url:"-"`
-	Comment     *string `json:"comment,omitempty" url:"-"`
-	Likes       *int    `json:"likes,omitempty" url:"-"`
-	Paused      *bool   `json:"paused,omitempty" url:"-"`
-	Repost      *bool   `json:"repost,omitempty" url:"-"`
+	RuleID  string  `json:"-" url:"-"`
+	Comment *string `json:"comment,omitempty" url:"-"`
+	Likes   *int    `json:"likes,omitempty" url:"-"`
+	Paused  *bool   `json:"paused,omitempty" url:"-"`
+	Repost  *bool   `json:"repost,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1408,13 +1361,6 @@ func (f *FollowUpRuleChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	f.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (f *FollowUpRuleChange) SetWorkspaceID(workspaceID string) {
-	f.WorkspaceID = workspaceID
-	f.require(followUpRuleChangeFieldWorkspaceID)
 }
 
 // SetRuleID sets the RuleID field and marks it as non-optional;

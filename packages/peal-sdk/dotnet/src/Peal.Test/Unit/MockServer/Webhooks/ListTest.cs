@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -77,10 +76,7 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/webhooks").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -89,9 +85,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Webhooks.ListAsync(
-            new ListWebhooksRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Webhooks.ListAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -130,10 +124,7 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/webhooks").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -142,9 +133,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Webhooks.ListAsync(
-            new ListWebhooksRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Webhooks.ListAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

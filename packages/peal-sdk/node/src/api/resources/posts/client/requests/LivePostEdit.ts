@@ -3,14 +3,12 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         targetId: "targetId",
  *         text: "text"
  *     }
  */
 export interface LivePostEdit {
-    workspaceId: string;
     postId: string;
     targetId: string;
     wait?: string;

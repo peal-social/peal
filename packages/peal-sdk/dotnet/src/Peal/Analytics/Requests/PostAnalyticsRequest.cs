@@ -7,9 +7,6 @@ namespace Peal;
 public record PostAnalyticsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PostId { get; set; }
 
     /// <inheritdoc />

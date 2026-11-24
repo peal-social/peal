@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
-import social.peal.resources.members.requests.ListMembersRequest;
 import social.peal.types.WorkspaceMember;
 
 public class AsyncMembersClient {
@@ -31,8 +30,8 @@ public class AsyncMembersClient {
     /**
      * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
      */
-    public CompletableFuture<List<WorkspaceMember>> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<WorkspaceMember>>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<List<WorkspaceMember>> list() {
+        CompletableFuture<PealClientHttpResponse<List<WorkspaceMember>>> rawFuture = this.rawClient.list();
         CompletableFuture<List<WorkspaceMember>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -45,40 +44,9 @@ public class AsyncMembersClient {
     /**
      * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
      */
-    public CompletableFuture<List<WorkspaceMember>> list(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<List<WorkspaceMember>> list(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<WorkspaceMember>>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<List<WorkspaceMember>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
-     */
-    public CompletableFuture<List<WorkspaceMember>> list(String workspaceId, ListMembersRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<WorkspaceMember>>> rawFuture =
-                this.rawClient.list(workspaceId, request);
-        CompletableFuture<List<WorkspaceMember>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
-     */
-    public CompletableFuture<List<WorkspaceMember>> list(
-            String workspaceId, ListMembersRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<WorkspaceMember>>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+                this.rawClient.list(requestOptions);
         CompletableFuture<List<WorkspaceMember>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         platform: "x",
  *         state: "state"
  *     }
  */
 export interface ConnectCallback {
-    workspaceId: string;
     platform: Peal.Platform;
     code?: string;
     error?: string;

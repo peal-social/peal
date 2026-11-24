@@ -7,9 +7,6 @@ namespace Peal;
 public record AiProviderTest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required AiProvider Provider { get; set; }
 
     [JsonPropertyName("model")]

@@ -3,14 +3,12 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         commentId: "commentId",
  *         resolved: true
  *     }
  */
 export interface ResolveReviewRequest {
-    workspaceId: string;
     postId: string;
     commentId: string;
     resolved: boolean;

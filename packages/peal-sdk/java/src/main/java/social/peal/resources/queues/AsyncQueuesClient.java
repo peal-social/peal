@@ -8,14 +8,13 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
-import social.peal.resources.queues.requests.CreateQueuesRequest;
 import social.peal.resources.queues.requests.DeleteQueuesRequest;
 import social.peal.resources.queues.requests.GetQueuesRequest;
-import social.peal.resources.queues.requests.ListQueuesRequest;
 import social.peal.resources.queues.requests.ReshuffleQueuesRequest;
 import social.peal.resources.queues.requests.SlotsQueuesRequest;
 import social.peal.resources.queues.requests.UpdateQueuesRequest;
 import social.peal.types.Queue;
+import social.peal.types.QueueDetails;
 import social.peal.types.QueuePreview;
 import social.peal.types.QueueReshuffle;
 
@@ -39,8 +38,8 @@ public class AsyncQueuesClient {
     /**
      * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public CompletableFuture<List<Queue>> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<Queue>>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<List<Queue>> list() {
+        CompletableFuture<PealClientHttpResponse<List<Queue>>> rawFuture = this.rawClient.list();
         CompletableFuture<List<Queue>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -53,39 +52,8 @@ public class AsyncQueuesClient {
     /**
      * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public CompletableFuture<List<Queue>> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Queue>>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<List<Queue>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public CompletableFuture<List<Queue>> list(String workspaceId, ListQueuesRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<Queue>>> rawFuture = this.rawClient.list(workspaceId, request);
-        CompletableFuture<List<Queue>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public CompletableFuture<List<Queue>> list(
-            String workspaceId, ListQueuesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Queue>>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<List<Queue>> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<Queue>>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<List<Queue>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -98,8 +66,8 @@ public class AsyncQueuesClient {
     /**
      * Saves a queue. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. The first queue of a workspace is its default. A workspace keeps 20 queues at most. Needs post:update and channel:read.
      */
-    public CompletableFuture<Queue> create(String workspaceId, CreateQueuesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.create(workspaceId, request);
+    public CompletableFuture<Queue> create(QueueDetails request) {
+        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.create(request);
         CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -112,69 +80,65 @@ public class AsyncQueuesClient {
     /**
      * Saves a queue. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. The first queue of a workspace is its default. A workspace keeps 20 queues at most. Needs post:update and channel:read.
      */
-    public CompletableFuture<Queue> create(
-            String workspaceId, CreateQueuesRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Queue> create(QueueDetails request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.create(request, requestOptions);
+        CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Answers with a queue of the workspace. Needs post:read and channel:read.
+     */
+    public CompletableFuture<Queue> get(String queueId) {
+        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.get(queueId);
+        CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Answers with a queue of the workspace. Needs post:read and channel:read.
+     */
+    public CompletableFuture<Queue> get(String queueId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.get(queueId, requestOptions);
+        CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Answers with a queue of the workspace. Needs post:read and channel:read.
+     */
+    public CompletableFuture<Queue> get(String queueId, GetQueuesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.get(queueId, request);
+        CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Answers with a queue of the workspace. Needs post:read and channel:read.
+     */
+    public CompletableFuture<Queue> get(String queueId, GetQueuesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Queue>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
-        CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers with a queue of the workspace. Needs post:read and channel:read.
-     */
-    public CompletableFuture<Queue> get(String workspaceId, String queueId) {
-        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.get(workspaceId, queueId);
-        CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers with a queue of the workspace. Needs post:read and channel:read.
-     */
-    public CompletableFuture<Queue> get(String workspaceId, String queueId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture =
-                this.rawClient.get(workspaceId, queueId, requestOptions);
-        CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers with a queue of the workspace. Needs post:read and channel:read.
-     */
-    public CompletableFuture<Queue> get(String workspaceId, String queueId, GetQueuesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.get(workspaceId, queueId, request);
-        CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers with a queue of the workspace. Needs post:read and channel:read.
-     */
-    public CompletableFuture<Queue> get(
-            String workspaceId, String queueId, GetQueuesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture =
-                this.rawClient.get(workspaceId, queueId, request, requestOptions);
+                this.rawClient.get(queueId, request, requestOptions);
         CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -187,9 +151,8 @@ public class AsyncQueuesClient {
     /**
      * Replaces a queue's name, zone, slots and channels: every channel must be connected now, so this is also how a disconnected one is taken out. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. Posts the queue placed keep their times: a slot that changed frees nothing and moves nothing. Saving the default with <code>isDefault</code> false, or without <code>isDefault</code>, leaves the workspace without one, and a post then sent to the default queue is refused (QueueNotFound): send <code>isDefault</code> true to keep it the default. Needs post:update and channel:read.
      */
-    public CompletableFuture<Queue> update(String workspaceId, String queueId, UpdateQueuesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture =
-                this.rawClient.update(workspaceId, queueId, request);
+    public CompletableFuture<Queue> update(String queueId, UpdateQueuesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Queue>> rawFuture = this.rawClient.update(queueId, request);
         CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -202,10 +165,9 @@ public class AsyncQueuesClient {
     /**
      * Replaces a queue's name, zone, slots and channels: every channel must be connected now, so this is also how a disconnected one is taken out. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. Posts the queue placed keep their times: a slot that changed frees nothing and moves nothing. Saving the default with <code>isDefault</code> false, or without <code>isDefault</code>, leaves the workspace without one, and a post then sent to the default queue is refused (QueueNotFound): send <code>isDefault</code> true to keep it the default. Needs post:update and channel:read.
      */
-    public CompletableFuture<Queue> update(
-            String workspaceId, String queueId, UpdateQueuesRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Queue> update(String queueId, UpdateQueuesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Queue>> rawFuture =
-                this.rawClient.update(workspaceId, queueId, request, requestOptions);
+                this.rawClient.update(queueId, request, requestOptions);
         CompletableFuture<Queue> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -218,8 +180,8 @@ public class AsyncQueuesClient {
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String queueId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, queueId);
+    public CompletableFuture<Void> delete(String queueId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(queueId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -232,9 +194,8 @@ public class AsyncQueuesClient {
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String queueId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, queueId, requestOptions);
+    public CompletableFuture<Void> delete(String queueId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(queueId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -247,9 +208,8 @@ public class AsyncQueuesClient {
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String queueId, DeleteQueuesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, queueId, request);
+    public CompletableFuture<Void> delete(String queueId, DeleteQueuesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(queueId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -262,10 +222,9 @@ public class AsyncQueuesClient {
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public CompletableFuture<Void> delete(
-            String workspaceId, String queueId, DeleteQueuesRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Void> delete(String queueId, DeleteQueuesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, queueId, request, requestOptions);
+                this.rawClient.delete(queueId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -278,8 +237,8 @@ public class AsyncQueuesClient {
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
-    public CompletableFuture<QueuePreview> slots(String workspaceId, String queueId) {
-        CompletableFuture<PealClientHttpResponse<QueuePreview>> rawFuture = this.rawClient.slots(workspaceId, queueId);
+    public CompletableFuture<QueuePreview> slots(String queueId) {
+        CompletableFuture<PealClientHttpResponse<QueuePreview>> rawFuture = this.rawClient.slots(queueId);
         CompletableFuture<QueuePreview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -292,9 +251,9 @@ public class AsyncQueuesClient {
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
-    public CompletableFuture<QueuePreview> slots(String workspaceId, String queueId, RequestOptions requestOptions) {
+    public CompletableFuture<QueuePreview> slots(String queueId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<QueuePreview>> rawFuture =
-                this.rawClient.slots(workspaceId, queueId, requestOptions);
+                this.rawClient.slots(queueId, requestOptions);
         CompletableFuture<QueuePreview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -307,9 +266,8 @@ public class AsyncQueuesClient {
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
-    public CompletableFuture<QueuePreview> slots(String workspaceId, String queueId, SlotsQueuesRequest request) {
-        CompletableFuture<PealClientHttpResponse<QueuePreview>> rawFuture =
-                this.rawClient.slots(workspaceId, queueId, request);
+    public CompletableFuture<QueuePreview> slots(String queueId, SlotsQueuesRequest request) {
+        CompletableFuture<PealClientHttpResponse<QueuePreview>> rawFuture = this.rawClient.slots(queueId, request);
         CompletableFuture<QueuePreview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -323,9 +281,9 @@ public class AsyncQueuesClient {
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
     public CompletableFuture<QueuePreview> slots(
-            String workspaceId, String queueId, SlotsQueuesRequest request, RequestOptions requestOptions) {
+            String queueId, SlotsQueuesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<QueuePreview>> rawFuture =
-                this.rawClient.slots(workspaceId, queueId, request, requestOptions);
+                this.rawClient.slots(queueId, request, requestOptions);
         CompletableFuture<QueuePreview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -338,9 +296,38 @@ public class AsyncQueuesClient {
     /**
      * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
      */
-    public CompletableFuture<QueueReshuffle> reshuffle(String workspaceId, String queueId) {
+    public CompletableFuture<QueueReshuffle> reshuffle(String queueId) {
+        CompletableFuture<PealClientHttpResponse<QueueReshuffle>> rawFuture = this.rawClient.reshuffle(queueId);
+        CompletableFuture<QueueReshuffle> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
+     */
+    public CompletableFuture<QueueReshuffle> reshuffle(String queueId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<QueueReshuffle>> rawFuture =
-                this.rawClient.reshuffle(workspaceId, queueId);
+                this.rawClient.reshuffle(queueId, requestOptions);
+        CompletableFuture<QueueReshuffle> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
+     */
+    public CompletableFuture<QueueReshuffle> reshuffle(String queueId, ReshuffleQueuesRequest request) {
+        CompletableFuture<PealClientHttpResponse<QueueReshuffle>> rawFuture =
+                this.rawClient.reshuffle(queueId, request);
         CompletableFuture<QueueReshuffle> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -354,41 +341,9 @@ public class AsyncQueuesClient {
      * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
      */
     public CompletableFuture<QueueReshuffle> reshuffle(
-            String workspaceId, String queueId, RequestOptions requestOptions) {
+            String queueId, ReshuffleQueuesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<QueueReshuffle>> rawFuture =
-                this.rawClient.reshuffle(workspaceId, queueId, requestOptions);
-        CompletableFuture<QueueReshuffle> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
-     */
-    public CompletableFuture<QueueReshuffle> reshuffle(
-            String workspaceId, String queueId, ReshuffleQueuesRequest request) {
-        CompletableFuture<PealClientHttpResponse<QueueReshuffle>> rawFuture =
-                this.rawClient.reshuffle(workspaceId, queueId, request);
-        CompletableFuture<QueueReshuffle> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
-     */
-    public CompletableFuture<QueueReshuffle> reshuffle(
-            String workspaceId, String queueId, ReshuffleQueuesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<QueueReshuffle>> rawFuture =
-                this.rawClient.reshuffle(workspaceId, queueId, request, requestOptions);
+                this.rawClient.reshuffle(queueId, request, requestOptions);
         CompletableFuture<QueueReshuffle> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

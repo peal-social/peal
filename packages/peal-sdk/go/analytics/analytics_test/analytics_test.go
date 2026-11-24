@@ -91,10 +91,9 @@ func TestAnalyticsSummaryWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SummaryAnalyticsRequest{
-		WorkspaceID: "workspaceId",
-		From:        "from",
-		TimeZone:    "timeZone",
-		To:          "to",
+		From:     "from",
+		TimeZone: "timeZone",
+		To:       "to",
 	}
 	_, invocationErr := client.Analytics.Summary(
 		context.TODO(),
@@ -105,7 +104,7 @@ func TestAnalyticsSummaryWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAnalyticsSummaryWithWireMock", "GET", "/api/workspaces/workspaceId/analytics/summary", map[string]interface{}{"from": "from", "timeZone": "timeZone", "to": "to"}, 1)
+	VerifyRequestCount(t, "TestAnalyticsSummaryWithWireMock", "GET", "/api/v1/analytics/summary", map[string]interface{}{"from": "from", "timeZone": "timeZone", "to": "to"}, 1)
 }
 
 func TestAnalyticsDashboardWithWireMock(
@@ -120,8 +119,7 @@ func TestAnalyticsDashboardWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DashboardAnalyticsRequest{
-		WorkspaceID: "workspaceId",
-		TimeZone:    "timeZone",
+		TimeZone: "timeZone",
 	}
 	_, invocationErr := client.Analytics.Dashboard(
 		context.TODO(),
@@ -132,7 +130,7 @@ func TestAnalyticsDashboardWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAnalyticsDashboardWithWireMock", "GET", "/api/workspaces/workspaceId/analytics/dashboard", map[string]interface{}{"timeZone": "timeZone"}, 1)
+	VerifyRequestCount(t, "TestAnalyticsDashboardWithWireMock", "GET", "/api/v1/analytics/dashboard", map[string]interface{}{"timeZone": "timeZone"}, 1)
 }
 
 func TestAnalyticsChannelWithWireMock(
@@ -147,9 +145,8 @@ func TestAnalyticsChannelWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ChannelAnalyticsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
-		TimeZone:    "timeZone",
+		ChannelID: "channelId",
+		TimeZone:  "timeZone",
 	}
 	_, invocationErr := client.Analytics.Channel(
 		context.TODO(),
@@ -160,7 +157,7 @@ func TestAnalyticsChannelWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAnalyticsChannelWithWireMock", "GET", "/api/workspaces/workspaceId/analytics/channels/channelId", map[string]interface{}{"timeZone": "timeZone"}, 1)
+	VerifyRequestCount(t, "TestAnalyticsChannelWithWireMock", "GET", "/api/v1/analytics/channels/channelId", map[string]interface{}{"timeZone": "timeZone"}, 1)
 }
 
 func TestAnalyticsExportWithWireMock(
@@ -175,9 +172,8 @@ func TestAnalyticsExportWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ExportAnalyticsRequest{
-		WorkspaceID: "workspaceId",
-		TimeZone:    "timeZone",
-		Kind:        peal.AnalyticsExportKindPosts,
+		TimeZone: "timeZone",
+		Kind:     peal.AnalyticsExportKindPosts,
 	}
 	response, invocationErr := client.Analytics.WithRawResponse.Export(
 		context.TODO(),
@@ -194,7 +190,7 @@ func TestAnalyticsExportWithWireMock(
 	expectedBytes, decodeErr := base64.StdEncoding.DecodeString("JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA2MTIgNzkyXSA+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE1IDAwMDAwIG4gCjAwMDAwMDAwNjQgMDAwMDAgbiAKMDAwMDAwMDEyMSAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDQgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4cmVmCjE5MgolJUVPRgo=")
 	require.NoError(t, decodeErr, "Fixture bytes should decode")
 	require.Equal(t, expectedBytes, actualBytes, "Response body should match the served fixture bytes")
-	VerifyRequestCount(t, "TestAnalyticsExportWithWireMock", "GET", "/api/workspaces/workspaceId/analytics/export", map[string]interface{}{"timeZone": "timeZone", "kind": "posts"}, 1)
+	VerifyRequestCount(t, "TestAnalyticsExportWithWireMock", "GET", "/api/v1/analytics/export", map[string]interface{}{"timeZone": "timeZone", "kind": "posts"}, 1)
 }
 
 func TestAnalyticsBestTimesWithWireMock(
@@ -209,9 +205,8 @@ func TestAnalyticsBestTimesWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.BestTimesAnalyticsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
-		TimeZone:    "timeZone",
+		ChannelID: "channelId",
+		TimeZone:  "timeZone",
 	}
 	_, invocationErr := client.Analytics.BestTimes(
 		context.TODO(),
@@ -222,7 +217,7 @@ func TestAnalyticsBestTimesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAnalyticsBestTimesWithWireMock", "GET", "/api/workspaces/workspaceId/analytics/best-times", map[string]interface{}{"channelId": "channelId", "timeZone": "timeZone"}, 1)
+	VerifyRequestCount(t, "TestAnalyticsBestTimesWithWireMock", "GET", "/api/v1/analytics/best-times", map[string]interface{}{"channelId": "channelId", "timeZone": "timeZone"}, 1)
 }
 
 func TestAnalyticsPostWithWireMock(
@@ -237,8 +232,7 @@ func TestAnalyticsPostWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.PostAnalyticsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Analytics.Post(
 		context.TODO(),
@@ -249,5 +243,5 @@ func TestAnalyticsPostWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAnalyticsPostWithWireMock", "GET", "/api/workspaces/workspaceId/analytics/posts/postId", nil, 1)
+	VerifyRequestCount(t, "TestAnalyticsPostWithWireMock", "GET", "/api/v1/analytics/posts/postId", nil, 1)
 }

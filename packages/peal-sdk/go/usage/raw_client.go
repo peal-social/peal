@@ -43,10 +43,7 @@ func (r *RawClient) Get(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/usage",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/usage"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -95,10 +92,7 @@ func (r *RawClient) Partner(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/usage/partner",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/usage/partner"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err

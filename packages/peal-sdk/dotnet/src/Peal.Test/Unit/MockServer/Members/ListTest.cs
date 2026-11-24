@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -54,12 +53,7 @@ public class ListTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/members")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/members").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -67,9 +61,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Members.ListAsync(
-            new ListMembersRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Members.ListAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -100,12 +92,7 @@ public class ListTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/members")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/members").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -113,9 +100,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Members.ListAsync(
-            new ListMembersRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Members.ListAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

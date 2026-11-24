@@ -33,8 +33,7 @@ public partial class LookupsClient : ILookupsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/lookups",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/lookups",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -89,6 +88,18 @@ public partial class LookupsClient : ILookupsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -178,8 +189,7 @@ public partial class LookupsClient : ILookupsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/lookups/{2}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/lookups/{1}",
                         ValueConvert.ToPathParameterString(request.ChannelId),
                         ValueConvert.ToPathParameterString(request.Name)
                     ),
@@ -236,6 +246,18 @@ public partial class LookupsClient : ILookupsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -344,9 +366,7 @@ public partial class LookupsClient : ILookupsClient
     /// Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Lookups.ListAsync(
-    ///     new ListLookupsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-    /// );
+    /// await client.Lookups.ListAsync(new ListLookupsRequest { ChannelId = "channelId" });
     /// </code></example>
     public WithRawResponseTask<IEnumerable<LookupDescription>> ListAsync(
         ListLookupsRequest request,
@@ -363,14 +383,7 @@ public partial class LookupsClient : ILookupsClient
     /// Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in `nextCursor`, to send back as `cursor`. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Lookups.RunAsync(
-    ///     new LookupInput
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ChannelId = "channelId",
-    ///         Name = "name",
-    ///     }
-    /// );
+    /// await client.Lookups.RunAsync(new LookupInput { ChannelId = "channelId", Name = "name" });
     /// </code></example>
     public WithRawResponseTask<LookupResult> RunAsync(
         LookupInput request,

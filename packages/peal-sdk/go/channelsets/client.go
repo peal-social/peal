@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListChannelSetsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.ChannelSets.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListChannelSetsRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.ChannelSet, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,14 +59,11 @@ func (c *Client) List(
 //
 // Example:
 //
-//	request := &peal.CreateChannelSetsRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.ChannelSetDetails{
-//	        ChannelIDs: []string{
-//	            "channelIds",
-//	        },
-//	        Name: "name",
+//	request := &peal.ChannelSetDetails{
+//	    ChannelIDs: []string{
+//	        "channelIds",
 //	    },
+//	    Name: "name",
 //	}
 //	_, err := client.ChannelSets.Create(
 //	    context.TODO(),
@@ -80,7 +71,7 @@ func (c *Client) List(
 //	)
 func (c *Client) Create(
 	ctx context.Context,
-	request *peal.CreateChannelSetsRequest,
+	request *peal.ChannelSetDetails,
 	opts ...option.RequestOption,
 ) (*peal.ChannelSet, error) {
 	response, err := c.WithRawResponse.Create(
@@ -99,7 +90,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.UpdateChannelSetsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelSetID: "channelSetId",
 //	    Body: &peal.ChannelSetDetails{
 //	        ChannelIDs: []string{
@@ -133,7 +123,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.DeleteChannelSetsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelSetID: "channelSetId",
 //	}
 //	err := client.ChannelSets.Delete(

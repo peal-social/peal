@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         action: {
  *             _tag: "rewrite",
  *             tone: "professional"
@@ -14,7 +13,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface SuggestionRequest {
-    workspaceId: string;
     action: Peal.AssistantAction;
     text: string;
 }

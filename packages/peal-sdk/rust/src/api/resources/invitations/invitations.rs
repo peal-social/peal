@@ -35,17 +35,10 @@ impl InvitationsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .invitations
-    ///         .list(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.invitations.list(None).await;
     /// }
     /// ```
-    pub async fn list(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Vec<Invitation>, ApiError> {
+    pub async fn list(&self, options: Option<RequestOptions>) -> Result<Vec<Invitation>, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -54,13 +47,7 @@ impl InvitationsClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/invitations", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/invitations", None, None, options)
             .await
     }
 
@@ -89,7 +76,6 @@ impl InvitationsClient {
     ///     client
     ///         .invitations
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewInvitation {
     ///                 email: "email".to_string(),
     ///                 role: Role::Owner,
@@ -101,7 +87,6 @@ impl InvitationsClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewInvitation,
         options: Option<RequestOptions>,
     ) -> Result<Invitation, ApiError> {
@@ -116,7 +101,7 @@ impl InvitationsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/invitations", workspace_id),
+                "api/v1/invitations",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -148,17 +133,12 @@ impl InvitationsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .invitations
-    ///         .revoke(
-    ///             &"workspaceId".to_string(),
-    ///             &"invitationId".to_string(),
-    ///             None,
-    ///         )
+    ///         .revoke(&"invitationId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn revoke(
         &self,
-        workspace_id: &str,
         invitation_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -172,10 +152,7 @@ impl InvitationsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/invitations/{}",
-                    workspace_id, invitation_id
-                ),
+                &format!("api/v1/invitations/{}", invitation_id),
                 None,
                 None,
                 options,

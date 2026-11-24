@@ -15,15 +15,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId")
+                    .WithPath("/api/v1/queues/queueId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Queues.DeleteAsync(
-                new DeleteQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-            )
+            await Client.Queues.DeleteAsync(new DeleteQueuesRequest { QueueId = "queueId" })
         );
     }
 
@@ -34,15 +32,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId")
+                    .WithPath("/api/v1/queues/queueId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Queues.DeleteAsync(
-                new DeleteQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-            )
+            await Client.Queues.DeleteAsync(new DeleteQueuesRequest { QueueId = "queueId" })
         );
     }
 }

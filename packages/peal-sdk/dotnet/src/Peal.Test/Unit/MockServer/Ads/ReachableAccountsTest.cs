@@ -41,7 +41,7 @@ public class ReachableAccountsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/connectionId/accounts")
+                    .WithPath("/api/v1/ads/connections/connectionId/accounts")
                     .UsingGet()
             )
             .RespondWith(
@@ -52,11 +52,7 @@ public class ReachableAccountsTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ReachableAccountsAsync(
-            new ReachableAccountsAdsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ConnectionId = "connectionId",
-            }
+            new ReachableAccountsAdsRequest { ConnectionId = "connectionId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -83,7 +79,7 @@ public class ReachableAccountsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/connectionId/accounts")
+                    .WithPath("/api/v1/ads/connections/connectionId/accounts")
                     .UsingGet()
             )
             .RespondWith(
@@ -94,11 +90,7 @@ public class ReachableAccountsTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ReachableAccountsAsync(
-            new ReachableAccountsAdsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ConnectionId = "connectionId",
-            }
+            new ReachableAccountsAdsRequest { ConnectionId = "connectionId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

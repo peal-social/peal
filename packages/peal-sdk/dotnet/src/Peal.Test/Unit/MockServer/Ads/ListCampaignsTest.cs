@@ -92,7 +92,7 @@ public class ListCampaignsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/accounts/accountId/campaigns")
+                    .WithPath("/api/v1/ads/accounts/accountId/campaigns")
                     .UsingGet()
             )
             .RespondWith(
@@ -103,7 +103,7 @@ public class ListCampaignsTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ListCampaignsAsync(
-            new ListCampaignsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
+            new ListCampaignsAdsRequest { AccountId = "accountId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -170,7 +170,7 @@ public class ListCampaignsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/accounts/accountId/campaigns")
+                    .WithPath("/api/v1/ads/accounts/accountId/campaigns")
                     .UsingGet()
             )
             .RespondWith(
@@ -181,7 +181,7 @@ public class ListCampaignsTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ListCampaignsAsync(
-            new ListCampaignsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
+            new ListCampaignsAdsRequest { AccountId = "accountId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

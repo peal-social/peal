@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         model: "model"
  *     }
  */
 export interface TextProviderChange {
-    workspaceId: string;
     apiKey?: string;
     baseUrl?: string;
     kind?: Peal.TextProviderKind;

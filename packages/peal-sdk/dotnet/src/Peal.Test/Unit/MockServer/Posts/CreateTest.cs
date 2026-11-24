@@ -347,8 +347,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/posts")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -360,45 +359,41 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.CreateAsync(
-            new CreatePostsRequest
+            new PostDraft
             {
-                WorkspaceId = "workspaceId",
-                Body = new PostDraft
+                ChannelIds = new List<string>() { "channelIds", "channelIds" },
+                ChannelSets = null,
+                Content = new PostContent
                 {
-                    ChannelIds = new List<string>() { "channelIds", "channelIds" },
-                    ChannelSets = null,
-                    Content = new PostContent
+                    FollowUps = null,
+                    Media = new List<MediaAttachment>()
                     {
-                        FollowUps = null,
-                        Media = new List<MediaAttachment>()
-                        {
-                            new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
-                            new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
-                        },
-                        Overrides = new List<TextOverride>()
-                        {
-                            new TextOverride
-                            {
-                                ChannelId = "channelId",
-                                Media = null,
-                                Text = "x",
-                            },
-                            new TextOverride
-                            {
-                                ChannelId = "channelId",
-                                Media = null,
-                                Text = "x",
-                            },
-                        },
-                        Poll = null,
-                        Text = "text",
+                        new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
+                        new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
                     },
-                    DefaultSignatures = null,
-                    Options = null,
-                    ShortenLinks = null,
-                    SignatureId = null,
-                    TagIds = null,
+                    Overrides = new List<TextOverride>()
+                    {
+                        new TextOverride
+                        {
+                            ChannelId = "channelId",
+                            Media = null,
+                            Text = "x",
+                        },
+                        new TextOverride
+                        {
+                            ChannelId = "channelId",
+                            Media = null,
+                            Text = "x",
+                        },
+                    },
+                    Poll = null,
+                    Text = "text",
                 },
+                DefaultSignatures = null,
+                Options = null,
+                ShortenLinks = null,
+                SignatureId = null,
+                TagIds = null,
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -545,8 +540,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/posts")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -558,24 +552,20 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.CreateAsync(
-            new CreatePostsRequest
+            new PostDraft
             {
-                WorkspaceId = "workspaceId",
-                Body = new PostDraft
+                ChannelIds = new List<string>() { "channelIds" },
+                Content = new PostContent
                 {
-                    ChannelIds = new List<string>() { "channelIds" },
-                    Content = new PostContent
+                    Media = new List<MediaAttachment>()
                     {
-                        Media = new List<MediaAttachment>()
-                        {
-                            new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
-                        },
-                        Overrides = new List<TextOverride>()
-                        {
-                            new TextOverride { ChannelId = "channelId", Text = "text" },
-                        },
-                        Text = "text",
+                        new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
                     },
+                    Overrides = new List<TextOverride>()
+                    {
+                        new TextOverride { ChannelId = "channelId", Text = "text" },
+                    },
+                    Text = "text",
                 },
             }
         );

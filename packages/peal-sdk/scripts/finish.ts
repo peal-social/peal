@@ -443,6 +443,21 @@ const rust = async (_language: Language, folder: string): Promise<void> => {
   ]);
 };
 
+/**
+ * The .NET generator writes an optional global header it was not given as
+ * an empty value, which the API would read as a workspace named "": the
+ * client sends Peal-Workspace only when it was given one.
+ */
+const dotnet = async (_language: Language, folder: string): Promise<void> => {
+  await replaceIn(path.join(folder, "src", "Peal", "PealClient.cs"), [
+    ['                { "Peal-Workspace", workspace ?? "" },\n', ""],
+    [
+      "        foreach (var header in authHeaders)\n        {\n            clientOptionsWithAuth.Headers[header.Key] = header.Value;\n        }\n",
+      '        foreach (var header in authHeaders)\n        {\n            clientOptionsWithAuth.Headers[header.Key] = header.Value;\n        }\n        if (workspace is not null)\n        {\n            clientOptionsWithAuth.Headers["Peal-Workspace"] = workspace;\n        }\n',
+    ],
+  ]);
+};
+
 const go = async (language: Language, folder: string): Promise<void> => {
   await addInstallation(
     folder,
@@ -476,7 +491,7 @@ const keepStableMetadata = async (folder: string): Promise<void> => {
 type Finisher = (language: Language, folder: string) => Promise<void>;
 
 const finishers = {
-  dotnet: undefined,
+  dotnet,
   go,
   java,
   node,

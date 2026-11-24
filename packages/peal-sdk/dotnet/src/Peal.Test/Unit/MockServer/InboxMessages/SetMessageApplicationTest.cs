@@ -52,7 +52,7 @@ public class SetMessageApplicationTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/applications")
+                    .WithPath("/api/v1/inbox/messages/applications")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -65,12 +65,7 @@ public class SetMessageApplicationTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.SetMessageApplicationAsync(
-            new SetMessageApplicationInboxMessagesRequest
-            {
-                WorkspaceId = "workspaceId",
-                Allowed = true,
-                ClientId = "x",
-            }
+            new SetMessageApplicationInboxMessagesRequest { Allowed = true, ClientId = "x" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -108,7 +103,7 @@ public class SetMessageApplicationTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/applications")
+                    .WithPath("/api/v1/inbox/messages/applications")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -121,12 +116,7 @@ public class SetMessageApplicationTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.SetMessageApplicationAsync(
-            new SetMessageApplicationInboxMessagesRequest
-            {
-                WorkspaceId = "workspaceId",
-                Allowed = true,
-                ClientId = "clientId",
-            }
+            new SetMessageApplicationInboxMessagesRequest { Allowed = true, ClientId = "clientId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

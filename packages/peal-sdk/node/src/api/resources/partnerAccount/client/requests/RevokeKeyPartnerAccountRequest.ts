@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         partnerKeyId: "partnerKeyId"
  *     }
  */
 export interface RevokeKeyPartnerAccountRequest {
-    workspaceId: string;
     partnerKeyId: string;
 }

@@ -6,9 +6,6 @@ package social.peal.resources.partneraccount;
 import java.util.List;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
-import social.peal.resources.partneraccount.requests.ClosePartnerAccountRequest;
-import social.peal.resources.partneraccount.requests.GetPartnerAccountRequest;
-import social.peal.resources.partneraccount.requests.ListKeysPartnerAccountRequest;
 import social.peal.resources.partneraccount.requests.ListWorkspacesPartnerAccountRequest;
 import social.peal.resources.partneraccount.requests.NewPartnerKey;
 import social.peal.resources.partneraccount.requests.OpenPartner;
@@ -42,235 +39,183 @@ public class PartnerAccountClient {
     /**
      * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
      */
-    public PartnerStanding get(String workspaceId) {
-        return this.rawClient.get(workspaceId).body();
+    public PartnerStanding get() {
+        return this.rawClient.get().body();
     }
 
     /**
      * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
      */
-    public PartnerStanding get(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
-     */
-    public PartnerStanding get(String workspaceId, GetPartnerAccountRequest request) {
-        return this.rawClient.get(workspaceId, request).body();
-    }
-
-    /**
-     * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (<code>canOpen</code>). Needs partner:read.
-     */
-    public PartnerStanding get(String workspaceId, GetPartnerAccountRequest request, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, request, requestOptions).body();
+    public PartnerStanding get(RequestOptions requestOptions) {
+        return this.rawClient.get(requestOptions).body();
     }
 
     /**
      * Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 <code>PartnerAccountsClosed</code>. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public Partner open(String workspaceId, OpenPartner request) {
-        return this.rawClient.open(workspaceId, request).body();
+    public Partner open(OpenPartner request) {
+        return this.rawClient.open(request).body();
     }
 
     /**
      * Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 <code>PartnerAccountsClosed</code>. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public Partner open(String workspaceId, OpenPartner request, RequestOptions requestOptions) {
-        return this.rawClient.open(workspaceId, request, requestOptions).body();
+    public Partner open(OpenPartner request, RequestOptions requestOptions) {
+        return this.rawClient.open(request, requestOptions).body();
     }
 
     /**
      * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public void close(String workspaceId) {
-        this.rawClient.close(workspaceId).body();
+    public void close() {
+        this.rawClient.close().body();
     }
 
     /**
      * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public void close(String workspaceId, RequestOptions requestOptions) {
-        this.rawClient.close(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
-     */
-    public void close(String workspaceId, ClosePartnerAccountRequest request) {
-        this.rawClient.close(workspaceId, request).body();
-    }
-
-    /**
-     * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 <code>PartnerOwnsWorkspaces</code>): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
-     */
-    public void close(String workspaceId, ClosePartnerAccountRequest request, RequestOptions requestOptions) {
-        this.rawClient.close(workspaceId, request, requestOptions).body();
+    public void close(RequestOptions requestOptions) {
+        this.rawClient.close(requestOptions).body();
     }
 
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public Partner update(String workspaceId) {
-        return this.rawClient.update(workspaceId).body();
+    public Partner update() {
+        return this.rawClient.update().body();
     }
 
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public Partner update(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.update(workspaceId, requestOptions).body();
+    public Partner update(RequestOptions requestOptions) {
+        return this.rawClient.update(requestOptions).body();
     }
 
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public Partner update(String workspaceId, PartnerChange request) {
-        return this.rawClient.update(workspaceId, request).body();
+    public Partner update(PartnerChange request) {
+        return this.rawClient.update(request).body();
     }
 
     /**
      * Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (<code>#RRGGBB</code>, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background <code>#FAFAF9</code>, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. <code>returnOrigins</code> replaces the whole list, 20 at most: each is an origin as browsers write it (<code>https://app.example.com</code>: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      */
-    public Partner update(String workspaceId, PartnerChange request, RequestOptions requestOptions) {
-        return this.rawClient.update(workspaceId, request, requestOptions).body();
+    public Partner update(PartnerChange request, RequestOptions requestOptions) {
+        return this.rawClient.update(request, requestOptions).body();
     }
 
     /**
      * Lists the partner account's keys. Needs partner:read.
      */
-    public List<PartnerKey> listKeys(String workspaceId) {
-        return this.rawClient.listKeys(workspaceId).body();
+    public List<PartnerKey> listKeys() {
+        return this.rawClient.listKeys().body();
     }
 
     /**
      * Lists the partner account's keys. Needs partner:read.
      */
-    public List<PartnerKey> listKeys(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.listKeys(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Lists the partner account's keys. Needs partner:read.
-     */
-    public List<PartnerKey> listKeys(String workspaceId, ListKeysPartnerAccountRequest request) {
-        return this.rawClient.listKeys(workspaceId, request).body();
-    }
-
-    /**
-     * Lists the partner account's keys. Needs partner:read.
-     */
-    public List<PartnerKey> listKeys(
-            String workspaceId, ListKeysPartnerAccountRequest request, RequestOptions requestOptions) {
-        return this.rawClient.listKeys(workspaceId, request, requestOptions).body();
+    public List<PartnerKey> listKeys(RequestOptions requestOptions) {
+        return this.rawClient.listKeys(requestOptions).body();
     }
 
     /**
      * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.
      */
-    public CreatedPartnerKey createKey(String workspaceId, NewPartnerKey request) {
-        return this.rawClient.createKey(workspaceId, request).body();
+    public CreatedPartnerKey createKey(NewPartnerKey request) {
+        return this.rawClient.createKey(request).body();
     }
 
     /**
      * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.
      */
-    public CreatedPartnerKey createKey(String workspaceId, NewPartnerKey request, RequestOptions requestOptions) {
-        return this.rawClient.createKey(workspaceId, request, requestOptions).body();
+    public CreatedPartnerKey createKey(NewPartnerKey request, RequestOptions requestOptions) {
+        return this.rawClient.createKey(request, requestOptions).body();
     }
 
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
-    public void revokeKey(String workspaceId, String partnerKeyId) {
-        this.rawClient.revokeKey(workspaceId, partnerKeyId).body();
+    public void revokeKey(String partnerKeyId) {
+        this.rawClient.revokeKey(partnerKeyId).body();
     }
 
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
-    public void revokeKey(String workspaceId, String partnerKeyId, RequestOptions requestOptions) {
-        this.rawClient.revokeKey(workspaceId, partnerKeyId, requestOptions).body();
+    public void revokeKey(String partnerKeyId, RequestOptions requestOptions) {
+        this.rawClient.revokeKey(partnerKeyId, requestOptions).body();
     }
 
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
-    public void revokeKey(String workspaceId, String partnerKeyId, RevokeKeyPartnerAccountRequest request) {
-        this.rawClient.revokeKey(workspaceId, partnerKeyId, request).body();
+    public void revokeKey(String partnerKeyId, RevokeKeyPartnerAccountRequest request) {
+        this.rawClient.revokeKey(partnerKeyId, request).body();
     }
 
     /**
      * Revokes a partner key: it stops working at once. Needs partner:manage.
      */
-    public void revokeKey(
-            String workspaceId,
-            String partnerKeyId,
-            RevokeKeyPartnerAccountRequest request,
-            RequestOptions requestOptions) {
-        this.rawClient
-                .revokeKey(workspaceId, partnerKeyId, request, requestOptions)
-                .body();
+    public void revokeKey(String partnerKeyId, RevokeKeyPartnerAccountRequest request, RequestOptions requestOptions) {
+        this.rawClient.revokeKey(partnerKeyId, request, requestOptions).body();
     }
 
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
-    public PartnerHealth overview(String workspaceId) {
-        return this.rawClient.overview(workspaceId).body();
+    public PartnerHealth overview() {
+        return this.rawClient.overview().body();
     }
 
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
-    public PartnerHealth overview(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.overview(workspaceId, requestOptions).body();
+    public PartnerHealth overview(RequestOptions requestOptions) {
+        return this.rawClient.overview(requestOptions).body();
     }
 
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
-    public PartnerHealth overview(String workspaceId, OverviewPartnerAccountRequest request) {
-        return this.rawClient.overview(workspaceId, request).body();
+    public PartnerHealth overview(OverviewPartnerAccountRequest request) {
+        return this.rawClient.overview(request).body();
     }
 
     /**
      * Answers, for each workspace the partner owns, what needs attention: its channels (<code>connected</code>, <code>toReconnect</code>: to reconnect, as <code>channel.reconnect_needed</code> told; <code>off</code>: turned off), its posts (<code>scheduledNext7Days</code>, <code>awaitingApproval</code>, <code>failedLast7Days</code>: finished in the last 7 days with a channel that failed, as <code>post.failed</code> told; <code>unconfirmedLast7Days</code>: one that may be live and must be checked) and its inbox (<code>unanswered</code>: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass <code>next</code> as <code>before</code>; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. <code>account</code> comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (<code>channel:read</code>, <code>post:read</code>, <code>engagement:read</code>), as the overview across their workspaces gives it, so staff acting as a member read no inbox; <code>mayApprove</code> is always false, as they are members of no customer's workspace. Needs partner:read.
      */
-    public PartnerHealth overview(
-            String workspaceId, OverviewPartnerAccountRequest request, RequestOptions requestOptions) {
-        return this.rawClient.overview(workspaceId, request, requestOptions).body();
+    public PartnerHealth overview(OverviewPartnerAccountRequest request, RequestOptions requestOptions) {
+        return this.rawClient.overview(request, requestOptions).body();
     }
 
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
-    public CustomerWorkspacePage listWorkspaces(String workspaceId) {
-        return this.rawClient.listWorkspaces(workspaceId).body();
+    public CustomerWorkspacePage listWorkspaces() {
+        return this.rawClient.listWorkspaces().body();
     }
 
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
-    public CustomerWorkspacePage listWorkspaces(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.listWorkspaces(workspaceId, requestOptions).body();
+    public CustomerWorkspacePage listWorkspaces(RequestOptions requestOptions) {
+        return this.rawClient.listWorkspaces(requestOptions).body();
     }
 
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
-    public CustomerWorkspacePage listWorkspaces(String workspaceId, ListWorkspacesPartnerAccountRequest request) {
-        return this.rawClient.listWorkspaces(workspaceId, request).body();
+    public CustomerWorkspacePage listWorkspaces(ListWorkspacesPartnerAccountRequest request) {
+        return this.rawClient.listWorkspaces(request).body();
     }
 
     /**
      * Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless <code>limit</code> (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
      */
     public CustomerWorkspacePage listWorkspaces(
-            String workspaceId, ListWorkspacesPartnerAccountRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .listWorkspaces(workspaceId, request, requestOptions)
-                .body();
+            ListWorkspacesPartnerAccountRequest request, RequestOptions requestOptions) {
+        return this.rawClient.listWorkspaces(request, requestOptions).body();
     }
 }

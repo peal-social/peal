@@ -47,7 +47,7 @@ public class ImportFromUrlTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/import")
+                    .WithPath("/api/v1/media/import")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -60,12 +60,7 @@ public class ImportFromUrlTest : BaseMockServerTest
             );
 
         var response = await Client.Media.ImportFromUrlAsync(
-            new MediaImport
-            {
-                WorkspaceId = "workspaceId",
-                AltText = null,
-                Url = "x",
-            }
+            new MediaImport { AltText = null, Url = "x" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -108,7 +103,7 @@ public class ImportFromUrlTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/import")
+                    .WithPath("/api/v1/media/import")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -120,9 +115,7 @@ public class ImportFromUrlTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Media.ImportFromUrlAsync(
-            new MediaImport { WorkspaceId = "workspaceId", Url = "url" }
-        );
+        var response = await Client.Media.ImportFromUrlAsync(new MediaImport { Url = "url" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

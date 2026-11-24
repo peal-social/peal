@@ -44,8 +44,7 @@ func (r *RawClient) Creator(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/tiktok-creator",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/tiktok-creator",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(

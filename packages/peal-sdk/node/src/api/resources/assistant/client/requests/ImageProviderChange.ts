@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         model: "model"
  *     }
  */
 export interface ImageProviderChange {
-    workspaceId: string;
     apiKey?: string;
     baseUrl?: string;
     model: string;

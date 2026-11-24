@@ -13,7 +13,6 @@ public partial class ReviewClient : IReviewClient
     }
 
     private async Task<WithRawResponse<ReviewSettings>> SettingsAsyncCore(
-        SettingsReviewRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class ReviewClient : IReviewClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/review/settings",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/review/settings",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -155,7 +163,7 @@ public partial class ReviewClient : IReviewClient
     }
 
     private async Task<WithRawResponse<ReviewSettings>> UpdateSettingsAsyncCore(
-        UpdateSettingsReviewRequest request,
+        ReviewSettings request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -174,14 +182,10 @@ public partial class ReviewClient : IReviewClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Put,
-                    Path = string.Format(
-                        "api/workspaces/{0}/review/settings",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/review/settings",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                 },
                 cancellationToken
@@ -230,6 +234,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -299,7 +315,6 @@ public partial class ReviewClient : IReviewClient
     }
 
     private async Task<WithRawResponse<IEnumerable<ApprovalRequest>>> PendingAsyncCore(
-        PendingReviewRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -318,10 +333,7 @@ public partial class ReviewClient : IReviewClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/approvals",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/approvals",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -374,6 +386,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -463,8 +487,7 @@ public partial class ReviewClient : IReviewClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/review",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/review",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -517,6 +540,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -606,8 +641,7 @@ public partial class ReviewClient : IReviewClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/comments",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/comments",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request,
@@ -663,6 +697,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -764,8 +810,7 @@ public partial class ReviewClient : IReviewClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/comments/{2}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/comments/{1}",
                         ValueConvert.ToPathParameterString(request.PostId),
                         ValueConvert.ToPathParameterString(request.CommentId)
                     ),
@@ -822,6 +867,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -923,8 +980,7 @@ public partial class ReviewClient : IReviewClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/approve",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/approve",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request,
@@ -980,6 +1036,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1093,8 +1161,7 @@ public partial class ReviewClient : IReviewClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/request-changes",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/request-changes",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request,
@@ -1150,6 +1217,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1263,8 +1342,7 @@ public partial class ReviewClient : IReviewClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/review-links",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/review-links",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -1317,6 +1395,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1406,8 +1496,7 @@ public partial class ReviewClient : IReviewClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/review-links",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/review-links",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request,
@@ -1463,6 +1552,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1564,8 +1665,7 @@ public partial class ReviewClient : IReviewClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/review-links/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/review-links/{0}",
                         ValueConvert.ToPathParameterString(request.LinkId)
                     ),
                     QueryString = _queryString,
@@ -1618,6 +1718,18 @@ public partial class ReviewClient : IReviewClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1690,16 +1802,15 @@ public partial class ReviewClient : IReviewClient
     /// Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Review.SettingsAsync(new SettingsReviewRequest { WorkspaceId = "workspaceId" });
+    /// await client.Review.SettingsAsync();
     /// </code></example>
     public WithRawResponseTask<ReviewSettings> SettingsAsync(
-        SettingsReviewRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<ReviewSettings>(
-            SettingsAsyncCore(request, options, cancellationToken)
+            SettingsAsyncCore(options, cancellationToken)
         );
     }
 
@@ -1708,15 +1819,11 @@ public partial class ReviewClient : IReviewClient
     /// </summary>
     /// <example><code>
     /// await client.Review.UpdateSettingsAsync(
-    ///     new UpdateSettingsReviewRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new ReviewSettings { ApprovalPolicy = ApprovalPolicy.Never },
-    ///     }
+    ///     new ReviewSettings { ApprovalPolicy = ApprovalPolicy.Never }
     /// );
     /// </code></example>
     public WithRawResponseTask<ReviewSettings> UpdateSettingsAsync(
-        UpdateSettingsReviewRequest request,
+        ReviewSettings request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1730,16 +1837,15 @@ public partial class ReviewClient : IReviewClient
     /// Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Review.PendingAsync(new PendingReviewRequest { WorkspaceId = "workspaceId" });
+    /// await client.Review.PendingAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<ApprovalRequest>> PendingAsync(
-        PendingReviewRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<ApprovalRequest>>(
-            PendingAsyncCore(request, options, cancellationToken)
+            PendingAsyncCore(options, cancellationToken)
         );
     }
 
@@ -1747,9 +1853,7 @@ public partial class ReviewClient : IReviewClient
     /// Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Review.ThreadAsync(
-    ///     new ThreadReviewRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Review.ThreadAsync(new ThreadReviewRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<PostReview> ThreadAsync(
         ThreadReviewRequest request,
@@ -1766,14 +1870,7 @@ public partial class ReviewClient : IReviewClient
     /// Comments on a post, starts a thread about one of its channels or some words of its text there, or answers a thread. The text is kept as plain text, 2000 characters at most, without control characters. Those who follow the post are told. Needs post:create or post:approve, and is refused to staff acting as a member.
     /// </summary>
     /// <example><code>
-    /// await client.Review.CommentAsync(
-    ///     new NewComment
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PostId = "postId",
-    ///         Text = "text",
-    ///     }
-    /// );
+    /// await client.Review.CommentAsync(new NewComment { PostId = "postId", Text = "text" });
     /// </code></example>
     public WithRawResponseTask<ReviewComment> CommentAsync(
         NewComment request,
@@ -1793,7 +1890,6 @@ public partial class ReviewClient : IReviewClient
     /// await client.Review.ResolveAsync(
     ///     new ResolveReviewRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         CommentId = "commentId",
     ///         Resolved = true,
@@ -1818,7 +1914,6 @@ public partial class ReviewClient : IReviewClient
     /// await client.Review.ApproveAsync(
     ///     new ApprovalDecision
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         ApprovalId = "approvalId",
     ///         SubjectHash = "subjectHash",
@@ -1843,7 +1938,6 @@ public partial class ReviewClient : IReviewClient
     /// await client.Review.RequestChangesAsync(
     ///     new ChangesRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         ApprovalId = "approvalId",
     ///         SubjectHash = "subjectHash",
@@ -1866,9 +1960,7 @@ public partial class ReviewClient : IReviewClient
     /// Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Review.LinksAsync(
-    ///     new LinksReviewRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Review.LinksAsync(new LinksReviewRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<IEnumerable<ReviewLink>> LinksAsync(
         LinksReviewRequest request,
@@ -1886,12 +1978,7 @@ public partial class ReviewClient : IReviewClient
     /// </summary>
     /// <example><code>
     /// await client.Review.CreateLinkAsync(
-    ///     new NewReviewLink
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PostId = "postId",
-    ///         Access = ReviewLinkAccess.View,
-    ///     }
+    ///     new NewReviewLink { PostId = "postId", Access = ReviewLinkAccess.View }
     /// );
     /// </code></example>
     public WithRawResponseTask<CreatedReviewLink> CreateLinkAsync(
@@ -1909,9 +1996,7 @@ public partial class ReviewClient : IReviewClient
     /// Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
     /// </summary>
     /// <example><code>
-    /// await client.Review.RevokeLinkAsync(
-    ///     new RevokeLinkReviewRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
-    /// );
+    /// await client.Review.RevokeLinkAsync(new RevokeLinkReviewRequest { LinkId = "linkId" });
     /// </code></example>
     public WithRawResponseTask<ReviewLink> RevokeLinkAsync(
         RevokeLinkReviewRequest request,

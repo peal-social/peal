@@ -53,8 +53,7 @@ public class QuoteBoostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts/quote")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/ads/boosts/quote")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -66,28 +65,24 @@ public class QuoteBoostTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.QuoteBoostAsync(
-            new QuoteBoostAdsRequest
+            new NewBoost
             {
-                WorkspaceId = "workspaceId",
-                Body = new NewBoost
+                AccountId = "accountId",
+                Audience = new BoostAudience
                 {
-                    AccountId = "accountId",
-                    Audience = new BoostAudience
-                    {
-                        AgeMax = 65,
-                        AgeMin = 65,
-                        Countries = new List<string>() { "countries", "countries" },
-                    },
-                    Beneficiary = null,
-                    Budget = new BoostBudget { Amount = 1000000, Kind = BoostBudgetKind.Total },
-                    ChannelId = "channelId",
-                    Currency = "currency",
-                    EndsAt = "endsAt",
-                    Payer = null,
-                    PostId = "postId",
-                    SpecialAdCategory = SpecialAdCategory.None,
-                    StartsAt = null,
+                    AgeMax = 65,
+                    AgeMin = 65,
+                    Countries = new List<string>() { "countries", "countries" },
                 },
+                Beneficiary = null,
+                Budget = new BoostBudget { Amount = 1000000, Kind = BoostBudgetKind.Total },
+                ChannelId = "channelId",
+                Currency = "currency",
+                EndsAt = "endsAt",
+                Payer = null,
+                PostId = "postId",
+                SpecialAdCategory = SpecialAdCategory.None,
+                StartsAt = null,
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -136,8 +131,7 @@ public class QuoteBoostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts/quote")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/ads/boosts/quote")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -149,25 +143,21 @@ public class QuoteBoostTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.QuoteBoostAsync(
-            new QuoteBoostAdsRequest
+            new NewBoost
             {
-                WorkspaceId = "workspaceId",
-                Body = new NewBoost
+                AccountId = "accountId",
+                Audience = new BoostAudience
                 {
-                    AccountId = "accountId",
-                    Audience = new BoostAudience
-                    {
-                        AgeMax = 1,
-                        AgeMin = 1,
-                        Countries = new List<string>() { "countries" },
-                    },
-                    Budget = new BoostBudget { Amount = 1000000, Kind = BoostBudgetKind.Total },
-                    ChannelId = "channelId",
-                    Currency = "currency",
-                    EndsAt = "endsAt",
-                    PostId = "postId",
-                    SpecialAdCategory = SpecialAdCategory.None,
+                    AgeMax = 1,
+                    AgeMin = 1,
+                    Countries = new List<string>() { "countries" },
                 },
+                Budget = new BoostBudget { Amount = 1000000, Kind = BoostBudgetKind.Total },
+                ChannelId = "channelId",
+                Currency = "currency",
+                EndsAt = "endsAt",
+                PostId = "postId",
+                SpecialAdCategory = SpecialAdCategory.None,
             }
         );
         JsonAssert.AreEqual(response, mockResponse);

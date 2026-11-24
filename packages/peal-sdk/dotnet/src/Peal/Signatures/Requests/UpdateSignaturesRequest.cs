@@ -7,9 +7,6 @@ namespace Peal;
 public record UpdateSignaturesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string SignatureId { get; set; }
 
     [JsonIgnore]

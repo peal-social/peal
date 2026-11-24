@@ -27,16 +27,12 @@ class ChannelSetsClient:
         """
         return self._raw_client
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ChannelSet]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[ChannelSet]:
         """
         Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -50,18 +46,16 @@ class ChannelSetsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.channel_sets.list(
-            workspace_id="workspaceId",
-        )
+        client.channel_sets.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         name: str,
@@ -73,8 +67,6 @@ class ChannelSetsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         name : str
@@ -94,22 +86,21 @@ class ChannelSetsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channel_sets.create(
-            workspace_id="workspaceId",
             channel_ids=["channelIds"],
             name="name",
         )
         """
         _response = self._raw_client.create(
-            workspace_id, channel_ids=channel_ids, name=name, options=options, request_options=request_options
+            channel_ids=channel_ids, name=name, options=options, request_options=request_options
         )
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         channel_set_id: str,
         *,
         channel_ids: typing.Sequence[str],
@@ -122,8 +113,6 @@ class ChannelSetsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_set_id : str
 
         channel_ids : typing.Sequence[str]
@@ -145,35 +134,26 @@ class ChannelSetsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channel_sets.update(
-            workspace_id="workspaceId",
             channel_set_id="channelSetId",
             channel_ids=["channelIds"],
             name="name",
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
-            channel_set_id,
-            channel_ids=channel_ids,
-            name=name,
-            options=options,
-            request_options=request_options,
+            channel_set_id, channel_ids=channel_ids, name=name, options=options, request_options=request_options
         )
         return _response.data
 
-    def delete(
-        self, workspace_id: str, channel_set_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, channel_set_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_set_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -188,14 +168,14 @@ class ChannelSetsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channel_sets.delete(
-            workspace_id="workspaceId",
             channel_set_id="channelSetId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, channel_set_id, request_options=request_options)
+        _response = self._raw_client.delete(channel_set_id, request_options=request_options)
         return _response.data
 
 
@@ -214,16 +194,12 @@ class AsyncChannelSetsClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ChannelSet]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[ChannelSet]:
         """
         Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -239,24 +215,22 @@ class AsyncChannelSetsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.channel_sets.list(
-                workspace_id="workspaceId",
-            )
+            await client.channel_sets.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         name: str,
@@ -268,8 +242,6 @@ class AsyncChannelSetsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         name : str
@@ -291,13 +263,13 @@ class AsyncChannelSetsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channel_sets.create(
-                workspace_id="workspaceId",
                 channel_ids=["channelIds"],
                 name="name",
             )
@@ -306,13 +278,12 @@ class AsyncChannelSetsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id, channel_ids=channel_ids, name=name, options=options, request_options=request_options
+            channel_ids=channel_ids, name=name, options=options, request_options=request_options
         )
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         channel_set_id: str,
         *,
         channel_ids: typing.Sequence[str],
@@ -325,8 +296,6 @@ class AsyncChannelSetsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_set_id : str
 
         channel_ids : typing.Sequence[str]
@@ -350,13 +319,13 @@ class AsyncChannelSetsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channel_sets.update(
-                workspace_id="workspaceId",
                 channel_set_id="channelSetId",
                 channel_ids=["channelIds"],
                 name="name",
@@ -366,25 +335,16 @@ class AsyncChannelSetsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
-            channel_set_id,
-            channel_ids=channel_ids,
-            name=name,
-            options=options,
-            request_options=request_options,
+            channel_set_id, channel_ids=channel_ids, name=name, options=options, request_options=request_options
         )
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, channel_set_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, channel_set_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_set_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -401,18 +361,18 @@ class AsyncChannelSetsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channel_sets.delete(
-                workspace_id="workspaceId",
                 channel_set_id="channelSetId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, channel_set_id, request_options=request_options)
+        _response = await self._raw_client.delete(channel_set_id, request_options=request_options)
         return _response.data

@@ -7,9 +7,6 @@ namespace Peal;
 public record ReshuffleQueuesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string QueueId { get; set; }
 
     /// <inheritdoc />

@@ -9,7 +9,6 @@ import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.resources.connectlinks.requests.GetConnectLinksRequest;
-import social.peal.resources.connectlinks.requests.ListConnectLinksRequest;
 import social.peal.resources.connectlinks.requests.NewConnectLink;
 import social.peal.resources.connectlinks.requests.RevokeConnectLinksRequest;
 import social.peal.types.ConnectLink;
@@ -35,8 +34,8 @@ public class AsyncConnectLinksClient {
     /**
      * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
      */
-    public CompletableFuture<List<ConnectLink>> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<ConnectLink>>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<List<ConnectLink>> list() {
+        CompletableFuture<PealClientHttpResponse<List<ConnectLink>>> rawFuture = this.rawClient.list();
         CompletableFuture<List<ConnectLink>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -49,40 +48,8 @@ public class AsyncConnectLinksClient {
     /**
      * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
      */
-    public CompletableFuture<List<ConnectLink>> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<ConnectLink>>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<List<ConnectLink>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
-     */
-    public CompletableFuture<List<ConnectLink>> list(String workspaceId, ListConnectLinksRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<ConnectLink>>> rawFuture =
-                this.rawClient.list(workspaceId, request);
-        CompletableFuture<List<ConnectLink>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
-     */
-    public CompletableFuture<List<ConnectLink>> list(
-            String workspaceId, ListConnectLinksRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<ConnectLink>>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<List<ConnectLink>> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<ConnectLink>>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<List<ConnectLink>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -95,8 +62,8 @@ public class AsyncConnectLinksClient {
     /**
      * Creates a link to hand to whoever owns an account of <code>platform</code>, or accounts of each of <code>platforms</code>: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With <code>platforms</code>, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: <code>connectedPlatforms</code> and <code>channelIds</code> say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless <code>expiresInHours</code> (1 to 720) says otherwise; with <code>channelId</code>, it reconnects that channel, and only a sign-in to the channel's own account goes through. <code>returnUrl</code> is where the page sends them once done, with <code>peal_link</code> (the link's id) and <code>peal_status</code> (<code>connected</code>, <code>cancelled</code> or <code>failed</code>) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 <code>ReturnUrlNotAllowed</code> otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 <code>ConnectFailed</code>. A workspace has 100 links waiting at most. Needs channel:connect.
      */
-    public CompletableFuture<CreatedConnectLink> create(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<CreatedConnectLink>> rawFuture = this.rawClient.create(workspaceId);
+    public CompletableFuture<CreatedConnectLink> create() {
+        CompletableFuture<PealClientHttpResponse<CreatedConnectLink>> rawFuture = this.rawClient.create();
         CompletableFuture<CreatedConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -109,9 +76,8 @@ public class AsyncConnectLinksClient {
     /**
      * Creates a link to hand to whoever owns an account of <code>platform</code>, or accounts of each of <code>platforms</code>: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With <code>platforms</code>, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: <code>connectedPlatforms</code> and <code>channelIds</code> say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless <code>expiresInHours</code> (1 to 720) says otherwise; with <code>channelId</code>, it reconnects that channel, and only a sign-in to the channel's own account goes through. <code>returnUrl</code> is where the page sends them once done, with <code>peal_link</code> (the link's id) and <code>peal_status</code> (<code>connected</code>, <code>cancelled</code> or <code>failed</code>) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 <code>ReturnUrlNotAllowed</code> otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 <code>ConnectFailed</code>. A workspace has 100 links waiting at most. Needs channel:connect.
      */
-    public CompletableFuture<CreatedConnectLink> create(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<CreatedConnectLink>> rawFuture =
-                this.rawClient.create(workspaceId, requestOptions);
+    public CompletableFuture<CreatedConnectLink> create(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<CreatedConnectLink>> rawFuture = this.rawClient.create(requestOptions);
         CompletableFuture<CreatedConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -124,9 +90,8 @@ public class AsyncConnectLinksClient {
     /**
      * Creates a link to hand to whoever owns an account of <code>platform</code>, or accounts of each of <code>platforms</code>: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With <code>platforms</code>, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: <code>connectedPlatforms</code> and <code>channelIds</code> say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless <code>expiresInHours</code> (1 to 720) says otherwise; with <code>channelId</code>, it reconnects that channel, and only a sign-in to the channel's own account goes through. <code>returnUrl</code> is where the page sends them once done, with <code>peal_link</code> (the link's id) and <code>peal_status</code> (<code>connected</code>, <code>cancelled</code> or <code>failed</code>) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 <code>ReturnUrlNotAllowed</code> otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 <code>ConnectFailed</code>. A workspace has 100 links waiting at most. Needs channel:connect.
      */
-    public CompletableFuture<CreatedConnectLink> create(String workspaceId, NewConnectLink request) {
-        CompletableFuture<PealClientHttpResponse<CreatedConnectLink>> rawFuture =
-                this.rawClient.create(workspaceId, request);
+    public CompletableFuture<CreatedConnectLink> create(NewConnectLink request) {
+        CompletableFuture<PealClientHttpResponse<CreatedConnectLink>> rawFuture = this.rawClient.create(request);
         CompletableFuture<CreatedConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -139,10 +104,9 @@ public class AsyncConnectLinksClient {
     /**
      * Creates a link to hand to whoever owns an account of <code>platform</code>, or accounts of each of <code>platforms</code>: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With <code>platforms</code>, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: <code>connectedPlatforms</code> and <code>channelIds</code> say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless <code>expiresInHours</code> (1 to 720) says otherwise; with <code>channelId</code>, it reconnects that channel, and only a sign-in to the channel's own account goes through. <code>returnUrl</code> is where the page sends them once done, with <code>peal_link</code> (the link's id) and <code>peal_status</code> (<code>connected</code>, <code>cancelled</code> or <code>failed</code>) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 <code>ReturnUrlNotAllowed</code> otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 <code>ConnectFailed</code>. A workspace has 100 links waiting at most. Needs channel:connect.
      */
-    public CompletableFuture<CreatedConnectLink> create(
-            String workspaceId, NewConnectLink request, RequestOptions requestOptions) {
+    public CompletableFuture<CreatedConnectLink> create(NewConnectLink request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CreatedConnectLink>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+                this.rawClient.create(request, requestOptions);
         CompletableFuture<CreatedConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -155,8 +119,8 @@ public class AsyncConnectLinksClient {
     /**
      * One connect link of the workspace: where it stands, the channels it connected once <code>completed</code>, and how its last sign-in failed. Read it when a browser comes back to your return address, or on <code>channel.connected</code>. Needs channel:read.
      */
-    public CompletableFuture<ConnectLink> get(String workspaceId, String linkId) {
-        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture = this.rawClient.get(workspaceId, linkId);
+    public CompletableFuture<ConnectLink> get(String linkId) {
+        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture = this.rawClient.get(linkId);
         CompletableFuture<ConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -169,9 +133,8 @@ public class AsyncConnectLinksClient {
     /**
      * One connect link of the workspace: where it stands, the channels it connected once <code>completed</code>, and how its last sign-in failed. Read it when a browser comes back to your return address, or on <code>channel.connected</code>. Needs channel:read.
      */
-    public CompletableFuture<ConnectLink> get(String workspaceId, String linkId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture =
-                this.rawClient.get(workspaceId, linkId, requestOptions);
+    public CompletableFuture<ConnectLink> get(String linkId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture = this.rawClient.get(linkId, requestOptions);
         CompletableFuture<ConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -184,9 +147,8 @@ public class AsyncConnectLinksClient {
     /**
      * One connect link of the workspace: where it stands, the channels it connected once <code>completed</code>, and how its last sign-in failed. Read it when a browser comes back to your return address, or on <code>channel.connected</code>. Needs channel:read.
      */
-    public CompletableFuture<ConnectLink> get(String workspaceId, String linkId, GetConnectLinksRequest request) {
-        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture =
-                this.rawClient.get(workspaceId, linkId, request);
+    public CompletableFuture<ConnectLink> get(String linkId, GetConnectLinksRequest request) {
+        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture = this.rawClient.get(linkId, request);
         CompletableFuture<ConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -200,9 +162,9 @@ public class AsyncConnectLinksClient {
      * One connect link of the workspace: where it stands, the channels it connected once <code>completed</code>, and how its last sign-in failed. Read it when a browser comes back to your return address, or on <code>channel.connected</code>. Needs channel:read.
      */
     public CompletableFuture<ConnectLink> get(
-            String workspaceId, String linkId, GetConnectLinksRequest request, RequestOptions requestOptions) {
+            String linkId, GetConnectLinksRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture =
-                this.rawClient.get(workspaceId, linkId, request, requestOptions);
+                this.rawClient.get(linkId, request, requestOptions);
         CompletableFuture<ConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -215,8 +177,8 @@ public class AsyncConnectLinksClient {
     /**
      * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
      */
-    public CompletableFuture<ConnectLink> revoke(String workspaceId, String linkId) {
-        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture = this.rawClient.revoke(workspaceId, linkId);
+    public CompletableFuture<ConnectLink> revoke(String linkId) {
+        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture = this.rawClient.revoke(linkId);
         CompletableFuture<ConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -229,9 +191,9 @@ public class AsyncConnectLinksClient {
     /**
      * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
      */
-    public CompletableFuture<ConnectLink> revoke(String workspaceId, String linkId, RequestOptions requestOptions) {
+    public CompletableFuture<ConnectLink> revoke(String linkId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture =
-                this.rawClient.revoke(workspaceId, linkId, requestOptions);
+                this.rawClient.revoke(linkId, requestOptions);
         CompletableFuture<ConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -244,9 +206,8 @@ public class AsyncConnectLinksClient {
     /**
      * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
      */
-    public CompletableFuture<ConnectLink> revoke(String workspaceId, String linkId, RevokeConnectLinksRequest request) {
-        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture =
-                this.rawClient.revoke(workspaceId, linkId, request);
+    public CompletableFuture<ConnectLink> revoke(String linkId, RevokeConnectLinksRequest request) {
+        CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture = this.rawClient.revoke(linkId, request);
         CompletableFuture<ConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -260,9 +221,9 @@ public class AsyncConnectLinksClient {
      * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
      */
     public CompletableFuture<ConnectLink> revoke(
-            String workspaceId, String linkId, RevokeConnectLinksRequest request, RequestOptions requestOptions) {
+            String linkId, RevokeConnectLinksRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ConnectLink>> rawFuture =
-                this.rawClient.revoke(workspaceId, linkId, request, requestOptions);
+                this.rawClient.revoke(linkId, request, requestOptions);
         CompletableFuture<ConnectLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

@@ -43,10 +43,7 @@ func (r *RawClient) ListCommentRules(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/rules",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/inbox/rules"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -95,10 +92,7 @@ func (r *RawClient) CreateCommentRule(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/rules",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/inbox/rules"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -143,8 +137,7 @@ func (r *RawClient) GetCommentRule(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/rules/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/rules/%v",
 		request.RuleID,
 	)
 	headers := internal.MergeHeaders(
@@ -189,8 +182,7 @@ func (r *RawClient) DeleteCommentRule(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/rules/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/rules/%v",
 		request.RuleID,
 	)
 	headers := internal.MergeHeaders(
@@ -233,8 +225,7 @@ func (r *RawClient) UpdateCommentRule(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/rules/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/rules/%v",
 		request.RuleID,
 	)
 	headers := internal.MergeHeaders(

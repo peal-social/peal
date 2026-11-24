@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         likes: 1
  *     }
  */
 export interface NewFollowUpRule {
-    workspaceId: string;
     channelId?: string;
     comment?: string;
     likes: number;

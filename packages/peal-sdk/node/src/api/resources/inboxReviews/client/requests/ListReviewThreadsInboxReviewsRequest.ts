@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListReviewThreadsInboxReviewsRequest {
-    workspaceId: string;
     channelId?: string;
     cursor?: string;
     limit?: string;

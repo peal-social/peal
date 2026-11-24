@@ -53,39 +53,33 @@ public class AsyncRawInboxRulesClient {
     /**
      * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
-    public CompletableFuture<PealClientHttpResponse<CommentRulePage>> listCommentRules(String workspaceId) {
-        return listCommentRules(
-                workspaceId, ListCommentRulesInboxRulesRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<CommentRulePage>> listCommentRules() {
+        return listCommentRules(ListCommentRulesInboxRulesRequest.builder().build());
+    }
+
+    /**
+     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<CommentRulePage>> listCommentRules(RequestOptions requestOptions) {
+        return listCommentRules(ListCommentRulesInboxRulesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRulePage>> listCommentRules(
-            String workspaceId, RequestOptions requestOptions) {
-        return listCommentRules(
-                workspaceId, ListCommentRulesInboxRulesRequest.builder().build(), requestOptions);
+            ListCommentRulesInboxRulesRequest request) {
+        return listCommentRules(request, null);
     }
 
     /**
      * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRulePage>> listCommentRules(
-            String workspaceId, ListCommentRulesInboxRulesRequest request) {
-        return listCommentRules(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's comment rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<CommentRulePage>> listCommentRules(
-            String workspaceId, ListCommentRulesInboxRulesRequest request, RequestOptions requestOptions) {
+            ListCommentRulesInboxRulesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("inbox")
-                .addPathSegments("rules");
+                .addPathSegments("api/v1/inbox/rules");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -195,22 +189,18 @@ public class AsyncRawInboxRulesClient {
     /**
      * Starts a rule on the comments of a post that went out (<code>postId</code>) or of every post of a channel (<code>channelId</code>), exactly one of them, with 1 to 10 <code>keywords</code>, a <code>reply</code> and, optionally, a <code>privateReply</code>. A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its <code>reply</code>, once a comment and once a person, 25 replies a day at most, and 100 a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and <code>channels</code> says so. It never likes or follows anyone. With a <code>privateReply</code>, it also sends the author of each comment it answered that one private message, once its public reply is out: only on Instagram and Facebook Pages, whose platforms let an account send a commenter one message within 7 days of the comment, only where the channel's messages are on (a channel that cannot carry it answers in public only, and the match's <code>privateCode</code> says why), never twice to a comment, whoever sent the first, and never to anyone who did not comment. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected. It is refused when no channel it answers on can carry its reply, or its private reply when it has one (CommentRuleNotPossible, with each channel's reason). A workspace keeps 100 rules active or paused. Needs engagement:reply, and engagement:message with a private reply (an application, the owner's consent for messages too); never staff acting as a member.
      */
-    public CompletableFuture<PealClientHttpResponse<CommentRule>> createCommentRule(
-            String workspaceId, NewCommentRule request) {
-        return createCommentRule(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<CommentRule>> createCommentRule(NewCommentRule request) {
+        return createCommentRule(request, null);
     }
 
     /**
      * Starts a rule on the comments of a post that went out (<code>postId</code>) or of every post of a channel (<code>channelId</code>), exactly one of them, with 1 to 10 <code>keywords</code>, a <code>reply</code> and, optionally, a <code>privateReply</code>. A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its <code>reply</code>, once a comment and once a person, 25 replies a day at most, and 100 a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and <code>channels</code> says so. It never likes or follows anyone. With a <code>privateReply</code>, it also sends the author of each comment it answered that one private message, once its public reply is out: only on Instagram and Facebook Pages, whose platforms let an account send a commenter one message within 7 days of the comment, only where the channel's messages are on (a channel that cannot carry it answers in public only, and the match's <code>privateCode</code> says why), never twice to a comment, whoever sent the first, and never to anyone who did not comment. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected. It is refused when no channel it answers on can carry its reply, or its private reply when it has one (CommentRuleNotPossible, with each channel's reason). A workspace keeps 100 rules active or paused. Needs engagement:reply, and engagement:message with a private reply (an application, the owner's consent for messages too); never staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRule>> createCommentRule(
-            String workspaceId, NewCommentRule request, RequestOptions requestOptions) {
+            NewCommentRule request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("inbox")
-                .addPathSegments("rules");
+                .addPathSegments("api/v1/inbox/rules");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -322,38 +312,34 @@ public class AsyncRawInboxRulesClient {
     /**
      * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
-    public CompletableFuture<PealClientHttpResponse<CommentRule>> getCommentRule(String workspaceId, String ruleId) {
-        return getCommentRule(
-                workspaceId, ruleId, GetCommentRuleInboxRulesRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<CommentRule>> getCommentRule(String ruleId) {
+        return getCommentRule(ruleId, GetCommentRuleInboxRulesRequest.builder().build());
     }
 
     /**
      * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRule>> getCommentRule(
-            String workspaceId, String ruleId, RequestOptions requestOptions) {
-        return getCommentRule(
-                workspaceId, ruleId, GetCommentRuleInboxRulesRequest.builder().build(), requestOptions);
+            String ruleId, RequestOptions requestOptions) {
+        return getCommentRule(ruleId, GetCommentRuleInboxRulesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRule>> getCommentRule(
-            String workspaceId, String ruleId, GetCommentRuleInboxRulesRequest request) {
-        return getCommentRule(workspaceId, ruleId, request, null);
+            String ruleId, GetCommentRuleInboxRulesRequest request) {
+        return getCommentRule(ruleId, request, null);
     }
 
     /**
      * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's <code>privateReply</code>, and each match's <code>privateCode</code>, <code>privateReplyId</code> and <code>privateStatus</code>, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRule>> getCommentRule(
-            String workspaceId, String ruleId, GetCommentRuleInboxRulesRequest request, RequestOptions requestOptions) {
+            String ruleId, GetCommentRuleInboxRulesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("inbox/rules")
+                .addPathSegments("api/v1/inbox/rules")
                 .addPathSegment(PathSegments.validate(ruleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -393,6 +379,11 @@ public class AsyncRawInboxRulesClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -446,46 +437,36 @@ public class AsyncRawInboxRulesClient {
     /**
      * Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> deleteCommentRule(String workspaceId, String ruleId) {
+    public CompletableFuture<PealClientHttpResponse<Void>> deleteCommentRule(String ruleId) {
         return deleteCommentRule(
-                workspaceId,
-                ruleId,
-                DeleteCommentRuleInboxRulesRequest.builder().build());
+                ruleId, DeleteCommentRuleInboxRulesRequest.builder().build());
     }
 
     /**
      * Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> deleteCommentRule(
-            String workspaceId, String ruleId, RequestOptions requestOptions) {
+            String ruleId, RequestOptions requestOptions) {
         return deleteCommentRule(
-                workspaceId,
-                ruleId,
-                DeleteCommentRuleInboxRulesRequest.builder().build(),
-                requestOptions);
+                ruleId, DeleteCommentRuleInboxRulesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> deleteCommentRule(
-            String workspaceId, String ruleId, DeleteCommentRuleInboxRulesRequest request) {
-        return deleteCommentRule(workspaceId, ruleId, request, null);
+            String ruleId, DeleteCommentRuleInboxRulesRequest request) {
+        return deleteCommentRule(ruleId, request, null);
     }
 
     /**
      * Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> deleteCommentRule(
-            String workspaceId,
-            String ruleId,
-            DeleteCommentRuleInboxRulesRequest request,
-            RequestOptions requestOptions) {
+            String ruleId, DeleteCommentRuleInboxRulesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("inbox/rules")
+                .addPathSegments("api/v1/inbox/rules")
                 .addPathSegment(PathSegments.validate(ruleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -527,6 +508,11 @@ public class AsyncRawInboxRulesClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -580,38 +566,34 @@ public class AsyncRawInboxRulesClient {
     /**
      * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
      */
-    public CompletableFuture<PealClientHttpResponse<CommentRule>> updateCommentRule(String workspaceId, String ruleId) {
-        return updateCommentRule(
-                workspaceId, ruleId, CommentRuleChange.builder().build());
+    public CompletableFuture<PealClientHttpResponse<CommentRule>> updateCommentRule(String ruleId) {
+        return updateCommentRule(ruleId, CommentRuleChange.builder().build());
     }
 
     /**
      * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRule>> updateCommentRule(
-            String workspaceId, String ruleId, RequestOptions requestOptions) {
-        return updateCommentRule(
-                workspaceId, ruleId, CommentRuleChange.builder().build(), requestOptions);
+            String ruleId, RequestOptions requestOptions) {
+        return updateCommentRule(ruleId, CommentRuleChange.builder().build(), requestOptions);
     }
 
     /**
      * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRule>> updateCommentRule(
-            String workspaceId, String ruleId, CommentRuleChange request) {
-        return updateCommentRule(workspaceId, ruleId, request, null);
+            String ruleId, CommentRuleChange request) {
+        return updateCommentRule(ruleId, request, null);
     }
 
     /**
      * Changes a rule's keywords, reply or private reply (<code>privateReply</code> null takes it off), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
      */
     public CompletableFuture<PealClientHttpResponse<CommentRule>> updateCommentRule(
-            String workspaceId, String ruleId, CommentRuleChange request, RequestOptions requestOptions) {
+            String ruleId, CommentRuleChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("inbox/rules")
+                .addPathSegments("api/v1/inbox/rules")
                 .addPathSegment(PathSegments.validate(ruleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -656,6 +638,11 @@ public class AsyncRawInboxRulesClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

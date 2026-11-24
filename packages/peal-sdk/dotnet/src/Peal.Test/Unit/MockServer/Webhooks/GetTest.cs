@@ -48,7 +48,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId")
+                    .WithPath("/api/v1/webhooks/endpointId")
                     .UsingGet()
             )
             .RespondWith(
@@ -59,7 +59,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.GetAsync(
-            new GetWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+            new GetWebhooksRequest { EndpointId = "endpointId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -99,7 +99,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId")
+                    .WithPath("/api/v1/webhooks/endpointId")
                     .UsingGet()
             )
             .RespondWith(
@@ -110,7 +110,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.GetAsync(
-            new GetWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+            new GetWebhooksRequest { EndpointId = "endpointId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

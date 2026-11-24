@@ -59,6 +59,7 @@ class PartnerUsageClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.partner_usage.get()
@@ -121,6 +122,7 @@ class AsyncPartnerUsageClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 

@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         reviewId: "reviewId"
  *     }
  */
 export interface WithdrawReviewReplyInboxReviewsRequest {
-    workspaceId: string;
     reviewId: string;
 }

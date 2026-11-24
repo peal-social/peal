@@ -69,7 +69,6 @@ public partial interface IInboxMessagesClient
     /// Lists the channels whose direct messages the workspace turned on, and the applications its owner let read and answer them. Needs channel:connect.
     /// </summary>
     WithRawResponseTask<InboxMessageSettings> GetMessageSettingsAsync(
-        GetMessageSettingsInboxMessagesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

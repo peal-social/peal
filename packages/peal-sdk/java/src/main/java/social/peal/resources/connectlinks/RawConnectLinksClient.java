@@ -24,13 +24,13 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.errors.UnprocessableEntityError;
 import social.peal.resources.connectlinks.requests.GetConnectLinksRequest;
-import social.peal.resources.connectlinks.requests.ListConnectLinksRequest;
 import social.peal.resources.connectlinks.requests.NewConnectLink;
 import social.peal.resources.connectlinks.requests.RevokeConnectLinksRequest;
 import social.peal.types.ConnectLink;
@@ -47,45 +47,28 @@ public class RawConnectLinksClient {
     /**
      * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
      */
-    public PealClientHttpResponse<List<ConnectLink>> list(String workspaceId) {
-        return list(workspaceId, ListConnectLinksRequest.builder().build());
+    public PealClientHttpResponse<List<ConnectLink>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
      */
-    public PealClientHttpResponse<List<ConnectLink>> list(String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListConnectLinksRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
-     */
-    public PealClientHttpResponse<List<ConnectLink>> list(String workspaceId, ListConnectLinksRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
-     */
-    public PealClientHttpResponse<List<ConnectLink>> list(
-            String workspaceId, ListConnectLinksRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<List<ConnectLink>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("connect-links");
+                .addPathSegments("api/v1/connect-links");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -110,6 +93,9 @@ public class RawConnectLinksClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -140,34 +126,31 @@ public class RawConnectLinksClient {
     /**
      * Creates a link to hand to whoever owns an account of <code>platform</code>, or accounts of each of <code>platforms</code>: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With <code>platforms</code>, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: <code>connectedPlatforms</code> and <code>channelIds</code> say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless <code>expiresInHours</code> (1 to 720) says otherwise; with <code>channelId</code>, it reconnects that channel, and only a sign-in to the channel's own account goes through. <code>returnUrl</code> is where the page sends them once done, with <code>peal_link</code> (the link's id) and <code>peal_status</code> (<code>connected</code>, <code>cancelled</code> or <code>failed</code>) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 <code>ReturnUrlNotAllowed</code> otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 <code>ConnectFailed</code>. A workspace has 100 links waiting at most. Needs channel:connect.
      */
-    public PealClientHttpResponse<CreatedConnectLink> create(String workspaceId) {
-        return create(workspaceId, NewConnectLink.builder().build());
+    public PealClientHttpResponse<CreatedConnectLink> create() {
+        return create(NewConnectLink.builder().build());
     }
 
     /**
      * Creates a link to hand to whoever owns an account of <code>platform</code>, or accounts of each of <code>platforms</code>: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With <code>platforms</code>, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: <code>connectedPlatforms</code> and <code>channelIds</code> say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless <code>expiresInHours</code> (1 to 720) says otherwise; with <code>channelId</code>, it reconnects that channel, and only a sign-in to the channel's own account goes through. <code>returnUrl</code> is where the page sends them once done, with <code>peal_link</code> (the link's id) and <code>peal_status</code> (<code>connected</code>, <code>cancelled</code> or <code>failed</code>) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 <code>ReturnUrlNotAllowed</code> otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 <code>ConnectFailed</code>. A workspace has 100 links waiting at most. Needs channel:connect.
      */
-    public PealClientHttpResponse<CreatedConnectLink> create(String workspaceId, RequestOptions requestOptions) {
-        return create(workspaceId, NewConnectLink.builder().build(), requestOptions);
+    public PealClientHttpResponse<CreatedConnectLink> create(RequestOptions requestOptions) {
+        return create(NewConnectLink.builder().build(), requestOptions);
     }
 
     /**
      * Creates a link to hand to whoever owns an account of <code>platform</code>, or accounts of each of <code>platforms</code>: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With <code>platforms</code>, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: <code>connectedPlatforms</code> and <code>channelIds</code> say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless <code>expiresInHours</code> (1 to 720) says otherwise; with <code>channelId</code>, it reconnects that channel, and only a sign-in to the channel's own account goes through. <code>returnUrl</code> is where the page sends them once done, with <code>peal_link</code> (the link's id) and <code>peal_status</code> (<code>connected</code>, <code>cancelled</code> or <code>failed</code>) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 <code>ReturnUrlNotAllowed</code> otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 <code>ConnectFailed</code>. A workspace has 100 links waiting at most. Needs channel:connect.
      */
-    public PealClientHttpResponse<CreatedConnectLink> create(String workspaceId, NewConnectLink request) {
-        return create(workspaceId, request, null);
+    public PealClientHttpResponse<CreatedConnectLink> create(NewConnectLink request) {
+        return create(request, null);
     }
 
     /**
      * Creates a link to hand to whoever owns an account of <code>platform</code>, or accounts of each of <code>platforms</code>: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With <code>platforms</code>, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: <code>connectedPlatforms</code> and <code>channelIds</code> say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless <code>expiresInHours</code> (1 to 720) says otherwise; with <code>channelId</code>, it reconnects that channel, and only a sign-in to the channel's own account goes through. <code>returnUrl</code> is where the page sends them once done, with <code>peal_link</code> (the link's id) and <code>peal_status</code> (<code>connected</code>, <code>cancelled</code> or <code>failed</code>) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 <code>ReturnUrlNotAllowed</code> otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 <code>ConnectFailed</code>. A workspace has 100 links waiting at most. Needs channel:connect.
      */
-    public PealClientHttpResponse<CreatedConnectLink> create(
-            String workspaceId, NewConnectLink request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<CreatedConnectLink> create(NewConnectLink request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("connect-links");
+                .addPathSegments("api/v1/connect-links");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -206,6 +189,9 @@ public class RawConnectLinksClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -239,34 +225,32 @@ public class RawConnectLinksClient {
     /**
      * One connect link of the workspace: where it stands, the channels it connected once <code>completed</code>, and how its last sign-in failed. Read it when a browser comes back to your return address, or on <code>channel.connected</code>. Needs channel:read.
      */
-    public PealClientHttpResponse<ConnectLink> get(String workspaceId, String linkId) {
-        return get(workspaceId, linkId, GetConnectLinksRequest.builder().build());
+    public PealClientHttpResponse<ConnectLink> get(String linkId) {
+        return get(linkId, GetConnectLinksRequest.builder().build());
     }
 
     /**
      * One connect link of the workspace: where it stands, the channels it connected once <code>completed</code>, and how its last sign-in failed. Read it when a browser comes back to your return address, or on <code>channel.connected</code>. Needs channel:read.
      */
-    public PealClientHttpResponse<ConnectLink> get(String workspaceId, String linkId, RequestOptions requestOptions) {
-        return get(workspaceId, linkId, GetConnectLinksRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<ConnectLink> get(String linkId, RequestOptions requestOptions) {
+        return get(linkId, GetConnectLinksRequest.builder().build(), requestOptions);
     }
 
     /**
      * One connect link of the workspace: where it stands, the channels it connected once <code>completed</code>, and how its last sign-in failed. Read it when a browser comes back to your return address, or on <code>channel.connected</code>. Needs channel:read.
      */
-    public PealClientHttpResponse<ConnectLink> get(String workspaceId, String linkId, GetConnectLinksRequest request) {
-        return get(workspaceId, linkId, request, null);
+    public PealClientHttpResponse<ConnectLink> get(String linkId, GetConnectLinksRequest request) {
+        return get(linkId, request, null);
     }
 
     /**
      * One connect link of the workspace: where it stands, the channels it connected once <code>completed</code>, and how its last sign-in failed. Read it when a browser comes back to your return address, or on <code>channel.connected</code>. Needs channel:read.
      */
     public PealClientHttpResponse<ConnectLink> get(
-            String workspaceId, String linkId, GetConnectLinksRequest request, RequestOptions requestOptions) {
+            String linkId, GetConnectLinksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("connect-links")
+                .addPathSegments("api/v1/connect-links")
                 .addPathSegment(PathSegments.validate(linkId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -301,6 +285,9 @@ public class RawConnectLinksClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -331,36 +318,32 @@ public class RawConnectLinksClient {
     /**
      * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
      */
-    public PealClientHttpResponse<ConnectLink> revoke(String workspaceId, String linkId) {
-        return revoke(workspaceId, linkId, RevokeConnectLinksRequest.builder().build());
+    public PealClientHttpResponse<ConnectLink> revoke(String linkId) {
+        return revoke(linkId, RevokeConnectLinksRequest.builder().build());
+    }
+
+    /**
+     * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
+     */
+    public PealClientHttpResponse<ConnectLink> revoke(String linkId, RequestOptions requestOptions) {
+        return revoke(linkId, RevokeConnectLinksRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
+     */
+    public PealClientHttpResponse<ConnectLink> revoke(String linkId, RevokeConnectLinksRequest request) {
+        return revoke(linkId, request, null);
     }
 
     /**
      * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
      */
     public PealClientHttpResponse<ConnectLink> revoke(
-            String workspaceId, String linkId, RequestOptions requestOptions) {
-        return revoke(workspaceId, linkId, RevokeConnectLinksRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
-     */
-    public PealClientHttpResponse<ConnectLink> revoke(
-            String workspaceId, String linkId, RevokeConnectLinksRequest request) {
-        return revoke(workspaceId, linkId, request, null);
-    }
-
-    /**
-     * Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
-     */
-    public PealClientHttpResponse<ConnectLink> revoke(
-            String workspaceId, String linkId, RevokeConnectLinksRequest request, RequestOptions requestOptions) {
+            String linkId, RevokeConnectLinksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("connect-links")
+                .addPathSegments("api/v1/connect-links")
                 .addPathSegment(PathSegments.validate(linkId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -398,6 +381,9 @@ public class RawConnectLinksClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListConnectLinksRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.ConnectLinks.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListConnectLinksRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.ConnectLink, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,9 +59,7 @@ func (c *Client) List(
 //
 // Example:
 //
-//	request := &peal.NewConnectLink{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.NewConnectLink{}
 //	_, err := client.ConnectLinks.Create(
 //	    context.TODO(),
 //	    request,
@@ -93,7 +85,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.GetConnectLinksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    LinkID: "linkId",
 //	}
 //	_, err := client.ConnectLinks.Get(
@@ -121,7 +112,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.RevokeConnectLinksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    LinkID: "linkId",
 //	}
 //	_, err := client.ConnectLinks.Revoke(

@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         commentId: "commentId",
  *         text: "text"
  *     }
  */
 export interface NewInboxPrivateReply {
-    workspaceId: string;
     "idempotency-key"?: string;
     commentId: string;
     text: string;

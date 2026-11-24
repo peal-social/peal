@@ -35,7 +35,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner")
+                    .WithPath("/api/v1/partner-account")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -50,7 +50,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.PartnerAccount.UpdateAsync(
             new PartnerChange
             {
-                WorkspaceId = "workspaceId",
                 AccentColor = null,
                 LogoUrl = null,
                 Name = null,
@@ -85,7 +84,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner")
+                    .WithPath("/api/v1/partner-account")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -97,9 +96,7 @@ public class UpdateTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.PartnerAccount.UpdateAsync(
-            new PartnerChange { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.PartnerAccount.UpdateAsync(new PartnerChange());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

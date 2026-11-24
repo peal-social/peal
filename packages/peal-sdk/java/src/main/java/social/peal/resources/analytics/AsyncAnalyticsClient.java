@@ -40,9 +40,8 @@ public class AsyncAnalyticsClient {
     /**
      * Sums up the posts published from <code>from</code> to <code>to</code>, both included and at most 366 days, as days run in <code>timeZone</code> (an IANA zone such as Europe/Paris): their latest counts in all and by channel, what they gained each day, and the five with the most engagement (likes, reposts, replies and quotes). Counts are read from the platforms every hour for 48 hours after a post goes live, then every day until it is 30 days old. Needs analytics:read.
      */
-    public CompletableFuture<AnalyticsSummary> summary(String workspaceId, SummaryAnalyticsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AnalyticsSummary>> rawFuture =
-                this.rawClient.summary(workspaceId, request);
+    public CompletableFuture<AnalyticsSummary> summary(SummaryAnalyticsRequest request) {
+        CompletableFuture<PealClientHttpResponse<AnalyticsSummary>> rawFuture = this.rawClient.summary(request);
         CompletableFuture<AnalyticsSummary> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -55,10 +54,9 @@ public class AsyncAnalyticsClient {
     /**
      * Sums up the posts published from <code>from</code> to <code>to</code>, both included and at most 366 days, as days run in <code>timeZone</code> (an IANA zone such as Europe/Paris): their latest counts in all and by channel, what they gained each day, and the five with the most engagement (likes, reposts, replies and quotes). Counts are read from the platforms every hour for 48 hours after a post goes live, then every day until it is 30 days old. Needs analytics:read.
      */
-    public CompletableFuture<AnalyticsSummary> summary(
-            String workspaceId, SummaryAnalyticsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<AnalyticsSummary> summary(SummaryAnalyticsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AnalyticsSummary>> rawFuture =
-                this.rawClient.summary(workspaceId, request, requestOptions);
+                this.rawClient.summary(request, requestOptions);
         CompletableFuture<AnalyticsSummary> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -71,9 +69,8 @@ public class AsyncAnalyticsClient {
     /**
      * Answers a workspace's analytics over a range in one call: the totals of the posts published in it and of those published in the range before, of the same length, so a client shows the trend; followers at the end of each and their change; the same by channel and by platform; each day's gains, followers and account views; and the <code>topPosts</code> (5 unless said, 25 at most) with the most engagement. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. Followers are kept from the day a channel is connected, read once a day; a number a platform does not give is null, never zero. Needs analytics:read.
      */
-    public CompletableFuture<AnalyticsDashboard> dashboard(String workspaceId, DashboardAnalyticsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AnalyticsDashboard>> rawFuture =
-                this.rawClient.dashboard(workspaceId, request);
+    public CompletableFuture<AnalyticsDashboard> dashboard(DashboardAnalyticsRequest request) {
+        CompletableFuture<PealClientHttpResponse<AnalyticsDashboard>> rawFuture = this.rawClient.dashboard(request);
         CompletableFuture<AnalyticsDashboard> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -87,9 +84,9 @@ public class AsyncAnalyticsClient {
      * Answers a workspace's analytics over a range in one call: the totals of the posts published in it and of those published in the range before, of the same length, so a client shows the trend; followers at the end of each and their change; the same by channel and by platform; each day's gains, followers and account views; and the <code>topPosts</code> (5 unless said, 25 at most) with the most engagement. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. Followers are kept from the day a channel is connected, read once a day; a number a platform does not give is null, never zero. Needs analytics:read.
      */
     public CompletableFuture<AnalyticsDashboard> dashboard(
-            String workspaceId, DashboardAnalyticsRequest request, RequestOptions requestOptions) {
+            DashboardAnalyticsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AnalyticsDashboard>> rawFuture =
-                this.rawClient.dashboard(workspaceId, request, requestOptions);
+                this.rawClient.dashboard(request, requestOptions);
         CompletableFuture<AnalyticsDashboard> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -102,10 +99,8 @@ public class AsyncAnalyticsClient {
     /**
      * Answers one channel's numbers day by day: its followers, the accounts it follows and its posts as read each UTC day, the views and reach its platform counted, and what its posts published in the range gained. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. A channel Peal has read nothing of answers days without numbers. Needs analytics:read.
      */
-    public CompletableFuture<ChannelSeries> channel(
-            String workspaceId, String channelId, ChannelAnalyticsRequest request) {
-        CompletableFuture<PealClientHttpResponse<ChannelSeries>> rawFuture =
-                this.rawClient.channel(workspaceId, channelId, request);
+    public CompletableFuture<ChannelSeries> channel(String channelId, ChannelAnalyticsRequest request) {
+        CompletableFuture<PealClientHttpResponse<ChannelSeries>> rawFuture = this.rawClient.channel(channelId, request);
         CompletableFuture<ChannelSeries> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -119,9 +114,9 @@ public class AsyncAnalyticsClient {
      * Answers one channel's numbers day by day: its followers, the accounts it follows and its posts as read each UTC day, the views and reach its platform counted, and what its posts published in the range gained. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. A channel Peal has read nothing of answers days without numbers. Needs analytics:read.
      */
     public CompletableFuture<ChannelSeries> channel(
-            String workspaceId, String channelId, ChannelAnalyticsRequest request, RequestOptions requestOptions) {
+            String channelId, ChannelAnalyticsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChannelSeries>> rawFuture =
-                this.rawClient.channel(workspaceId, channelId, request, requestOptions);
+                this.rawClient.channel(channelId, request, requestOptions);
         CompletableFuture<ChannelSeries> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -134,8 +129,8 @@ public class AsyncAnalyticsClient {
     /**
      * Streams the workspace's analytics as a file: <code>kind=posts</code> lists each post published in the range on each channel with its latest counts, <code>kind=accounts</code> each channel's account day by day. <code>format=csv</code> (the default) writes a header line then one line a row, as RFC 4180; <code>format=json</code> writes one JSON object a line (<code>application/x-ndjson</code>). A number a platform does not give is empty in CSV and null in JSON. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. Needs analytics:read.
      */
-    public CompletableFuture<InputStream> export(String workspaceId, ExportAnalyticsRequest request) {
-        CompletableFuture<PealClientHttpResponse<InputStream>> rawFuture = this.rawClient.export(workspaceId, request);
+    public CompletableFuture<InputStream> export(ExportAnalyticsRequest request) {
+        CompletableFuture<PealClientHttpResponse<InputStream>> rawFuture = this.rawClient.export(request);
         CompletableFuture<InputStream> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -148,10 +143,9 @@ public class AsyncAnalyticsClient {
     /**
      * Streams the workspace's analytics as a file: <code>kind=posts</code> lists each post published in the range on each channel with its latest counts, <code>kind=accounts</code> each channel's account day by day. <code>format=csv</code> (the default) writes a header line then one line a row, as RFC 4180; <code>format=json</code> writes one JSON object a line (<code>application/x-ndjson</code>). A number a platform does not give is empty in CSV and null in JSON. The range is <code>days</code> (7, 30 or 90: that many days ending today in <code>timeZone</code>), or <code>from</code> and <code>to</code>, both included and at most 366 days; <code>timeZone</code> is an IANA zone such as Europe/Paris. Needs analytics:read.
      */
-    public CompletableFuture<InputStream> export(
-            String workspaceId, ExportAnalyticsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<InputStream> export(ExportAnalyticsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<InputStream>> rawFuture =
-                this.rawClient.export(workspaceId, request, requestOptions);
+                this.rawClient.export(request, requestOptions);
         CompletableFuture<InputStream> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -164,8 +158,8 @@ public class AsyncAnalyticsClient {
     /**
      * Answers when one channel's posts did best, by weekday and hour as <code>timeZone</code> (an IANA zone) runs them, over the last <code>days</code> (30, 90 or 180, 90 unless given; fewer where the platform lets Peal keep less): for each hour, how many of its posts went live in it and the median of what each was given, likes, reposts, replies and quotes together, those the platform gives (<code>counted</code> is false where it gives none). It describes this channel's past and predicts nothing: counts of different platforms are never added, an hour with fewer than 3 posts has no median, and a channel with fewer than 20 posts in the range answers <code>enough: false</code> with no ranking. <code>best</code> lists at most 5 hours, by median then by posts. Posts younger than 48 hours are left out (<code>recent</code>), as are posts Peal deleted from the platform. Needs analytics:read.
      */
-    public CompletableFuture<BestTimes> bestTimes(String workspaceId, BestTimesAnalyticsRequest request) {
-        CompletableFuture<PealClientHttpResponse<BestTimes>> rawFuture = this.rawClient.bestTimes(workspaceId, request);
+    public CompletableFuture<BestTimes> bestTimes(BestTimesAnalyticsRequest request) {
+        CompletableFuture<PealClientHttpResponse<BestTimes>> rawFuture = this.rawClient.bestTimes(request);
         CompletableFuture<BestTimes> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -178,10 +172,9 @@ public class AsyncAnalyticsClient {
     /**
      * Answers when one channel's posts did best, by weekday and hour as <code>timeZone</code> (an IANA zone) runs them, over the last <code>days</code> (30, 90 or 180, 90 unless given; fewer where the platform lets Peal keep less): for each hour, how many of its posts went live in it and the median of what each was given, likes, reposts, replies and quotes together, those the platform gives (<code>counted</code> is false where it gives none). It describes this channel's past and predicts nothing: counts of different platforms are never added, an hour with fewer than 3 posts has no median, and a channel with fewer than 20 posts in the range answers <code>enough: false</code> with no ranking. <code>best</code> lists at most 5 hours, by median then by posts. Posts younger than 48 hours are left out (<code>recent</code>), as are posts Peal deleted from the platform. Needs analytics:read.
      */
-    public CompletableFuture<BestTimes> bestTimes(
-            String workspaceId, BestTimesAnalyticsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<BestTimes> bestTimes(BestTimesAnalyticsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<BestTimes>> rawFuture =
-                this.rawClient.bestTimes(workspaceId, request, requestOptions);
+                this.rawClient.bestTimes(request, requestOptions);
         CompletableFuture<BestTimes> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -194,8 +187,8 @@ public class AsyncAnalyticsClient {
     /**
      * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
      */
-    public CompletableFuture<PostAnalytics> post(String workspaceId, String postId) {
-        CompletableFuture<PealClientHttpResponse<PostAnalytics>> rawFuture = this.rawClient.post(workspaceId, postId);
+    public CompletableFuture<PostAnalytics> post(String postId) {
+        CompletableFuture<PealClientHttpResponse<PostAnalytics>> rawFuture = this.rawClient.post(postId);
         CompletableFuture<PostAnalytics> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -208,9 +201,9 @@ public class AsyncAnalyticsClient {
     /**
      * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
      */
-    public CompletableFuture<PostAnalytics> post(String workspaceId, String postId, RequestOptions requestOptions) {
+    public CompletableFuture<PostAnalytics> post(String postId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<PostAnalytics>> rawFuture =
-                this.rawClient.post(workspaceId, postId, requestOptions);
+                this.rawClient.post(postId, requestOptions);
         CompletableFuture<PostAnalytics> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -223,9 +216,8 @@ public class AsyncAnalyticsClient {
     /**
      * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
      */
-    public CompletableFuture<PostAnalytics> post(String workspaceId, String postId, PostAnalyticsRequest request) {
-        CompletableFuture<PealClientHttpResponse<PostAnalytics>> rawFuture =
-                this.rawClient.post(workspaceId, postId, request);
+    public CompletableFuture<PostAnalytics> post(String postId, PostAnalyticsRequest request) {
+        CompletableFuture<PealClientHttpResponse<PostAnalytics>> rawFuture = this.rawClient.post(postId, request);
         CompletableFuture<PostAnalytics> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -239,9 +231,9 @@ public class AsyncAnalyticsClient {
      * Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
      */
     public CompletableFuture<PostAnalytics> post(
-            String workspaceId, String postId, PostAnalyticsRequest request, RequestOptions requestOptions) {
+            String postId, PostAnalyticsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<PostAnalytics>> rawFuture =
-                this.rawClient.post(workspaceId, postId, request, requestOptions);
+                this.rawClient.post(postId, request, requestOptions);
         CompletableFuture<PostAnalytics> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

@@ -7,9 +7,6 @@ namespace Peal;
 public record AuditTrailAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Cursor { get; set; }
 
     /// <inheritdoc />

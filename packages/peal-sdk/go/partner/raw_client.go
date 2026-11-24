@@ -42,7 +42,7 @@ func (r *RawClient) Account(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := baseURL + "/api/partner"
+	endpointURL := baseURL + "/api/v1/partner"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -84,7 +84,7 @@ func (r *RawClient) Overview(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := baseURL + "/api/partner/overview"
+	endpointURL := baseURL + "/api/v1/partner/overview"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -133,7 +133,7 @@ func (r *RawClient) ListWorkspaces(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := baseURL + "/api/partner/workspaces"
+	endpointURL := baseURL + "/api/v1/partner/workspaces"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func (r *RawClient) CreateWorkspace(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := baseURL + "/api/partner/workspaces"
+	endpointURL := baseURL + "/api/v1/partner/workspaces"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -230,7 +230,7 @@ func (r *RawClient) GetWorkspace(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/partner/workspaces/%v",
+		baseURL+"/api/v1/partner/workspaces/%v",
 		request.WorkspaceID,
 	)
 	headers := internal.MergeHeaders(
@@ -275,7 +275,7 @@ func (r *RawClient) DeleteWorkspace(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/partner/workspaces/%v",
+		baseURL+"/api/v1/partner/workspaces/%v",
 		request.WorkspaceID,
 	)
 	headers := internal.MergeHeaders(
@@ -318,7 +318,7 @@ func (r *RawClient) UpdateWorkspace(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/partner/workspaces/%v",
+		baseURL+"/api/v1/partner/workspaces/%v",
 		request.WorkspaceID,
 	)
 	headers := internal.MergeHeaders(
@@ -365,7 +365,7 @@ func (r *RawClient) MoveChannel(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/partner/workspaces/%v/channels/%v/move",
+		baseURL+"/api/v1/partner/workspaces/%v/channels/%v/move",
 		request.WorkspaceID,
 		request.ChannelID,
 	)

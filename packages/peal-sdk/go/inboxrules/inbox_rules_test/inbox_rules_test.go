@@ -88,9 +88,7 @@ func TestInboxRulesListCommentRulesWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListCommentRulesInboxRulesRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListCommentRulesInboxRulesRequest{}
 	_, invocationErr := client.InboxRules.ListCommentRules(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestInboxRulesListCommentRulesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxRulesListCommentRulesWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/rules", nil, 1)
+	VerifyRequestCount(t, "TestInboxRulesListCommentRulesWithWireMock", "GET", "/api/v1/inbox/rules", nil, 1)
 }
 
 func TestInboxRulesCreateCommentRuleWithWireMock(
@@ -115,7 +113,6 @@ func TestInboxRulesCreateCommentRuleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewCommentRule{
-		WorkspaceID: "workspaceId",
 		Keywords: []string{
 			"keywords",
 		},
@@ -130,7 +127,7 @@ func TestInboxRulesCreateCommentRuleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxRulesCreateCommentRuleWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/rules", nil, 1)
+	VerifyRequestCount(t, "TestInboxRulesCreateCommentRuleWithWireMock", "POST", "/api/v1/inbox/rules", nil, 1)
 }
 
 func TestInboxRulesGetCommentRuleWithWireMock(
@@ -145,8 +142,7 @@ func TestInboxRulesGetCommentRuleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetCommentRuleInboxRulesRequest{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	_, invocationErr := client.InboxRules.GetCommentRule(
 		context.TODO(),
@@ -157,7 +153,7 @@ func TestInboxRulesGetCommentRuleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxRulesGetCommentRuleWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/rules/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestInboxRulesGetCommentRuleWithWireMock", "GET", "/api/v1/inbox/rules/ruleId", nil, 1)
 }
 
 func TestInboxRulesDeleteCommentRuleWithWireMock(
@@ -172,8 +168,7 @@ func TestInboxRulesDeleteCommentRuleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteCommentRuleInboxRulesRequest{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	invocationErr := client.InboxRules.DeleteCommentRule(
 		context.TODO(),
@@ -184,7 +179,7 @@ func TestInboxRulesDeleteCommentRuleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxRulesDeleteCommentRuleWithWireMock", "DELETE", "/api/workspaces/workspaceId/inbox/rules/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestInboxRulesDeleteCommentRuleWithWireMock", "DELETE", "/api/v1/inbox/rules/ruleId", nil, 1)
 }
 
 func TestInboxRulesUpdateCommentRuleWithWireMock(
@@ -199,8 +194,7 @@ func TestInboxRulesUpdateCommentRuleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.CommentRuleChange{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	_, invocationErr := client.InboxRules.UpdateCommentRule(
 		context.TODO(),
@@ -211,5 +205,5 @@ func TestInboxRulesUpdateCommentRuleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxRulesUpdateCommentRuleWithWireMock", "PATCH", "/api/workspaces/workspaceId/inbox/rules/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestInboxRulesUpdateCommentRuleWithWireMock", "PATCH", "/api/v1/inbox/rules/ruleId", nil, 1)
 }

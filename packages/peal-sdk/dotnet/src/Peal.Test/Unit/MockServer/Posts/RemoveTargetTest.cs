@@ -315,7 +315,7 @@ public class RemoveTargetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId")
+                    .WithPath("/api/v1/posts/postId/targets/targetId")
                     .UsingDelete()
             )
             .RespondWith(
@@ -326,12 +326,7 @@ public class RemoveTargetTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.RemoveTargetAsync(
-            new RemoveTargetPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                TargetId = "targetId",
-            }
+            new RemoveTargetPostsRequest { PostId = "postId", TargetId = "targetId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -454,7 +449,7 @@ public class RemoveTargetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId")
+                    .WithPath("/api/v1/posts/postId/targets/targetId")
                     .UsingDelete()
             )
             .RespondWith(
@@ -465,12 +460,7 @@ public class RemoveTargetTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.RemoveTargetAsync(
-            new RemoveTargetPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                TargetId = "targetId",
-            }
+            new RemoveTargetPostsRequest { PostId = "postId", TargetId = "targetId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -315,7 +315,7 @@ public class OutcomeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/outcome")
+                    .WithPath("/api/v1/posts/postId/outcome")
                     .UsingGet()
             )
             .RespondWith(
@@ -326,7 +326,7 @@ public class OutcomeTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.OutcomeAsync(
-            new OutcomePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new OutcomePostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -449,7 +449,7 @@ public class OutcomeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/outcome")
+                    .WithPath("/api/v1/posts/postId/outcome")
                     .UsingGet()
             )
             .RespondWith(
@@ -460,7 +460,7 @@ public class OutcomeTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.OutcomeAsync(
-            new OutcomePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new OutcomePostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -4,8 +4,6 @@ module Peal
   module Webhooks
     module Types
       class WebhookEndpointChange < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :endpoint_id, -> { String }, optional: false, nullable: false, api_name: "endpointId"
 
         field :channel_ids, -> { Internal::Types::Array[String] }, optional: true, nullable: false, api_name: "channelIds"

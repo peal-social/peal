@@ -33,14 +33,12 @@ class PartnerAccountClient:
         """
         return self._raw_client
 
-    def get(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> PartnerStanding:
+    def get(self, *, request_options: typing.Optional[RequestOptions] = None) -> PartnerStanding:
         """
         The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (`canOpen`). Needs partner:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -54,23 +52,20 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.partner_account.get(
-            workspace_id="workspaceId",
-        )
+        client.partner_account.get()
         """
-        _response = self._raw_client.get(workspace_id, request_options=request_options)
+        _response = self._raw_client.get(request_options=request_options)
         return _response.data
 
-    def open(self, workspace_id: str, *, name: str, request_options: typing.Optional[RequestOptions] = None) -> Partner:
+    def open(self, *, name: str, request_options: typing.Optional[RequestOptions] = None) -> Partner:
         """
         Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 `PartnerAccountsClosed`. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         request_options : typing.Optional[RequestOptions]
@@ -86,24 +81,22 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.partner_account.open(
-            workspace_id="workspaceId",
             name="name",
         )
         """
-        _response = self._raw_client.open(workspace_id, name=name, request_options=request_options)
+        _response = self._raw_client.open(name=name, request_options=request_options)
         return _response.data
 
-    def close(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
+    def close(self, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 `PartnerOwnsWorkspaces`): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -116,18 +109,16 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.partner_account.close(
-            workspace_id="workspaceId",
-        )
+        client.partner_account.close()
         """
-        _response = self._raw_client.close(workspace_id, request_options=request_options)
+        _response = self._raw_client.close(request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         *,
         accent_color: typing.Optional[str] = OMIT,
         logo_url: typing.Optional[str] = OMIT,
@@ -140,8 +131,6 @@ class PartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         accent_color : typing.Optional[str]
 
         logo_url : typing.Optional[str]
@@ -163,14 +152,12 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.partner_account.update(
-            workspace_id="workspaceId",
-        )
+        client.partner_account.update()
         """
         _response = self._raw_client.update(
-            workspace_id,
             accent_color=accent_color,
             logo_url=logo_url,
             name=name,
@@ -179,16 +166,12 @@ class PartnerAccountClient:
         )
         return _response.data
 
-    def list_keys(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[PartnerKey]:
+    def list_keys(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[PartnerKey]:
         """
         Lists the partner account's keys. Needs partner:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -202,18 +185,16 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.partner_account.list_keys(
-            workspace_id="workspaceId",
-        )
+        client.partner_account.list_keys()
         """
-        _response = self._raw_client.list_keys(workspace_id, request_options=request_options)
+        _response = self._raw_client.list_keys(request_options=request_options)
         return _response.data
 
     def create_key(
         self,
-        workspace_id: str,
         *,
         name: str,
         permissions: typing.Sequence[Permission],
@@ -226,8 +207,6 @@ class PartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         permissions : typing.Sequence[Permission]
@@ -249,17 +228,16 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.partner_account.create_key(
-            workspace_id="workspaceId",
             name="name",
             permissions=["activity:read"],
             scopes=["workspaces:read"],
         )
         """
         _response = self._raw_client.create_key(
-            workspace_id,
             name=name,
             permissions=permissions,
             scopes=scopes,
@@ -268,16 +246,12 @@ class PartnerAccountClient:
         )
         return _response.data
 
-    def revoke_key(
-        self, workspace_id: str, partner_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def revoke_key(self, partner_key_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Revokes a partner key: it stops working at once. Needs partner:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         partner_key_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -292,19 +266,18 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.partner_account.revoke_key(
-            workspace_id="workspaceId",
             partner_key_id="partnerKeyId",
         )
         """
-        _response = self._raw_client.revoke_key(workspace_id, partner_key_id, request_options=request_options)
+        _response = self._raw_client.revoke_key(partner_key_id, request_options=request_options)
         return _response.data
 
     def overview(
         self,
-        workspace_id: str,
         *,
         before: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -315,8 +288,6 @@ class PartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         before : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -334,18 +305,16 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.partner_account.overview(
-            workspace_id="workspaceId",
-        )
+        client.partner_account.overview()
         """
-        _response = self._raw_client.overview(workspace_id, before=before, limit=limit, request_options=request_options)
+        _response = self._raw_client.overview(before=before, limit=limit, request_options=request_options)
         return _response.data
 
     def list_workspaces(
         self,
-        workspace_id: str,
         *,
         before: typing.Optional[str] = None,
         external_id: typing.Optional[str] = None,
@@ -358,8 +327,6 @@ class PartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         before : typing.Optional[str]
 
         external_id : typing.Optional[str]
@@ -381,19 +348,13 @@ class PartnerAccountClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.partner_account.list_workspaces(
-            workspace_id="workspaceId",
-        )
+        client.partner_account.list_workspaces()
         """
         _response = self._raw_client.list_workspaces(
-            workspace_id,
-            before=before,
-            external_id=external_id,
-            limit=limit,
-            name=name,
-            request_options=request_options,
+            before=before, external_id=external_id, limit=limit, name=name, request_options=request_options
         )
         return _response.data
 
@@ -413,16 +374,12 @@ class AsyncPartnerAccountClient:
         """
         return self._raw_client
 
-    async def get(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> PartnerStanding:
+    async def get(self, *, request_options: typing.Optional[RequestOptions] = None) -> PartnerStanding:
         """
         The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (`canOpen`). Needs partner:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -438,31 +395,26 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.partner_account.get(
-                workspace_id="workspaceId",
-            )
+            await client.partner_account.get()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, request_options=request_options)
+        _response = await self._raw_client.get(request_options=request_options)
         return _response.data
 
-    async def open(
-        self, workspace_id: str, *, name: str, request_options: typing.Optional[RequestOptions] = None
-    ) -> Partner:
+    async def open(self, *, name: str, request_options: typing.Optional[RequestOptions] = None) -> Partner:
         """
         Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 `PartnerAccountsClosed`. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         request_options : typing.Optional[RequestOptions]
@@ -480,30 +432,28 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.partner_account.open(
-                workspace_id="workspaceId",
                 name="name",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.open(workspace_id, name=name, request_options=request_options)
+        _response = await self._raw_client.open(name=name, request_options=request_options)
         return _response.data
 
-    async def close(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
+    async def close(self, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 `PartnerOwnsWorkspaces`): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -518,24 +468,22 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.partner_account.close(
-                workspace_id="workspaceId",
-            )
+            await client.partner_account.close()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.close(workspace_id, request_options=request_options)
+        _response = await self._raw_client.close(request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         *,
         accent_color: typing.Optional[str] = OMIT,
         logo_url: typing.Optional[str] = OMIT,
@@ -548,8 +496,6 @@ class AsyncPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         accent_color : typing.Optional[str]
 
         logo_url : typing.Optional[str]
@@ -573,20 +519,18 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.partner_account.update(
-                workspace_id="workspaceId",
-            )
+            await client.partner_account.update()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
             accent_color=accent_color,
             logo_url=logo_url,
             name=name,
@@ -595,16 +539,12 @@ class AsyncPartnerAccountClient:
         )
         return _response.data
 
-    async def list_keys(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[PartnerKey]:
+    async def list_keys(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[PartnerKey]:
         """
         Lists the partner account's keys. Needs partner:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -620,24 +560,22 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.partner_account.list_keys(
-                workspace_id="workspaceId",
-            )
+            await client.partner_account.list_keys()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_keys(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list_keys(request_options=request_options)
         return _response.data
 
     async def create_key(
         self,
-        workspace_id: str,
         *,
         name: str,
         permissions: typing.Sequence[Permission],
@@ -650,8 +588,6 @@ class AsyncPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         permissions : typing.Sequence[Permission]
@@ -675,13 +611,13 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.partner_account.create_key(
-                workspace_id="workspaceId",
                 name="name",
                 permissions=["activity:read"],
                 scopes=["workspaces:read"],
@@ -691,7 +627,6 @@ class AsyncPartnerAccountClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create_key(
-            workspace_id,
             name=name,
             permissions=permissions,
             scopes=scopes,
@@ -700,16 +635,12 @@ class AsyncPartnerAccountClient:
         )
         return _response.data
 
-    async def revoke_key(
-        self, workspace_id: str, partner_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def revoke_key(self, partner_key_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Revokes a partner key: it stops working at once. Needs partner:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         partner_key_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -726,25 +657,24 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.partner_account.revoke_key(
-                workspace_id="workspaceId",
                 partner_key_id="partnerKeyId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.revoke_key(workspace_id, partner_key_id, request_options=request_options)
+        _response = await self._raw_client.revoke_key(partner_key_id, request_options=request_options)
         return _response.data
 
     async def overview(
         self,
-        workspace_id: str,
         *,
         before: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -755,8 +685,6 @@ class AsyncPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         before : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -776,26 +704,22 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.partner_account.overview(
-                workspace_id="workspaceId",
-            )
+            await client.partner_account.overview()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.overview(
-            workspace_id, before=before, limit=limit, request_options=request_options
-        )
+        _response = await self._raw_client.overview(before=before, limit=limit, request_options=request_options)
         return _response.data
 
     async def list_workspaces(
         self,
-        workspace_id: str,
         *,
         before: typing.Optional[str] = None,
         external_id: typing.Optional[str] = None,
@@ -808,8 +732,6 @@ class AsyncPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         before : typing.Optional[str]
 
         external_id : typing.Optional[str]
@@ -833,24 +755,18 @@ class AsyncPartnerAccountClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.partner_account.list_workspaces(
-                workspace_id="workspaceId",
-            )
+            await client.partner_account.list_workspaces()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list_workspaces(
-            workspace_id,
-            before=before,
-            external_id=external_id,
-            limit=limit,
-            name=name,
-            request_options=request_options,
+            before=before, external_id=external_id, limit=limit, name=name, request_options=request_options
         )
         return _response.data

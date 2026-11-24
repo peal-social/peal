@@ -47,7 +47,7 @@ public class CreateVoiceoverTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/voiceovers")
+                    .WithPath("/api/v1/media/voiceovers")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -60,12 +60,7 @@ public class CreateVoiceoverTest : BaseMockServerTest
             );
 
         var response = await Client.MediaAudio.CreateVoiceoverAsync(
-            new VoiceoverRequest
-            {
-                WorkspaceId = "workspaceId",
-                Text = "text",
-                Voice = null,
-            }
+            new VoiceoverRequest { Text = "text", Voice = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -108,7 +103,7 @@ public class CreateVoiceoverTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/voiceovers")
+                    .WithPath("/api/v1/media/voiceovers")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -121,7 +116,7 @@ public class CreateVoiceoverTest : BaseMockServerTest
             );
 
         var response = await Client.MediaAudio.CreateVoiceoverAsync(
-            new VoiceoverRequest { WorkspaceId = "workspaceId", Text = "text" }
+            new VoiceoverRequest { Text = "text" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

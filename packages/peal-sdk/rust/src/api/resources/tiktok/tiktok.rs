@@ -35,15 +35,11 @@ impl TiktokClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .tiktok
-    ///         .creator(&"workspaceId".to_string(), &"channelId".to_string(), None)
-    ///         .await;
+    ///     client.tiktok.creator(&"channelId".to_string(), None).await;
     /// }
     /// ```
     pub async fn creator(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<TikTokAccount, ApiError> {
@@ -57,10 +53,7 @@ impl TiktokClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/channels/{}/tiktok-creator",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/tiktok-creator", channel_id),
                 None,
                 None,
                 options,

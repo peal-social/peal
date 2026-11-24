@@ -49,7 +49,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds/feedId")
+                    .WithPath("/api/v1/feeds/feedId")
                     .UsingGet()
             )
             .RespondWith(
@@ -59,9 +59,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Feeds.GetAsync(
-            new GetFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" }
-        );
+        var response = await Client.Feeds.GetAsync(new GetFeedsRequest { FeedId = "feedId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -104,7 +102,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds/feedId")
+                    .WithPath("/api/v1/feeds/feedId")
                     .UsingGet()
             )
             .RespondWith(
@@ -114,9 +112,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Feeds.GetAsync(
-            new GetFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" }
-        );
+        var response = await Client.Feeds.GetAsync(new GetFeedsRequest { FeedId = "feedId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

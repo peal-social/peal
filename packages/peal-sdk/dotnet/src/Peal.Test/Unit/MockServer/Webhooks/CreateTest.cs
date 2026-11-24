@@ -61,7 +61,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks")
+                    .WithPath("/api/v1/webhooks")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -76,7 +76,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Webhooks.CreateAsync(
             new NewWebhookEndpoint
             {
-                WorkspaceId = "workspaceId",
                 ChannelIds = null,
                 Description = null,
                 Enabled = null,
@@ -141,7 +140,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks")
+                    .WithPath("/api/v1/webhooks")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -156,7 +155,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Webhooks.CreateAsync(
             new NewWebhookEndpoint
             {
-                WorkspaceId = "workspaceId",
                 EventTypes = new List<SubscribableWebhookEventType>()
                 {
                     SubscribableWebhookEventType.PostScheduled,

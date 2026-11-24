@@ -13,7 +13,6 @@ public partial class BillingClient : IBillingClient
     }
 
     private async Task<WithRawResponse<Billing>> GetAsyncCore(
-        GetBillingRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class BillingClient : IBillingClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/billing",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/billing",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class BillingClient : IBillingClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -155,7 +163,6 @@ public partial class BillingClient : IBillingClient
     }
 
     private async Task<WithRawResponse<Standing>> StandingAsyncCore(
-        StandingBillingRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -174,10 +181,7 @@ public partial class BillingClient : IBillingClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/billing/standing",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/billing/standing",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -228,6 +232,18 @@ public partial class BillingClient : IBillingClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -300,31 +316,27 @@ public partial class BillingClient : IBillingClient
     /// Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
     /// </summary>
     /// <example><code>
-    /// await client.Billing.GetAsync(new GetBillingRequest { WorkspaceId = "workspaceId" });
+    /// await client.Billing.GetAsync();
     /// </code></example>
     public WithRawResponseTask<Billing> GetAsync(
-        GetBillingRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask<Billing>(GetAsyncCore(request, options, cancellationToken));
+        return new WithRawResponseTask<Billing>(GetAsyncCore(options, cancellationToken));
     }
 
     /// <summary>
     /// Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with `planLimit`), until when a grace keeps it publishing (`graceUntil`), the plan that holds everything (`payAsYouGo`, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
     /// </summary>
     /// <example><code>
-    /// await client.Billing.StandingAsync(new StandingBillingRequest { WorkspaceId = "workspaceId" });
+    /// await client.Billing.StandingAsync();
     /// </code></example>
     public WithRawResponseTask<Standing> StandingAsync(
-        StandingBillingRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask<Standing>(
-            StandingAsyncCore(request, options, cancellationToken)
-        );
+        return new WithRawResponseTask<Standing>(StandingAsyncCore(options, cancellationToken));
     }
 }

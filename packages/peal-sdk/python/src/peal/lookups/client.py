@@ -28,15 +28,13 @@ class LookupsClient:
         return self._raw_client
 
     def list(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[LookupDescription]:
         """
         Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -52,19 +50,18 @@ class LookupsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.lookups.list(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.list(workspace_id, channel_id, request_options=request_options)
+        _response = self._raw_client.list(channel_id, request_options=request_options)
         return _response.data
 
     def run(
         self,
-        workspace_id: str,
         channel_id: str,
         name: str,
         *,
@@ -81,8 +78,6 @@ class LookupsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         name : str
@@ -112,16 +107,15 @@ class LookupsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.lookups.run(
-            workspace_id="workspaceId",
             channel_id="channelId",
             name="name",
         )
         """
         _response = self._raw_client.run(
-            workspace_id,
             channel_id,
             name,
             board_id=board_id,
@@ -151,15 +145,13 @@ class AsyncLookupsClient:
         return self._raw_client
 
     async def list(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[LookupDescription]:
         """
         Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -177,25 +169,24 @@ class AsyncLookupsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.lookups.list(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, channel_id, request_options=request_options)
+        _response = await self._raw_client.list(channel_id, request_options=request_options)
         return _response.data
 
     async def run(
         self,
-        workspace_id: str,
         channel_id: str,
         name: str,
         *,
@@ -212,8 +203,6 @@ class AsyncLookupsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         name : str
@@ -245,13 +234,13 @@ class AsyncLookupsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.lookups.run(
-                workspace_id="workspaceId",
                 channel_id="channelId",
                 name="name",
             )
@@ -260,7 +249,6 @@ class AsyncLookupsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.run(
-            workspace_id,
             channel_id,
             name,
             board_id=board_id,

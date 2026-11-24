@@ -37,7 +37,7 @@ public class RunTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/lookups/name")
+                    .WithPath("/api/v1/channels/channelId/lookups/name")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -52,7 +52,6 @@ public class RunTest : BaseMockServerTest
         var response = await Client.Lookups.RunAsync(
             new LookupInput
             {
-                WorkspaceId = "workspaceId",
                 ChannelId = "channelId",
                 Name = "name",
                 BoardId = null,
@@ -90,7 +89,7 @@ public class RunTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/lookups/name")
+                    .WithPath("/api/v1/channels/channelId/lookups/name")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -103,12 +102,7 @@ public class RunTest : BaseMockServerTest
             );
 
         var response = await Client.Lookups.RunAsync(
-            new LookupInput
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                Name = "name",
-            }
+            new LookupInput { ChannelId = "channelId", Name = "name" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

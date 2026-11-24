@@ -27,16 +27,12 @@ class InvitationsClient:
         """
         return self._raw_client
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[Invitation]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Invitation]:
         """
         Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -50,25 +46,20 @@ class InvitationsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.invitations.list(
-            workspace_id="workspaceId",
-        )
+        client.invitations.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
-    def create(
-        self, workspace_id: str, *, email: str, role: Role, request_options: typing.Optional[RequestOptions] = None
-    ) -> Invitation:
+    def create(self, *, email: str, role: Role, request_options: typing.Optional[RequestOptions] = None) -> Invitation:
         """
         Invites someone to the workspace with a role: Peal emails them a link that works for 7 days, in their language when they have an account, in the inviter's otherwise. A pending invitation to the same address is revoked, and its link stops working. Only owners invite owners. On a server that bills, the members and the other pending invitations must leave room in the workspace's plan (PlanLimitReached). Needs invitation:create, and a member in person: not an API key, nor staff impersonating one.
 
         Parameters
         ----------
-        workspace_id : str
-
         email : str
 
         role : Role
@@ -86,27 +77,23 @@ class InvitationsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.invitations.create(
-            workspace_id="workspaceId",
             email="email",
             role="owner",
         )
         """
-        _response = self._raw_client.create(workspace_id, email=email, role=role, request_options=request_options)
+        _response = self._raw_client.create(email=email, role=role, request_options=request_options)
         return _response.data
 
-    def revoke(
-        self, workspace_id: str, invitation_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def revoke(self, invitation_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
 
         Parameters
         ----------
-        workspace_id : str
-
         invitation_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -121,14 +108,14 @@ class InvitationsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.invitations.revoke(
-            workspace_id="workspaceId",
             invitation_id="invitationId",
         )
         """
-        _response = self._raw_client.revoke(workspace_id, invitation_id, request_options=request_options)
+        _response = self._raw_client.revoke(invitation_id, request_options=request_options)
         return _response.data
 
 
@@ -147,16 +134,12 @@ class AsyncInvitationsClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[Invitation]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Invitation]:
         """
         Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -172,31 +155,28 @@ class AsyncInvitationsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.invitations.list(
-                workspace_id="workspaceId",
-            )
+            await client.invitations.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def create(
-        self, workspace_id: str, *, email: str, role: Role, request_options: typing.Optional[RequestOptions] = None
+        self, *, email: str, role: Role, request_options: typing.Optional[RequestOptions] = None
     ) -> Invitation:
         """
         Invites someone to the workspace with a role: Peal emails them a link that works for 7 days, in their language when they have an account, in the inviter's otherwise. A pending invitation to the same address is revoked, and its link stops working. Only owners invite owners. On a server that bills, the members and the other pending invitations must leave room in the workspace's plan (PlanLimitReached). Needs invitation:create, and a member in person: not an API key, nor staff impersonating one.
 
         Parameters
         ----------
-        workspace_id : str
-
         email : str
 
         role : Role
@@ -216,13 +196,13 @@ class AsyncInvitationsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.invitations.create(
-                workspace_id="workspaceId",
                 email="email",
                 role="owner",
             )
@@ -230,19 +210,15 @@ class AsyncInvitationsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create(workspace_id, email=email, role=role, request_options=request_options)
+        _response = await self._raw_client.create(email=email, role=role, request_options=request_options)
         return _response.data
 
-    async def revoke(
-        self, workspace_id: str, invitation_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def revoke(self, invitation_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
 
         Parameters
         ----------
-        workspace_id : str
-
         invitation_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -259,18 +235,18 @@ class AsyncInvitationsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.invitations.revoke(
-                workspace_id="workspaceId",
                 invitation_id="invitationId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.revoke(workspace_id, invitation_id, request_options=request_options)
+        _response = await self._raw_client.revoke(invitation_id, request_options=request_options)
         return _response.data

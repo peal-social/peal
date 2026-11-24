@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         accountId: "accountId"
  *     }
  */
 export interface ListAdsAdsRequest {
-    workspaceId: string;
     accountId: string;
     from?: Peal.CalendarDay;
     to?: Peal.CalendarDay;

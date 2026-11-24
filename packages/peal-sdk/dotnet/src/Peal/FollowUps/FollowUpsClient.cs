@@ -36,10 +36,7 @@ public partial class FollowUpsClient : IFollowUpsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/follow-ups",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/follow-ups",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -190,10 +187,7 @@ public partial class FollowUpsClient : IFollowUpsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/follow-ups",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/follow-ups",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -372,8 +366,7 @@ public partial class FollowUpsClient : IFollowUpsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/follow-ups/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/follow-ups/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     QueryString = _queryString,
@@ -426,6 +419,18 @@ public partial class FollowUpsClient : IFollowUpsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -515,8 +520,7 @@ public partial class FollowUpsClient : IFollowUpsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/follow-ups/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/follow-ups/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     QueryString = _queryString,
@@ -543,6 +547,18 @@ public partial class FollowUpsClient : IFollowUpsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -632,8 +648,7 @@ public partial class FollowUpsClient : IFollowUpsClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/follow-ups/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/follow-ups/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     Body = request,
@@ -689,6 +704,18 @@ public partial class FollowUpsClient : IFollowUpsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -802,8 +829,7 @@ public partial class FollowUpsClient : IFollowUpsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/follow-ups/{1}/approve",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/follow-ups/{0}/approve",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     QueryString = _queryString,
@@ -857,6 +883,18 @@ public partial class FollowUpsClient : IFollowUpsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -941,7 +979,7 @@ public partial class FollowUpsClient : IFollowUpsClient
     /// Lists the workspace's follow-up rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those of the post `postId` or with `status` alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's `nextCursor` as `cursor` for the next one. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.FollowUps.ListAsync(new ListFollowUpsRequest { WorkspaceId = "workspaceId" });
+    /// await client.FollowUps.ListAsync(new ListFollowUpsRequest());
     /// </code></example>
     public WithRawResponseTask<FollowUpRulePage> ListAsync(
         ListFollowUpsRequest request,
@@ -958,7 +996,7 @@ public partial class FollowUpsClient : IFollowUpsClient
     /// Starts a rule on a post (`postId`) or on every post a channel publishes from now on (`channelId`), exactly one of them, that waits for `likes` likes (1 to 1,000,000) and then publishes `comment`, reposts (`repost`), or both. A rule acts on the workspace's own posts only, from the channel's own account: once a post it acts on has `likes` likes on a channel, as analytics last counted them (hourly for two days, then daily: a rule never asks a platform for more, nor makes a paid read happen), it publishes its `comment` under the post, as the account's own reply after the post's last part, and reposts it when `repost` is set, once each, within 7 days of the post going live there. A post is followed up once of each kind whatever rules act on it, and a channel carries 10 follow-ups a UTC day at most: those past it wait for the next day, within their window. Comments go out on Bluesky, Mastodon and X (a post X bills, and only where the server sends X threads), reposts on Bluesky (a channel connected before Peal asked for it must be connected again) and Mastodon; LinkedIn's terms forbid both, and elsewhere `channels` says why not. Nothing likes, follows or messages anyone. It acts as whoever started it, with what they may do then: where the approval policy holds their posts it waits for a member who approves posts to approve it, and it ends when they can no longer publish. What each did is in `followUps`. A post that already went out is armed at once, while its window lasts. It is refused when no channel it acts on can carry what it asks, or when its comment is longer than a channel that could carry it takes (FollowUpNotPossible, with each channel's reasons). A post or a channel has one rule going on at a time (FollowUpRuleTaken), and a workspace 100 active or paused. It publishes again, in public, without anyone being asked each time. Needs post:schedule, or post:create where posts wait for an approval; never staff acting as a member.
     /// </summary>
     /// <example><code>
-    /// await client.FollowUps.CreateAsync(new NewFollowUpRule { WorkspaceId = "workspaceId", Likes = 1 });
+    /// await client.FollowUps.CreateAsync(new NewFollowUpRule { Likes = 1 });
     /// </code></example>
     public WithRawResponseTask<FollowUpRule> CreateAsync(
         NewFollowUpRule request,
@@ -975,9 +1013,7 @@ public partial class FollowUpsClient : IFollowUpsClient
     /// Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.FollowUps.GetAsync(
-    ///     new GetFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.FollowUps.GetAsync(new GetFollowUpsRequest { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask<FollowUpRule> GetAsync(
         GetFollowUpsRequest request,
@@ -994,9 +1030,7 @@ public partial class FollowUpsClient : IFollowUpsClient
     /// Stops a rule: it ends `stopped`, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
     /// </summary>
     /// <example><code>
-    /// await client.FollowUps.DeleteAsync(
-    ///     new DeleteFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.FollowUps.DeleteAsync(new DeleteFollowUpsRequest { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask DeleteAsync(
         DeleteFollowUpsRequest request,
@@ -1011,9 +1045,7 @@ public partial class FollowUpsClient : IFollowUpsClient
     /// Changes a rule's `likes`, its `comment` (null takes it away) or whether it reposts, or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
     /// </summary>
     /// <example><code>
-    /// await client.FollowUps.UpdateAsync(
-    ///     new FollowUpRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.FollowUps.UpdateAsync(new FollowUpRuleChange { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask<FollowUpRule> UpdateAsync(
         FollowUpRuleChange request,
@@ -1030,9 +1062,7 @@ public partial class FollowUpsClient : IFollowUpsClient
     /// Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
     /// </summary>
     /// <example><code>
-    /// await client.FollowUps.ApproveAsync(
-    ///     new ApproveFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.FollowUps.ApproveAsync(new ApproveFollowUpsRequest { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask<FollowUpRule> ApproveAsync(
         ApproveFollowUpsRequest request,

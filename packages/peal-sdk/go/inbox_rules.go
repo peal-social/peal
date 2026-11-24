@@ -10,16 +10,14 @@ import (
 )
 
 var (
-	newCommentRuleFieldWorkspaceID  = big.NewInt(1 << 0)
-	newCommentRuleFieldChannelID    = big.NewInt(1 << 1)
-	newCommentRuleFieldKeywords     = big.NewInt(1 << 2)
-	newCommentRuleFieldPostID       = big.NewInt(1 << 3)
-	newCommentRuleFieldPrivateReply = big.NewInt(1 << 4)
-	newCommentRuleFieldReply        = big.NewInt(1 << 5)
+	newCommentRuleFieldChannelID    = big.NewInt(1 << 0)
+	newCommentRuleFieldKeywords     = big.NewInt(1 << 1)
+	newCommentRuleFieldPostID       = big.NewInt(1 << 2)
+	newCommentRuleFieldPrivateReply = big.NewInt(1 << 3)
+	newCommentRuleFieldReply        = big.NewInt(1 << 4)
 )
 
 type NewCommentRule struct {
-	WorkspaceID  string   `json:"-" url:"-"`
 	ChannelID    *string  `json:"channelId,omitempty" url:"-"`
 	Keywords     []string `json:"keywords" url:"-"`
 	PostID       *string  `json:"postId,omitempty" url:"-"`
@@ -37,13 +35,6 @@ func (n *NewCommentRule) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewCommentRule) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newCommentRuleFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -103,13 +94,11 @@ func (n *NewCommentRule) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	deleteCommentRuleInboxRulesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteCommentRuleInboxRulesRequestFieldRuleID      = big.NewInt(1 << 1)
+	deleteCommentRuleInboxRulesRequestFieldRuleID = big.NewInt(1 << 0)
 )
 
 type DeleteCommentRuleInboxRulesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	RuleID      string `json:"-" url:"-"`
+	RuleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -124,13 +113,6 @@ func (d *DeleteCommentRuleInboxRulesRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteCommentRuleInboxRulesRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteCommentRuleInboxRulesRequestFieldWorkspaceID)
-}
-
 // SetRuleID sets the RuleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteCommentRuleInboxRulesRequest) SetRuleID(ruleID string) {
@@ -139,13 +121,11 @@ func (d *DeleteCommentRuleInboxRulesRequest) SetRuleID(ruleID string) {
 }
 
 var (
-	getCommentRuleInboxRulesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getCommentRuleInboxRulesRequestFieldRuleID      = big.NewInt(1 << 1)
+	getCommentRuleInboxRulesRequestFieldRuleID = big.NewInt(1 << 0)
 )
 
 type GetCommentRuleInboxRulesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	RuleID      string `json:"-" url:"-"`
+	RuleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -160,13 +140,6 @@ func (g *GetCommentRuleInboxRulesRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetCommentRuleInboxRulesRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getCommentRuleInboxRulesRequestFieldWorkspaceID)
-}
-
 // SetRuleID sets the RuleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetCommentRuleInboxRulesRequest) SetRuleID(ruleID string) {
@@ -175,17 +148,15 @@ func (g *GetCommentRuleInboxRulesRequest) SetRuleID(ruleID string) {
 }
 
 var (
-	listCommentRulesInboxRulesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listCommentRulesInboxRulesRequestFieldCursor      = big.NewInt(1 << 1)
-	listCommentRulesInboxRulesRequestFieldLimit       = big.NewInt(1 << 2)
-	listCommentRulesInboxRulesRequestFieldStatus      = big.NewInt(1 << 3)
+	listCommentRulesInboxRulesRequestFieldCursor = big.NewInt(1 << 0)
+	listCommentRulesInboxRulesRequestFieldLimit  = big.NewInt(1 << 1)
+	listCommentRulesInboxRulesRequestFieldStatus = big.NewInt(1 << 2)
 )
 
 type ListCommentRulesInboxRulesRequest struct {
-	WorkspaceID string             `json:"-" url:"-"`
-	Cursor      *string            `json:"-" url:"cursor,omitempty"`
-	Limit       *string            `json:"-" url:"limit,omitempty"`
-	Status      *CommentRuleStatus `json:"-" url:"status,omitempty"`
+	Cursor *string            `json:"-" url:"cursor,omitempty"`
+	Limit  *string            `json:"-" url:"limit,omitempty"`
+	Status *CommentRuleStatus `json:"-" url:"status,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -198,13 +169,6 @@ func (l *ListCommentRulesInboxRulesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListCommentRulesInboxRulesRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listCommentRulesInboxRulesRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -1159,16 +1123,14 @@ func (c CommentRuleStatus) Ptr() *CommentRuleStatus {
 }
 
 var (
-	commentRuleChangeFieldWorkspaceID  = big.NewInt(1 << 0)
-	commentRuleChangeFieldRuleID       = big.NewInt(1 << 1)
-	commentRuleChangeFieldKeywords     = big.NewInt(1 << 2)
-	commentRuleChangeFieldPaused       = big.NewInt(1 << 3)
-	commentRuleChangeFieldPrivateReply = big.NewInt(1 << 4)
-	commentRuleChangeFieldReply        = big.NewInt(1 << 5)
+	commentRuleChangeFieldRuleID       = big.NewInt(1 << 0)
+	commentRuleChangeFieldKeywords     = big.NewInt(1 << 1)
+	commentRuleChangeFieldPaused       = big.NewInt(1 << 2)
+	commentRuleChangeFieldPrivateReply = big.NewInt(1 << 3)
+	commentRuleChangeFieldReply        = big.NewInt(1 << 4)
 )
 
 type CommentRuleChange struct {
-	WorkspaceID  string   `json:"-" url:"-"`
 	RuleID       string   `json:"-" url:"-"`
 	Keywords     []string `json:"keywords,omitempty" url:"-"`
 	Paused       *bool    `json:"paused,omitempty" url:"-"`
@@ -1186,13 +1148,6 @@ func (c *CommentRuleChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CommentRuleChange) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(commentRuleChangeFieldWorkspaceID)
 }
 
 // SetRuleID sets the RuleID field and marks it as non-optional;

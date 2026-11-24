@@ -40,24 +40,22 @@ export class FeedsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.feeds.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.feeds.list()
      */
-    public list(request: Peal.ListFeedsRequest, requestOptions?: FeedsClient.RequestOptions): core.HttpResponsePromise<Peal.FeedPage> {
+    public list(request: Peal.ListFeedsRequest = {}, requestOptions?: FeedsClient.RequestOptions): core.HttpResponsePromise<Peal.FeedPage> {
         return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
     }
 
-    private async __list(request: Peal.ListFeedsRequest, requestOptions?: FeedsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FeedPage>> {
-        const { workspaceId, cursor, limit } = request;
+    private async __list(request: Peal.ListFeedsRequest = {}, requestOptions?: FeedsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FeedPage>> {
+        const { cursor, limit } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
             limit
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/feeds`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/feeds"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -86,7 +84,7 @@ export class FeedsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/feeds");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/feeds");
     }
 
     /**
@@ -95,6 +93,7 @@ export class FeedsClient {
      * @param {Peal.NewFeed} request
      * @param {FeedsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -106,7 +105,6 @@ export class FeedsClient {
      *
      * @example
      *     await client.feeds.create({
-     *         workspaceId: "workspaceId",
      *         url: "url"
      *     })
      */
@@ -115,17 +113,16 @@ export class FeedsClient {
     }
 
     private async __create(request: Peal.NewFeed, requestOptions?: FeedsClient.RequestOptions): Promise<core.WithRawResponse<Peal.CreatedFeed>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/feeds`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/feeds"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -138,6 +135,7 @@ export class FeedsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -152,7 +150,7 @@ export class FeedsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/feeds");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/feeds");
     }
 
     /**
@@ -161,6 +159,7 @@ export class FeedsClient {
      * @param {Peal.FeedPreviewRequest} request
      * @param {FeedsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -171,7 +170,6 @@ export class FeedsClient {
      *
      * @example
      *     await client.feeds.preview({
-     *         workspaceId: "workspaceId",
      *         url: "url"
      *     })
      */
@@ -180,17 +178,16 @@ export class FeedsClient {
     }
 
     private async __preview(request: Peal.FeedPreviewRequest, requestOptions?: FeedsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FeedPreview>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/feeds/preview`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/feeds/preview"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -203,6 +200,7 @@ export class FeedsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -216,7 +214,7 @@ export class FeedsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/feeds/preview");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/feeds/preview");
     }
 
     /**
@@ -225,6 +223,7 @@ export class FeedsClient {
      * @param {Peal.GetFeedsRequest} request
      * @param {FeedsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -234,7 +233,6 @@ export class FeedsClient {
      *
      * @example
      *     await client.feeds.get({
-     *         workspaceId: "workspaceId",
      *         feedId: "feedId"
      *     })
      */
@@ -243,11 +241,11 @@ export class FeedsClient {
     }
 
     private async __get(request: Peal.GetFeedsRequest, requestOptions?: FeedsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Feed>> {
-        const { workspaceId, feedId } = request;
+        const { feedId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/feeds/${core.url.encodePathParam(feedId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/feeds/${core.url.encodePathParam(feedId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -263,6 +261,7 @@ export class FeedsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -275,7 +274,7 @@ export class FeedsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/feeds/{feedId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/feeds/{feedId}");
     }
 
     /**
@@ -284,6 +283,7 @@ export class FeedsClient {
      * @param {Peal.DeleteFeedsRequest} request
      * @param {FeedsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -293,7 +293,6 @@ export class FeedsClient {
      *
      * @example
      *     await client.feeds.delete({
-     *         workspaceId: "workspaceId",
      *         feedId: "feedId"
      *     })
      */
@@ -302,11 +301,11 @@ export class FeedsClient {
     }
 
     private async __delete(request: Peal.DeleteFeedsRequest, requestOptions?: FeedsClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, feedId } = request;
+        const { feedId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/feeds/${core.url.encodePathParam(feedId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/feeds/${core.url.encodePathParam(feedId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -322,6 +321,7 @@ export class FeedsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -334,7 +334,7 @@ export class FeedsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/feeds/{feedId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/feeds/{feedId}");
     }
 
     /**
@@ -343,6 +343,7 @@ export class FeedsClient {
      * @param {Peal.FeedChange} request
      * @param {FeedsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -353,7 +354,6 @@ export class FeedsClient {
      *
      * @example
      *     await client.feeds.update({
-     *         workspaceId: "workspaceId",
      *         feedId: "feedId"
      *     })
      */
@@ -362,11 +362,11 @@ export class FeedsClient {
     }
 
     private async __update(request: Peal.FeedChange, requestOptions?: FeedsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Feed>> {
-        const { workspaceId, feedId, ..._body } = request;
+        const { feedId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/feeds/${core.url.encodePathParam(feedId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/feeds/${core.url.encodePathParam(feedId, errors.PealError)}`),
             method: "PATCH",
             headers: _headers,
             contentType: "application/json",
@@ -385,6 +385,7 @@ export class FeedsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -398,7 +399,7 @@ export class FeedsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/workspaces/{workspaceId}/feeds/{feedId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/v1/feeds/{feedId}");
     }
 
     /**
@@ -407,6 +408,7 @@ export class FeedsClient {
      * @param {Peal.ItemsFeedsRequest} request
      * @param {FeedsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -416,7 +418,6 @@ export class FeedsClient {
      *
      * @example
      *     await client.feeds.items({
-     *         workspaceId: "workspaceId",
      *         feedId: "feedId"
      *     })
      */
@@ -425,11 +426,11 @@ export class FeedsClient {
     }
 
     private async __items(request: Peal.ItemsFeedsRequest, requestOptions?: FeedsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FeedItems>> {
-        const { workspaceId, feedId } = request;
+        const { feedId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/feeds/${core.url.encodePathParam(feedId, errors.PealError)}/items`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/feeds/${core.url.encodePathParam(feedId, errors.PealError)}/items`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -445,6 +446,7 @@ export class FeedsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -457,6 +459,6 @@ export class FeedsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/feeds/{feedId}/items");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/feeds/{feedId}/items");
     }
 }

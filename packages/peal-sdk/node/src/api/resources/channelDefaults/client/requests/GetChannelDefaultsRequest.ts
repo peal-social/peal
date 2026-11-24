@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId"
  *     }
  */
 export interface GetChannelDefaultsRequest {
-    workspaceId: string;
     channelId: string;
 }

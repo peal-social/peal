@@ -15,18 +15,14 @@ public class DisconnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId")
+                    .WithPath("/api/v1/channels/channelId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Channels.DisconnectAsync(
-                new DisconnectChannelsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    ChannelId = "channelId",
-                }
+                new DisconnectChannelsRequest { ChannelId = "channelId" }
             )
         );
     }
@@ -38,18 +34,14 @@ public class DisconnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId")
+                    .WithPath("/api/v1/channels/channelId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Channels.DisconnectAsync(
-                new DisconnectChannelsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    ChannelId = "channelId",
-                }
+                new DisconnectChannelsRequest { ChannelId = "channelId" }
             )
         );
     }

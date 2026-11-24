@@ -23,6 +23,7 @@ import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
 import social.peal.errors.BadGatewayError;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
@@ -47,21 +48,17 @@ public class RawMediaAudioClient {
     /**
      * Asks the provider the workspace chose for voice-overs (<code>PUT .../assistant/models/speech</code>) to speak the text, in <code>voice</code> when given, and answers with the audio as a new file of the media library, marked <code>aiGenerated</code>, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
      */
-    public PealClientHttpResponse<Media> createVoiceover(String workspaceId, VoiceoverRequest request) {
-        return createVoiceover(workspaceId, request, null);
+    public PealClientHttpResponse<Media> createVoiceover(VoiceoverRequest request) {
+        return createVoiceover(request, null);
     }
 
     /**
      * Asks the provider the workspace chose for voice-overs (<code>PUT .../assistant/models/speech</code>) to speak the text, in <code>voice</code> when given, and answers with the audio as a new file of the media library, marked <code>aiGenerated</code>, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
      */
-    public PealClientHttpResponse<Media> createVoiceover(
-            String workspaceId, VoiceoverRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Media> createVoiceover(VoiceoverRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
-                .addPathSegments("voiceovers");
+                .addPathSegments("api/v1/media/voiceovers");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -100,6 +97,9 @@ public class RawMediaAudioClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -145,36 +145,32 @@ public class RawMediaAudioClient {
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
-    public PealClientHttpResponse<Transcript> transcribe(String workspaceId, String mediaId) {
-        return transcribe(workspaceId, mediaId, TranscriptionRequest.builder().build());
+    public PealClientHttpResponse<Transcript> transcribe(String mediaId) {
+        return transcribe(mediaId, TranscriptionRequest.builder().build());
+    }
+
+    /**
+     * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
+     */
+    public PealClientHttpResponse<Transcript> transcribe(String mediaId, RequestOptions requestOptions) {
+        return transcribe(mediaId, TranscriptionRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
+     */
+    public PealClientHttpResponse<Transcript> transcribe(String mediaId, TranscriptionRequest request) {
+        return transcribe(mediaId, request, null);
     }
 
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
     public PealClientHttpResponse<Transcript> transcribe(
-            String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return transcribe(workspaceId, mediaId, TranscriptionRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
-     */
-    public PealClientHttpResponse<Transcript> transcribe(
-            String workspaceId, String mediaId, TranscriptionRequest request) {
-        return transcribe(workspaceId, mediaId, request, null);
-    }
-
-    /**
-     * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
-     */
-    public PealClientHttpResponse<Transcript> transcribe(
-            String workspaceId, String mediaId, TranscriptionRequest request, RequestOptions requestOptions) {
+            String mediaId, TranscriptionRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
+                .addPathSegments("api/v1/media")
                 .addPathSegment(PathSegments.validate(mediaId))
                 .addPathSegments("transcription");
         if (requestOptions != null) {
@@ -215,6 +211,9 @@ public class RawMediaAudioClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

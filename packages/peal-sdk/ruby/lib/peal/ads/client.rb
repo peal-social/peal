@@ -13,24 +13,22 @@ module Peal
       # Says what this server offers of ads (`off`, `read` or `spend`) and on which networks. Needs ads:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.ads.status(workspace_id: "workspaceId")
+      #   client.ads.status
       #
       # @return [Peal::Types::AdsStatus]
-      def status(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def status(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads",
+          path: "api/v1/ads",
           request_options: request_options
         )
         begin
@@ -55,24 +53,22 @@ module Peal
       # sign-in, and whether it may run ads. Never a token. Needs ads:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.ads.list_connections(workspace_id: "workspaceId")
+      #   client.ads.list_connections
       #
       # @return [Array[Peal::Types::AdConnection]]
-      def list_connections(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list_connections(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/connections",
+          path: "api/v1/ads/connections",
           request_options: request_options
         )
         begin
@@ -104,14 +100,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::AdNetwork] :network
       #
       # @example
-      #   client.ads.connect(
-      #     workspace_id: "workspaceId",
-      #     network: "meta"
-      #   )
+      #   client.ads.connect(network: "meta")
       #
       # @return [Peal::Types::AdSignIn]
       def connect(request_options: {}, **params)
@@ -119,7 +111,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/connections/#{URI.encode_uri_component(params[:network].to_s)}",
+          path: "api/v1/ads/connections/#{URI.encode_uri_component(params[:network].to_s)}",
           request_options: request_options,
           max_retries: 0
         )
@@ -152,12 +144,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::AdNetwork] :network
       #
       # @example
       #   client.ads.complete_connect(
-      #     workspace_id: "workspaceId",
       #     network: "meta",
       #     state: "state"
       #   )
@@ -166,13 +156,13 @@ module Peal
       def complete_connect(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Ads::Types::AdSignInCallback.new(params).to_h
-        non_body_param_names = %w[workspaceId network]
+        non_body_param_names = %w[network]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/connections/#{URI.encode_uri_component(params[:network].to_s)}/callback",
+          path: "api/v1/ads/connections/#{URI.encode_uri_component(params[:network].to_s)}/callback",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -205,14 +195,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :connection_id
       #
       # @example
-      #   client.ads.reachable_accounts(
-      #     workspace_id: "workspaceId",
-      #     connection_id: "connectionId"
-      #   )
+      #   client.ads.reachable_accounts(connection_id: "connectionId")
       #
       # @return [Array[Peal::Types::ReachableAdAccount]]
       def reachable_accounts(request_options: {}, **params)
@@ -220,7 +206,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/connections/#{URI.encode_uri_component(params[:connection_id].to_s)}/accounts",
+          path: "api/v1/ads/connections/#{URI.encode_uri_component(params[:connection_id].to_s)}/accounts",
           request_options: request_options
         )
         begin
@@ -253,12 +239,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :connection_id
       #
       # @example
       #   client.ads.connect_accounts(
-      #     workspace_id: "workspaceId",
       #     connection_id: "connectionId",
       #     external_ids: ["externalIds"]
       #   )
@@ -267,13 +251,13 @@ module Peal
       def connect_accounts(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Ads::Types::AdAccountsToConnect.new(params).to_h
-        non_body_param_names = %w[workspaceId connectionId]
+        non_body_param_names = %w[connectionId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/connections/#{URI.encode_uri_component(params[:connection_id].to_s)}/accounts",
+          path: "api/v1/ads/connections/#{URI.encode_uri_component(params[:connection_id].to_s)}/accounts",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -308,14 +292,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :connection_id
       #
       # @example
-      #   client.ads.disconnect(
-      #     workspace_id: "workspaceId",
-      #     connection_id: "connectionId"
-      #   )
+      #   client.ads.disconnect(connection_id: "connectionId")
       #
       # @return [untyped]
       def disconnect(request_options: {}, **params)
@@ -323,7 +303,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/connections/#{URI.encode_uri_component(params[:connection_id].to_s)}",
+          path: "api/v1/ads/connections/#{URI.encode_uri_component(params[:connection_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -346,24 +326,22 @@ module Peal
       # monthly ceiling. Needs ads:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.ads.list_accounts(workspace_id: "workspaceId")
+      #   client.ads.list_accounts
       #
       # @return [Array[Peal::Types::AdAccount]]
-      def list_accounts(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list_accounts(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/accounts",
+          path: "api/v1/ads/accounts",
           request_options: request_options
         )
         begin
@@ -394,14 +372,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :account_id
       #
       # @example
-      #   client.ads.get_account(
-      #     workspace_id: "workspaceId",
-      #     account_id: "accountId"
-      #   )
+      #   client.ads.get_account(account_id: "accountId")
       #
       # @return [Peal::Types::AdSpending]
       def get_account(request_options: {}, **params)
@@ -409,7 +383,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}",
+          path: "api/v1/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -442,14 +416,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :account_id
       #
       # @example
-      #   client.ads.remove_account(
-      #     workspace_id: "workspaceId",
-      #     account_id: "accountId"
-      #   )
+      #   client.ads.remove_account(account_id: "accountId")
       #
       # @return [untyped]
       def remove_account(request_options: {}, **params)
@@ -457,7 +427,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}",
+          path: "api/v1/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -492,12 +462,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :account_id
       #
       # @example
       #   client.ads.set_spending(
-      #     workspace_id: "workspaceId",
       #     account_id: "accountId",
       #     enabled: true
       #   )
@@ -506,13 +474,13 @@ module Peal
       def set_spending(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Ads::Types::AdSpendingDecision.new(params).to_h
-        non_body_param_names = %w[workspaceId accountId]
+        non_body_param_names = %w[accountId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}/spending",
+          path: "api/v1/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}/spending",
           body: body,
           request_options: request_options
         )
@@ -546,16 +514,12 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :account_id
       # @option params [String, nil] :from
       # @option params [String, nil] :to
       #
       # @example
-      #   client.ads.list_campaigns(
-      #     workspace_id: "workspaceId",
-      #     account_id: "accountId"
-      #   )
+      #   client.ads.list_campaigns(account_id: "accountId")
       #
       # @return [Peal::Types::AdCampaignReport]
       def list_campaigns(request_options: {}, **params)
@@ -567,7 +531,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}/campaigns",
+          path: "api/v1/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}/campaigns",
           query: query_params,
           request_options: request_options
         )
@@ -601,17 +565,13 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :account_id
       # @option params [String, nil] :from
       # @option params [String, nil] :to
       # @option params [String, nil] :campaign_id
       #
       # @example
-      #   client.ads.list_ads(
-      #     workspace_id: "workspaceId",
-      #     account_id: "accountId"
-      #   )
+      #   client.ads.list_ads(account_id: "accountId")
       #
       # @return [Peal::Types::AdReport]
       def list_ads(request_options: {}, **params)
@@ -624,7 +584,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}/ads",
+          path: "api/v1/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}/ads",
           query: query_params,
           request_options: request_options
         )
@@ -658,16 +618,12 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :account_id
       # @option params [String, nil] :from
       # @option params [String, nil] :to
       #
       # @example
-      #   client.ads.list_insights(
-      #     workspace_id: "workspaceId",
-      #     account_id: "accountId"
-      #   )
+      #   client.ads.list_insights(account_id: "accountId")
       #
       # @return [Peal::Types::AdInsightReport]
       def list_insights(request_options: {}, **params)
@@ -679,7 +635,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}/insights",
+          path: "api/v1/ads/accounts/#{URI.encode_uri_component(params[:account_id].to_s)}/insights",
           query: query_params,
           request_options: request_options
         )
@@ -712,14 +668,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.ads.post_performance(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.ads.post_performance(post_id: "postId")
       #
       # @return [Peal::Types::PostAdPerformance]
       def post_performance(request_options: {}, **params)
@@ -727,7 +679,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
+          path: "api/v1/ads/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -761,11 +713,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.ads.quote_boost(
-      #     workspace_id: "workspaceId",
       #     account_id: "accountId",
       #     audience: {
       #       ageMax: 1,
@@ -786,14 +736,11 @@ module Peal
       # @return [Peal::Types::BoostQuote]
       def quote_boost(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/boosts/quote",
-          body: Peal::Types::NewBoost.new(body_params).to_h,
+          path: "api/v1/ads/boosts/quote",
+          body: Peal::Types::NewBoost.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -825,12 +772,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :post_id
       #
       # @example
-      #   client.ads.list_boosts(workspace_id: "workspaceId")
+      #   client.ads.list_boosts
       #
       # @return [Peal::Types::BoostPage]
       def list_boosts(request_options: {}, **params)
@@ -842,7 +788,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/boosts",
+          path: "api/v1/ads/boosts",
           query: query_params,
           request_options: request_options
         )
@@ -883,12 +829,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :idempotency_key
       #
       # @example
       #   client.ads.create_boost(
-      #     workspace_id: "workspaceId",
       #     idempotency_key: "idempotency-key",
       #     account_id: "accountId",
       #     audience: {
@@ -910,18 +854,15 @@ module Peal
       # @return [Peal::Types::Boost]
       def create_boost(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         headers = {}
         headers["idempotency-key"] = params[:idempotency_key] unless params[:idempotency_key].nil?
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/boosts",
+          path: "api/v1/ads/boosts",
           headers: headers,
-          body: Peal::Types::NewBoost.new(body_params).to_h,
+          body: Peal::Types::NewBoost.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -953,14 +894,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :boost_id
       #
       # @example
-      #   client.ads.get_boost(
-      #     workspace_id: "workspaceId",
-      #     boost_id: "boostId"
-      #   )
+      #   client.ads.get_boost(boost_id: "boostId")
       #
       # @return [Peal::Types::BoostDetail]
       def get_boost(request_options: {}, **params)
@@ -968,7 +905,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/boosts/#{URI.encode_uri_component(params[:boost_id].to_s)}",
+          path: "api/v1/ads/boosts/#{URI.encode_uri_component(params[:boost_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -1000,14 +937,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :boost_id
       #
       # @example
-      #   client.ads.pause_boost(
-      #     workspace_id: "workspaceId",
-      #     boost_id: "boostId"
-      #   )
+      #   client.ads.pause_boost(boost_id: "boostId")
       #
       # @return [Peal::Types::Boost]
       def pause_boost(request_options: {}, **params)
@@ -1015,7 +948,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/boosts/#{URI.encode_uri_component(params[:boost_id].to_s)}/pause",
+          path: "api/v1/ads/boosts/#{URI.encode_uri_component(params[:boost_id].to_s)}/pause",
           request_options: request_options,
           max_retries: 0
         )
@@ -1048,14 +981,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :boost_id
       #
       # @example
-      #   client.ads.resume_boost(
-      #     workspace_id: "workspaceId",
-      #     boost_id: "boostId"
-      #   )
+      #   client.ads.resume_boost(boost_id: "boostId")
       #
       # @return [Peal::Types::Boost]
       def resume_boost(request_options: {}, **params)
@@ -1063,7 +992,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/boosts/#{URI.encode_uri_component(params[:boost_id].to_s)}/resume",
+          path: "api/v1/ads/boosts/#{URI.encode_uri_component(params[:boost_id].to_s)}/resume",
           request_options: request_options,
           max_retries: 0
         )
@@ -1097,14 +1026,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :boost_id
       #
       # @example
-      #   client.ads.stop_boost(
-      #     workspace_id: "workspaceId",
-      #     boost_id: "boostId"
-      #   )
+      #   client.ads.stop_boost(boost_id: "boostId")
       #
       # @return [Peal::Types::Boost]
       def stop_boost(request_options: {}, **params)
@@ -1112,7 +1037,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/boosts/#{URI.encode_uri_component(params[:boost_id].to_s)}/stop",
+          path: "api/v1/ads/boosts/#{URI.encode_uri_component(params[:boost_id].to_s)}/stop",
           request_options: request_options,
           max_retries: 0
         )
@@ -1144,11 +1069,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :cursor
       #
       # @example
-      #   client.ads.audit_trail(workspace_id: "workspaceId")
+      #   client.ads.audit_trail
       #
       # @return [Peal::Types::AdAuditPage]
       def audit_trail(request_options: {}, **params)
@@ -1159,7 +1083,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/ads/audit",
+          path: "api/v1/ads/audit",
           query: query_params,
           request_options: request_options
         )

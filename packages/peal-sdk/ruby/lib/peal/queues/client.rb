@@ -14,24 +14,22 @@ module Peal
       # them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.queues.list(workspace_id: "workspaceId")
+      #   client.queues.list
       #
       # @return [Array[Peal::Types::Queue]]
-      def list(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/queues",
+          path: "api/v1/queues",
           request_options: request_options
         )
         begin
@@ -67,11 +65,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.queues.create(
-      #     workspace_id: "workspaceId",
       #     name: "name",
       #     slots: [{
       #       day: "monday",
@@ -83,14 +79,11 @@ module Peal
       # @return [Peal::Types::Queue]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/queues",
-          body: Peal::Types::QueueDetails.new(body_params).to_h,
+          path: "api/v1/queues",
+          body: Peal::Types::QueueDetails.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -121,14 +114,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :queue_id
       #
       # @example
-      #   client.queues.get(
-      #     workspace_id: "workspaceId",
-      #     queue_id: "queueId"
-      #   )
+      #   client.queues.get(queue_id: "queueId")
       #
       # @return [Peal::Types::Queue]
       def get(request_options: {}, **params)
@@ -136,7 +125,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}",
+          path: "api/v1/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -175,12 +164,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :queue_id
       #
       # @example
       #   client.queues.update(
-      #     workspace_id: "workspaceId",
       #     queue_id: "queueId",
       #     name: "name",
       #     slots: [{
@@ -193,13 +180,13 @@ module Peal
       # @return [Peal::Types::Queue]
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id queue_id]
+        path_param_names = %i[queue_id]
         body_params = params.except(*path_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}",
+          path: "api/v1/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}",
           body: Peal::Types::QueueDetails.new(body_params).to_h,
           request_options: request_options
         )
@@ -231,14 +218,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :queue_id
       #
       # @example
-      #   client.queues.delete(
-      #     workspace_id: "workspaceId",
-      #     queue_id: "queueId"
-      #   )
+      #   client.queues.delete(queue_id: "queueId")
       #
       # @return [untyped]
       def delete(request_options: {}, **params)
@@ -246,7 +229,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}",
+          path: "api/v1/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -278,15 +261,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :queue_id
       # @option params [String, nil] :count
       #
       # @example
-      #   client.queues.slots(
-      #     workspace_id: "workspaceId",
-      #     queue_id: "queueId"
-      #   )
+      #   client.queues.slots(queue_id: "queueId")
       #
       # @return [Peal::Types::QueuePreview]
       def slots(request_options: {}, **params)
@@ -297,7 +276,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}/slots",
+          path: "api/v1/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}/slots",
           query: query_params,
           request_options: request_options
         )
@@ -341,14 +320,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :queue_id
       #
       # @example
-      #   client.queues.reshuffle(
-      #     workspace_id: "workspaceId",
-      #     queue_id: "queueId"
-      #   )
+      #   client.queues.reshuffle(queue_id: "queueId")
       #
       # @return [Peal::Types::QueueReshuffle]
       def reshuffle(request_options: {}, **params)
@@ -356,7 +331,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}/reshuffle",
+          path: "api/v1/queues/#{URI.encode_uri_component(params[:queue_id].to_s)}/reshuffle",
           request_options: request_options,
           max_retries: 0
         )

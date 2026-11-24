@@ -38,7 +38,6 @@ impl ActivityClient {
     ///     client
     ///         .activity
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &ActivityListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl ActivityClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &ActivityListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ActivityPage, ApiError> {
@@ -63,7 +61,7 @@ impl ActivityClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/activity", workspace_id),
+                "api/v1/activity",
                 None,
                 QueryBuilder::new()
                     .string("actor", request.actor.clone())

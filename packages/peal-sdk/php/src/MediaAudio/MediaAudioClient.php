@@ -58,14 +58,12 @@ class MediaAudioClient
      * Example:
      * ```php
      * $client->mediaAudio->createVoiceover(
-     *     'workspaceId',
      *     new VoiceoverRequest([
      *         'text' => 'text',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param VoiceoverRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -79,7 +77,7 @@ class MediaAudioClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function createVoiceover(string $workspaceId, VoiceoverRequest $request, ?array $options = null): ?Media
+    public function createVoiceover(VoiceoverRequest $request, ?array $options = null): ?Media
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -87,7 +85,7 @@ class MediaAudioClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/voiceovers",
+                    path: "api/v1/media/voiceovers",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -119,13 +117,11 @@ class MediaAudioClient
      * Example:
      * ```php
      * $client->mediaAudio->transcribe(
-     *     'workspaceId',
      *     'mediaId',
      *     new TranscriptionRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $mediaId
      * @param TranscriptionRequest $request
      * @param ?array{
@@ -140,7 +136,7 @@ class MediaAudioClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function transcribe(string $workspaceId, string $mediaId, TranscriptionRequest $request = new TranscriptionRequest(), ?array $options = null): ?Transcript
+    public function transcribe(string $mediaId, TranscriptionRequest $request = new TranscriptionRequest(), ?array $options = null): ?Transcript
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -148,7 +144,7 @@ class MediaAudioClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/{$mediaId}/transcription",
+                    path: "api/v1/media/{$mediaId}/transcription",
                     method: HttpMethod::POST,
                     body: $request,
                 ),

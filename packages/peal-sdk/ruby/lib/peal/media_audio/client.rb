@@ -24,26 +24,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.media_audio.create_voiceover(
-      #     workspace_id: "workspaceId",
-      #     text: "text"
-      #   )
+      #   client.media_audio.create_voiceover(text: "text")
       #
       # @return [Peal::Types::Media]
       def create_voiceover(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::MediaAudio::Types::VoiceoverRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/voiceovers",
-          body: body,
+          path: "api/v1/media/voiceovers",
+          body: Peal::MediaAudio::Types::VoiceoverRequest.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -80,26 +72,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :media_id
       #
       # @example
-      #   client.media_audio.transcribe(
-      #     workspace_id: "workspaceId",
-      #     media_id: "mediaId"
-      #   )
+      #   client.media_audio.transcribe(media_id: "mediaId")
       #
       # @return [Peal::Types::Transcript]
       def transcribe(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::MediaAudio::Types::TranscriptionRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId mediaId]
+        non_body_param_names = %w[mediaId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/#{URI.encode_uri_component(params[:media_id].to_s)}/transcription",
+          path: "api/v1/media/#{URI.encode_uri_component(params[:media_id].to_s)}/transcription",
           body: body,
           request_options: request_options,
           max_retries: 0

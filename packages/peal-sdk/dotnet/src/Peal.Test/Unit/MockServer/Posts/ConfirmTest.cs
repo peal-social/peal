@@ -321,7 +321,7 @@ public class ConfirmTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId/confirm")
+                    .WithPath("/api/v1/posts/postId/targets/targetId/confirm")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -336,7 +336,6 @@ public class ConfirmTest : BaseMockServerTest
         var response = await Client.Posts.ConfirmAsync(
             new ConfirmPostsRequest
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 TargetId = "targetId",
                 Body = new TargetConfirmation(
@@ -473,7 +472,7 @@ public class ConfirmTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId/confirm")
+                    .WithPath("/api/v1/posts/postId/targets/targetId/confirm")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -488,7 +487,6 @@ public class ConfirmTest : BaseMockServerTest
         var response = await Client.Posts.ConfirmAsync(
             new ConfirmPostsRequest
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 TargetId = "targetId",
                 Body = new TargetConfirmation(

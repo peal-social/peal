@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         ruleId: "ruleId"
  *     }
  */
 export interface RecyclingResume {
-    workspaceId: string;
     ruleId: string;
     variants?: Peal.RecyclingVariant[];
 }

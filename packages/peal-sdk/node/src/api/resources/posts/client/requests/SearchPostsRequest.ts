@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface SearchPostsRequest {
-    workspaceId: string;
     authorId?: string;
     channelId?: string;
     createdVia?: Peal.PostOriginVia;

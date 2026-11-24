@@ -20,11 +20,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::SlideshowStatus, nil] :status
       #
       # @example
-      #   client.slideshows.list(workspace_id: "workspaceId")
+      #   client.slideshows.list
       #
       # @return [Peal::Types::Slideshows]
       def list(request_options: {}, **params)
@@ -35,7 +34,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/slideshows",
+          path: "api/v1/media/slideshows",
           query: query_params,
           request_options: request_options
         )
@@ -79,11 +78,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.slideshows.create(
-      #     workspace_id: "workspaceId",
       #     aspect: "square",
       #     slides: [{
       #       mediaId: "mediaId"
@@ -93,15 +90,11 @@ module Peal
       # @return [Peal::Types::Slideshow]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Slideshows::Types::SlideshowRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/slideshows",
-          body: body,
+          path: "api/v1/media/slideshows",
+          body: Peal::Slideshows::Types::SlideshowRequest.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -150,28 +143,20 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.slideshows.create_from_edit(
-      #     workspace_id: "workspaceId",
-      #     edit: {
-      #       key: "value"
-      #     }
-      #   )
+      #   client.slideshows.create_from_edit(edit: {
+      #     key: "value"
+      #   })
       #
       # @return [Peal::Types::Slideshow]
       def create_from_edit(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Slideshows::Types::EditRenderRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/slideshows/edits",
-          body: body,
+          path: "api/v1/media/slideshows/edits",
+          body: Peal::Slideshows::Types::EditRenderRequest.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -203,14 +188,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :slideshow_id
       #
       # @example
-      #   client.slideshows.get(
-      #     workspace_id: "workspaceId",
-      #     slideshow_id: "slideshowId"
-      #   )
+      #   client.slideshows.get(slideshow_id: "slideshowId")
       #
       # @return [Peal::Types::Slideshow]
       def get(request_options: {}, **params)
@@ -218,7 +199,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/slideshows/#{URI.encode_uri_component(params[:slideshow_id].to_s)}",
+          path: "api/v1/media/slideshows/#{URI.encode_uri_component(params[:slideshow_id].to_s)}",
           request_options: request_options
         )
         begin

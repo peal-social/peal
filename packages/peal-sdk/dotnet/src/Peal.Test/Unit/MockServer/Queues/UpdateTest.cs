@@ -62,7 +62,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId")
+                    .WithPath("/api/v1/queues/queueId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -77,7 +77,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Queues.UpdateAsync(
             new UpdateQueuesRequest
             {
-                WorkspaceId = "workspaceId",
                 QueueId = "queueId",
                 Body = new QueueDetails
                 {
@@ -140,7 +139,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId")
+                    .WithPath("/api/v1/queues/queueId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -155,7 +154,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Queues.UpdateAsync(
             new UpdateQueuesRequest
             {
-                WorkspaceId = "workspaceId",
                 QueueId = "queueId",
                 Body = new QueueDetails
                 {

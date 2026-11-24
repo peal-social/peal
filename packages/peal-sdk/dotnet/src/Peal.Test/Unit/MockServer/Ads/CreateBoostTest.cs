@@ -74,7 +74,7 @@ public class CreateBoostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts")
+                    .WithPath("/api/v1/ads/boosts")
                     .WithHeader("idempotency-key", "idempotencyKey")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
@@ -90,7 +90,6 @@ public class CreateBoostTest : BaseMockServerTest
         var response = await Client.Ads.CreateBoostAsync(
             new CreateBoostAdsRequest
             {
-                WorkspaceId = "workspaceId",
                 IdempotencyKey = "idempotencyKey",
                 Body = new NewBoost
                 {
@@ -179,7 +178,7 @@ public class CreateBoostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts")
+                    .WithPath("/api/v1/ads/boosts")
                     .WithHeader("idempotency-key", "idempotency-key")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
@@ -195,7 +194,6 @@ public class CreateBoostTest : BaseMockServerTest
         var response = await Client.Ads.CreateBoostAsync(
             new CreateBoostAdsRequest
             {
-                WorkspaceId = "workspaceId",
                 IdempotencyKey = "idempotency-key",
                 Body = new NewBoost
                 {

@@ -13,7 +13,6 @@ public partial class ShortLinksClient : IShortLinksClient
     }
 
     private async Task<WithRawResponse<ShortLinkStatus>> StatusAsyncCore(
-        StatusShortLinksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class ShortLinksClient : IShortLinksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/short-links/status",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/short-links/status",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class ShortLinksClient : IShortLinksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -174,10 +182,7 @@ public partial class ShortLinksClient : IShortLinksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Put,
-                    Path = string.Format(
-                        "api/workspaces/{0}/short-links/settings",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/short-links/settings",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -230,6 +235,18 @@ public partial class ShortLinksClient : IShortLinksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -324,10 +341,7 @@ public partial class ShortLinksClient : IShortLinksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/short-links",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/short-links",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -481,8 +495,7 @@ public partial class ShortLinksClient : IShortLinksClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/short-links/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/short-links/{0}",
                         ValueConvert.ToPathParameterString(request.LinkId)
                     ),
                     QueryString = _queryString,
@@ -619,16 +632,15 @@ public partial class ShortLinksClient : IShortLinksClient
     /// Answers whether this server shortens links (`available`), what a short address starts with (`base`) and how long it is (`shortLength`), and whether the workspace's new posts ask for short links by default (`byDefault`). A post that leaves `shortenLinks` out takes `byDefault` when it is made (the web app, the API, MCP, the command line and feeds alike), and `false` always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with `http://` or `https://` and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.ShortLinks.StatusAsync(new StatusShortLinksRequest { WorkspaceId = "workspaceId" });
+    /// await client.ShortLinks.StatusAsync();
     /// </code></example>
     public WithRawResponseTask<ShortLinkStatus> StatusAsync(
-        StatusShortLinksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<ShortLinkStatus>(
-            StatusAsyncCore(request, options, cancellationToken)
+            StatusAsyncCore(options, cancellationToken)
         );
     }
 
@@ -636,9 +648,7 @@ public partial class ShortLinksClient : IShortLinksClient
     /// Sets whether the workspace's new posts ask for short links unless they say otherwise (`shortenLinks`), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
     /// </summary>
     /// <example><code>
-    /// await client.ShortLinks.SetDefaultAsync(
-    ///     new ShortLinkSettings { WorkspaceId = "workspaceId", ByDefault = true }
-    /// );
+    /// await client.ShortLinks.SetDefaultAsync(new ShortLinkSettings { ByDefault = true });
     /// </code></example>
     public WithRawResponseTask<ShortLinkStatus> SetDefaultAsync(
         ShortLinkSettings request,
@@ -655,7 +665,7 @@ public partial class ShortLinksClient : IShortLinksClient
     /// Lists the workspace's short links, newest first, 50 a page unless `limit` (at most 100) says otherwise, those of one post (`postId`) or one channel (`channelId`), each with its clicks from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's `nextCursor` as `cursor` for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
     /// </summary>
     /// <example><code>
-    /// await client.ShortLinks.ListAsync(new ListShortLinksRequest { WorkspaceId = "workspaceId" });
+    /// await client.ShortLinks.ListAsync(new ListShortLinksRequest());
     /// </code></example>
     public WithRawResponseTask<ShortLinkPage> ListAsync(
         ListShortLinksRequest request,
@@ -672,9 +682,7 @@ public partial class ShortLinksClient : IShortLinksClient
     /// Answers one short link with its clicks each day from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
     /// </summary>
     /// <example><code>
-    /// await client.ShortLinks.GetAsync(
-    ///     new GetShortLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
-    /// );
+    /// await client.ShortLinks.GetAsync(new GetShortLinksRequest { LinkId = "linkId" });
     /// </code></example>
     public WithRawResponseTask<ShortLinkReport> GetAsync(
         GetShortLinksRequest request,

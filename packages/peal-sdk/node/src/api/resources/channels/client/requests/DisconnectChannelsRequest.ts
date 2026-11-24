@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId"
  *     }
  */
 export interface DisconnectChannelsRequest {
-    workspaceId: string;
     channelId: string;
 }

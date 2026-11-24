@@ -315,7 +315,7 @@ public class RepostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId/repost")
+                    .WithPath("/api/v1/posts/postId/targets/targetId/repost")
                     .UsingPost()
             )
             .RespondWith(
@@ -326,12 +326,7 @@ public class RepostTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.RepostAsync(
-            new RepostPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                TargetId = "targetId",
-            }
+            new RepostPostsRequest { PostId = "postId", TargetId = "targetId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -454,7 +449,7 @@ public class RepostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId/repost")
+                    .WithPath("/api/v1/posts/postId/targets/targetId/repost")
                     .UsingPost()
             )
             .RespondWith(
@@ -465,12 +460,7 @@ public class RepostTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.RepostAsync(
-            new RepostPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                TargetId = "targetId",
-            }
+            new RepostPostsRequest { PostId = "postId", TargetId = "targetId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

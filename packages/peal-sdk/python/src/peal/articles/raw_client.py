@@ -39,7 +39,6 @@ class RawArticlesClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -51,8 +50,6 @@ class RawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -68,7 +65,7 @@ class RawArticlesClient:
             ArticlePage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles",
+            "api/v1/articles",
             method="GET",
             params={
                 "cursor": cursor,
@@ -153,7 +150,6 @@ class RawArticlesClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         body: ArticleBody,
         title: str,
@@ -171,8 +167,6 @@ class RawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         body : ArticleBody
 
         title : str
@@ -203,7 +197,7 @@ class RawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles",
+            "api/v1/articles",
             method="POST",
             json={
                 "body": convert_and_respect_annotation_metadata(
@@ -236,6 +230,17 @@ class RawArticlesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -322,16 +327,12 @@ class RawArticlesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[Article]:
+    def get(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Article]:
         """
         Reads an article. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -343,7 +344,7 @@ class RawArticlesClient:
             Article
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}",
+            f"api/v1/articles/{encode_path_param(article_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -357,6 +358,17 @@ class RawArticlesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -410,16 +422,12 @@ class RawArticlesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def delete(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -430,13 +438,24 @@ class RawArticlesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}",
+            f"api/v1/articles/{encode_path_param(article_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -503,7 +522,6 @@ class RawArticlesClient:
 
     def update(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         body: ArticleBody,
@@ -520,8 +538,6 @@ class RawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         body : ArticleBody
@@ -550,7 +566,7 @@ class RawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}",
+            f"api/v1/articles/{encode_path_param(article_id)}",
             method="PATCH",
             json={
                 "body": convert_and_respect_annotation_metadata(
@@ -579,6 +595,17 @@ class RawArticlesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -667,7 +694,6 @@ class RawArticlesClient:
 
     def schedule(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         time_zone: str,
@@ -679,8 +705,6 @@ class RawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         time_zone : str
@@ -699,7 +723,7 @@ class RawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/schedule",
+            f"api/v1/articles/{encode_path_param(article_id)}/schedule",
             method="POST",
             json={
                 "at": at,
@@ -721,6 +745,17 @@ class RawArticlesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -808,15 +843,13 @@ class RawArticlesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unschedule(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Article]:
         """
         Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -831,7 +864,7 @@ class RawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/unschedule",
+            f"api/v1/articles/{encode_path_param(article_id)}/unschedule",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -845,6 +878,17 @@ class RawArticlesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -910,15 +954,13 @@ class RawArticlesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def retry(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Article]:
         """
         Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected `approvalRequired`) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -933,7 +975,7 @@ class RawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/retry",
+            f"api/v1/articles/{encode_path_param(article_id)}/retry",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -947,6 +989,17 @@ class RawArticlesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1034,15 +1087,13 @@ class RawArticlesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unpublish(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Article]:
         """
         Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with `removedAt`. Needs post:publish; an OAuth client needs the scope workspace:publish.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1057,7 +1108,7 @@ class RawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/unpublish",
+            f"api/v1/articles/{encode_path_param(article_id)}/unpublish",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -1071,6 +1122,17 @@ class RawArticlesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1170,7 +1232,6 @@ class RawArticlesClient:
 
     def update_on_site(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         body: ArticleBody,
@@ -1187,8 +1248,6 @@ class RawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         body : ArticleBody
@@ -1217,7 +1276,7 @@ class RawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/site",
+            f"api/v1/articles/{encode_path_param(article_id)}/site",
             method="POST",
             json={
                 "body": convert_and_respect_annotation_metadata(
@@ -1246,6 +1305,17 @@ class RawArticlesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1350,7 +1420,6 @@ class AsyncRawArticlesClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -1362,8 +1431,6 @@ class AsyncRawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -1379,7 +1446,7 @@ class AsyncRawArticlesClient:
             ArticlePage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles",
+            "api/v1/articles",
             method="GET",
             params={
                 "cursor": cursor,
@@ -1464,7 +1531,6 @@ class AsyncRawArticlesClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         body: ArticleBody,
         title: str,
@@ -1482,8 +1548,6 @@ class AsyncRawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         body : ArticleBody
 
         title : str
@@ -1514,7 +1578,7 @@ class AsyncRawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles",
+            "api/v1/articles",
             method="POST",
             json={
                 "body": convert_and_respect_annotation_metadata(
@@ -1547,6 +1611,17 @@ class AsyncRawArticlesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1634,15 +1709,13 @@ class AsyncRawArticlesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Article]:
         """
         Reads an article. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1654,7 +1727,7 @@ class AsyncRawArticlesClient:
             Article
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}",
+            f"api/v1/articles/{encode_path_param(article_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1668,6 +1741,17 @@ class AsyncRawArticlesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1722,15 +1806,13 @@ class AsyncRawArticlesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1741,13 +1823,24 @@ class AsyncRawArticlesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}",
+            f"api/v1/articles/{encode_path_param(article_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1814,7 +1907,6 @@ class AsyncRawArticlesClient:
 
     async def update(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         body: ArticleBody,
@@ -1831,8 +1923,6 @@ class AsyncRawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         body : ArticleBody
@@ -1861,7 +1951,7 @@ class AsyncRawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}",
+            f"api/v1/articles/{encode_path_param(article_id)}",
             method="PATCH",
             json={
                 "body": convert_and_respect_annotation_metadata(
@@ -1890,6 +1980,17 @@ class AsyncRawArticlesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1978,7 +2079,6 @@ class AsyncRawArticlesClient:
 
     async def schedule(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         time_zone: str,
@@ -1990,8 +2090,6 @@ class AsyncRawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         time_zone : str
@@ -2010,7 +2108,7 @@ class AsyncRawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/schedule",
+            f"api/v1/articles/{encode_path_param(article_id)}/schedule",
             method="POST",
             json={
                 "at": at,
@@ -2032,6 +2130,17 @@ class AsyncRawArticlesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2119,15 +2228,13 @@ class AsyncRawArticlesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unschedule(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Article]:
         """
         Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2142,7 +2249,7 @@ class AsyncRawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/unschedule",
+            f"api/v1/articles/{encode_path_param(article_id)}/unschedule",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2156,6 +2263,17 @@ class AsyncRawArticlesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2221,15 +2339,13 @@ class AsyncRawArticlesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def retry(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Article]:
         """
         Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected `approvalRequired`) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2244,7 +2360,7 @@ class AsyncRawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/retry",
+            f"api/v1/articles/{encode_path_param(article_id)}/retry",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2258,6 +2374,17 @@ class AsyncRawArticlesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2345,15 +2472,13 @@ class AsyncRawArticlesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unpublish(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Article]:
         """
         Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with `removedAt`. Needs post:publish; an OAuth client needs the scope workspace:publish.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2368,7 +2493,7 @@ class AsyncRawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/unpublish",
+            f"api/v1/articles/{encode_path_param(article_id)}/unpublish",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2382,6 +2507,17 @@ class AsyncRawArticlesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2481,7 +2617,6 @@ class AsyncRawArticlesClient:
 
     async def update_on_site(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         body: ArticleBody,
@@ -2498,8 +2633,6 @@ class AsyncRawArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         body : ArticleBody
@@ -2528,7 +2661,7 @@ class AsyncRawArticlesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/articles/{encode_path_param(article_id)}/site",
+            f"api/v1/articles/{encode_path_param(article_id)}/site",
             method="POST",
             json={
                 "body": convert_and_respect_annotation_metadata(
@@ -2557,6 +2690,17 @@ class AsyncRawArticlesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

@@ -50,34 +50,31 @@ public class RawFollowUpsClient {
     /**
      * Lists the workspace's follow-up rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of the post <code>postId</code> or with <code>status</code> alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public PealClientHttpResponse<FollowUpRulePage> list(String workspaceId) {
-        return list(workspaceId, ListFollowUpsRequest.builder().build());
+    public PealClientHttpResponse<FollowUpRulePage> list() {
+        return list(ListFollowUpsRequest.builder().build());
     }
 
     /**
      * Lists the workspace's follow-up rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of the post <code>postId</code> or with <code>status</code> alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public PealClientHttpResponse<FollowUpRulePage> list(String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListFollowUpsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<FollowUpRulePage> list(RequestOptions requestOptions) {
+        return list(ListFollowUpsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the workspace's follow-up rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of the post <code>postId</code> or with <code>status</code> alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public PealClientHttpResponse<FollowUpRulePage> list(String workspaceId, ListFollowUpsRequest request) {
-        return list(workspaceId, request, null);
+    public PealClientHttpResponse<FollowUpRulePage> list(ListFollowUpsRequest request) {
+        return list(request, null);
     }
 
     /**
      * Lists the workspace's follow-up rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of the post <code>postId</code> or with <code>status</code> alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public PealClientHttpResponse<FollowUpRulePage> list(
-            String workspaceId, ListFollowUpsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<FollowUpRulePage> list(ListFollowUpsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("follow-ups");
+                .addPathSegments("api/v1/follow-ups");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -160,20 +157,17 @@ public class RawFollowUpsClient {
     /**
      * Starts a rule on a post (<code>postId</code>) or on every post a channel publishes from now on (<code>channelId</code>), exactly one of them, that waits for <code>likes</code> likes (1 to 1,000,000) and then publishes <code>comment</code>, reposts (<code>repost</code>), or both. A rule acts on the workspace's own posts only, from the channel's own account: once a post it acts on has <code>likes</code> likes on a channel, as analytics last counted them (hourly for two days, then daily: a rule never asks a platform for more, nor makes a paid read happen), it publishes its <code>comment</code> under the post, as the account's own reply after the post's last part, and reposts it when <code>repost</code> is set, once each, within 7 days of the post going live there. A post is followed up once of each kind whatever rules act on it, and a channel carries 10 follow-ups a UTC day at most: those past it wait for the next day, within their window. Comments go out on Bluesky, Mastodon and X (a post X bills, and only where the server sends X threads), reposts on Bluesky (a channel connected before Peal asked for it must be connected again) and Mastodon; LinkedIn's terms forbid both, and elsewhere <code>channels</code> says why not. Nothing likes, follows or messages anyone. It acts as whoever started it, with what they may do then: where the approval policy holds their posts it waits for a member who approves posts to approve it, and it ends when they can no longer publish. What each did is in <code>followUps</code>. A post that already went out is armed at once, while its window lasts. It is refused when no channel it acts on can carry what it asks, or when its comment is longer than a channel that could carry it takes (FollowUpNotPossible, with each channel's reasons). A post or a channel has one rule going on at a time (FollowUpRuleTaken), and a workspace 100 active or paused. It publishes again, in public, without anyone being asked each time. Needs post:schedule, or post:create where posts wait for an approval; never staff acting as a member.
      */
-    public PealClientHttpResponse<FollowUpRule> create(String workspaceId, NewFollowUpRule request) {
-        return create(workspaceId, request, null);
+    public PealClientHttpResponse<FollowUpRule> create(NewFollowUpRule request) {
+        return create(request, null);
     }
 
     /**
      * Starts a rule on a post (<code>postId</code>) or on every post a channel publishes from now on (<code>channelId</code>), exactly one of them, that waits for <code>likes</code> likes (1 to 1,000,000) and then publishes <code>comment</code>, reposts (<code>repost</code>), or both. A rule acts on the workspace's own posts only, from the channel's own account: once a post it acts on has <code>likes</code> likes on a channel, as analytics last counted them (hourly for two days, then daily: a rule never asks a platform for more, nor makes a paid read happen), it publishes its <code>comment</code> under the post, as the account's own reply after the post's last part, and reposts it when <code>repost</code> is set, once each, within 7 days of the post going live there. A post is followed up once of each kind whatever rules act on it, and a channel carries 10 follow-ups a UTC day at most: those past it wait for the next day, within their window. Comments go out on Bluesky, Mastodon and X (a post X bills, and only where the server sends X threads), reposts on Bluesky (a channel connected before Peal asked for it must be connected again) and Mastodon; LinkedIn's terms forbid both, and elsewhere <code>channels</code> says why not. Nothing likes, follows or messages anyone. It acts as whoever started it, with what they may do then: where the approval policy holds their posts it waits for a member who approves posts to approve it, and it ends when they can no longer publish. What each did is in <code>followUps</code>. A post that already went out is armed at once, while its window lasts. It is refused when no channel it acts on can carry what it asks, or when its comment is longer than a channel that could carry it takes (FollowUpNotPossible, with each channel's reasons). A post or a channel has one rule going on at a time (FollowUpRuleTaken), and a workspace 100 active or paused. It publishes again, in public, without anyone being asked each time. Needs post:schedule, or post:create where posts wait for an approval; never staff acting as a member.
      */
-    public PealClientHttpResponse<FollowUpRule> create(
-            String workspaceId, NewFollowUpRule request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<FollowUpRule> create(NewFollowUpRule request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("follow-ups");
+                .addPathSegments("api/v1/follow-ups");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -251,34 +245,32 @@ public class RawFollowUpsClient {
     /**
      * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
      */
-    public PealClientHttpResponse<FollowUpRule> get(String workspaceId, String ruleId) {
-        return get(workspaceId, ruleId, GetFollowUpsRequest.builder().build());
+    public PealClientHttpResponse<FollowUpRule> get(String ruleId) {
+        return get(ruleId, GetFollowUpsRequest.builder().build());
     }
 
     /**
      * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
      */
-    public PealClientHttpResponse<FollowUpRule> get(String workspaceId, String ruleId, RequestOptions requestOptions) {
-        return get(workspaceId, ruleId, GetFollowUpsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<FollowUpRule> get(String ruleId, RequestOptions requestOptions) {
+        return get(ruleId, GetFollowUpsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
      */
-    public PealClientHttpResponse<FollowUpRule> get(String workspaceId, String ruleId, GetFollowUpsRequest request) {
-        return get(workspaceId, ruleId, request, null);
+    public PealClientHttpResponse<FollowUpRule> get(String ruleId, GetFollowUpsRequest request) {
+        return get(ruleId, request, null);
     }
 
     /**
      * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
      */
     public PealClientHttpResponse<FollowUpRule> get(
-            String workspaceId, String ruleId, GetFollowUpsRequest request, RequestOptions requestOptions) {
+            String ruleId, GetFollowUpsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("follow-ups")
+                .addPathSegments("api/v1/follow-ups")
                 .addPathSegment(PathSegments.validate(ruleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -313,6 +305,9 @@ public class RawFollowUpsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -343,34 +338,32 @@ public class RawFollowUpsClient {
     /**
      * Stops a rule: it ends <code>stopped</code>, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String ruleId) {
-        return delete(workspaceId, ruleId, DeleteFollowUpsRequest.builder().build());
+    public PealClientHttpResponse<Void> delete(String ruleId) {
+        return delete(ruleId, DeleteFollowUpsRequest.builder().build());
     }
 
     /**
      * Stops a rule: it ends <code>stopped</code>, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String ruleId, RequestOptions requestOptions) {
-        return delete(workspaceId, ruleId, DeleteFollowUpsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Void> delete(String ruleId, RequestOptions requestOptions) {
+        return delete(ruleId, DeleteFollowUpsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Stops a rule: it ends <code>stopped</code>, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String ruleId, DeleteFollowUpsRequest request) {
-        return delete(workspaceId, ruleId, request, null);
+    public PealClientHttpResponse<Void> delete(String ruleId, DeleteFollowUpsRequest request) {
+        return delete(ruleId, request, null);
     }
 
     /**
      * Stops a rule: it ends <code>stopped</code>, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
      */
     public PealClientHttpResponse<Void> delete(
-            String workspaceId, String ruleId, DeleteFollowUpsRequest request, RequestOptions requestOptions) {
+            String ruleId, DeleteFollowUpsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("follow-ups")
+                .addPathSegments("api/v1/follow-ups")
                 .addPathSegment(PathSegments.validate(ruleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -407,6 +400,9 @@ public class RawFollowUpsClient {
             String responseBodyString = responseBody != null ? responseBody.string() : "{}";
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -437,35 +433,32 @@ public class RawFollowUpsClient {
     /**
      * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public PealClientHttpResponse<FollowUpRule> update(String workspaceId, String ruleId) {
-        return update(workspaceId, ruleId, FollowUpRuleChange.builder().build());
+    public PealClientHttpResponse<FollowUpRule> update(String ruleId) {
+        return update(ruleId, FollowUpRuleChange.builder().build());
+    }
+
+    /**
+     * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
+     */
+    public PealClientHttpResponse<FollowUpRule> update(String ruleId, RequestOptions requestOptions) {
+        return update(ruleId, FollowUpRuleChange.builder().build(), requestOptions);
+    }
+
+    /**
+     * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
+     */
+    public PealClientHttpResponse<FollowUpRule> update(String ruleId, FollowUpRuleChange request) {
+        return update(ruleId, request, null);
     }
 
     /**
      * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
     public PealClientHttpResponse<FollowUpRule> update(
-            String workspaceId, String ruleId, RequestOptions requestOptions) {
-        return update(workspaceId, ruleId, FollowUpRuleChange.builder().build(), requestOptions);
-    }
-
-    /**
-     * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
-     */
-    public PealClientHttpResponse<FollowUpRule> update(String workspaceId, String ruleId, FollowUpRuleChange request) {
-        return update(workspaceId, ruleId, request, null);
-    }
-
-    /**
-     * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
-     */
-    public PealClientHttpResponse<FollowUpRule> update(
-            String workspaceId, String ruleId, FollowUpRuleChange request, RequestOptions requestOptions) {
+            String ruleId, FollowUpRuleChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("follow-ups")
+                .addPathSegments("api/v1/follow-ups")
                 .addPathSegment(PathSegments.validate(ruleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -505,6 +498,9 @@ public class RawFollowUpsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -541,36 +537,32 @@ public class RawFollowUpsClient {
     /**
      * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
      */
-    public PealClientHttpResponse<FollowUpRule> approve(String workspaceId, String ruleId) {
-        return approve(workspaceId, ruleId, ApproveFollowUpsRequest.builder().build());
+    public PealClientHttpResponse<FollowUpRule> approve(String ruleId) {
+        return approve(ruleId, ApproveFollowUpsRequest.builder().build());
+    }
+
+    /**
+     * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
+     */
+    public PealClientHttpResponse<FollowUpRule> approve(String ruleId, RequestOptions requestOptions) {
+        return approve(ruleId, ApproveFollowUpsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
+     */
+    public PealClientHttpResponse<FollowUpRule> approve(String ruleId, ApproveFollowUpsRequest request) {
+        return approve(ruleId, request, null);
     }
 
     /**
      * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
      */
     public PealClientHttpResponse<FollowUpRule> approve(
-            String workspaceId, String ruleId, RequestOptions requestOptions) {
-        return approve(workspaceId, ruleId, ApproveFollowUpsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
-     */
-    public PealClientHttpResponse<FollowUpRule> approve(
-            String workspaceId, String ruleId, ApproveFollowUpsRequest request) {
-        return approve(workspaceId, ruleId, request, null);
-    }
-
-    /**
-     * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
-     */
-    public PealClientHttpResponse<FollowUpRule> approve(
-            String workspaceId, String ruleId, ApproveFollowUpsRequest request, RequestOptions requestOptions) {
+            String ruleId, ApproveFollowUpsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("follow-ups")
+                .addPathSegments("api/v1/follow-ups")
                 .addPathSegment(PathSegments.validate(ruleId))
                 .addPathSegments("approve");
         if (requestOptions != null) {
@@ -605,6 +597,9 @@ public class RawFollowUpsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

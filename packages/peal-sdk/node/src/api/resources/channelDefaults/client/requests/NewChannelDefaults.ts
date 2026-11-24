@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId",
  *         options: {
  *             platform: "youtube"
@@ -13,7 +12,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface NewChannelDefaults {
-    workspaceId: string;
     channelId: string;
     options: Peal.TargetOptions;
 }

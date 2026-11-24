@@ -10,15 +10,13 @@ import (
 )
 
 var (
-	getUsageRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getUsageRequestFieldFrom        = big.NewInt(1 << 1)
-	getUsageRequestFieldTo          = big.NewInt(1 << 2)
+	getUsageRequestFieldFrom = big.NewInt(1 << 0)
+	getUsageRequestFieldTo   = big.NewInt(1 << 1)
 )
 
 type GetUsageRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
+	From *CalendarDay `json:"-" url:"from,omitempty"`
+	To   *CalendarDay `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (g *GetUsageRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	g.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetUsageRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getUsageRequestFieldWorkspaceID)
 }
 
 // SetFrom sets the From field and marks it as non-optional;
@@ -55,19 +46,17 @@ func (g *GetUsageRequest) SetTo(to *CalendarDay) {
 }
 
 var (
-	partnerUsageRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	partnerUsageRequestFieldBefore      = big.NewInt(1 << 1)
-	partnerUsageRequestFieldFrom        = big.NewInt(1 << 2)
-	partnerUsageRequestFieldLimit       = big.NewInt(1 << 3)
-	partnerUsageRequestFieldTo          = big.NewInt(1 << 4)
+	partnerUsageRequestFieldBefore = big.NewInt(1 << 0)
+	partnerUsageRequestFieldFrom   = big.NewInt(1 << 1)
+	partnerUsageRequestFieldLimit  = big.NewInt(1 << 2)
+	partnerUsageRequestFieldTo     = big.NewInt(1 << 3)
 )
 
 type PartnerUsageRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	Before      *string      `json:"-" url:"before,omitempty"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	Limit       *string      `json:"-" url:"limit,omitempty"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
+	Before *string      `json:"-" url:"before,omitempty"`
+	From   *CalendarDay `json:"-" url:"from,omitempty"`
+	Limit  *string      `json:"-" url:"limit,omitempty"`
+	To     *CalendarDay `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -80,13 +69,6 @@ func (p *PartnerUsageRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	p.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PartnerUsageRequest) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(partnerUsageRequestFieldWorkspaceID)
 }
 
 // SetBefore sets the Before field and marks it as non-optional;

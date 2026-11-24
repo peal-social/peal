@@ -43,10 +43,7 @@ func (r *RawClient) ListReviewThreads(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/reviews/threads",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/inbox/reviews/threads"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -96,8 +93,7 @@ func (r *RawClient) GetReviewThread(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/reviews/threads/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/reviews/threads/%v",
 		request.ThreadID,
 	)
 	headers := internal.MergeHeaders(
@@ -142,8 +138,7 @@ func (r *RawClient) ReplyToReview(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/reviews/%v/reply",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/reviews/%v/reply",
 		request.ReviewID,
 	)
 	headers := internal.MergeHeaders(
@@ -193,8 +188,7 @@ func (r *RawClient) WithdrawReviewReply(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/reviews/%v/reply",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/reviews/%v/reply",
 		request.ReviewID,
 	)
 	headers := internal.MergeHeaders(
@@ -239,8 +233,7 @@ func (r *RawClient) SetReviewAnswered(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/reviews/%v/answered",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/reviews/%v/answered",
 		request.ReviewID,
 	)
 	headers := internal.MergeHeaders(

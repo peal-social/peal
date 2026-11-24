@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface GetUsageRequest {
-    workspaceId: string;
     from?: Peal.CalendarDay;
     to?: Peal.CalendarDay;
 }

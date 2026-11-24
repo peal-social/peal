@@ -35,15 +35,11 @@ impl AssistantClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .assistant
-    ///         .status(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.assistant.status(None).await;
     /// }
     /// ```
     pub async fn status(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<AssistantStatus, ApiError> {
         let options = {
@@ -54,13 +50,7 @@ impl AssistantClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/assistant", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/assistant", None, None, options)
             .await
     }
 
@@ -89,7 +79,6 @@ impl AssistantClient {
     ///     client
     ///         .assistant
     ///         .suggest(
-    ///             &"workspaceId".to_string(),
     ///             &SuggestionRequest {
     ///                 action: AssistantAction::Rewrite {
     ///                     data: AssistantActionRewrite {
@@ -105,7 +94,6 @@ impl AssistantClient {
     /// ```
     pub async fn suggest(
         &self,
-        workspace_id: &str,
         request: &SuggestionRequest,
         options: Option<RequestOptions>,
     ) -> Result<Suggestion, ApiError> {
@@ -120,7 +108,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/assistant/suggestions", workspace_id),
+                "api/v1/assistant/suggestions",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -153,7 +141,6 @@ impl AssistantClient {
     ///     client
     ///         .assistant
     ///         .generate_image(
-    ///             &"workspaceId".to_string(),
     ///             &ImageRequest {
     ///                 aspect: ImageAspect::Square,
     ///                 prompt: "prompt".to_string(),
@@ -165,7 +152,6 @@ impl AssistantClient {
     /// ```
     pub async fn generate_image(
         &self,
-        workspace_id: &str,
         request: &ImageRequest,
         options: Option<RequestOptions>,
     ) -> Result<Media, ApiError> {
@@ -180,7 +166,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/assistant/images", workspace_id),
+                "api/v1/assistant/images",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -210,15 +196,11 @@ impl AssistantClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .assistant
-    ///         .image_provider(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.assistant.image_provider(None).await;
     /// }
     /// ```
     pub async fn image_provider(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ImageProviderSetting, ApiError> {
         let options = {
@@ -231,7 +213,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/assistant/image-provider", workspace_id),
+                "api/v1/assistant/image-provider",
                 None,
                 None,
                 options,
@@ -264,7 +246,6 @@ impl AssistantClient {
     ///     client
     ///         .assistant
     ///         .set_image_provider(
-    ///             &"workspaceId".to_string(),
     ///             &ImageProviderChange {
     ///                 model: "model".to_string(),
     ///                 api_key: None,
@@ -278,7 +259,6 @@ impl AssistantClient {
     /// ```
     pub async fn set_image_provider(
         &self,
-        workspace_id: &str,
         request: &ImageProviderChange,
         options: Option<RequestOptions>,
     ) -> Result<ImageProvider, ApiError> {
@@ -292,7 +272,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!("api/workspaces/{}/assistant/image-provider", workspace_id),
+                "api/v1/assistant/image-provider",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -322,15 +302,11 @@ impl AssistantClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .assistant
-    ///         .remove_image_provider(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.assistant.remove_image_provider(None).await;
     /// }
     /// ```
     pub async fn remove_image_provider(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
         let options = {
@@ -343,7 +319,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/assistant/image-provider", workspace_id),
+                "api/v1/assistant/image-provider",
                 None,
                 None,
                 options,
@@ -373,15 +349,11 @@ impl AssistantClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .assistant
-    ///         .text_provider(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.assistant.text_provider(None).await;
     /// }
     /// ```
     pub async fn text_provider(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<TextProviderSetting, ApiError> {
         let options = {
@@ -394,7 +366,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/assistant/text-provider", workspace_id),
+                "api/v1/assistant/text-provider",
                 None,
                 None,
                 options,
@@ -427,7 +399,6 @@ impl AssistantClient {
     ///     client
     ///         .assistant
     ///         .set_text_provider(
-    ///             &"workspaceId".to_string(),
     ///             &TextProviderChange {
     ///                 model: "model".to_string(),
     ///                 api_key: None,
@@ -442,7 +413,6 @@ impl AssistantClient {
     /// ```
     pub async fn set_text_provider(
         &self,
-        workspace_id: &str,
         request: &TextProviderChange,
         options: Option<RequestOptions>,
     ) -> Result<TextProvider, ApiError> {
@@ -456,7 +426,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!("api/workspaces/{}/assistant/text-provider", workspace_id),
+                "api/v1/assistant/text-provider",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -486,15 +456,11 @@ impl AssistantClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .assistant
-    ///         .remove_text_provider(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.assistant.remove_text_provider(None).await;
     /// }
     /// ```
     pub async fn remove_text_provider(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
         let options = {
@@ -507,7 +473,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/assistant/text-provider", workspace_id),
+                "api/v1/assistant/text-provider",
                 None,
                 None,
                 options,
@@ -537,15 +503,11 @@ impl AssistantClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .assistant
-    ///         .test_text_provider(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.assistant.test_text_provider(None).await;
     /// }
     /// ```
     pub async fn test_text_provider(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
         let options = {
@@ -559,10 +521,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/assistant/text-provider/test",
-                    workspace_id
-                ),
+                "api/v1/assistant/text-provider/test",
                 None,
                 None,
                 options,
@@ -592,15 +551,11 @@ impl AssistantClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .assistant
-    ///         .providers(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.assistant.providers(None).await;
     /// }
     /// ```
     pub async fn providers(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<AiProviderConnections, ApiError> {
         let options = {
@@ -613,7 +568,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/assistant/providers", workspace_id),
+                "api/v1/assistant/providers",
                 None,
                 None,
                 options,
@@ -646,7 +601,6 @@ impl AssistantClient {
     ///     client
     ///         .assistant
     ///         .connect_provider(
-    ///             &"workspaceId".to_string(),
     ///             &AiProvider::Anthropic,
     ///             &AiProviderConnectionChange {
     ///                 ..Default::default()
@@ -658,7 +612,6 @@ impl AssistantClient {
     /// ```
     pub async fn connect_provider(
         &self,
-        workspace_id: &str,
         provider: &AiProvider,
         request: &AiProviderConnectionChange,
         options: Option<RequestOptions>,
@@ -673,10 +626,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/assistant/providers/{}",
-                    workspace_id, provider
-                ),
+                &format!("api/v1/assistant/providers/{}", provider),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -708,13 +658,12 @@ impl AssistantClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .assistant
-    ///         .disconnect_provider(&"workspaceId".to_string(), &AiProvider::Anthropic, None)
+    ///         .disconnect_provider(&AiProvider::Anthropic, None)
     ///         .await;
     /// }
     /// ```
     pub async fn disconnect_provider(
         &self,
-        workspace_id: &str,
         provider: &AiProvider,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -728,10 +677,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/assistant/providers/{}",
-                    workspace_id, provider
-                ),
+                &format!("api/v1/assistant/providers/{}", provider),
                 None,
                 None,
                 options,
@@ -764,7 +710,6 @@ impl AssistantClient {
     ///     client
     ///         .assistant
     ///         .test_provider(
-    ///             &"workspaceId".to_string(),
     ///             &AiProvider::Anthropic,
     ///             &AiProviderTest {
     ///                 ..Default::default()
@@ -776,7 +721,6 @@ impl AssistantClient {
     /// ```
     pub async fn test_provider(
         &self,
-        workspace_id: &str,
         provider: &AiProvider,
         request: &AiProviderTest,
         options: Option<RequestOptions>,
@@ -792,10 +736,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/assistant/providers/{}/test",
-                    workspace_id, provider
-                ),
+                &format!("api/v1/assistant/providers/{}/test", provider),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -825,15 +766,11 @@ impl AssistantClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .assistant
-    ///         .models(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.assistant.models(None).await;
     /// }
     /// ```
     pub async fn models(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<AiCapabilityModels, ApiError> {
         let options = {
@@ -844,13 +781,7 @@ impl AssistantClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/assistant/models", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/assistant/models", None, None, options)
             .await
     }
 
@@ -879,7 +810,6 @@ impl AssistantClient {
     ///     client
     ///         .assistant
     ///         .set_model(
-    ///             &"workspaceId".to_string(),
     ///             &AiCapability::Text,
     ///             &AiCapabilityModelChange {
     ///                 provider: AiProvider::Anthropic,
@@ -892,7 +822,6 @@ impl AssistantClient {
     /// ```
     pub async fn set_model(
         &self,
-        workspace_id: &str,
         capability: &AiCapability,
         request: &AiCapabilityModelChange,
         options: Option<RequestOptions>,
@@ -907,10 +836,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/assistant/models/{}",
-                    workspace_id, capability
-                ),
+                &format!("api/v1/assistant/models/{}", capability),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -942,13 +868,12 @@ impl AssistantClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .assistant
-    ///         .unset_model(&"workspaceId".to_string(), &AiCapability::Text, None)
+    ///         .unset_model(&AiCapability::Text, None)
     ///         .await;
     /// }
     /// ```
     pub async fn unset_model(
         &self,
-        workspace_id: &str,
         capability: &AiCapability,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -962,10 +887,7 @@ impl AssistantClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/assistant/models/{}",
-                    workspace_id, capability
-                ),
+                &format!("api/v1/assistant/models/{}", capability),
                 None,
                 None,
                 options,

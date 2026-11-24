@@ -10,14 +10,6 @@ import (
 )
 
 func TestSettersNewAPIKey(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &NewAPIKey{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetExpiresInDays", func(t *testing.T) {
 		obj := &NewAPIKey{}
 		var fernTestValueExpiresInDays *int
@@ -45,37 +37,6 @@ func TestSettersNewAPIKey(t *testing.T) {
 }
 
 func TestSettersMarkExplicitNewAPIKey(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &NewAPIKey{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetExpiresInDays_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -171,60 +132,7 @@ func TestSettersMarkExplicitNewAPIKey(t *testing.T) {
 
 }
 
-func TestSettersListAPIKeysRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &ListAPIKeysRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
-}
-
-func TestSettersMarkExplicitListAPIKeysRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &ListAPIKeysRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
-}
-
 func TestSettersRevokeAPIKeysRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &RevokeAPIKeysRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetAPIKeyID", func(t *testing.T) {
 		obj := &RevokeAPIKeysRequest{}
 		var fernTestValueAPIKeyID string
@@ -236,37 +144,6 @@ func TestSettersRevokeAPIKeysRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitRevokeAPIKeysRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &RevokeAPIKeysRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetAPIKeyID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange

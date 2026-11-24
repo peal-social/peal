@@ -23,13 +23,12 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
       # @option params [Peal::Types::CommentRuleStatus, nil] :status
       #
       # @example
-      #   client.inbox_rules.list_comment_rules(workspace_id: "workspaceId")
+      #   client.inbox_rules.list_comment_rules
       #
       # @return [Peal::Types::CommentRulePage]
       def list_comment_rules(request_options: {}, **params)
@@ -42,7 +41,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/rules",
+          path: "api/v1/inbox/rules",
           query: query_params,
           request_options: request_options
         )
@@ -91,11 +90,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.inbox_rules.create_comment_rule(
-      #     workspace_id: "workspaceId",
       #     keywords: ["keywords"],
       #     reply: "reply"
       #   )
@@ -103,15 +100,11 @@ module Peal
       # @return [Peal::Types::CommentRule]
       def create_comment_rule(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::InboxRules::Types::NewCommentRule.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/rules",
-          body: body,
+          path: "api/v1/inbox/rules",
+          body: Peal::InboxRules::Types::NewCommentRule.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -145,14 +138,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :rule_id
       #
       # @example
-      #   client.inbox_rules.get_comment_rule(
-      #     workspace_id: "workspaceId",
-      #     rule_id: "ruleId"
-      #   )
+      #   client.inbox_rules.get_comment_rule(rule_id: "ruleId")
       #
       # @return [Peal::Types::CommentRule]
       def get_comment_rule(request_options: {}, **params)
@@ -160,7 +149,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/rules/#{URI.encode_uri_component(params[:rule_id].to_s)}",
+          path: "api/v1/inbox/rules/#{URI.encode_uri_component(params[:rule_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -191,14 +180,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :rule_id
       #
       # @example
-      #   client.inbox_rules.delete_comment_rule(
-      #     workspace_id: "workspaceId",
-      #     rule_id: "ruleId"
-      #   )
+      #   client.inbox_rules.delete_comment_rule(rule_id: "ruleId")
       #
       # @return [untyped]
       def delete_comment_rule(request_options: {}, **params)
@@ -206,7 +191,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/rules/#{URI.encode_uri_component(params[:rule_id].to_s)}",
+          path: "api/v1/inbox/rules/#{URI.encode_uri_component(params[:rule_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -240,26 +225,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :rule_id
       #
       # @example
-      #   client.inbox_rules.update_comment_rule(
-      #     workspace_id: "workspaceId",
-      #     rule_id: "ruleId"
-      #   )
+      #   client.inbox_rules.update_comment_rule(rule_id: "ruleId")
       #
       # @return [Peal::Types::CommentRule]
       def update_comment_rule(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::InboxRules::Types::CommentRuleChange.new(params).to_h
-        non_body_param_names = %w[workspaceId ruleId]
+        non_body_param_names = %w[ruleId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/rules/#{URI.encode_uri_component(params[:rule_id].to_s)}",
+          path: "api/v1/inbox/rules/#{URI.encode_uri_component(params[:rule_id].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0

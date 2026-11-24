@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record NewCommentRule
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("channelId")]
     public string? ChannelId { get; set; }
 

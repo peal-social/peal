@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         eventTypes: ["post.scheduled"],
  *         url: "url"
  *     }
  */
 export interface NewWebhookEndpoint {
-    workspaceId: string;
     channelIds?: string[];
     description?: string;
     enabled?: boolean;

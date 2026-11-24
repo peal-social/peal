@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListSlideshowsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListSlideshowsRequest{}
 //	_, err := client.Slideshows.List(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.SlideshowRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Aspect: peal.ImageAspectSquare,
 //	    Slides: []*peal.Slide{
 //	        &peal.Slide{
@@ -99,7 +96,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.EditRenderRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Edit: map[string]any{
 //	        "key": "value",
 //	    },
@@ -129,7 +125,6 @@ func (c *Client) CreateFromEdit(
 // Example:
 //
 //	request := &peal.GetSlideshowsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    SlideshowID: "slideshowId",
 //	}
 //	_, err := client.Slideshows.Get(

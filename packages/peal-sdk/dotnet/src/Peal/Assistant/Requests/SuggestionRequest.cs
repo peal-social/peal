@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record SuggestionRequest
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("action")]
     public required AssistantAction Action { get; set; }
 

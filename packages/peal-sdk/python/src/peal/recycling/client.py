@@ -33,7 +33,6 @@ class RecyclingClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -45,8 +44,6 @@ class RecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -66,20 +63,16 @@ class RecyclingClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.recycling.list(
-            workspace_id="workspaceId",
-        )
+        client.recycling.list()
         """
-        _response = self._raw_client.list(
-            workspace_id, cursor=cursor, limit=limit, status=status, request_options=request_options
-        )
+        _response = self._raw_client.list(cursor=cursor, limit=limit, status=status, request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         every: RecyclingInterval,
         post_id: str,
@@ -94,8 +87,6 @@ class RecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         every : RecyclingInterval
 
         post_id : str
@@ -121,10 +112,10 @@ class RecyclingClient:
         from peal import Peal, RecyclingInterval
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.recycling.create(
-            workspace_id="workspaceId",
             every=RecyclingInterval(
                 count=1,
                 unit="days",
@@ -133,7 +124,6 @@ class RecyclingClient:
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             every=every,
             post_id=post_id,
             count=count,
@@ -144,16 +134,12 @@ class RecyclingClient:
         )
         return _response.data
 
-    def get(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RecyclingRule:
+    def get(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> RecyclingRule:
         """
         Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -169,26 +155,22 @@ class RecyclingClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.recycling.get(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
-        _response = self._raw_client.get(workspace_id, rule_id, request_options=request_options)
+        _response = self._raw_client.get(rule_id, request_options=request_options)
         return _response.data
 
-    def delete(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -203,19 +185,18 @@ class RecyclingClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.recycling.delete(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, rule_id, request_options=request_options)
+        _response = self._raw_client.delete(rule_id, request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         count: typing.Optional[int] = OMIT,
@@ -229,8 +210,6 @@ class RecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         count : typing.Optional[int]
@@ -254,27 +233,20 @@ class RecyclingClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.recycling.update(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
-            rule_id,
-            count=count,
-            paused=paused,
-            until=until,
-            variants=variants,
-            request_options=request_options,
+            rule_id, count=count, paused=paused, until=until, variants=variants, request_options=request_options
         )
         return _response.data
 
     def resume(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         variants: typing.Optional[typing.Sequence[RecyclingVariant]] = OMIT,
@@ -285,8 +257,6 @@ class RecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         variants : typing.Optional[typing.Sequence[RecyclingVariant]]
@@ -304,14 +274,14 @@ class RecyclingClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.recycling.resume(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
-        _response = self._raw_client.resume(workspace_id, rule_id, variants=variants, request_options=request_options)
+        _response = self._raw_client.resume(rule_id, variants=variants, request_options=request_options)
         return _response.data
 
 
@@ -332,7 +302,6 @@ class AsyncRecyclingClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -344,8 +313,6 @@ class AsyncRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -367,26 +334,24 @@ class AsyncRecyclingClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.recycling.list(
-                workspace_id="workspaceId",
-            )
+            await client.recycling.list()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list(
-            workspace_id, cursor=cursor, limit=limit, status=status, request_options=request_options
+            cursor=cursor, limit=limit, status=status, request_options=request_options
         )
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         every: RecyclingInterval,
         post_id: str,
@@ -401,8 +366,6 @@ class AsyncRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         every : RecyclingInterval
 
         post_id : str
@@ -430,13 +393,13 @@ class AsyncRecyclingClient:
         from peal import AsyncPeal, RecyclingInterval
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.recycling.create(
-                workspace_id="workspaceId",
                 every=RecyclingInterval(
                     count=1,
                     unit="days",
@@ -448,7 +411,6 @@ class AsyncRecyclingClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             every=every,
             post_id=post_id,
             count=count,
@@ -459,16 +421,12 @@ class AsyncRecyclingClient:
         )
         return _response.data
 
-    async def get(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RecyclingRule:
+    async def get(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> RecyclingRule:
         """
         Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -486,32 +444,28 @@ class AsyncRecyclingClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.recycling.get(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, rule_id, request_options=request_options)
+        _response = await self._raw_client.get(rule_id, request_options=request_options)
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -528,25 +482,24 @@ class AsyncRecyclingClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.recycling.delete(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, rule_id, request_options=request_options)
+        _response = await self._raw_client.delete(rule_id, request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         count: typing.Optional[int] = OMIT,
@@ -560,8 +513,6 @@ class AsyncRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         count : typing.Optional[int]
@@ -587,13 +538,13 @@ class AsyncRecyclingClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.recycling.update(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
@@ -601,19 +552,12 @@ class AsyncRecyclingClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
-            rule_id,
-            count=count,
-            paused=paused,
-            until=until,
-            variants=variants,
-            request_options=request_options,
+            rule_id, count=count, paused=paused, until=until, variants=variants, request_options=request_options
         )
         return _response.data
 
     async def resume(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         variants: typing.Optional[typing.Sequence[RecyclingVariant]] = OMIT,
@@ -624,8 +568,6 @@ class AsyncRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         variants : typing.Optional[typing.Sequence[RecyclingVariant]]
@@ -645,20 +587,18 @@ class AsyncRecyclingClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.recycling.resume(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.resume(
-            workspace_id, rule_id, variants=variants, request_options=request_options
-        )
+        _response = await self._raw_client.resume(rule_id, variants=variants, request_options=request_options)
         return _response.data

@@ -6,14 +6,13 @@ package social.peal.resources.queues;
 import java.util.List;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
-import social.peal.resources.queues.requests.CreateQueuesRequest;
 import social.peal.resources.queues.requests.DeleteQueuesRequest;
 import social.peal.resources.queues.requests.GetQueuesRequest;
-import social.peal.resources.queues.requests.ListQueuesRequest;
 import social.peal.resources.queues.requests.ReshuffleQueuesRequest;
 import social.peal.resources.queues.requests.SlotsQueuesRequest;
 import social.peal.resources.queues.requests.UpdateQueuesRequest;
 import social.peal.types.Queue;
+import social.peal.types.QueueDetails;
 import social.peal.types.QueuePreview;
 import social.peal.types.QueueReshuffle;
 
@@ -37,177 +36,154 @@ public class QueuesClient {
     /**
      * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public List<Queue> list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public List<Queue> list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public List<Queue> list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public List<Queue> list(String workspaceId, ListQueuesRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
-    }
-
-    /**
-     * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public List<Queue> list(String workspaceId, ListQueuesRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public List<Queue> list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Saves a queue. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. The first queue of a workspace is its default. A workspace keeps 20 queues at most. Needs post:update and channel:read.
      */
-    public Queue create(String workspaceId, CreateQueuesRequest request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public Queue create(QueueDetails request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Saves a queue. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. The first queue of a workspace is its default. A workspace keeps 20 queues at most. Needs post:update and channel:read.
      */
-    public Queue create(String workspaceId, CreateQueuesRequest request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public Queue create(QueueDetails request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Answers with a queue of the workspace. Needs post:read and channel:read.
      */
-    public Queue get(String workspaceId, String queueId) {
-        return this.rawClient.get(workspaceId, queueId).body();
+    public Queue get(String queueId) {
+        return this.rawClient.get(queueId).body();
     }
 
     /**
      * Answers with a queue of the workspace. Needs post:read and channel:read.
      */
-    public Queue get(String workspaceId, String queueId, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, queueId, requestOptions).body();
+    public Queue get(String queueId, RequestOptions requestOptions) {
+        return this.rawClient.get(queueId, requestOptions).body();
     }
 
     /**
      * Answers with a queue of the workspace. Needs post:read and channel:read.
      */
-    public Queue get(String workspaceId, String queueId, GetQueuesRequest request) {
-        return this.rawClient.get(workspaceId, queueId, request).body();
+    public Queue get(String queueId, GetQueuesRequest request) {
+        return this.rawClient.get(queueId, request).body();
     }
 
     /**
      * Answers with a queue of the workspace. Needs post:read and channel:read.
      */
-    public Queue get(String workspaceId, String queueId, GetQueuesRequest request, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, queueId, request, requestOptions).body();
+    public Queue get(String queueId, GetQueuesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.get(queueId, request, requestOptions).body();
     }
 
     /**
      * Replaces a queue's name, zone, slots and channels: every channel must be connected now, so this is also how a disconnected one is taken out. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. Posts the queue placed keep their times: a slot that changed frees nothing and moves nothing. Saving the default with <code>isDefault</code> false, or without <code>isDefault</code>, leaves the workspace without one, and a post then sent to the default queue is refused (QueueNotFound): send <code>isDefault</code> true to keep it the default. Needs post:update and channel:read.
      */
-    public Queue update(String workspaceId, String queueId, UpdateQueuesRequest request) {
-        return this.rawClient.update(workspaceId, queueId, request).body();
+    public Queue update(String queueId, UpdateQueuesRequest request) {
+        return this.rawClient.update(queueId, request).body();
     }
 
     /**
      * Replaces a queue's name, zone, slots and channels: every channel must be connected now, so this is also how a disconnected one is taken out. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. Posts the queue placed keep their times: a slot that changed frees nothing and moves nothing. Saving the default with <code>isDefault</code> false, or without <code>isDefault</code>, leaves the workspace without one, and a post then sent to the default queue is refused (QueueNotFound): send <code>isDefault</code> true to keep it the default. Needs post:update and channel:read.
      */
-    public Queue update(
-            String workspaceId, String queueId, UpdateQueuesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .update(workspaceId, queueId, request, requestOptions)
-                .body();
+    public Queue update(String queueId, UpdateQueuesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.update(queueId, request, requestOptions).body();
     }
 
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public void delete(String workspaceId, String queueId) {
-        this.rawClient.delete(workspaceId, queueId).body();
+    public void delete(String queueId) {
+        this.rawClient.delete(queueId).body();
     }
 
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public void delete(String workspaceId, String queueId, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, queueId, requestOptions).body();
+    public void delete(String queueId, RequestOptions requestOptions) {
+        this.rawClient.delete(queueId, requestOptions).body();
     }
 
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public void delete(String workspaceId, String queueId, DeleteQueuesRequest request) {
-        this.rawClient.delete(workspaceId, queueId, request).body();
+    public void delete(String queueId, DeleteQueuesRequest request) {
+        this.rawClient.delete(queueId, request).body();
     }
 
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public void delete(String workspaceId, String queueId, DeleteQueuesRequest request, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, queueId, request, requestOptions).body();
+    public void delete(String queueId, DeleteQueuesRequest request, RequestOptions requestOptions) {
+        this.rawClient.delete(queueId, request, requestOptions).body();
     }
 
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
-    public QueuePreview slots(String workspaceId, String queueId) {
-        return this.rawClient.slots(workspaceId, queueId).body();
+    public QueuePreview slots(String queueId) {
+        return this.rawClient.slots(queueId).body();
     }
 
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
-    public QueuePreview slots(String workspaceId, String queueId, RequestOptions requestOptions) {
-        return this.rawClient.slots(workspaceId, queueId, requestOptions).body();
+    public QueuePreview slots(String queueId, RequestOptions requestOptions) {
+        return this.rawClient.slots(queueId, requestOptions).body();
     }
 
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
-    public QueuePreview slots(String workspaceId, String queueId, SlotsQueuesRequest request) {
-        return this.rawClient.slots(workspaceId, queueId, request).body();
+    public QueuePreview slots(String queueId, SlotsQueuesRequest request) {
+        return this.rawClient.slots(queueId, request).body();
     }
 
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
-    public QueuePreview slots(
-            String workspaceId, String queueId, SlotsQueuesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .slots(workspaceId, queueId, request, requestOptions)
-                .body();
+    public QueuePreview slots(String queueId, SlotsQueuesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.slots(queueId, request, requestOptions).body();
     }
 
     /**
      * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
      */
-    public QueueReshuffle reshuffle(String workspaceId, String queueId) {
-        return this.rawClient.reshuffle(workspaceId, queueId).body();
+    public QueueReshuffle reshuffle(String queueId) {
+        return this.rawClient.reshuffle(queueId).body();
     }
 
     /**
      * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
      */
-    public QueueReshuffle reshuffle(String workspaceId, String queueId, RequestOptions requestOptions) {
-        return this.rawClient.reshuffle(workspaceId, queueId, requestOptions).body();
+    public QueueReshuffle reshuffle(String queueId, RequestOptions requestOptions) {
+        return this.rawClient.reshuffle(queueId, requestOptions).body();
     }
 
     /**
      * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
      */
-    public QueueReshuffle reshuffle(String workspaceId, String queueId, ReshuffleQueuesRequest request) {
-        return this.rawClient.reshuffle(workspaceId, queueId, request).body();
+    public QueueReshuffle reshuffle(String queueId, ReshuffleQueuesRequest request) {
+        return this.rawClient.reshuffle(queueId, request).body();
     }
 
     /**
      * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
      */
-    public QueueReshuffle reshuffle(
-            String workspaceId, String queueId, ReshuffleQueuesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .reshuffle(workspaceId, queueId, request, requestOptions)
-                .body();
+    public QueueReshuffle reshuffle(String queueId, ReshuffleQueuesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.reshuffle(queueId, request, requestOptions).body();
     }
 }

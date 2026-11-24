@@ -15,17 +15,16 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import social.peal.core.ClientOptions;
 import social.peal.core.ObjectMappers;
-import social.peal.core.PathSegments;
 import social.peal.core.PealClientApiException;
 import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
-import social.peal.resources.members.requests.ListMembersRequest;
 import social.peal.types.UnauthenticatedEncoded;
 import social.peal.types.WorkspaceMember;
 
@@ -39,45 +38,28 @@ public class RawMembersClient {
     /**
      * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
      */
-    public PealClientHttpResponse<List<WorkspaceMember>> list(String workspaceId) {
-        return list(workspaceId, ListMembersRequest.builder().build());
+    public PealClientHttpResponse<List<WorkspaceMember>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
      */
-    public PealClientHttpResponse<List<WorkspaceMember>> list(String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListMembersRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
-     */
-    public PealClientHttpResponse<List<WorkspaceMember>> list(String workspaceId, ListMembersRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
-     */
-    public PealClientHttpResponse<List<WorkspaceMember>> list(
-            String workspaceId, ListMembersRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<List<WorkspaceMember>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("members");
+                .addPathSegments("api/v1/members");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -102,6 +84,9 @@ public class RawMembersClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

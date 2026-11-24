@@ -5,14 +5,12 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         platform: "x",
  *         accountIds: ["accountIds"],
  *         selection: "selection"
  *     }
  */
 export interface ChooseAccounts {
-    workspaceId: string;
     platform: Peal.Platform;
     accountIds: string[];
     selection: string;

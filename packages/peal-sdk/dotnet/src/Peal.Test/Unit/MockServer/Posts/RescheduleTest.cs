@@ -322,7 +322,7 @@ public class RescheduleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/reschedule")
+                    .WithPath("/api/v1/posts/postId/reschedule")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -337,7 +337,6 @@ public class RescheduleTest : BaseMockServerTest
         var response = await Client.Posts.RescheduleAsync(
             new ReschedulePostsRequest
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 Body = new PostSchedule { At = "at", TimeZone = "timeZone" },
             }
@@ -470,7 +469,7 @@ public class RescheduleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/reschedule")
+                    .WithPath("/api/v1/posts/postId/reschedule")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -485,7 +484,6 @@ public class RescheduleTest : BaseMockServerTest
         var response = await Client.Posts.RescheduleAsync(
             new ReschedulePostsRequest
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 Body = new PostSchedule { At = "at", TimeZone = "timeZone" },
             }

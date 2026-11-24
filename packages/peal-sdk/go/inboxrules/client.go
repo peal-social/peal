@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListCommentRulesInboxRulesRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListCommentRulesInboxRulesRequest{}
 //	_, err := client.InboxRules.ListCommentRules(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) ListCommentRules(
 // Example:
 //
 //	request := &peal.NewCommentRule{
-//	    WorkspaceID: "workspaceId",
 //	    Keywords: []string{
 //	        "keywords",
 //	    },
@@ -97,7 +94,6 @@ func (c *Client) CreateCommentRule(
 // Example:
 //
 //	request := &peal.GetCommentRuleInboxRulesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	_, err := client.InboxRules.GetCommentRule(
@@ -125,7 +121,6 @@ func (c *Client) GetCommentRule(
 // Example:
 //
 //	request := &peal.DeleteCommentRuleInboxRulesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	err := client.InboxRules.DeleteCommentRule(
@@ -153,7 +148,6 @@ func (c *Client) DeleteCommentRule(
 // Example:
 //
 //	request := &peal.CommentRuleChange{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	_, err := client.InboxRules.UpdateCommentRule(

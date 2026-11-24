@@ -36,7 +36,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/signatures/signatureId")
+                    .WithPath("/api/v1/signatures/signatureId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -51,7 +51,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Signatures.UpdateAsync(
             new UpdateSignaturesRequest
             {
-                WorkspaceId = "workspaceId",
                 SignatureId = "signatureId",
                 Body = new SignatureDetails
                 {
@@ -92,7 +91,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/signatures/signatureId")
+                    .WithPath("/api/v1/signatures/signatureId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -107,7 +106,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Signatures.UpdateAsync(
             new UpdateSignaturesRequest
             {
-                WorkspaceId = "workspaceId",
                 SignatureId = "signatureId",
                 Body = new SignatureDetails { Name = "name", Text = "text" },
             }

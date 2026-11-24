@@ -15,14 +15,14 @@ public class RemoveAccountTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/accounts/accountId")
+                    .WithPath("/api/v1/ads/accounts/accountId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Ads.RemoveAccountAsync(
-                new RemoveAccountAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
+                new RemoveAccountAdsRequest { AccountId = "accountId" }
             )
         );
     }
@@ -34,14 +34,14 @@ public class RemoveAccountTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/accounts/accountId")
+                    .WithPath("/api/v1/ads/accounts/accountId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Ads.RemoveAccountAsync(
-                new RemoveAccountAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
+                new RemoveAccountAdsRequest { AccountId = "accountId" }
             )
         );
     }

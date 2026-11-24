@@ -7,9 +7,6 @@ namespace Peal;
 public record ListVideoGenerationsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public VideoGenerationStatus? Status { get; set; }
 
     /// <inheritdoc />

@@ -7,9 +7,6 @@ namespace Peal;
 public record ExportAnalyticsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Days { get; set; }
 
     [JsonIgnore]

@@ -13,7 +13,6 @@ public partial class QueuesClient : IQueuesClient
     }
 
     private async Task<WithRawResponse<IEnumerable<Queue>>> ListAsyncCore(
-        ListQueuesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class QueuesClient : IQueuesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/queues",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/queues",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class QueuesClient : IQueuesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -155,7 +163,7 @@ public partial class QueuesClient : IQueuesClient
     }
 
     private async Task<WithRawResponse<Queue>> CreateAsyncCore(
-        CreateQueuesRequest request,
+        QueueDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -174,14 +182,10 @@ public partial class QueuesClient : IQueuesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/queues",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/queues",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                     RetriesDisabled = true,
                 },
@@ -231,6 +235,18 @@ public partial class QueuesClient : IQueuesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -344,8 +360,7 @@ public partial class QueuesClient : IQueuesClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/queues/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/queues/{0}",
                         ValueConvert.ToPathParameterString(request.QueueId)
                     ),
                     QueryString = _queryString,
@@ -398,6 +413,18 @@ public partial class QueuesClient : IQueuesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -487,8 +514,7 @@ public partial class QueuesClient : IQueuesClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/queues/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/queues/{0}",
                         ValueConvert.ToPathParameterString(request.QueueId)
                     ),
                     Body = request.Body,
@@ -543,6 +569,18 @@ public partial class QueuesClient : IQueuesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -656,8 +694,7 @@ public partial class QueuesClient : IQueuesClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/queues/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/queues/{0}",
                         ValueConvert.ToPathParameterString(request.QueueId)
                     ),
                     QueryString = _queryString,
@@ -684,6 +721,18 @@ public partial class QueuesClient : IQueuesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -774,8 +823,7 @@ public partial class QueuesClient : IQueuesClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/queues/{1}/slots",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/queues/{0}/slots",
                         ValueConvert.ToPathParameterString(request.QueueId)
                     ),
                     QueryString = _queryString,
@@ -828,6 +876,18 @@ public partial class QueuesClient : IQueuesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -917,8 +977,7 @@ public partial class QueuesClient : IQueuesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/queues/{1}/reshuffle",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/queues/{0}/reshuffle",
                         ValueConvert.ToPathParameterString(request.QueueId)
                     ),
                     QueryString = _queryString,
@@ -972,6 +1031,18 @@ public partial class QueuesClient : IQueuesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1056,16 +1127,15 @@ public partial class QueuesClient : IQueuesClient
     /// Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Queues.ListAsync(new ListQueuesRequest { WorkspaceId = "workspaceId" });
+    /// await client.Queues.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<Queue>> ListAsync(
-        ListQueuesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<Queue>>(
-            ListAsyncCore(request, options, cancellationToken)
+            ListAsyncCore(options, cancellationToken)
         );
     }
 
@@ -1074,23 +1144,19 @@ public partial class QueuesClient : IQueuesClient
     /// </summary>
     /// <example><code>
     /// await client.Queues.CreateAsync(
-    ///     new CreateQueuesRequest
+    ///     new QueueDetails
     ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new QueueDetails
+    ///         Name = "name",
+    ///         Slots = new List&lt;QueueSlot&gt;()
     ///         {
-    ///             Name = "name",
-    ///             Slots = new List&lt;QueueSlot&gt;()
-    ///             {
-    ///                 new QueueSlot { Day = Weekday.Monday, Time = "time" },
-    ///             },
-    ///             TimeZone = "timeZone",
+    ///             new QueueSlot { Day = Weekday.Monday, Time = "time" },
     ///         },
+    ///         TimeZone = "timeZone",
     ///     }
     /// );
     /// </code></example>
     public WithRawResponseTask<Queue> CreateAsync(
-        CreateQueuesRequest request,
+        QueueDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1102,9 +1168,7 @@ public partial class QueuesClient : IQueuesClient
     /// Answers with a queue of the workspace. Needs post:read and channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Queues.GetAsync(
-    ///     new GetQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-    /// );
+    /// await client.Queues.GetAsync(new GetQueuesRequest { QueueId = "queueId" });
     /// </code></example>
     public WithRawResponseTask<Queue> GetAsync(
         GetQueuesRequest request,
@@ -1122,7 +1186,6 @@ public partial class QueuesClient : IQueuesClient
     /// await client.Queues.UpdateAsync(
     ///     new UpdateQueuesRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         QueueId = "queueId",
     ///         Body = new QueueDetails
     ///         {
@@ -1149,9 +1212,7 @@ public partial class QueuesClient : IQueuesClient
     /// Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (`queueId` null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
     /// </summary>
     /// <example><code>
-    /// await client.Queues.DeleteAsync(
-    ///     new DeleteQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-    /// );
+    /// await client.Queues.DeleteAsync(new DeleteQueuesRequest { QueueId = "queueId" });
     /// </code></example>
     public WithRawResponseTask DeleteAsync(
         DeleteQueuesRequest request,
@@ -1166,9 +1227,7 @@ public partial class QueuesClient : IQueuesClient
     /// Lists the queue's next `count` slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and `nextFree`, the slot a post added now would take, which may come after them; null with `noRoom` when there is none: the queue has no slot (`noSlots`), or every slot of the next 366 days is taken (`full`). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Queues.SlotsAsync(
-    ///     new SlotsQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-    /// );
+    /// await client.Queues.SlotsAsync(new SlotsQueuesRequest { QueueId = "queueId" });
     /// </code></example>
     public WithRawResponseTask<QueuePreview> SlotsAsync(
         SlotsQueuesRequest request,
@@ -1185,9 +1244,7 @@ public partial class QueuesClient : IQueuesClient
     /// Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and `post.scheduled` told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (`post.approval_requested` is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (`stoppedBy` `planLimit`), when no slot is left within 366 days (`full`), or when the queue was saved meanwhile (`changed`); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (`noSlots`) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
     /// </summary>
     /// <example><code>
-    /// await client.Queues.ReshuffleAsync(
-    ///     new ReshuffleQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-    /// );
+    /// await client.Queues.ReshuffleAsync(new ReshuffleQueuesRequest { QueueId = "queueId" });
     /// </code></example>
     public WithRawResponseTask<QueueReshuffle> ReshuffleAsync(
         ReshuffleQueuesRequest request,

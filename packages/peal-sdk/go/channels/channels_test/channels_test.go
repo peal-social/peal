@@ -88,19 +88,15 @@ func TestChannelsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListChannelsRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Channels.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestChannelsListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsListWithWireMock", "GET", "/api/workspaces/workspaceId/channels", nil, 1)
+	VerifyRequestCount(t, "TestChannelsListWithWireMock", "GET", "/api/v1/channels", nil, 1)
 }
 
 func TestChannelsFindWithWireMock(
@@ -114,9 +110,7 @@ func TestChannelsFindWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.FindChannelsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.FindChannelsRequest{}
 	_, invocationErr := client.Channels.Find(
 		context.TODO(),
 		request,
@@ -126,7 +120,7 @@ func TestChannelsFindWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsFindWithWireMock", "GET", "/api/workspaces/workspaceId/channels/search", nil, 1)
+	VerifyRequestCount(t, "TestChannelsFindWithWireMock", "GET", "/api/v1/channels/search", nil, 1)
 }
 
 func TestChannelsPlatformsWithWireMock(
@@ -140,19 +134,15 @@ func TestChannelsPlatformsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.PlatformsChannelsRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Channels.Platforms(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestChannelsPlatformsWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsPlatformsWithWireMock", "GET", "/api/workspaces/workspaceId/channels/platforms", nil, 1)
+	VerifyRequestCount(t, "TestChannelsPlatformsWithWireMock", "GET", "/api/v1/channels/platforms", nil, 1)
 }
 
 func TestChannelsConnectSiteWithWireMock(
@@ -167,7 +157,6 @@ func TestChannelsConnectSiteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ConnectSite{
-		WorkspaceID:         "workspaceId",
 		Address:             "address",
 		ApplicationPassword: "applicationPassword",
 		Platform:            peal.SitePlatformWordpress,
@@ -182,7 +171,7 @@ func TestChannelsConnectSiteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsConnectSiteWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites", nil, 1)
+	VerifyRequestCount(t, "TestChannelsConnectSiteWithWireMock", "POST", "/api/v1/channels/websites", nil, 1)
 }
 
 func TestChannelsConnectSiteWithKeyWithWireMock(
@@ -197,9 +186,8 @@ func TestChannelsConnectSiteWithKeyWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ConnectSiteWithKey{
-		WorkspaceID: "workspaceId",
-		APIKey:      "apiKey",
-		Platform:    peal.KeySitePlatformDevto,
+		APIKey:   "apiKey",
+		Platform: peal.KeySitePlatformDevto,
 	}
 	_, invocationErr := client.Channels.ConnectSiteWithKey(
 		context.TODO(),
@@ -210,7 +198,7 @@ func TestChannelsConnectSiteWithKeyWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsConnectSiteWithKeyWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites/keys", nil, 1)
+	VerifyRequestCount(t, "TestChannelsConnectSiteWithKeyWithWireMock", "POST", "/api/v1/channels/websites/keys", nil, 1)
 }
 
 func TestChannelsConnectChatWithWireMock(
@@ -224,12 +212,9 @@ func TestChannelsConnectChatWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ConnectChatChannelsRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.ConnectChat{
-			Discord: &peal.ConnectDiscordChat{
-				WebhookURL: "webhookUrl",
-			},
+	request := &peal.ConnectChat{
+		Discord: &peal.ConnectDiscordChat{
+			WebhookURL: "webhookUrl",
 		},
 	}
 	_, invocationErr := client.Channels.ConnectChat(
@@ -241,7 +226,7 @@ func TestChannelsConnectChatWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsConnectChatWithWireMock", "POST", "/api/workspaces/workspaceId/channels/chats", nil, 1)
+	VerifyRequestCount(t, "TestChannelsConnectChatWithWireMock", "POST", "/api/v1/channels/chats", nil, 1)
 }
 
 func TestChannelsStartSiteSignInWithWireMock(
@@ -256,8 +241,7 @@ func TestChannelsStartSiteSignInWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.StartSiteSignIn{
-		WorkspaceID: "workspaceId",
-		Platform:    peal.OAuthSitePlatformWordpressCom,
+		Platform: peal.OAuthSitePlatformWordpressCom,
 	}
 	_, invocationErr := client.Channels.StartSiteSignIn(
 		context.TODO(),
@@ -268,7 +252,7 @@ func TestChannelsStartSiteSignInWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsStartSiteSignInWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites/sign-in/wordpressCom", nil, 1)
+	VerifyRequestCount(t, "TestChannelsStartSiteSignInWithWireMock", "POST", "/api/v1/channels/websites/sign-in/wordpressCom", nil, 1)
 }
 
 func TestChannelsCompleteSiteSignInWithWireMock(
@@ -283,9 +267,8 @@ func TestChannelsCompleteSiteSignInWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SiteSignInCallback{
-		WorkspaceID: "workspaceId",
-		Platform:    peal.OAuthSitePlatformWordpressCom,
-		State:       "state",
+		Platform: peal.OAuthSitePlatformWordpressCom,
+		State:    "state",
 	}
 	_, invocationErr := client.Channels.CompleteSiteSignIn(
 		context.TODO(),
@@ -296,7 +279,7 @@ func TestChannelsCompleteSiteSignInWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsCompleteSiteSignInWithWireMock", "POST", "/api/workspaces/workspaceId/channels/websites/sign-in/wordpressCom/callback", nil, 1)
+	VerifyRequestCount(t, "TestChannelsCompleteSiteSignInWithWireMock", "POST", "/api/v1/channels/websites/sign-in/wordpressCom/callback", nil, 1)
 }
 
 func TestChannelsConnectWithWireMock(
@@ -311,8 +294,7 @@ func TestChannelsConnectWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ConnectChannel{
-		WorkspaceID: "workspaceId",
-		Platform:    peal.PlatformX,
+		Platform: peal.PlatformX,
 	}
 	_, invocationErr := client.Channels.Connect(
 		context.TODO(),
@@ -323,7 +305,7 @@ func TestChannelsConnectWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsConnectWithWireMock", "POST", "/api/workspaces/workspaceId/channels/connect/x", nil, 1)
+	VerifyRequestCount(t, "TestChannelsConnectWithWireMock", "POST", "/api/v1/channels/connect/x", nil, 1)
 }
 
 func TestChannelsCompleteConnectWithWireMock(
@@ -338,9 +320,8 @@ func TestChannelsCompleteConnectWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ConnectCallback{
-		WorkspaceID: "workspaceId",
-		Platform:    peal.PlatformX,
-		State:       "state",
+		Platform: peal.PlatformX,
+		State:    "state",
 	}
 	_, invocationErr := client.Channels.CompleteConnect(
 		context.TODO(),
@@ -351,7 +332,7 @@ func TestChannelsCompleteConnectWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsCompleteConnectWithWireMock", "POST", "/api/workspaces/workspaceId/channels/connect/x/callback", nil, 1)
+	VerifyRequestCount(t, "TestChannelsCompleteConnectWithWireMock", "POST", "/api/v1/channels/connect/x/callback", nil, 1)
 }
 
 func TestChannelsChooseAccountsWithWireMock(
@@ -366,8 +347,7 @@ func TestChannelsChooseAccountsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ChooseAccounts{
-		WorkspaceID: "workspaceId",
-		Platform:    peal.PlatformX,
+		Platform: peal.PlatformX,
 		AccountIDs: []string{
 			"accountIds",
 		},
@@ -382,7 +362,7 @@ func TestChannelsChooseAccountsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsChooseAccountsWithWireMock", "POST", "/api/workspaces/workspaceId/channels/connect/x/accounts", nil, 1)
+	VerifyRequestCount(t, "TestChannelsChooseAccountsWithWireMock", "POST", "/api/v1/channels/connect/x/accounts", nil, 1)
 }
 
 func TestChannelsReconnectWithWireMock(
@@ -397,8 +377,7 @@ func TestChannelsReconnectWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ReconnectChannelsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	_, invocationErr := client.Channels.Reconnect(
 		context.TODO(),
@@ -409,7 +388,7 @@ func TestChannelsReconnectWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsReconnectWithWireMock", "POST", "/api/workspaces/workspaceId/channels/channelId/reconnect", nil, 1)
+	VerifyRequestCount(t, "TestChannelsReconnectWithWireMock", "POST", "/api/v1/channels/channelId/reconnect", nil, 1)
 }
 
 func TestChannelsDisconnectWithWireMock(
@@ -424,8 +403,7 @@ func TestChannelsDisconnectWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DisconnectChannelsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	invocationErr := client.Channels.Disconnect(
 		context.TODO(),
@@ -436,7 +414,7 @@ func TestChannelsDisconnectWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsDisconnectWithWireMock", "DELETE", "/api/workspaces/workspaceId/channels/channelId", nil, 1)
+	VerifyRequestCount(t, "TestChannelsDisconnectWithWireMock", "DELETE", "/api/v1/channels/channelId", nil, 1)
 }
 
 func TestChannelsUpdateWithWireMock(
@@ -451,8 +429,7 @@ func TestChannelsUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ChannelUpdate{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	_, invocationErr := client.Channels.Update(
 		context.TODO(),
@@ -463,7 +440,7 @@ func TestChannelsUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsUpdateWithWireMock", "PATCH", "/api/workspaces/workspaceId/channels/channelId", nil, 1)
+	VerifyRequestCount(t, "TestChannelsUpdateWithWireMock", "PATCH", "/api/v1/channels/channelId", nil, 1)
 }
 
 func TestChannelsDisableWithWireMock(
@@ -478,8 +455,7 @@ func TestChannelsDisableWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DisableChannelsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	_, invocationErr := client.Channels.Disable(
 		context.TODO(),
@@ -490,7 +466,7 @@ func TestChannelsDisableWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsDisableWithWireMock", "POST", "/api/workspaces/workspaceId/channels/channelId/disable", nil, 1)
+	VerifyRequestCount(t, "TestChannelsDisableWithWireMock", "POST", "/api/v1/channels/channelId/disable", nil, 1)
 }
 
 func TestChannelsEnableWithWireMock(
@@ -505,8 +481,7 @@ func TestChannelsEnableWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.EnableChannelsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	_, invocationErr := client.Channels.Enable(
 		context.TODO(),
@@ -517,5 +492,5 @@ func TestChannelsEnableWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelsEnableWithWireMock", "POST", "/api/workspaces/workspaceId/channels/channelId/enable", nil, 1)
+	VerifyRequestCount(t, "TestChannelsEnableWithWireMock", "POST", "/api/v1/channels/channelId/enable", nil, 1)
 }

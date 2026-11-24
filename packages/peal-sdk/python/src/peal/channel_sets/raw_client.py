@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -30,16 +31,12 @@ class RawChannelSetsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[ChannelSet]]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[ChannelSet]]:
         """
         Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -49,7 +46,7 @@ class RawChannelSetsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channel-sets",
+            "api/v1/channel-sets",
             method="GET",
             request_options=request_options,
         )
@@ -63,6 +60,17 @@ class RawChannelSetsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -118,7 +126,6 @@ class RawChannelSetsClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         name: str,
@@ -130,8 +137,6 @@ class RawChannelSetsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         name : str
@@ -150,7 +155,7 @@ class RawChannelSetsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channel-sets",
+            "api/v1/channel-sets",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -158,9 +163,6 @@ class RawChannelSetsClient:
                 "options": convert_and_respect_annotation_metadata(
                     object_=options, annotation=typing.Sequence[ChannelOptions], direction="write"
                 ),
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -175,6 +177,17 @@ class RawChannelSetsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -252,7 +265,6 @@ class RawChannelSetsClient:
 
     def update(
         self,
-        workspace_id: str,
         channel_set_id: str,
         *,
         channel_ids: typing.Sequence[str],
@@ -265,8 +277,6 @@ class RawChannelSetsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_set_id : str
 
         channel_ids : typing.Sequence[str]
@@ -284,7 +294,7 @@ class RawChannelSetsClient:
             ChannelSet
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channel-sets/{encode_path_param(channel_set_id)}",
+            f"api/v1/channel-sets/{encode_path_param(channel_set_id)}",
             method="PUT",
             json={
                 "channelIds": channel_ids,
@@ -309,6 +319,17 @@ class RawChannelSetsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -385,15 +406,13 @@ class RawChannelSetsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
-        self, workspace_id: str, channel_set_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_set_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_set_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -404,13 +423,24 @@ class RawChannelSetsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channel-sets/{encode_path_param(channel_set_id)}",
+            f"api/v1/channel-sets/{encode_path_param(channel_set_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -470,15 +500,13 @@ class AsyncRawChannelSetsClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[ChannelSet]]:
         """
         Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -488,7 +516,7 @@ class AsyncRawChannelSetsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channel-sets",
+            "api/v1/channel-sets",
             method="GET",
             request_options=request_options,
         )
@@ -502,6 +530,17 @@ class AsyncRawChannelSetsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -557,7 +596,6 @@ class AsyncRawChannelSetsClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         name: str,
@@ -569,8 +607,6 @@ class AsyncRawChannelSetsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         name : str
@@ -589,7 +625,7 @@ class AsyncRawChannelSetsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channel-sets",
+            "api/v1/channel-sets",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -597,9 +633,6 @@ class AsyncRawChannelSetsClient:
                 "options": convert_and_respect_annotation_metadata(
                     object_=options, annotation=typing.Sequence[ChannelOptions], direction="write"
                 ),
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -614,6 +647,17 @@ class AsyncRawChannelSetsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -691,7 +735,6 @@ class AsyncRawChannelSetsClient:
 
     async def update(
         self,
-        workspace_id: str,
         channel_set_id: str,
         *,
         channel_ids: typing.Sequence[str],
@@ -704,8 +747,6 @@ class AsyncRawChannelSetsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_set_id : str
 
         channel_ids : typing.Sequence[str]
@@ -723,7 +764,7 @@ class AsyncRawChannelSetsClient:
             ChannelSet
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channel-sets/{encode_path_param(channel_set_id)}",
+            f"api/v1/channel-sets/{encode_path_param(channel_set_id)}",
             method="PUT",
             json={
                 "channelIds": channel_ids,
@@ -748,6 +789,17 @@ class AsyncRawChannelSetsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -824,15 +876,13 @@ class AsyncRawChannelSetsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, channel_set_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_set_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_set_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -843,13 +893,24 @@ class AsyncRawChannelSetsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channel-sets/{encode_path_param(channel_set_id)}",
+            f"api/v1/channel-sets/{encode_path_param(channel_set_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

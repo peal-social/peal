@@ -22,6 +22,7 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
@@ -43,36 +44,32 @@ public class RawChannelDefaultsClient {
     /**
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
-    public PealClientHttpResponse<ChannelDefaults> get(String workspaceId, String channelId) {
-        return get(workspaceId, channelId, GetChannelDefaultsRequest.builder().build());
+    public PealClientHttpResponse<ChannelDefaults> get(String channelId) {
+        return get(channelId, GetChannelDefaultsRequest.builder().build());
+    }
+
+    /**
+     * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
+     */
+    public PealClientHttpResponse<ChannelDefaults> get(String channelId, RequestOptions requestOptions) {
+        return get(channelId, GetChannelDefaultsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
+     */
+    public PealClientHttpResponse<ChannelDefaults> get(String channelId, GetChannelDefaultsRequest request) {
+        return get(channelId, request, null);
     }
 
     /**
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
     public PealClientHttpResponse<ChannelDefaults> get(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return get(workspaceId, channelId, GetChannelDefaultsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
-     */
-    public PealClientHttpResponse<ChannelDefaults> get(
-            String workspaceId, String channelId, GetChannelDefaultsRequest request) {
-        return get(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
-     */
-    public PealClientHttpResponse<ChannelDefaults> get(
-            String workspaceId, String channelId, GetChannelDefaultsRequest request, RequestOptions requestOptions) {
+            String channelId, GetChannelDefaultsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("default-options");
         if (requestOptions != null) {
@@ -108,6 +105,9 @@ public class RawChannelDefaultsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -138,21 +138,18 @@ public class RawChannelDefaultsClient {
     /**
      * Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (<code>TargetOptions</code>), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
      */
-    public PealClientHttpResponse<ChannelDefaults> set(
-            String workspaceId, String channelId, NewChannelDefaults request) {
-        return set(workspaceId, channelId, request, null);
+    public PealClientHttpResponse<ChannelDefaults> set(String channelId, NewChannelDefaults request) {
+        return set(channelId, request, null);
     }
 
     /**
      * Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (<code>TargetOptions</code>), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
      */
     public PealClientHttpResponse<ChannelDefaults> set(
-            String workspaceId, String channelId, NewChannelDefaults request, RequestOptions requestOptions) {
+            String channelId, NewChannelDefaults request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("default-options");
         if (requestOptions != null) {
@@ -198,6 +195,9 @@ public class RawChannelDefaultsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -231,37 +231,32 @@ public class RawChannelDefaultsClient {
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
-    public PealClientHttpResponse<Void> clear(String workspaceId, String channelId) {
-        return clear(
-                workspaceId, channelId, ClearChannelDefaultsRequest.builder().build());
+    public PealClientHttpResponse<Void> clear(String channelId) {
+        return clear(channelId, ClearChannelDefaultsRequest.builder().build());
     }
 
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
-    public PealClientHttpResponse<Void> clear(String workspaceId, String channelId, RequestOptions requestOptions) {
-        return clear(
-                workspaceId, channelId, ClearChannelDefaultsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Void> clear(String channelId, RequestOptions requestOptions) {
+        return clear(channelId, ClearChannelDefaultsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
+     */
+    public PealClientHttpResponse<Void> clear(String channelId, ClearChannelDefaultsRequest request) {
+        return clear(channelId, request, null);
     }
 
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
     public PealClientHttpResponse<Void> clear(
-            String workspaceId, String channelId, ClearChannelDefaultsRequest request) {
-        return clear(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
-     */
-    public PealClientHttpResponse<Void> clear(
-            String workspaceId, String channelId, ClearChannelDefaultsRequest request, RequestOptions requestOptions) {
+            String channelId, ClearChannelDefaultsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("default-options");
         if (requestOptions != null) {
@@ -299,6 +294,9 @@ public class RawChannelDefaultsClient {
             String responseBodyString = responseBody != null ? responseBody.string() : "{}";
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

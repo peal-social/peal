@@ -7,9 +7,6 @@ namespace Peal;
 public record ListMediaRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Cursor { get; set; }
 
     [JsonIgnore]

@@ -10,14 +10,6 @@ import (
 )
 
 func TestSettersVideoGenerationRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &VideoGenerationRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetAspect", func(t *testing.T) {
 		obj := &VideoGenerationRequest{}
 		var fernTestValueAspect ImageAspect
@@ -53,37 +45,6 @@ func TestSettersVideoGenerationRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitVideoGenerationRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &VideoGenerationRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetAspect_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -211,14 +172,6 @@ func TestSettersMarkExplicitVideoGenerationRequest(t *testing.T) {
 }
 
 func TestSettersGetVideoGenerationsRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &GetVideoGenerationsRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetGenerationID", func(t *testing.T) {
 		obj := &GetVideoGenerationsRequest{}
 		var fernTestValueGenerationID string
@@ -230,37 +183,6 @@ func TestSettersGetVideoGenerationsRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitGetVideoGenerationsRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &GetVideoGenerationsRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetGenerationID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -295,14 +217,6 @@ func TestSettersMarkExplicitGetVideoGenerationsRequest(t *testing.T) {
 }
 
 func TestSettersListVideoGenerationsRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &ListVideoGenerationsRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetStatus", func(t *testing.T) {
 		obj := &ListVideoGenerationsRequest{}
 		var fernTestValueStatus *VideoGenerationStatus
@@ -314,37 +228,6 @@ func TestSettersListVideoGenerationsRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitListVideoGenerationsRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &ListVideoGenerationsRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetStatus_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange

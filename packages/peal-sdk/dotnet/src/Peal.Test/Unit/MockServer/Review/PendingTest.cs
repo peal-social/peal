@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -65,10 +64,7 @@ public class PendingTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/approvals")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/approvals").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -77,9 +73,7 @@ public class PendingTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Review.PendingAsync(
-            new PendingReviewRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Review.PendingAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -113,10 +107,7 @@ public class PendingTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/approvals")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/approvals").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -125,9 +116,7 @@ public class PendingTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Review.PendingAsync(
-            new PendingReviewRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Review.PendingAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

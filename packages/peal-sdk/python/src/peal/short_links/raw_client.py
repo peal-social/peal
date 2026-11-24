@@ -30,16 +30,12 @@ class RawShortLinksClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def status(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[ShortLinkStatus]:
+    def status(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[ShortLinkStatus]:
         """
         Answers whether this server shortens links (`available`), what a short address starts with (`base`) and how long it is (`shortLength`), and whether the workspace's new posts ask for short links by default (`byDefault`). A post that leaves `shortenLinks` out takes `byDefault` when it is made (the web app, the API, MCP, the command line and feeds alike), and `false` always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with `http://` or `https://` and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -49,7 +45,7 @@ class RawShortLinksClient:
             ShortLinkStatus
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/short-links/status",
+            "api/v1/short-links/status",
             method="GET",
             request_options=request_options,
         )
@@ -63,6 +59,17 @@ class RawShortLinksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -117,15 +124,13 @@ class RawShortLinksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_default(
-        self, workspace_id: str, *, by_default: bool, request_options: typing.Optional[RequestOptions] = None
+        self, *, by_default: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ShortLinkStatus]:
         """
         Sets whether the workspace's new posts ask for short links unless they say otherwise (`shortenLinks`), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
 
         Parameters
         ----------
-        workspace_id : str
-
         by_default : bool
 
         request_options : typing.Optional[RequestOptions]
@@ -137,7 +142,7 @@ class RawShortLinksClient:
             ShortLinkStatus
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/short-links/settings",
+            "api/v1/short-links/settings",
             method="PUT",
             json={
                 "byDefault": by_default,
@@ -158,6 +163,17 @@ class RawShortLinksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -213,7 +229,6 @@ class RawShortLinksClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -228,8 +243,6 @@ class RawShortLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -251,7 +264,7 @@ class RawShortLinksClient:
             ShortLinkPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/short-links",
+            "api/v1/short-links",
             method="GET",
             params={
                 "channelId": channel_id,
@@ -339,7 +352,6 @@ class RawShortLinksClient:
 
     def get(
         self,
-        workspace_id: str,
         link_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -351,8 +363,6 @@ class RawShortLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -368,7 +378,7 @@ class RawShortLinksClient:
             ShortLinkReport
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/short-links/{encode_path_param(link_id)}",
+            f"api/v1/short-links/{encode_path_param(link_id)}",
             method="GET",
             params={
                 "from": from_,
@@ -456,15 +466,13 @@ class AsyncRawShortLinksClient:
         self._client_wrapper = client_wrapper
 
     async def status(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ShortLinkStatus]:
         """
         Answers whether this server shortens links (`available`), what a short address starts with (`base`) and how long it is (`shortLength`), and whether the workspace's new posts ask for short links by default (`byDefault`). A post that leaves `shortenLinks` out takes `byDefault` when it is made (the web app, the API, MCP, the command line and feeds alike), and `false` always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with `http://` or `https://` and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -474,7 +482,7 @@ class AsyncRawShortLinksClient:
             ShortLinkStatus
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/short-links/status",
+            "api/v1/short-links/status",
             method="GET",
             request_options=request_options,
         )
@@ -488,6 +496,17 @@ class AsyncRawShortLinksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -542,15 +561,13 @@ class AsyncRawShortLinksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_default(
-        self, workspace_id: str, *, by_default: bool, request_options: typing.Optional[RequestOptions] = None
+        self, *, by_default: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ShortLinkStatus]:
         """
         Sets whether the workspace's new posts ask for short links unless they say otherwise (`shortenLinks`), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
 
         Parameters
         ----------
-        workspace_id : str
-
         by_default : bool
 
         request_options : typing.Optional[RequestOptions]
@@ -562,7 +579,7 @@ class AsyncRawShortLinksClient:
             ShortLinkStatus
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/short-links/settings",
+            "api/v1/short-links/settings",
             method="PUT",
             json={
                 "byDefault": by_default,
@@ -583,6 +600,17 @@ class AsyncRawShortLinksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -638,7 +666,6 @@ class AsyncRawShortLinksClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -653,8 +680,6 @@ class AsyncRawShortLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -676,7 +701,7 @@ class AsyncRawShortLinksClient:
             ShortLinkPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/short-links",
+            "api/v1/short-links",
             method="GET",
             params={
                 "channelId": channel_id,
@@ -764,7 +789,6 @@ class AsyncRawShortLinksClient:
 
     async def get(
         self,
-        workspace_id: str,
         link_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -776,8 +800,6 @@ class AsyncRawShortLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -793,7 +815,7 @@ class AsyncRawShortLinksClient:
             ShortLinkReport
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/short-links/{encode_path_param(link_id)}",
+            f"api/v1/short-links/{encode_path_param(link_id)}",
             method="GET",
             params={
                 "from": from_,

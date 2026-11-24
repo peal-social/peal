@@ -34,7 +34,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/invitations")
+                    .WithPath("/api/v1/invitations")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -47,12 +47,7 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Invitations.CreateAsync(
-            new NewInvitation
-            {
-                WorkspaceId = "workspaceId",
-                Email = "email",
-                Role = Role.Owner,
-            }
+            new NewInvitation { Email = "email", Role = Role.Owner }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -82,7 +77,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/invitations")
+                    .WithPath("/api/v1/invitations")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -95,12 +90,7 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Invitations.CreateAsync(
-            new NewInvitation
-            {
-                WorkspaceId = "workspaceId",
-                Email = "email",
-                Role = Role.Owner,
-            }
+            new NewInvitation { Email = "email", Role = Role.Owner }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

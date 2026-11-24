@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         ruleId: "ruleId"
  *     }
  */
 export interface RecyclingRuleChange {
-    workspaceId: string;
     ruleId: string;
     count?: number | null;
     paused?: boolean;

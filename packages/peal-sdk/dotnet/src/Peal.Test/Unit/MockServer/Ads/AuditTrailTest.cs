@@ -54,10 +54,7 @@ public class AuditTrailTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/audit")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/ads/audit").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -66,9 +63,7 @@ public class AuditTrailTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Ads.AuditTrailAsync(
-            new AuditTrailAdsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Ads.AuditTrailAsync(new AuditTrailAdsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -100,10 +95,7 @@ public class AuditTrailTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/audit")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/ads/audit").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -112,9 +104,7 @@ public class AuditTrailTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Ads.AuditTrailAsync(
-            new AuditTrailAdsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Ads.AuditTrailAsync(new AuditTrailAdsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

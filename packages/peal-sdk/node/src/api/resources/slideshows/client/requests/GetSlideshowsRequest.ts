@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         slideshowId: "slideshowId"
  *     }
  */
 export interface GetSlideshowsRequest {
-    workspaceId: string;
     slideshowId: string;
 }

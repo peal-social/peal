@@ -15,18 +15,14 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channel-sets/channelSetId")
+                    .WithPath("/api/v1/channel-sets/channelSetId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.ChannelSets.DeleteAsync(
-                new DeleteChannelSetsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    ChannelSetId = "channelSetId",
-                }
+                new DeleteChannelSetsRequest { ChannelSetId = "channelSetId" }
             )
         );
     }
@@ -38,18 +34,14 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channel-sets/channelSetId")
+                    .WithPath("/api/v1/channel-sets/channelSetId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.ChannelSets.DeleteAsync(
-                new DeleteChannelSetsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    ChannelSetId = "channelSetId",
-                }
+                new DeleteChannelSetsRequest { ChannelSetId = "channelSetId" }
             )
         );
     }

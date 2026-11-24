@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         conversationId: "conversationId"
  *     }
  */
 export interface GetConversationInboxMessagesRequest {
-    workspaceId: string;
     conversationId: string;
     cursor?: string;
     limit?: string;

@@ -4,8 +4,6 @@ module Peal
   module Recycling
     module Types
       class DeleteRecyclingRequest < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :rule_id, -> { String }, optional: false, nullable: false, api_name: "ruleId"
       end
     end

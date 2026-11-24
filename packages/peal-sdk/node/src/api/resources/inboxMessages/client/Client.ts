@@ -40,16 +40,14 @@ export class InboxMessagesClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.inboxMessages.listConversations({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.inboxMessages.listConversations()
      */
-    public listConversations(request: Peal.ListConversationsInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): core.HttpResponsePromise<Peal.InboxConversationPage> {
+    public listConversations(request: Peal.ListConversationsInboxMessagesRequest = {}, requestOptions?: InboxMessagesClient.RequestOptions): core.HttpResponsePromise<Peal.InboxConversationPage> {
         return core.HttpResponsePromise.fromPromise(this.__listConversations(request, requestOptions));
     }
 
-    private async __listConversations(request: Peal.ListConversationsInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxConversationPage>> {
-        const { workspaceId, channelId, cursor, limit, unread } = request;
+    private async __listConversations(request: Peal.ListConversationsInboxMessagesRequest = {}, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxConversationPage>> {
+        const { channelId, cursor, limit, unread } = request;
         const _queryParams: Record<string, unknown> = {
             channelId,
             cursor,
@@ -57,9 +55,9 @@ export class InboxMessagesClient {
             unread: unread != null ? unread : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/conversations`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/inbox/messages/conversations"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -88,7 +86,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/messages/conversations");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/messages/conversations");
     }
 
     /**
@@ -107,7 +105,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.getConversation({
-     *         workspaceId: "workspaceId",
      *         conversationId: "conversationId"
      *     })
      */
@@ -116,15 +113,15 @@ export class InboxMessagesClient {
     }
 
     private async __getConversation(request: Peal.GetConversationInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxConversationDetail>> {
-        const { workspaceId, conversationId, cursor, limit } = request;
+        const { conversationId, cursor, limit } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
             limit
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -153,7 +150,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/messages/conversations/{conversationId}");
     }
 
     /**
@@ -162,6 +159,7 @@ export class InboxMessagesClient {
      * @param {Peal.NewInboxMessage} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.PaymentRequiredError}
      * @throws {@link Peal.ForbiddenError}
@@ -174,7 +172,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.sendMessage({
-     *         workspaceId: "workspaceId",
      *         conversationId: "conversationId",
      *         text: "text"
      *     })
@@ -184,11 +181,11 @@ export class InboxMessagesClient {
     }
 
     private async __sendMessage(request: Peal.NewInboxMessage, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxOutgoingMessage>> {
-        const { workspaceId, conversationId, "idempotency-key": idempotencyKey, ..._body } = request;
+        const { conversationId, "idempotency-key": idempotencyKey, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}/messages`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}/messages`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -207,6 +204,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
@@ -222,7 +220,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/messages");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/messages/conversations/{conversationId}/messages");
     }
 
     /**
@@ -231,6 +229,7 @@ export class InboxMessagesClient {
      * @param {Peal.NewInboxPrivateReply} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.PaymentRequiredError}
      * @throws {@link Peal.ForbiddenError}
@@ -243,7 +242,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.sendPrivateReply({
-     *         workspaceId: "workspaceId",
      *         commentId: "commentId",
      *         text: "text"
      *     })
@@ -253,11 +251,11 @@ export class InboxMessagesClient {
     }
 
     private async __sendPrivateReply(request: Peal.NewInboxPrivateReply, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxPrivateReply>> {
-        const { workspaceId, "idempotency-key": idempotencyKey, ..._body } = request;
+        const { "idempotency-key": idempotencyKey, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/private-replies`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/inbox/messages/private-replies"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -276,6 +274,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
@@ -291,7 +290,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/messages/private-replies");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/messages/private-replies");
     }
 
     /**
@@ -300,6 +299,7 @@ export class InboxMessagesClient {
      * @param {Peal.GetPrivateReplyInboxMessagesRequest} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -309,7 +309,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.getPrivateReply({
-     *         workspaceId: "workspaceId",
      *         privateReplyId: "privateReplyId"
      *     })
      */
@@ -318,11 +317,11 @@ export class InboxMessagesClient {
     }
 
     private async __getPrivateReply(request: Peal.GetPrivateReplyInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxPrivateReply>> {
-        const { workspaceId, privateReplyId } = request;
+        const { privateReplyId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/private-replies/${core.url.encodePathParam(privateReplyId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/messages/private-replies/${core.url.encodePathParam(privateReplyId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -338,6 +337,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -350,7 +350,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/messages/private-replies/{privateReplyId}");
     }
 
     /**
@@ -359,6 +359,7 @@ export class InboxMessagesClient {
      * @param {Peal.ConfirmPrivateReplyInboxMessagesRequest} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -369,7 +370,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.confirmPrivateReply({
-     *         workspaceId: "workspaceId",
      *         privateReplyId: "privateReplyId",
      *         went: true
      *     })
@@ -379,11 +379,11 @@ export class InboxMessagesClient {
     }
 
     private async __confirmPrivateReply(request: Peal.ConfirmPrivateReplyInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxPrivateReply>> {
-        const { workspaceId, privateReplyId, ..._body } = request;
+        const { privateReplyId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/private-replies/${core.url.encodePathParam(privateReplyId, errors.PealError)}/confirm`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/messages/private-replies/${core.url.encodePathParam(privateReplyId, errors.PealError)}/confirm`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -402,6 +402,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -415,7 +416,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/messages/private-replies/{privateReplyId}/confirm");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/messages/private-replies/{privateReplyId}/confirm");
     }
 
     /**
@@ -424,6 +425,7 @@ export class InboxMessagesClient {
      * @param {Peal.SetConversationReadInboxMessagesRequest} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -433,7 +435,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.setConversationRead({
-     *         workspaceId: "workspaceId",
      *         conversationId: "conversationId",
      *         read: true
      *     })
@@ -443,11 +444,11 @@ export class InboxMessagesClient {
     }
 
     private async __setConversationRead(request: Peal.SetConversationReadInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxConversation>> {
-        const { workspaceId, conversationId, ..._body } = request;
+        const { conversationId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}/read`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/messages/conversations/${core.url.encodePathParam(conversationId, errors.PealError)}/read`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -466,6 +467,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -478,15 +480,15 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/messages/conversations/{conversationId}/read");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/messages/conversations/{conversationId}/read");
     }
 
     /**
      * Lists the channels whose direct messages the workspace turned on, and the applications its owner let read and answer them. Needs channel:connect.
      *
-     * @param {Peal.GetMessageSettingsInboxMessagesRequest} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -495,20 +497,17 @@ export class InboxMessagesClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.inboxMessages.getMessageSettings({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.inboxMessages.getMessageSettings()
      */
-    public getMessageSettings(request: Peal.GetMessageSettingsInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): core.HttpResponsePromise<Peal.InboxMessageSettings> {
-        return core.HttpResponsePromise.fromPromise(this.__getMessageSettings(request, requestOptions));
+    public getMessageSettings(requestOptions?: InboxMessagesClient.RequestOptions): core.HttpResponsePromise<Peal.InboxMessageSettings> {
+        return core.HttpResponsePromise.fromPromise(this.__getMessageSettings(requestOptions));
     }
 
-    private async __getMessageSettings(request: Peal.GetMessageSettingsInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxMessageSettings>> {
-        const { workspaceId } = request;
+    private async __getMessageSettings(requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxMessageSettings>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/settings`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/inbox/messages/settings"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -524,6 +523,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -536,7 +536,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/messages/settings");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/messages/settings");
     }
 
     /**
@@ -545,6 +545,7 @@ export class InboxMessagesClient {
      * @param {Peal.SetChannelMessagesInboxMessagesRequest} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -555,7 +556,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.setChannelMessages({
-     *         workspaceId: "workspaceId",
      *         channelId: "channelId",
      *         enabled: true
      *     })
@@ -565,11 +565,11 @@ export class InboxMessagesClient {
     }
 
     private async __setChannelMessages(request: Peal.SetChannelMessagesInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxMessageSettings>> {
-        const { workspaceId, channelId, ..._body } = request;
+        const { channelId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/channels/${core.url.encodePathParam(channelId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/messages/channels/${core.url.encodePathParam(channelId, errors.PealError)}`),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
@@ -588,6 +588,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -601,7 +602,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/inbox/messages/channels/{channelId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/inbox/messages/channels/{channelId}");
     }
 
     /**
@@ -610,6 +611,7 @@ export class InboxMessagesClient {
      * @param {Peal.SetMessageApplicationInboxMessagesRequest} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -619,7 +621,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.setMessageApplication({
-     *         workspaceId: "workspaceId",
      *         allowed: true,
      *         clientId: "clientId"
      *     })
@@ -629,17 +630,16 @@ export class InboxMessagesClient {
     }
 
     private async __setMessageApplication(request: Peal.SetMessageApplicationInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxMessageSettings>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/applications`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/inbox/messages/applications"),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -652,6 +652,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -664,7 +665,7 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/inbox/messages/applications");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/inbox/messages/applications");
     }
 
     /**
@@ -673,6 +674,7 @@ export class InboxMessagesClient {
      * @param {Peal.ConfirmMessageInboxMessagesRequest} request
      * @param {InboxMessagesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -683,7 +685,6 @@ export class InboxMessagesClient {
      *
      * @example
      *     await client.inboxMessages.confirmMessage({
-     *         workspaceId: "workspaceId",
      *         messageId: "messageId",
      *         sent: true
      *     })
@@ -693,11 +694,11 @@ export class InboxMessagesClient {
     }
 
     private async __confirmMessage(request: Peal.ConfirmMessageInboxMessagesRequest, requestOptions?: InboxMessagesClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxOutgoingMessage>> {
-        const { workspaceId, messageId, ..._body } = request;
+        const { messageId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/messages/outgoing/${core.url.encodePathParam(messageId, errors.PealError)}/confirmation`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/messages/outgoing/${core.url.encodePathParam(messageId, errors.PealError)}/confirmation`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -716,6 +717,7 @@ export class InboxMessagesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -729,6 +731,6 @@ export class InboxMessagesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/messages/outgoing/{messageId}/confirmation");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/messages/outgoing/{messageId}/confirmation");
     }
 }

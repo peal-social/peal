@@ -42,7 +42,7 @@ func (r *RawClient) Get(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := baseURL + "/api/credential"
+	endpointURL := baseURL + "/api/v1/credential"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),

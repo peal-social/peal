@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListChannelSetsRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.ChannelSet], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channel-sets",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/channel-sets"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -79,7 +75,7 @@ func (r *RawClient) List(
 
 func (r *RawClient) Create(
 	ctx context.Context,
-	request *peal.CreateChannelSetsRequest,
+	request *peal.ChannelSetDetails,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.ChannelSet], error) {
 	options := core.NewRequestOptions(opts...)
@@ -88,15 +84,11 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channel-sets",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/channel-sets"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.ChannelSet
 	raw, err := r.caller.Call(
 		ctx,
@@ -136,8 +128,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channel-sets/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channel-sets/%v",
 		request.ChannelSetID,
 	)
 	headers := internal.MergeHeaders(
@@ -184,8 +175,7 @@ func (r *RawClient) Delete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channel-sets/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channel-sets/%v",
 		request.ChannelSetID,
 	)
 	headers := internal.MergeHeaders(

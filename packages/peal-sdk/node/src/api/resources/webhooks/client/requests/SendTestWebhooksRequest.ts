@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         endpointId: "endpointId"
  *     }
  */
 export interface SendTestWebhooksRequest {
-    workspaceId: string;
     endpointId: string;
     eventType?: Peal.SubscribableWebhookEventType;
 }

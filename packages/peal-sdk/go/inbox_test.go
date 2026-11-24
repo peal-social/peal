@@ -10,14 +10,6 @@ import (
 )
 
 func TestSettersConfirmReplyInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &ConfirmReplyInboxRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetReplyID", func(t *testing.T) {
 		obj := &ConfirmReplyInboxRequest{}
 		var fernTestValueReplyID string
@@ -37,37 +29,6 @@ func TestSettersConfirmReplyInboxRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitConfirmReplyInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &ConfirmReplyInboxRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetReplyID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -133,14 +94,6 @@ func TestSettersMarkExplicitConfirmReplyInboxRequest(t *testing.T) {
 }
 
 func TestSettersGetAbilitiesInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &GetAbilitiesInboxRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetChannelID", func(t *testing.T) {
 		obj := &GetAbilitiesInboxRequest{}
 		var fernTestValueChannelID string
@@ -152,37 +105,6 @@ func TestSettersGetAbilitiesInboxRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitGetAbilitiesInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &GetAbilitiesInboxRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetChannelID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -217,14 +139,6 @@ func TestSettersMarkExplicitGetAbilitiesInboxRequest(t *testing.T) {
 }
 
 func TestSettersGetThreadInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &GetThreadInboxRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetThreadID", func(t *testing.T) {
 		obj := &GetThreadInboxRequest{}
 		var fernTestValueThreadID string
@@ -236,37 +150,6 @@ func TestSettersGetThreadInboxRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitGetThreadInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &GetThreadInboxRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetThreadID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -301,14 +184,6 @@ func TestSettersMarkExplicitGetThreadInboxRequest(t *testing.T) {
 }
 
 func TestSettersListThreadsInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &ListThreadsInboxRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetChannelID", func(t *testing.T) {
 		obj := &ListThreadsInboxRequest{}
 		var fernTestValueChannelID *string
@@ -352,37 +227,6 @@ func TestSettersListThreadsInboxRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitListThreadsInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &ListThreadsInboxRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetChannelID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -541,14 +385,6 @@ func TestSettersMarkExplicitListThreadsInboxRequest(t *testing.T) {
 }
 
 func TestSettersModerateInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &ModerateInboxRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetCommentID", func(t *testing.T) {
 		obj := &ModerateInboxRequest{}
 		var fernTestValueCommentID string
@@ -568,37 +404,6 @@ func TestSettersModerateInboxRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitModerateInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &ModerateInboxRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetCommentID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -672,14 +477,6 @@ func TestSettersNewInboxReply(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &NewInboxReply{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetCommentID", func(t *testing.T) {
 		obj := &NewInboxReply{}
 		var fernTestValueCommentID string
@@ -707,37 +504,6 @@ func TestSettersMarkExplicitNewInboxReply(t *testing.T) {
 
 		// Act
 		obj.SetIdempotencyKey(fernTestValueIdempotencyKey)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &NewInboxReply{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -826,14 +592,6 @@ func TestSettersMarkExplicitNewInboxReply(t *testing.T) {
 }
 
 func TestSettersSetAnsweredInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &SetAnsweredInboxRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetCommentID", func(t *testing.T) {
 		obj := &SetAnsweredInboxRequest{}
 		var fernTestValueCommentID string
@@ -853,37 +611,6 @@ func TestSettersSetAnsweredInboxRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitSetAnsweredInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &SetAnsweredInboxRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetCommentID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -4394,14 +4121,6 @@ func TestSettersMarkExplicitInboxThreadPage(t *testing.T) {
 }
 
 func TestSettersWithdrawReplyInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID", func(t *testing.T) {
-		obj := &WithdrawReplyInboxRequest{}
-		var fernTestValueWorkspaceID string
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-		assert.Equal(t, fernTestValueWorkspaceID, obj.WorkspaceID)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetReplyID", func(t *testing.T) {
 		obj := &WithdrawReplyInboxRequest{}
 		var fernTestValueReplyID string
@@ -4413,37 +4132,6 @@ func TestSettersWithdrawReplyInboxRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitWithdrawReplyInboxRequest(t *testing.T) {
-	t.Run("SetWorkspaceID_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &WithdrawReplyInboxRequest{}
-		var fernTestValueWorkspaceID string
-
-		// Act
-		obj.SetWorkspaceID(fernTestValueWorkspaceID)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetReplyID_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange

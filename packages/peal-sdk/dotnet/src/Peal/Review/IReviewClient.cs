@@ -6,7 +6,6 @@ public partial interface IReviewClient
     /// Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
     /// </summary>
     WithRawResponseTask<ReviewSettings> SettingsAsync(
-        SettingsReviewRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -15,7 +14,7 @@ public partial interface IReviewClient
     /// Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
     /// </summary>
     WithRawResponseTask<ReviewSettings> UpdateSettingsAsync(
-        UpdateSettingsReviewRequest request,
+        ReviewSettings request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -24,7 +23,6 @@ public partial interface IReviewClient
     /// Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<ApprovalRequest>> PendingAsync(
-        PendingReviewRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

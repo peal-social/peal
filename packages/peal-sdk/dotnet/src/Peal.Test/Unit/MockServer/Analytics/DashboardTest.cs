@@ -271,7 +271,7 @@ public class DashboardTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/analytics/dashboard")
+                    .WithPath("/api/v1/analytics/dashboard")
                     .WithParam("timeZone", "timeZone")
                     .UsingGet()
             )
@@ -283,7 +283,7 @@ public class DashboardTest : BaseMockServerTest
             );
 
         var response = await Client.Analytics.DashboardAsync(
-            new DashboardAnalyticsRequest { WorkspaceId = "workspaceId", TimeZone = "timeZone" }
+            new DashboardAnalyticsRequest { TimeZone = "timeZone" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -412,7 +412,7 @@ public class DashboardTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/analytics/dashboard")
+                    .WithPath("/api/v1/analytics/dashboard")
                     .WithParam("timeZone", "timeZone")
                     .UsingGet()
             )
@@ -424,7 +424,7 @@ public class DashboardTest : BaseMockServerTest
             );
 
         var response = await Client.Analytics.DashboardAsync(
-            new DashboardAnalyticsRequest { WorkspaceId = "workspaceId", TimeZone = "timeZone" }
+            new DashboardAnalyticsRequest { TimeZone = "timeZone" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -3,7 +3,9 @@
 // the health check, and the signed-in user to the bearer token peal_test
 // only. The test calls both through the SDK as its users would, and checks
 // the answer; the run passes only when the stand-in saw both calls, each
-// naming the version of the API the SDK was generated against.
+// naming the version of the API the SDK was generated against, and none
+// naming a workspace: the test's client is made without one, as a key's
+// client is, so its optional `Peal-Workspace` must stay unsent.
 import path from "node:path";
 
 import { $ } from "bun";
@@ -68,6 +70,9 @@ const seen = { health: false, me: false };
 /** What each call the stand-in counted sent as its version. */
 const versions: (string | null)[] = [];
 
+/** What each call the stand-in counted sent as its workspace. */
+const workspaces: (string | null)[] = [];
+
 const server = Bun.serve({
   fetch: (request) => {
     const { pathname } = new URL(request.url);
@@ -75,6 +80,7 @@ const server = Bun.serve({
     if (request.method === "GET" && pathname === "/api/health") {
       seen.health = true;
       versions.push(request.headers.get("peal-version"));
+      workspaces.push(request.headers.get("peal-workspace"));
 
       return new Response(null, { status: 204 });
     }
@@ -86,6 +92,7 @@ const server = Bun.serve({
 
       seen.me = true;
       versions.push(request.headers.get("peal-version"));
+      workspaces.push(request.headers.get("peal-workspace"));
 
       return Response.json(me);
     }
@@ -128,5 +135,11 @@ if (!seen.health || !seen.me) {
 if (versions.some((version) => version !== info.version)) {
   throw new Error(
     `The ${language.name} SDK must send Peal-Version: ${info.version} on every request; it sent ${JSON.stringify(versions)}.`
+  );
+}
+
+if (workspaces.some((workspace) => workspace !== null)) {
+  throw new Error(
+    `The ${language.name} SDK's client, made without a workspace, must send no Peal-Workspace; it sent ${JSON.stringify(workspaces)}.`
   );
 }

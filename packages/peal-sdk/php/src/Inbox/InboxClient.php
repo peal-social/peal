@@ -64,12 +64,10 @@ class InboxClient
      * Example:
      * ```php
      * $client->inbox->listThreads(
-     *     'workspaceId',
      *     new ListThreadsInboxRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListThreadsInboxRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -83,7 +81,7 @@ class InboxClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listThreads(string $workspaceId, ListThreadsInboxRequest $request = new ListThreadsInboxRequest(), ?array $options = null): ?InboxThreadPage
+    public function listThreads(ListThreadsInboxRequest $request = new ListThreadsInboxRequest(), ?array $options = null): ?InboxThreadPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -106,7 +104,7 @@ class InboxClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/threads",
+                    path: "api/v1/inbox/threads",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -138,12 +136,10 @@ class InboxClient
      * Example:
      * ```php
      * $client->inbox->getThread(
-     *     'workspaceId',
      *     'threadId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $threadId
      * @param ?array{
      *   baseUrl?: string,
@@ -157,14 +153,14 @@ class InboxClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getThread(string $workspaceId, string $threadId, ?array $options = null): ?InboxThreadDetail
+    public function getThread(string $threadId, ?array $options = null): ?InboxThreadDetail
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/threads/{$threadId}",
+                    path: "api/v1/inbox/threads/{$threadId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -195,12 +191,10 @@ class InboxClient
      * Example:
      * ```php
      * $client->inbox->getAbilities(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -214,14 +208,14 @@ class InboxClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getAbilities(string $workspaceId, string $channelId, ?array $options = null): ?InboxAbilities
+    public function getAbilities(string $channelId, ?array $options = null): ?InboxAbilities
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/channels/{$channelId}/abilities",
+                    path: "api/v1/inbox/channels/{$channelId}/abilities",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -252,7 +246,6 @@ class InboxClient
      * Example:
      * ```php
      * $client->inbox->reply(
-     *     'workspaceId',
      *     'commentId',
      *     new NewInboxReply([
      *         'text' => 'text',
@@ -260,7 +253,6 @@ class InboxClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $commentId
      * @param NewInboxReply $request
      * @param ?array{
@@ -275,7 +267,7 @@ class InboxClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function reply(string $workspaceId, string $commentId, NewInboxReply $request, ?array $options = null): ?InboxReply
+    public function reply(string $commentId, NewInboxReply $request, ?array $options = null): ?InboxReply
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -287,7 +279,7 @@ class InboxClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/comments/{$commentId}/replies",
+                    path: "api/v1/inbox/comments/{$commentId}/replies",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -320,7 +312,6 @@ class InboxClient
      * Example:
      * ```php
      * $client->inbox->setAnswered(
-     *     'workspaceId',
      *     'commentId',
      *     new SetAnsweredInboxRequest([
      *         'answered' => true,
@@ -328,7 +319,6 @@ class InboxClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $commentId
      * @param SetAnsweredInboxRequest $request
      * @param ?array{
@@ -343,7 +333,7 @@ class InboxClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setAnswered(string $workspaceId, string $commentId, SetAnsweredInboxRequest $request, ?array $options = null): ?InboxComment
+    public function setAnswered(string $commentId, SetAnsweredInboxRequest $request, ?array $options = null): ?InboxComment
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -351,7 +341,7 @@ class InboxClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/comments/{$commentId}/answered",
+                    path: "api/v1/inbox/comments/{$commentId}/answered",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -383,7 +373,6 @@ class InboxClient
      * Example:
      * ```php
      * $client->inbox->moderate(
-     *     'workspaceId',
      *     'commentId',
      *     new ModerateInboxRequest([
      *         'action' => InboxModerationAction::Hide->value,
@@ -391,7 +380,6 @@ class InboxClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $commentId
      * @param ModerateInboxRequest $request
      * @param ?array{
@@ -406,7 +394,7 @@ class InboxClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function moderate(string $workspaceId, string $commentId, ModerateInboxRequest $request, ?array $options = null): ?InboxComment
+    public function moderate(string $commentId, ModerateInboxRequest $request, ?array $options = null): ?InboxComment
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -414,7 +402,7 @@ class InboxClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/comments/{$commentId}/moderation",
+                    path: "api/v1/inbox/comments/{$commentId}/moderation",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -446,7 +434,6 @@ class InboxClient
      * Example:
      * ```php
      * $client->inbox->confirmReply(
-     *     'workspaceId',
      *     'replyId',
      *     new ConfirmReplyInboxRequest([
      *         'sent' => true,
@@ -454,7 +441,6 @@ class InboxClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $replyId
      * @param ConfirmReplyInboxRequest $request
      * @param ?array{
@@ -469,7 +455,7 @@ class InboxClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function confirmReply(string $workspaceId, string $replyId, ConfirmReplyInboxRequest $request, ?array $options = null): ?InboxReply
+    public function confirmReply(string $replyId, ConfirmReplyInboxRequest $request, ?array $options = null): ?InboxReply
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -477,7 +463,7 @@ class InboxClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/replies/{$replyId}/confirmation",
+                    path: "api/v1/inbox/replies/{$replyId}/confirmation",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -509,12 +495,10 @@ class InboxClient
      * Example:
      * ```php
      * $client->inbox->withdrawReply(
-     *     'workspaceId',
      *     'replyId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $replyId
      * @param ?array{
      *   baseUrl?: string,
@@ -528,14 +512,14 @@ class InboxClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function withdrawReply(string $workspaceId, string $replyId, ?array $options = null): ?InboxReply
+    public function withdrawReply(string $replyId, ?array $options = null): ?InboxReply
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/replies/{$replyId}",
+                    path: "api/v1/inbox/replies/{$replyId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

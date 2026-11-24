@@ -88,19 +88,15 @@ func TestTagsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListTagsRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Tags.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestTagsListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestTagsListWithWireMock", "GET", "/api/workspaces/workspaceId/tags", nil, 1)
+	VerifyRequestCount(t, "TestTagsListWithWireMock", "GET", "/api/v1/tags", nil, 1)
 }
 
 func TestTagsCreateWithWireMock(
@@ -114,12 +110,9 @@ func TestTagsCreateWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.CreateTagsRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.TagDetails{
-			Colour: peal.TagColourGray,
-			Name:   "name",
-		},
+	request := &peal.TagDetails{
+		Colour: peal.TagColourGray,
+		Name:   "name",
 	}
 	_, invocationErr := client.Tags.Create(
 		context.TODO(),
@@ -130,7 +123,7 @@ func TestTagsCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestTagsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/tags", nil, 1)
+	VerifyRequestCount(t, "TestTagsCreateWithWireMock", "POST", "/api/v1/tags", nil, 1)
 }
 
 func TestTagsDeleteWithWireMock(
@@ -145,8 +138,7 @@ func TestTagsDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteTagsRequest{
-		WorkspaceID: "workspaceId",
-		TagID:       "tagId",
+		TagID: "tagId",
 	}
 	invocationErr := client.Tags.Delete(
 		context.TODO(),
@@ -157,7 +149,7 @@ func TestTagsDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestTagsDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/tags/tagId", nil, 1)
+	VerifyRequestCount(t, "TestTagsDeleteWithWireMock", "DELETE", "/api/v1/tags/tagId", nil, 1)
 }
 
 func TestTagsUpdateWithWireMock(
@@ -172,8 +164,7 @@ func TestTagsUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UpdateTagsRequest{
-		WorkspaceID: "workspaceId",
-		TagID:       "tagId",
+		TagID: "tagId",
 		Body: &peal.TagDetails{
 			Colour: peal.TagColourGray,
 			Name:   "name",
@@ -188,5 +179,5 @@ func TestTagsUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestTagsUpdateWithWireMock", "PATCH", "/api/workspaces/workspaceId/tags/tagId", nil, 1)
+	VerifyRequestCount(t, "TestTagsUpdateWithWireMock", "PATCH", "/api/v1/tags/tagId", nil, 1)
 }

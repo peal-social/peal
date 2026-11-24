@@ -18,7 +18,7 @@ use Peal\Types\ChannelPage;
 use Peal\Types\ConnectablePlatforms;
 use Peal\Channels\Requests\ConnectSite;
 use Peal\Channels\Requests\ConnectSiteWithKey;
-use Peal\Channels\Requests\ConnectChatChannelsRequest;
+use Peal\Types\ConnectChat;
 use Peal\Types\OAuthSitePlatform;
 use Peal\Channels\Requests\StartSiteSignIn;
 use Peal\Types\Authorization;
@@ -72,12 +72,9 @@ class ChannelsClient
      *
      * Example:
      * ```php
-     * $client->channels->list(
-     *     'workspaceId',
-     * );
+     * $client->channels->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -90,14 +87,14 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels",
+                    path: "api/v1/channels",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -128,12 +125,10 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->find(
-     *     'workspaceId',
      *     new FindChannelsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param FindChannelsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -147,7 +142,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function find(string $workspaceId, FindChannelsRequest $request = new FindChannelsRequest(), ?array $options = null): ?ChannelPage
+    public function find(FindChannelsRequest $request = new FindChannelsRequest(), ?array $options = null): ?ChannelPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -170,7 +165,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/search",
+                    path: "api/v1/channels/search",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -201,12 +196,9 @@ class ChannelsClient
      *
      * Example:
      * ```php
-     * $client->channels->platforms(
-     *     'workspaceId',
-     * );
+     * $client->channels->platforms();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -219,14 +211,14 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function platforms(string $workspaceId, ?array $options = null): ?ConnectablePlatforms
+    public function platforms(?array $options = null): ?ConnectablePlatforms
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/platforms",
+                    path: "api/v1/channels/platforms",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -257,7 +249,6 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->connectSite(
-     *     'workspaceId',
      *     new ConnectSite([
      *         'address' => 'address',
      *         'applicationPassword' => 'applicationPassword',
@@ -267,7 +258,6 @@ class ChannelsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ConnectSite $request
      * @param ?array{
      *   baseUrl?: string,
@@ -281,7 +271,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function connectSite(string $workspaceId, ConnectSite $request, ?array $options = null): ?Channel
+    public function connectSite(ConnectSite $request, ?array $options = null): ?Channel
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -289,7 +279,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/websites",
+                    path: "api/v1/channels/websites",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -321,7 +311,6 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->connectSiteWithKey(
-     *     'workspaceId',
      *     new ConnectSiteWithKey([
      *         'apiKey' => 'apiKey',
      *         'platform' => KeySitePlatform::Devto->value,
@@ -329,7 +318,6 @@ class ChannelsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ConnectSiteWithKey $request
      * @param ?array{
      *   baseUrl?: string,
@@ -343,7 +331,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function connectSiteWithKey(string $workspaceId, ConnectSiteWithKey $request, ?array $options = null): ?Channel
+    public function connectSiteWithKey(ConnectSiteWithKey $request, ?array $options = null): ?Channel
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -351,7 +339,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/websites/keys",
+                    path: "api/v1/channels/websites/keys",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -383,17 +371,13 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->connectChat(
-     *     'workspaceId',
-     *     new ConnectChatChannelsRequest([
-     *         'body' => ConnectChat::discord(new ConnectDiscordChat([
-     *             'webhookUrl' => 'webhookUrl',
-     *         ])),
-     *     ]),
+     *     ConnectChat::discord(new ConnectDiscordChat([
+     *         'webhookUrl' => 'webhookUrl',
+     *     ])),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param ConnectChatChannelsRequest $request
+     * @param ConnectChat $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -406,7 +390,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function connectChat(string $workspaceId, ConnectChatChannelsRequest $request, ?array $options = null): ?Channel
+    public function connectChat(ConnectChat $request, ?array $options = null): ?Channel
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -414,9 +398,9 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/chats",
+                    path: "api/v1/channels/chats",
                     method: HttpMethod::POST,
-                    body: $request->body,
+                    body: $request,
                 ),
                 $options,
             );
@@ -446,13 +430,11 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->startSiteSignIn(
-     *     'workspaceId',
      *     OAuthSitePlatform::WordpressCom->value,
      *     new StartSiteSignIn([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<OAuthSitePlatform> $platform
      * @param StartSiteSignIn $request
      * @param ?array{
@@ -467,7 +449,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function startSiteSignIn(string $workspaceId, string $platform, StartSiteSignIn $request = new StartSiteSignIn(), ?array $options = null): ?Authorization
+    public function startSiteSignIn(string $platform, StartSiteSignIn $request = new StartSiteSignIn(), ?array $options = null): ?Authorization
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -475,7 +457,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/websites/sign-in/{$platform}",
+                    path: "api/v1/channels/websites/sign-in/{$platform}",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -507,7 +489,6 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->completeSiteSignIn(
-     *     'workspaceId',
      *     OAuthSitePlatform::WordpressCom->value,
      *     new SiteSignInCallback([
      *         'state' => 'state',
@@ -515,7 +496,6 @@ class ChannelsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<OAuthSitePlatform> $platform
      * @param SiteSignInCallback $request
      * @param ?array{
@@ -530,7 +510,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function completeSiteSignIn(string $workspaceId, string $platform, SiteSignInCallback $request, ?array $options = null): ?Channel
+    public function completeSiteSignIn(string $platform, SiteSignInCallback $request, ?array $options = null): ?Channel
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -538,7 +518,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/websites/sign-in/{$platform}/callback",
+                    path: "api/v1/channels/websites/sign-in/{$platform}/callback",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -570,13 +550,11 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->connect(
-     *     'workspaceId',
      *     Platform::X->value,
      *     new ConnectChannel([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<Platform> $platform
      * @param ConnectChannel $request
      * @param ?array{
@@ -591,7 +569,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function connect(string $workspaceId, string $platform, ConnectChannel $request = new ConnectChannel(), ?array $options = null): ?Authorization
+    public function connect(string $platform, ConnectChannel $request = new ConnectChannel(), ?array $options = null): ?Authorization
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -599,7 +577,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/connect/{$platform}",
+                    path: "api/v1/channels/connect/{$platform}",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -631,7 +609,6 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->completeConnect(
-     *     'workspaceId',
      *     Platform::X->value,
      *     new ConnectCallback([
      *         'state' => 'state',
@@ -639,7 +616,6 @@ class ChannelsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<Platform> $platform
      * @param ConnectCallback $request
      * @param ?array{
@@ -654,7 +630,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function completeConnect(string $workspaceId, string $platform, ConnectCallback $request, ?array $options = null): ?ConnectOutcome
+    public function completeConnect(string $platform, ConnectCallback $request, ?array $options = null): ?ConnectOutcome
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -662,7 +638,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/connect/{$platform}/callback",
+                    path: "api/v1/channels/connect/{$platform}/callback",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -694,7 +670,6 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->chooseAccounts(
-     *     'workspaceId',
      *     Platform::X->value,
      *     new ChooseAccounts([
      *         'accountIds' => [
@@ -705,7 +680,6 @@ class ChannelsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<Platform> $platform
      * @param ChooseAccounts $request
      * @param ?array{
@@ -720,7 +694,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function chooseAccounts(string $workspaceId, string $platform, ChooseAccounts $request, ?array $options = null): ?array
+    public function chooseAccounts(string $platform, ChooseAccounts $request, ?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -728,7 +702,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/connect/{$platform}/accounts",
+                    path: "api/v1/channels/connect/{$platform}/accounts",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -760,13 +734,11 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->reconnect(
-     *     'workspaceId',
      *     'channelId',
      *     new ReconnectChannelsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ReconnectChannelsRequest $request
      * @param ?array{
@@ -781,7 +753,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function reconnect(string $workspaceId, string $channelId, ReconnectChannelsRequest $request = new ReconnectChannelsRequest(), ?array $options = null): ?Authorization
+    public function reconnect(string $channelId, ReconnectChannelsRequest $request = new ReconnectChannelsRequest(), ?array $options = null): ?Authorization
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -796,7 +768,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/reconnect",
+                    path: "api/v1/channels/{$channelId}/reconnect",
                     method: HttpMethod::POST,
                     query: $query,
                 ),
@@ -828,12 +800,10 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->disconnect(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -846,14 +816,14 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function disconnect(string $workspaceId, string $channelId, ?array $options = null): void
+    public function disconnect(string $channelId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}",
+                    path: "api/v1/channels/{$channelId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -878,7 +848,6 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->update(
-     *     'workspaceId',
      *     'channelId',
      *     new ChannelUpdate([
      *         'label' => null,
@@ -886,7 +855,6 @@ class ChannelsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ChannelUpdate $request
      * @param ?array{
@@ -901,7 +869,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $channelId, ChannelUpdate $request, ?array $options = null): ?Channel
+    public function update(string $channelId, ChannelUpdate $request, ?array $options = null): ?Channel
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -909,7 +877,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}",
+                    path: "api/v1/channels/{$channelId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -941,12 +909,10 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->disable(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -960,7 +926,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function disable(string $workspaceId, string $channelId, ?array $options = null): ?Channel
+    public function disable(string $channelId, ?array $options = null): ?Channel
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -968,7 +934,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/disable",
+                    path: "api/v1/channels/{$channelId}/disable",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -999,12 +965,10 @@ class ChannelsClient
      * Example:
      * ```php
      * $client->channels->enable(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -1018,7 +982,7 @@ class ChannelsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function enable(string $workspaceId, string $channelId, ?array $options = null): ?Channel
+    public function enable(string $channelId, ?array $options = null): ?Channel
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1026,7 +990,7 @@ class ChannelsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/enable",
+                    path: "api/v1/channels/{$channelId}/enable",
                     method: HttpMethod::POST,
                 ),
                 $options,

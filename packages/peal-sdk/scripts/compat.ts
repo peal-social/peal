@@ -27,6 +27,7 @@ import {
   AcceptedChangeSchema,
   breakingOf,
   checkAccepted,
+  movesOf,
 } from "./accepted-changes.ts";
 import { apiChanges, lineOf, operationCount } from "./api-changes.ts";
 
@@ -87,24 +88,29 @@ if (sha256(baseline) !== recorded.trim()) {
   );
 }
 
-const changes = apiChanges(
-  decodeDocument(baseline),
-  decodeDocument(await read(current))
-);
-
 const exceptions = Schema.decodeUnknownSync(AcceptedSchema)(
   await read(accepted)
 );
 
+// The moves decided on take each operation to its new place, where it is
+// compared as any other.
+const changes = apiChanges(
+  decodeDocument(baseline),
+  decodeDocument(await read(current)),
+  movesOf(exceptions)
+);
+
 const breaking = changes.filter(({ kind }) => kind === "breaking").map(lineOf);
 
-const { stale, unaccepted } = checkAccepted(breaking, exceptions);
+const moved = changes.flatMap(({ move }) => (move === undefined ? [] : [move]));
+
+const { stale, unaccepted } = checkAccepted(breaking, exceptions, moved);
 
 const count = (kind: (typeof changes)[number]["kind"]) =>
   changes.filter((change) => change.kind === kind).length;
 
 console.log(
-  `${String(changes.length)} changes since the last release: ${String(count("addition"))} additions, ${String(count("deprecation"))} deprecations, ${String(breaking.length)} breaking (${String(breaking.length - unaccepted.length)} accepted).`
+  `${String(changes.length)} changes since the last release: ${String(count("addition"))} additions, ${String(count("deprecation"))} deprecations, ${String(count("move"))} operations moved, ${String(breaking.length)} breaking (${String(breaking.length - unaccepted.length)} accepted).`
 );
 
 if (unaccepted.length > 0) {
@@ -123,7 +129,7 @@ if (stale.length > 0) {
   console.error(
     [
       "",
-      "These accepted changes no longer match any change: remove them from released/accepted-changes.json.",
+      "These accepted changes (or moves) no longer match any change: remove them from released/accepted-changes.json.",
       ...stale.map(({ change }) => `  ${change}`),
     ].join("\n")
   );

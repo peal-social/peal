@@ -7,9 +7,6 @@ namespace Peal;
 public record NewInboxMessage
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ConversationId { get; set; }
 
     [JsonIgnore]

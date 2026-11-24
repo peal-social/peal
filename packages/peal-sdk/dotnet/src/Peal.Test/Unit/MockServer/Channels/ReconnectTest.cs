@@ -22,7 +22,7 @@ public class ReconnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/reconnect")
+                    .WithPath("/api/v1/channels/channelId/reconnect")
                     .UsingPost()
             )
             .RespondWith(
@@ -33,7 +33,7 @@ public class ReconnectTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.ReconnectAsync(
-            new ReconnectChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new ReconnectChannelsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -51,7 +51,7 @@ public class ReconnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/reconnect")
+                    .WithPath("/api/v1/channels/channelId/reconnect")
                     .UsingPost()
             )
             .RespondWith(
@@ -62,7 +62,7 @@ public class ReconnectTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.ReconnectAsync(
-            new ReconnectChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new ReconnectChannelsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

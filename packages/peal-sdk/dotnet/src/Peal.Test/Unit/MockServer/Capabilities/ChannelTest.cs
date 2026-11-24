@@ -434,7 +434,7 @@ public class ChannelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/capabilities")
+                    .WithPath("/api/v1/channels/channelId/capabilities")
                     .UsingGet()
             )
             .RespondWith(
@@ -445,7 +445,7 @@ public class ChannelTest : BaseMockServerTest
             );
 
         var response = await Client.Capabilities.ChannelAsync(
-            new ChannelCapabilitiesRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new ChannelCapabilitiesRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -612,7 +612,7 @@ public class ChannelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/capabilities")
+                    .WithPath("/api/v1/channels/channelId/capabilities")
                     .UsingGet()
             )
             .RespondWith(
@@ -623,7 +623,7 @@ public class ChannelTest : BaseMockServerTest
             );
 
         var response = await Client.Capabilities.ChannelAsync(
-            new ChannelCapabilitiesRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new ChannelCapabilitiesRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

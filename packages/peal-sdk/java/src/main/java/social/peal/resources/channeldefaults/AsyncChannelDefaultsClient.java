@@ -32,9 +32,8 @@ public class AsyncChannelDefaultsClient {
     /**
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
-    public CompletableFuture<ChannelDefaults> get(String workspaceId, String channelId) {
-        CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture =
-                this.rawClient.get(workspaceId, channelId);
+    public CompletableFuture<ChannelDefaults> get(String channelId) {
+        CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture = this.rawClient.get(channelId);
         CompletableFuture<ChannelDefaults> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -47,9 +46,23 @@ public class AsyncChannelDefaultsClient {
     /**
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
-    public CompletableFuture<ChannelDefaults> get(String workspaceId, String channelId, RequestOptions requestOptions) {
+    public CompletableFuture<ChannelDefaults> get(String channelId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture =
-                this.rawClient.get(workspaceId, channelId, requestOptions);
+                this.rawClient.get(channelId, requestOptions);
+        CompletableFuture<ChannelDefaults> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
+     */
+    public CompletableFuture<ChannelDefaults> get(String channelId, GetChannelDefaultsRequest request) {
+        CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture = this.rawClient.get(channelId, request);
         CompletableFuture<ChannelDefaults> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -63,25 +76,9 @@ public class AsyncChannelDefaultsClient {
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
     public CompletableFuture<ChannelDefaults> get(
-            String workspaceId, String channelId, GetChannelDefaultsRequest request) {
+            String channelId, GetChannelDefaultsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture =
-                this.rawClient.get(workspaceId, channelId, request);
-        CompletableFuture<ChannelDefaults> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
-     */
-    public CompletableFuture<ChannelDefaults> get(
-            String workspaceId, String channelId, GetChannelDefaultsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture =
-                this.rawClient.get(workspaceId, channelId, request, requestOptions);
+                this.rawClient.get(channelId, request, requestOptions);
         CompletableFuture<ChannelDefaults> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -94,9 +91,8 @@ public class AsyncChannelDefaultsClient {
     /**
      * Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (<code>TargetOptions</code>), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
      */
-    public CompletableFuture<ChannelDefaults> set(String workspaceId, String channelId, NewChannelDefaults request) {
-        CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture =
-                this.rawClient.set(workspaceId, channelId, request);
+    public CompletableFuture<ChannelDefaults> set(String channelId, NewChannelDefaults request) {
+        CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture = this.rawClient.set(channelId, request);
         CompletableFuture<ChannelDefaults> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -110,9 +106,9 @@ public class AsyncChannelDefaultsClient {
      * Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (<code>TargetOptions</code>), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
      */
     public CompletableFuture<ChannelDefaults> set(
-            String workspaceId, String channelId, NewChannelDefaults request, RequestOptions requestOptions) {
+            String channelId, NewChannelDefaults request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChannelDefaults>> rawFuture =
-                this.rawClient.set(workspaceId, channelId, request, requestOptions);
+                this.rawClient.set(channelId, request, requestOptions);
         CompletableFuture<ChannelDefaults> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -125,8 +121,8 @@ public class AsyncChannelDefaultsClient {
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
-    public CompletableFuture<Void> clear(String workspaceId, String channelId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.clear(workspaceId, channelId);
+    public CompletableFuture<Void> clear(String channelId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.clear(channelId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -139,9 +135,8 @@ public class AsyncChannelDefaultsClient {
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
-    public CompletableFuture<Void> clear(String workspaceId, String channelId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.clear(workspaceId, channelId, requestOptions);
+    public CompletableFuture<Void> clear(String channelId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.clear(channelId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -154,9 +149,8 @@ public class AsyncChannelDefaultsClient {
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
-    public CompletableFuture<Void> clear(String workspaceId, String channelId, ClearChannelDefaultsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.clear(workspaceId, channelId, request);
+    public CompletableFuture<Void> clear(String channelId, ClearChannelDefaultsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.clear(channelId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -170,9 +164,9 @@ public class AsyncChannelDefaultsClient {
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
     public CompletableFuture<Void> clear(
-            String workspaceId, String channelId, ClearChannelDefaultsRequest request, RequestOptions requestOptions) {
+            String channelId, ClearChannelDefaultsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.clear(workspaceId, channelId, request, requestOptions);
+                this.rawClient.clear(channelId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

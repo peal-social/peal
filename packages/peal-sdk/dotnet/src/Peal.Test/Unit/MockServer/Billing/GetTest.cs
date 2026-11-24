@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -280,12 +279,7 @@ public class GetTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/billing")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/billing").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -293,9 +287,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Billing.GetAsync(
-            new GetBillingRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Billing.GetAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -514,12 +506,7 @@ public class GetTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/billing")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/billing").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -527,9 +514,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Billing.GetAsync(
-            new GetBillingRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Billing.GetAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

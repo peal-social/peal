@@ -24,7 +24,6 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :channel_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
@@ -32,7 +31,7 @@ module Peal
       # @option params [Peal::Inbox::Types::ListThreadsInboxRequestUnanswered, nil] :unanswered
       #
       # @example
-      #   client.inbox.list_threads(workspace_id: "workspaceId")
+      #   client.inbox.list_threads
       #
       # @return [Peal::Types::InboxThreadPage]
       def list_threads(request_options: {}, **params)
@@ -47,7 +46,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/threads",
+          path: "api/v1/inbox/threads",
           query: query_params,
           request_options: request_options
         )
@@ -80,14 +79,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :thread_id
       #
       # @example
-      #   client.inbox.get_thread(
-      #     workspace_id: "workspaceId",
-      #     thread_id: "threadId"
-      #   )
+      #   client.inbox.get_thread(thread_id: "threadId")
       #
       # @return [Peal::Types::InboxThreadDetail]
       def get_thread(request_options: {}, **params)
@@ -95,7 +90,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/threads/#{URI.encode_uri_component(params[:thread_id].to_s)}",
+          path: "api/v1/inbox/threads/#{URI.encode_uri_component(params[:thread_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -126,14 +121,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       #
       # @example
-      #   client.inbox.get_abilities(
-      #     workspace_id: "workspaceId",
-      #     channel_id: "channelId"
-      #   )
+      #   client.inbox.get_abilities(channel_id: "channelId")
       #
       # @return [Peal::Types::InboxAbilities]
       def get_abilities(request_options: {}, **params)
@@ -141,7 +132,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/abilities",
+          path: "api/v1/inbox/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/abilities",
           request_options: request_options
         )
         begin
@@ -184,13 +175,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :comment_id
       # @option params [String, nil] :idempotency_key
       #
       # @example
       #   client.inbox.reply(
-      #     workspace_id: "workspaceId",
       #     comment_id: "commentId",
       #     text: "text"
       #   )
@@ -199,7 +188,7 @@ module Peal
       def reply(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Inbox::Types::NewInboxReply.new(params).to_h
-        non_body_param_names = %w[workspaceId commentId idempotency-key]
+        non_body_param_names = %w[commentId idempotency-key]
         body = request_data.except(*non_body_param_names)
 
         headers = {}
@@ -208,7 +197,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/comments/#{URI.encode_uri_component(params[:comment_id].to_s)}/replies",
+          path: "api/v1/inbox/comments/#{URI.encode_uri_component(params[:comment_id].to_s)}/replies",
           headers: headers,
           body: body,
           request_options: request_options,
@@ -243,12 +232,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :comment_id
       #
       # @example
       #   client.inbox.set_answered(
-      #     workspace_id: "workspaceId",
       #     comment_id: "commentId",
       #     answered: true
       #   )
@@ -257,13 +244,13 @@ module Peal
       def set_answered(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Inbox::Types::SetAnsweredInboxRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId commentId]
+        non_body_param_names = %w[commentId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/comments/#{URI.encode_uri_component(params[:comment_id].to_s)}/answered",
+          path: "api/v1/inbox/comments/#{URI.encode_uri_component(params[:comment_id].to_s)}/answered",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -298,12 +285,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :comment_id
       #
       # @example
       #   client.inbox.moderate(
-      #     workspace_id: "workspaceId",
       #     comment_id: "commentId",
       #     action: "hide"
       #   )
@@ -312,13 +297,13 @@ module Peal
       def moderate(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Inbox::Types::ModerateInboxRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId commentId]
+        non_body_param_names = %w[commentId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/comments/#{URI.encode_uri_component(params[:comment_id].to_s)}/moderation",
+          path: "api/v1/inbox/comments/#{URI.encode_uri_component(params[:comment_id].to_s)}/moderation",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -352,12 +337,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :reply_id
       #
       # @example
       #   client.inbox.confirm_reply(
-      #     workspace_id: "workspaceId",
       #     reply_id: "replyId",
       #     sent: true
       #   )
@@ -366,13 +349,13 @@ module Peal
       def confirm_reply(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Inbox::Types::ConfirmReplyInboxRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId replyId]
+        non_body_param_names = %w[replyId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/replies/#{URI.encode_uri_component(params[:reply_id].to_s)}/confirmation",
+          path: "api/v1/inbox/replies/#{URI.encode_uri_component(params[:reply_id].to_s)}/confirmation",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -406,14 +389,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :reply_id
       #
       # @example
-      #   client.inbox.withdraw_reply(
-      #     workspace_id: "workspaceId",
-      #     reply_id: "replyId"
-      #   )
+      #   client.inbox.withdraw_reply(reply_id: "replyId")
       #
       # @return [Peal::Types::InboxReply]
       def withdraw_reply(request_options: {}, **params)
@@ -421,7 +400,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/replies/#{URI.encode_uri_component(params[:reply_id].to_s)}",
+          path: "api/v1/inbox/replies/#{URI.encode_uri_component(params[:reply_id].to_s)}",
           request_options: request_options
         )
         begin

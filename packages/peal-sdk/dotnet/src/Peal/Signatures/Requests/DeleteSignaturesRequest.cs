@@ -7,9 +7,6 @@ namespace Peal;
 public record DeleteSignaturesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string SignatureId { get; set; }
 
     /// <inheritdoc />

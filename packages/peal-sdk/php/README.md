@@ -45,7 +45,6 @@ $client = new PealClient(
     token: '<token>',
 );
 $client->apiKeys->create(
-    'workspaceId',
     new NewApiKey([
         'name' => 'name',
         'permissions' => [

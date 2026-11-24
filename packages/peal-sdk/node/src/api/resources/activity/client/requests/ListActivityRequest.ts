@@ -2,12 +2,9 @@
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListActivityRequest {
-    workspaceId: string;
     actor?: string;
     cursor?: string;
     limit?: string;

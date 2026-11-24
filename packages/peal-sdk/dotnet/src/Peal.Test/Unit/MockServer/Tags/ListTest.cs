@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -30,12 +29,7 @@ public class ListTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/tags")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/tags").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -43,9 +37,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Tags.ListAsync(
-            new ListTagsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Tags.ListAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -64,12 +56,7 @@ public class ListTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/tags")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/tags").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -77,9 +64,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Tags.ListAsync(
-            new ListTagsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Tags.ListAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

@@ -10,14 +10,12 @@ import (
 )
 
 var (
-	approvalDecisionFieldWorkspaceID = big.NewInt(1 << 0)
-	approvalDecisionFieldPostID      = big.NewInt(1 << 1)
-	approvalDecisionFieldApprovalID  = big.NewInt(1 << 2)
-	approvalDecisionFieldSubjectHash = big.NewInt(1 << 3)
+	approvalDecisionFieldPostID      = big.NewInt(1 << 0)
+	approvalDecisionFieldApprovalID  = big.NewInt(1 << 1)
+	approvalDecisionFieldSubjectHash = big.NewInt(1 << 2)
 )
 
 type ApprovalDecision struct {
-	WorkspaceID string `json:"-" url:"-"`
 	PostID      string `json:"-" url:"-"`
 	ApprovalID  string `json:"approvalId" url:"-"`
 	SubjectHash string `json:"subjectHash" url:"-"`
@@ -33,13 +31,6 @@ func (a *ApprovalDecision) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	a.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *ApprovalDecision) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(approvalDecisionFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -85,19 +76,17 @@ func (a *ApprovalDecision) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	newCommentFieldWorkspaceID = big.NewInt(1 << 0)
-	newCommentFieldPostID      = big.NewInt(1 << 1)
-	newCommentFieldAnchor      = big.NewInt(1 << 2)
-	newCommentFieldParentID    = big.NewInt(1 << 3)
-	newCommentFieldText        = big.NewInt(1 << 4)
+	newCommentFieldPostID   = big.NewInt(1 << 0)
+	newCommentFieldAnchor   = big.NewInt(1 << 1)
+	newCommentFieldParentID = big.NewInt(1 << 2)
+	newCommentFieldText     = big.NewInt(1 << 3)
 )
 
 type NewComment struct {
-	WorkspaceID string            `json:"-" url:"-"`
-	PostID      string            `json:"-" url:"-"`
-	Anchor      *NewCommentAnchor `json:"anchor,omitempty" url:"-"`
-	ParentID    *string           `json:"parentId,omitempty" url:"-"`
-	Text        string            `json:"text" url:"-"`
+	PostID   string            `json:"-" url:"-"`
+	Anchor   *NewCommentAnchor `json:"anchor,omitempty" url:"-"`
+	ParentID *string           `json:"parentId,omitempty" url:"-"`
+	Text     string            `json:"text" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -110,13 +99,6 @@ func (n *NewComment) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewComment) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newCommentFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -169,14 +151,12 @@ func (n *NewComment) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	newReviewLinkFieldWorkspaceID    = big.NewInt(1 << 0)
-	newReviewLinkFieldPostID         = big.NewInt(1 << 1)
-	newReviewLinkFieldAccess         = big.NewInt(1 << 2)
-	newReviewLinkFieldExpiresInHours = big.NewInt(1 << 3)
+	newReviewLinkFieldPostID         = big.NewInt(1 << 0)
+	newReviewLinkFieldAccess         = big.NewInt(1 << 1)
+	newReviewLinkFieldExpiresInHours = big.NewInt(1 << 2)
 )
 
 type NewReviewLink struct {
-	WorkspaceID    string           `json:"-" url:"-"`
 	PostID         string           `json:"-" url:"-"`
 	Access         ReviewLinkAccess `json:"access" url:"-"`
 	ExpiresInHours *int             `json:"expiresInHours,omitempty" url:"-"`
@@ -192,13 +172,6 @@ func (n *NewReviewLink) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewReviewLink) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newReviewLinkFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -244,13 +217,11 @@ func (n *NewReviewLink) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	linksReviewRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	linksReviewRequestFieldPostID      = big.NewInt(1 << 1)
+	linksReviewRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type LinksReviewRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -265,13 +236,6 @@ func (l *LinksReviewRequest) require(field *big.Int) {
 	l.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LinksReviewRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(linksReviewRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (l *LinksReviewRequest) SetPostID(postID string) {
@@ -280,42 +244,13 @@ func (l *LinksReviewRequest) SetPostID(postID string) {
 }
 
 var (
-	pendingReviewRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type PendingReviewRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (p *PendingReviewRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PendingReviewRequest) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(pendingReviewRequestFieldWorkspaceID)
-}
-
-var (
-	changesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	changesRequestFieldPostID      = big.NewInt(1 << 1)
-	changesRequestFieldApprovalID  = big.NewInt(1 << 2)
-	changesRequestFieldSubjectHash = big.NewInt(1 << 3)
-	changesRequestFieldComment     = big.NewInt(1 << 4)
+	changesRequestFieldPostID      = big.NewInt(1 << 0)
+	changesRequestFieldApprovalID  = big.NewInt(1 << 1)
+	changesRequestFieldSubjectHash = big.NewInt(1 << 2)
+	changesRequestFieldComment     = big.NewInt(1 << 3)
 )
 
 type ChangesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
 	PostID      string `json:"-" url:"-"`
 	ApprovalID  string `json:"approvalId" url:"-"`
 	SubjectHash string `json:"subjectHash" url:"-"`
@@ -332,13 +267,6 @@ func (c *ChangesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ChangesRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(changesRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -391,17 +319,15 @@ func (c *ChangesRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	resolveReviewRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	resolveReviewRequestFieldPostID      = big.NewInt(1 << 1)
-	resolveReviewRequestFieldCommentID   = big.NewInt(1 << 2)
-	resolveReviewRequestFieldResolved    = big.NewInt(1 << 3)
+	resolveReviewRequestFieldPostID    = big.NewInt(1 << 0)
+	resolveReviewRequestFieldCommentID = big.NewInt(1 << 1)
+	resolveReviewRequestFieldResolved  = big.NewInt(1 << 2)
 )
 
 type ResolveReviewRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
-	CommentID   string `json:"-" url:"-"`
-	Resolved    bool   `json:"resolved" url:"-"`
+	PostID    string `json:"-" url:"-"`
+	CommentID string `json:"-" url:"-"`
+	Resolved  bool   `json:"resolved" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -414,13 +340,6 @@ func (r *ResolveReviewRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ResolveReviewRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(resolveReviewRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -466,13 +385,11 @@ func (r *ResolveReviewRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	revokeLinkReviewRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	revokeLinkReviewRequestFieldLinkID      = big.NewInt(1 << 1)
+	revokeLinkReviewRequestFieldLinkID = big.NewInt(1 << 0)
 )
 
 type RevokeLinkReviewRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	LinkID      string `json:"-" url:"-"`
+	LinkID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -487,13 +404,6 @@ func (r *RevokeLinkReviewRequest) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RevokeLinkReviewRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(revokeLinkReviewRequestFieldWorkspaceID)
-}
-
 // SetLinkID sets the LinkID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (r *RevokeLinkReviewRequest) SetLinkID(linkID string) {
@@ -502,40 +412,11 @@ func (r *RevokeLinkReviewRequest) SetLinkID(linkID string) {
 }
 
 var (
-	settingsReviewRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type SettingsReviewRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (s *SettingsReviewRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if s.explicitFields != nil {
-		next.Set(s.explicitFields)
-	}
-	next.Or(next, field)
-	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SettingsReviewRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(settingsReviewRequestFieldWorkspaceID)
-}
-
-var (
-	threadReviewRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	threadReviewRequestFieldPostID      = big.NewInt(1 << 1)
+	threadReviewRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type ThreadReviewRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -548,13 +429,6 @@ func (t *ThreadReviewRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	t.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (t *ThreadReviewRequest) SetWorkspaceID(workspaceID string) {
-	t.WorkspaceID = workspaceID
-	t.require(threadReviewRequestFieldWorkspaceID)
 }
 
 // SetPostID sets the PostID field and marks it as non-optional;
@@ -3303,45 +3177,4 @@ func (n *NewCommentAnchorSelection) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", n)
-}
-
-var (
-	updateSettingsReviewRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type UpdateSettingsReviewRequest struct {
-	WorkspaceID string          `json:"-" url:"-"`
-	Body        *ReviewSettings `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (u *UpdateSettingsReviewRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if u.explicitFields != nil {
-		next.Set(u.explicitFields)
-	}
-	next.Or(next, field)
-	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UpdateSettingsReviewRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(updateSettingsReviewRequestFieldWorkspaceID)
-}
-
-func (u *UpdateSettingsReviewRequest) UnmarshalJSON(data []byte) error {
-	body := new(ReviewSettings)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	u.Body = body
-	return nil
-}
-
-func (u *UpdateSettingsReviewRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(u.Body)
 }

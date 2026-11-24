@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         name: "name",
  *         permissions: ["activity:read"]
  *     }
  */
 export interface NewApiKey {
-    workspaceId: string;
     expiresInDays?: number;
     name: string;
     permissions: Peal.Permission[];

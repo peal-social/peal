@@ -51,7 +51,7 @@ public class RotateSecretTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId/secret")
+                    .WithPath("/api/v1/webhooks/endpointId/secret")
                     .UsingPost()
             )
             .RespondWith(
@@ -62,11 +62,7 @@ public class RotateSecretTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.RotateSecretAsync(
-            new RotateSecretWebhooksRequest
-            {
-                WorkspaceId = "workspaceId",
-                EndpointId = "endpointId",
-            }
+            new RotateSecretWebhooksRequest { EndpointId = "endpointId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -109,7 +105,7 @@ public class RotateSecretTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId/secret")
+                    .WithPath("/api/v1/webhooks/endpointId/secret")
                     .UsingPost()
             )
             .RespondWith(
@@ -120,11 +116,7 @@ public class RotateSecretTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.RotateSecretAsync(
-            new RotateSecretWebhooksRequest
-            {
-                WorkspaceId = "workspaceId",
-                EndpointId = "endpointId",
-            }
+            new RotateSecretWebhooksRequest { EndpointId = "endpointId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

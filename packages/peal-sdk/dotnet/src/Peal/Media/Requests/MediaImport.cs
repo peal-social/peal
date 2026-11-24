@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record MediaImport
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("altText")]
     public string? AltText { get; set; }
 

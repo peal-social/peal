@@ -35,17 +35,10 @@ impl ChannelSetsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .channel_sets
-    ///         .list(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.channel_sets.list(None).await;
     /// }
     /// ```
-    pub async fn list(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Vec<ChannelSet>, ApiError> {
+    pub async fn list(&self, options: Option<RequestOptions>) -> Result<Vec<ChannelSet>, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -54,13 +47,7 @@ impl ChannelSetsClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/channel-sets", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/channel-sets", None, None, options)
             .await
     }
 
@@ -89,7 +76,6 @@ impl ChannelSetsClient {
     ///     client
     ///         .channel_sets
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &ChannelSetDetails {
     ///                 channel_ids: vec!["channelIds".to_string()],
     ///                 name: "name".to_string(),
@@ -102,7 +88,6 @@ impl ChannelSetsClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &ChannelSetDetails,
         options: Option<RequestOptions>,
     ) -> Result<ChannelSet, ApiError> {
@@ -117,7 +102,7 @@ impl ChannelSetsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/channel-sets", workspace_id),
+                "api/v1/channel-sets",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -150,7 +135,6 @@ impl ChannelSetsClient {
     ///     client
     ///         .channel_sets
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"channelSetId".to_string(),
     ///             &ChannelSetDetails {
     ///                 channel_ids: vec!["channelIds".to_string()],
@@ -164,7 +148,6 @@ impl ChannelSetsClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         channel_set_id: &str,
         request: &ChannelSetDetails,
         options: Option<RequestOptions>,
@@ -179,10 +162,7 @@ impl ChannelSetsClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/channel-sets/{}",
-                    workspace_id, channel_set_id
-                ),
+                &format!("api/v1/channel-sets/{}", channel_set_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -214,17 +194,12 @@ impl ChannelSetsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .channel_sets
-    ///         .delete(
-    ///             &"workspaceId".to_string(),
-    ///             &"channelSetId".to_string(),
-    ///             None,
-    ///         )
+    ///         .delete(&"channelSetId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         channel_set_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -238,10 +213,7 @@ impl ChannelSetsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/channel-sets/{}",
-                    workspace_id, channel_set_id
-                ),
+                &format!("api/v1/channel-sets/{}", channel_set_id),
                 None,
                 None,
                 options,

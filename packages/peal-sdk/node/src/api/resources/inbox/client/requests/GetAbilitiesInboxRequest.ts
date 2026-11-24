@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId"
  *     }
  */
 export interface GetAbilitiesInboxRequest {
-    workspaceId: string;
     channelId: string;
 }

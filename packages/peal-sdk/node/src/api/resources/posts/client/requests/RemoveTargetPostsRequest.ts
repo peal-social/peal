@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         targetId: "targetId"
  *     }
  */
 export interface RemoveTargetPostsRequest {
-    workspaceId: string;
     postId: string;
     targetId: string;
 }

@@ -7,9 +7,6 @@ namespace Peal;
 public record ReschedulePostsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PostId { get; set; }
 
     [JsonIgnore]

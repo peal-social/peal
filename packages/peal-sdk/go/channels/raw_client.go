@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListChannelsRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.Channel], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/channels"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -88,10 +84,7 @@ func (r *RawClient) Find(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/search",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/channels/search"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -131,7 +124,6 @@ func (r *RawClient) Find(
 
 func (r *RawClient) Platforms(
 	ctx context.Context,
-	request *peal.PlatformsChannelsRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.ConnectablePlatforms], error) {
 	options := core.NewRequestOptions(opts...)
@@ -140,10 +132,7 @@ func (r *RawClient) Platforms(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/platforms",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/channels/platforms"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -185,10 +174,7 @@ func (r *RawClient) ConnectSite(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/websites",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/channels/websites"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -232,10 +218,7 @@ func (r *RawClient) ConnectSiteWithKey(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/websites/keys",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/channels/websites/keys"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -270,7 +253,7 @@ func (r *RawClient) ConnectSiteWithKey(
 
 func (r *RawClient) ConnectChat(
 	ctx context.Context,
-	request *peal.ConnectChatChannelsRequest,
+	request *peal.ConnectChat,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.Channel], error) {
 	options := core.NewRequestOptions(opts...)
@@ -279,15 +262,11 @@ func (r *RawClient) ConnectChat(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/chats",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/channels/chats"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.Channel
 	raw, err := r.caller.Call(
 		ctx,
@@ -327,8 +306,7 @@ func (r *RawClient) StartSiteSignIn(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/websites/sign-in/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/websites/sign-in/%v",
 		request.Platform,
 	)
 	headers := internal.MergeHeaders(
@@ -375,8 +353,7 @@ func (r *RawClient) CompleteSiteSignIn(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/websites/sign-in/%v/callback",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/websites/sign-in/%v/callback",
 		request.Platform,
 	)
 	headers := internal.MergeHeaders(
@@ -423,8 +400,7 @@ func (r *RawClient) Connect(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/connect/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/connect/%v",
 		request.Platform,
 	)
 	headers := internal.MergeHeaders(
@@ -471,8 +447,7 @@ func (r *RawClient) CompleteConnect(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/connect/%v/callback",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/connect/%v/callback",
 		request.Platform,
 	)
 	headers := internal.MergeHeaders(
@@ -519,8 +494,7 @@ func (r *RawClient) ChooseAccounts(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/connect/%v/accounts",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/connect/%v/accounts",
 		request.Platform,
 	)
 	headers := internal.MergeHeaders(
@@ -567,8 +541,7 @@ func (r *RawClient) Reconnect(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/reconnect",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/reconnect",
 		request.ChannelID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -620,8 +593,7 @@ func (r *RawClient) Disconnect(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(
@@ -664,8 +636,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(
@@ -712,8 +683,7 @@ func (r *RawClient) Disable(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/disable",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/disable",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(
@@ -758,8 +728,7 @@ func (r *RawClient) Enable(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/enable",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/enable",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(

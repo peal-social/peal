@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListAPIKeysRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.APIKeys.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListAPIKeysRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.APIKey, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -66,7 +60,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.NewAPIKey{
-//	    WorkspaceID: "workspaceId",
 //	    Name: "name",
 //	    Permissions: []peal.Permission{
 //	        peal.PermissionActivityRead,
@@ -97,7 +90,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.RevokeAPIKeysRequest{
-//	    WorkspaceID: "workspaceId",
 //	    APIKeyID: "apiKeyId",
 //	}
 //	err := client.APIKeys.Revoke(

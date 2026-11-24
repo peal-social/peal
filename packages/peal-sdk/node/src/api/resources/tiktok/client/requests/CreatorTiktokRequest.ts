@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId"
  *     }
  */
 export interface CreatorTiktokRequest {
-    workspaceId: string;
     channelId: string;
 }

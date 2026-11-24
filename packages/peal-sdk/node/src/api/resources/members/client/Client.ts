@@ -27,9 +27,9 @@ export class MembersClient {
     /**
      * Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
      *
-     * @param {Peal.ListMembersRequest} request
      * @param {MembersClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -38,20 +38,17 @@ export class MembersClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.members.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.members.list()
      */
-    public list(request: Peal.ListMembersRequest, requestOptions?: MembersClient.RequestOptions): core.HttpResponsePromise<Peal.WorkspaceMember[]> {
-        return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
+    public list(requestOptions?: MembersClient.RequestOptions): core.HttpResponsePromise<Peal.WorkspaceMember[]> {
+        return core.HttpResponsePromise.fromPromise(this.__list(requestOptions));
     }
 
-    private async __list(request: Peal.ListMembersRequest, requestOptions?: MembersClient.RequestOptions): Promise<core.WithRawResponse<Peal.WorkspaceMember[]>> {
-        const { workspaceId } = request;
+    private async __list(requestOptions?: MembersClient.RequestOptions): Promise<core.WithRawResponse<Peal.WorkspaceMember[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/members`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/members"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -67,6 +64,7 @@ export class MembersClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -79,6 +77,6 @@ export class MembersClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/members");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/members");
     }
 }

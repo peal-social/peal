@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         text: "text"
  *     }
  */
 export interface VoiceoverRequest {
-    workspaceId: string;
     text: string;
     voice?: string;
 }

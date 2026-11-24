@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         mediaId: "mediaId"
  *     }
  */
 export interface TranscriptionRequest {
-    workspaceId: string;
     mediaId: string;
     saveAsDescription?: boolean;
 }

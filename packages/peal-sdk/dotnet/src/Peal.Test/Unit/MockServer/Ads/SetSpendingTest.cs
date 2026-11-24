@@ -55,7 +55,7 @@ public class SetSpendingTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/accounts/accountId/spending")
+                    .WithPath("/api/v1/ads/accounts/accountId/spending")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -70,7 +70,6 @@ public class SetSpendingTest : BaseMockServerTest
         var response = await Client.Ads.SetSpendingAsync(
             new AdSpendingDecision
             {
-                WorkspaceId = "workspaceId",
                 AccountId = "accountId",
                 Enabled = true,
                 MonthlyCeiling = null,
@@ -125,7 +124,7 @@ public class SetSpendingTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/accounts/accountId/spending")
+                    .WithPath("/api/v1/ads/accounts/accountId/spending")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -138,12 +137,7 @@ public class SetSpendingTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.SetSpendingAsync(
-            new AdSpendingDecision
-            {
-                WorkspaceId = "workspaceId",
-                AccountId = "accountId",
-                Enabled = true,
-            }
+            new AdSpendingDecision { AccountId = "accountId", Enabled = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

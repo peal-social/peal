@@ -59,12 +59,10 @@ class SlideshowsClient
      * Example:
      * ```php
      * $client->slideshows->list(
-     *     'workspaceId',
      *     new ListSlideshowsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListSlideshowsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -78,7 +76,7 @@ class SlideshowsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListSlideshowsRequest $request = new ListSlideshowsRequest(), ?array $options = null): ?Slideshows
+    public function list(ListSlideshowsRequest $request = new ListSlideshowsRequest(), ?array $options = null): ?Slideshows
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -89,7 +87,7 @@ class SlideshowsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/slideshows",
+                    path: "api/v1/media/slideshows",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -121,7 +119,6 @@ class SlideshowsClient
      * Example:
      * ```php
      * $client->slideshows->create(
-     *     'workspaceId',
      *     new SlideshowRequest([
      *         'aspect' => ImageAspect::Square->value,
      *         'slides' => [
@@ -133,7 +130,6 @@ class SlideshowsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param SlideshowRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -147,7 +143,7 @@ class SlideshowsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, SlideshowRequest $request, ?array $options = null): ?Slideshow
+    public function create(SlideshowRequest $request, ?array $options = null): ?Slideshow
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -155,7 +151,7 @@ class SlideshowsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/slideshows",
+                    path: "api/v1/media/slideshows",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -187,7 +183,6 @@ class SlideshowsClient
      * Example:
      * ```php
      * $client->slideshows->createFromEdit(
-     *     'workspaceId',
      *     new EditRenderRequest([
      *         'edit' => [
      *             'key' => "value",
@@ -196,7 +191,6 @@ class SlideshowsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param EditRenderRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -210,7 +204,7 @@ class SlideshowsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function createFromEdit(string $workspaceId, EditRenderRequest $request, ?array $options = null): ?Slideshow
+    public function createFromEdit(EditRenderRequest $request, ?array $options = null): ?Slideshow
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -218,7 +212,7 @@ class SlideshowsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/slideshows/edits",
+                    path: "api/v1/media/slideshows/edits",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -250,12 +244,10 @@ class SlideshowsClient
      * Example:
      * ```php
      * $client->slideshows->get(
-     *     'workspaceId',
      *     'slideshowId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $slideshowId
      * @param ?array{
      *   baseUrl?: string,
@@ -269,14 +261,14 @@ class SlideshowsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $slideshowId, ?array $options = null): ?Slideshow
+    public function get(string $slideshowId, ?array $options = null): ?Slideshow
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/slideshows/{$slideshowId}",
+                    path: "api/v1/media/slideshows/{$slideshowId}",
                     method: HttpMethod::GET,
                 ),
                 $options,

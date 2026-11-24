@@ -7,9 +7,6 @@ namespace Peal;
 public record ListBoostsAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Cursor { get; set; }
 
     [JsonIgnore]

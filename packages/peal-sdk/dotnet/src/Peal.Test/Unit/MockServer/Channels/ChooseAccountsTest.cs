@@ -57,7 +57,7 @@ public class ChooseAccountsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/connect/x/accounts")
+                    .WithPath("/api/v1/channels/connect/x/accounts")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -72,7 +72,6 @@ public class ChooseAccountsTest : BaseMockServerTest
         var response = await Client.Channels.ChooseAccountsAsync(
             new ChooseAccounts
             {
-                WorkspaceId = "workspaceId",
                 Platform = Platform.X,
                 AccountIds = new List<string>() { "accountIds", "accountIds" },
                 Selection = "x",
@@ -115,7 +114,7 @@ public class ChooseAccountsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/connect/x/accounts")
+                    .WithPath("/api/v1/channels/connect/x/accounts")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -130,7 +129,6 @@ public class ChooseAccountsTest : BaseMockServerTest
         var response = await Client.Channels.ChooseAccountsAsync(
             new ChooseAccounts
             {
-                WorkspaceId = "workspaceId",
                 Platform = Platform.X,
                 AccountIds = new List<string>() { "accountIds" },
                 Selection = "selection",

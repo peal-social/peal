@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -35,10 +34,7 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/invitations")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/invitations").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -47,9 +43,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Invitations.ListAsync(
-            new ListInvitationsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Invitations.ListAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -71,10 +65,7 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/invitations")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/invitations").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -83,9 +74,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Invitations.ListAsync(
-            new ListInvitationsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Invitations.ListAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

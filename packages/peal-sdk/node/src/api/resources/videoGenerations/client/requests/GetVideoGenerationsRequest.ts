@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         generationId: "generationId"
  *     }
  */
 export interface GetVideoGenerationsRequest {
-    workspaceId: string;
     generationId: string;
 }

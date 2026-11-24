@@ -57,12 +57,9 @@ class ApiKeysClient
      *
      * Example:
      * ```php
-     * $client->apiKeys->list(
-     *     'workspaceId',
-     * );
+     * $client->apiKeys->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -75,14 +72,14 @@ class ApiKeysClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/api-keys",
+                    path: "api/v1/api-keys",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -113,7 +110,6 @@ class ApiKeysClient
      * Example:
      * ```php
      * $client->apiKeys->create(
-     *     'workspaceId',
      *     new NewApiKey([
      *         'name' => 'name',
      *         'permissions' => [
@@ -123,7 +119,6 @@ class ApiKeysClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewApiKey $request
      * @param ?array{
      *   baseUrl?: string,
@@ -137,7 +132,7 @@ class ApiKeysClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, NewApiKey $request, ?array $options = null): ?CreatedApiKey
+    public function create(NewApiKey $request, ?array $options = null): ?CreatedApiKey
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -145,7 +140,7 @@ class ApiKeysClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/api-keys",
+                    path: "api/v1/api-keys",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -177,12 +172,10 @@ class ApiKeysClient
      * Example:
      * ```php
      * $client->apiKeys->revoke(
-     *     'workspaceId',
      *     'apiKeyId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $apiKeyId
      * @param ?array{
      *   baseUrl?: string,
@@ -195,14 +188,14 @@ class ApiKeysClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function revoke(string $workspaceId, string $apiKeyId, ?array $options = null): void
+    public function revoke(string $apiKeyId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/api-keys/{$apiKeyId}",
+                    path: "api/v1/api-keys/{$apiKeyId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

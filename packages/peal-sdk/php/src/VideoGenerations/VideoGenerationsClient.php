@@ -58,12 +58,10 @@ class VideoGenerationsClient
      * Example:
      * ```php
      * $client->videoGenerations->list(
-     *     'workspaceId',
      *     new ListVideoGenerationsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListVideoGenerationsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -77,7 +75,7 @@ class VideoGenerationsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListVideoGenerationsRequest $request = new ListVideoGenerationsRequest(), ?array $options = null): ?VideoGenerations
+    public function list(ListVideoGenerationsRequest $request = new ListVideoGenerationsRequest(), ?array $options = null): ?VideoGenerations
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -88,7 +86,7 @@ class VideoGenerationsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/videos/generations",
+                    path: "api/v1/media/videos/generations",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -120,7 +118,6 @@ class VideoGenerationsClient
      * Example:
      * ```php
      * $client->videoGenerations->create(
-     *     'workspaceId',
      *     new VideoGenerationRequest([
      *         'aspect' => ImageAspect::Square->value,
      *         'prompt' => 'prompt',
@@ -128,7 +125,6 @@ class VideoGenerationsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param VideoGenerationRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -142,7 +138,7 @@ class VideoGenerationsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, VideoGenerationRequest $request, ?array $options = null): ?VideoGeneration
+    public function create(VideoGenerationRequest $request, ?array $options = null): ?VideoGeneration
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -150,7 +146,7 @@ class VideoGenerationsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/videos/generations",
+                    path: "api/v1/media/videos/generations",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -182,12 +178,10 @@ class VideoGenerationsClient
      * Example:
      * ```php
      * $client->videoGenerations->get(
-     *     'workspaceId',
      *     'generationId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $generationId
      * @param ?array{
      *   baseUrl?: string,
@@ -201,14 +195,14 @@ class VideoGenerationsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $generationId, ?array $options = null): ?VideoGeneration
+    public function get(string $generationId, ?array $options = null): ?VideoGeneration
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/media/videos/generations/{$generationId}",
+                    path: "api/v1/media/videos/generations/{$generationId}",
                     method: HttpMethod::GET,
                 ),
                 $options,

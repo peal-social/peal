@@ -7,9 +7,6 @@ namespace Peal;
 public record UpdateTagsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string TagId { get; set; }
 
     [JsonIgnore]

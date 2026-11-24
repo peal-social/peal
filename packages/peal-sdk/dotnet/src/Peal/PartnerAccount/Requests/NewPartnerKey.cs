@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record NewPartnerKey
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("expiresInDays")]
     public int? ExpiresInDays { get; set; }
 

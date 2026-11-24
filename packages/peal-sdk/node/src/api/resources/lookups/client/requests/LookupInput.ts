@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId",
  *         name: "name"
  *     }
  */
 export interface LookupInput {
-    workspaceId: string;
     channelId: string;
     name: string;
     boardId?: string;

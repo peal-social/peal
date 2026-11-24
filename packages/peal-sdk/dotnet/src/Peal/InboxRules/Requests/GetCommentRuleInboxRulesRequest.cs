@@ -7,9 +7,6 @@ namespace Peal;
 public record GetCommentRuleInboxRulesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string RuleId { get; set; }
 
     /// <inheritdoc />

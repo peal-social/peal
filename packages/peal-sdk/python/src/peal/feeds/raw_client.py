@@ -37,7 +37,6 @@ class RawFeedsClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -48,8 +47,6 @@ class RawFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -63,7 +60,7 @@ class RawFeedsClient:
             FeedPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds",
+            "api/v1/feeds",
             method="GET",
             params={
                 "cursor": cursor,
@@ -147,7 +144,6 @@ class RawFeedsClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         url: str,
         attach_picture: typing.Optional[bool] = OMIT,
@@ -163,8 +159,6 @@ class RawFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         attach_picture : typing.Optional[bool]
@@ -191,7 +185,7 @@ class RawFeedsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds",
+            "api/v1/feeds",
             method="POST",
             json={
                 "attachPicture": attach_picture,
@@ -218,6 +212,17 @@ class RawFeedsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -295,7 +300,6 @@ class RawFeedsClient:
 
     def preview(
         self,
-        workspace_id: str,
         *,
         url: str,
         template: typing.Optional[str] = OMIT,
@@ -306,8 +310,6 @@ class RawFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         template : typing.Optional[str]
@@ -324,7 +326,7 @@ class RawFeedsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/preview",
+            "api/v1/feeds/preview",
             method="POST",
             json={
                 "template": template,
@@ -346,6 +348,17 @@ class RawFeedsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -410,16 +423,12 @@ class RawFeedsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[Feed]:
+    def get(self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Feed]:
         """
         Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -431,7 +440,7 @@ class RawFeedsClient:
             Feed
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/{encode_path_param(feed_id)}",
+            f"api/v1/feeds/{encode_path_param(feed_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -445,6 +454,17 @@ class RawFeedsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -498,16 +518,12 @@ class RawFeedsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def delete(self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -518,13 +534,24 @@ class RawFeedsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/{encode_path_param(feed_id)}",
+            f"api/v1/feeds/{encode_path_param(feed_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -580,7 +607,6 @@ class RawFeedsClient:
 
     def update(
         self,
-        workspace_id: str,
         feed_id: str,
         *,
         attach_picture: typing.Optional[bool] = OMIT,
@@ -598,8 +624,6 @@ class RawFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         attach_picture : typing.Optional[bool]
@@ -630,7 +654,7 @@ class RawFeedsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/{encode_path_param(feed_id)}",
+            f"api/v1/feeds/{encode_path_param(feed_id)}",
             method="PATCH",
             json={
                 "attachPicture": attach_picture,
@@ -658,6 +682,17 @@ class RawFeedsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -723,15 +758,13 @@ class RawFeedsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def items(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[FeedItems]:
         """
         Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -743,7 +776,7 @@ class RawFeedsClient:
             FeedItems
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/{encode_path_param(feed_id)}/items",
+            f"api/v1/feeds/{encode_path_param(feed_id)}/items",
             method="GET",
             request_options=request_options,
         )
@@ -757,6 +790,17 @@ class RawFeedsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -817,7 +861,6 @@ class AsyncRawFeedsClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -828,8 +871,6 @@ class AsyncRawFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -843,7 +884,7 @@ class AsyncRawFeedsClient:
             FeedPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds",
+            "api/v1/feeds",
             method="GET",
             params={
                 "cursor": cursor,
@@ -927,7 +968,6 @@ class AsyncRawFeedsClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         url: str,
         attach_picture: typing.Optional[bool] = OMIT,
@@ -943,8 +983,6 @@ class AsyncRawFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         attach_picture : typing.Optional[bool]
@@ -971,7 +1009,7 @@ class AsyncRawFeedsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds",
+            "api/v1/feeds",
             method="POST",
             json={
                 "attachPicture": attach_picture,
@@ -998,6 +1036,17 @@ class AsyncRawFeedsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1075,7 +1124,6 @@ class AsyncRawFeedsClient:
 
     async def preview(
         self,
-        workspace_id: str,
         *,
         url: str,
         template: typing.Optional[str] = OMIT,
@@ -1086,8 +1134,6 @@ class AsyncRawFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         template : typing.Optional[str]
@@ -1104,7 +1150,7 @@ class AsyncRawFeedsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/preview",
+            "api/v1/feeds/preview",
             method="POST",
             json={
                 "template": template,
@@ -1126,6 +1172,17 @@ class AsyncRawFeedsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1191,15 +1248,13 @@ class AsyncRawFeedsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Feed]:
         """
         Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1211,7 +1266,7 @@ class AsyncRawFeedsClient:
             Feed
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/{encode_path_param(feed_id)}",
+            f"api/v1/feeds/{encode_path_param(feed_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1225,6 +1280,17 @@ class AsyncRawFeedsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1279,15 +1345,13 @@ class AsyncRawFeedsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1298,13 +1362,24 @@ class AsyncRawFeedsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/{encode_path_param(feed_id)}",
+            f"api/v1/feeds/{encode_path_param(feed_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1360,7 +1435,6 @@ class AsyncRawFeedsClient:
 
     async def update(
         self,
-        workspace_id: str,
         feed_id: str,
         *,
         attach_picture: typing.Optional[bool] = OMIT,
@@ -1378,8 +1452,6 @@ class AsyncRawFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         attach_picture : typing.Optional[bool]
@@ -1410,7 +1482,7 @@ class AsyncRawFeedsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/{encode_path_param(feed_id)}",
+            f"api/v1/feeds/{encode_path_param(feed_id)}",
             method="PATCH",
             json={
                 "attachPicture": attach_picture,
@@ -1438,6 +1510,17 @@ class AsyncRawFeedsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1503,15 +1586,13 @@ class AsyncRawFeedsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def items(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[FeedItems]:
         """
         Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1523,7 +1604,7 @@ class AsyncRawFeedsClient:
             FeedItems
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/feeds/{encode_path_param(feed_id)}/items",
+            f"api/v1/feeds/{encode_path_param(feed_id)}/items",
             method="GET",
             request_options=request_options,
         )
@@ -1537,6 +1618,17 @@ class AsyncRawFeedsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

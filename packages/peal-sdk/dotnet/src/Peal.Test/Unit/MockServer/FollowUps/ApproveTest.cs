@@ -89,7 +89,7 @@ public class ApproveTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/follow-ups/ruleId/approve")
+                    .WithPath("/api/v1/follow-ups/ruleId/approve")
                     .UsingPost()
             )
             .RespondWith(
@@ -100,7 +100,7 @@ public class ApproveTest : BaseMockServerTest
             );
 
         var response = await Client.FollowUps.ApproveAsync(
-            new ApproveFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new ApproveFollowUpsRequest { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -162,7 +162,7 @@ public class ApproveTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/follow-ups/ruleId/approve")
+                    .WithPath("/api/v1/follow-ups/ruleId/approve")
                     .UsingPost()
             )
             .RespondWith(
@@ -173,7 +173,7 @@ public class ApproveTest : BaseMockServerTest
             );
 
         var response = await Client.FollowUps.ApproveAsync(
-            new ApproveFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new ApproveFollowUpsRequest { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -6384,9 +6384,9 @@ func (b *BadGatewayErrorBody) validate() error {
 }
 
 type BadRequestErrorBody struct {
-	Type             string
-	BadRequest       *EffectHttpApiErrorBadRequestEncoded
-	InvalidDateRange *InvalidDateRangeEncoded
+	Type              string
+	InvalidDateRange  *InvalidDateRangeEncoded
+	WorkspaceRequired *WorkspaceRequiredEncoded
 
 	rawJSON json.RawMessage
 }
@@ -6398,18 +6398,18 @@ func (b *BadRequestErrorBody) GetType() string {
 	return b.Type
 }
 
-func (b *BadRequestErrorBody) GetBadRequest() *EffectHttpApiErrorBadRequestEncoded {
-	if b == nil {
-		return nil
-	}
-	return b.BadRequest
-}
-
 func (b *BadRequestErrorBody) GetInvalidDateRange() *InvalidDateRangeEncoded {
 	if b == nil {
 		return nil
 	}
 	return b.InvalidDateRange
+}
+
+func (b *BadRequestErrorBody) GetWorkspaceRequired() *WorkspaceRequiredEncoded {
+	if b == nil {
+		return nil
+	}
+	return b.WorkspaceRequired
 }
 
 func (b *BadRequestErrorBody) UnmarshalJSON(data []byte) error {
@@ -6424,18 +6424,18 @@ func (b *BadRequestErrorBody) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("%T did not include discriminant _tag", b)
 	}
 	switch unmarshaler.Type {
-	case "BadRequest":
-		value := new(EffectHttpApiErrorBadRequestEncoded)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		b.BadRequest = value
 	case "InvalidDateRange":
 		value := new(InvalidDateRangeEncoded)
 		if err := json.Unmarshal(data, &value); err != nil {
 			return err
 		}
 		b.InvalidDateRange = value
+	case "WorkspaceRequired":
+		value := new(WorkspaceRequiredEncoded)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		b.WorkspaceRequired = value
 	}
 	b.rawJSON = json.RawMessage(data)
 	return nil
@@ -6445,11 +6445,11 @@ func (b BadRequestErrorBody) MarshalJSON() ([]byte, error) {
 	if err := b.validate(); err != nil {
 		return nil, err
 	}
-	if b.BadRequest != nil {
-		return internal.MarshalJSONWithExtraProperty(b.BadRequest, "_tag", "BadRequest")
-	}
 	if b.InvalidDateRange != nil {
 		return internal.MarshalJSONWithExtraProperty(b.InvalidDateRange, "_tag", "InvalidDateRange")
+	}
+	if b.WorkspaceRequired != nil {
+		return internal.MarshalJSONWithExtraProperty(b.WorkspaceRequired, "_tag", "WorkspaceRequired")
 	}
 	if len(b.rawJSON) > 0 {
 		return b.rawJSON, nil
@@ -6458,16 +6458,16 @@ func (b BadRequestErrorBody) MarshalJSON() ([]byte, error) {
 }
 
 type BadRequestErrorBodyVisitor interface {
-	VisitBadRequest(*EffectHttpApiErrorBadRequestEncoded) error
 	VisitInvalidDateRange(*InvalidDateRangeEncoded) error
+	VisitWorkspaceRequired(*WorkspaceRequiredEncoded) error
 }
 
 func (b *BadRequestErrorBody) Accept(visitor BadRequestErrorBodyVisitor) error {
-	if b.BadRequest != nil {
-		return visitor.VisitBadRequest(b.BadRequest)
-	}
 	if b.InvalidDateRange != nil {
 		return visitor.VisitInvalidDateRange(b.InvalidDateRange)
+	}
+	if b.WorkspaceRequired != nil {
+		return visitor.VisitWorkspaceRequired(b.WorkspaceRequired)
 	}
 	return fmt.Errorf("type %T does not define a non-empty union type", b)
 }
@@ -6477,11 +6477,11 @@ func (b *BadRequestErrorBody) validate() error {
 		return fmt.Errorf("type %T is nil", b)
 	}
 	var fields []string
-	if b.BadRequest != nil {
-		fields = append(fields, "BadRequest")
-	}
 	if b.InvalidDateRange != nil {
 		fields = append(fields, "InvalidDateRange")
+	}
+	if b.WorkspaceRequired != nil {
+		fields = append(fields, "WorkspaceRequired")
 	}
 	if len(fields) == 0 {
 		if b.Type != "" {
@@ -17829,30 +17829,21 @@ func (i InstagramTrialReel) Ptr() *InstagramTrialReel {
 }
 
 var (
-	invalidDateRangeEncodedFieldTag       = big.NewInt(1 << 0)
-	invalidDateRangeEncodedFieldCode      = big.NewInt(1 << 1)
-	invalidDateRangeEncodedFieldMessage   = big.NewInt(1 << 2)
-	invalidDateRangeEncodedFieldRequestID = big.NewInt(1 << 3)
+	invalidDateRangeEncodedFieldCode      = big.NewInt(1 << 0)
+	invalidDateRangeEncodedFieldMessage   = big.NewInt(1 << 1)
+	invalidDateRangeEncodedFieldRequestID = big.NewInt(1 << 2)
 )
 
 type InvalidDateRangeEncoded struct {
-	Tag       InvalidDateRangeEncodedTag `json:"_tag" url:"_tag"`
-	Code      *string                    `json:"code,omitempty" url:"code,omitempty"`
-	Message   *string                    `json:"message,omitempty" url:"message,omitempty"`
-	RequestID *string                    `json:"requestId,omitempty" url:"requestId,omitempty"`
+	Code      *string `json:"code,omitempty" url:"code,omitempty"`
+	Message   *string `json:"message,omitempty" url:"message,omitempty"`
+	RequestID *string `json:"requestId,omitempty" url:"requestId,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
-}
-
-func (i *InvalidDateRangeEncoded) GetTag() InvalidDateRangeEncodedTag {
-	if i == nil {
-		return ""
-	}
-	return i.Tag
 }
 
 func (i *InvalidDateRangeEncoded) GetCode() *string {
@@ -17890,13 +17881,6 @@ func (i *InvalidDateRangeEncoded) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	i.explicitFields = next
-}
-
-// SetTag sets the Tag field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (i *InvalidDateRangeEncoded) SetTag(tag InvalidDateRangeEncodedTag) {
-	i.Tag = tag
-	i.require(invalidDateRangeEncodedFieldTag)
 }
 
 // SetCode sets the Code field and marks it as non-optional;
@@ -17962,50 +17946,22 @@ func (i *InvalidDateRangeEncoded) String() string {
 	return fmt.Sprintf("%#v", i)
 }
 
-type InvalidDateRangeEncodedTag string
-
-const (
-	InvalidDateRangeEncodedTagInvalidDateRange InvalidDateRangeEncodedTag = "InvalidDateRange"
-)
-
-func NewInvalidDateRangeEncodedTagFromString(s string) (InvalidDateRangeEncodedTag, error) {
-	switch s {
-	case "InvalidDateRange":
-		return InvalidDateRangeEncodedTagInvalidDateRange, nil
-	}
-	var t InvalidDateRangeEncodedTag
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (i InvalidDateRangeEncodedTag) Ptr() *InvalidDateRangeEncodedTag {
-	return &i
-}
-
 var (
-	invalidTimeRangeEncodedFieldTag       = big.NewInt(1 << 0)
-	invalidTimeRangeEncodedFieldCode      = big.NewInt(1 << 1)
-	invalidTimeRangeEncodedFieldMessage   = big.NewInt(1 << 2)
-	invalidTimeRangeEncodedFieldRequestID = big.NewInt(1 << 3)
+	invalidTimeRangeEncodedFieldCode      = big.NewInt(1 << 0)
+	invalidTimeRangeEncodedFieldMessage   = big.NewInt(1 << 1)
+	invalidTimeRangeEncodedFieldRequestID = big.NewInt(1 << 2)
 )
 
 type InvalidTimeRangeEncoded struct {
-	Tag       InvalidTimeRangeEncodedTag `json:"_tag" url:"_tag"`
-	Code      *string                    `json:"code,omitempty" url:"code,omitempty"`
-	Message   *string                    `json:"message,omitempty" url:"message,omitempty"`
-	RequestID *string                    `json:"requestId,omitempty" url:"requestId,omitempty"`
+	Code      *string `json:"code,omitempty" url:"code,omitempty"`
+	Message   *string `json:"message,omitempty" url:"message,omitempty"`
+	RequestID *string `json:"requestId,omitempty" url:"requestId,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
-}
-
-func (i *InvalidTimeRangeEncoded) GetTag() InvalidTimeRangeEncodedTag {
-	if i == nil {
-		return ""
-	}
-	return i.Tag
 }
 
 func (i *InvalidTimeRangeEncoded) GetCode() *string {
@@ -18043,13 +17999,6 @@ func (i *InvalidTimeRangeEncoded) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	i.explicitFields = next
-}
-
-// SetTag sets the Tag field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (i *InvalidTimeRangeEncoded) SetTag(tag InvalidTimeRangeEncodedTag) {
-	i.Tag = tag
-	i.require(invalidTimeRangeEncodedFieldTag)
 }
 
 // SetCode sets the Code field and marks it as non-optional;
@@ -18113,25 +18062,6 @@ func (i *InvalidTimeRangeEncoded) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", i)
-}
-
-type InvalidTimeRangeEncodedTag string
-
-const (
-	InvalidTimeRangeEncodedTagInvalidTimeRange InvalidTimeRangeEncodedTag = "InvalidTimeRange"
-)
-
-func NewInvalidTimeRangeEncodedTagFromString(s string) (InvalidTimeRangeEncodedTag, error) {
-	switch s {
-	case "InvalidTimeRange":
-		return InvalidTimeRangeEncodedTagInvalidTimeRange, nil
-	}
-	var t InvalidTimeRangeEncodedTag
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (i InvalidTimeRangeEncodedTag) Ptr() *InvalidTimeRangeEncodedTag {
-	return &i
 }
 
 var (
@@ -40271,6 +40201,159 @@ func NewWorkspaceNotFoundEncodedTagFromString(s string) (WorkspaceNotFoundEncode
 }
 
 func (w WorkspaceNotFoundEncodedTag) Ptr() *WorkspaceNotFoundEncodedTag {
+	return &w
+}
+
+var (
+	workspaceRequiredEncodedFieldTag       = big.NewInt(1 << 0)
+	workspaceRequiredEncodedFieldCode      = big.NewInt(1 << 1)
+	workspaceRequiredEncodedFieldMessage   = big.NewInt(1 << 2)
+	workspaceRequiredEncodedFieldRequestID = big.NewInt(1 << 3)
+)
+
+type WorkspaceRequiredEncoded struct {
+	Tag       WorkspaceRequiredEncodedTag `json:"_tag" url:"_tag"`
+	Code      *string                     `json:"code,omitempty" url:"code,omitempty"`
+	Message   *string                     `json:"message,omitempty" url:"message,omitempty"`
+	RequestID *string                     `json:"requestId,omitempty" url:"requestId,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (w *WorkspaceRequiredEncoded) GetTag() WorkspaceRequiredEncodedTag {
+	if w == nil {
+		return ""
+	}
+	return w.Tag
+}
+
+func (w *WorkspaceRequiredEncoded) GetCode() *string {
+	if w == nil {
+		return nil
+	}
+	return w.Code
+}
+
+func (w *WorkspaceRequiredEncoded) GetMessage() *string {
+	if w == nil {
+		return nil
+	}
+	return w.Message
+}
+
+func (w *WorkspaceRequiredEncoded) GetRequestID() *string {
+	if w == nil {
+		return nil
+	}
+	return w.RequestID
+}
+
+func (w *WorkspaceRequiredEncoded) GetExtraProperties() map[string]interface{} {
+	if w == nil {
+		return nil
+	}
+	return w.extraProperties
+}
+
+func (w *WorkspaceRequiredEncoded) require(field *big.Int) {
+	next := new(big.Int)
+	if w.explicitFields != nil {
+		next.Set(w.explicitFields)
+	}
+	next.Or(next, field)
+	w.explicitFields = next
+}
+
+// SetTag sets the Tag field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WorkspaceRequiredEncoded) SetTag(tag WorkspaceRequiredEncodedTag) {
+	w.Tag = tag
+	w.require(workspaceRequiredEncodedFieldTag)
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WorkspaceRequiredEncoded) SetCode(code *string) {
+	w.Code = code
+	w.require(workspaceRequiredEncodedFieldCode)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WorkspaceRequiredEncoded) SetMessage(message *string) {
+	w.Message = message
+	w.require(workspaceRequiredEncodedFieldMessage)
+}
+
+// SetRequestID sets the RequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WorkspaceRequiredEncoded) SetRequestID(requestID *string) {
+	w.RequestID = requestID
+	w.require(workspaceRequiredEncodedFieldRequestID)
+}
+
+func (w *WorkspaceRequiredEncoded) UnmarshalJSON(data []byte) error {
+	type unmarshaler WorkspaceRequiredEncoded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*w = WorkspaceRequiredEncoded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *w)
+	if err != nil {
+		return err
+	}
+	w.extraProperties = extraProperties
+	w.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (w *WorkspaceRequiredEncoded) MarshalJSON() ([]byte, error) {
+	type embed WorkspaceRequiredEncoded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*w),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, w.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (w *WorkspaceRequiredEncoded) String() string {
+	if w == nil {
+		return "<nil>"
+	}
+	if len(w.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(w.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(w); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", w)
+}
+
+type WorkspaceRequiredEncodedTag string
+
+const (
+	WorkspaceRequiredEncodedTagWorkspaceRequired WorkspaceRequiredEncodedTag = "WorkspaceRequired"
+)
+
+func NewWorkspaceRequiredEncodedTagFromString(s string) (WorkspaceRequiredEncodedTag, error) {
+	switch s {
+	case "WorkspaceRequired":
+		return WorkspaceRequiredEncodedTagWorkspaceRequired, nil
+	}
+	var t WorkspaceRequiredEncodedTag
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (w WorkspaceRequiredEncodedTag) Ptr() *WorkspaceRequiredEncodedTag {
 	return &w
 }
 

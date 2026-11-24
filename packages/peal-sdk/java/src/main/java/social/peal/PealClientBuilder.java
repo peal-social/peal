@@ -39,6 +39,8 @@ public class PealClientBuilder {
 
     private String pealVersion = "2026-11-09";
 
+    private String workspace = null;
+
     private Environment environment = Environment.DEFAULT;
 
     private OkHttpClient httpClient;
@@ -58,6 +60,14 @@ public class PealClientBuilder {
      */
     public PealClientBuilder pealVersion(String pealVersion) {
         this.pealVersion = pealVersion;
+        return this;
+    }
+
+    /**
+     * Sets workspace
+     */
+    public PealClientBuilder workspace(String workspace) {
+        this.workspace = workspace;
         return this;
     }
 
@@ -240,6 +250,9 @@ public class PealClientBuilder {
      */
     protected void setCustomHeaders(ClientOptions.Builder builder) {
         builder.addHeader("Peal-Version", this.pealVersion);
+        if (this.workspace != null) {
+            builder.addHeader("Peal-Workspace", this.workspace);
+        }
     }
 
     /**

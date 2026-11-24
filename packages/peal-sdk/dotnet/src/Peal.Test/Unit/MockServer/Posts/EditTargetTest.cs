@@ -37,7 +37,7 @@ public class EditTargetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId/edit")
+                    .WithPath("/api/v1/posts/postId/targets/targetId/edit")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -52,7 +52,6 @@ public class EditTargetTest : BaseMockServerTest
         var response = await Client.Posts.EditTargetAsync(
             new LivePostEdit
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 TargetId = "targetId",
                 Part = null,
@@ -90,7 +89,7 @@ public class EditTargetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId/edit")
+                    .WithPath("/api/v1/posts/postId/targets/targetId/edit")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -105,7 +104,6 @@ public class EditTargetTest : BaseMockServerTest
         var response = await Client.Posts.EditTargetAsync(
             new LivePostEdit
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 TargetId = "targetId",
                 Text = "text",

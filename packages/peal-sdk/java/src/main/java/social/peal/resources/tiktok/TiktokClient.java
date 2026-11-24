@@ -28,31 +28,28 @@ public class TiktokClient {
     /**
      * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
      */
-    public TikTokAccount creator(String workspaceId, String channelId) {
-        return this.rawClient.creator(workspaceId, channelId).body();
+    public TikTokAccount creator(String channelId) {
+        return this.rawClient.creator(channelId).body();
     }
 
     /**
      * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
      */
-    public TikTokAccount creator(String workspaceId, String channelId, RequestOptions requestOptions) {
-        return this.rawClient.creator(workspaceId, channelId, requestOptions).body();
+    public TikTokAccount creator(String channelId, RequestOptions requestOptions) {
+        return this.rawClient.creator(channelId, requestOptions).body();
     }
 
     /**
      * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
      */
-    public TikTokAccount creator(String workspaceId, String channelId, CreatorTiktokRequest request) {
-        return this.rawClient.creator(workspaceId, channelId, request).body();
+    public TikTokAccount creator(String channelId, CreatorTiktokRequest request) {
+        return this.rawClient.creator(channelId, request).body();
     }
 
     /**
      * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
      */
-    public TikTokAccount creator(
-            String workspaceId, String channelId, CreatorTiktokRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .creator(workspaceId, channelId, request, requestOptions)
-                .body();
+    public TikTokAccount creator(String channelId, CreatorTiktokRequest request, RequestOptions requestOptions) {
+        return this.rawClient.creator(channelId, request, requestOptions).body();
     }
 }

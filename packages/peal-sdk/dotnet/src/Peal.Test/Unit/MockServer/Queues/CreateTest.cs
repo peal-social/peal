@@ -62,8 +62,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/queues")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -75,22 +74,18 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Queues.CreateAsync(
-            new CreateQueuesRequest
+            new QueueDetails
             {
-                WorkspaceId = "workspaceId",
-                Body = new QueueDetails
+                ChannelIds = null,
+                ChannelSetId = null,
+                IsDefault = null,
+                Name = "x",
+                Slots = new List<QueueSlot>()
                 {
-                    ChannelIds = null,
-                    ChannelSetId = null,
-                    IsDefault = null,
-                    Name = "x",
-                    Slots = new List<QueueSlot>()
-                    {
-                        new QueueSlot { Day = Weekday.Monday, Time = "time" },
-                        new QueueSlot { Day = Weekday.Monday, Time = "time" },
-                    },
-                    TimeZone = "timeZone",
+                    new QueueSlot { Day = Weekday.Monday, Time = "time" },
+                    new QueueSlot { Day = Weekday.Monday, Time = "time" },
                 },
+                TimeZone = "timeZone",
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -139,8 +134,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/queues")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -152,18 +146,14 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Queues.CreateAsync(
-            new CreateQueuesRequest
+            new QueueDetails
             {
-                WorkspaceId = "workspaceId",
-                Body = new QueueDetails
+                Name = "name",
+                Slots = new List<QueueSlot>()
                 {
-                    Name = "name",
-                    Slots = new List<QueueSlot>()
-                    {
-                        new QueueSlot { Day = Weekday.Monday, Time = "time" },
-                    },
-                    TimeZone = "timeZone",
+                    new QueueSlot { Day = Weekday.Monday, Time = "time" },
                 },
+                TimeZone = "timeZone",
             }
         );
         JsonAssert.AreEqual(response, mockResponse);

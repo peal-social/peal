@@ -4,8 +4,6 @@ module Peal
   module Feeds
     module Types
       class FeedChange < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :feed_id, -> { String }, optional: false, nullable: false, api_name: "feedId"
 
         field :attach_picture, -> { Internal::Types::Boolean }, optional: true, nullable: false, api_name: "attachPicture"

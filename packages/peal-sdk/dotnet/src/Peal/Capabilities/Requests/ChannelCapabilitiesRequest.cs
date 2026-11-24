@@ -7,9 +7,6 @@ namespace Peal;
 public record ChannelCapabilitiesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ChannelId { get; set; }
 
     /// <inheritdoc />

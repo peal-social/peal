@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         tagId: "tagId"
  *     }
  */
 export interface DeleteTagsRequest {
-    workspaceId: string;
     tagId: string;
 }

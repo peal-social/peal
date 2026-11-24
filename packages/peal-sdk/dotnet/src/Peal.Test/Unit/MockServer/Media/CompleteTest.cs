@@ -41,7 +41,7 @@ public class CompleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId/complete")
+                    .WithPath("/api/v1/media/mediaId/complete")
                     .UsingPost()
             )
             .RespondWith(
@@ -52,7 +52,7 @@ public class CompleteTest : BaseMockServerTest
             );
 
         var response = await Client.Media.CompleteAsync(
-            new CompleteMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
+            new CompleteMediaRequest { MediaId = "mediaId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -89,7 +89,7 @@ public class CompleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId/complete")
+                    .WithPath("/api/v1/media/mediaId/complete")
                     .UsingPost()
             )
             .RespondWith(
@@ -100,7 +100,7 @@ public class CompleteTest : BaseMockServerTest
             );
 
         var response = await Client.Media.CompleteAsync(
-            new CompleteMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
+            new CompleteMediaRequest { MediaId = "mediaId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -26,7 +26,7 @@ public class ConnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/connect/x")
+                    .WithPath("/api/v1/channels/connect/x")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -41,7 +41,6 @@ public class ConnectTest : BaseMockServerTest
         var response = await Client.Channels.ConnectAsync(
             new ConnectChannel
             {
-                WorkspaceId = "workspaceId",
                 Platform = Platform.X,
                 Connection = null,
                 Handle = null,
@@ -68,7 +67,7 @@ public class ConnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/connect/x")
+                    .WithPath("/api/v1/channels/connect/x")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -81,7 +80,7 @@ public class ConnectTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.ConnectAsync(
-            new ConnectChannel { WorkspaceId = "workspaceId", Platform = Platform.X }
+            new ConnectChannel { Platform = Platform.X }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

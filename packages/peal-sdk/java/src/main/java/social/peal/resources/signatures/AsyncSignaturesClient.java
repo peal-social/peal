@@ -8,11 +8,10 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
-import social.peal.resources.signatures.requests.CreateSignaturesRequest;
 import social.peal.resources.signatures.requests.DeleteSignaturesRequest;
-import social.peal.resources.signatures.requests.ListSignaturesRequest;
 import social.peal.resources.signatures.requests.UpdateSignaturesRequest;
 import social.peal.types.Signature;
+import social.peal.types.SignatureDetails;
 
 public class AsyncSignaturesClient {
     protected final ClientOptions clientOptions;
@@ -34,8 +33,8 @@ public class AsyncSignaturesClient {
     /**
      * Lists the workspace's signatures, oldest first. Needs post:read.
      */
-    public CompletableFuture<List<Signature>> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<Signature>>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<List<Signature>> list() {
+        CompletableFuture<PealClientHttpResponse<List<Signature>>> rawFuture = this.rawClient.list();
         CompletableFuture<List<Signature>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -48,40 +47,8 @@ public class AsyncSignaturesClient {
     /**
      * Lists the workspace's signatures, oldest first. Needs post:read.
      */
-    public CompletableFuture<List<Signature>> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Signature>>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<List<Signature>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's signatures, oldest first. Needs post:read.
-     */
-    public CompletableFuture<List<Signature>> list(String workspaceId, ListSignaturesRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<Signature>>> rawFuture =
-                this.rawClient.list(workspaceId, request);
-        CompletableFuture<List<Signature>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's signatures, oldest first. Needs post:read.
-     */
-    public CompletableFuture<List<Signature>> list(
-            String workspaceId, ListSignaturesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Signature>>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<List<Signature>> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<Signature>>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<List<Signature>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -94,8 +61,8 @@ public class AsyncSignaturesClient {
     /**
      * Adds a signature to the workspace: a name no other signature of the workspace has whatever its case, a text of 2000 characters at most, and the <code>scope</code> it is meant for (the whole <code>workspace</code>, a <code>platform</code>, or one <code>channel</code> of the workspace). With <code>isDefault</code>, new posts that ask for the default signatures take it in its scope, and the signature that was the default of that scope is one no longer. A signature is text of the post once added: it counts against each platform's limit when the post is scheduled. A workspace keeps 50 signatures at most. Needs post:update, and channel:read for a channel's.
      */
-    public CompletableFuture<Signature> create(String workspaceId, CreateSignaturesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Signature>> rawFuture = this.rawClient.create(workspaceId, request);
+    public CompletableFuture<Signature> create(SignatureDetails request) {
+        CompletableFuture<PealClientHttpResponse<Signature>> rawFuture = this.rawClient.create(request);
         CompletableFuture<Signature> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -108,10 +75,22 @@ public class AsyncSignaturesClient {
     /**
      * Adds a signature to the workspace: a name no other signature of the workspace has whatever its case, a text of 2000 characters at most, and the <code>scope</code> it is meant for (the whole <code>workspace</code>, a <code>platform</code>, or one <code>channel</code> of the workspace). With <code>isDefault</code>, new posts that ask for the default signatures take it in its scope, and the signature that was the default of that scope is one no longer. A signature is text of the post once added: it counts against each platform's limit when the post is scheduled. A workspace keeps 50 signatures at most. Needs post:update, and channel:read for a channel's.
      */
-    public CompletableFuture<Signature> create(
-            String workspaceId, CreateSignaturesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Signature>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+    public CompletableFuture<Signature> create(SignatureDetails request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Signature>> rawFuture = this.rawClient.create(request, requestOptions);
+        CompletableFuture<Signature> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Replaces a signature's name, text, scope and whether it is a default. Posts that already hold its text keep it as it was. Needs post:update, and channel:read for a channel's.
+     */
+    public CompletableFuture<Signature> update(String signatureId, UpdateSignaturesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Signature>> rawFuture = this.rawClient.update(signatureId, request);
         CompletableFuture<Signature> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -125,25 +104,9 @@ public class AsyncSignaturesClient {
      * Replaces a signature's name, text, scope and whether it is a default. Posts that already hold its text keep it as it was. Needs post:update, and channel:read for a channel's.
      */
     public CompletableFuture<Signature> update(
-            String workspaceId, String signatureId, UpdateSignaturesRequest request) {
+            String signatureId, UpdateSignaturesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Signature>> rawFuture =
-                this.rawClient.update(workspaceId, signatureId, request);
-        CompletableFuture<Signature> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Replaces a signature's name, text, scope and whether it is a default. Posts that already hold its text keep it as it was. Needs post:update, and channel:read for a channel's.
-     */
-    public CompletableFuture<Signature> update(
-            String workspaceId, String signatureId, UpdateSignaturesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Signature>> rawFuture =
-                this.rawClient.update(workspaceId, signatureId, request, requestOptions);
+                this.rawClient.update(signatureId, request, requestOptions);
         CompletableFuture<Signature> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -156,8 +119,8 @@ public class AsyncSignaturesClient {
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String signatureId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, signatureId);
+    public CompletableFuture<Void> delete(String signatureId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(signatureId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -170,9 +133,8 @@ public class AsyncSignaturesClient {
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String signatureId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, signatureId, requestOptions);
+    public CompletableFuture<Void> delete(String signatureId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(signatureId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -185,9 +147,8 @@ public class AsyncSignaturesClient {
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String signatureId, DeleteSignaturesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, signatureId, request);
+    public CompletableFuture<Void> delete(String signatureId, DeleteSignaturesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(signatureId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -201,9 +162,9 @@ public class AsyncSignaturesClient {
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
     public CompletableFuture<Void> delete(
-            String workspaceId, String signatureId, DeleteSignaturesRequest request, RequestOptions requestOptions) {
+            String signatureId, DeleteSignaturesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, signatureId, request, requestOptions);
+                this.rawClient.delete(signatureId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

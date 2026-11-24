@@ -15,18 +15,14 @@ public class DisconnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/connectionId")
+                    .WithPath("/api/v1/ads/connections/connectionId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Ads.DisconnectAsync(
-                new DisconnectAdsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    ConnectionId = "connectionId",
-                }
+                new DisconnectAdsRequest { ConnectionId = "connectionId" }
             )
         );
     }
@@ -38,18 +34,14 @@ public class DisconnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/connectionId")
+                    .WithPath("/api/v1/ads/connections/connectionId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Ads.DisconnectAsync(
-                new DisconnectAdsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    ConnectionId = "connectionId",
-                }
+                new DisconnectAdsRequest { ConnectionId = "connectionId" }
             )
         );
     }

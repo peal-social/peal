@@ -7,9 +7,6 @@ namespace Peal;
 public record AiProviderConnectionChange
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required AiProvider Provider { get; set; }
 
     [JsonPropertyName("apiKey")]

@@ -134,7 +134,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling")
+                    .WithPath("/api/v1/recycling")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -149,7 +149,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Recycling.CreateAsync(
             new NewRecyclingRule
             {
-                WorkspaceId = "workspaceId",
                 Count = null,
                 Every = new RecyclingInterval { Count = 1, Unit = RecyclingUnit.Days },
                 PostId = "postId",
@@ -224,7 +223,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling")
+                    .WithPath("/api/v1/recycling")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -239,7 +238,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Recycling.CreateAsync(
             new NewRecyclingRule
             {
-                WorkspaceId = "workspaceId",
                 Every = new RecyclingInterval { Count = 1, Unit = RecyclingUnit.Days },
                 PostId = "postId",
             }

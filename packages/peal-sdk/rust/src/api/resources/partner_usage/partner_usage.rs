@@ -61,7 +61,7 @@ impl PartnerUsageClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                "api/partner/usage",
+                "api/v1/partner/usage",
                 None,
                 QueryBuilder::new()
                     .string("before", request.before.clone())

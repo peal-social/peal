@@ -43,7 +43,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/connect-links/linkId")
+                    .WithPath("/api/v1/connect-links/linkId")
                     .UsingGet()
             )
             .RespondWith(
@@ -54,7 +54,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.ConnectLinks.GetAsync(
-            new GetConnectLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
+            new GetConnectLinksRequest { LinkId = "linkId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -90,7 +90,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/connect-links/linkId")
+                    .WithPath("/api/v1/connect-links/linkId")
                     .UsingGet()
             )
             .RespondWith(
@@ -101,7 +101,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.ConnectLinks.GetAsync(
-            new GetConnectLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
+            new GetConnectLinksRequest { LinkId = "linkId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

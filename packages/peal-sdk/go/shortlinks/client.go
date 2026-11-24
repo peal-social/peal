@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.StatusShortLinksRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.ShortLinks.Status(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Status(
 	ctx context.Context,
-	request *peal.StatusShortLinksRequest,
 	opts ...option.RequestOption,
 ) (*peal.ShortLinkStatus, error) {
 	response, err := c.WithRawResponse.Status(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -66,7 +60,6 @@ func (c *Client) Status(
 // Example:
 //
 //	request := &peal.ShortLinkSettings{
-//	    WorkspaceID: "workspaceId",
 //	    ByDefault: true,
 //	}
 //	_, err := client.ShortLinks.SetDefault(
@@ -93,9 +86,7 @@ func (c *Client) SetDefault(
 //
 // Example:
 //
-//	request := &peal.ListShortLinksRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListShortLinksRequest{}
 //	_, err := client.ShortLinks.List(
 //	    context.TODO(),
 //	    request,
@@ -121,7 +112,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.GetShortLinksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    LinkID: "linkId",
 //	}
 //	_, err := client.ShortLinks.Get(

@@ -27,9 +27,9 @@ export class CapabilitiesClient {
     /**
      * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
      *
-     * @param {Peal.PlatformsCapabilitiesRequest} request
      * @param {CapabilitiesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -38,20 +38,17 @@ export class CapabilitiesClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.capabilities.platforms({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.capabilities.platforms()
      */
-    public platforms(request: Peal.PlatformsCapabilitiesRequest, requestOptions?: CapabilitiesClient.RequestOptions): core.HttpResponsePromise<Peal.PlatformCapabilities[]> {
-        return core.HttpResponsePromise.fromPromise(this.__platforms(request, requestOptions));
+    public platforms(requestOptions?: CapabilitiesClient.RequestOptions): core.HttpResponsePromise<Peal.PlatformCapabilities[]> {
+        return core.HttpResponsePromise.fromPromise(this.__platforms(requestOptions));
     }
 
-    private async __platforms(request: Peal.PlatformsCapabilitiesRequest, requestOptions?: CapabilitiesClient.RequestOptions): Promise<core.WithRawResponse<Peal.PlatformCapabilities[]>> {
-        const { workspaceId } = request;
+    private async __platforms(requestOptions?: CapabilitiesClient.RequestOptions): Promise<core.WithRawResponse<Peal.PlatformCapabilities[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/platforms/capabilities`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/platforms/capabilities"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -67,6 +64,7 @@ export class CapabilitiesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -79,7 +77,7 @@ export class CapabilitiesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/platforms/capabilities");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/platforms/capabilities");
     }
 
     /**
@@ -88,6 +86,7 @@ export class CapabilitiesClient {
      * @param {Peal.ChannelCapabilitiesRequest} request
      * @param {CapabilitiesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -97,7 +96,6 @@ export class CapabilitiesClient {
      *
      * @example
      *     await client.capabilities.channel({
-     *         workspaceId: "workspaceId",
      *         channelId: "channelId"
      *     })
      */
@@ -106,11 +104,11 @@ export class CapabilitiesClient {
     }
 
     private async __channel(request: Peal.ChannelCapabilitiesRequest, requestOptions?: CapabilitiesClient.RequestOptions): Promise<core.WithRawResponse<Peal.ChannelCapabilities>> {
-        const { workspaceId, channelId } = request;
+        const { channelId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/channels/${core.url.encodePathParam(channelId, errors.PealError)}/capabilities`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/channels/${core.url.encodePathParam(channelId, errors.PealError)}/capabilities`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -126,6 +124,7 @@ export class CapabilitiesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -138,6 +137,6 @@ export class CapabilitiesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/channels/{channelId}/capabilities");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/channels/{channelId}/capabilities");
     }
 }

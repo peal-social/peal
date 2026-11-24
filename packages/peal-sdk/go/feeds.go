@@ -10,18 +10,16 @@ import (
 )
 
 var (
-	newFeedFieldWorkspaceID   = big.NewInt(1 << 0)
-	newFeedFieldAttachPicture = big.NewInt(1 << 1)
-	newFeedFieldChannelIDs    = big.NewInt(1 << 2)
-	newFeedFieldChannelSetID  = big.NewInt(1 << 3)
-	newFeedFieldMode          = big.NewInt(1 << 4)
-	newFeedFieldQueueID       = big.NewInt(1 << 5)
-	newFeedFieldTemplate      = big.NewInt(1 << 6)
-	newFeedFieldURL           = big.NewInt(1 << 7)
+	newFeedFieldAttachPicture = big.NewInt(1 << 0)
+	newFeedFieldChannelIDs    = big.NewInt(1 << 1)
+	newFeedFieldChannelSetID  = big.NewInt(1 << 2)
+	newFeedFieldMode          = big.NewInt(1 << 3)
+	newFeedFieldQueueID       = big.NewInt(1 << 4)
+	newFeedFieldTemplate      = big.NewInt(1 << 5)
+	newFeedFieldURL           = big.NewInt(1 << 6)
 )
 
 type NewFeed struct {
-	WorkspaceID   string    `json:"-" url:"-"`
 	AttachPicture *bool     `json:"attachPicture,omitempty" url:"-"`
 	ChannelIDs    []string  `json:"channelIds,omitempty" url:"-"`
 	ChannelSetID  *string   `json:"channelSetId,omitempty" url:"-"`
@@ -41,13 +39,6 @@ func (n *NewFeed) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewFeed) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newFeedFieldWorkspaceID)
 }
 
 // SetAttachPicture sets the AttachPicture field and marks it as non-optional;
@@ -121,13 +112,11 @@ func (n *NewFeed) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	deleteFeedsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteFeedsRequestFieldFeedID      = big.NewInt(1 << 1)
+	deleteFeedsRequestFieldFeedID = big.NewInt(1 << 0)
 )
 
 type DeleteFeedsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	FeedID      string `json:"-" url:"-"`
+	FeedID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -142,13 +131,6 @@ func (d *DeleteFeedsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteFeedsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteFeedsRequestFieldWorkspaceID)
-}
-
 // SetFeedID sets the FeedID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteFeedsRequest) SetFeedID(feedID string) {
@@ -157,13 +139,11 @@ func (d *DeleteFeedsRequest) SetFeedID(feedID string) {
 }
 
 var (
-	getFeedsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getFeedsRequestFieldFeedID      = big.NewInt(1 << 1)
+	getFeedsRequestFieldFeedID = big.NewInt(1 << 0)
 )
 
 type GetFeedsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	FeedID      string `json:"-" url:"-"`
+	FeedID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -178,13 +158,6 @@ func (g *GetFeedsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetFeedsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getFeedsRequestFieldWorkspaceID)
-}
-
 // SetFeedID sets the FeedID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetFeedsRequest) SetFeedID(feedID string) {
@@ -193,13 +166,11 @@ func (g *GetFeedsRequest) SetFeedID(feedID string) {
 }
 
 var (
-	itemsFeedsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	itemsFeedsRequestFieldFeedID      = big.NewInt(1 << 1)
+	itemsFeedsRequestFieldFeedID = big.NewInt(1 << 0)
 )
 
 type ItemsFeedsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	FeedID      string `json:"-" url:"-"`
+	FeedID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -214,13 +185,6 @@ func (i *ItemsFeedsRequest) require(field *big.Int) {
 	i.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (i *ItemsFeedsRequest) SetWorkspaceID(workspaceID string) {
-	i.WorkspaceID = workspaceID
-	i.require(itemsFeedsRequestFieldWorkspaceID)
-}
-
 // SetFeedID sets the FeedID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (i *ItemsFeedsRequest) SetFeedID(feedID string) {
@@ -229,15 +193,13 @@ func (i *ItemsFeedsRequest) SetFeedID(feedID string) {
 }
 
 var (
-	listFeedsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listFeedsRequestFieldCursor      = big.NewInt(1 << 1)
-	listFeedsRequestFieldLimit       = big.NewInt(1 << 2)
+	listFeedsRequestFieldCursor = big.NewInt(1 << 0)
+	listFeedsRequestFieldLimit  = big.NewInt(1 << 1)
 )
 
 type ListFeedsRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Cursor      *string `json:"-" url:"cursor,omitempty"`
-	Limit       *string `json:"-" url:"limit,omitempty"`
+	Cursor *string `json:"-" url:"cursor,omitempty"`
+	Limit  *string `json:"-" url:"limit,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -250,13 +212,6 @@ func (l *ListFeedsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListFeedsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listFeedsRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -274,15 +229,13 @@ func (l *ListFeedsRequest) SetLimit(limit *string) {
 }
 
 var (
-	feedPreviewRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	feedPreviewRequestFieldTemplate    = big.NewInt(1 << 1)
-	feedPreviewRequestFieldURL         = big.NewInt(1 << 2)
+	feedPreviewRequestFieldTemplate = big.NewInt(1 << 0)
+	feedPreviewRequestFieldURL      = big.NewInt(1 << 1)
 )
 
 type FeedPreviewRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Template    *string `json:"template,omitempty" url:"-"`
-	URL         string  `json:"url" url:"-"`
+	Template *string `json:"template,omitempty" url:"-"`
+	URL      string  `json:"url" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -295,13 +248,6 @@ func (f *FeedPreviewRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	f.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (f *FeedPreviewRequest) SetWorkspaceID(workspaceID string) {
-	f.WorkspaceID = workspaceID
-	f.require(feedPreviewRequestFieldWorkspaceID)
 }
 
 // SetTemplate sets the Template field and marks it as non-optional;
@@ -1819,20 +1765,18 @@ func (f FeedChangeStatus) Ptr() *FeedChangeStatus {
 }
 
 var (
-	feedChangeFieldWorkspaceID   = big.NewInt(1 << 0)
-	feedChangeFieldFeedID        = big.NewInt(1 << 1)
-	feedChangeFieldAttachPicture = big.NewInt(1 << 2)
-	feedChangeFieldChannelIDs    = big.NewInt(1 << 3)
-	feedChangeFieldChannelSetID  = big.NewInt(1 << 4)
-	feedChangeFieldMode          = big.NewInt(1 << 5)
-	feedChangeFieldQueueID       = big.NewInt(1 << 6)
-	feedChangeFieldStatus        = big.NewInt(1 << 7)
-	feedChangeFieldTemplate      = big.NewInt(1 << 8)
-	feedChangeFieldURL           = big.NewInt(1 << 9)
+	feedChangeFieldFeedID        = big.NewInt(1 << 0)
+	feedChangeFieldAttachPicture = big.NewInt(1 << 1)
+	feedChangeFieldChannelIDs    = big.NewInt(1 << 2)
+	feedChangeFieldChannelSetID  = big.NewInt(1 << 3)
+	feedChangeFieldMode          = big.NewInt(1 << 4)
+	feedChangeFieldQueueID       = big.NewInt(1 << 5)
+	feedChangeFieldStatus        = big.NewInt(1 << 6)
+	feedChangeFieldTemplate      = big.NewInt(1 << 7)
+	feedChangeFieldURL           = big.NewInt(1 << 8)
 )
 
 type FeedChange struct {
-	WorkspaceID   string            `json:"-" url:"-"`
 	FeedID        string            `json:"-" url:"-"`
 	AttachPicture *bool             `json:"attachPicture,omitempty" url:"-"`
 	ChannelIDs    []string          `json:"channelIds,omitempty" url:"-"`
@@ -1854,13 +1798,6 @@ func (f *FeedChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	f.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (f *FeedChange) SetWorkspaceID(workspaceID string) {
-	f.WorkspaceID = workspaceID
-	f.require(feedChangeFieldWorkspaceID)
 }
 
 // SetFeedID sets the FeedID field and marks it as non-optional;

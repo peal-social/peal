@@ -52,7 +52,7 @@ public class ApproveTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/approve")
+                    .WithPath("/api/v1/posts/postId/approve")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -67,7 +67,6 @@ public class ApproveTest : BaseMockServerTest
         var response = await Client.Review.ApproveAsync(
             new ApprovalDecision
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 ApprovalId = "approvalId",
                 SubjectHash = "subjectHash",
@@ -116,7 +115,7 @@ public class ApproveTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/approve")
+                    .WithPath("/api/v1/posts/postId/approve")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -131,7 +130,6 @@ public class ApproveTest : BaseMockServerTest
         var response = await Client.Review.ApproveAsync(
             new ApprovalDecision
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 ApprovalId = "approvalId",
                 SubjectHash = "subjectHash",

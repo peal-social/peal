@@ -283,6 +283,7 @@ class PealClient
 
     /**
      * @param ?string $token The token to use for authentication.
+     * @param ?string $workspace
      * @param ?string $pealVersion
      * @param ?array{
      *   baseUrl?: string,
@@ -294,6 +295,7 @@ class PealClient
      */
     public function __construct(
         ?string $token = null,
+        ?string $workspace = null,
         ?string $pealVersion = null,
         ?array $options = null,
     ) {
@@ -306,6 +308,9 @@ class PealClient
         ];
         if ($token != null) {
             $defaultHeaders['Authorization'] = "Bearer $token";
+        }
+        if ($workspace != null) {
+            $defaultHeaders['Peal-Workspace'] = $workspace;
         }
         if ($pealVersion !== null) {
             $defaultHeaders['Peal-Version'] = $pealVersion;

@@ -17,8 +17,11 @@ use Peal\Webhooks\Requests\NewWebhookEndpoint;
 use Peal\Types\WebhookEndpointSecret;
 use Peal\Webhooks\Requests\SearchDeliveriesWebhooksRequest;
 use Peal\Types\WebhookDeliveryPage;
-use Peal\Webhooks\Requests\RedeliverManyWebhooksRequest;
+use Peal\Types\WebhookRedeliveryByIds;
+use Peal\Types\WebhookRedeliveryOfFailed;
 use Peal\Types\WebhookBulkRedelivery;
+use Peal\Core\Json\JsonSerializer;
+use Peal\Core\Types\Union;
 use Peal\Webhooks\Requests\WebhookEndpointChange;
 use Peal\Webhooks\Requests\SendTestWebhooksRequest;
 use Peal\Types\WebhookDelivery;
@@ -65,12 +68,9 @@ class WebhooksClient
      *
      * Example:
      * ```php
-     * $client->webhooks->list(
-     *     'workspaceId',
-     * );
+     * $client->webhooks->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -83,14 +83,14 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks",
+                    path: "api/v1/webhooks",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -121,7 +121,6 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->create(
-     *     'workspaceId',
      *     new NewWebhookEndpoint([
      *         'eventTypes' => [
      *             SubscribableWebhookEventType::PostScheduled->value,
@@ -131,7 +130,6 @@ class WebhooksClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewWebhookEndpoint $request
      * @param ?array{
      *   baseUrl?: string,
@@ -145,7 +143,7 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, NewWebhookEndpoint $request, ?array $options = null): ?WebhookEndpointSecret
+    public function create(NewWebhookEndpoint $request, ?array $options = null): ?WebhookEndpointSecret
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -153,7 +151,7 @@ class WebhooksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks",
+                    path: "api/v1/webhooks",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -185,12 +183,10 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->searchDeliveries(
-     *     'workspaceId',
      *     new SearchDeliveriesWebhooksRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param SearchDeliveriesWebhooksRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -204,7 +200,7 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function searchDeliveries(string $workspaceId, SearchDeliveriesWebhooksRequest $request = new SearchDeliveriesWebhooksRequest(), ?array $options = null): ?WebhookDeliveryPage
+    public function searchDeliveries(SearchDeliveriesWebhooksRequest $request = new SearchDeliveriesWebhooksRequest(), ?array $options = null): ?WebhookDeliveryPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -233,7 +229,7 @@ class WebhooksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/deliveries",
+                    path: "api/v1/webhooks/deliveries",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -265,19 +261,18 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->redeliverMany(
-     *     'workspaceId',
-     *     new RedeliverManyWebhooksRequest([
-     *         'body' => new WebhookRedeliveryByIds([
-     *             'deliveryIds' => [
-     *                 'deliveryIds',
-     *             ],
-     *         ]),
+     *     new WebhookRedeliveryByIds([
+     *         'deliveryIds' => [
+     *             'deliveryIds',
+     *         ],
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param RedeliverManyWebhooksRequest $request
+     * @param (
+     *    WebhookRedeliveryByIds
+     *   |WebhookRedeliveryOfFailed
+     * ) $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -290,7 +285,7 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function redeliverMany(string $workspaceId, RedeliverManyWebhooksRequest $request, ?array $options = null): ?WebhookBulkRedelivery
+    public function redeliverMany(WebhookRedeliveryByIds|WebhookRedeliveryOfFailed $request, ?array $options = null): ?WebhookBulkRedelivery
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -298,9 +293,9 @@ class WebhooksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/deliveries/redeliver",
+                    path: "api/v1/webhooks/deliveries/redeliver",
                     method: HttpMethod::POST,
-                    body: $request->body,
+                    body: JsonSerializer::serializeUnion($request, new Union(WebhookRedeliveryByIds::class, WebhookRedeliveryOfFailed::class)),
                 ),
                 $options,
             );
@@ -330,12 +325,10 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->get(
-     *     'workspaceId',
      *     'endpointId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $endpointId
      * @param ?array{
      *   baseUrl?: string,
@@ -349,14 +342,14 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $endpointId, ?array $options = null): ?WebhookEndpoint
+    public function get(string $endpointId, ?array $options = null): ?WebhookEndpoint
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/{$endpointId}",
+                    path: "api/v1/webhooks/{$endpointId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -387,12 +380,10 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->delete(
-     *     'workspaceId',
      *     'endpointId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $endpointId
      * @param ?array{
      *   baseUrl?: string,
@@ -405,14 +396,14 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $endpointId, ?array $options = null): void
+    public function delete(string $endpointId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/{$endpointId}",
+                    path: "api/v1/webhooks/{$endpointId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -437,13 +428,11 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->update(
-     *     'workspaceId',
      *     'endpointId',
      *     new WebhookEndpointChange([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $endpointId
      * @param WebhookEndpointChange $request
      * @param ?array{
@@ -458,7 +447,7 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $endpointId, WebhookEndpointChange $request = new WebhookEndpointChange(), ?array $options = null): ?WebhookEndpoint
+    public function update(string $endpointId, WebhookEndpointChange $request = new WebhookEndpointChange(), ?array $options = null): ?WebhookEndpoint
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -466,7 +455,7 @@ class WebhooksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/{$endpointId}",
+                    path: "api/v1/webhooks/{$endpointId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -498,12 +487,10 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->rotateSecret(
-     *     'workspaceId',
      *     'endpointId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $endpointId
      * @param ?array{
      *   baseUrl?: string,
@@ -517,7 +504,7 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function rotateSecret(string $workspaceId, string $endpointId, ?array $options = null): ?WebhookEndpointSecret
+    public function rotateSecret(string $endpointId, ?array $options = null): ?WebhookEndpointSecret
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -525,7 +512,7 @@ class WebhooksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/{$endpointId}/secret",
+                    path: "api/v1/webhooks/{$endpointId}/secret",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -556,13 +543,11 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->sendTest(
-     *     'workspaceId',
      *     'endpointId',
      *     new SendTestWebhooksRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $endpointId
      * @param SendTestWebhooksRequest $request
      * @param ?array{
@@ -577,7 +562,7 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function sendTest(string $workspaceId, string $endpointId, SendTestWebhooksRequest $request = new SendTestWebhooksRequest(), ?array $options = null): ?WebhookDelivery
+    public function sendTest(string $endpointId, SendTestWebhooksRequest $request = new SendTestWebhooksRequest(), ?array $options = null): ?WebhookDelivery
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -589,7 +574,7 @@ class WebhooksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/{$endpointId}/test",
+                    path: "api/v1/webhooks/{$endpointId}/test",
                     method: HttpMethod::POST,
                     query: $query,
                 ),
@@ -621,13 +606,11 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->listDeliveries(
-     *     'workspaceId',
      *     'endpointId',
      *     new ListDeliveriesWebhooksRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $endpointId
      * @param ListDeliveriesWebhooksRequest $request
      * @param ?array{
@@ -642,7 +625,7 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listDeliveries(string $workspaceId, string $endpointId, ListDeliveriesWebhooksRequest $request = new ListDeliveriesWebhooksRequest(), ?array $options = null): ?WebhookDeliveryPage
+    public function listDeliveries(string $endpointId, ListDeliveriesWebhooksRequest $request = new ListDeliveriesWebhooksRequest(), ?array $options = null): ?WebhookDeliveryPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -662,7 +645,7 @@ class WebhooksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/{$endpointId}/deliveries",
+                    path: "api/v1/webhooks/{$endpointId}/deliveries",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -694,13 +677,11 @@ class WebhooksClient
      * Example:
      * ```php
      * $client->webhooks->redeliver(
-     *     'workspaceId',
      *     'endpointId',
      *     'deliveryId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $endpointId
      * @param string $deliveryId
      * @param ?array{
@@ -715,7 +696,7 @@ class WebhooksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function redeliver(string $workspaceId, string $endpointId, string $deliveryId, ?array $options = null): ?WebhookDelivery
+    public function redeliver(string $endpointId, string $deliveryId, ?array $options = null): ?WebhookDelivery
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -723,7 +704,7 @@ class WebhooksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/webhooks/{$endpointId}/deliveries/{$deliveryId}/redeliver",
+                    path: "api/v1/webhooks/{$endpointId}/deliveries/{$deliveryId}/redeliver",
                     method: HttpMethod::POST,
                 ),
                 $options,

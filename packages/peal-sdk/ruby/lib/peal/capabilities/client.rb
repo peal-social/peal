@@ -17,24 +17,22 @@ module Peal
       # channel:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.capabilities.platforms(workspace_id: "workspaceId")
+      #   client.capabilities.platforms
       #
       # @return [Array[Peal::Types::PlatformCapabilities]]
-      def platforms(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def platforms(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/platforms/capabilities",
+          path: "api/v1/platforms/capabilities",
           request_options: request_options
         )
         begin
@@ -67,14 +65,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       #
       # @example
-      #   client.capabilities.channel(
-      #     workspace_id: "workspaceId",
-      #     channel_id: "channelId"
-      #   )
+      #   client.capabilities.channel(channel_id: "channelId")
       #
       # @return [Peal::Types::ChannelCapabilities]
       def channel(request_options: {}, **params)
@@ -82,7 +76,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/capabilities",
+          path: "api/v1/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/capabilities",
           request_options: request_options
         )
         begin

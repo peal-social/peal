@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         linkId: "linkId"
  *     }
  */
 export interface GetShortLinksRequest {
-    workspaceId: string;
     linkId: string;
     from?: Peal.CalendarDay;
     to?: Peal.CalendarDay;

@@ -29,14 +29,12 @@ class ShortLinksClient:
         """
         return self._raw_client
 
-    def status(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ShortLinkStatus:
+    def status(self, *, request_options: typing.Optional[RequestOptions] = None) -> ShortLinkStatus:
         """
         Answers whether this server shortens links (`available`), what a short address starts with (`base`) and how long it is (`shortLength`), and whether the workspace's new posts ask for short links by default (`byDefault`). A post that leaves `shortenLinks` out takes `byDefault` when it is made (the web app, the API, MCP, the command line and feeds alike), and `false` always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with `http://` or `https://` and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -50,25 +48,22 @@ class ShortLinksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.short_links.status(
-            workspace_id="workspaceId",
-        )
+        client.short_links.status()
         """
-        _response = self._raw_client.status(workspace_id, request_options=request_options)
+        _response = self._raw_client.status(request_options=request_options)
         return _response.data
 
     def set_default(
-        self, workspace_id: str, *, by_default: bool, request_options: typing.Optional[RequestOptions] = None
+        self, *, by_default: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> ShortLinkStatus:
         """
         Sets whether the workspace's new posts ask for short links unless they say otherwise (`shortenLinks`), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
 
         Parameters
         ----------
-        workspace_id : str
-
         by_default : bool
 
         request_options : typing.Optional[RequestOptions]
@@ -84,19 +79,18 @@ class ShortLinksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.short_links.set_default(
-            workspace_id="workspaceId",
             by_default=True,
         )
         """
-        _response = self._raw_client.set_default(workspace_id, by_default=by_default, request_options=request_options)
+        _response = self._raw_client.set_default(by_default=by_default, request_options=request_options)
         return _response.data
 
     def list(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -111,8 +105,6 @@ class ShortLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -138,14 +130,12 @@ class ShortLinksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.short_links.list(
-            workspace_id="workspaceId",
-        )
+        client.short_links.list()
         """
         _response = self._raw_client.list(
-            workspace_id,
             channel_id=channel_id,
             cursor=cursor,
             from_=from_,
@@ -158,7 +148,6 @@ class ShortLinksClient:
 
     def get(
         self,
-        workspace_id: str,
         link_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -170,8 +159,6 @@ class ShortLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -191,14 +178,14 @@ class ShortLinksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.short_links.get(
-            workspace_id="workspaceId",
             link_id="linkId",
         )
         """
-        _response = self._raw_client.get(workspace_id, link_id, from_=from_, to=to, request_options=request_options)
+        _response = self._raw_client.get(link_id, from_=from_, to=to, request_options=request_options)
         return _response.data
 
 
@@ -217,16 +204,12 @@ class AsyncShortLinksClient:
         """
         return self._raw_client
 
-    async def status(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ShortLinkStatus:
+    async def status(self, *, request_options: typing.Optional[RequestOptions] = None) -> ShortLinkStatus:
         """
         Answers whether this server shortens links (`available`), what a short address starts with (`base`) and how long it is (`shortLength`), and whether the workspace's new posts ask for short links by default (`byDefault`). A post that leaves `shortenLinks` out takes `byDefault` when it is made (the web app, the API, MCP, the command line and feeds alike), and `false` always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with `http://` or `https://` and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -242,31 +225,28 @@ class AsyncShortLinksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.short_links.status(
-                workspace_id="workspaceId",
-            )
+            await client.short_links.status()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.status(workspace_id, request_options=request_options)
+        _response = await self._raw_client.status(request_options=request_options)
         return _response.data
 
     async def set_default(
-        self, workspace_id: str, *, by_default: bool, request_options: typing.Optional[RequestOptions] = None
+        self, *, by_default: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> ShortLinkStatus:
         """
         Sets whether the workspace's new posts ask for short links unless they say otherwise (`shortenLinks`), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
 
         Parameters
         ----------
-        workspace_id : str
-
         by_default : bool
 
         request_options : typing.Optional[RequestOptions]
@@ -284,27 +264,24 @@ class AsyncShortLinksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.short_links.set_default(
-                workspace_id="workspaceId",
                 by_default=True,
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.set_default(
-            workspace_id, by_default=by_default, request_options=request_options
-        )
+        _response = await self._raw_client.set_default(by_default=by_default, request_options=request_options)
         return _response.data
 
     async def list(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -319,8 +296,6 @@ class AsyncShortLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -348,20 +323,18 @@ class AsyncShortLinksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.short_links.list(
-                workspace_id="workspaceId",
-            )
+            await client.short_links.list()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list(
-            workspace_id,
             channel_id=channel_id,
             cursor=cursor,
             from_=from_,
@@ -374,7 +347,6 @@ class AsyncShortLinksClient:
 
     async def get(
         self,
-        workspace_id: str,
         link_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -386,8 +358,6 @@ class AsyncShortLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -409,20 +379,18 @@ class AsyncShortLinksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.short_links.get(
-                workspace_id="workspaceId",
                 link_id="linkId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(
-            workspace_id, link_id, from_=from_, to=to, request_options=request_options
-        )
+        _response = await self._raw_client.get(link_id, from_=from_, to=to, request_options=request_options)
         return _response.data

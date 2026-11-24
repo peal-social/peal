@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.DraftsPostsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.DraftsPostsRequest{}
 //	_, err := client.Posts.Drafts(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) Drafts(
 // Example:
 //
 //	request := &peal.ListPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    From: "from",
 //	    To: "to",
 //	}
@@ -94,27 +91,24 @@ func (c *Client) List(
 //
 // Example:
 //
-//	request := &peal.CreatePostsRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.PostDraft{
-//	        ChannelIDs: []string{
-//	            "channelIds",
-//	        },
-//	        Content: &peal.PostContent{
-//	            Media: []*peal.MediaAttachment{
-//	                &peal.MediaAttachment{
-//	                    AltText: "altText",
-//	                    MediaID: "mediaId",
-//	                },
+//	request := &peal.PostDraft{
+//	    ChannelIDs: []string{
+//	        "channelIds",
+//	    },
+//	    Content: &peal.PostContent{
+//	        Media: []*peal.MediaAttachment{
+//	            &peal.MediaAttachment{
+//	                AltText: "altText",
+//	                MediaID: "mediaId",
 //	            },
-//	            Overrides: []*peal.TextOverride{
-//	                &peal.TextOverride{
-//	                    ChannelID: "channelId",
-//	                    Text: "text",
-//	                },
-//	            },
-//	            Text: "text",
 //	        },
+//	        Overrides: []*peal.TextOverride{
+//	            &peal.TextOverride{
+//	                ChannelID: "channelId",
+//	                Text: "text",
+//	            },
+//	        },
+//	        Text: "text",
 //	    },
 //	}
 //	_, err := client.Posts.Create(
@@ -123,7 +117,7 @@ func (c *Client) List(
 //	)
 func (c *Client) Create(
 	ctx context.Context,
-	request *peal.CreatePostsRequest,
+	request *peal.PostDraft,
 	opts ...option.RequestOption,
 ) (*peal.Post, error) {
 	response, err := c.WithRawResponse.Create(
@@ -141,9 +135,7 @@ func (c *Client) Create(
 //
 // Example:
 //
-//	request := &peal.SearchPostsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.SearchPostsRequest{}
 //	_, err := client.Posts.Search(
 //	    context.TODO(),
 //	    request,
@@ -169,7 +161,6 @@ func (c *Client) Search(
 // Example:
 //
 //	request := &peal.NewPost{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelIDs: []string{
 //	        "channelIds",
 //	    },
@@ -217,7 +208,6 @@ func (c *Client) Send(
 // Example:
 //
 //	request := &peal.BulkPosts{
-//	    WorkspaceID: "workspaceId",
 //	    Posts: []*peal.BulkPost{
 //	        &peal.BulkPost{
 //	            ChannelIDs: []string{
@@ -269,7 +259,6 @@ func (c *Client) Bulk(
 // Example:
 //
 //	request := &peal.PostImport{
-//	    WorkspaceID: "workspaceId",
 //	    Csv: "csv",
 //	}
 //	_, err := client.Posts.Import(
@@ -297,7 +286,6 @@ func (c *Client) Import(
 // Example:
 //
 //	request := &peal.PostToValidate{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelIDs: []string{
 //	        "channelIds",
 //	    },
@@ -342,7 +330,6 @@ func (c *Client) Validate(
 // Example:
 //
 //	request := &peal.GetPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Get(
@@ -370,7 +357,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.UpdatePostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    Body: &peal.PostDraft{
 //	        ChannelIDs: []string{
@@ -418,7 +404,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.DiscardPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	err := client.Posts.Discard(
@@ -446,7 +431,6 @@ func (c *Client) Discard(
 // Example:
 //
 //	request := &peal.OutcomePostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Outcome(
@@ -474,7 +458,6 @@ func (c *Client) Outcome(
 // Example:
 //
 //	request := &peal.AttemptsPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Attempts(
@@ -502,7 +485,6 @@ func (c *Client) Attempts(
 // Example:
 //
 //	request := &peal.PostTags{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    TagIDs: []string{
 //	        "tagIds",
@@ -533,7 +515,6 @@ func (c *Client) Tag(
 // Example:
 //
 //	request := &peal.DuplicatePostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Duplicate(
@@ -561,7 +542,6 @@ func (c *Client) Duplicate(
 // Example:
 //
 //	request := &peal.SchedulePost{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    At: "at",
 //	    ChannelIDs: []string{
@@ -594,7 +574,6 @@ func (c *Client) Schedule(
 // Example:
 //
 //	request := &peal.ReschedulePostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    Body: &peal.PostSchedule{
 //	        At: "at",
@@ -626,7 +605,6 @@ func (c *Client) Reschedule(
 // Example:
 //
 //	request := &peal.QueuePost{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Enqueue(
@@ -654,7 +632,6 @@ func (c *Client) Enqueue(
 // Example:
 //
 //	request := &peal.UnschedulePostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Unschedule(
@@ -682,7 +659,6 @@ func (c *Client) Unschedule(
 // Example:
 //
 //	request := &peal.RepostPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    TargetID: "targetId",
 //	}
@@ -711,7 +687,6 @@ func (c *Client) Repost(
 // Example:
 //
 //	request := &peal.RemoveTargetPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    TargetID: "targetId",
 //	}
@@ -740,7 +715,6 @@ func (c *Client) RemoveTarget(
 // Example:
 //
 //	request := &peal.ConfirmPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    TargetID: "targetId",
 //	    Body: &peal.TargetConfirmation{
@@ -772,7 +746,6 @@ func (c *Client) Confirm(
 // Example:
 //
 //	request := &peal.LeaveOutRestPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    TargetID: "targetId",
 //	}
@@ -801,7 +774,6 @@ func (c *Client) LeaveOutRest(
 // Example:
 //
 //	request := &peal.UnpublishTargetPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    TargetID: "targetId",
 //	}
@@ -830,7 +802,6 @@ func (c *Client) UnpublishTarget(
 // Example:
 //
 //	request := &peal.LivePostEdit{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    TargetID: "targetId",
 //	    Text: "text",
@@ -860,7 +831,6 @@ func (c *Client) EditTarget(
 // Example:
 //
 //	request := &peal.UnpublishPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Unpublish(
@@ -888,7 +858,6 @@ func (c *Client) Unpublish(
 // Example:
 //
 //	request := &peal.ChangesPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Changes(
@@ -916,7 +885,6 @@ func (c *Client) Changes(
 // Example:
 //
 //	request := &peal.CancelPostsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Posts.Cancel(

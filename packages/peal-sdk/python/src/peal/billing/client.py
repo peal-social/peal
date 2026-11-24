@@ -24,14 +24,12 @@ class BillingClient:
         """
         return self._raw_client
 
-    def get(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Billing:
+    def get(self, *, request_options: typing.Optional[RequestOptions] = None) -> Billing:
         """
         Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -45,23 +43,20 @@ class BillingClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.billing.get(
-            workspace_id="workspaceId",
-        )
+        client.billing.get()
         """
-        _response = self._raw_client.get(workspace_id, request_options=request_options)
+        _response = self._raw_client.get(request_options=request_options)
         return _response.data
 
-    def standing(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Standing:
+    def standing(self, *, request_options: typing.Optional[RequestOptions] = None) -> Standing:
         """
         Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with `planLimit`), until when a grace keeps it publishing (`graceUntil`), the plan that holds everything (`payAsYouGo`, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -75,13 +70,12 @@ class BillingClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.billing.standing(
-            workspace_id="workspaceId",
-        )
+        client.billing.standing()
         """
-        _response = self._raw_client.standing(workspace_id, request_options=request_options)
+        _response = self._raw_client.standing(request_options=request_options)
         return _response.data
 
 
@@ -100,14 +94,12 @@ class AsyncBillingClient:
         """
         return self._raw_client
 
-    async def get(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Billing:
+    async def get(self, *, request_options: typing.Optional[RequestOptions] = None) -> Billing:
         """
         Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -123,29 +115,26 @@ class AsyncBillingClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.billing.get(
-                workspace_id="workspaceId",
-            )
+            await client.billing.get()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, request_options=request_options)
+        _response = await self._raw_client.get(request_options=request_options)
         return _response.data
 
-    async def standing(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Standing:
+    async def standing(self, *, request_options: typing.Optional[RequestOptions] = None) -> Standing:
         """
         Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with `planLimit`), until when a grace keeps it publishing (`graceUntil`), the plan that holds everything (`payAsYouGo`, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -161,17 +150,16 @@ class AsyncBillingClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.billing.standing(
-                workspace_id="workspaceId",
-            )
+            await client.billing.standing()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.standing(workspace_id, request_options=request_options)
+        _response = await self._raw_client.standing(request_options=request_options)
         return _response.data

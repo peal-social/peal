@@ -36,7 +36,7 @@ class RawCredentialClient:
             Credential
         """
         _response = self._client_wrapper.httpx_client.request(
-            "api/credential",
+            "api/v1/credential",
             method="GET",
             request_options=request_options,
         )
@@ -112,7 +112,7 @@ class AsyncRawCredentialClient:
             Credential
         """
         _response = await self._client_wrapper.httpx_client.request(
-            "api/credential",
+            "api/v1/credential",
             method="GET",
             request_options=request_options,
         )

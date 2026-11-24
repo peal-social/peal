@@ -6,7 +6,6 @@ public partial interface IShortLinksClient
     /// Answers whether this server shortens links (`available`), what a short address starts with (`base`) and how long it is (`shortLength`), and whether the workspace's new posts ask for short links by default (`byDefault`). A post that leaves `shortenLinks` out takes `byDefault` when it is made (the web app, the API, MCP, the command line and feeds alike), and `false` always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with `http://` or `https://` and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
     /// </summary>
     WithRawResponseTask<ShortLinkStatus> StatusAsync(
-        StatusShortLinksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

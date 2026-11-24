@@ -2,12 +2,9 @@
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListWorkspacesPartnerAccountRequest {
-    workspaceId: string;
     before?: string;
     externalId?: string;
     limit?: string;

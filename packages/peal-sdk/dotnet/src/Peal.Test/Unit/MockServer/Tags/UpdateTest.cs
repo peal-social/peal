@@ -32,7 +32,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/tags/tagId")
+                    .WithPath("/api/v1/tags/tagId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -47,7 +47,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Tags.UpdateAsync(
             new UpdateTagsRequest
             {
-                WorkspaceId = "workspaceId",
                 TagId = "tagId",
                 Body = new TagDetails { Colour = TagColour.Gray, Name = "x" },
             }
@@ -78,7 +77,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/tags/tagId")
+                    .WithPath("/api/v1/tags/tagId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -93,7 +92,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Tags.UpdateAsync(
             new UpdateTagsRequest
             {
-                WorkspaceId = "workspaceId",
                 TagId = "tagId",
                 Body = new TagDetails { Colour = TagColour.Gray, Name = "name" },
             }

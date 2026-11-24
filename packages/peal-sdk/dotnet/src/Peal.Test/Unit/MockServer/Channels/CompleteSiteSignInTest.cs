@@ -38,9 +38,7 @@ public class CompleteSiteSignInTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/channels/websites/sign-in/wordpressCom/callback"
-                    )
+                    .WithPath("/api/v1/channels/websites/sign-in/wordpressCom/callback")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -55,7 +53,6 @@ public class CompleteSiteSignInTest : BaseMockServerTest
         var response = await Client.Channels.CompleteSiteSignInAsync(
             new SiteSignInCallback
             {
-                WorkspaceId = "workspaceId",
                 Platform = OAuthSitePlatform.WordpressCom,
                 Code = null,
                 Error = null,
@@ -94,9 +91,7 @@ public class CompleteSiteSignInTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/channels/websites/sign-in/wordpressCom/callback"
-                    )
+                    .WithPath("/api/v1/channels/websites/sign-in/wordpressCom/callback")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -109,12 +104,7 @@ public class CompleteSiteSignInTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.CompleteSiteSignInAsync(
-            new SiteSignInCallback
-            {
-                WorkspaceId = "workspaceId",
-                Platform = OAuthSitePlatform.WordpressCom,
-                State = "state",
-            }
+            new SiteSignInCallback { Platform = OAuthSitePlatform.WordpressCom, State = "state" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

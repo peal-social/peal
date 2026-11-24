@@ -25,20 +25,20 @@ import social.peal.core.PealClientHttpResponse;
 import social.peal.core.QueryStringMapper;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.errors.UnprocessableEntityError;
-import social.peal.resources.queues.requests.CreateQueuesRequest;
 import social.peal.resources.queues.requests.DeleteQueuesRequest;
 import social.peal.resources.queues.requests.GetQueuesRequest;
-import social.peal.resources.queues.requests.ListQueuesRequest;
 import social.peal.resources.queues.requests.ReshuffleQueuesRequest;
 import social.peal.resources.queues.requests.SlotsQueuesRequest;
 import social.peal.resources.queues.requests.UpdateQueuesRequest;
 import social.peal.types.Queue;
+import social.peal.types.QueueDetails;
 import social.peal.types.QueuePreview;
 import social.peal.types.QueueReshuffle;
 import social.peal.types.UnauthenticatedEncoded;
@@ -53,45 +53,28 @@ public class RawQueuesClient {
     /**
      * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public PealClientHttpResponse<List<Queue>> list(String workspaceId) {
-        return list(workspaceId, ListQueuesRequest.builder().build());
+    public PealClientHttpResponse<List<Queue>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public PealClientHttpResponse<List<Queue>> list(String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListQueuesRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public PealClientHttpResponse<List<Queue>> list(String workspaceId, ListQueuesRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public PealClientHttpResponse<List<Queue>> list(
-            String workspaceId, ListQueuesRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<List<Queue>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("queues");
+                .addPathSegments("api/v1/queues");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -115,6 +98,9 @@ public class RawQueuesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -145,20 +131,17 @@ public class RawQueuesClient {
     /**
      * Saves a queue. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. The first queue of a workspace is its default. A workspace keeps 20 queues at most. Needs post:update and channel:read.
      */
-    public PealClientHttpResponse<Queue> create(String workspaceId, CreateQueuesRequest request) {
-        return create(workspaceId, request, null);
+    public PealClientHttpResponse<Queue> create(QueueDetails request) {
+        return create(request, null);
     }
 
     /**
      * Saves a queue. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. The first queue of a workspace is its default. A workspace keeps 20 queues at most. Needs post:update and channel:read.
      */
-    public PealClientHttpResponse<Queue> create(
-            String workspaceId, CreateQueuesRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Queue> create(QueueDetails request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("queues");
+                .addPathSegments("api/v1/queues");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -168,7 +151,7 @@ public class RawQueuesClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -197,6 +180,9 @@ public class RawQueuesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -233,34 +219,31 @@ public class RawQueuesClient {
     /**
      * Answers with a queue of the workspace. Needs post:read and channel:read.
      */
-    public PealClientHttpResponse<Queue> get(String workspaceId, String queueId) {
-        return get(workspaceId, queueId, GetQueuesRequest.builder().build());
+    public PealClientHttpResponse<Queue> get(String queueId) {
+        return get(queueId, GetQueuesRequest.builder().build());
     }
 
     /**
      * Answers with a queue of the workspace. Needs post:read and channel:read.
      */
-    public PealClientHttpResponse<Queue> get(String workspaceId, String queueId, RequestOptions requestOptions) {
-        return get(workspaceId, queueId, GetQueuesRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Queue> get(String queueId, RequestOptions requestOptions) {
+        return get(queueId, GetQueuesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Answers with a queue of the workspace. Needs post:read and channel:read.
      */
-    public PealClientHttpResponse<Queue> get(String workspaceId, String queueId, GetQueuesRequest request) {
-        return get(workspaceId, queueId, request, null);
+    public PealClientHttpResponse<Queue> get(String queueId, GetQueuesRequest request) {
+        return get(queueId, request, null);
     }
 
     /**
      * Answers with a queue of the workspace. Needs post:read and channel:read.
      */
-    public PealClientHttpResponse<Queue> get(
-            String workspaceId, String queueId, GetQueuesRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Queue> get(String queueId, GetQueuesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("queues")
+                .addPathSegments("api/v1/queues")
                 .addPathSegment(PathSegments.validate(queueId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -295,6 +278,9 @@ public class RawQueuesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -325,20 +311,18 @@ public class RawQueuesClient {
     /**
      * Replaces a queue's name, zone, slots and channels: every channel must be connected now, so this is also how a disconnected one is taken out. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. Posts the queue placed keep their times: a slot that changed frees nothing and moves nothing. Saving the default with <code>isDefault</code> false, or without <code>isDefault</code>, leaves the workspace without one, and a post then sent to the default queue is refused (QueueNotFound): send <code>isDefault</code> true to keep it the default. Needs post:update and channel:read.
      */
-    public PealClientHttpResponse<Queue> update(String workspaceId, String queueId, UpdateQueuesRequest request) {
-        return update(workspaceId, queueId, request, null);
+    public PealClientHttpResponse<Queue> update(String queueId, UpdateQueuesRequest request) {
+        return update(queueId, request, null);
     }
 
     /**
      * Replaces a queue's name, zone, slots and channels: every channel must be connected now, so this is also how a disconnected one is taken out. A slot is a weekday and a time of day (<code>HH:mm</code>) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (<code>channelIds</code>, connected ones, 50 at most) and one channel set (<code>channelSetId</code>), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. <code>isDefault</code> makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. Posts the queue placed keep their times: a slot that changed frees nothing and moves nothing. Saving the default with <code>isDefault</code> false, or without <code>isDefault</code>, leaves the workspace without one, and a post then sent to the default queue is refused (QueueNotFound): send <code>isDefault</code> true to keep it the default. Needs post:update and channel:read.
      */
     public PealClientHttpResponse<Queue> update(
-            String workspaceId, String queueId, UpdateQueuesRequest request, RequestOptions requestOptions) {
+            String queueId, UpdateQueuesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("queues")
+                .addPathSegments("api/v1/queues")
                 .addPathSegment(PathSegments.validate(queueId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -383,6 +367,9 @@ public class RawQueuesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -419,34 +406,32 @@ public class RawQueuesClient {
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String queueId) {
-        return delete(workspaceId, queueId, DeleteQueuesRequest.builder().build());
+    public PealClientHttpResponse<Void> delete(String queueId) {
+        return delete(queueId, DeleteQueuesRequest.builder().build());
     }
 
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String queueId, RequestOptions requestOptions) {
-        return delete(workspaceId, queueId, DeleteQueuesRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Void> delete(String queueId, RequestOptions requestOptions) {
+        return delete(queueId, DeleteQueuesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String queueId, DeleteQueuesRequest request) {
-        return delete(workspaceId, queueId, request, null);
+    public PealClientHttpResponse<Void> delete(String queueId, DeleteQueuesRequest request) {
+        return delete(queueId, request, null);
     }
 
     /**
      * Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (<code>queueId</code> null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
      */
     public PealClientHttpResponse<Void> delete(
-            String workspaceId, String queueId, DeleteQueuesRequest request, RequestOptions requestOptions) {
+            String queueId, DeleteQueuesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("queues")
+                .addPathSegments("api/v1/queues")
                 .addPathSegment(PathSegments.validate(queueId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -483,6 +468,9 @@ public class RawQueuesClient {
             String responseBodyString = responseBody != null ? responseBody.string() : "{}";
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -513,35 +501,32 @@ public class RawQueuesClient {
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
-    public PealClientHttpResponse<QueuePreview> slots(String workspaceId, String queueId) {
-        return slots(workspaceId, queueId, SlotsQueuesRequest.builder().build());
+    public PealClientHttpResponse<QueuePreview> slots(String queueId) {
+        return slots(queueId, SlotsQueuesRequest.builder().build());
+    }
+
+    /**
+     * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
+     */
+    public PealClientHttpResponse<QueuePreview> slots(String queueId, RequestOptions requestOptions) {
+        return slots(queueId, SlotsQueuesRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
+     */
+    public PealClientHttpResponse<QueuePreview> slots(String queueId, SlotsQueuesRequest request) {
+        return slots(queueId, request, null);
     }
 
     /**
      * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
      */
     public PealClientHttpResponse<QueuePreview> slots(
-            String workspaceId, String queueId, RequestOptions requestOptions) {
-        return slots(workspaceId, queueId, SlotsQueuesRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
-     */
-    public PealClientHttpResponse<QueuePreview> slots(String workspaceId, String queueId, SlotsQueuesRequest request) {
-        return slots(workspaceId, queueId, request, null);
-    }
-
-    /**
-     * Lists the queue's next <code>count</code> slots after now (10 unless given, 50 at most), each with the post that holds it, or null, and <code>nextFree</code>, the slot a post added now would take, which may come after them; null with <code>noRoom</code> when there is none: the queue has no slot (<code>noSlots</code>), or every slot of the next 366 days is taken (<code>full</code>). A slot is taken while a post the queue placed is scheduled, awaiting approval or publishing at exactly that instant. The preview holds nothing: the slot is decided when the post is added. Needs post:read.
-     */
-    public PealClientHttpResponse<QueuePreview> slots(
-            String workspaceId, String queueId, SlotsQueuesRequest request, RequestOptions requestOptions) {
+            String queueId, SlotsQueuesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("queues")
+                .addPathSegments("api/v1/queues")
                 .addPathSegment(PathSegments.validate(queueId))
                 .addPathSegments("slots");
         if (request.getCount().isPresent()) {
@@ -581,6 +566,9 @@ public class RawQueuesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -611,36 +599,32 @@ public class RawQueuesClient {
     /**
      * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
      */
-    public PealClientHttpResponse<QueueReshuffle> reshuffle(String workspaceId, String queueId) {
-        return reshuffle(workspaceId, queueId, ReshuffleQueuesRequest.builder().build());
+    public PealClientHttpResponse<QueueReshuffle> reshuffle(String queueId) {
+        return reshuffle(queueId, ReshuffleQueuesRequest.builder().build());
+    }
+
+    /**
+     * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
+     */
+    public PealClientHttpResponse<QueueReshuffle> reshuffle(String queueId, RequestOptions requestOptions) {
+        return reshuffle(queueId, ReshuffleQueuesRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
+     */
+    public PealClientHttpResponse<QueueReshuffle> reshuffle(String queueId, ReshuffleQueuesRequest request) {
+        return reshuffle(queueId, request, null);
     }
 
     /**
      * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
      */
     public PealClientHttpResponse<QueueReshuffle> reshuffle(
-            String workspaceId, String queueId, RequestOptions requestOptions) {
-        return reshuffle(workspaceId, queueId, ReshuffleQueuesRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
-     */
-    public PealClientHttpResponse<QueueReshuffle> reshuffle(
-            String workspaceId, String queueId, ReshuffleQueuesRequest request) {
-        return reshuffle(workspaceId, queueId, request, null);
-    }
-
-    /**
-     * Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and <code>post.scheduled</code> told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (<code>post.approval_requested</code> is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (<code>stoppedBy</code> <code>planLimit</code>), when no slot is left within 366 days (<code>full</code>), or when the queue was saved meanwhile (<code>changed</code>); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (<code>noSlots</code>) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
-     */
-    public PealClientHttpResponse<QueueReshuffle> reshuffle(
-            String workspaceId, String queueId, ReshuffleQueuesRequest request, RequestOptions requestOptions) {
+            String queueId, ReshuffleQueuesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("queues")
+                .addPathSegments("api/v1/queues")
                 .addPathSegment(PathSegments.validate(queueId))
                 .addPathSegments("reshuffle");
         if (requestOptions != null) {
@@ -675,6 +659,9 @@ public class RawQueuesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

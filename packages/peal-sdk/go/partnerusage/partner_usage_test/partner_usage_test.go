@@ -98,5 +98,5 @@ func TestPartnerUsageGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerUsageGetWithWireMock", "GET", "/api/partner/usage", nil, 1)
+	VerifyRequestCount(t, "TestPartnerUsageGetWithWireMock", "GET", "/api/v1/partner/usage", nil, 1)
 }

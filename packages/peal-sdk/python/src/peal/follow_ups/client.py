@@ -30,7 +30,6 @@ class FollowUpsClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -43,8 +42,6 @@ class FollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -66,20 +63,18 @@ class FollowUpsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.follow_ups.list(
-            workspace_id="workspaceId",
-        )
+        client.follow_ups.list()
         """
         _response = self._raw_client.list(
-            workspace_id, cursor=cursor, limit=limit, post_id=post_id, status=status, request_options=request_options
+            cursor=cursor, limit=limit, post_id=post_id, status=status, request_options=request_options
         )
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         likes: int,
         channel_id: typing.Optional[str] = OMIT,
@@ -93,8 +88,6 @@ class FollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         likes : int
 
         channel_id : typing.Optional[str]
@@ -118,15 +111,14 @@ class FollowUpsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.follow_ups.create(
-            workspace_id="workspaceId",
             likes=1,
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             likes=likes,
             channel_id=channel_id,
             comment=comment,
@@ -136,16 +128,12 @@ class FollowUpsClient:
         )
         return _response.data
 
-    def get(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> FollowUpRule:
+    def get(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> FollowUpRule:
         """
         Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -161,26 +149,22 @@ class FollowUpsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.follow_ups.get(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
-        _response = self._raw_client.get(workspace_id, rule_id, request_options=request_options)
+        _response = self._raw_client.get(rule_id, request_options=request_options)
         return _response.data
 
-    def delete(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Stops a rule: it ends `stopped`, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -195,19 +179,18 @@ class FollowUpsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.follow_ups.delete(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, rule_id, request_options=request_options)
+        _response = self._raw_client.delete(rule_id, request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         comment: typing.Optional[str] = OMIT,
@@ -221,8 +204,6 @@ class FollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         comment : typing.Optional[str]
@@ -246,34 +227,24 @@ class FollowUpsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.follow_ups.update(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
-            rule_id,
-            comment=comment,
-            likes=likes,
-            paused=paused,
-            repost=repost,
-            request_options=request_options,
+            rule_id, comment=comment, likes=likes, paused=paused, repost=repost, request_options=request_options
         )
         return _response.data
 
-    def approve(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> FollowUpRule:
+    def approve(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> FollowUpRule:
         """
         Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -289,14 +260,14 @@ class FollowUpsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.follow_ups.approve(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
-        _response = self._raw_client.approve(workspace_id, rule_id, request_options=request_options)
+        _response = self._raw_client.approve(rule_id, request_options=request_options)
         return _response.data
 
 
@@ -317,7 +288,6 @@ class AsyncFollowUpsClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -330,8 +300,6 @@ class AsyncFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -355,26 +323,24 @@ class AsyncFollowUpsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.follow_ups.list(
-                workspace_id="workspaceId",
-            )
+            await client.follow_ups.list()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list(
-            workspace_id, cursor=cursor, limit=limit, post_id=post_id, status=status, request_options=request_options
+            cursor=cursor, limit=limit, post_id=post_id, status=status, request_options=request_options
         )
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         likes: int,
         channel_id: typing.Optional[str] = OMIT,
@@ -388,8 +354,6 @@ class AsyncFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         likes : int
 
         channel_id : typing.Optional[str]
@@ -415,13 +379,13 @@ class AsyncFollowUpsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.follow_ups.create(
-                workspace_id="workspaceId",
                 likes=1,
             )
 
@@ -429,7 +393,6 @@ class AsyncFollowUpsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             likes=likes,
             channel_id=channel_id,
             comment=comment,
@@ -439,16 +402,12 @@ class AsyncFollowUpsClient:
         )
         return _response.data
 
-    async def get(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> FollowUpRule:
+    async def get(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> FollowUpRule:
         """
         Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -466,32 +425,28 @@ class AsyncFollowUpsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.follow_ups.get(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, rule_id, request_options=request_options)
+        _response = await self._raw_client.get(rule_id, request_options=request_options)
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Stops a rule: it ends `stopped`, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -508,25 +463,24 @@ class AsyncFollowUpsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.follow_ups.delete(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, rule_id, request_options=request_options)
+        _response = await self._raw_client.delete(rule_id, request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         comment: typing.Optional[str] = OMIT,
@@ -540,8 +494,6 @@ class AsyncFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         comment : typing.Optional[str]
@@ -567,13 +519,13 @@ class AsyncFollowUpsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.follow_ups.update(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
@@ -581,26 +533,16 @@ class AsyncFollowUpsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
-            rule_id,
-            comment=comment,
-            likes=likes,
-            paused=paused,
-            repost=repost,
-            request_options=request_options,
+            rule_id, comment=comment, likes=likes, paused=paused, repost=repost, request_options=request_options
         )
         return _response.data
 
-    async def approve(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> FollowUpRule:
+    async def approve(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> FollowUpRule:
         """
         Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -618,18 +560,18 @@ class AsyncFollowUpsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.follow_ups.approve(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.approve(workspace_id, rule_id, request_options=request_options)
+        _response = await self._raw_client.approve(rule_id, request_options=request_options)
         return _response.data

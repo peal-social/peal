@@ -162,5 +162,23 @@
     "change": "A partner key whose maker is recorded stops working (401) once they leave the partner's home workspace, are removed from it or close their account, and once their role there no longer holds partner:manage; keys whose maker closed their account before stay",
     "kind": "behaviour",
     "reason": "A partner key outlived the admin who made it, across every customer workspace: an admin about to be removed kept access through it. Partner keys now follow their maker as API keys do, and PartnerKey.createdBy names them."
+  },
+  {
+    "change": "Every operation under /api/workspaces/{workspaceId} answers under /api/v1 instead, the rest of its path the same, and takes no workspaceId: a request acts in the workspace its Peal-Workspace header names, else in its credential's own",
+    "dropping": "workspaceId",
+    "from": "/api/workspaces/{workspaceId}",
+    "kind": "move",
+    "reason": "Decided on 2026-11-20, before the API had users: the API is versioned in its path, and a request's workspace comes from its credential. An API key, and an application's token bound to a workspace, act in their own workspace without naming it; a session, the command line's sign-in and a partner key name it in the Peal-Workspace header, or are answered 400 WorkspaceRequired. The SDKs take the workspace once, as their client's `workspace` option, and their methods no longer take workspaceId. The SDKs are 0.x: this ships in their next minor release, whose notes say so.",
+    "to": "/api/v1"
+  },
+  {
+    "change": "The workspace's own operations moved from /api/workspaces/{workspaceId} to /api/v1/workspace, its partner account from /api/workspaces/{workspaceId}/partner to /api/v1/partner-account, the partner API from /api/partner to /api/v1/partner (its customers' paths keep their workspaceId) and the credential check from /api/credential to /api/v1/credential",
+    "kind": "behaviour",
+    "reason": "The same decision as the move to /api/v1: these operations were not in the released SDKs, so the document's check cannot show their move. A client that called them by hand calls the new paths, and names the workspace in Peal-Workspace where it acts in one."
+  },
+  {
+    "change": "The SDKs' BadRequestErrorBody (one type for every 400 body with several errors) names InvalidDateRange and WorkspaceRequired, no longer BadRequest and InvalidDateRange; InvalidDateRangeEncoded and InvalidTimeRangeEncoded lost their _tag field, and their tag types (InvalidDateRangeEncodedTag, InvalidTimeRangeEncodedTag) are gone",
+    "kind": "sdk",
+    "reason": "Every workspace endpoint now answers 400 WorkspaceRequired to a request that names no workspace from a credential that belongs to none, beside the 400s some already had, and the generator names a single body type for each status, after one of the endpoints that has a union there. Nothing changes on the wire: every 400 body still carries its _tag. Code that matched BadRequestErrorBody.BadRequest, or read the date or time range errors' _tag through their types, reads the body's _tag as a string instead. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
   }
 ]

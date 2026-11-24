@@ -36,7 +36,7 @@ public partial class PartnerUsageClient : IPartnerUsageClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = "api/partner/usage",
+                    Path = "api/v1/partner/usage",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,

@@ -7,9 +7,6 @@ namespace Peal;
 public record GetPrivateReplyInboxMessagesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PrivateReplyId { get; set; }
 
     /// <inheritdoc />

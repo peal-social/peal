@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 
 namespace Peal.Test.Unit.MockServer.PartnerAccount;
@@ -15,16 +14,12 @@ public class CloseTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner")
+                    .WithPath("/api/v1/partner-account")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
-        Assert.DoesNotThrowAsync(async () =>
-            await Client.PartnerAccount.CloseAsync(
-                new ClosePartnerAccountRequest { WorkspaceId = "workspaceId" }
-            )
-        );
+        Assert.DoesNotThrowAsync(async () => await Client.PartnerAccount.CloseAsync());
     }
 
     [NUnit.Framework.Test]
@@ -34,15 +29,11 @@ public class CloseTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner")
+                    .WithPath("/api/v1/partner-account")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
-        Assert.DoesNotThrowAsync(async () =>
-            await Client.PartnerAccount.CloseAsync(
-                new ClosePartnerAccountRequest { WorkspaceId = "workspaceId" }
-            )
-        );
+        Assert.DoesNotThrowAsync(async () => await Client.PartnerAccount.CloseAsync());
     }
 }

@@ -44,16 +44,12 @@ class RawChannelsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[Channel]]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[Channel]]:
         """
         Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -63,7 +59,7 @@ class RawChannelsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels",
+            "api/v1/channels",
             method="GET",
             request_options=request_options,
         )
@@ -77,6 +73,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -132,7 +139,6 @@ class RawChannelsClient:
 
     def find(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -146,8 +152,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -167,7 +171,7 @@ class RawChannelsClient:
             ChannelPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/search",
+            "api/v1/channels/search",
             method="GET",
             params={
                 "cursor": cursor,
@@ -253,15 +257,13 @@ class RawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def platforms(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ConnectablePlatforms]:
         """
         Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -271,7 +273,7 @@ class RawChannelsClient:
             ConnectablePlatforms
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/platforms",
+            "api/v1/channels/platforms",
             method="GET",
             request_options=request_options,
         )
@@ -285,6 +287,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -340,7 +353,6 @@ class RawChannelsClient:
 
     def connect_site(
         self,
-        workspace_id: str,
         *,
         address: str,
         application_password: str,
@@ -353,8 +365,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         address : str
 
         application_password : str
@@ -375,7 +385,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/websites",
+            "api/v1/channels/websites",
             method="POST",
             json={
                 "address": address,
@@ -399,6 +409,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -487,7 +508,6 @@ class RawChannelsClient:
 
     def connect_site_with_key(
         self,
-        workspace_id: str,
         *,
         api_key: str,
         platform: KeySitePlatform,
@@ -499,8 +519,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         api_key : str
 
         platform : KeySitePlatform
@@ -519,7 +537,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/websites/keys",
+            "api/v1/channels/websites/keys",
             method="POST",
             json={
                 "apiKey": api_key,
@@ -542,6 +560,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -629,15 +658,13 @@ class RawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def connect_chat(
-        self, workspace_id: str, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
+        self, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Channel]:
         """
         Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request : ConnectChat
 
         request_options : typing.Optional[RequestOptions]
@@ -652,12 +679,9 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/chats",
+            "api/v1/channels/chats",
             method="POST",
             json=convert_and_respect_annotation_metadata(object_=request, annotation=ConnectChat, direction="write"),
-            headers={
-                "content-type": "application/json",
-            },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
@@ -671,6 +695,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -759,7 +794,6 @@ class RawChannelsClient:
 
     def start_site_sign_in(
         self,
-        workspace_id: str,
         platform: OAuthSitePlatform,
         *,
         channel_id: typing.Optional[str] = OMIT,
@@ -770,8 +804,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : OAuthSitePlatform
 
         channel_id : typing.Optional[str]
@@ -788,7 +820,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/websites/sign-in/{encode_path_param(platform)}",
+            f"api/v1/channels/websites/sign-in/{encode_path_param(platform)}",
             method="POST",
             json={
                 "channelId": channel_id,
@@ -809,6 +841,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -897,7 +940,6 @@ class RawChannelsClient:
 
     def complete_site_sign_in(
         self,
-        workspace_id: str,
         platform: OAuthSitePlatform,
         *,
         state: str,
@@ -910,8 +952,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : OAuthSitePlatform
 
         state : str
@@ -932,7 +972,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/websites/sign-in/{encode_path_param(platform)}/callback",
+            f"api/v1/channels/websites/sign-in/{encode_path_param(platform)}/callback",
             method="POST",
             json={
                 "code": code,
@@ -955,6 +995,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1043,7 +1094,6 @@ class RawChannelsClient:
 
     def connect(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         connection: typing.Optional[ChannelConnection] = OMIT,
@@ -1056,8 +1106,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         connection : typing.Optional[ChannelConnection]
@@ -1078,7 +1126,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/connect/{encode_path_param(platform)}",
+            f"api/v1/channels/connect/{encode_path_param(platform)}",
             method="POST",
             json={
                 "connection": connection,
@@ -1101,6 +1149,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1189,7 +1248,6 @@ class RawChannelsClient:
 
     def complete_connect(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         state: str,
@@ -1203,8 +1261,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         state : str
@@ -1227,7 +1283,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/connect/{encode_path_param(platform)}/callback",
+            f"api/v1/channels/connect/{encode_path_param(platform)}/callback",
             method="POST",
             json={
                 "code": code,
@@ -1251,6 +1307,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1339,7 +1406,6 @@ class RawChannelsClient:
 
     def choose_accounts(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         account_ids: typing.Sequence[str],
@@ -1351,8 +1417,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         account_ids : typing.Sequence[str]
@@ -1371,7 +1435,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/connect/{encode_path_param(platform)}/accounts",
+            f"api/v1/channels/connect/{encode_path_param(platform)}/accounts",
             method="POST",
             json={
                 "accountIds": account_ids,
@@ -1393,6 +1457,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1481,7 +1556,6 @@ class RawChannelsClient:
 
     def reconnect(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         messages: typing.Optional[ReconnectChannelsRequestMessages] = None,
@@ -1493,8 +1567,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         messages : typing.Optional[ReconnectChannelsRequestMessages]
@@ -1513,7 +1585,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/reconnect",
+            f"api/v1/channels/{encode_path_param(channel_id)}/reconnect",
             method="POST",
             params={
                 "messages": messages,
@@ -1531,6 +1603,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1607,15 +1690,13 @@ class RawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def disconnect(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1626,13 +1707,24 @@ class RawChannelsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}",
+            f"api/v1/channels/{encode_path_param(channel_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1688,7 +1780,6 @@ class RawChannelsClient:
 
     def update(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         label: typing.Optional[str] = OMIT,
@@ -1699,8 +1790,6 @@ class RawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         label : typing.Optional[str]
@@ -1717,7 +1806,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}",
+            f"api/v1/channels/{encode_path_param(channel_id)}",
             method="PATCH",
             json={
                 "label": label,
@@ -1738,6 +1827,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1792,15 +1892,13 @@ class RawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def disable(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Channel]:
         """
         Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (`channelDisabled`) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1815,7 +1913,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/disable",
+            f"api/v1/channels/{encode_path_param(channel_id)}/disable",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -1829,6 +1927,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1883,15 +1992,13 @@ class RawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def enable(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Channel]:
         """
         Turns a channel back on. It posts again at once, or has the status `refreshNeeded` when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1906,7 +2013,7 @@ class RawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/enable",
+            f"api/v1/channels/{encode_path_param(channel_id)}/enable",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -1920,6 +2027,17 @@ class RawChannelsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1979,15 +2097,13 @@ class AsyncRawChannelsClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[Channel]]:
         """
         Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1997,7 +2113,7 @@ class AsyncRawChannelsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels",
+            "api/v1/channels",
             method="GET",
             request_options=request_options,
         )
@@ -2011,6 +2127,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2066,7 +2193,6 @@ class AsyncRawChannelsClient:
 
     async def find(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -2080,8 +2206,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -2101,7 +2225,7 @@ class AsyncRawChannelsClient:
             ChannelPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/search",
+            "api/v1/channels/search",
             method="GET",
             params={
                 "cursor": cursor,
@@ -2187,15 +2311,13 @@ class AsyncRawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def platforms(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ConnectablePlatforms]:
         """
         Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2205,7 +2327,7 @@ class AsyncRawChannelsClient:
             ConnectablePlatforms
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/platforms",
+            "api/v1/channels/platforms",
             method="GET",
             request_options=request_options,
         )
@@ -2219,6 +2341,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2274,7 +2407,6 @@ class AsyncRawChannelsClient:
 
     async def connect_site(
         self,
-        workspace_id: str,
         *,
         address: str,
         application_password: str,
@@ -2287,8 +2419,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         address : str
 
         application_password : str
@@ -2309,7 +2439,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/websites",
+            "api/v1/channels/websites",
             method="POST",
             json={
                 "address": address,
@@ -2333,6 +2463,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2421,7 +2562,6 @@ class AsyncRawChannelsClient:
 
     async def connect_site_with_key(
         self,
-        workspace_id: str,
         *,
         api_key: str,
         platform: KeySitePlatform,
@@ -2433,8 +2573,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         api_key : str
 
         platform : KeySitePlatform
@@ -2453,7 +2591,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/websites/keys",
+            "api/v1/channels/websites/keys",
             method="POST",
             json={
                 "apiKey": api_key,
@@ -2476,6 +2614,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2563,15 +2712,13 @@ class AsyncRawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def connect_chat(
-        self, workspace_id: str, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
+        self, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Channel]:
         """
         Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request : ConnectChat
 
         request_options : typing.Optional[RequestOptions]
@@ -2586,12 +2733,9 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/chats",
+            "api/v1/channels/chats",
             method="POST",
             json=convert_and_respect_annotation_metadata(object_=request, annotation=ConnectChat, direction="write"),
-            headers={
-                "content-type": "application/json",
-            },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
@@ -2605,6 +2749,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2693,7 +2848,6 @@ class AsyncRawChannelsClient:
 
     async def start_site_sign_in(
         self,
-        workspace_id: str,
         platform: OAuthSitePlatform,
         *,
         channel_id: typing.Optional[str] = OMIT,
@@ -2704,8 +2858,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : OAuthSitePlatform
 
         channel_id : typing.Optional[str]
@@ -2722,7 +2874,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/websites/sign-in/{encode_path_param(platform)}",
+            f"api/v1/channels/websites/sign-in/{encode_path_param(platform)}",
             method="POST",
             json={
                 "channelId": channel_id,
@@ -2743,6 +2895,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2831,7 +2994,6 @@ class AsyncRawChannelsClient:
 
     async def complete_site_sign_in(
         self,
-        workspace_id: str,
         platform: OAuthSitePlatform,
         *,
         state: str,
@@ -2844,8 +3006,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : OAuthSitePlatform
 
         state : str
@@ -2866,7 +3026,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/websites/sign-in/{encode_path_param(platform)}/callback",
+            f"api/v1/channels/websites/sign-in/{encode_path_param(platform)}/callback",
             method="POST",
             json={
                 "code": code,
@@ -2889,6 +3049,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2977,7 +3148,6 @@ class AsyncRawChannelsClient:
 
     async def connect(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         connection: typing.Optional[ChannelConnection] = OMIT,
@@ -2990,8 +3160,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         connection : typing.Optional[ChannelConnection]
@@ -3012,7 +3180,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/connect/{encode_path_param(platform)}",
+            f"api/v1/channels/connect/{encode_path_param(platform)}",
             method="POST",
             json={
                 "connection": connection,
@@ -3035,6 +3203,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3123,7 +3302,6 @@ class AsyncRawChannelsClient:
 
     async def complete_connect(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         state: str,
@@ -3137,8 +3315,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         state : str
@@ -3161,7 +3337,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/connect/{encode_path_param(platform)}/callback",
+            f"api/v1/channels/connect/{encode_path_param(platform)}/callback",
             method="POST",
             json={
                 "code": code,
@@ -3185,6 +3361,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3273,7 +3460,6 @@ class AsyncRawChannelsClient:
 
     async def choose_accounts(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         account_ids: typing.Sequence[str],
@@ -3285,8 +3471,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         account_ids : typing.Sequence[str]
@@ -3305,7 +3489,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/connect/{encode_path_param(platform)}/accounts",
+            f"api/v1/channels/connect/{encode_path_param(platform)}/accounts",
             method="POST",
             json={
                 "accountIds": account_ids,
@@ -3327,6 +3511,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3415,7 +3610,6 @@ class AsyncRawChannelsClient:
 
     async def reconnect(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         messages: typing.Optional[ReconnectChannelsRequestMessages] = None,
@@ -3427,8 +3621,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         messages : typing.Optional[ReconnectChannelsRequestMessages]
@@ -3447,7 +3639,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/reconnect",
+            f"api/v1/channels/{encode_path_param(channel_id)}/reconnect",
             method="POST",
             params={
                 "messages": messages,
@@ -3465,6 +3657,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3541,15 +3744,13 @@ class AsyncRawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def disconnect(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3560,13 +3761,24 @@ class AsyncRawChannelsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}",
+            f"api/v1/channels/{encode_path_param(channel_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3622,7 +3834,6 @@ class AsyncRawChannelsClient:
 
     async def update(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         label: typing.Optional[str] = OMIT,
@@ -3633,8 +3844,6 @@ class AsyncRawChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         label : typing.Optional[str]
@@ -3651,7 +3860,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}",
+            f"api/v1/channels/{encode_path_param(channel_id)}",
             method="PATCH",
             json={
                 "label": label,
@@ -3672,6 +3881,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3726,15 +3946,13 @@ class AsyncRawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def disable(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Channel]:
         """
         Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (`channelDisabled`) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3749,7 +3967,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/disable",
+            f"api/v1/channels/{encode_path_param(channel_id)}/disable",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -3763,6 +3981,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3817,15 +4046,13 @@ class AsyncRawChannelsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def enable(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Channel]:
         """
         Turns a channel back on. It posts again at once, or has the status `refreshNeeded` when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3840,7 +4067,7 @@ class AsyncRawChannelsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/enable",
+            f"api/v1/channels/{encode_path_param(channel_id)}/enable",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -3854,6 +4081,17 @@ class AsyncRawChannelsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

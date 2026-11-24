@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         feedId: "feedId"
  *     }
  */
 export interface FeedChange {
-    workspaceId: string;
     feedId: string;
     attachPicture?: boolean;
     channelIds?: string[];

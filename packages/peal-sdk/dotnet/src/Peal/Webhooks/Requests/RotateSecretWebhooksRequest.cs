@@ -7,9 +7,6 @@ namespace Peal;
 public record RotateSecretWebhooksRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string EndpointId { get; set; }
 
     /// <inheritdoc />

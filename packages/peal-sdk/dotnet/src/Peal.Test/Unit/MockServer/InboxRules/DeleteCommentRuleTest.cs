@@ -15,18 +15,14 @@ public class DeleteCommentRuleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules/ruleId")
+                    .WithPath("/api/v1/inbox/rules/ruleId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.InboxRules.DeleteCommentRuleAsync(
-                new DeleteCommentRuleInboxRulesRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    RuleId = "ruleId",
-                }
+                new DeleteCommentRuleInboxRulesRequest { RuleId = "ruleId" }
             )
         );
     }
@@ -38,18 +34,14 @@ public class DeleteCommentRuleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules/ruleId")
+                    .WithPath("/api/v1/inbox/rules/ruleId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.InboxRules.DeleteCommentRuleAsync(
-                new DeleteCommentRuleInboxRulesRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    RuleId = "ruleId",
-                }
+                new DeleteCommentRuleInboxRulesRequest { RuleId = "ruleId" }
             )
         );
     }

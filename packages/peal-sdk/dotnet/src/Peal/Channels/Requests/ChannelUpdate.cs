@@ -7,9 +7,6 @@ namespace Peal;
 public record ChannelUpdate
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ChannelId { get; set; }
 
     [JsonPropertyName("label")]

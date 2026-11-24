@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record NewRecyclingRule
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("count")]
     public int? Count { get; set; }
 

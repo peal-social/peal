@@ -37,16 +37,12 @@ class WebhooksClient:
         """
         return self._raw_client
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[WebhookEndpoint]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[WebhookEndpoint]:
         """
         Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -60,18 +56,16 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.webhooks.list(
-            workspace_id="workspaceId",
-        )
+        client.webhooks.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         event_types: typing.Sequence[SubscribableWebhookEventType],
         url: str,
@@ -88,8 +82,6 @@ class WebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         event_types : typing.Sequence[SubscribableWebhookEventType]
 
         url : str
@@ -119,16 +111,15 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.create(
-            workspace_id="workspaceId",
             event_types=["post.scheduled"],
             url="url",
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             event_types=event_types,
             url=url,
             channel_ids=channel_ids,
@@ -143,7 +134,6 @@ class WebhooksClient:
 
     def search_deliveries(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -159,8 +149,6 @@ class WebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -188,14 +176,12 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.webhooks.search_deliveries(
-            workspace_id="workspaceId",
-        )
+        client.webhooks.search_deliveries()
         """
         _response = self._raw_client.search_deliveries(
-            workspace_id,
             cursor=cursor,
             limit=limit,
             event_type=event_type,
@@ -208,19 +194,13 @@ class WebhooksClient:
         return _response.data
 
     def redeliver_many(
-        self,
-        workspace_id: str,
-        *,
-        request: WebhookRedeliveryRequest,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, request: WebhookRedeliveryRequest, request_options: typing.Optional[RequestOptions] = None
     ) -> WebhookBulkRedelivery:
         """
         Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, or the failed deliveries of the endpoint `endpointId` (made from `since`, before `until`, of `eventType`, each left out for any), oldest first, the last of each event only. Each goes to its own endpoint whatever the endpoint's filters are now, as a new delivery of the same event: the same `webhook-id` and body, signed anew. A delivery is skipped when its endpoint is off, when it is not the workspace's, and when its event was sent again since and that delivery is pending or went through, so calling again after a partial run sends nothing twice; `remaining` says how many more failed deliveries the selection holds. The new deliveries of an endpoint start a quarter of a second apart. A workspace sends 1000 deliveries again this way an hour, apart from the test events and single sends: a call that would pass it sends nothing (429 `TooManyWebhookSends`). Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         request : WebhookRedeliveryRequest
 
         request_options : typing.Optional[RequestOptions]
@@ -236,28 +216,24 @@ class WebhooksClient:
         from peal import Peal, WebhookRedeliveryByIds
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.redeliver_many(
-            workspace_id="workspaceId",
             request=WebhookRedeliveryByIds(
                 delivery_ids=["deliveryIds"],
             ),
         )
         """
-        _response = self._raw_client.redeliver_many(workspace_id, request=request, request_options=request_options)
+        _response = self._raw_client.redeliver_many(request=request, request_options=request_options)
         return _response.data
 
-    def get(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> WebhookEndpoint:
+    def get(self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> WebhookEndpoint:
         """
         Shows one of the workspace's webhook endpoints. Needs webhook:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -273,26 +249,22 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.get(
-            workspace_id="workspaceId",
             endpoint_id="endpointId",
         )
         """
-        _response = self._raw_client.get(workspace_id, endpoint_id, request_options=request_options)
+        _response = self._raw_client.get(endpoint_id, request_options=request_options)
         return _response.data
 
-    def delete(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -307,19 +279,18 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.delete(
-            workspace_id="workspaceId",
             endpoint_id="endpointId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, endpoint_id, request_options=request_options)
+        _response = self._raw_client.delete(endpoint_id, request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         channel_ids: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -336,8 +307,6 @@ class WebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         channel_ids : typing.Optional[typing.Sequence[str]]
@@ -367,15 +336,14 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.update(
-            workspace_id="workspaceId",
             endpoint_id="endpointId",
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
             endpoint_id,
             channel_ids=channel_ids,
             description=description,
@@ -389,15 +357,13 @@ class WebhooksClient:
         return _response.data
 
     def rotate_secret(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> WebhookEndpointSecret:
         """
         Replaces an endpoint's signing secret, and answers with the new one, which is not shown again. For 24 hours each delivery carries two signatures, one per secret, so the receiver changes its own without missing any; the old one then signs nothing more. Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -413,19 +379,18 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.rotate_secret(
-            workspace_id="workspaceId",
             endpoint_id="endpointId",
         )
         """
-        _response = self._raw_client.rotate_secret(workspace_id, endpoint_id, request_options=request_options)
+        _response = self._raw_client.rotate_secret(endpoint_id, request_options=request_options)
         return _response.data
 
     def send_test(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         event_type: typing.Optional[SubscribableWebhookEventType] = None,
@@ -436,8 +401,6 @@ class WebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         event_type : typing.Optional[SubscribableWebhookEventType]
@@ -455,21 +418,18 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.send_test(
-            workspace_id="workspaceId",
             endpoint_id="endpointId",
         )
         """
-        _response = self._raw_client.send_test(
-            workspace_id, endpoint_id, event_type=event_type, request_options=request_options
-        )
+        _response = self._raw_client.send_test(endpoint_id, event_type=event_type, request_options=request_options)
         return _response.data
 
     def list_deliveries(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         cursor: typing.Optional[str] = None,
@@ -483,8 +443,6 @@ class WebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         cursor : typing.Optional[str]
@@ -508,15 +466,14 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.list_deliveries(
-            workspace_id="workspaceId",
             endpoint_id="endpointId",
         )
         """
         _response = self._raw_client.list_deliveries(
-            workspace_id,
             endpoint_id,
             cursor=cursor,
             limit=limit,
@@ -527,20 +484,13 @@ class WebhooksClient:
         return _response.data
 
     def redeliver(
-        self,
-        workspace_id: str,
-        endpoint_id: str,
-        delivery_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, endpoint_id: str, delivery_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> WebhookDelivery:
         """
         Sends the delivery's event to the endpoint again, as a new delivery of the same event: the receiver gets the same `webhook-id` and body, with a new timestamp and signature. A workspace sends 30 test events and deliveries again an hour at most (429 `TooManyWebhookSends`). Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         delivery_id : str
@@ -558,15 +508,15 @@ class WebhooksClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.webhooks.redeliver(
-            workspace_id="workspaceId",
             endpoint_id="endpointId",
             delivery_id="deliveryId",
         )
         """
-        _response = self._raw_client.redeliver(workspace_id, endpoint_id, delivery_id, request_options=request_options)
+        _response = self._raw_client.redeliver(endpoint_id, delivery_id, request_options=request_options)
         return _response.data
 
 
@@ -585,16 +535,12 @@ class AsyncWebhooksClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[WebhookEndpoint]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[WebhookEndpoint]:
         """
         Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -610,24 +556,22 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.webhooks.list(
-                workspace_id="workspaceId",
-            )
+            await client.webhooks.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         event_types: typing.Sequence[SubscribableWebhookEventType],
         url: str,
@@ -644,8 +588,6 @@ class AsyncWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         event_types : typing.Sequence[SubscribableWebhookEventType]
 
         url : str
@@ -677,13 +619,13 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.create(
-                workspace_id="workspaceId",
                 event_types=["post.scheduled"],
                 url="url",
             )
@@ -692,7 +634,6 @@ class AsyncWebhooksClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             event_types=event_types,
             url=url,
             channel_ids=channel_ids,
@@ -707,7 +648,6 @@ class AsyncWebhooksClient:
 
     async def search_deliveries(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -723,8 +663,6 @@ class AsyncWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -754,20 +692,18 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.webhooks.search_deliveries(
-                workspace_id="workspaceId",
-            )
+            await client.webhooks.search_deliveries()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.search_deliveries(
-            workspace_id,
             cursor=cursor,
             limit=limit,
             event_type=event_type,
@@ -780,19 +716,13 @@ class AsyncWebhooksClient:
         return _response.data
 
     async def redeliver_many(
-        self,
-        workspace_id: str,
-        *,
-        request: WebhookRedeliveryRequest,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, request: WebhookRedeliveryRequest, request_options: typing.Optional[RequestOptions] = None
     ) -> WebhookBulkRedelivery:
         """
         Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, or the failed deliveries of the endpoint `endpointId` (made from `since`, before `until`, of `eventType`, each left out for any), oldest first, the last of each event only. Each goes to its own endpoint whatever the endpoint's filters are now, as a new delivery of the same event: the same `webhook-id` and body, signed anew. A delivery is skipped when its endpoint is off, when it is not the workspace's, and when its event was sent again since and that delivery is pending or went through, so calling again after a partial run sends nothing twice; `remaining` says how many more failed deliveries the selection holds. The new deliveries of an endpoint start a quarter of a second apart. A workspace sends 1000 deliveries again this way an hour, apart from the test events and single sends: a call that would pass it sends nothing (429 `TooManyWebhookSends`). Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         request : WebhookRedeliveryRequest
 
         request_options : typing.Optional[RequestOptions]
@@ -810,13 +740,13 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal, WebhookRedeliveryByIds
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.redeliver_many(
-                workspace_id="workspaceId",
                 request=WebhookRedeliveryByIds(
                     delivery_ids=["deliveryIds"],
                 ),
@@ -825,21 +755,17 @@ class AsyncWebhooksClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.redeliver_many(
-            workspace_id, request=request, request_options=request_options
-        )
+        _response = await self._raw_client.redeliver_many(request=request, request_options=request_options)
         return _response.data
 
     async def get(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> WebhookEndpoint:
         """
         Shows one of the workspace's webhook endpoints. Needs webhook:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -857,32 +783,28 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.get(
-                workspace_id="workspaceId",
                 endpoint_id="endpointId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, endpoint_id, request_options=request_options)
+        _response = await self._raw_client.get(endpoint_id, request_options=request_options)
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -899,25 +821,24 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.delete(
-                workspace_id="workspaceId",
                 endpoint_id="endpointId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, endpoint_id, request_options=request_options)
+        _response = await self._raw_client.delete(endpoint_id, request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         channel_ids: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -934,8 +855,6 @@ class AsyncWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         channel_ids : typing.Optional[typing.Sequence[str]]
@@ -967,13 +886,13 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.update(
-                workspace_id="workspaceId",
                 endpoint_id="endpointId",
             )
 
@@ -981,7 +900,6 @@ class AsyncWebhooksClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
             endpoint_id,
             channel_ids=channel_ids,
             description=description,
@@ -995,15 +913,13 @@ class AsyncWebhooksClient:
         return _response.data
 
     async def rotate_secret(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> WebhookEndpointSecret:
         """
         Replaces an endpoint's signing secret, and answers with the new one, which is not shown again. For 24 hours each delivery carries two signatures, one per secret, so the receiver changes its own without missing any; the old one then signs nothing more. Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1021,25 +937,24 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.rotate_secret(
-                workspace_id="workspaceId",
                 endpoint_id="endpointId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.rotate_secret(workspace_id, endpoint_id, request_options=request_options)
+        _response = await self._raw_client.rotate_secret(endpoint_id, request_options=request_options)
         return _response.data
 
     async def send_test(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         event_type: typing.Optional[SubscribableWebhookEventType] = None,
@@ -1050,8 +965,6 @@ class AsyncWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         event_type : typing.Optional[SubscribableWebhookEventType]
@@ -1071,13 +984,13 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.send_test(
-                workspace_id="workspaceId",
                 endpoint_id="endpointId",
             )
 
@@ -1085,13 +998,12 @@ class AsyncWebhooksClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.send_test(
-            workspace_id, endpoint_id, event_type=event_type, request_options=request_options
+            endpoint_id, event_type=event_type, request_options=request_options
         )
         return _response.data
 
     async def list_deliveries(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         cursor: typing.Optional[str] = None,
@@ -1105,8 +1017,6 @@ class AsyncWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         cursor : typing.Optional[str]
@@ -1132,13 +1042,13 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.list_deliveries(
-                workspace_id="workspaceId",
                 endpoint_id="endpointId",
             )
 
@@ -1146,7 +1056,6 @@ class AsyncWebhooksClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.list_deliveries(
-            workspace_id,
             endpoint_id,
             cursor=cursor,
             limit=limit,
@@ -1157,20 +1066,13 @@ class AsyncWebhooksClient:
         return _response.data
 
     async def redeliver(
-        self,
-        workspace_id: str,
-        endpoint_id: str,
-        delivery_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, endpoint_id: str, delivery_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> WebhookDelivery:
         """
         Sends the delivery's event to the endpoint again, as a new delivery of the same event: the receiver gets the same `webhook-id` and body, with a new timestamp and signature. A workspace sends 30 test events and deliveries again an hour at most (429 `TooManyWebhookSends`). Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         delivery_id : str
@@ -1190,13 +1092,13 @@ class AsyncWebhooksClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.webhooks.redeliver(
-                workspace_id="workspaceId",
                 endpoint_id="endpointId",
                 delivery_id="deliveryId",
             )
@@ -1204,7 +1106,5 @@ class AsyncWebhooksClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.redeliver(
-            workspace_id, endpoint_id, delivery_id, request_options=request_options
-        )
+        _response = await self._raw_client.redeliver(endpoint_id, delivery_id, request_options=request_options)
         return _response.data

@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListSignaturesRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Signatures.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListSignaturesRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.Signature, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,12 +59,9 @@ func (c *Client) List(
 //
 // Example:
 //
-//	request := &peal.CreateSignaturesRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.SignatureDetails{
-//	        Name: "name",
-//	        Text: "text",
-//	    },
+//	request := &peal.SignatureDetails{
+//	    Name: "name",
+//	    Text: "text",
 //	}
 //	_, err := client.Signatures.Create(
 //	    context.TODO(),
@@ -78,7 +69,7 @@ func (c *Client) List(
 //	)
 func (c *Client) Create(
 	ctx context.Context,
-	request *peal.CreateSignaturesRequest,
+	request *peal.SignatureDetails,
 	opts ...option.RequestOption,
 ) (*peal.Signature, error) {
 	response, err := c.WithRawResponse.Create(
@@ -97,7 +88,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.UpdateSignaturesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    SignatureID: "signatureId",
 //	    Body: &peal.SignatureDetails{
 //	        Name: "name",
@@ -129,7 +119,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.DeleteSignaturesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    SignatureID: "signatureId",
 //	}
 //	err := client.Signatures.Delete(

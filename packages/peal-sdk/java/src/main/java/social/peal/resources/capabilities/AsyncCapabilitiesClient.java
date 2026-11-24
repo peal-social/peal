@@ -9,7 +9,6 @@ import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.resources.capabilities.requests.ChannelCapabilitiesRequest;
-import social.peal.resources.capabilities.requests.PlatformsCapabilitiesRequest;
 import social.peal.types.ChannelCapabilities;
 import social.peal.types.PlatformCapabilities;
 
@@ -33,9 +32,8 @@ public class AsyncCapabilitiesClient {
     /**
      * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
      */
-    public CompletableFuture<List<PlatformCapabilities>> platforms(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<PlatformCapabilities>>> rawFuture =
-                this.rawClient.platforms(workspaceId);
+    public CompletableFuture<List<PlatformCapabilities>> platforms() {
+        CompletableFuture<PealClientHttpResponse<List<PlatformCapabilities>>> rawFuture = this.rawClient.platforms();
         CompletableFuture<List<PlatformCapabilities>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -48,41 +46,9 @@ public class AsyncCapabilitiesClient {
     /**
      * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
      */
-    public CompletableFuture<List<PlatformCapabilities>> platforms(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<List<PlatformCapabilities>> platforms(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<PlatformCapabilities>>> rawFuture =
-                this.rawClient.platforms(workspaceId, requestOptions);
-        CompletableFuture<List<PlatformCapabilities>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
-     */
-    public CompletableFuture<List<PlatformCapabilities>> platforms(
-            String workspaceId, PlatformsCapabilitiesRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<PlatformCapabilities>>> rawFuture =
-                this.rawClient.platforms(workspaceId, request);
-        CompletableFuture<List<PlatformCapabilities>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
-     */
-    public CompletableFuture<List<PlatformCapabilities>> platforms(
-            String workspaceId, PlatformsCapabilitiesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<PlatformCapabilities>>> rawFuture =
-                this.rawClient.platforms(workspaceId, request, requestOptions);
+                this.rawClient.platforms(requestOptions);
         CompletableFuture<List<PlatformCapabilities>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -95,9 +61,38 @@ public class AsyncCapabilitiesClient {
     /**
      * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
      */
-    public CompletableFuture<ChannelCapabilities> channel(String workspaceId, String channelId) {
+    public CompletableFuture<ChannelCapabilities> channel(String channelId) {
+        CompletableFuture<PealClientHttpResponse<ChannelCapabilities>> rawFuture = this.rawClient.channel(channelId);
+        CompletableFuture<ChannelCapabilities> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
+     */
+    public CompletableFuture<ChannelCapabilities> channel(String channelId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChannelCapabilities>> rawFuture =
-                this.rawClient.channel(workspaceId, channelId);
+                this.rawClient.channel(channelId, requestOptions);
+        CompletableFuture<ChannelCapabilities> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
+     */
+    public CompletableFuture<ChannelCapabilities> channel(String channelId, ChannelCapabilitiesRequest request) {
+        CompletableFuture<PealClientHttpResponse<ChannelCapabilities>> rawFuture =
+                this.rawClient.channel(channelId, request);
         CompletableFuture<ChannelCapabilities> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -111,41 +106,9 @@ public class AsyncCapabilitiesClient {
      * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
      */
     public CompletableFuture<ChannelCapabilities> channel(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
+            String channelId, ChannelCapabilitiesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChannelCapabilities>> rawFuture =
-                this.rawClient.channel(workspaceId, channelId, requestOptions);
-        CompletableFuture<ChannelCapabilities> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
-     */
-    public CompletableFuture<ChannelCapabilities> channel(
-            String workspaceId, String channelId, ChannelCapabilitiesRequest request) {
-        CompletableFuture<PealClientHttpResponse<ChannelCapabilities>> rawFuture =
-                this.rawClient.channel(workspaceId, channelId, request);
-        CompletableFuture<ChannelCapabilities> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
-     */
-    public CompletableFuture<ChannelCapabilities> channel(
-            String workspaceId, String channelId, ChannelCapabilitiesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ChannelCapabilities>> rawFuture =
-                this.rawClient.channel(workspaceId, channelId, request, requestOptions);
+                this.rawClient.channel(channelId, request, requestOptions);
         CompletableFuture<ChannelCapabilities> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

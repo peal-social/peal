@@ -7,9 +7,6 @@ namespace Peal;
 public record ListRecyclingRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Cursor { get; set; }
 
     [JsonIgnore]

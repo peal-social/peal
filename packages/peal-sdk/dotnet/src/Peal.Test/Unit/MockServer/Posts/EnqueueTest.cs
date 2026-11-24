@@ -319,7 +319,7 @@ public class EnqueueTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/queue")
+                    .WithPath("/api/v1/posts/postId/queue")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -334,7 +334,6 @@ public class EnqueueTest : BaseMockServerTest
         var response = await Client.Posts.EnqueueAsync(
             new QueuePost
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 ChannelIds = null,
                 QueueId = null,
@@ -465,7 +464,7 @@ public class EnqueueTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/queue")
+                    .WithPath("/api/v1/posts/postId/queue")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -477,9 +476,7 @@ public class EnqueueTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.EnqueueAsync(
-            new QueuePost { WorkspaceId = "workspaceId", PostId = "postId" }
-        );
+        var response = await Client.Posts.EnqueueAsync(new QueuePost { PostId = "postId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

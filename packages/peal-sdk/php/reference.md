@@ -198,7 +198,7 @@ $client->credential->get();
 </details>
 
 ## apiKeys
-<details><summary><code>$client-&gt;apiKeys-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;apiKeys-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -225,25 +225,8 @@ Lists the workspace's API keys, with the member who made each. Needs apiKey:read
 <dd>
 
 ```php
-$client->apiKeys->list(
-    'workspaceId',
-);
+$client->apiKeys->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -254,7 +237,7 @@ $client->apiKeys->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;apiKeys-&gt;create($workspaceId, $request) -> ?CreatedApiKey</code></summary>
+<details><summary><code>$client-&gt;apiKeys-&gt;create($request) -> ?CreatedApiKey</code></summary>
 <dl>
 <dd>
 
@@ -282,7 +265,6 @@ Creates an API key for the workspace with some of the caller's permissions, and 
 
 ```php
 $client->apiKeys->create(
-    'workspaceId',
     new NewApiKey([
         'name' => 'name',
         'permissions' => [
@@ -300,14 +282,6 @@ $client->apiKeys->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -340,7 +314,7 @@ $client->apiKeys->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;apiKeys-&gt;revoke($workspaceId, $apiKeyId)</code></summary>
+<details><summary><code>$client-&gt;apiKeys-&gt;revoke($apiKeyId)</code></summary>
 <dl>
 <dd>
 
@@ -368,7 +342,6 @@ Revokes an API key of the workspace: it stops working at once. Needs apiKey:dele
 
 ```php
 $client->apiKeys->revoke(
-    'workspaceId',
     'apiKeyId',
 );
 ```
@@ -381,14 +354,6 @@ $client->apiKeys->revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -406,7 +371,7 @@ $client->apiKeys->revoke(
 </details>
 
 ## channels
-<details><summary><code>$client-&gt;channels-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -433,25 +398,8 @@ Lists the channels connected to the workspace, oldest first. Their tokens are ne
 <dd>
 
 ```php
-$client->channels->list(
-    'workspaceId',
-);
+$client->channels->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -462,7 +410,7 @@ $client->channels->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;find($workspaceId, $request) -> ?ChannelPage</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;find($request) -> ?ChannelPage</code></summary>
 <dl>
 <dd>
 
@@ -490,7 +438,6 @@ Lists the workspace's channels a page at a time, oldest first: 50 unless `limit`
 
 ```php
 $client->channels->find(
-    'workspaceId',
     new FindChannelsRequest([]),
 );
 ```
@@ -503,14 +450,6 @@ $client->channels->find(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -559,7 +498,7 @@ $client->channels->find(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;platforms($workspaceId) -> ?ConnectablePlatforms</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;platforms() -> ?ConnectablePlatforms</code></summary>
 <dl>
 <dd>
 
@@ -586,25 +525,8 @@ Lists the platforms this server can connect accounts of, in Peal's order. A plat
 <dd>
 
 ```php
-$client->channels->platforms(
-    'workspaceId',
-);
+$client->channels->platforms();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -615,7 +537,7 @@ $client->channels->platforms(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;connectSite($workspaceId, $request) -> ?Channel</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;connectSite($request) -> ?Channel</code></summary>
 <dl>
 <dd>
 
@@ -643,7 +565,6 @@ Connects a website, to publish articles to it: a WordPress site, by its address,
 
 ```php
 $client->channels->connectSite(
-    'workspaceId',
     new ConnectSite([
         'address' => 'address',
         'applicationPassword' => 'applicationPassword',
@@ -661,14 +582,6 @@ $client->channels->connectSite(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -709,7 +622,7 @@ $client->channels->connectSite(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;connectSiteWithKey($workspaceId, $request) -> ?Channel</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;connectSiteWithKey($request) -> ?Channel</code></summary>
 <dl>
 <dd>
 
@@ -737,7 +650,6 @@ Connects an account on a publishing platform, to publish articles to it, with a 
 
 ```php
 $client->channels->connectSiteWithKey(
-    'workspaceId',
     new ConnectSiteWithKey([
         'apiKey' => 'apiKey',
         'platform' => KeySitePlatform::Devto->value,
@@ -753,14 +665,6 @@ $client->channels->connectSiteWithKey(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -793,7 +697,7 @@ $client->channels->connectSiteWithKey(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;connectChat($workspaceId, $request) -> ?Channel</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;connectChat($request) -> ?Channel</code></summary>
 <dl>
 <dd>
 
@@ -821,12 +725,9 @@ Connects a chat, to post to it, with a secret its member pastes, no sign-in page
 
 ```php
 $client->channels->connectChat(
-    'workspaceId',
-    new ConnectChatChannelsRequest([
-        'body' => ConnectChat::discord(new ConnectDiscordChat([
-            'webhookUrl' => 'webhookUrl',
-        ])),
-    ]),
+    ConnectChat::discord(new ConnectDiscordChat([
+        'webhookUrl' => 'webhookUrl',
+    ])),
 );
 ```
 </dd>
@@ -838,14 +739,6 @@ $client->channels->connectChat(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -862,7 +755,7 @@ $client->channels->connectChat(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;startSiteSignIn($workspaceId, $platform, $request) -> ?Authorization</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;startSiteSignIn($platform, $request) -> ?Authorization</code></summary>
 <dl>
 <dd>
 
@@ -890,7 +783,6 @@ Starts connecting a website by signing in on its platform: on WordPress.com (`wo
 
 ```php
 $client->channels->startSiteSignIn(
-    'workspaceId',
     OAuthSitePlatform::WordpressCom->value,
     new StartSiteSignIn([]),
 );
@@ -904,14 +796,6 @@ $client->channels->startSiteSignIn(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -936,7 +820,7 @@ $client->channels->startSiteSignIn(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;completeSiteSignIn($workspaceId, $platform, $request) -> ?Channel</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;completeSiteSignIn($platform, $request) -> ?Channel</code></summary>
 <dl>
 <dd>
 
@@ -964,7 +848,6 @@ Completes a website sign-in with what the platform sent back: the site becomes a
 
 ```php
 $client->channels->completeSiteSignIn(
-    'workspaceId',
     OAuthSitePlatform::WordpressCom->value,
     new SiteSignInCallback([
         'state' => 'state',
@@ -980,14 +863,6 @@ $client->channels->completeSiteSignIn(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1028,7 +903,7 @@ $client->channels->completeSiteSignIn(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;connect($workspaceId, $platform, $request) -> ?Authorization</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;connect($platform, $request) -> ?Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1056,7 +931,6 @@ Starts connecting an account of the platform: answers with the platform's sign-i
 
 ```php
 $client->channels->connect(
-    'workspaceId',
     Platform::X->value,
     new ConnectChannel([]),
 );
@@ -1070,14 +944,6 @@ $client->channels->connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1118,7 +984,7 @@ $client->channels->connect(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;completeConnect($workspaceId, $platform, $request) -> ?ConnectOutcome</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;completeConnect($platform, $request) -> ?ConnectOutcome</code></summary>
 <dl>
 <dd>
 
@@ -1146,7 +1012,6 @@ Completes a connection with what the platform sent back: the account becomes a c
 
 ```php
 $client->channels->completeConnect(
-    'workspaceId',
     Platform::X->value,
     new ConnectCallback([
         'state' => 'state',
@@ -1162,14 +1027,6 @@ $client->channels->completeConnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1218,7 +1075,7 @@ $client->channels->completeConnect(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;chooseAccounts($workspaceId, $platform, $request) -> ?array</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;chooseAccounts($platform, $request) -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -1246,7 +1103,6 @@ Connects the accounts the member chose among those a completed sign-in listed: e
 
 ```php
 $client->channels->chooseAccounts(
-    'workspaceId',
     Platform::X->value,
     new ChooseAccounts([
         'accountIds' => [
@@ -1265,14 +1121,6 @@ $client->channels->chooseAccounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1305,7 +1153,7 @@ $client->channels->chooseAccounts(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;reconnect($workspaceId, $channelId, $request) -> ?Authorization</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;reconnect($channelId, $request) -> ?Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1333,7 +1181,6 @@ Starts reconnecting a channel whose token stopped working or is about to: answer
 
 ```php
 $client->channels->reconnect(
-    'workspaceId',
     'channelId',
     new ReconnectChannelsRequest([]),
 );
@@ -1347,14 +1194,6 @@ $client->channels->reconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1387,7 +1226,7 @@ $client->channels->reconnect(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;disconnect($workspaceId, $channelId)</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;disconnect($channelId)</code></summary>
 <dl>
 <dd>
 
@@ -1415,7 +1254,6 @@ Disconnects a channel from the workspace: the channel and the tokens Peal holds 
 
 ```php
 $client->channels->disconnect(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -1432,14 +1270,6 @@ $client->channels->disconnect(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$channelId:** `string` 
     
 </dd>
@@ -1452,7 +1282,7 @@ $client->channels->disconnect(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;update($workspaceId, $channelId, $request) -> ?Channel</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;update($channelId, $request) -> ?Channel</code></summary>
 <dl>
 <dd>
 
@@ -1480,7 +1310,6 @@ Gives the channel the name the workspace calls it by (`label`, 60 characters at 
 
 ```php
 $client->channels->update(
-    'workspaceId',
     'channelId',
     new ChannelUpdate([
         'label' => null,
@@ -1496,14 +1325,6 @@ $client->channels->update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1528,7 +1349,7 @@ $client->channels->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;disable($workspaceId, $channelId) -> ?Channel</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;disable($channelId) -> ?Channel</code></summary>
 <dl>
 <dd>
 
@@ -1556,7 +1377,6 @@ Turns the channel off: nothing goes out on it until it is turned back on. It kee
 
 ```php
 $client->channels->disable(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -1573,14 +1393,6 @@ $client->channels->disable(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$channelId:** `string` 
     
 </dd>
@@ -1593,7 +1405,7 @@ $client->channels->disable(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channels-&gt;enable($workspaceId, $channelId) -> ?Channel</code></summary>
+<details><summary><code>$client-&gt;channels-&gt;enable($channelId) -> ?Channel</code></summary>
 <dl>
 <dd>
 
@@ -1621,7 +1433,6 @@ Turns a channel back on. It posts again at once, or has the status `refreshNeede
 
 ```php
 $client->channels->enable(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -1634,14 +1445,6 @@ $client->channels->enable(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1659,7 +1462,7 @@ $client->channels->enable(
 </details>
 
 ## posts
-<details><summary><code>$client-&gt;posts-&gt;drafts($workspaceId, $request) -> ?DraftPage</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;drafts($request) -> ?DraftPage</code></summary>
 <dl>
 <dd>
 
@@ -1687,7 +1490,6 @@ Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50
 
 ```php
 $client->posts->drafts(
-    'workspaceId',
     new DraftsPostsRequest([]),
 );
 ```
@@ -1700,14 +1502,6 @@ $client->posts->drafts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1732,7 +1526,7 @@ $client->posts->drafts(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;list($workspaceId, $request) -> ?array</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;list($request) -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -1760,7 +1554,6 @@ Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 
 
 ```php
 $client->posts->list(
-    'workspaceId',
     new ListPostsRequest([
         'from' => 'from',
         'to' => 'to',
@@ -1776,14 +1569,6 @@ $client->posts->list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1808,7 +1593,7 @@ $client->posts->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;create($workspaceId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;create($request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -1836,27 +1621,24 @@ Creates a draft for some of the workspace's channels, possibly none yet, with op
 
 ```php
 $client->posts->create(
-    'workspaceId',
-    new CreatePostsRequest([
-        'body' => new PostDraft([
-            'channelIds' => [
-                'channelIds',
+    new PostDraft([
+        'channelIds' => [
+            'channelIds',
+        ],
+        'content' => new PostContent([
+            'media' => [
+                new MediaAttachment([
+                    'altText' => 'altText',
+                    'mediaId' => 'mediaId',
+                ]),
             ],
-            'content' => new PostContent([
-                'media' => [
-                    new MediaAttachment([
-                        'altText' => 'altText',
-                        'mediaId' => 'mediaId',
-                    ]),
-                ],
-                'overrides' => [
-                    new TextOverride([
-                        'channelId' => 'channelId',
-                        'text' => 'text',
-                    ]),
-                ],
-                'text' => 'text',
-            ]),
+            'overrides' => [
+                new TextOverride([
+                    'channelId' => 'channelId',
+                    'text' => 'text',
+                ]),
+            ],
+            'text' => 'text',
         ]),
     ]),
 );
@@ -1874,14 +1656,6 @@ $client->posts->create(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$request:** `PostDraft` 
     
 </dd>
@@ -1894,7 +1668,7 @@ $client->posts->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;search($workspaceId, $request) -> ?PostPage</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;search($request) -> ?PostPage</code></summary>
 <dl>
 <dd>
 
@@ -1922,7 +1696,6 @@ Lists the workspace's posts, whatever their state, a page at a time: 20 unless `
 
 ```php
 $client->posts->search(
-    'workspaceId',
     new SearchPostsRequest([]),
 );
 ```
@@ -1935,14 +1708,6 @@ $client->posts->search(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2071,7 +1836,7 @@ $client->posts->search(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;send($workspaceId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;send($request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -2099,7 +1864,6 @@ Creates a post and sends it to some of the workspace's channels in one call: `wh
 
 ```php
 $client->posts->send(
-    'workspaceId',
     new NewPost([
         'channelIds' => [
             'channelIds',
@@ -2132,14 +1896,6 @@ $client->posts->send(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2244,7 +2000,7 @@ $client->posts->send(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;bulk($workspaceId, $request) -> ?BulkResult</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;bulk($request) -> ?BulkResult</code></summary>
 <dl>
 <dd>
 
@@ -2272,7 +2028,6 @@ Creates and sends up to 50 posts in one request, each as `send` would: one post 
 
 ```php
 $client->posts->bulk(
-    'workspaceId',
     new BulkPosts([
         'posts' => [
             new BulkPost([
@@ -2313,14 +2068,6 @@ $client->posts->bulk(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$idempotencyKey:** `?string` 
     
 </dd>
@@ -2341,7 +2088,7 @@ $client->posts->bulk(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;import($workspaceId, $request) -> ?ImportResult</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;import($request) -> ?ImportResult</code></summary>
 <dl>
 <dd>
 
@@ -2369,7 +2116,6 @@ Creates and sends the posts a CSV file lists, one per row, at most 100 rows unde
 
 ```php
 $client->posts->import(
-    'workspaceId',
     new PostImport([
         'csv' => 'csv',
     ]),
@@ -2384,14 +2130,6 @@ $client->posts->import(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2424,7 +2162,7 @@ $client->posts->import(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;validate($workspaceId, $request) -> ?PostValidation</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;validate($request) -> ?PostValidation</code></summary>
 <dl>
 <dd>
 
@@ -2452,7 +2190,6 @@ Checks a post without making it, and changes nothing: send what `send` takes, or
 
 ```php
 $client->posts->validate(
-    'workspaceId',
     new PostToValidate([
         'channelIds' => [
             'channelIds',
@@ -2484,14 +2221,6 @@ $client->posts->validate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2572,7 +2301,7 @@ $client->posts->validate(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;get($workspaceId, $postId) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;get($postId) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -2600,7 +2329,6 @@ Answers with a post of the workspace. Needs post:read.
 
 ```php
 $client->posts->get(
-    'workspaceId',
     'postId',
 );
 ```
@@ -2617,14 +2345,6 @@ $client->posts->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -2637,7 +2357,7 @@ $client->posts->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;update($workspaceId, $postId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;update($postId, $request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -2665,7 +2385,6 @@ Replaces a draft's content, channels and options: options left out are removed. 
 
 ```php
 $client->posts->update(
-    'workspaceId',
     'postId',
     new UpdatePostsRequest([
         'body' => new PostDraft([
@@ -2704,14 +2423,6 @@ $client->posts->update(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -2732,7 +2443,7 @@ $client->posts->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;discard($workspaceId, $postId)</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;discard($postId)</code></summary>
 <dl>
 <dd>
 
@@ -2760,7 +2471,6 @@ Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Need
 
 ```php
 $client->posts->discard(
-    'workspaceId',
     'postId',
 );
 ```
@@ -2777,14 +2487,6 @@ $client->posts->discard(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -2797,7 +2499,7 @@ $client->posts->discard(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;outcome($workspaceId, $postId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;outcome($postId, $request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -2825,7 +2527,6 @@ Answers with a post once it has gone out: it waits up to `wait` seconds (60 at m
 
 ```php
 $client->posts->outcome(
-    'workspaceId',
     'postId',
     new OutcomePostsRequest([]),
 );
@@ -2839,14 +2540,6 @@ $client->posts->outcome(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2871,7 +2564,7 @@ $client->posts->outcome(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;attempts($workspaceId, $postId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;attempts($postId) -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -2899,7 +2592,6 @@ Lists every attempt Peal made at publishing the post, by channel, round and atte
 
 ```php
 $client->posts->attempts(
-    'workspaceId',
     'postId',
 );
 ```
@@ -2916,14 +2608,6 @@ $client->posts->attempts(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -2936,7 +2620,7 @@ $client->posts->attempts(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;tag($workspaceId, $postId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;tag($postId, $request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -2964,7 +2648,6 @@ Files a post under these tags of the workspace, 10 at most, instead of those it 
 
 ```php
 $client->posts->tag(
-    'workspaceId',
     'postId',
     new PostTags([
         'tagIds' => [
@@ -2982,14 +2665,6 @@ $client->posts->tag(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3014,7 +2689,7 @@ $client->posts->tag(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;duplicate($workspaceId, $postId) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;duplicate($postId) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3042,7 +2717,6 @@ Makes a new draft that says what the post says, whatever the post's status: its 
 
 ```php
 $client->posts->duplicate(
-    'workspaceId',
     'postId',
 );
 ```
@@ -3059,14 +2733,6 @@ $client->posts->duplicate(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -3079,7 +2745,7 @@ $client->posts->duplicate(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;schedule($workspaceId, $postId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;schedule($postId, $request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3107,7 +2773,6 @@ Schedules a draft on some of the workspace's channels at an instant, kept with t
 
 ```php
 $client->posts->schedule(
-    'workspaceId',
     'postId',
     new SchedulePost([
         'at' => 'at',
@@ -3127,14 +2792,6 @@ $client->posts->schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3175,7 +2832,7 @@ $client->posts->schedule(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;reschedule($workspaceId, $postId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;reschedule($postId, $request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3203,7 +2860,6 @@ Moves a scheduled post, or one awaiting approval, to another instant, or schedul
 
 ```php
 $client->posts->reschedule(
-    'workspaceId',
     'postId',
     new ReschedulePostsRequest([
         'body' => new PostSchedule([
@@ -3222,14 +2878,6 @@ $client->posts->reschedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3254,7 +2902,7 @@ $client->posts->reschedule(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;enqueue($workspaceId, $postId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;enqueue($postId, $request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3282,7 +2930,6 @@ Puts a post on the next free slot of a queue (`queueId`, or the workspace's defa
 
 ```php
 $client->posts->enqueue(
-    'workspaceId',
     'postId',
     new QueuePost([]),
 );
@@ -3296,14 +2943,6 @@ $client->posts->enqueue(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3336,7 +2975,7 @@ $client->posts->enqueue(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;unschedule($workspaceId, $postId) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;unschedule($postId) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3364,7 +3003,6 @@ Takes a scheduled post back to draft, so its text and media can change: it goes 
 
 ```php
 $client->posts->unschedule(
-    'workspaceId',
     'postId',
 );
 ```
@@ -3381,14 +3019,6 @@ $client->posts->unschedule(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -3401,7 +3031,7 @@ $client->posts->unschedule(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;repost($workspaceId, $postId, $targetId) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;repost($postId, $targetId) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3429,7 +3059,6 @@ Sends the post again, now, on one channel where it failed or is unconfirmed: a n
 
 ```php
 $client->posts->repost(
-    'workspaceId',
     'postId',
     'targetId',
 );
@@ -3443,14 +3072,6 @@ $client->posts->repost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3475,7 +3096,7 @@ $client->posts->repost(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;removeTarget($workspaceId, $postId, $targetId) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;removeTarget($postId, $targetId) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3503,7 +3124,6 @@ Takes one channel off a post that waits for its time (scheduled, or awaiting app
 
 ```php
 $client->posts->removeTarget(
-    'workspaceId',
     'postId',
     'targetId',
 );
@@ -3517,14 +3137,6 @@ $client->posts->removeTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3549,7 +3161,7 @@ $client->posts->removeTarget(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;confirm($workspaceId, $postId, $targetId, $request) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;confirm($postId, $targetId, $request) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3577,7 +3189,6 @@ Says what you found on the platform for a post unconfirmed on one channel: `publ
 
 ```php
 $client->posts->confirm(
-    'workspaceId',
     'postId',
     'targetId',
     new ConfirmPostsRequest([
@@ -3596,14 +3207,6 @@ $client->posts->confirm(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3636,7 +3239,7 @@ $client->posts->confirm(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;leaveOutRest($workspaceId, $postId, $targetId) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;leaveOutRest($postId, $targetId) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -3664,7 +3267,6 @@ Publishes the post on one channel without the parts that did not go out after it
 
 ```php
 $client->posts->leaveOutRest(
-    'workspaceId',
     'postId',
     'targetId',
 );
@@ -3678,14 +3280,6 @@ $client->posts->leaveOutRest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3710,7 +3304,7 @@ $client->posts->leaveOutRest(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;unpublishTarget($workspaceId, $postId, $targetId, $request) -> ?LivePostChange</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;unpublishTarget($postId, $targetId, $request) -> ?LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -3738,7 +3332,6 @@ Deletes the post from one channel's platform, for everyone: every part of a thre
 
 ```php
 $client->posts->unpublishTarget(
-    'workspaceId',
     'postId',
     'targetId',
     new UnpublishTargetPostsRequest([]),
@@ -3753,14 +3346,6 @@ $client->posts->unpublishTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3793,7 +3378,7 @@ $client->posts->unpublishTarget(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;editTarget($workspaceId, $postId, $targetId, $request) -> ?LivePostChange</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;editTarget($postId, $targetId, $request) -> ?LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -3821,7 +3406,6 @@ Replaces the text of one part of the post (`part`, from 0, the post itself by de
 
 ```php
 $client->posts->editTarget(
-    'workspaceId',
     'postId',
     'targetId',
     new LivePostEdit([
@@ -3838,14 +3422,6 @@ $client->posts->editTarget(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3894,7 +3470,7 @@ $client->posts->editTarget(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;unpublish($workspaceId, $postId) -> ?PostUnpublish</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;unpublish($postId) -> ?PostUnpublish</code></summary>
 <dl>
 <dd>
 
@@ -3922,7 +3498,6 @@ Deletes the post from every channel's platform where it can be, as unpublishing 
 
 ```php
 $client->posts->unpublish(
-    'workspaceId',
     'postId',
 );
 ```
@@ -3939,14 +3514,6 @@ $client->posts->unpublish(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -3959,7 +3526,7 @@ $client->posts->unpublish(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;changes($workspaceId, $postId) -> ?LivePostChanges</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;changes($postId) -> ?LivePostChanges</code></summary>
 <dl>
 <dd>
 
@@ -3987,7 +3554,6 @@ Lists the changes asked of the post once it was live (deleting it from a channel
 
 ```php
 $client->posts->changes(
-    'workspaceId',
     'postId',
 );
 ```
@@ -4004,14 +3570,6 @@ $client->posts->changes(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -4024,7 +3582,7 @@ $client->posts->changes(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;posts-&gt;cancel($workspaceId, $postId) -> ?Post</code></summary>
+<details><summary><code>$client-&gt;posts-&gt;cancel($postId) -> ?Post</code></summary>
 <dl>
 <dd>
 
@@ -4052,7 +3610,6 @@ Cancels a draft, a scheduled post or one awaiting approval. A post already publi
 
 ```php
 $client->posts->cancel(
-    'workspaceId',
     'postId',
 );
 ```
@@ -4065,14 +3622,6 @@ $client->posts->cancel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4090,7 +3639,7 @@ $client->posts->cancel(
 </details>
 
 ## articles
-<details><summary><code>$client-&gt;articles-&gt;list($workspaceId, $request) -> ?ArticlePage</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;list($request) -> ?ArticlePage</code></summary>
 <dl>
 <dd>
 
@@ -4118,7 +3667,6 @@ Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 
 
 ```php
 $client->articles->list(
-    'workspaceId',
     new ListArticlesRequest([]),
 );
 ```
@@ -4131,14 +3679,6 @@ $client->articles->list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4171,7 +3711,7 @@ $client->articles->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;create($workspaceId, $request) -> ?Article</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;create($request) -> ?Article</code></summary>
 <dl>
 <dd>
 
@@ -4199,7 +3739,6 @@ Writes an article for one of the workspace's websites (a channel connected with 
 
 ```php
 $client->articles->create(
-    'workspaceId',
     new NewArticle([
         'body' => new ArticleBody([
             'content' => [],
@@ -4219,14 +3758,6 @@ $client->articles->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4307,7 +3838,7 @@ $client->articles->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;get($workspaceId, $articleId) -> ?Article</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;get($articleId) -> ?Article</code></summary>
 <dl>
 <dd>
 
@@ -4335,7 +3866,6 @@ Reads an article. Needs post:read.
 
 ```php
 $client->articles->get(
-    'workspaceId',
     'articleId',
 );
 ```
@@ -4352,14 +3882,6 @@ $client->articles->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$articleId:** `string` 
     
 </dd>
@@ -4372,7 +3894,7 @@ $client->articles->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;delete($workspaceId, $articleId)</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;delete($articleId)</code></summary>
 <dl>
 <dd>
 
@@ -4400,7 +3922,6 @@ Deletes the article from Peal, and its job when it waits to go out; never while 
 
 ```php
 $client->articles->delete(
-    'workspaceId',
     'articleId',
 );
 ```
@@ -4417,14 +3938,6 @@ $client->articles->delete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$articleId:** `string` 
     
 </dd>
@@ -4437,7 +3950,7 @@ $client->articles->delete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;update($workspaceId, $articleId, $request) -> ?Article</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;update($articleId, $request) -> ?Article</code></summary>
 <dl>
 <dd>
 
@@ -4465,7 +3978,6 @@ Replaces what a draft, a scheduled article or one that failed says. A scheduled 
 
 ```php
 $client->articles->update(
-    'workspaceId',
     'articleId',
     new UpdateArticlesRequest([
         'body' => new ArticleInput([
@@ -4491,14 +4003,6 @@ $client->articles->update(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$articleId:** `string` 
     
 </dd>
@@ -4519,7 +4023,7 @@ $client->articles->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;schedule($workspaceId, $articleId, $request) -> ?Article</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;schedule($articleId, $request) -> ?Article</code></summary>
 <dl>
 <dd>
 
@@ -4547,7 +4051,6 @@ Schedules a draft, moves a scheduled article, or schedules one that failed again
 
 ```php
 $client->articles->schedule(
-    'workspaceId',
     'articleId',
     new ScheduleArticlesRequest([
         'body' => new ArticleTime([
@@ -4565,14 +4068,6 @@ $client->articles->schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4597,7 +4092,7 @@ $client->articles->schedule(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;unschedule($workspaceId, $articleId) -> ?Article</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;unschedule($articleId) -> ?Article</code></summary>
 <dl>
 <dd>
 
@@ -4625,7 +4120,6 @@ Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 
 ```php
 $client->articles->unschedule(
-    'workspaceId',
     'articleId',
 );
 ```
@@ -4642,14 +4136,6 @@ $client->articles->unschedule(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$articleId:** `string` 
     
 </dd>
@@ -4662,7 +4148,7 @@ $client->articles->unschedule(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;retry($workspaceId, $articleId) -> ?Article</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;retry($articleId) -> ?Article</code></summary>
 <dl>
 <dd>
 
@@ -4690,7 +4176,6 @@ Sends a failed article again now, or one that was unconfirmed once a member chec
 
 ```php
 $client->articles->retry(
-    'workspaceId',
     'articleId',
 );
 ```
@@ -4707,14 +4192,6 @@ $client->articles->retry(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$articleId:** `string` 
     
 </dd>
@@ -4727,7 +4204,7 @@ $client->articles->retry(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;unpublish($workspaceId, $articleId) -> ?Article</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;unpublish($articleId) -> ?Article</code></summary>
 <dl>
 <dd>
 
@@ -4755,7 +4232,6 @@ Moves the article's post to the site's trash, where the site keeps it for a whil
 
 ```php
 $client->articles->unpublish(
-    'workspaceId',
     'articleId',
 );
 ```
@@ -4772,14 +4248,6 @@ $client->articles->unpublish(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$articleId:** `string` 
     
 </dd>
@@ -4792,7 +4260,7 @@ $client->articles->unpublish(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;articles-&gt;updateOnSite($workspaceId, $articleId, $request) -> ?Article</code></summary>
+<details><summary><code>$client-&gt;articles-&gt;updateOnSite($articleId, $request) -> ?Article</code></summary>
 <dl>
 <dd>
 
@@ -4820,7 +4288,6 @@ Replaces what the article's post says on the site (title, body, excerpt, tags, c
 
 ```php
 $client->articles->updateOnSite(
-    'workspaceId',
     'articleId',
     new UpdateOnSiteArticlesRequest([
         'body' => new ArticleInput([
@@ -4846,14 +4313,6 @@ $client->articles->updateOnSite(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$articleId:** `string` 
     
 </dd>
@@ -4875,7 +4334,7 @@ $client->articles->updateOnSite(
 </details>
 
 ## media
-<details><summary><code>$client-&gt;media-&gt;list($workspaceId, $request) -> ?MediaPage</code></summary>
+<details><summary><code>$client-&gt;media-&gt;list($request) -> ?MediaPage</code></summary>
 <dl>
 <dd>
 
@@ -4903,7 +4362,6 @@ Lists the workspace's media, newest first, 30 a page unless `limit` (at most 100
 
 ```php
 $client->media->list(
-    'workspaceId',
     new ListMediaRequest([]),
 );
 ```
@@ -4916,14 +4374,6 @@ $client->media->list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4964,7 +4414,7 @@ $client->media->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;media-&gt;create($workspaceId, $request) -> ?PreparedUpload</code></summary>
+<details><summary><code>$client-&gt;media-&gt;create($request) -> ?PreparedUpload</code></summary>
 <dl>
 <dd>
 
@@ -4992,7 +4442,6 @@ Records pending media and signs the upload of its file: one PUT for an image or 
 
 ```php
 $client->media->create(
-    'workspaceId',
     new NewUpload([
         'byteSize' => 1000000,
         'contentType' => 'contentType',
@@ -5008,14 +4457,6 @@ $client->media->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5056,7 +4497,7 @@ $client->media->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;media-&gt;importFromUrl($workspaceId, $request) -> ?Media</code></summary>
+<details><summary><code>$client-&gt;media-&gt;importFromUrl($request) -> ?Media</code></summary>
 <dl>
 <dd>
 
@@ -5084,7 +4525,6 @@ Fetches a file from a public address, stores it as media of the workspace and pr
 
 ```php
 $client->media->importFromUrl(
-    'workspaceId',
     new MediaImport([
         'url' => 'url',
     ]),
@@ -5099,14 +4539,6 @@ $client->media->importFromUrl(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5131,7 +4563,7 @@ $client->media->importFromUrl(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;media-&gt;get($workspaceId, $mediaId) -> ?Media</code></summary>
+<details><summary><code>$client-&gt;media-&gt;get($mediaId) -> ?Media</code></summary>
 <dl>
 <dd>
 
@@ -5159,7 +4591,6 @@ Shows one of the workspace's media. Needs media:read.
 
 ```php
 $client->media->get(
-    'workspaceId',
     'mediaId',
 );
 ```
@@ -5176,14 +4607,6 @@ $client->media->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$mediaId:** `string` 
     
 </dd>
@@ -5196,7 +4619,7 @@ $client->media->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;media-&gt;delete($workspaceId, $mediaId)</code></summary>
+<details><summary><code>$client-&gt;media-&gt;delete($mediaId)</code></summary>
 <dl>
 <dd>
 
@@ -5224,7 +4647,6 @@ Deletes the media and its file, and cancels its upload if it is still pending. D
 
 ```php
 $client->media->delete(
-    'workspaceId',
     'mediaId',
 );
 ```
@@ -5241,14 +4663,6 @@ $client->media->delete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$mediaId:** `string` 
     
 </dd>
@@ -5261,7 +4675,7 @@ $client->media->delete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;media-&gt;describe($workspaceId, $mediaId, $request) -> ?Media</code></summary>
+<details><summary><code>$client-&gt;media-&gt;describe($mediaId, $request) -> ?Media</code></summary>
 <dl>
 <dd>
 
@@ -5289,7 +4703,6 @@ Sets the media's description, which platforms show to people who cannot see it. 
 
 ```php
 $client->media->describe(
-    'workspaceId',
     'mediaId',
     new MediaDescription([
         'altText' => null,
@@ -5305,14 +4718,6 @@ $client->media->describe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5337,7 +4742,7 @@ $client->media->describe(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;media-&gt;complete($workspaceId, $mediaId) -> ?Media</code></summary>
+<details><summary><code>$client-&gt;media-&gt;complete($mediaId) -> ?Media</code></summary>
 <dl>
 <dd>
 
@@ -5365,7 +4770,6 @@ Checks that the file reached the store with the declared size and type, joining 
 
 ```php
 $client->media->complete(
-    'workspaceId',
     'mediaId',
 );
 ```
@@ -5382,14 +4786,6 @@ $client->media->complete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$mediaId:** `string` 
     
 </dd>
@@ -5402,7 +4798,7 @@ $client->media->complete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;media-&gt;usage($workspaceId, $mediaId) -> ?MediaUsage</code></summary>
+<details><summary><code>$client-&gt;media-&gt;usage($mediaId) -> ?MediaUsage</code></summary>
 <dl>
 <dd>
 
@@ -5430,7 +4826,6 @@ Lists the posts that show the media: drafts, which lose it if it is deleted, and
 
 ```php
 $client->media->usage(
-    'workspaceId',
     'mediaId',
 );
 ```
@@ -5443,14 +4838,6 @@ $client->media->usage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5468,7 +4855,7 @@ $client->media->usage(
 </details>
 
 ## mediaAudio
-<details><summary><code>$client-&gt;mediaAudio-&gt;createVoiceover($workspaceId, $request) -> ?Media</code></summary>
+<details><summary><code>$client-&gt;mediaAudio-&gt;createVoiceover($request) -> ?Media</code></summary>
 <dl>
 <dd>
 
@@ -5496,7 +4883,6 @@ Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models
 
 ```php
 $client->mediaAudio->createVoiceover(
-    'workspaceId',
     new VoiceoverRequest([
         'text' => 'text',
     ]),
@@ -5511,14 +4897,6 @@ $client->mediaAudio->createVoiceover(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5543,7 +4921,7 @@ $client->mediaAudio->createVoiceover(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;mediaAudio-&gt;transcribe($workspaceId, $mediaId, $request) -> ?Transcript</code></summary>
+<details><summary><code>$client-&gt;mediaAudio-&gt;transcribe($mediaId, $request) -> ?Transcript</code></summary>
 <dl>
 <dd>
 
@@ -5571,7 +4949,6 @@ Sends a ready audio or video file of the media library, of at most 25000000 byte
 
 ```php
 $client->mediaAudio->transcribe(
-    'workspaceId',
     'mediaId',
     new TranscriptionRequest([]),
 );
@@ -5585,14 +4962,6 @@ $client->mediaAudio->transcribe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5925,7 +5294,7 @@ $client->notificationPreferences->update(
 </details>
 
 ## assistant
-<details><summary><code>$client-&gt;assistant-&gt;status($workspaceId) -> ?AssistantStatus</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;status() -> ?AssistantStatus</code></summary>
 <dl>
 <dd>
 
@@ -5952,25 +5321,8 @@ Tells whether the assistant writes for the workspace, so clients show it or hide
 <dd>
 
 ```php
-$client->assistant->status(
-    'workspaceId',
-);
+$client->assistant->status();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -5981,7 +5333,7 @@ $client->assistant->status(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;suggest($workspaceId, $request) -> ?Suggestion</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;suggest($request) -> ?Suggestion</code></summary>
 <dl>
 <dd>
 
@@ -6009,7 +5361,6 @@ Asks the language model to rewrite, shorten or translate a post's text, to sugge
 
 ```php
 $client->assistant->suggest(
-    'workspaceId',
     new SuggestionRequest([
         'action' => AssistantAction::rewrite(new AssistantActionRewrite([
             'tone' => AssistantTone::Professional->value,
@@ -6027,14 +5378,6 @@ $client->assistant->suggest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6059,7 +5402,7 @@ $client->assistant->suggest(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;generateImage($workspaceId, $request) -> ?Media</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;generateImage($request) -> ?Media</code></summary>
 <dl>
 <dd>
 
@@ -6087,7 +5430,6 @@ Asks for one image from the prompt, in the aspect asked for, and answers with it
 
 ```php
 $client->assistant->generateImage(
-    'workspaceId',
     new ImageRequest([
         'aspect' => ImageAspect::Square->value,
         'prompt' => 'prompt',
@@ -6103,14 +5445,6 @@ $client->assistant->generateImage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6135,7 +5469,7 @@ $client->assistant->generateImage(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;imageProvider($workspaceId) -> ?ImageProviderSetting</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;imageProvider() -> ?ImageProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -6162,25 +5496,8 @@ Reads the image provider the workspace brought, a provider Peal knows by name (O
 <dd>
 
 ```php
-$client->assistant->imageProvider(
-    'workspaceId',
-);
+$client->assistant->imageProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6191,7 +5508,7 @@ $client->assistant->imageProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;setImageProvider($workspaceId, $request) -> ?ImageProvider</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;setImageProvider($request) -> ?ImageProvider</code></summary>
 <dl>
 <dd>
 
@@ -6219,7 +5536,6 @@ Sets the image provider the workspace brings, a provider Peal knows by name (Ope
 
 ```php
 $client->assistant->setImageProvider(
-    'workspaceId',
     new ImageProviderChange([
         'model' => 'model',
     ]),
@@ -6234,14 +5550,6 @@ $client->assistant->setImageProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6282,7 +5590,7 @@ $client->assistant->setImageProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;removeImageProvider($workspaceId)</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;removeImageProvider()</code></summary>
 <dl>
 <dd>
 
@@ -6309,25 +5617,8 @@ Removes the workspace's image provider and its key: images are made by the serve
 <dd>
 
 ```php
-$client->assistant->removeImageProvider(
-    'workspaceId',
-);
+$client->assistant->removeImageProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6338,7 +5629,7 @@ $client->assistant->removeImageProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;textProvider($workspaceId) -> ?TextProviderSetting</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;textProvider() -> ?TextProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -6365,25 +5656,8 @@ Reads the text provider the workspace brought, Anthropic's Messages API or an en
 <dd>
 
 ```php
-$client->assistant->textProvider(
-    'workspaceId',
-);
+$client->assistant->textProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6394,7 +5668,7 @@ $client->assistant->textProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;setTextProvider($workspaceId, $request) -> ?TextProvider</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;setTextProvider($request) -> ?TextProvider</code></summary>
 <dl>
 <dd>
 
@@ -6422,7 +5696,6 @@ Sets the text provider the workspace brings, Anthropic's Messages API or an endp
 
 ```php
 $client->assistant->setTextProvider(
-    'workspaceId',
     new TextProviderChange([
         'model' => 'model',
     ]),
@@ -6437,14 +5710,6 @@ $client->assistant->setTextProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6493,7 +5758,7 @@ $client->assistant->setTextProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;removeTextProvider($workspaceId)</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;removeTextProvider()</code></summary>
 <dl>
 <dd>
 
@@ -6520,25 +5785,8 @@ Removes the workspace's text provider and its key: the server's language model w
 <dd>
 
 ```php
-$client->assistant->removeTextProvider(
-    'workspaceId',
-);
+$client->assistant->removeTextProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6549,7 +5797,7 @@ $client->assistant->removeTextProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;testTextProvider($workspaceId)</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;testTextProvider()</code></summary>
 <dl>
 <dd>
 
@@ -6576,25 +5824,8 @@ Sends the workspace's text provider one short request, a rewrite of a fixed sent
 <dd>
 
 ```php
-$client->assistant->testTextProvider(
-    'workspaceId',
-);
+$client->assistant->testTextProvider();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6605,7 +5836,7 @@ $client->assistant->testTextProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;providers($workspaceId) -> ?AiProviderConnections</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;providers() -> ?AiProviderConnections</code></summary>
 <dl>
 <dd>
 
@@ -6632,25 +5863,8 @@ Lists the AI providers the workspace connected with a key of its own: where each
 <dd>
 
 ```php
-$client->assistant->providers(
-    'workspaceId',
-);
+$client->assistant->providers();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6661,7 +5875,7 @@ $client->assistant->providers(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;connectProvider($workspaceId, $provider, $request) -> ?AiProviderConnection</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;connectProvider($provider, $request) -> ?AiProviderConnection</code></summary>
 <dl>
 <dd>
 
@@ -6689,7 +5903,6 @@ Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `open
 
 ```php
 $client->assistant->connectProvider(
-    'workspaceId',
     AiProvider::Anthropic->value,
     new AiProviderConnectionChange([]),
 );
@@ -6703,14 +5916,6 @@ $client->assistant->connectProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6743,7 +5948,7 @@ $client->assistant->connectProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;disconnectProvider($workspaceId, $provider)</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;disconnectProvider($provider)</code></summary>
 <dl>
 <dd>
 
@@ -6771,7 +5976,6 @@ Removes the provider and its key, and the uses it served: the server's model wor
 
 ```php
 $client->assistant->disconnectProvider(
-    'workspaceId',
     AiProvider::Anthropic->value,
 );
 ```
@@ -6788,14 +5992,6 @@ $client->assistant->disconnectProvider(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$provider:** `string` 
     
 </dd>
@@ -6808,7 +6004,7 @@ $client->assistant->disconnectProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;testProvider($workspaceId, $provider, $request)</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;testProvider($provider, $request)</code></summary>
 <dl>
 <dd>
 
@@ -6836,7 +6032,6 @@ Sends a connected provider one short request for text, a rewrite of a fixed sent
 
 ```php
 $client->assistant->testProvider(
-    'workspaceId',
     AiProvider::Anthropic->value,
     new AiProviderTest([]),
 );
@@ -6850,14 +6045,6 @@ $client->assistant->testProvider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6882,7 +6069,7 @@ $client->assistant->testProvider(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;models($workspaceId) -> ?AiCapabilityModels</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;models() -> ?AiCapabilityModels</code></summary>
 <dl>
 <dd>
 
@@ -6909,25 +6096,8 @@ Tells, for each use (text, images, videos, voice-overs, transcripts, slide video
 <dd>
 
 ```php
-$client->assistant->models(
-    'workspaceId',
-);
+$client->assistant->models();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -6938,7 +6108,7 @@ $client->assistant->models(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;setModel($workspaceId, $capability, $request) -> ?AiCapabilityModel</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;setModel($capability, $request) -> ?AiCapabilityModel</code></summary>
 <dl>
 <dd>
 
@@ -6966,7 +6136,6 @@ Chooses the provider and the model for one use: the provider must be connected (
 
 ```php
 $client->assistant->setModel(
-    'workspaceId',
     AiCapability::Text->value,
     new AiCapabilityModelChange([
         'provider' => AiProvider::Anthropic->value,
@@ -6982,14 +6151,6 @@ $client->assistant->setModel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7022,7 +6183,7 @@ $client->assistant->setModel(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;assistant-&gt;unsetModel($workspaceId, $capability)</code></summary>
+<details><summary><code>$client-&gt;assistant-&gt;unsetModel($capability)</code></summary>
 <dl>
 <dd>
 
@@ -7050,7 +6211,6 @@ Leaves a use to the server's model, if it has one (`serverModel`), within the wo
 
 ```php
 $client->assistant->unsetModel(
-    'workspaceId',
     AiCapability::Text->value,
 );
 ```
@@ -7063,14 +6223,6 @@ $client->assistant->unsetModel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7088,7 +6240,7 @@ $client->assistant->unsetModel(
 </details>
 
 ## videoGenerations
-<details><summary><code>$client-&gt;videoGenerations-&gt;list($workspaceId, $request) -> ?VideoGenerations</code></summary>
+<details><summary><code>$client-&gt;videoGenerations-&gt;list($request) -> ?VideoGenerations</code></summary>
 <dl>
 <dd>
 
@@ -7116,7 +6268,6 @@ Lists the videos the workspace asked for, newest first, 50 at most, only those w
 
 ```php
 $client->videoGenerations->list(
-    'workspaceId',
     new ListVideoGenerationsRequest([]),
 );
 ```
@@ -7133,14 +6284,6 @@ $client->videoGenerations->list(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$status:** `?string` 
     
 </dd>
@@ -7153,7 +6296,7 @@ $client->videoGenerations->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;videoGenerations-&gt;create($workspaceId, $request) -> ?VideoGeneration</code></summary>
+<details><summary><code>$client-&gt;videoGenerations-&gt;create($request) -> ?VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -7181,7 +6324,6 @@ Asks the provider the workspace chose for videos (`PUT .../assistant/models/vide
 
 ```php
 $client->videoGenerations->create(
-    'workspaceId',
     new VideoGenerationRequest([
         'aspect' => ImageAspect::Square->value,
         'prompt' => 'prompt',
@@ -7197,14 +6339,6 @@ $client->videoGenerations->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7245,7 +6379,7 @@ $client->videoGenerations->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;videoGenerations-&gt;get($workspaceId, $generationId) -> ?VideoGeneration</code></summary>
+<details><summary><code>$client-&gt;videoGenerations-&gt;get($generationId) -> ?VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -7273,7 +6407,6 @@ Reads where a video stands: queued, running, succeeded with its file (`mediaId`)
 
 ```php
 $client->videoGenerations->get(
-    'workspaceId',
     'generationId',
 );
 ```
@@ -7286,14 +6419,6 @@ $client->videoGenerations->get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7311,7 +6436,7 @@ $client->videoGenerations->get(
 </details>
 
 ## slideshows
-<details><summary><code>$client-&gt;slideshows-&gt;list($workspaceId, $request) -> ?Slideshows</code></summary>
+<details><summary><code>$client-&gt;slideshows-&gt;list($request) -> ?Slideshows</code></summary>
 <dl>
 <dd>
 
@@ -7339,7 +6464,6 @@ Lists the slide videos the workspace asked for, newest first, 50 at most, only t
 
 ```php
 $client->slideshows->list(
-    'workspaceId',
     new ListSlideshowsRequest([]),
 );
 ```
@@ -7356,14 +6480,6 @@ $client->slideshows->list(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$status:** `?string` 
     
 </dd>
@@ -7376,7 +6492,7 @@ $client->slideshows->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;slideshows-&gt;create($workspaceId, $request) -> ?Slideshow</code></summary>
+<details><summary><code>$client-&gt;slideshows-&gt;create($request) -> ?Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7404,7 +6520,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```php
 $client->slideshows->create(
-    'workspaceId',
     new SlideshowRequest([
         'aspect' => ImageAspect::Square->value,
         'slides' => [
@@ -7424,14 +6539,6 @@ $client->slideshows->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7480,7 +6587,7 @@ $client->slideshows->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;slideshows-&gt;createFromEdit($workspaceId, $request) -> ?Slideshow</code></summary>
+<details><summary><code>$client-&gt;slideshows-&gt;createFromEdit($request) -> ?Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7508,7 +6615,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```php
 $client->slideshows->createFromEdit(
-    'workspaceId',
     new EditRenderRequest([
         'edit' => [
             'key' => "value",
@@ -7529,14 +6635,6 @@ $client->slideshows->createFromEdit(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$edit:** `array` 
     
 </dd>
@@ -7549,7 +6647,7 @@ $client->slideshows->createFromEdit(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;slideshows-&gt;get($workspaceId, $slideshowId) -> ?Slideshow</code></summary>
+<details><summary><code>$client-&gt;slideshows-&gt;get($slideshowId) -> ?Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -7577,7 +6675,6 @@ Reads where a slide video stands: queued, running, succeeded with its file (`med
 
 ```php
 $client->slideshows->get(
-    'workspaceId',
     'slideshowId',
 );
 ```
@@ -7590,14 +6687,6 @@ $client->slideshows->get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7615,7 +6704,7 @@ $client->slideshows->get(
 </details>
 
 ## members
-<details><summary><code>$client-&gt;members-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;members-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -7642,25 +6731,8 @@ Lists the workspace's members, in the order they joined, with their name, email 
 <dd>
 
 ```php
-$client->members->list(
-    'workspaceId',
-);
+$client->members->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -7672,7 +6744,7 @@ $client->members->list(
 </details>
 
 ## invitations
-<details><summary><code>$client-&gt;invitations-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;invitations-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -7699,25 +6771,8 @@ Lists the workspace's pending invitations, oldest first, expired ones included. 
 <dd>
 
 ```php
-$client->invitations->list(
-    'workspaceId',
-);
+$client->invitations->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -7728,7 +6783,7 @@ $client->invitations->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;invitations-&gt;create($workspaceId, $request) -> ?Invitation</code></summary>
+<details><summary><code>$client-&gt;invitations-&gt;create($request) -> ?Invitation</code></summary>
 <dl>
 <dd>
 
@@ -7756,7 +6811,6 @@ Invites someone to the workspace with a role: Peal emails them a link that works
 
 ```php
 $client->invitations->create(
-    'workspaceId',
     new NewInvitation([
         'email' => 'email',
         'role' => Role::Owner->value,
@@ -7772,14 +6826,6 @@ $client->invitations->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7804,7 +6850,7 @@ $client->invitations->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;invitations-&gt;revoke($workspaceId, $invitationId)</code></summary>
+<details><summary><code>$client-&gt;invitations-&gt;revoke($invitationId)</code></summary>
 <dl>
 <dd>
 
@@ -7832,7 +6878,6 @@ Revokes a pending invitation of the workspace: its link stops working at once. N
 
 ```php
 $client->invitations->revoke(
-    'workspaceId',
     'invitationId',
 );
 ```
@@ -7845,14 +6890,6 @@ $client->invitations->revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7870,7 +6907,7 @@ $client->invitations->revoke(
 </details>
 
 ## billing
-<details><summary><code>$client-&gt;billing-&gt;get($workspaceId) -> ?Billing</code></summary>
+<details><summary><code>$client-&gt;billing-&gt;get() -> ?Billing</code></summary>
 <dl>
 <dd>
 
@@ -7897,25 +6934,8 @@ Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tie
 <dd>
 
 ```php
-$client->billing->get(
-    'workspaceId',
-);
+$client->billing->get();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -7926,7 +6946,7 @@ $client->billing->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;billing-&gt;standing($workspaceId) -> ?Standing</code></summary>
+<details><summary><code>$client-&gt;billing-&gt;standing() -> ?Standing</code></summary>
 <dl>
 <dd>
 
@@ -7953,25 +6973,8 @@ Answers where the workspace stands against its plan: what it holds beyond it, as
 <dd>
 
 ```php
-$client->billing->standing(
-    'workspaceId',
-);
+$client->billing->standing();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -7983,7 +6986,7 @@ $client->billing->standing(
 </details>
 
 ## usage
-<details><summary><code>$client-&gt;usage-&gt;get($workspaceId, $request) -> ?WorkspaceUsageReport</code></summary>
+<details><summary><code>$client-&gt;usage-&gt;get($request) -> ?WorkspaceUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -8011,7 +7014,6 @@ Answers what the workspace uses of its plan now, and day by day from `from` to `
 
 ```php
 $client->usage->get(
-    'workspaceId',
     new GetUsageRequest([]),
 );
 ```
@@ -8024,14 +7026,6 @@ $client->usage->get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8056,7 +7050,7 @@ $client->usage->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;usage-&gt;partner($workspaceId, $request) -> ?PartnerUsageReport</code></summary>
+<details><summary><code>$client-&gt;usage-&gt;partner($request) -> ?PartnerUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -8068,7 +7062,7 @@ $client->usage->get(
 <dl>
 <dd>
 
-Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
 </dd>
 </dl>
 </dd>
@@ -8084,7 +7078,6 @@ Answers what the partner account uses across the workspaces it holds, from `from
 
 ```php
 $client->usage->partner(
-    'workspaceId',
     new PartnerUsageRequest([]),
 );
 ```
@@ -8097,14 +7090,6 @@ $client->usage->partner(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8146,7 +7131,7 @@ $client->usage->partner(
 </details>
 
 ## analytics
-<details><summary><code>$client-&gt;analytics-&gt;summary($workspaceId, $request) -> ?AnalyticsSummary</code></summary>
+<details><summary><code>$client-&gt;analytics-&gt;summary($request) -> ?AnalyticsSummary</code></summary>
 <dl>
 <dd>
 
@@ -8174,7 +7159,6 @@ Sums up the posts published from `from` to `to`, both included and at most 366 d
 
 ```php
 $client->analytics->summary(
-    'workspaceId',
     new SummaryAnalyticsRequest([
         'from' => 'from',
         'timeZone' => 'timeZone',
@@ -8191,14 +7175,6 @@ $client->analytics->summary(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8231,7 +7207,7 @@ $client->analytics->summary(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;analytics-&gt;dashboard($workspaceId, $request) -> ?AnalyticsDashboard</code></summary>
+<details><summary><code>$client-&gt;analytics-&gt;dashboard($request) -> ?AnalyticsDashboard</code></summary>
 <dl>
 <dd>
 
@@ -8259,7 +7235,6 @@ Answers a workspace's analytics over a range in one call: the totals of the post
 
 ```php
 $client->analytics->dashboard(
-    'workspaceId',
     new DashboardAnalyticsRequest([
         'timeZone' => 'timeZone',
     ]),
@@ -8274,14 +7249,6 @@ $client->analytics->dashboard(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8330,7 +7297,7 @@ $client->analytics->dashboard(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;analytics-&gt;channel($workspaceId, $channelId, $request) -> ?ChannelSeries</code></summary>
+<details><summary><code>$client-&gt;analytics-&gt;channel($channelId, $request) -> ?ChannelSeries</code></summary>
 <dl>
 <dd>
 
@@ -8358,7 +7325,6 @@ Answers one channel's numbers day by day: its followers, the accounts it follows
 
 ```php
 $client->analytics->channel(
-    'workspaceId',
     'channelId',
     new ChannelAnalyticsRequest([
         'timeZone' => 'timeZone',
@@ -8374,14 +7340,6 @@ $client->analytics->channel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8430,7 +7388,7 @@ $client->analytics->channel(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;analytics-&gt;export($workspaceId, $request) -> string</code></summary>
+<details><summary><code>$client-&gt;analytics-&gt;export($request) -> string</code></summary>
 <dl>
 <dd>
 
@@ -8458,7 +7416,6 @@ Streams the workspace's analytics as a file: `kind=posts` lists each post publis
 
 ```php
 $client->analytics->export(
-    'workspaceId',
     new ExportAnalyticsRequest([
         'timeZone' => 'timeZone',
         'kind' => AnalyticsExportKind::Posts->value,
@@ -8474,14 +7431,6 @@ $client->analytics->export(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8538,7 +7487,7 @@ $client->analytics->export(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;analytics-&gt;bestTimes($workspaceId, $request) -> ?BestTimes</code></summary>
+<details><summary><code>$client-&gt;analytics-&gt;bestTimes($request) -> ?BestTimes</code></summary>
 <dl>
 <dd>
 
@@ -8566,7 +7515,6 @@ Answers when one channel's posts did best, by weekday and hour as `timeZone` (an
 
 ```php
 $client->analytics->bestTimes(
-    'workspaceId',
     new BestTimesAnalyticsRequest([
         'channelId' => 'channelId',
         'timeZone' => 'timeZone',
@@ -8582,14 +7530,6 @@ $client->analytics->bestTimes(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8622,7 +7562,7 @@ $client->analytics->bestTimes(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;analytics-&gt;post($workspaceId, $postId) -> ?PostAnalytics</code></summary>
+<details><summary><code>$client-&gt;analytics-&gt;post($postId) -> ?PostAnalytics</code></summary>
 <dl>
 <dd>
 
@@ -8650,7 +7590,6 @@ Answers with the counts of a post on each channel it went live on, over time. A 
 
 ```php
 $client->analytics->post(
-    'workspaceId',
     'postId',
 );
 ```
@@ -8663,14 +7602,6 @@ $client->analytics->post(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8688,7 +7619,7 @@ $client->analytics->post(
 </details>
 
 ## tiktok
-<details><summary><code>$client-&gt;tiktok-&gt;creator($workspaceId, $channelId) -> ?TikTokAccount</code></summary>
+<details><summary><code>$client-&gt;tiktok-&gt;creator($channelId) -> ?TikTokAccount</code></summary>
 <dl>
 <dd>
 
@@ -8716,7 +7647,6 @@ Reads a TikTok channel's creator from TikTok: their nickname, the audiences the 
 
 ```php
 $client->tiktok->creator(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -8729,14 +7659,6 @@ $client->tiktok->creator(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8754,7 +7676,7 @@ $client->tiktok->creator(
 </details>
 
 ## capabilities
-<details><summary><code>$client-&gt;capabilities-&gt;platforms($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;capabilities-&gt;platforms() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -8781,25 +7703,8 @@ Describes what a post may hold on every platform, in Peal's order, whether or no
 <dd>
 
 ```php
-$client->capabilities->platforms(
-    'workspaceId',
-);
+$client->capabilities->platforms();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -8810,7 +7715,7 @@ $client->capabilities->platforms(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;capabilities-&gt;channel($workspaceId, $channelId) -> ?ChannelCapabilities</code></summary>
+<details><summary><code>$client-&gt;capabilities-&gt;channel($channelId) -> ?ChannelCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -8838,7 +7743,6 @@ Describes what a post on this channel may hold: its platform's capabilities, and
 
 ```php
 $client->capabilities->channel(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -8851,14 +7755,6 @@ $client->capabilities->channel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8876,7 +7772,7 @@ $client->capabilities->channel(
 </details>
 
 ## lookups
-<details><summary><code>$client-&gt;lookups-&gt;list($workspaceId, $channelId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;lookups-&gt;list($channelId) -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -8904,7 +7800,6 @@ Lists the lookups the channel has: what its platform tells about the account tha
 
 ```php
 $client->lookups->list(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -8921,14 +7816,6 @@ $client->lookups->list(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$channelId:** `string` 
     
 </dd>
@@ -8941,7 +7828,7 @@ $client->lookups->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;lookups-&gt;run($workspaceId, $channelId, $name, $request) -> ?LookupResult</code></summary>
+<details><summary><code>$client-&gt;lookups-&gt;run($channelId, $name, $request) -> ?LookupResult</code></summary>
 <dl>
 <dd>
 
@@ -8969,7 +7856,6 @@ Runs one of the channel's lookups: asks the platform now, with the channel's tok
 
 ```php
 $client->lookups->run(
-    'workspaceId',
     'channelId',
     'name',
     new LookupInput([]),
@@ -8984,14 +7870,6 @@ $client->lookups->run(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9065,7 +7943,7 @@ $client->lookups->run(
 </details>
 
 ## webhooks
-<details><summary><code>$client-&gt;webhooks-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -9092,25 +7970,8 @@ Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 <dd>
 
 ```php
-$client->webhooks->list(
-    'workspaceId',
-);
+$client->webhooks->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -9121,7 +7982,7 @@ $client->webhooks->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;create($workspaceId, $request) -> ?WebhookEndpointSecret</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;create($request) -> ?WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -9149,7 +8010,6 @@ Adds a webhook endpoint to the workspace, and answers with its signing secret, w
 
 ```php
 $client->webhooks->create(
-    'workspaceId',
     new NewWebhookEndpoint([
         'eventTypes' => [
             SubscribableWebhookEventType::PostScheduled->value,
@@ -9167,14 +8027,6 @@ $client->webhooks->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9247,7 +8099,7 @@ $client->webhooks->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;searchDeliveries($workspaceId, $request) -> ?WebhookDeliveryPage</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;searchDeliveries($request) -> ?WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -9275,7 +8127,6 @@ Lists the workspace's deliveries across its endpoints, newest first, 30 a page u
 
 ```php
 $client->webhooks->searchDeliveries(
-    'workspaceId',
     new SearchDeliveriesWebhooksRequest([]),
 );
 ```
@@ -9288,14 +8139,6 @@ $client->webhooks->searchDeliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9360,7 +8203,7 @@ $client->webhooks->searchDeliveries(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;redeliverMany($workspaceId, $request) -> ?WebhookBulkRedelivery</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;redeliverMany($request) -> ?WebhookBulkRedelivery</code></summary>
 <dl>
 <dd>
 
@@ -9388,13 +8231,10 @@ Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, o
 
 ```php
 $client->webhooks->redeliverMany(
-    'workspaceId',
-    new RedeliverManyWebhooksRequest([
-        'body' => new WebhookRedeliveryByIds([
-            'deliveryIds' => [
-                'deliveryIds',
-            ],
-        ]),
+    new WebhookRedeliveryByIds([
+        'deliveryIds' => [
+            'deliveryIds',
+        ],
     ]),
 );
 ```
@@ -9411,14 +8251,6 @@ $client->webhooks->redeliverMany(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$request:** `WebhookRedeliveryByIds|WebhookRedeliveryOfFailed` 
     
 </dd>
@@ -9431,7 +8263,7 @@ $client->webhooks->redeliverMany(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;get($workspaceId, $endpointId) -> ?WebhookEndpoint</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;get($endpointId) -> ?WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -9459,7 +8291,6 @@ Shows one of the workspace's webhook endpoints. Needs webhook:read.
 
 ```php
 $client->webhooks->get(
-    'workspaceId',
     'endpointId',
 );
 ```
@@ -9476,14 +8307,6 @@ $client->webhooks->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$endpointId:** `string` 
     
 </dd>
@@ -9496,7 +8319,7 @@ $client->webhooks->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;delete($workspaceId, $endpointId)</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;delete($endpointId)</code></summary>
 <dl>
 <dd>
 
@@ -9524,7 +8347,6 @@ Deletes an endpoint, its secret and its delivery log: nothing more is sent to it
 
 ```php
 $client->webhooks->delete(
-    'workspaceId',
     'endpointId',
 );
 ```
@@ -9541,14 +8363,6 @@ $client->webhooks->delete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$endpointId:** `string` 
     
 </dd>
@@ -9561,7 +8375,7 @@ $client->webhooks->delete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;update($workspaceId, $endpointId, $request) -> ?WebhookEndpoint</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;update($endpointId, $request) -> ?WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -9589,7 +8403,6 @@ Changes an endpoint's address, description, events, filters or headers, or turns
 
 ```php
 $client->webhooks->update(
-    'workspaceId',
     'endpointId',
     new WebhookEndpointChange([]),
 );
@@ -9603,14 +8416,6 @@ $client->webhooks->update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9683,7 +8488,7 @@ $client->webhooks->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;rotateSecret($workspaceId, $endpointId) -> ?WebhookEndpointSecret</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;rotateSecret($endpointId) -> ?WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -9711,7 +8516,6 @@ Replaces an endpoint's signing secret, and answers with the new one, which is no
 
 ```php
 $client->webhooks->rotateSecret(
-    'workspaceId',
     'endpointId',
 );
 ```
@@ -9728,14 +8532,6 @@ $client->webhooks->rotateSecret(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$endpointId:** `string` 
     
 </dd>
@@ -9748,7 +8544,7 @@ $client->webhooks->rotateSecret(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;sendTest($workspaceId, $endpointId, $request) -> ?WebhookDelivery</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;sendTest($endpointId, $request) -> ?WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -9776,7 +8572,6 @@ Sends the endpoint a `webhook.test` event, or, with `eventType`, a sample of tha
 
 ```php
 $client->webhooks->sendTest(
-    'workspaceId',
     'endpointId',
     new SendTestWebhooksRequest([]),
 );
@@ -9790,14 +8585,6 @@ $client->webhooks->sendTest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9822,7 +8609,7 @@ $client->webhooks->sendTest(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;listDeliveries($workspaceId, $endpointId, $request) -> ?WebhookDeliveryPage</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;listDeliveries($endpointId, $request) -> ?WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -9850,7 +8637,6 @@ Lists the endpoint's deliveries, newest first, of a `status` and an `eventType` 
 
 ```php
 $client->webhooks->listDeliveries(
-    'workspaceId',
     'endpointId',
     new ListDeliveriesWebhooksRequest([]),
 );
@@ -9864,14 +8650,6 @@ $client->webhooks->listDeliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9920,7 +8698,7 @@ $client->webhooks->listDeliveries(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;webhooks-&gt;redeliver($workspaceId, $endpointId, $deliveryId) -> ?WebhookDelivery</code></summary>
+<details><summary><code>$client-&gt;webhooks-&gt;redeliver($endpointId, $deliveryId) -> ?WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -9948,7 +8726,6 @@ Sends the delivery's event to the endpoint again, as a new delivery of the same 
 
 ```php
 $client->webhooks->redeliver(
-    'workspaceId',
     'endpointId',
     'deliveryId',
 );
@@ -9962,14 +8739,6 @@ $client->webhooks->redeliver(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9995,7 +8764,7 @@ $client->webhooks->redeliver(
 </details>
 
 ## inbox
-<details><summary><code>$client-&gt;inbox-&gt;listThreads($workspaceId, $request) -> ?InboxThreadPage</code></summary>
+<details><summary><code>$client-&gt;inbox-&gt;listThreads($request) -> ?InboxThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -10023,7 +8792,6 @@ Lists the threads that have comments, one per post and channel: those with a com
 
 ```php
 $client->inbox->listThreads(
-    'workspaceId',
     new ListThreadsInboxRequest([]),
 );
 ```
@@ -10036,14 +8804,6 @@ $client->inbox->listThreads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10092,7 +8852,7 @@ $client->inbox->listThreads(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inbox-&gt;getThread($workspaceId, $threadId) -> ?InboxThreadDetail</code></summary>
+<details><summary><code>$client-&gt;inbox-&gt;getThread($threadId) -> ?InboxThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -10120,7 +8880,6 @@ Shows a thread whole: its comments, oldest first, the replies sent from Peal, an
 
 ```php
 $client->inbox->getThread(
-    'workspaceId',
     'threadId',
 );
 ```
@@ -10137,14 +8896,6 @@ $client->inbox->getThread(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$threadId:** `string` 
     
 </dd>
@@ -10157,7 +8908,7 @@ $client->inbox->getThread(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inbox-&gt;getAbilities($workspaceId, $channelId) -> ?InboxAbilities</code></summary>
+<details><summary><code>$client-&gt;inbox-&gt;getAbilities($channelId) -> ?InboxAbilities</code></summary>
 <dl>
 <dd>
 
@@ -10185,7 +8936,6 @@ Says what a channel can do about the comments under its posts, from its platform
 
 ```php
 $client->inbox->getAbilities(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -10202,14 +8952,6 @@ $client->inbox->getAbilities(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$channelId:** `string` 
     
 </dd>
@@ -10222,7 +8964,7 @@ $client->inbox->getAbilities(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inbox-&gt;reply($workspaceId, $commentId, $request) -> ?InboxReply</code></summary>
+<details><summary><code>$client-&gt;inbox-&gt;reply($commentId, $request) -> ?InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10250,7 +8992,6 @@ Answers a comment in public, as the channel's account: everyone who sees the pos
 
 ```php
 $client->inbox->reply(
-    'workspaceId',
     'commentId',
     new NewInboxReply([
         'text' => 'text',
@@ -10266,14 +9007,6 @@ $client->inbox->reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10306,7 +9039,7 @@ $client->inbox->reply(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inbox-&gt;setAnswered($workspaceId, $commentId, $request) -> ?InboxComment</code></summary>
+<details><summary><code>$client-&gt;inbox-&gt;setAnswered($commentId, $request) -> ?InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -10334,7 +9067,6 @@ Says a comment needs no answer (`answered: true`), or waits for one again (`fals
 
 ```php
 $client->inbox->setAnswered(
-    'workspaceId',
     'commentId',
     new SetAnsweredInboxRequest([
         'answered' => true,
@@ -10350,14 +9082,6 @@ $client->inbox->setAnswered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10382,7 +9106,7 @@ $client->inbox->setAnswered(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inbox-&gt;moderate($workspaceId, $commentId, $request) -> ?InboxComment</code></summary>
+<details><summary><code>$client-&gt;inbox-&gt;moderate($commentId, $request) -> ?InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -10410,7 +9134,6 @@ Asks the channel's account to hide or show a comment, like it or take the like b
 
 ```php
 $client->inbox->moderate(
-    'workspaceId',
     'commentId',
     new ModerateInboxRequest([
         'action' => InboxModerationAction::Hide->value,
@@ -10426,14 +9149,6 @@ $client->inbox->moderate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10458,7 +9173,7 @@ $client->inbox->moderate(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inbox-&gt;confirmReply($workspaceId, $replyId, $request) -> ?InboxReply</code></summary>
+<details><summary><code>$client-&gt;inbox-&gt;confirmReply($replyId, $request) -> ?InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10486,7 +9201,6 @@ Records what someone found on the platform for an unconfirmed reply: it is there
 
 ```php
 $client->inbox->confirmReply(
-    'workspaceId',
     'replyId',
     new ConfirmReplyInboxRequest([
         'sent' => true,
@@ -10502,14 +9216,6 @@ $client->inbox->confirmReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10534,7 +9240,7 @@ $client->inbox->confirmReply(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inbox-&gt;withdrawReply($workspaceId, $replyId) -> ?InboxReply</code></summary>
+<details><summary><code>$client-&gt;inbox-&gt;withdrawReply($replyId) -> ?InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -10562,7 +9268,6 @@ Deletes a reply sent from Peal from its platform, and answers with it, `withdraw
 
 ```php
 $client->inbox->withdrawReply(
-    'workspaceId',
     'replyId',
 );
 ```
@@ -10575,14 +9280,6 @@ $client->inbox->withdrawReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10600,7 +9297,7 @@ $client->inbox->withdrawReply(
 </details>
 
 ## inboxReviews
-<details><summary><code>$client-&gt;inboxReviews-&gt;listReviewThreads($workspaceId, $request) -> ?InboxReviewThreadPage</code></summary>
+<details><summary><code>$client-&gt;inboxReviews-&gt;listReviewThreads($request) -> ?InboxReviewThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -10628,7 +9325,6 @@ Lists the locations that have reviews, one per channel: those with a review wait
 
 ```php
 $client->inboxReviews->listReviewThreads(
-    'workspaceId',
     new ListReviewThreadsInboxReviewsRequest([]),
 );
 ```
@@ -10641,14 +9337,6 @@ $client->inboxReviews->listReviewThreads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10689,7 +9377,7 @@ $client->inboxReviews->listReviewThreads(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxReviews-&gt;getReviewThread($workspaceId, $threadId) -> ?InboxReviewThreadDetail</code></summary>
+<details><summary><code>$client-&gt;inboxReviews-&gt;getReviewThread($threadId) -> ?InboxReviewThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -10717,7 +9405,6 @@ Shows a location's reviews whole, the latest first, the replies sent from Peal, 
 
 ```php
 $client->inboxReviews->getReviewThread(
-    'workspaceId',
     'threadId',
 );
 ```
@@ -10734,14 +9421,6 @@ $client->inboxReviews->getReviewThread(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$threadId:** `string` 
     
 </dd>
@@ -10754,7 +9433,7 @@ $client->inboxReviews->getReviewThread(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxReviews-&gt;replyToReview($workspaceId, $reviewId, $request) -> ?InboxReviewReply</code></summary>
+<details><summary><code>$client-&gt;inboxReviews-&gt;replyToReview($reviewId, $request) -> ?InboxReviewReply</code></summary>
 <dl>
 <dd>
 
@@ -10782,7 +9461,6 @@ Answers a review in public, as the location: the reply replaces the one the revi
 
 ```php
 $client->inboxReviews->replyToReview(
-    'workspaceId',
     'reviewId',
     new NewInboxReviewReply([
         'text' => 'text',
@@ -10798,14 +9476,6 @@ $client->inboxReviews->replyToReview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10838,7 +9508,7 @@ $client->inboxReviews->replyToReview(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxReviews-&gt;withdrawReviewReply($workspaceId, $reviewId) -> ?InboxReview</code></summary>
+<details><summary><code>$client-&gt;inboxReviews-&gt;withdrawReviewReply($reviewId) -> ?InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -10866,7 +9536,6 @@ Deletes the location's reply to a review from the platform, whoever wrote it, an
 
 ```php
 $client->inboxReviews->withdrawReviewReply(
-    'workspaceId',
     'reviewId',
 );
 ```
@@ -10883,14 +9552,6 @@ $client->inboxReviews->withdrawReviewReply(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$reviewId:** `string` 
     
 </dd>
@@ -10903,7 +9564,7 @@ $client->inboxReviews->withdrawReviewReply(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxReviews-&gt;setReviewAnswered($workspaceId, $reviewId, $request) -> ?InboxReview</code></summary>
+<details><summary><code>$client-&gt;inboxReviews-&gt;setReviewAnswered($reviewId, $request) -> ?InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -10931,7 +9592,6 @@ Says a review needs no answer (`answered: true`), or waits for one again (`false
 
 ```php
 $client->inboxReviews->setReviewAnswered(
-    'workspaceId',
     'reviewId',
     new SetReviewAnsweredInboxReviewsRequest([
         'answered' => true,
@@ -10947,14 +9607,6 @@ $client->inboxReviews->setReviewAnswered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10980,7 +9632,7 @@ $client->inboxReviews->setReviewAnswered(
 </details>
 
 ## inboxMessages
-<details><summary><code>$client-&gt;inboxMessages-&gt;listConversations($workspaceId, $request) -> ?InboxConversationPage</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;listConversations($request) -> ?InboxConversationPage</code></summary>
 <dl>
 <dd>
 
@@ -11008,7 +9660,6 @@ Lists the workspace's conversations, the latest message first, 30 a page unless 
 
 ```php
 $client->inboxMessages->listConversations(
-    'workspaceId',
     new ListConversationsInboxMessagesRequest([]),
 );
 ```
@@ -11021,14 +9672,6 @@ $client->inboxMessages->listConversations(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11069,7 +9712,7 @@ $client->inboxMessages->listConversations(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;getConversation($workspaceId, $conversationId, $request) -> ?InboxConversationDetail</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;getConversation($conversationId, $request) -> ?InboxConversationDetail</code></summary>
 <dl>
 <dd>
 
@@ -11097,7 +9740,6 @@ Shows a conversation: a page of its messages (the latest 100 unless `limit` says
 
 ```php
 $client->inboxMessages->getConversation(
-    'workspaceId',
     'conversationId',
     new GetConversationInboxMessagesRequest([]),
 );
@@ -11111,14 +9753,6 @@ $client->inboxMessages->getConversation(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11151,7 +9785,7 @@ $client->inboxMessages->getConversation(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;sendMessage($workspaceId, $conversationId, $request) -> ?InboxOutgoingMessage</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;sendMessage($conversationId, $request) -> ?InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -11179,7 +9813,6 @@ Answers a conversation privately, as the channel's account: the message goes to 
 
 ```php
 $client->inboxMessages->sendMessage(
-    'workspaceId',
     'conversationId',
     new NewInboxMessage([
         'text' => 'text',
@@ -11195,14 +9828,6 @@ $client->inboxMessages->sendMessage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11235,7 +9860,7 @@ $client->inboxMessages->sendMessage(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;sendPrivateReply($workspaceId, $request) -> ?InboxPrivateReply</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;sendPrivateReply($request) -> ?InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11263,7 +9888,6 @@ Sends the author of a comment under the workspace's post one private message, as
 
 ```php
 $client->inboxMessages->sendPrivateReply(
-    'workspaceId',
     new NewInboxPrivateReply([
         'commentId' => 'commentId',
         'text' => 'text',
@@ -11279,14 +9903,6 @@ $client->inboxMessages->sendPrivateReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11319,7 +9935,7 @@ $client->inboxMessages->sendPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;getPrivateReply($workspaceId, $privateReplyId) -> ?InboxPrivateReply</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;getPrivateReply($privateReplyId) -> ?InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11347,7 +9963,6 @@ Shows a private reply sent to a comment's author, and how it stands. Needs engag
 
 ```php
 $client->inboxMessages->getPrivateReply(
-    'workspaceId',
     'privateReplyId',
 );
 ```
@@ -11364,14 +9979,6 @@ $client->inboxMessages->getPrivateReply(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$privateReplyId:** `string` 
     
 </dd>
@@ -11384,7 +9991,7 @@ $client->inboxMessages->getPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;confirmPrivateReply($workspaceId, $privateReplyId, $request) -> ?InboxPrivateReply</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;confirmPrivateReply($privateReplyId, $request) -> ?InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -11412,7 +10019,6 @@ Records what someone found in the person's conversation for an unconfirmed priva
 
 ```php
 $client->inboxMessages->confirmPrivateReply(
-    'workspaceId',
     'privateReplyId',
     new ConfirmPrivateReplyInboxMessagesRequest([
         'went' => true,
@@ -11428,14 +10034,6 @@ $client->inboxMessages->confirmPrivateReply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11460,7 +10058,7 @@ $client->inboxMessages->confirmPrivateReply(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;setConversationRead($workspaceId, $conversationId, $request) -> ?InboxConversation</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;setConversationRead($conversationId, $request) -> ?InboxConversation</code></summary>
 <dl>
 <dd>
 
@@ -11488,7 +10086,6 @@ Says a conversation was read (`read: true`), or is unread again (`false`). Nothi
 
 ```php
 $client->inboxMessages->setConversationRead(
-    'workspaceId',
     'conversationId',
     new SetConversationReadInboxMessagesRequest([
         'read' => true,
@@ -11504,14 +10101,6 @@ $client->inboxMessages->setConversationRead(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11536,7 +10125,7 @@ $client->inboxMessages->setConversationRead(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;getMessageSettings($workspaceId) -> ?InboxMessageSettings</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;getMessageSettings() -> ?InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -11563,25 +10152,8 @@ Lists the channels whose direct messages the workspace turned on, and the applic
 <dd>
 
 ```php
-$client->inboxMessages->getMessageSettings(
-    'workspaceId',
-);
+$client->inboxMessages->getMessageSettings();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -11592,7 +10164,7 @@ $client->inboxMessages->getMessageSettings(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;setChannelMessages($workspaceId, $channelId, $request) -> ?InboxMessageSettings</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;setChannelMessages($channelId, $request) -> ?InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -11620,7 +10192,6 @@ Turns a channel's direct messages on (`enabled: true`): Peal reads its conversat
 
 ```php
 $client->inboxMessages->setChannelMessages(
-    'workspaceId',
     'channelId',
     new SetChannelMessagesInboxMessagesRequest([
         'enabled' => true,
@@ -11636,14 +10207,6 @@ $client->inboxMessages->setChannelMessages(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11668,7 +10231,7 @@ $client->inboxMessages->setChannelMessages(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;setMessageApplication($workspaceId, $request) -> ?InboxMessageSettings</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;setMessageApplication($request) -> ?InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -11696,7 +10259,6 @@ Lets an application connected through OAuth (by its client id) read and answer t
 
 ```php
 $client->inboxMessages->setMessageApplication(
-    'workspaceId',
     new SetMessageApplicationInboxMessagesRequest([
         'allowed' => true,
         'clientId' => 'clientId',
@@ -11712,14 +10274,6 @@ $client->inboxMessages->setMessageApplication(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11744,7 +10298,7 @@ $client->inboxMessages->setMessageApplication(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxMessages-&gt;confirmMessage($workspaceId, $messageId, $request) -> ?InboxOutgoingMessage</code></summary>
+<details><summary><code>$client-&gt;inboxMessages-&gt;confirmMessage($messageId, $request) -> ?InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -11772,7 +10326,6 @@ Records what someone found on the platform for an unconfirmed message: it is the
 
 ```php
 $client->inboxMessages->confirmMessage(
-    'workspaceId',
     'messageId',
     new ConfirmMessageInboxMessagesRequest([
         'sent' => true,
@@ -11788,14 +10341,6 @@ $client->inboxMessages->confirmMessage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11821,7 +10366,7 @@ $client->inboxMessages->confirmMessage(
 </details>
 
 ## ads
-<details><summary><code>$client-&gt;ads-&gt;status($workspaceId) -> ?AdsStatus</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;status() -> ?AdsStatus</code></summary>
 <dl>
 <dd>
 
@@ -11848,25 +10393,8 @@ Says what this server offers of ads (`off`, `read` or `spend`) and on which netw
 <dd>
 
 ```php
-$client->ads->status(
-    'workspaceId',
-);
+$client->ads->status();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -11877,7 +10405,7 @@ $client->ads->status(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;listConnections($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;listConnections() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -11904,25 +10432,8 @@ Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whet
 <dd>
 
 ```php
-$client->ads->listConnections(
-    'workspaceId',
-);
+$client->ads->listConnections();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -11933,7 +10444,7 @@ $client->ads->listConnections(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;connect($workspaceId, $network) -> ?AdSignIn</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;connect($network) -> ?AdSignIn</code></summary>
 <dl>
 <dd>
 
@@ -11961,7 +10472,6 @@ Starts a sign-in to an ad network and answers the page to send the member's brow
 
 ```php
 $client->ads->connect(
-    'workspaceId',
     AdNetwork::Meta->value,
 );
 ```
@@ -11978,14 +10488,6 @@ $client->ads->connect(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$network:** `string` 
     
 </dd>
@@ -11998,7 +10500,7 @@ $client->ads->connect(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;completeConnect($workspaceId, $network, $request) -> ?AdSignInResult</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;completeConnect($network, $request) -> ?AdSignInResult</code></summary>
 <dl>
 <dd>
 
@@ -12026,7 +10528,6 @@ Completes a sign-in with what the network's page sent back, and answers the ad a
 
 ```php
 $client->ads->completeConnect(
-    'workspaceId',
     AdNetwork::Meta->value,
     new AdSignInCallback([
         'state' => 'state',
@@ -12042,14 +10543,6 @@ $client->ads->completeConnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12090,7 +10583,7 @@ $client->ads->completeConnect(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;reachableAccounts($workspaceId, $connectionId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;reachableAccounts($connectionId) -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -12118,7 +10611,6 @@ Lists the ad accounts a sign-in reaches now, as the network gives them: currency
 
 ```php
 $client->ads->reachableAccounts(
-    'workspaceId',
     'connectionId',
 );
 ```
@@ -12135,14 +10627,6 @@ $client->ads->reachableAccounts(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$connectionId:** `string` 
     
 </dd>
@@ -12155,7 +10639,7 @@ $client->ads->reachableAccounts(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;connectAccounts($workspaceId, $connectionId, $request) -> ?array</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;connectAccounts($connectionId, $request) -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -12183,7 +10667,6 @@ Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the n
 
 ```php
 $client->ads->connectAccounts(
-    'workspaceId',
     'connectionId',
     new AdAccountsToConnect([
         'externalIds' => [
@@ -12201,14 +10684,6 @@ $client->ads->connectAccounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12233,7 +10708,7 @@ $client->ads->connectAccounts(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;disconnect($workspaceId, $connectionId)</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;disconnect($connectionId)</code></summary>
 <dl>
 <dd>
 
@@ -12261,7 +10736,6 @@ Removes a sign-in, its token, the ad accounts it connects and what was read of t
 
 ```php
 $client->ads->disconnect(
-    'workspaceId',
     'connectionId',
 );
 ```
@@ -12278,14 +10752,6 @@ $client->ads->disconnect(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$connectionId:** `string` 
     
 </dd>
@@ -12298,7 +10764,7 @@ $client->ads->disconnect(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;listAccounts($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;listAccounts() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -12325,25 +10791,8 @@ Lists the workspace's connected ad accounts, oldest first, with whether each may
 <dd>
 
 ```php
-$client->ads->listAccounts(
-    'workspaceId',
-);
+$client->ads->listAccounts();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -12354,7 +10803,7 @@ $client->ads->listAccounts(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;getAccount($workspaceId, $accountId) -> ?AdSpending</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;getAccount($accountId) -> ?AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -12382,7 +10831,6 @@ Shows an ad account with what its boosts made through Peal commit in the current
 
 ```php
 $client->ads->getAccount(
-    'workspaceId',
     'accountId',
 );
 ```
@@ -12399,14 +10847,6 @@ $client->ads->getAccount(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$accountId:** `string` 
     
 </dd>
@@ -12419,7 +10859,7 @@ $client->ads->getAccount(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;removeAccount($workspaceId, $accountId)</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;removeAccount($accountId)</code></summary>
 <dl>
 <dd>
 
@@ -12447,7 +10887,6 @@ Disconnects an ad account: what was read of it goes with it, and its boosts' rec
 
 ```php
 $client->ads->removeAccount(
-    'workspaceId',
     'accountId',
 );
 ```
@@ -12464,14 +10903,6 @@ $client->ads->removeAccount(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$accountId:** `string` 
     
 </dd>
@@ -12484,7 +10915,7 @@ $client->ads->removeAccount(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;setSpending($workspaceId, $accountId, $request) -> ?AdSpending</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;setSpending($accountId, $request) -> ?AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -12512,7 +10943,6 @@ Decides whether an ad account may spend through Peal, and how much: `enabled` wi
 
 ```php
 $client->ads->setSpending(
-    'workspaceId',
     'accountId',
     new AdSpendingDecision([
         'enabled' => true,
@@ -12528,14 +10958,6 @@ $client->ads->setSpending(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12568,7 +10990,7 @@ $client->ads->setSpending(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;listCampaigns($workspaceId, $accountId, $request) -> ?AdCampaignReport</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;listCampaigns($accountId, $request) -> ?AdCampaignReport</code></summary>
 <dl>
 <dd>
 
@@ -12596,7 +11018,6 @@ Lists an ad account's campaigns as last read from its network (every hour on Met
 
 ```php
 $client->ads->listCampaigns(
-    'workspaceId',
     'accountId',
     new ListCampaignsAdsRequest([]),
 );
@@ -12610,14 +11031,6 @@ $client->ads->listCampaigns(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12650,7 +11063,7 @@ $client->ads->listCampaigns(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;listAds($workspaceId, $accountId, $request) -> ?AdReport</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;listAds($accountId, $request) -> ?AdReport</code></summary>
 <dl>
 <dd>
 
@@ -12678,7 +11091,6 @@ Lists an ad account's ads as last read, those of one campaign with `campaignId` 
 
 ```php
 $client->ads->listAds(
-    'workspaceId',
     'accountId',
     new ListAdsAdsRequest([]),
 );
@@ -12692,14 +11104,6 @@ $client->ads->listAds(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12740,7 +11144,7 @@ $client->ads->listAds(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;listInsights($workspaceId, $accountId, $request) -> ?AdInsightReport</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;listInsights($accountId, $request) -> ?AdInsightReport</code></summary>
 <dl>
 <dd>
 
@@ -12768,7 +11172,6 @@ Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spe
 
 ```php
 $client->ads->listInsights(
-    'workspaceId',
     'accountId',
     new ListInsightsAdsRequest([]),
 );
@@ -12782,14 +11185,6 @@ $client->ads->listInsights(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12822,7 +11217,7 @@ $client->ads->listInsights(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;postPerformance($workspaceId, $postId) -> ?PostAdPerformance</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;postPerformance($postId) -> ?PostAdPerformance</code></summary>
 <dl>
 <dd>
 
@@ -12850,7 +11245,6 @@ Shows a published post's organic counts on each channel beside what the ads that
 
 ```php
 $client->ads->postPerformance(
-    'workspaceId',
     'postId',
 );
 ```
@@ -12867,14 +11261,6 @@ $client->ads->postPerformance(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -12887,7 +11273,7 @@ $client->ads->postPerformance(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;quoteBoost($workspaceId, $request) -> ?BoostQuote</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;quoteBoost($request) -> ?BoostQuote</code></summary>
 <dl>
 <dd>
 
@@ -12915,27 +11301,24 @@ Checks a boost as `createBoost` would, and says what it would commit and the roo
 
 ```php
 $client->ads->quoteBoost(
-    'workspaceId',
-    new QuoteBoostAdsRequest([
-        'body' => new NewBoost([
-            'accountId' => 'accountId',
-            'audience' => new BoostAudience([
-                'ageMax' => 1,
-                'ageMin' => 1,
-                'countries' => [
-                    'countries',
-                ],
-            ]),
-            'budget' => new BoostBudget([
-                'amount' => 1000000,
-                'kind' => BoostBudgetKind::Total->value,
-            ]),
-            'channelId' => 'channelId',
-            'currency' => 'currency',
-            'endsAt' => 'endsAt',
-            'postId' => 'postId',
-            'specialAdCategory' => SpecialAdCategory::None->value,
+    new NewBoost([
+        'accountId' => 'accountId',
+        'audience' => new BoostAudience([
+            'ageMax' => 1,
+            'ageMin' => 1,
+            'countries' => [
+                'countries',
+            ],
         ]),
+        'budget' => new BoostBudget([
+            'amount' => 1000000,
+            'kind' => BoostBudgetKind::Total->value,
+        ]),
+        'channelId' => 'channelId',
+        'currency' => 'currency',
+        'endsAt' => 'endsAt',
+        'postId' => 'postId',
+        'specialAdCategory' => SpecialAdCategory::None->value,
     ]),
 );
 ```
@@ -12952,14 +11335,6 @@ $client->ads->quoteBoost(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$request:** `NewBoost` 
     
 </dd>
@@ -12972,7 +11347,7 @@ $client->ads->quoteBoost(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;listBoosts($workspaceId, $request) -> ?BoostPage</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;listBoosts($request) -> ?BoostPage</code></summary>
 <dl>
 <dd>
 
@@ -13000,7 +11375,6 @@ Lists the workspace's boosts, newest first, 50 a page, those of one post with `p
 
 ```php
 $client->ads->listBoosts(
-    'workspaceId',
     new ListBoostsAdsRequest([]),
 );
 ```
@@ -13013,14 +11387,6 @@ $client->ads->listBoosts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13045,7 +11411,7 @@ $client->ads->listBoosts(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;createBoost($workspaceId, $request) -> ?Boost</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;createBoost($request) -> ?Boost</code></summary>
 <dl>
 <dd>
 
@@ -13073,7 +11439,6 @@ $client->ads->listBoosts(
 
 ```php
 $client->ads->createBoost(
-    'workspaceId',
     new CreateBoostAdsRequest([
         'idempotencyKey' => 'idempotency-key',
         'body' => new NewBoost([
@@ -13111,14 +11476,6 @@ $client->ads->createBoost(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$idempotencyKey:** `string` 
     
 </dd>
@@ -13139,7 +11496,7 @@ $client->ads->createBoost(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;getBoost($workspaceId, $boostId) -> ?BoostDetail</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;getBoost($boostId) -> ?BoostDetail</code></summary>
 <dl>
 <dd>
 
@@ -13167,7 +11524,6 @@ Shows a boost and the journal of the requests Peal sent the network for it, each
 
 ```php
 $client->ads->getBoost(
-    'workspaceId',
     'boostId',
 );
 ```
@@ -13184,14 +11540,6 @@ $client->ads->getBoost(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$boostId:** `string` 
     
 </dd>
@@ -13204,7 +11552,7 @@ $client->ads->getBoost(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;pauseBoost($workspaceId, $boostId) -> ?Boost</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;pauseBoost($boostId) -> ?Boost</code></summary>
 <dl>
 <dd>
 
@@ -13232,7 +11580,6 @@ Pauses a boost that runs or may run: its campaign is told to pause, and the boos
 
 ```php
 $client->ads->pauseBoost(
-    'workspaceId',
     'boostId',
 );
 ```
@@ -13249,14 +11596,6 @@ $client->ads->pauseBoost(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$boostId:** `string` 
     
 </dd>
@@ -13269,7 +11608,7 @@ $client->ads->pauseBoost(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;resumeBoost($workspaceId, $boostId) -> ?Boost</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;resumeBoost($boostId) -> ?Boost</code></summary>
 <dl>
 <dd>
 
@@ -13297,7 +11636,6 @@ $client->ads->pauseBoost(
 
 ```php
 $client->ads->resumeBoost(
-    'workspaceId',
     'boostId',
 );
 ```
@@ -13314,14 +11652,6 @@ $client->ads->resumeBoost(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$boostId:** `string` 
     
 </dd>
@@ -13334,7 +11664,7 @@ $client->ads->resumeBoost(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;stopBoost($workspaceId, $boostId) -> ?Boost</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;stopBoost($boostId) -> ?Boost</code></summary>
 <dl>
 <dd>
 
@@ -13362,7 +11692,6 @@ Stops a boost for good: its campaign is told to pause, and the boost is `stopped
 
 ```php
 $client->ads->stopBoost(
-    'workspaceId',
     'boostId',
 );
 ```
@@ -13379,14 +11708,6 @@ $client->ads->stopBoost(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$boostId:** `string` 
     
 </dd>
@@ -13399,7 +11720,7 @@ $client->ads->stopBoost(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;ads-&gt;auditTrail($workspaceId, $request) -> ?AdAuditPage</code></summary>
+<details><summary><code>$client-&gt;ads-&gt;auditTrail($request) -> ?AdAuditPage</code></summary>
 <dl>
 <dd>
 
@@ -13427,7 +11748,6 @@ Lists the ads audit trail, newest first, 100 a page: every decision about spendi
 
 ```php
 $client->ads->auditTrail(
-    'workspaceId',
     new AuditTrailAdsRequest([]),
 );
 ```
@@ -13440,14 +11760,6 @@ $client->ads->auditTrail(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13465,7 +11777,7 @@ $client->ads->auditTrail(
 </details>
 
 ## activity
-<details><summary><code>$client-&gt;activity-&gt;list($workspaceId, $request) -> ?ActivityPage</code></summary>
+<details><summary><code>$client-&gt;activity-&gt;list($request) -> ?ActivityPage</code></summary>
 <dl>
 <dd>
 
@@ -13493,7 +11805,6 @@ Lists the requests that asked to change something in the workspace, newest first
 
 ```php
 $client->activity->list(
-    'workspaceId',
     new ListActivityRequest([]),
 );
 ```
@@ -13506,14 +11817,6 @@ $client->activity->list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14163,7 +12466,7 @@ $client->partnerUsage->get(
 </details>
 
 ## partnerAccount
-<details><summary><code>$client-&gt;partnerAccount-&gt;get($workspaceId) -> ?PartnerStanding</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;get() -> ?PartnerStanding</code></summary>
 <dl>
 <dd>
 
@@ -14190,25 +12493,8 @@ The workspace's partner account and what it holds, null when it has none, and wh
 <dd>
 
 ```php
-$client->partnerAccount->get(
-    'workspaceId',
-);
+$client->partnerAccount->get();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -14219,7 +12505,7 @@ $client->partnerAccount->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;partnerAccount-&gt;open($workspaceId, $request) -> ?Partner</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;open($request) -> ?Partner</code></summary>
 <dl>
 <dd>
 
@@ -14247,7 +12533,6 @@ Opens a partner account for the workspace, which becomes its home workspace, und
 
 ```php
 $client->partnerAccount->open(
-    'workspaceId',
     new OpenPartner([
         'name' => 'name',
     ]),
@@ -14266,14 +12551,6 @@ $client->partnerAccount->open(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$name:** `string` 
     
 </dd>
@@ -14286,7 +12563,7 @@ $client->partnerAccount->open(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;partnerAccount-&gt;close($workspaceId)</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;close()</code></summary>
 <dl>
 <dd>
 
@@ -14313,25 +12590,8 @@ Closes the workspace's partner account: its keys stop working at once. Refused w
 <dd>
 
 ```php
-$client->partnerAccount->close(
-    'workspaceId',
-);
+$client->partnerAccount->close();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -14342,7 +12602,7 @@ $client->partnerAccount->close(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;partnerAccount-&gt;update($workspaceId, $request) -> ?Partner</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;update($request) -> ?Partner</code></summary>
 <dl>
 <dd>
 
@@ -14370,7 +12630,6 @@ Changes the partner account's name, its logo (an HTTPS URL, shown from that addr
 
 ```php
 $client->partnerAccount->update(
-    'workspaceId',
     new PartnerChange([]),
 );
 ```
@@ -14383,14 +12642,6 @@ $client->partnerAccount->update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14431,7 +12682,7 @@ $client->partnerAccount->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;partnerAccount-&gt;listKeys($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;listKeys() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -14458,25 +12709,8 @@ Lists the partner account's keys. Needs partner:read.
 <dd>
 
 ```php
-$client->partnerAccount->listKeys(
-    'workspaceId',
-);
+$client->partnerAccount->listKeys();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -14487,7 +12721,7 @@ $client->partnerAccount->listKeys(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;partnerAccount-&gt;createKey($workspaceId, $request) -> ?CreatedPartnerKey</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;createKey($request) -> ?CreatedPartnerKey</code></summary>
 <dl>
 <dd>
 
@@ -14515,7 +12749,6 @@ Creates a partner key, and answers with the key itself, which is not shown again
 
 ```php
 $client->partnerAccount->createKey(
-    'workspaceId',
     new NewPartnerKey([
         'name' => 'name',
         'permissions' => [
@@ -14536,14 +12769,6 @@ $client->partnerAccount->createKey(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14584,7 +12809,7 @@ $client->partnerAccount->createKey(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;partnerAccount-&gt;revokeKey($workspaceId, $partnerKeyId)</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;revokeKey($partnerKeyId)</code></summary>
 <dl>
 <dd>
 
@@ -14612,7 +12837,6 @@ Revokes a partner key: it stops working at once. Needs partner:manage.
 
 ```php
 $client->partnerAccount->revokeKey(
-    'workspaceId',
     'partnerKeyId',
 );
 ```
@@ -14629,14 +12853,6 @@ $client->partnerAccount->revokeKey(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$partnerKeyId:** `string` 
     
 </dd>
@@ -14649,7 +12865,7 @@ $client->partnerAccount->revokeKey(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;partnerAccount-&gt;overview($workspaceId, $request) -> ?PartnerHealth</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;overview($request) -> ?PartnerHealth</code></summary>
 <dl>
 <dd>
 
@@ -14677,7 +12893,6 @@ Answers, for each workspace the partner owns, what needs attention: its channels
 
 ```php
 $client->partnerAccount->overview(
-    'workspaceId',
     new OverviewPartnerAccountRequest([]),
 );
 ```
@@ -14690,14 +12905,6 @@ $client->partnerAccount->overview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14722,7 +12929,7 @@ $client->partnerAccount->overview(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;partnerAccount-&gt;listWorkspaces($workspaceId, $request) -> ?CustomerWorkspacePage</code></summary>
+<details><summary><code>$client-&gt;partnerAccount-&gt;listWorkspaces($request) -> ?CustomerWorkspacePage</code></summary>
 <dl>
 <dd>
 
@@ -14750,7 +12957,6 @@ Lists the workspaces the partner account owns, newest first, each with the numbe
 
 ```php
 $client->partnerAccount->listWorkspaces(
-    'workspaceId',
     new ListWorkspacesPartnerAccountRequest([]),
 );
 ```
@@ -14763,14 +12969,6 @@ $client->partnerAccount->listWorkspaces(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14812,7 +13010,7 @@ $client->partnerAccount->listWorkspaces(
 </details>
 
 ## connectLinks
-<details><summary><code>$client-&gt;connectLinks-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;connectLinks-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -14839,25 +13037,8 @@ Lists the workspace's connect links, newest first, the last 100: those waiting, 
 <dd>
 
 ```php
-$client->connectLinks->list(
-    'workspaceId',
-);
+$client->connectLinks->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -14868,7 +13049,7 @@ $client->connectLinks->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;connectLinks-&gt;create($workspaceId, $request) -> ?CreatedConnectLink</code></summary>
+<details><summary><code>$client-&gt;connectLinks-&gt;create($request) -> ?CreatedConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -14896,7 +13077,6 @@ Creates a link to hand to whoever owns an account of `platform`, or accounts of 
 
 ```php
 $client->connectLinks->create(
-    'workspaceId',
     new NewConnectLink([]),
 );
 ```
@@ -14909,14 +13089,6 @@ $client->connectLinks->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14981,7 +13153,7 @@ $client->connectLinks->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;connectLinks-&gt;get($workspaceId, $linkId) -> ?ConnectLink</code></summary>
+<details><summary><code>$client-&gt;connectLinks-&gt;get($linkId) -> ?ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15009,7 +13181,6 @@ One connect link of the workspace: where it stands, the channels it connected on
 
 ```php
 $client->connectLinks->get(
-    'workspaceId',
     'linkId',
 );
 ```
@@ -15026,14 +13197,6 @@ $client->connectLinks->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$linkId:** `string` 
     
 </dd>
@@ -15046,7 +13209,7 @@ $client->connectLinks->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;connectLinks-&gt;revoke($workspaceId, $linkId) -> ?ConnectLink</code></summary>
+<details><summary><code>$client-&gt;connectLinks-&gt;revoke($linkId) -> ?ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -15074,7 +13237,6 @@ Takes a connect link back: it opens nothing more, and a sign-in in progress thro
 
 ```php
 $client->connectLinks->revoke(
-    'workspaceId',
     'linkId',
 );
 ```
@@ -15087,14 +13249,6 @@ $client->connectLinks->revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15112,7 +13266,7 @@ $client->connectLinks->revoke(
 </details>
 
 ## review
-<details><summary><code>$client-&gt;review-&gt;settings($workspaceId) -> ?ReviewSettings</code></summary>
+<details><summary><code>$client-&gt;review-&gt;settings() -> ?ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -15139,25 +13293,8 @@ Answers with the workspace's approval policy: which of its posts wait for an app
 <dd>
 
 ```php
-$client->review->settings(
-    'workspaceId',
-);
+$client->review->settings();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -15168,7 +13305,7 @@ $client->review->settings(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;updateSettings($workspaceId, $request) -> ?ReviewSettings</code></summary>
+<details><summary><code>$client-&gt;review-&gt;updateSettings($request) -> ?ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -15196,11 +13333,8 @@ Chooses the workspace's approval policy. It applies to posts scheduled from then
 
 ```php
 $client->review->updateSettings(
-    'workspaceId',
-    new UpdateSettingsReviewRequest([
-        'body' => new ReviewSettings([
-            'approvalPolicy' => ApprovalPolicy::Never->value,
-        ]),
+    new ReviewSettings([
+        'approvalPolicy' => ApprovalPolicy::Never->value,
     ]),
 );
 ```
@@ -15217,14 +13351,6 @@ $client->review->updateSettings(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$request:** `ReviewSettings` 
     
 </dd>
@@ -15237,7 +13363,7 @@ $client->review->updateSettings(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;pending($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;review-&gt;pending() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -15264,25 +13390,8 @@ Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs
 <dd>
 
 ```php
-$client->review->pending(
-    'workspaceId',
-);
+$client->review->pending();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -15293,7 +13402,7 @@ $client->review->pending(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;thread($workspaceId, $postId) -> ?PostReview</code></summary>
+<details><summary><code>$client-&gt;review-&gt;thread($postId) -> ?PostReview</code></summary>
 <dl>
 <dd>
 
@@ -15321,7 +13430,6 @@ Answers with a post's review: its comments, oldest first, and the approvals aske
 
 ```php
 $client->review->thread(
-    'workspaceId',
     'postId',
 );
 ```
@@ -15338,14 +13446,6 @@ $client->review->thread(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -15358,7 +13458,7 @@ $client->review->thread(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;comment($workspaceId, $postId, $request) -> ?ReviewComment</code></summary>
+<details><summary><code>$client-&gt;review-&gt;comment($postId, $request) -> ?ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -15386,7 +13486,6 @@ Comments on a post, starts a thread about one of its channels or some words of i
 
 ```php
 $client->review->comment(
-    'workspaceId',
     'postId',
     new NewComment([
         'text' => 'text',
@@ -15402,14 +13501,6 @@ $client->review->comment(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15450,7 +13541,7 @@ $client->review->comment(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;resolve($workspaceId, $postId, $commentId, $request) -> ?ReviewComment</code></summary>
+<details><summary><code>$client-&gt;review-&gt;resolve($postId, $commentId, $request) -> ?ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -15478,7 +13569,6 @@ Resolves the thread a comment started, or reopens it. An answer is not resolved:
 
 ```php
 $client->review->resolve(
-    'workspaceId',
     'postId',
     'commentId',
     new ResolveReviewRequest([
@@ -15495,14 +13585,6 @@ $client->review->resolve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15535,7 +13617,7 @@ $client->review->resolve(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;approve($workspaceId, $postId, $request) -> ?ApprovalOutcome</code></summary>
+<details><summary><code>$client-&gt;review-&gt;approve($postId, $request) -> ?ApprovalOutcome</code></summary>
 <dl>
 <dd>
 
@@ -15563,7 +13645,6 @@ Approves a post that waits for an approval, as the reviewer was shown it: send t
 
 ```php
 $client->review->approve(
-    'workspaceId',
     'postId',
     new ApprovalDecision([
         'approvalId' => 'approvalId',
@@ -15580,14 +13661,6 @@ $client->review->approve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15620,7 +13693,7 @@ $client->review->approve(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;requestChanges($workspaceId, $postId, $request) -> ?ChangesOutcome</code></summary>
+<details><summary><code>$client-&gt;review-&gt;requestChanges($postId, $request) -> ?ChangesOutcome</code></summary>
 <dl>
 <dd>
 
@@ -15648,7 +13721,6 @@ Sends a post that waits for an approval back to draft, with a comment that says 
 
 ```php
 $client->review->requestChanges(
-    'workspaceId',
     'postId',
     new ChangesRequest([
         'approvalId' => 'approvalId',
@@ -15666,14 +13738,6 @@ $client->review->requestChanges(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15714,7 +13778,7 @@ $client->review->requestChanges(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;links($workspaceId, $postId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;review-&gt;links($postId) -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -15742,7 +13806,6 @@ Lists a post's review links, newest first, ended ones included. No token is show
 
 ```php
 $client->review->links(
-    'workspaceId',
     'postId',
 );
 ```
@@ -15759,14 +13822,6 @@ $client->review->links(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$postId:** `string` 
     
 </dd>
@@ -15779,7 +13834,7 @@ $client->review->links(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;createLink($workspaceId, $postId, $request) -> ?CreatedReviewLink</code></summary>
+<details><summary><code>$client-&gt;review-&gt;createLink($postId, $request) -> ?CreatedReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -15807,7 +13862,6 @@ Makes a link that shows a draft, a post that waits for an approval or a schedule
 
 ```php
 $client->review->createLink(
-    'workspaceId',
     'postId',
     new NewReviewLink([
         'access' => ReviewLinkAccess::View->value,
@@ -15823,14 +13877,6 @@ $client->review->createLink(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15863,7 +13909,7 @@ $client->review->createLink(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;review-&gt;revokeLink($workspaceId, $linkId) -> ?ReviewLink</code></summary>
+<details><summary><code>$client-&gt;review-&gt;revokeLink($linkId) -> ?ReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -15891,7 +13937,6 @@ Ends a review link at once: whoever opens it is told it was revoked. Needs post:
 
 ```php
 $client->review->revokeLink(
-    'workspaceId',
     'linkId',
 );
 ```
@@ -15904,14 +13949,6 @@ $client->review->revokeLink(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15929,7 +13966,7 @@ $client->review->revokeLink(
 </details>
 
 ## tags
-<details><summary><code>$client-&gt;tags-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;tags-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -15956,25 +13993,8 @@ Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`)
 <dd>
 
 ```php
-$client->tags->list(
-    'workspaceId',
-);
+$client->tags->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -15985,7 +14005,7 @@ $client->tags->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;tags-&gt;create($workspaceId, $request) -> ?Tag</code></summary>
+<details><summary><code>$client-&gt;tags-&gt;create($request) -> ?Tag</code></summary>
 <dl>
 <dd>
 
@@ -16013,12 +14033,9 @@ Adds a tag to the workspace: a name of 40 characters at most, on one line, which
 
 ```php
 $client->tags->create(
-    'workspaceId',
-    new CreateTagsRequest([
-        'body' => new TagDetails([
-            'colour' => TagColour::Gray->value,
-            'name' => 'name',
-        ]),
+    new TagDetails([
+        'colour' => TagColour::Gray->value,
+        'name' => 'name',
     ]),
 );
 ```
@@ -16035,14 +14052,6 @@ $client->tags->create(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$request:** `TagDetails` 
     
 </dd>
@@ -16055,7 +14064,7 @@ $client->tags->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;tags-&gt;delete($workspaceId, $tagId)</code></summary>
+<details><summary><code>$client-&gt;tags-&gt;delete($tagId)</code></summary>
 <dl>
 <dd>
 
@@ -16083,7 +14092,6 @@ Deletes a tag, and takes it off every post that had it; the posts stay. Needs po
 
 ```php
 $client->tags->delete(
-    'workspaceId',
     'tagId',
 );
 ```
@@ -16100,14 +14108,6 @@ $client->tags->delete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$tagId:** `string` 
     
 </dd>
@@ -16120,7 +14120,7 @@ $client->tags->delete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;tags-&gt;update($workspaceId, $tagId, $request) -> ?Tag</code></summary>
+<details><summary><code>$client-&gt;tags-&gt;update($tagId, $request) -> ?Tag</code></summary>
 <dl>
 <dd>
 
@@ -16148,7 +14148,6 @@ Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
 ```php
 $client->tags->update(
-    'workspaceId',
     'tagId',
     new UpdateTagsRequest([
         'body' => new TagDetails([
@@ -16167,14 +14166,6 @@ $client->tags->update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16200,7 +14191,7 @@ $client->tags->update(
 </details>
 
 ## signatures
-<details><summary><code>$client-&gt;signatures-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;signatures-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -16227,25 +14218,8 @@ Lists the workspace's signatures, oldest first. Needs post:read.
 <dd>
 
 ```php
-$client->signatures->list(
-    'workspaceId',
-);
+$client->signatures->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -16256,7 +14230,7 @@ $client->signatures->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;signatures-&gt;create($workspaceId, $request) -> ?Signature</code></summary>
+<details><summary><code>$client-&gt;signatures-&gt;create($request) -> ?Signature</code></summary>
 <dl>
 <dd>
 
@@ -16284,12 +14258,9 @@ Adds a signature to the workspace: a name no other signature of the workspace ha
 
 ```php
 $client->signatures->create(
-    'workspaceId',
-    new CreateSignaturesRequest([
-        'body' => new SignatureDetails([
-            'name' => 'name',
-            'text' => 'text',
-        ]),
+    new SignatureDetails([
+        'name' => 'name',
+        'text' => 'text',
     ]),
 );
 ```
@@ -16306,14 +14277,6 @@ $client->signatures->create(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$request:** `SignatureDetails` 
     
 </dd>
@@ -16326,7 +14289,7 @@ $client->signatures->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;signatures-&gt;update($workspaceId, $signatureId, $request) -> ?Signature</code></summary>
+<details><summary><code>$client-&gt;signatures-&gt;update($signatureId, $request) -> ?Signature</code></summary>
 <dl>
 <dd>
 
@@ -16354,7 +14317,6 @@ Replaces a signature's name, text, scope and whether it is a default. Posts that
 
 ```php
 $client->signatures->update(
-    'workspaceId',
     'signatureId',
     new UpdateSignaturesRequest([
         'body' => new SignatureDetails([
@@ -16373,14 +14335,6 @@ $client->signatures->update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16405,7 +14359,7 @@ $client->signatures->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;signatures-&gt;delete($workspaceId, $signatureId)</code></summary>
+<details><summary><code>$client-&gt;signatures-&gt;delete($signatureId)</code></summary>
 <dl>
 <dd>
 
@@ -16433,7 +14387,6 @@ Deletes a signature. Posts that already hold its text keep it. Needs post:update
 
 ```php
 $client->signatures->delete(
-    'workspaceId',
     'signatureId',
 );
 ```
@@ -16446,14 +14399,6 @@ $client->signatures->delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16471,7 +14416,7 @@ $client->signatures->delete(
 </details>
 
 ## channelSets
-<details><summary><code>$client-&gt;channelSets-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;channelSets-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -16498,25 +14443,8 @@ Lists the workspace's channel sets, oldest first, each with the channels it keep
 <dd>
 
 ```php
-$client->channelSets->list(
-    'workspaceId',
-);
+$client->channelSets->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -16527,7 +14455,7 @@ $client->channelSets->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channelSets-&gt;create($workspaceId, $request) -> ?ChannelSet</code></summary>
+<details><summary><code>$client-&gt;channelSets-&gt;create($request) -> ?ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -16555,14 +14483,11 @@ Saves a selection of the workspace's channels under a name no other set of the w
 
 ```php
 $client->channelSets->create(
-    'workspaceId',
-    new CreateChannelSetsRequest([
-        'body' => new ChannelSetDetails([
-            'channelIds' => [
-                'channelIds',
-            ],
-            'name' => 'name',
-        ]),
+    new ChannelSetDetails([
+        'channelIds' => [
+            'channelIds',
+        ],
+        'name' => 'name',
     ]),
 );
 ```
@@ -16579,14 +14504,6 @@ $client->channelSets->create(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$request:** `ChannelSetDetails` 
     
 </dd>
@@ -16599,7 +14516,7 @@ $client->channelSets->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channelSets-&gt;update($workspaceId, $channelSetId, $request) -> ?ChannelSet</code></summary>
+<details><summary><code>$client-&gt;channelSets-&gt;update($channelSetId, $request) -> ?ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -16627,7 +14544,6 @@ Replaces a set's name, channels and options: every channel must be connected now
 
 ```php
 $client->channelSets->update(
-    'workspaceId',
     'channelSetId',
     new UpdateChannelSetsRequest([
         'body' => new ChannelSetDetails([
@@ -16652,14 +14568,6 @@ $client->channelSets->update(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$channelSetId:** `string` 
     
 </dd>
@@ -16680,7 +14588,7 @@ $client->channelSets->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channelSets-&gt;delete($workspaceId, $channelSetId)</code></summary>
+<details><summary><code>$client-&gt;channelSets-&gt;delete($channelSetId)</code></summary>
 <dl>
 <dd>
 
@@ -16708,7 +14616,6 @@ Deletes a channel set. Its channels, and the posts made with it, stay. Needs pos
 
 ```php
 $client->channelSets->delete(
-    'workspaceId',
     'channelSetId',
 );
 ```
@@ -16721,14 +14628,6 @@ $client->channelSets->delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16746,7 +14645,7 @@ $client->channelSets->delete(
 </details>
 
 ## queues
-<details><summary><code>$client-&gt;queues-&gt;list($workspaceId) -> ?array</code></summary>
+<details><summary><code>$client-&gt;queues-&gt;list() -> ?array</code></summary>
 <dl>
 <dd>
 
@@ -16773,25 +14672,8 @@ Lists the workspace's queues, the default first, then by name, each with its slo
 <dd>
 
 ```php
-$client->queues->list(
-    'workspaceId',
-);
+$client->queues->list();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -16802,7 +14684,7 @@ $client->queues->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;queues-&gt;create($workspaceId, $request) -> ?Queue</code></summary>
+<details><summary><code>$client-&gt;queues-&gt;create($request) -> ?Queue</code></summary>
 <dl>
 <dd>
 
@@ -16830,18 +14712,15 @@ Saves a queue. A slot is a weekday and a time of day (`HH:mm`) in the queue's IA
 
 ```php
 $client->queues->create(
-    'workspaceId',
-    new CreateQueuesRequest([
-        'body' => new QueueDetails([
-            'name' => 'name',
-            'slots' => [
-                new QueueSlot([
-                    'day' => Weekday::Monday->value,
-                    'time' => 'time',
-                ]),
-            ],
-            'timeZone' => 'timeZone',
-        ]),
+    new QueueDetails([
+        'name' => 'name',
+        'slots' => [
+            new QueueSlot([
+                'day' => Weekday::Monday->value,
+                'time' => 'time',
+            ]),
+        ],
+        'timeZone' => 'timeZone',
     ]),
 );
 ```
@@ -16858,14 +14737,6 @@ $client->queues->create(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$request:** `QueueDetails` 
     
 </dd>
@@ -16878,7 +14749,7 @@ $client->queues->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;queues-&gt;get($workspaceId, $queueId) -> ?Queue</code></summary>
+<details><summary><code>$client-&gt;queues-&gt;get($queueId) -> ?Queue</code></summary>
 <dl>
 <dd>
 
@@ -16906,7 +14777,6 @@ Answers with a queue of the workspace. Needs post:read and channel:read.
 
 ```php
 $client->queues->get(
-    'workspaceId',
     'queueId',
 );
 ```
@@ -16923,14 +14793,6 @@ $client->queues->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$queueId:** `string` 
     
 </dd>
@@ -16943,7 +14805,7 @@ $client->queues->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;queues-&gt;update($workspaceId, $queueId, $request) -> ?Queue</code></summary>
+<details><summary><code>$client-&gt;queues-&gt;update($queueId, $request) -> ?Queue</code></summary>
 <dl>
 <dd>
 
@@ -16971,7 +14833,6 @@ Replaces a queue's name, zone, slots and channels: every channel must be connect
 
 ```php
 $client->queues->update(
-    'workspaceId',
     'queueId',
     new UpdateQueuesRequest([
         'body' => new QueueDetails([
@@ -17000,14 +14861,6 @@ $client->queues->update(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$queueId:** `string` 
     
 </dd>
@@ -17028,7 +14881,7 @@ $client->queues->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;queues-&gt;delete($workspaceId, $queueId)</code></summary>
+<details><summary><code>$client-&gt;queues-&gt;delete($queueId)</code></summary>
 <dl>
 <dd>
 
@@ -17056,7 +14909,6 @@ Deletes a queue. The posts it placed stay scheduled at their times, and no longe
 
 ```php
 $client->queues->delete(
-    'workspaceId',
     'queueId',
 );
 ```
@@ -17073,14 +14925,6 @@ $client->queues->delete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$queueId:** `string` 
     
 </dd>
@@ -17093,7 +14937,7 @@ $client->queues->delete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;queues-&gt;slots($workspaceId, $queueId, $request) -> ?QueuePreview</code></summary>
+<details><summary><code>$client-&gt;queues-&gt;slots($queueId, $request) -> ?QueuePreview</code></summary>
 <dl>
 <dd>
 
@@ -17121,7 +14965,6 @@ Lists the queue's next `count` slots after now (10 unless given, 50 at most), ea
 
 ```php
 $client->queues->slots(
-    'workspaceId',
     'queueId',
     new SlotsQueuesRequest([]),
 );
@@ -17135,14 +14978,6 @@ $client->queues->slots(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17167,7 +15002,7 @@ $client->queues->slots(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;queues-&gt;reshuffle($workspaceId, $queueId) -> ?QueueReshuffle</code></summary>
+<details><summary><code>$client-&gt;queues-&gt;reshuffle($queueId) -> ?QueueReshuffle</code></summary>
 <dl>
 <dd>
 
@@ -17195,7 +15030,6 @@ Moves the posts that wait in the queue (scheduled or awaiting approval, after no
 
 ```php
 $client->queues->reshuffle(
-    'workspaceId',
     'queueId',
 );
 ```
@@ -17208,14 +15042,6 @@ $client->queues->reshuffle(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17233,7 +15059,7 @@ $client->queues->reshuffle(
 </details>
 
 ## recycling
-<details><summary><code>$client-&gt;recycling-&gt;list($workspaceId, $request) -> ?RecyclingRulePage</code></summary>
+<details><summary><code>$client-&gt;recycling-&gt;list($request) -> ?RecyclingRulePage</code></summary>
 <dl>
 <dd>
 
@@ -17261,7 +15087,6 @@ Lists the workspace's recycling rules, oldest first, 50 a page unless `limit` (a
 
 ```php
 $client->recycling->list(
-    'workspaceId',
     new ListRecyclingRequest([]),
 );
 ```
@@ -17274,14 +15099,6 @@ $client->recycling->list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17314,7 +15131,7 @@ $client->recycling->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;recycling-&gt;create($workspaceId, $request) -> ?RecyclingRule</code></summary>
+<details><summary><code>$client-&gt;recycling-&gt;create($request) -> ?RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -17342,7 +15159,6 @@ Starts a rule that repeats a post that is scheduled, publishing or went out (del
 
 ```php
 $client->recycling->create(
-    'workspaceId',
     new NewRecyclingRule([
         'every' => new RecyclingInterval([
             'count' => 1,
@@ -17361,14 +15177,6 @@ $client->recycling->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17425,7 +15233,7 @@ $client->recycling->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;recycling-&gt;get($workspaceId, $ruleId) -> ?RecyclingRule</code></summary>
+<details><summary><code>$client-&gt;recycling-&gt;get($ruleId) -> ?RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -17453,7 +15261,6 @@ Answers with a rule of the workspace and its next 3 posts to come, each with the
 
 ```php
 $client->recycling->get(
-    'workspaceId',
     'ruleId',
 );
 ```
@@ -17470,14 +15277,6 @@ $client->recycling->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$ruleId:** `string` 
     
 </dd>
@@ -17490,7 +15289,7 @@ $client->recycling->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;recycling-&gt;delete($workspaceId, $ruleId)</code></summary>
+<details><summary><code>$client-&gt;recycling-&gt;delete($ruleId)</code></summary>
 <dl>
 <dd>
 
@@ -17518,7 +15317,6 @@ Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay 
 
 ```php
 $client->recycling->delete(
-    'workspaceId',
     'ruleId',
 );
 ```
@@ -17535,14 +15333,6 @@ $client->recycling->delete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$ruleId:** `string` 
     
 </dd>
@@ -17555,7 +15345,7 @@ $client->recycling->delete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;recycling-&gt;update($workspaceId, $ruleId, $request) -> ?RecyclingRule</code></summary>
+<details><summary><code>$client-&gt;recycling-&gt;update($ruleId, $request) -> ?RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -17583,7 +15373,6 @@ Changes a rule's variants, its `count` or `until` (null takes it away), or pause
 
 ```php
 $client->recycling->update(
-    'workspaceId',
     'ruleId',
     new RecyclingRuleChange([]),
 );
@@ -17597,14 +15386,6 @@ $client->recycling->update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17653,7 +15434,7 @@ $client->recycling->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;recycling-&gt;resume($workspaceId, $ruleId, $request) -> ?RecyclingRule</code></summary>
+<details><summary><code>$client-&gt;recycling-&gt;resume($ruleId, $request) -> ?RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -17681,7 +15462,6 @@ Sets a paused rule going again, or one that ended for a reason that can be put r
 
 ```php
 $client->recycling->resume(
-    'workspaceId',
     'ruleId',
     new RecyclingResume([]),
 );
@@ -17695,14 +15475,6 @@ $client->recycling->resume(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17728,7 +15500,7 @@ $client->recycling->resume(
 </details>
 
 ## followUps
-<details><summary><code>$client-&gt;followUps-&gt;list($workspaceId, $request) -> ?FollowUpRulePage</code></summary>
+<details><summary><code>$client-&gt;followUps-&gt;list($request) -> ?FollowUpRulePage</code></summary>
 <dl>
 <dd>
 
@@ -17756,7 +15528,6 @@ Lists the workspace's follow-up rules, oldest first, 50 a page unless `limit` (a
 
 ```php
 $client->followUps->list(
-    'workspaceId',
     new ListFollowUpsRequest([]),
 );
 ```
@@ -17769,14 +15540,6 @@ $client->followUps->list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17817,7 +15580,7 @@ $client->followUps->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;followUps-&gt;create($workspaceId, $request) -> ?FollowUpRule</code></summary>
+<details><summary><code>$client-&gt;followUps-&gt;create($request) -> ?FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -17845,7 +15608,6 @@ Starts a rule on a post (`postId`) or on every post a channel publishes from now
 
 ```php
 $client->followUps->create(
-    'workspaceId',
     new NewFollowUpRule([
         'likes' => 1,
     ]),
@@ -17860,14 +15622,6 @@ $client->followUps->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17916,7 +15670,7 @@ $client->followUps->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;followUps-&gt;get($workspaceId, $ruleId) -> ?FollowUpRule</code></summary>
+<details><summary><code>$client-&gt;followUps-&gt;get($ruleId) -> ?FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -17944,7 +15698,6 @@ Answers with a rule of the workspace, what its channels can carry and its latest
 
 ```php
 $client->followUps->get(
-    'workspaceId',
     'ruleId',
 );
 ```
@@ -17961,14 +15714,6 @@ $client->followUps->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$ruleId:** `string` 
     
 </dd>
@@ -17981,7 +15726,7 @@ $client->followUps->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;followUps-&gt;delete($workspaceId, $ruleId)</code></summary>
+<details><summary><code>$client-&gt;followUps-&gt;delete($ruleId)</code></summary>
 <dl>
 <dd>
 
@@ -18009,7 +15754,6 @@ Stops a rule: it ends `stopped`, what it armed and did not send is given up, and
 
 ```php
 $client->followUps->delete(
-    'workspaceId',
     'ruleId',
 );
 ```
@@ -18026,14 +15770,6 @@ $client->followUps->delete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$ruleId:** `string` 
     
 </dd>
@@ -18046,7 +15782,7 @@ $client->followUps->delete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;followUps-&gt;update($workspaceId, $ruleId, $request) -> ?FollowUpRule</code></summary>
+<details><summary><code>$client-&gt;followUps-&gt;update($ruleId, $request) -> ?FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18074,7 +15810,6 @@ Changes a rule's `likes`, its `comment` (null takes it away) or whether it repos
 
 ```php
 $client->followUps->update(
-    'workspaceId',
     'ruleId',
     new FollowUpRuleChange([]),
 );
@@ -18088,14 +15823,6 @@ $client->followUps->update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18144,7 +15871,7 @@ $client->followUps->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;followUps-&gt;approve($workspaceId, $ruleId) -> ?FollowUpRule</code></summary>
+<details><summary><code>$client-&gt;followUps-&gt;approve($ruleId) -> ?FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -18172,7 +15899,6 @@ Approves what a rule sends, for a rule whose starter's posts wait for an approva
 
 ```php
 $client->followUps->approve(
-    'workspaceId',
     'ruleId',
 );
 ```
@@ -18185,14 +15911,6 @@ $client->followUps->approve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18210,7 +15928,7 @@ $client->followUps->approve(
 </details>
 
 ## inboxRules
-<details><summary><code>$client-&gt;inboxRules-&gt;listCommentRules($workspaceId, $request) -> ?CommentRulePage</code></summary>
+<details><summary><code>$client-&gt;inboxRules-&gt;listCommentRules($request) -> ?CommentRulePage</code></summary>
 <dl>
 <dd>
 
@@ -18238,7 +15956,6 @@ Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at 
 
 ```php
 $client->inboxRules->listCommentRules(
-    'workspaceId',
     new ListCommentRulesInboxRulesRequest([]),
 );
 ```
@@ -18251,14 +15968,6 @@ $client->inboxRules->listCommentRules(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18291,7 +16000,7 @@ $client->inboxRules->listCommentRules(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxRules-&gt;createCommentRule($workspaceId, $request) -> ?CommentRule</code></summary>
+<details><summary><code>$client-&gt;inboxRules-&gt;createCommentRule($request) -> ?CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -18319,7 +16028,6 @@ Starts a rule on the comments of a post that went out (`postId`) or of every pos
 
 ```php
 $client->inboxRules->createCommentRule(
-    'workspaceId',
     new NewCommentRule([
         'keywords' => [
             'keywords',
@@ -18337,14 +16045,6 @@ $client->inboxRules->createCommentRule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18393,7 +16093,7 @@ $client->inboxRules->createCommentRule(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxRules-&gt;getCommentRule($workspaceId, $ruleId) -> ?CommentRule</code></summary>
+<details><summary><code>$client-&gt;inboxRules-&gt;getCommentRule($ruleId) -> ?CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -18421,7 +16121,6 @@ Answers a comment rule of the workspace, what its channels can carry and what it
 
 ```php
 $client->inboxRules->getCommentRule(
-    'workspaceId',
     'ruleId',
 );
 ```
@@ -18438,14 +16137,6 @@ $client->inboxRules->getCommentRule(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$ruleId:** `string` 
     
 </dd>
@@ -18458,7 +16149,7 @@ $client->inboxRules->getCommentRule(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxRules-&gt;deleteCommentRule($workspaceId, $ruleId)</code></summary>
+<details><summary><code>$client-&gt;inboxRules-&gt;deleteCommentRule($ruleId)</code></summary>
 <dl>
 <dd>
 
@@ -18486,7 +16177,6 @@ Stops a rule: it answers nothing more; the replies it sent stay, and the inbox w
 
 ```php
 $client->inboxRules->deleteCommentRule(
-    'workspaceId',
     'ruleId',
 );
 ```
@@ -18503,14 +16193,6 @@ $client->inboxRules->deleteCommentRule(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$ruleId:** `string` 
     
 </dd>
@@ -18523,7 +16205,7 @@ $client->inboxRules->deleteCommentRule(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;inboxRules-&gt;updateCommentRule($workspaceId, $ruleId, $request) -> ?CommentRule</code></summary>
+<details><summary><code>$client-&gt;inboxRules-&gt;updateCommentRule($ruleId, $request) -> ?CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -18551,7 +16233,6 @@ Changes a rule's keywords, reply or private reply (`privateReply` null takes it 
 
 ```php
 $client->inboxRules->updateCommentRule(
-    'workspaceId',
     'ruleId',
     new CommentRuleChange([]),
 );
@@ -18565,14 +16246,6 @@ $client->inboxRules->updateCommentRule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18622,7 +16295,7 @@ $client->inboxRules->updateCommentRule(
 </details>
 
 ## feeds
-<details><summary><code>$client-&gt;feeds-&gt;list($workspaceId, $request) -> ?FeedPage</code></summary>
+<details><summary><code>$client-&gt;feeds-&gt;list($request) -> ?FeedPage</code></summary>
 <dl>
 <dd>
 
@@ -18650,7 +16323,6 @@ Lists the workspace's feeds, oldest first, 50 a page unless `limit` (at most 100
 
 ```php
 $client->feeds->list(
-    'workspaceId',
     new ListFeedsRequest([]),
 );
 ```
@@ -18663,14 +16335,6 @@ $client->feeds->list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18695,7 +16359,7 @@ $client->feeds->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;feeds-&gt;create($workspaceId, $request) -> ?CreatedFeed</code></summary>
+<details><summary><code>$client-&gt;feeds-&gt;create($request) -> ?CreatedFeed</code></summary>
 <dl>
 <dd>
 
@@ -18723,7 +16387,6 @@ Follows a feed at `url`: it is read once, and refused when it is not a feed; eve
 
 ```php
 $client->feeds->create(
-    'workspaceId',
     new NewFeed([
         'url' => 'url',
     ]),
@@ -18738,14 +16401,6 @@ $client->feeds->create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18810,7 +16465,7 @@ $client->feeds->create(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;feeds-&gt;preview($workspaceId, $request) -> ?FeedPreview</code></summary>
+<details><summary><code>$client-&gt;feeds-&gt;preview($request) -> ?FeedPreview</code></summary>
 <dl>
 <dd>
 
@@ -18838,7 +16493,6 @@ Reads an address and answers its title and its 3 newest items, each with what `t
 
 ```php
 $client->feeds->preview(
-    'workspaceId',
     new FeedPreviewRequest([
         'url' => 'url',
     ]),
@@ -18853,14 +16507,6 @@ $client->feeds->preview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18885,7 +16531,7 @@ $client->feeds->preview(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;feeds-&gt;get($workspaceId, $feedId) -> ?Feed</code></summary>
+<details><summary><code>$client-&gt;feeds-&gt;get($feedId) -> ?Feed</code></summary>
 <dl>
 <dd>
 
@@ -18913,7 +16559,6 @@ Answers with a feed of the workspace: its state, when it was last read and is ne
 
 ```php
 $client->feeds->get(
-    'workspaceId',
     'feedId',
 );
 ```
@@ -18930,14 +16575,6 @@ $client->feeds->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$feedId:** `string` 
     
 </dd>
@@ -18950,7 +16587,7 @@ $client->feeds->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;feeds-&gt;delete($workspaceId, $feedId)</code></summary>
+<details><summary><code>$client-&gt;feeds-&gt;delete($feedId)</code></summary>
 <dl>
 <dd>
 
@@ -18978,7 +16615,6 @@ Stops following a feed and forgets what it read; the drafts and posts it made st
 
 ```php
 $client->feeds->delete(
-    'workspaceId',
     'feedId',
 );
 ```
@@ -18995,14 +16631,6 @@ $client->feeds->delete(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$feedId:** `string` 
     
 </dd>
@@ -19015,7 +16643,7 @@ $client->feeds->delete(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;feeds-&gt;update($workspaceId, $feedId, $request) -> ?Feed</code></summary>
+<details><summary><code>$client-&gt;feeds-&gt;update($feedId, $request) -> ?Feed</code></summary>
 <dl>
 <dd>
 
@@ -19043,7 +16671,6 @@ Changes a feed; what the request leaves out stays. A new `url` is read at once, 
 
 ```php
 $client->feeds->update(
-    'workspaceId',
     'feedId',
     new FeedChange([]),
 );
@@ -19057,14 +16684,6 @@ $client->feeds->update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19145,7 +16764,7 @@ $client->feeds->update(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;feeds-&gt;items($workspaceId, $feedId) -> ?FeedItems</code></summary>
+<details><summary><code>$client-&gt;feeds-&gt;items($feedId) -> ?FeedItems</code></summary>
 <dl>
 <dd>
 
@@ -19173,7 +16792,6 @@ Lists a feed's 50 newest items, newest first: when each was seen, the date it ga
 
 ```php
 $client->feeds->items(
-    'workspaceId',
     'feedId',
 );
 ```
@@ -19186,14 +16804,6 @@ $client->feeds->items(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19211,7 +16821,7 @@ $client->feeds->items(
 </details>
 
 ## channelDefaults
-<details><summary><code>$client-&gt;channelDefaults-&gt;get($workspaceId, $channelId) -> ?ChannelDefaults</code></summary>
+<details><summary><code>$client-&gt;channelDefaults-&gt;get($channelId) -> ?ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -19239,7 +16849,6 @@ Answers the options new posts take on the channel when they give none there, or 
 
 ```php
 $client->channelDefaults->get(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -19256,14 +16865,6 @@ $client->channelDefaults->get(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$channelId:** `string` 
     
 </dd>
@@ -19276,7 +16877,7 @@ $client->channelDefaults->get(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channelDefaults-&gt;set($workspaceId, $channelId, $request) -> ?ChannelDefaults</code></summary>
+<details><summary><code>$client-&gt;channelDefaults-&gt;set($channelId, $request) -> ?ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -19304,7 +16905,6 @@ Keeps these as the channel's default options, instead of any it had: options of 
 
 ```php
 $client->channelDefaults->set(
-    'workspaceId',
     'channelId',
     new NewChannelDefaults([
         'options' => TargetOptions::youtube(new YouTubeOptions([])),
@@ -19320,14 +16920,6 @@ $client->channelDefaults->set(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19352,7 +16944,7 @@ $client->channelDefaults->set(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;channelDefaults-&gt;clear($workspaceId, $channelId)</code></summary>
+<details><summary><code>$client-&gt;channelDefaults-&gt;clear($channelId)</code></summary>
 <dl>
 <dd>
 
@@ -19380,7 +16972,6 @@ Leaves the channel without default options. Posts already made keep theirs. Need
 
 ```php
 $client->channelDefaults->clear(
-    'workspaceId',
     'channelId',
 );
 ```
@@ -19393,14 +16984,6 @@ $client->channelDefaults->clear(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19418,7 +17001,7 @@ $client->channelDefaults->clear(
 </details>
 
 ## shortLinks
-<details><summary><code>$client-&gt;shortLinks-&gt;status($workspaceId) -> ?ShortLinkStatus</code></summary>
+<details><summary><code>$client-&gt;shortLinks-&gt;status() -> ?ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -19445,25 +17028,8 @@ Answers whether this server shortens links (`available`), what a short address s
 <dd>
 
 ```php
-$client->shortLinks->status(
-    'workspaceId',
-);
+$client->shortLinks->status();
 ```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
 </dd>
 </dl>
 </dd>
@@ -19474,7 +17040,7 @@ $client->shortLinks->status(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;shortLinks-&gt;setDefault($workspaceId, $request) -> ?ShortLinkStatus</code></summary>
+<details><summary><code>$client-&gt;shortLinks-&gt;setDefault($request) -> ?ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -19502,7 +17068,6 @@ Sets whether the workspace's new posts ask for short links unless they say other
 
 ```php
 $client->shortLinks->setDefault(
-    'workspaceId',
     new ShortLinkSettings([
         'byDefault' => true,
     ]),
@@ -19521,14 +17086,6 @@ $client->shortLinks->setDefault(
 <dl>
 <dd>
 
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **$byDefault:** `bool` 
     
 </dd>
@@ -19541,7 +17098,7 @@ $client->shortLinks->setDefault(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;shortLinks-&gt;list($workspaceId, $request) -> ?ShortLinkPage</code></summary>
+<details><summary><code>$client-&gt;shortLinks-&gt;list($request) -> ?ShortLinkPage</code></summary>
 <dl>
 <dd>
 
@@ -19569,7 +17126,6 @@ Lists the workspace's short links, newest first, 50 a page unless `limit` (at mo
 
 ```php
 $client->shortLinks->list(
-    'workspaceId',
     new ListShortLinksRequest([]),
 );
 ```
@@ -19582,14 +17138,6 @@ $client->shortLinks->list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19646,7 +17194,7 @@ $client->shortLinks->list(
 </dl>
 </details>
 
-<details><summary><code>$client-&gt;shortLinks-&gt;get($workspaceId, $linkId, $request) -> ?ShortLinkReport</code></summary>
+<details><summary><code>$client-&gt;shortLinks-&gt;get($linkId, $request) -> ?ShortLinkReport</code></summary>
 <dl>
 <dd>
 
@@ -19674,7 +17222,6 @@ Answers one short link with its clicks each day from `from` to `to` (UTC days, b
 
 ```php
 $client->shortLinks->get(
-    'workspaceId',
     'linkId',
     new GetShortLinksRequest([]),
 );
@@ -19688,14 +17235,6 @@ $client->shortLinks->get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**$workspaceId:** `string` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>

@@ -29,7 +29,7 @@ public class TranscribeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId/transcription")
+                    .WithPath("/api/v1/media/mediaId/transcription")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -42,12 +42,7 @@ public class TranscribeTest : BaseMockServerTest
             );
 
         var response = await Client.MediaAudio.TranscribeAsync(
-            new TranscriptionRequest
-            {
-                WorkspaceId = "workspaceId",
-                MediaId = "mediaId",
-                SaveAsDescription = null,
-            }
+            new TranscriptionRequest { MediaId = "mediaId", SaveAsDescription = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -72,7 +67,7 @@ public class TranscribeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId/transcription")
+                    .WithPath("/api/v1/media/mediaId/transcription")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -85,7 +80,7 @@ public class TranscribeTest : BaseMockServerTest
             );
 
         var response = await Client.MediaAudio.TranscribeAsync(
-            new TranscriptionRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
+            new TranscriptionRequest { MediaId = "mediaId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

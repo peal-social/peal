@@ -35,14 +35,10 @@ impl TagsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client.tags.list(&"workspaceId".to_string(), None).await;
+    ///     client.tags.list(None).await;
     /// }
     /// ```
-    pub async fn list(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Vec<Tag>, ApiError> {
+    pub async fn list(&self, options: Option<RequestOptions>) -> Result<Vec<Tag>, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -51,13 +47,7 @@ impl TagsClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/tags", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/tags", None, None, options)
             .await
     }
 
@@ -86,7 +76,6 @@ impl TagsClient {
     ///     client
     ///         .tags
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &TagDetails {
     ///                 colour: TagColour::Gray,
     ///                 name: "name".to_string(),
@@ -98,7 +87,6 @@ impl TagsClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &TagDetails,
         options: Option<RequestOptions>,
     ) -> Result<Tag, ApiError> {
@@ -113,7 +101,7 @@ impl TagsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/tags", workspace_id),
+                "api/v1/tags",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -143,15 +131,11 @@ impl TagsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .tags
-    ///         .delete(&"workspaceId".to_string(), &"tagId".to_string(), None)
-    ///         .await;
+    ///     client.tags.delete(&"tagId".to_string(), None).await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         tag_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -165,7 +149,7 @@ impl TagsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/tags/{}", workspace_id, tag_id),
+                &format!("api/v1/tags/{}", tag_id),
                 None,
                 None,
                 options,
@@ -198,7 +182,6 @@ impl TagsClient {
     ///     client
     ///         .tags
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"tagId".to_string(),
     ///             &TagDetails {
     ///                 colour: TagColour::Gray,
@@ -211,7 +194,6 @@ impl TagsClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         tag_id: &str,
         request: &TagDetails,
         options: Option<RequestOptions>,
@@ -227,7 +209,7 @@ impl TagsClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/tags/{}", workspace_id, tag_id),
+                &format!("api/v1/tags/{}", tag_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

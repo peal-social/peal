@@ -7,9 +7,6 @@ namespace Peal;
 public record DashboardAnalyticsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Days { get; set; }
 
     [JsonIgnore]

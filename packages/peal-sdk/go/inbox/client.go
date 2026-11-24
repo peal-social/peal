@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListThreadsInboxRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListThreadsInboxRequest{}
 //	_, err := client.Inbox.ListThreads(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) ListThreads(
 // Example:
 //
 //	request := &peal.GetThreadInboxRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ThreadID: "threadId",
 //	}
 //	_, err := client.Inbox.GetThread(
@@ -94,7 +91,6 @@ func (c *Client) GetThread(
 // Example:
 //
 //	request := &peal.GetAbilitiesInboxRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.Inbox.GetAbilities(
@@ -122,7 +118,6 @@ func (c *Client) GetAbilities(
 // Example:
 //
 //	request := &peal.NewInboxReply{
-//	    WorkspaceID: "workspaceId",
 //	    CommentID: "commentId",
 //	    Text: "text",
 //	}
@@ -151,7 +146,6 @@ func (c *Client) Reply(
 // Example:
 //
 //	request := &peal.SetAnsweredInboxRequest{
-//	    WorkspaceID: "workspaceId",
 //	    CommentID: "commentId",
 //	    Answered: true,
 //	}
@@ -180,7 +174,6 @@ func (c *Client) SetAnswered(
 // Example:
 //
 //	request := &peal.ModerateInboxRequest{
-//	    WorkspaceID: "workspaceId",
 //	    CommentID: "commentId",
 //	    Action: peal.InboxModerationActionHide,
 //	}
@@ -209,7 +202,6 @@ func (c *Client) Moderate(
 // Example:
 //
 //	request := &peal.ConfirmReplyInboxRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ReplyID: "replyId",
 //	    Sent: true,
 //	}
@@ -238,7 +230,6 @@ func (c *Client) ConfirmReply(
 // Example:
 //
 //	request := &peal.WithdrawReplyInboxRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ReplyID: "replyId",
 //	}
 //	_, err := client.Inbox.WithdrawReply(

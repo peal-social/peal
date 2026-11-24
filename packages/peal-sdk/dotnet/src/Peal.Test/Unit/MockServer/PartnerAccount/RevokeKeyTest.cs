@@ -15,18 +15,14 @@ public class RevokeKeyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner/keys/partnerKeyId")
+                    .WithPath("/api/v1/partner-account/keys/partnerKeyId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.PartnerAccount.RevokeKeyAsync(
-                new RevokeKeyPartnerAccountRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    PartnerKeyId = "partnerKeyId",
-                }
+                new RevokeKeyPartnerAccountRequest { PartnerKeyId = "partnerKeyId" }
             )
         );
     }
@@ -38,18 +34,14 @@ public class RevokeKeyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner/keys/partnerKeyId")
+                    .WithPath("/api/v1/partner-account/keys/partnerKeyId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.PartnerAccount.RevokeKeyAsync(
-                new RevokeKeyPartnerAccountRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    PartnerKeyId = "partnerKeyId",
-                }
+                new RevokeKeyPartnerAccountRequest { PartnerKeyId = "partnerKeyId" }
             )
         );
     }

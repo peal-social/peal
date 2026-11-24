@@ -541,7 +541,7 @@ public class ListTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts")
+                    .WithPath("/api/v1/posts")
                     .WithParam("from", "from")
                     .WithParam("to", "to")
                     .UsingGet()
@@ -554,12 +554,7 @@ public class ListTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.ListAsync(
-            new ListPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                From = "from",
-                To = "to",
-            }
+            new ListPostsRequest { From = "from", To = "to" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -670,7 +665,7 @@ public class ListTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts")
+                    .WithPath("/api/v1/posts")
                     .WithParam("from", "from")
                     .WithParam("to", "to")
                     .UsingGet()
@@ -683,12 +678,7 @@ public class ListTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.ListAsync(
-            new ListPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                From = "from",
-                To = "to",
-            }
+            new ListPostsRequest { From = "from", To = "to" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

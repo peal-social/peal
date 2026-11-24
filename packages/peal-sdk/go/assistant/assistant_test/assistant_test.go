@@ -88,19 +88,15 @@ func TestAssistantStatusWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.StatusAssistantRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Assistant.Status(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAssistantStatusWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantStatusWithWireMock", "GET", "/api/workspaces/workspaceId/assistant", nil, 1)
+	VerifyRequestCount(t, "TestAssistantStatusWithWireMock", "GET", "/api/v1/assistant", nil, 1)
 }
 
 func TestAssistantSuggestWithWireMock(
@@ -115,7 +111,6 @@ func TestAssistantSuggestWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SuggestionRequest{
-		WorkspaceID: "workspaceId",
 		Action: &peal.AssistantAction{
 			Rewrite: &peal.AssistantActionRewrite{
 				Tone: peal.AssistantToneProfessional,
@@ -132,7 +127,7 @@ func TestAssistantSuggestWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantSuggestWithWireMock", "POST", "/api/workspaces/workspaceId/assistant/suggestions", nil, 1)
+	VerifyRequestCount(t, "TestAssistantSuggestWithWireMock", "POST", "/api/v1/assistant/suggestions", nil, 1)
 }
 
 func TestAssistantGenerateImageWithWireMock(
@@ -147,9 +142,8 @@ func TestAssistantGenerateImageWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ImageRequest{
-		WorkspaceID: "workspaceId",
-		Aspect:      peal.ImageAspectSquare,
-		Prompt:      "prompt",
+		Aspect: peal.ImageAspectSquare,
+		Prompt: "prompt",
 	}
 	_, invocationErr := client.Assistant.GenerateImage(
 		context.TODO(),
@@ -160,7 +154,7 @@ func TestAssistantGenerateImageWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantGenerateImageWithWireMock", "POST", "/api/workspaces/workspaceId/assistant/images", nil, 1)
+	VerifyRequestCount(t, "TestAssistantGenerateImageWithWireMock", "POST", "/api/v1/assistant/images", nil, 1)
 }
 
 func TestAssistantImageProviderWithWireMock(
@@ -174,19 +168,15 @@ func TestAssistantImageProviderWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ImageProviderAssistantRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Assistant.ImageProvider(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAssistantImageProviderWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantImageProviderWithWireMock", "GET", "/api/workspaces/workspaceId/assistant/image-provider", nil, 1)
+	VerifyRequestCount(t, "TestAssistantImageProviderWithWireMock", "GET", "/api/v1/assistant/image-provider", nil, 1)
 }
 
 func TestAssistantSetImageProviderWithWireMock(
@@ -201,8 +191,7 @@ func TestAssistantSetImageProviderWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ImageProviderChange{
-		WorkspaceID: "workspaceId",
-		Model:       "model",
+		Model: "model",
 	}
 	_, invocationErr := client.Assistant.SetImageProvider(
 		context.TODO(),
@@ -213,7 +202,7 @@ func TestAssistantSetImageProviderWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantSetImageProviderWithWireMock", "PUT", "/api/workspaces/workspaceId/assistant/image-provider", nil, 1)
+	VerifyRequestCount(t, "TestAssistantSetImageProviderWithWireMock", "PUT", "/api/v1/assistant/image-provider", nil, 1)
 }
 
 func TestAssistantRemoveImageProviderWithWireMock(
@@ -227,19 +216,15 @@ func TestAssistantRemoveImageProviderWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.RemoveImageProviderAssistantRequest{
-		WorkspaceID: "workspaceId",
-	}
 	invocationErr := client.Assistant.RemoveImageProvider(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAssistantRemoveImageProviderWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantRemoveImageProviderWithWireMock", "DELETE", "/api/workspaces/workspaceId/assistant/image-provider", nil, 1)
+	VerifyRequestCount(t, "TestAssistantRemoveImageProviderWithWireMock", "DELETE", "/api/v1/assistant/image-provider", nil, 1)
 }
 
 func TestAssistantTextProviderWithWireMock(
@@ -253,19 +238,15 @@ func TestAssistantTextProviderWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.TextProviderAssistantRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Assistant.TextProvider(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAssistantTextProviderWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantTextProviderWithWireMock", "GET", "/api/workspaces/workspaceId/assistant/text-provider", nil, 1)
+	VerifyRequestCount(t, "TestAssistantTextProviderWithWireMock", "GET", "/api/v1/assistant/text-provider", nil, 1)
 }
 
 func TestAssistantSetTextProviderWithWireMock(
@@ -280,8 +261,7 @@ func TestAssistantSetTextProviderWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.TextProviderChange{
-		WorkspaceID: "workspaceId",
-		Model:       "model",
+		Model: "model",
 	}
 	_, invocationErr := client.Assistant.SetTextProvider(
 		context.TODO(),
@@ -292,7 +272,7 @@ func TestAssistantSetTextProviderWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantSetTextProviderWithWireMock", "PUT", "/api/workspaces/workspaceId/assistant/text-provider", nil, 1)
+	VerifyRequestCount(t, "TestAssistantSetTextProviderWithWireMock", "PUT", "/api/v1/assistant/text-provider", nil, 1)
 }
 
 func TestAssistantRemoveTextProviderWithWireMock(
@@ -306,19 +286,15 @@ func TestAssistantRemoveTextProviderWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.RemoveTextProviderAssistantRequest{
-		WorkspaceID: "workspaceId",
-	}
 	invocationErr := client.Assistant.RemoveTextProvider(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAssistantRemoveTextProviderWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantRemoveTextProviderWithWireMock", "DELETE", "/api/workspaces/workspaceId/assistant/text-provider", nil, 1)
+	VerifyRequestCount(t, "TestAssistantRemoveTextProviderWithWireMock", "DELETE", "/api/v1/assistant/text-provider", nil, 1)
 }
 
 func TestAssistantTestTextProviderWithWireMock(
@@ -332,19 +308,15 @@ func TestAssistantTestTextProviderWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.TestTextProviderAssistantRequest{
-		WorkspaceID: "workspaceId",
-	}
 	invocationErr := client.Assistant.TestTextProvider(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAssistantTestTextProviderWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantTestTextProviderWithWireMock", "POST", "/api/workspaces/workspaceId/assistant/text-provider/test", nil, 1)
+	VerifyRequestCount(t, "TestAssistantTestTextProviderWithWireMock", "POST", "/api/v1/assistant/text-provider/test", nil, 1)
 }
 
 func TestAssistantProvidersWithWireMock(
@@ -358,19 +330,15 @@ func TestAssistantProvidersWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ProvidersAssistantRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Assistant.Providers(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAssistantProvidersWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantProvidersWithWireMock", "GET", "/api/workspaces/workspaceId/assistant/providers", nil, 1)
+	VerifyRequestCount(t, "TestAssistantProvidersWithWireMock", "GET", "/api/v1/assistant/providers", nil, 1)
 }
 
 func TestAssistantConnectProviderWithWireMock(
@@ -385,8 +353,7 @@ func TestAssistantConnectProviderWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.AiProviderConnectionChange{
-		WorkspaceID: "workspaceId",
-		Provider:    peal.AiProviderAnthropic,
+		Provider: peal.AiProviderAnthropic,
 	}
 	_, invocationErr := client.Assistant.ConnectProvider(
 		context.TODO(),
@@ -397,7 +364,7 @@ func TestAssistantConnectProviderWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantConnectProviderWithWireMock", "PUT", "/api/workspaces/workspaceId/assistant/providers/anthropic", nil, 1)
+	VerifyRequestCount(t, "TestAssistantConnectProviderWithWireMock", "PUT", "/api/v1/assistant/providers/anthropic", nil, 1)
 }
 
 func TestAssistantDisconnectProviderWithWireMock(
@@ -412,8 +379,7 @@ func TestAssistantDisconnectProviderWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DisconnectProviderAssistantRequest{
-		WorkspaceID: "workspaceId",
-		Provider:    peal.AiProviderAnthropic,
+		Provider: peal.AiProviderAnthropic,
 	}
 	invocationErr := client.Assistant.DisconnectProvider(
 		context.TODO(),
@@ -424,7 +390,7 @@ func TestAssistantDisconnectProviderWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantDisconnectProviderWithWireMock", "DELETE", "/api/workspaces/workspaceId/assistant/providers/anthropic", nil, 1)
+	VerifyRequestCount(t, "TestAssistantDisconnectProviderWithWireMock", "DELETE", "/api/v1/assistant/providers/anthropic", nil, 1)
 }
 
 func TestAssistantTestProviderWithWireMock(
@@ -439,8 +405,7 @@ func TestAssistantTestProviderWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.AiProviderTest{
-		WorkspaceID: "workspaceId",
-		Provider:    peal.AiProviderAnthropic,
+		Provider: peal.AiProviderAnthropic,
 	}
 	invocationErr := client.Assistant.TestProvider(
 		context.TODO(),
@@ -451,7 +416,7 @@ func TestAssistantTestProviderWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantTestProviderWithWireMock", "POST", "/api/workspaces/workspaceId/assistant/providers/anthropic/test", nil, 1)
+	VerifyRequestCount(t, "TestAssistantTestProviderWithWireMock", "POST", "/api/v1/assistant/providers/anthropic/test", nil, 1)
 }
 
 func TestAssistantModelsWithWireMock(
@@ -465,19 +430,15 @@ func TestAssistantModelsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ModelsAssistantRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Assistant.Models(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAssistantModelsWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantModelsWithWireMock", "GET", "/api/workspaces/workspaceId/assistant/models", nil, 1)
+	VerifyRequestCount(t, "TestAssistantModelsWithWireMock", "GET", "/api/v1/assistant/models", nil, 1)
 }
 
 func TestAssistantSetModelWithWireMock(
@@ -492,9 +453,8 @@ func TestAssistantSetModelWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.AiCapabilityModelChange{
-		WorkspaceID: "workspaceId",
-		Capability:  peal.AiCapabilityText,
-		Provider:    peal.AiProviderAnthropic,
+		Capability: peal.AiCapabilityText,
+		Provider:   peal.AiProviderAnthropic,
 	}
 	_, invocationErr := client.Assistant.SetModel(
 		context.TODO(),
@@ -505,7 +465,7 @@ func TestAssistantSetModelWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantSetModelWithWireMock", "PUT", "/api/workspaces/workspaceId/assistant/models/text", nil, 1)
+	VerifyRequestCount(t, "TestAssistantSetModelWithWireMock", "PUT", "/api/v1/assistant/models/text", nil, 1)
 }
 
 func TestAssistantUnsetModelWithWireMock(
@@ -520,8 +480,7 @@ func TestAssistantUnsetModelWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UnsetModelAssistantRequest{
-		WorkspaceID: "workspaceId",
-		Capability:  peal.AiCapabilityText,
+		Capability: peal.AiCapabilityText,
 	}
 	invocationErr := client.Assistant.UnsetModel(
 		context.TODO(),
@@ -532,5 +491,5 @@ func TestAssistantUnsetModelWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAssistantUnsetModelWithWireMock", "DELETE", "/api/workspaces/workspaceId/assistant/models/text", nil, 1)
+	VerifyRequestCount(t, "TestAssistantUnsetModelWithWireMock", "DELETE", "/api/v1/assistant/models/text", nil, 1)
 }

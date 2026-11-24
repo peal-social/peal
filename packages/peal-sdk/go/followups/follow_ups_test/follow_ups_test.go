@@ -88,9 +88,7 @@ func TestFollowUpsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListFollowUpsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListFollowUpsRequest{}
 	_, invocationErr := client.FollowUps.List(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestFollowUpsListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFollowUpsListWithWireMock", "GET", "/api/workspaces/workspaceId/follow-ups", nil, 1)
+	VerifyRequestCount(t, "TestFollowUpsListWithWireMock", "GET", "/api/v1/follow-ups", nil, 1)
 }
 
 func TestFollowUpsCreateWithWireMock(
@@ -115,8 +113,7 @@ func TestFollowUpsCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewFollowUpRule{
-		WorkspaceID: "workspaceId",
-		Likes:       1,
+		Likes: 1,
 	}
 	_, invocationErr := client.FollowUps.Create(
 		context.TODO(),
@@ -127,7 +124,7 @@ func TestFollowUpsCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFollowUpsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/follow-ups", nil, 1)
+	VerifyRequestCount(t, "TestFollowUpsCreateWithWireMock", "POST", "/api/v1/follow-ups", nil, 1)
 }
 
 func TestFollowUpsGetWithWireMock(
@@ -142,8 +139,7 @@ func TestFollowUpsGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetFollowUpsRequest{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	_, invocationErr := client.FollowUps.Get(
 		context.TODO(),
@@ -154,7 +150,7 @@ func TestFollowUpsGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFollowUpsGetWithWireMock", "GET", "/api/workspaces/workspaceId/follow-ups/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestFollowUpsGetWithWireMock", "GET", "/api/v1/follow-ups/ruleId", nil, 1)
 }
 
 func TestFollowUpsDeleteWithWireMock(
@@ -169,8 +165,7 @@ func TestFollowUpsDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteFollowUpsRequest{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	invocationErr := client.FollowUps.Delete(
 		context.TODO(),
@@ -181,7 +176,7 @@ func TestFollowUpsDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFollowUpsDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/follow-ups/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestFollowUpsDeleteWithWireMock", "DELETE", "/api/v1/follow-ups/ruleId", nil, 1)
 }
 
 func TestFollowUpsUpdateWithWireMock(
@@ -196,8 +191,7 @@ func TestFollowUpsUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.FollowUpRuleChange{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	_, invocationErr := client.FollowUps.Update(
 		context.TODO(),
@@ -208,7 +202,7 @@ func TestFollowUpsUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFollowUpsUpdateWithWireMock", "PATCH", "/api/workspaces/workspaceId/follow-ups/ruleId", nil, 1)
+	VerifyRequestCount(t, "TestFollowUpsUpdateWithWireMock", "PATCH", "/api/v1/follow-ups/ruleId", nil, 1)
 }
 
 func TestFollowUpsApproveWithWireMock(
@@ -223,8 +217,7 @@ func TestFollowUpsApproveWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ApproveFollowUpsRequest{
-		WorkspaceID: "workspaceId",
-		RuleID:      "ruleId",
+		RuleID: "ruleId",
 	}
 	_, invocationErr := client.FollowUps.Approve(
 		context.TODO(),
@@ -235,5 +228,5 @@ func TestFollowUpsApproveWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestFollowUpsApproveWithWireMock", "POST", "/api/workspaces/workspaceId/follow-ups/ruleId/approve", nil, 1)
+	VerifyRequestCount(t, "TestFollowUpsApproveWithWireMock", "POST", "/api/v1/follow-ups/ruleId/approve", nil, 1)
 }

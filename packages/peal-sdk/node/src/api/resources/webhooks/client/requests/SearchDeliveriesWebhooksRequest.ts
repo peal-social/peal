@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface SearchDeliveriesWebhooksRequest {
-    workspaceId: string;
     cursor?: string;
     limit?: string;
     eventType?: Peal.WebhookEventType;

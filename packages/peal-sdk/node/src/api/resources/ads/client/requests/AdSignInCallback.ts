@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         network: "meta",
  *         state: "state"
  *     }
  */
 export interface AdSignInCallback {
-    workspaceId: string;
     network: Peal.AdNetwork;
     code?: string;
     error?: string;

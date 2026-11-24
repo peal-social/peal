@@ -32,9 +32,8 @@ public class AsyncMediaAudioClient {
     /**
      * Asks the provider the workspace chose for voice-overs (<code>PUT .../assistant/models/speech</code>) to speak the text, in <code>voice</code> when given, and answers with the audio as a new file of the media library, marked <code>aiGenerated</code>, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
      */
-    public CompletableFuture<Media> createVoiceover(String workspaceId, VoiceoverRequest request) {
-        CompletableFuture<PealClientHttpResponse<Media>> rawFuture =
-                this.rawClient.createVoiceover(workspaceId, request);
+    public CompletableFuture<Media> createVoiceover(VoiceoverRequest request) {
+        CompletableFuture<PealClientHttpResponse<Media>> rawFuture = this.rawClient.createVoiceover(request);
         CompletableFuture<Media> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -47,10 +46,9 @@ public class AsyncMediaAudioClient {
     /**
      * Asks the provider the workspace chose for voice-overs (<code>PUT .../assistant/models/speech</code>) to speak the text, in <code>voice</code> when given, and answers with the audio as a new file of the media library, marked <code>aiGenerated</code>, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
      */
-    public CompletableFuture<Media> createVoiceover(
-            String workspaceId, VoiceoverRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Media> createVoiceover(VoiceoverRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Media>> rawFuture =
-                this.rawClient.createVoiceover(workspaceId, request, requestOptions);
+                this.rawClient.createVoiceover(request, requestOptions);
         CompletableFuture<Media> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -63,9 +61,8 @@ public class AsyncMediaAudioClient {
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
-    public CompletableFuture<Transcript> transcribe(String workspaceId, String mediaId) {
-        CompletableFuture<PealClientHttpResponse<Transcript>> rawFuture =
-                this.rawClient.transcribe(workspaceId, mediaId);
+    public CompletableFuture<Transcript> transcribe(String mediaId) {
+        CompletableFuture<PealClientHttpResponse<Transcript>> rawFuture = this.rawClient.transcribe(mediaId);
         CompletableFuture<Transcript> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -78,9 +75,9 @@ public class AsyncMediaAudioClient {
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
-    public CompletableFuture<Transcript> transcribe(String workspaceId, String mediaId, RequestOptions requestOptions) {
+    public CompletableFuture<Transcript> transcribe(String mediaId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Transcript>> rawFuture =
-                this.rawClient.transcribe(workspaceId, mediaId, requestOptions);
+                this.rawClient.transcribe(mediaId, requestOptions);
         CompletableFuture<Transcript> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -93,9 +90,8 @@ public class AsyncMediaAudioClient {
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
-    public CompletableFuture<Transcript> transcribe(String workspaceId, String mediaId, TranscriptionRequest request) {
-        CompletableFuture<PealClientHttpResponse<Transcript>> rawFuture =
-                this.rawClient.transcribe(workspaceId, mediaId, request);
+    public CompletableFuture<Transcript> transcribe(String mediaId, TranscriptionRequest request) {
+        CompletableFuture<PealClientHttpResponse<Transcript>> rawFuture = this.rawClient.transcribe(mediaId, request);
         CompletableFuture<Transcript> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -109,9 +105,9 @@ public class AsyncMediaAudioClient {
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
     public CompletableFuture<Transcript> transcribe(
-            String workspaceId, String mediaId, TranscriptionRequest request, RequestOptions requestOptions) {
+            String mediaId, TranscriptionRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Transcript>> rawFuture =
-                this.rawClient.transcribe(workspaceId, mediaId, request, requestOptions);
+                this.rawClient.transcribe(mediaId, request, requestOptions);
         CompletableFuture<Transcript> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

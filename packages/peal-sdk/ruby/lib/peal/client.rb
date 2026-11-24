@@ -4,18 +4,22 @@ module Peal
   class Client
     # @param token [String]
     # @param base_url [String, nil]
+    # @param workspace [String, nil]
     # @param max_retries [Integer]
     # @param timeout [Numeric]
     #
     # @return [void]
-    def initialize(token:, base_url: nil, max_retries: 2, timeout: 60)
+    def initialize(token:, base_url: nil, workspace: nil, max_retries: 2, timeout: 60)
+      headers = {
+        "X-Fern-Language" => "Ruby",
+        Authorization: "Bearer #{token}",
+        "Peal-Version" => "2026-11-09"
+      }
+      headers["Peal-Workspace"] = workspace.to_s unless workspace.nil?
       @raw_client = Peal::Internal::Http::RawClient.new(
         base_url: base_url || Peal::Environment::DEFAULT,
-        headers: {
-          "X-Fern-Language" => "Ruby",
-          Authorization: "Bearer #{token}",
-          "Peal-Version" => "2026-11-09"
-        },
+        headers: headers,
+        overridable_headers: %w[Peal-Workspace],
         max_retries: max_retries,
         timeout: timeout
       )

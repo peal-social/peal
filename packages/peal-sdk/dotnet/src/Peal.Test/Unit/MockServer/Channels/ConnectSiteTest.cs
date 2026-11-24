@@ -41,7 +41,7 @@ public class ConnectSiteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/websites")
+                    .WithPath("/api/v1/channels/websites")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -56,7 +56,6 @@ public class ConnectSiteTest : BaseMockServerTest
         var response = await Client.Channels.ConnectSiteAsync(
             new ConnectSite
             {
-                WorkspaceId = "workspaceId",
                 Address = "x",
                 ApplicationPassword = "x",
                 Platform = SitePlatform.Wordpress,
@@ -98,7 +97,7 @@ public class ConnectSiteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/websites")
+                    .WithPath("/api/v1/channels/websites")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -113,7 +112,6 @@ public class ConnectSiteTest : BaseMockServerTest
         var response = await Client.Channels.ConnectSiteAsync(
             new ConnectSite
             {
-                WorkspaceId = "workspaceId",
                 Address = "address",
                 ApplicationPassword = "applicationPassword",
                 Platform = SitePlatform.Wordpress,

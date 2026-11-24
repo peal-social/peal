@@ -31,7 +31,7 @@ public class UnpublishTargetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId/unpublish")
+                    .WithPath("/api/v1/posts/postId/targets/targetId/unpublish")
                     .UsingPost()
             )
             .RespondWith(
@@ -42,12 +42,7 @@ public class UnpublishTargetTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.UnpublishTargetAsync(
-            new UnpublishTargetPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                TargetId = "targetId",
-            }
+            new UnpublishTargetPostsRequest { PostId = "postId", TargetId = "targetId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -74,7 +69,7 @@ public class UnpublishTargetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/targets/targetId/unpublish")
+                    .WithPath("/api/v1/posts/postId/targets/targetId/unpublish")
                     .UsingPost()
             )
             .RespondWith(
@@ -85,12 +80,7 @@ public class UnpublishTargetTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.UnpublishTargetAsync(
-            new UnpublishTargetPostsRequest
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                TargetId = "targetId",
-            }
+            new UnpublishTargetPostsRequest { PostId = "postId", TargetId = "targetId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

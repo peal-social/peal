@@ -33,7 +33,7 @@ public class SlotsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId/slots")
+                    .WithPath("/api/v1/queues/queueId/slots")
                     .UsingGet()
             )
             .RespondWith(
@@ -44,7 +44,7 @@ public class SlotsTest : BaseMockServerTest
             );
 
         var response = await Client.Queues.SlotsAsync(
-            new SlotsQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
+            new SlotsQueuesRequest { QueueId = "queueId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -69,7 +69,7 @@ public class SlotsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId/slots")
+                    .WithPath("/api/v1/queues/queueId/slots")
                     .UsingGet()
             )
             .RespondWith(
@@ -80,7 +80,7 @@ public class SlotsTest : BaseMockServerTest
             );
 
         var response = await Client.Queues.SlotsAsync(
-            new SlotsQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
+            new SlotsQueuesRequest { QueueId = "queueId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

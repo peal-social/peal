@@ -10,15 +10,13 @@ import (
 )
 
 var (
-	voiceoverRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	voiceoverRequestFieldText        = big.NewInt(1 << 1)
-	voiceoverRequestFieldVoice       = big.NewInt(1 << 2)
+	voiceoverRequestFieldText  = big.NewInt(1 << 0)
+	voiceoverRequestFieldVoice = big.NewInt(1 << 1)
 )
 
 type VoiceoverRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Text        string  `json:"text" url:"-"`
-	Voice       *string `json:"voice,omitempty" url:"-"`
+	Text  string  `json:"text" url:"-"`
+	Voice *string `json:"voice,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (v *VoiceoverRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	v.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (v *VoiceoverRequest) SetWorkspaceID(workspaceID string) {
-	v.WorkspaceID = workspaceID
-	v.require(voiceoverRequestFieldWorkspaceID)
 }
 
 // SetText sets the Text field and marks it as non-optional;
@@ -76,13 +67,11 @@ func (v *VoiceoverRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	transcriptionRequestFieldWorkspaceID       = big.NewInt(1 << 0)
-	transcriptionRequestFieldMediaID           = big.NewInt(1 << 1)
-	transcriptionRequestFieldSaveAsDescription = big.NewInt(1 << 2)
+	transcriptionRequestFieldMediaID           = big.NewInt(1 << 0)
+	transcriptionRequestFieldSaveAsDescription = big.NewInt(1 << 1)
 )
 
 type TranscriptionRequest struct {
-	WorkspaceID       string `json:"-" url:"-"`
 	MediaID           string `json:"-" url:"-"`
 	SaveAsDescription *bool  `json:"saveAsDescription,omitempty" url:"-"`
 
@@ -97,13 +86,6 @@ func (t *TranscriptionRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	t.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TranscriptionRequest) SetWorkspaceID(workspaceID string) {
-	t.WorkspaceID = workspaceID
-	t.require(transcriptionRequestFieldWorkspaceID)
 }
 
 // SetMediaID sets the MediaID field and marks it as non-optional;

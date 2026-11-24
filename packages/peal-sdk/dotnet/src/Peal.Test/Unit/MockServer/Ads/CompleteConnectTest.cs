@@ -58,7 +58,7 @@ public class CompleteConnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/meta/callback")
+                    .WithPath("/api/v1/ads/connections/meta/callback")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -73,7 +73,6 @@ public class CompleteConnectTest : BaseMockServerTest
         var response = await Client.Ads.CompleteConnectAsync(
             new AdSignInCallback
             {
-                WorkspaceId = "workspaceId",
                 Network = AdNetwork.Meta,
                 Code = null,
                 Error = null,
@@ -122,7 +121,7 @@ public class CompleteConnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/meta/callback")
+                    .WithPath("/api/v1/ads/connections/meta/callback")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -135,12 +134,7 @@ public class CompleteConnectTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.CompleteConnectAsync(
-            new AdSignInCallback
-            {
-                WorkspaceId = "workspaceId",
-                Network = AdNetwork.Meta,
-                State = "state",
-            }
+            new AdSignInCallback { Network = AdNetwork.Meta, State = "state" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

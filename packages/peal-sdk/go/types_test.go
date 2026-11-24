@@ -10569,39 +10569,6 @@ func TestGettersBadRequestErrorBody(t *testing.T) {
 		_ = obj.GetType() // Should return zero value
 	})
 
-	t.Run("GetBadRequest", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &BadRequestErrorBody{}
-		var expected *EffectHttpApiErrorBadRequestEncoded
-		obj.BadRequest = expected
-
-		// Act & Assert
-		assert.Equal(t, expected, obj.GetBadRequest(), "getter should return the property value")
-	})
-
-	t.Run("GetBadRequest_NilValue", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &BadRequestErrorBody{}
-		obj.BadRequest = nil
-
-		// Act & Assert
-		assert.Nil(t, obj.GetBadRequest(), "getter should return nil when property is nil")
-	})
-
-	t.Run("GetBadRequest_NilReceiver", func(t *testing.T) {
-		t.Parallel()
-		var obj *BadRequestErrorBody
-		// Should not panic - getters should handle nil receiver gracefully
-		defer func() {
-			if r := recover(); r != nil {
-				t.Errorf("Getter panicked on nil receiver: %v", r)
-			}
-		}()
-		_ = obj.GetBadRequest() // Should return zero value
-	})
-
 	t.Run("GetInvalidDateRange", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -10633,6 +10600,39 @@ func TestGettersBadRequestErrorBody(t *testing.T) {
 			}
 		}()
 		_ = obj.GetInvalidDateRange() // Should return zero value
+	})
+
+	t.Run("GetWorkspaceRequired", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &BadRequestErrorBody{}
+		var expected *WorkspaceRequiredEncoded
+		obj.WorkspaceRequired = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetWorkspaceRequired(), "getter should return the property value")
+	})
+
+	t.Run("GetWorkspaceRequired_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &BadRequestErrorBody{}
+		obj.WorkspaceRequired = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetWorkspaceRequired(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetWorkspaceRequired_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *BadRequestErrorBody
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetWorkspaceRequired() // Should return zero value
 	})
 
 }
@@ -31486,14 +31486,6 @@ func TestSettersMarkExplicitInstagramOptions(t *testing.T) {
 }
 
 func TestSettersInvalidDateRangeEncoded(t *testing.T) {
-	t.Run("SetTag", func(t *testing.T) {
-		obj := &InvalidDateRangeEncoded{}
-		var fernTestValueTag InvalidDateRangeEncodedTag
-		obj.SetTag(fernTestValueTag)
-		assert.Equal(t, fernTestValueTag, obj.Tag)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetCode", func(t *testing.T) {
 		obj := &InvalidDateRangeEncoded{}
 		var fernTestValueCode *string
@@ -31521,29 +31513,6 @@ func TestSettersInvalidDateRangeEncoded(t *testing.T) {
 }
 
 func TestGettersInvalidDateRangeEncoded(t *testing.T) {
-	t.Run("GetTag", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &InvalidDateRangeEncoded{}
-		var expected InvalidDateRangeEncodedTag
-		obj.Tag = expected
-
-		// Act & Assert
-		assert.Equal(t, expected, obj.GetTag(), "getter should return the property value")
-	})
-
-	t.Run("GetTag_NilReceiver", func(t *testing.T) {
-		t.Parallel()
-		var obj *InvalidDateRangeEncoded
-		// Should not panic - getters should handle nil receiver gracefully
-		defer func() {
-			if r := recover(); r != nil {
-				t.Errorf("Getter panicked on nil receiver: %v", r)
-			}
-		}()
-		_ = obj.GetTag() // Should return zero value
-	})
-
 	t.Run("GetCode", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -31646,37 +31615,6 @@ func TestGettersInvalidDateRangeEncoded(t *testing.T) {
 }
 
 func TestSettersMarkExplicitInvalidDateRangeEncoded(t *testing.T) {
-	t.Run("SetTag_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &InvalidDateRangeEncoded{}
-		var fernTestValueTag InvalidDateRangeEncodedTag
-
-		// Act
-		obj.SetTag(fernTestValueTag)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetCode_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -31773,14 +31711,6 @@ func TestSettersMarkExplicitInvalidDateRangeEncoded(t *testing.T) {
 }
 
 func TestSettersInvalidTimeRangeEncoded(t *testing.T) {
-	t.Run("SetTag", func(t *testing.T) {
-		obj := &InvalidTimeRangeEncoded{}
-		var fernTestValueTag InvalidTimeRangeEncodedTag
-		obj.SetTag(fernTestValueTag)
-		assert.Equal(t, fernTestValueTag, obj.Tag)
-		assert.NotNil(t, obj.explicitFields)
-	})
-
 	t.Run("SetCode", func(t *testing.T) {
 		obj := &InvalidTimeRangeEncoded{}
 		var fernTestValueCode *string
@@ -31808,29 +31738,6 @@ func TestSettersInvalidTimeRangeEncoded(t *testing.T) {
 }
 
 func TestGettersInvalidTimeRangeEncoded(t *testing.T) {
-	t.Run("GetTag", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &InvalidTimeRangeEncoded{}
-		var expected InvalidTimeRangeEncodedTag
-		obj.Tag = expected
-
-		// Act & Assert
-		assert.Equal(t, expected, obj.GetTag(), "getter should return the property value")
-	})
-
-	t.Run("GetTag_NilReceiver", func(t *testing.T) {
-		t.Parallel()
-		var obj *InvalidTimeRangeEncoded
-		// Should not panic - getters should handle nil receiver gracefully
-		defer func() {
-			if r := recover(); r != nil {
-				t.Errorf("Getter panicked on nil receiver: %v", r)
-			}
-		}()
-		_ = obj.GetTag() // Should return zero value
-	})
-
 	t.Run("GetCode", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -31933,37 +31840,6 @@ func TestGettersInvalidTimeRangeEncoded(t *testing.T) {
 }
 
 func TestSettersMarkExplicitInvalidTimeRangeEncoded(t *testing.T) {
-	t.Run("SetTag_MarksExplicit", func(t *testing.T) {
-		t.Parallel()
-		// Arrange
-		obj := &InvalidTimeRangeEncoded{}
-		var fernTestValueTag InvalidTimeRangeEncodedTag
-
-		// Act
-		obj.SetTag(fernTestValueTag)
-
-		// Assert - object with explicitly set field can be marshaled/unmarshaled
-		bytes, err := json.Marshal(obj)
-		require.NoError(t, err, "marshaling should succeed for test setup")
-
-		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
-		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
-		if len(bytes) > 0 && bytes[0] == '{' {
-			// JSON object - unmarshal into map
-			var unmarshaled map[string]interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		} else {
-			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
-			var unmarshaled interface{}
-			err = json.Unmarshal(bytes, &unmarshaled)
-			require.NoError(t, err, "unmarshaling should succeed for test verification")
-		}
-
-		// Note: This does not explicitly assert the presence of a specific JSON field
-		// It verifies that setting a field via setter allows successful JSON round-trip
-	})
-
 	t.Run("SetCode_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -72926,6 +72802,293 @@ func TestSettersMarkExplicitWorkspaceNotFoundEncoded(t *testing.T) {
 
 }
 
+func TestSettersWorkspaceRequiredEncoded(t *testing.T) {
+	t.Run("SetTag", func(t *testing.T) {
+		obj := &WorkspaceRequiredEncoded{}
+		var fernTestValueTag WorkspaceRequiredEncodedTag
+		obj.SetTag(fernTestValueTag)
+		assert.Equal(t, fernTestValueTag, obj.Tag)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetCode", func(t *testing.T) {
+		obj := &WorkspaceRequiredEncoded{}
+		var fernTestValueCode *string
+		obj.SetCode(fernTestValueCode)
+		assert.Equal(t, fernTestValueCode, obj.Code)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetMessage", func(t *testing.T) {
+		obj := &WorkspaceRequiredEncoded{}
+		var fernTestValueMessage *string
+		obj.SetMessage(fernTestValueMessage)
+		assert.Equal(t, fernTestValueMessage, obj.Message)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetRequestID", func(t *testing.T) {
+		obj := &WorkspaceRequiredEncoded{}
+		var fernTestValueRequestID *string
+		obj.SetRequestID(fernTestValueRequestID)
+		assert.Equal(t, fernTestValueRequestID, obj.RequestID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersWorkspaceRequiredEncoded(t *testing.T) {
+	t.Run("GetTag", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		var expected WorkspaceRequiredEncodedTag
+		obj.Tag = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetTag(), "getter should return the property value")
+	})
+
+	t.Run("GetTag_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceRequiredEncoded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetTag() // Should return zero value
+	})
+
+	t.Run("GetCode", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		var expected *string
+		obj.Code = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetCode(), "getter should return the property value")
+	})
+
+	t.Run("GetCode_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		obj.Code = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetCode(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetCode_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceRequiredEncoded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetCode() // Should return zero value
+	})
+
+	t.Run("GetMessage", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		var expected *string
+		obj.Message = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMessage(), "getter should return the property value")
+	})
+
+	t.Run("GetMessage_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		obj.Message = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMessage(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMessage_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceRequiredEncoded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMessage() // Should return zero value
+	})
+
+	t.Run("GetRequestID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		var expected *string
+		obj.RequestID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetRequestID(), "getter should return the property value")
+	})
+
+	t.Run("GetRequestID_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		obj.RequestID = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetRequestID(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetRequestID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceRequiredEncoded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetRequestID() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitWorkspaceRequiredEncoded(t *testing.T) {
+	t.Run("SetTag_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		var fernTestValueTag WorkspaceRequiredEncodedTag
+
+		// Act
+		obj.SetTag(fernTestValueTag)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetCode_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		var fernTestValueCode *string
+
+		// Act
+		obj.SetCode(fernTestValueCode)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMessage_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		var fernTestValueMessage *string
+
+		// Act
+		obj.SetMessage(fernTestValueMessage)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetRequestID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+		var fernTestValueRequestID *string
+
+		// Act
+		obj.SetRequestID(fernTestValueRequestID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersXOptions(t *testing.T) {
 	t.Run("SetCommunityID", func(t *testing.T) {
 		obj := &XOptions{}
@@ -82523,6 +82686,39 @@ func TestJSONMarshalingWorkspaceNotFoundEncoded(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingWorkspaceRequiredEncoded(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceRequiredEncoded{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled WorkspaceRequiredEncoded
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj WorkspaceRequiredEncoded
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj WorkspaceRequiredEncoded
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingXOptions(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -87763,6 +87959,22 @@ func TestStringWorkspaceNotFoundEncoded(t *testing.T) {
 	})
 }
 
+func TestStringWorkspaceRequiredEncoded(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &WorkspaceRequiredEncoded{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceRequiredEncoded
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
 func TestStringXOptions(t *testing.T) {
 	t.Run("StringMethod", func(t *testing.T) {
 		t.Parallel()
@@ -90662,50 +90874,6 @@ func TestEnumInstagramTrialReel(t *testing.T) {
 
 	t.Run("Ptr", func(t *testing.T) {
 		val, err := NewInstagramTrialReelFromString("manual")
-		assert.NoError(t, err)
-		ptr := val.Ptr()
-		assert.NotNil(t, ptr)
-		assert.Equal(t, val, *ptr)
-	})
-}
-
-func TestEnumInvalidDateRangeEncodedTag(t *testing.T) {
-	t.Run("NewFromString_InvalidDateRange", func(t *testing.T) {
-		t.Parallel()
-		val, err := NewInvalidDateRangeEncodedTagFromString("InvalidDateRange")
-		assert.NoError(t, err, "valid enum value should not return error")
-		assert.Equal(t, InvalidDateRangeEncodedTag("InvalidDateRange"), val, "enum value should match expected wire value")
-	})
-
-	t.Run("NewFromString_Invalid", func(t *testing.T) {
-		_, err := NewInvalidDateRangeEncodedTagFromString("invalid_value_that_does_not_exist")
-		assert.Error(t, err)
-	})
-
-	t.Run("Ptr", func(t *testing.T) {
-		val, err := NewInvalidDateRangeEncodedTagFromString("InvalidDateRange")
-		assert.NoError(t, err)
-		ptr := val.Ptr()
-		assert.NotNil(t, ptr)
-		assert.Equal(t, val, *ptr)
-	})
-}
-
-func TestEnumInvalidTimeRangeEncodedTag(t *testing.T) {
-	t.Run("NewFromString_InvalidTimeRange", func(t *testing.T) {
-		t.Parallel()
-		val, err := NewInvalidTimeRangeEncodedTagFromString("InvalidTimeRange")
-		assert.NoError(t, err, "valid enum value should not return error")
-		assert.Equal(t, InvalidTimeRangeEncodedTag("InvalidTimeRange"), val, "enum value should match expected wire value")
-	})
-
-	t.Run("NewFromString_Invalid", func(t *testing.T) {
-		_, err := NewInvalidTimeRangeEncodedTagFromString("invalid_value_that_does_not_exist")
-		assert.Error(t, err)
-	})
-
-	t.Run("Ptr", func(t *testing.T) {
-		val, err := NewInvalidTimeRangeEncodedTagFromString("InvalidTimeRange")
 		assert.NoError(t, err)
 		ptr := val.Ptr()
 		assert.NotNil(t, ptr)
@@ -93766,6 +93934,28 @@ func TestEnumWorkspaceNotFoundEncodedTag(t *testing.T) {
 
 	t.Run("Ptr", func(t *testing.T) {
 		val, err := NewWorkspaceNotFoundEncodedTagFromString("WorkspaceNotFound")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumWorkspaceRequiredEncodedTag(t *testing.T) {
+	t.Run("NewFromString_WorkspaceRequired", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewWorkspaceRequiredEncodedTagFromString("WorkspaceRequired")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, WorkspaceRequiredEncodedTag("WorkspaceRequired"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewWorkspaceRequiredEncodedTagFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewWorkspaceRequiredEncodedTagFromString("WorkspaceRequired")
 		assert.NoError(t, err)
 		ptr := val.Ptr()
 		assert.NotNil(t, ptr)
@@ -99649,6 +99839,29 @@ func TestExtraPropertiesWorkspaceNotFoundEncoded(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *WorkspaceNotFoundEncoded
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesWorkspaceRequiredEncoded(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &WorkspaceRequiredEncoded{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceRequiredEncoded
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

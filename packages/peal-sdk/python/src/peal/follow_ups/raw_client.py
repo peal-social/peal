@@ -33,7 +33,6 @@ class RawFollowUpsClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -46,8 +45,6 @@ class RawFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -65,7 +62,7 @@ class RawFollowUpsClient:
             FollowUpRulePage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups",
+            "api/v1/follow-ups",
             method="GET",
             params={
                 "cursor": cursor,
@@ -151,7 +148,6 @@ class RawFollowUpsClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         likes: int,
         channel_id: typing.Optional[str] = OMIT,
@@ -165,8 +161,6 @@ class RawFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         likes : int
 
         channel_id : typing.Optional[str]
@@ -189,7 +183,7 @@ class RawFollowUpsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups",
+            "api/v1/follow-ups",
             method="POST",
             json={
                 "channelId": channel_id,
@@ -301,15 +295,13 @@ class RawFollowUpsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[FollowUpRule]:
         """
         Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -321,7 +313,7 @@ class RawFollowUpsClient:
             FollowUpRule
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups/{encode_path_param(rule_id)}",
+            f"api/v1/follow-ups/{encode_path_param(rule_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -335,6 +327,17 @@ class RawFollowUpsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -388,16 +391,12 @@ class RawFollowUpsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def delete(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Stops a rule: it ends `stopped`, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -408,13 +407,24 @@ class RawFollowUpsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups/{encode_path_param(rule_id)}",
+            f"api/v1/follow-ups/{encode_path_param(rule_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -470,7 +480,6 @@ class RawFollowUpsClient:
 
     def update(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         comment: typing.Optional[str] = OMIT,
@@ -484,8 +493,6 @@ class RawFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         comment : typing.Optional[str]
@@ -508,7 +515,7 @@ class RawFollowUpsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups/{encode_path_param(rule_id)}",
+            f"api/v1/follow-ups/{encode_path_param(rule_id)}",
             method="PATCH",
             json={
                 "comment": comment,
@@ -532,6 +539,17 @@ class RawFollowUpsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -608,15 +626,13 @@ class RawFollowUpsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def approve(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[FollowUpRule]:
         """
         Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -631,7 +647,7 @@ class RawFollowUpsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups/{encode_path_param(rule_id)}/approve",
+            f"api/v1/follow-ups/{encode_path_param(rule_id)}/approve",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -645,6 +661,17 @@ class RawFollowUpsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -716,7 +743,6 @@ class AsyncRawFollowUpsClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -729,8 +755,6 @@ class AsyncRawFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -748,7 +772,7 @@ class AsyncRawFollowUpsClient:
             FollowUpRulePage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups",
+            "api/v1/follow-ups",
             method="GET",
             params={
                 "cursor": cursor,
@@ -834,7 +858,6 @@ class AsyncRawFollowUpsClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         likes: int,
         channel_id: typing.Optional[str] = OMIT,
@@ -848,8 +871,6 @@ class AsyncRawFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         likes : int
 
         channel_id : typing.Optional[str]
@@ -872,7 +893,7 @@ class AsyncRawFollowUpsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups",
+            "api/v1/follow-ups",
             method="POST",
             json={
                 "channelId": channel_id,
@@ -984,15 +1005,13 @@ class AsyncRawFollowUpsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[FollowUpRule]:
         """
         Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1004,7 +1023,7 @@ class AsyncRawFollowUpsClient:
             FollowUpRule
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups/{encode_path_param(rule_id)}",
+            f"api/v1/follow-ups/{encode_path_param(rule_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1018,6 +1037,17 @@ class AsyncRawFollowUpsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1072,15 +1102,13 @@ class AsyncRawFollowUpsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Stops a rule: it ends `stopped`, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1091,13 +1119,24 @@ class AsyncRawFollowUpsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups/{encode_path_param(rule_id)}",
+            f"api/v1/follow-ups/{encode_path_param(rule_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1153,7 +1192,6 @@ class AsyncRawFollowUpsClient:
 
     async def update(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         comment: typing.Optional[str] = OMIT,
@@ -1167,8 +1205,6 @@ class AsyncRawFollowUpsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         comment : typing.Optional[str]
@@ -1191,7 +1227,7 @@ class AsyncRawFollowUpsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups/{encode_path_param(rule_id)}",
+            f"api/v1/follow-ups/{encode_path_param(rule_id)}",
             method="PATCH",
             json={
                 "comment": comment,
@@ -1215,6 +1251,17 @@ class AsyncRawFollowUpsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1291,15 +1338,13 @@ class AsyncRawFollowUpsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def approve(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[FollowUpRule]:
         """
         Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1314,7 +1359,7 @@ class AsyncRawFollowUpsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/follow-ups/{encode_path_param(rule_id)}/approve",
+            f"api/v1/follow-ups/{encode_path_param(rule_id)}/approve",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -1328,6 +1373,17 @@ class AsyncRawFollowUpsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

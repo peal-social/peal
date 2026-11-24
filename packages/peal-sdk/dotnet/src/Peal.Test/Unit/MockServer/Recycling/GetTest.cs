@@ -124,7 +124,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling/ruleId")
+                    .WithPath("/api/v1/recycling/ruleId")
                     .UsingGet()
             )
             .RespondWith(
@@ -135,7 +135,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Recycling.GetAsync(
-            new GetRecyclingRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new GetRecyclingRequest { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -193,7 +193,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling/ruleId")
+                    .WithPath("/api/v1/recycling/ruleId")
                     .UsingGet()
             )
             .RespondWith(
@@ -204,7 +204,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Recycling.GetAsync(
-            new GetRecyclingRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new GetRecyclingRequest { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

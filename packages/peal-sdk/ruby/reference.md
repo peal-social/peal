@@ -273,7 +273,7 @@ client.credential.get
 </details>
 
 ## apiKeys
-<details><summary><code>client.api_keys.<a href="/lib/peal/api_keys/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::APIKey]</code></summary>
+<details><summary><code>client.api_keys.<a href="/lib/peal/api_keys/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::APIKey]</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ Lists the workspace's API keys, with the member who made each. Needs apiKey:read
 <dd>
 
 ```ruby
-client.api_keys.list(workspace_id: "workspaceId")
+client.api_keys.list
 ```
 </dd>
 </dl>
@@ -311,14 +311,6 @@ client.api_keys.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -335,7 +327,7 @@ client.api_keys.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="/lib/peal/api_keys/client.rb">create</a>(workspace_id:, request) -> Peal::Types::CreatedAPIKey</code></summary>
+<details><summary><code>client.api_keys.<a href="/lib/peal/api_keys/client.rb">create</a>(request) -> Peal::Types::CreatedAPIKey</code></summary>
 <dl>
 <dd>
 
@@ -363,7 +355,6 @@ Creates an API key for the workspace with some of the caller's permissions, and 
 
 ```ruby
 client.api_keys.create(
-  workspace_id: "workspaceId",
   name: "name",
   permissions: ["activity:read"]
 )
@@ -377,14 +368,6 @@ client.api_keys.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -425,7 +408,7 @@ client.api_keys.create(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="/lib/peal/api_keys/client.rb">revoke</a>(workspace_id:, api_key_id:) -> </code></summary>
+<details><summary><code>client.api_keys.<a href="/lib/peal/api_keys/client.rb">revoke</a>(api_key_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -452,10 +435,7 @@ Revokes an API key of the workspace: it stops working at once. Needs apiKey:dele
 <dd>
 
 ```ruby
-client.api_keys.revoke(
-  workspace_id: "workspaceId",
-  api_key_id: "apiKeyId"
-)
+client.api_keys.revoke(api_key_id: "apiKeyId")
 ```
 </dd>
 </dl>
@@ -466,14 +446,6 @@ client.api_keys.revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -499,7 +471,7 @@ client.api_keys.revoke(
 </details>
 
 ## channels
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::Channel]</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::Channel]</code></summary>
 <dl>
 <dd>
 
@@ -526,7 +498,7 @@ Lists the channels connected to the workspace, oldest first. Their tokens are ne
 <dd>
 
 ```ruby
-client.channels.list(workspace_id: "workspaceId")
+client.channels.list
 ```
 </dd>
 </dl>
@@ -537,14 +509,6 @@ client.channels.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -561,7 +525,7 @@ client.channels.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">find</a>(workspace_id:) -> Peal::Types::ChannelPage</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">find</a>() -> Peal::Types::ChannelPage</code></summary>
 <dl>
 <dd>
 
@@ -588,7 +552,7 @@ Lists the workspace's channels a page at a time, oldest first: 50 unless `limit`
 <dd>
 
 ```ruby
-client.channels.find(workspace_id: "workspaceId")
+client.channels.find
 ```
 </dd>
 </dl>
@@ -599,14 +563,6 @@ client.channels.find(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -663,7 +619,7 @@ client.channels.find(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">platforms</a>(workspace_id:) -> Peal::Types::ConnectablePlatforms</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">platforms</a>() -> Peal::Types::ConnectablePlatforms</code></summary>
 <dl>
 <dd>
 
@@ -690,7 +646,7 @@ Lists the platforms this server can connect accounts of, in Peal's order. A plat
 <dd>
 
 ```ruby
-client.channels.platforms(workspace_id: "workspaceId")
+client.channels.platforms
 ```
 </dd>
 </dl>
@@ -701,14 +657,6 @@ client.channels.platforms(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -725,7 +673,7 @@ client.channels.platforms(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect_site</a>(workspace_id:, request) -> Peal::Types::Channel</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect_site</a>(request) -> Peal::Types::Channel</code></summary>
 <dl>
 <dd>
 
@@ -753,7 +701,6 @@ Connects a website, to publish articles to it: a WordPress site, by its address,
 
 ```ruby
 client.channels.connect_site(
-  workspace_id: "workspaceId",
   address: "address",
   application_password: "applicationPassword",
   platform: "wordpress",
@@ -769,14 +716,6 @@ client.channels.connect_site(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -825,7 +764,7 @@ client.channels.connect_site(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect_site_with_key</a>(workspace_id:, request) -> Peal::Types::Channel</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect_site_with_key</a>(request) -> Peal::Types::Channel</code></summary>
 <dl>
 <dd>
 
@@ -853,7 +792,6 @@ Connects an account on a publishing platform, to publish articles to it, with a 
 
 ```ruby
 client.channels.connect_site_with_key(
-  workspace_id: "workspaceId",
   api_key: "apiKey",
   platform: "devto"
 )
@@ -867,14 +805,6 @@ client.channels.connect_site_with_key(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -915,7 +845,7 @@ client.channels.connect_site_with_key(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect_chat</a>(workspace_id:, request) -> Peal::Types::Channel</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect_chat</a>(request) -> Peal::Types::Channel</code></summary>
 <dl>
 <dd>
 
@@ -942,7 +872,7 @@ Connects a chat, to post to it, with a secret its member pastes, no sign-in page
 <dd>
 
 ```ruby
-client.channels.connect_chat(workspace_id: "workspaceId")
+client.channels.connect_chat
 ```
 </dd>
 </dl>
@@ -953,14 +883,6 @@ client.channels.connect_chat(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -985,7 +907,7 @@ client.channels.connect_chat(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">start_site_sign_in</a>(workspace_id:, platform:, request) -> Peal::Types::Authorization</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">start_site_sign_in</a>(platform:, request) -> Peal::Types::Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1012,10 +934,7 @@ Starts connecting a website by signing in on its platform: on WordPress.com (`wo
 <dd>
 
 ```ruby
-client.channels.start_site_sign_in(
-  workspace_id: "workspaceId",
-  platform: "wordpressCom"
-)
+client.channels.start_site_sign_in(platform: "wordpressCom")
 ```
 </dd>
 </dl>
@@ -1026,14 +945,6 @@ client.channels.start_site_sign_in(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1066,7 +977,7 @@ client.channels.start_site_sign_in(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">complete_site_sign_in</a>(workspace_id:, platform:, request) -> Peal::Types::Channel</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">complete_site_sign_in</a>(platform:, request) -> Peal::Types::Channel</code></summary>
 <dl>
 <dd>
 
@@ -1094,7 +1005,6 @@ Completes a website sign-in with what the platform sent back: the site becomes a
 
 ```ruby
 client.channels.complete_site_sign_in(
-  workspace_id: "workspaceId",
   platform: "wordpressCom",
   state: "state"
 )
@@ -1108,14 +1018,6 @@ client.channels.complete_site_sign_in(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1164,7 +1066,7 @@ client.channels.complete_site_sign_in(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect</a>(workspace_id:, platform:, request) -> Peal::Types::Authorization</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">connect</a>(platform:, request) -> Peal::Types::Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1191,10 +1093,7 @@ Starts connecting an account of the platform: answers with the platform's sign-i
 <dd>
 
 ```ruby
-client.channels.connect(
-  workspace_id: "workspaceId",
-  platform: "x"
-)
+client.channels.connect(platform: "x")
 ```
 </dd>
 </dl>
@@ -1205,14 +1104,6 @@ client.channels.connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1261,7 +1152,7 @@ client.channels.connect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">complete_connect</a>(workspace_id:, platform:, request) -> Peal::Types::ConnectOutcome</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">complete_connect</a>(platform:, request) -> Peal::Types::ConnectOutcome</code></summary>
 <dl>
 <dd>
 
@@ -1289,7 +1180,6 @@ Completes a connection with what the platform sent back: the account becomes a c
 
 ```ruby
 client.channels.complete_connect(
-  workspace_id: "workspaceId",
   platform: "x",
   state: "state"
 )
@@ -1303,14 +1193,6 @@ client.channels.complete_connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1367,7 +1249,7 @@ client.channels.complete_connect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">choose_accounts</a>(workspace_id:, platform:, request) -> Internal::Types::Array[Peal::Types::Channel]</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">choose_accounts</a>(platform:, request) -> Internal::Types::Array[Peal::Types::Channel]</code></summary>
 <dl>
 <dd>
 
@@ -1395,7 +1277,6 @@ Connects the accounts the member chose among those a completed sign-in listed: e
 
 ```ruby
 client.channels.choose_accounts(
-  workspace_id: "workspaceId",
   platform: "x",
   account_ids: ["accountIds"],
   selection: "selection"
@@ -1410,14 +1291,6 @@ client.channels.choose_accounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1458,7 +1331,7 @@ client.channels.choose_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">reconnect</a>(workspace_id:, channel_id:) -> Peal::Types::Authorization</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">reconnect</a>(channel_id:) -> Peal::Types::Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1485,10 +1358,7 @@ Starts reconnecting a channel whose token stopped working or is about to: answer
 <dd>
 
 ```ruby
-client.channels.reconnect(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.channels.reconnect(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -1499,14 +1369,6 @@ client.channels.reconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1547,7 +1409,7 @@ client.channels.reconnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">disconnect</a>(workspace_id:, channel_id:) -> </code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">disconnect</a>(channel_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -1574,10 +1436,7 @@ Disconnects a channel from the workspace: the channel and the tokens Peal holds 
 <dd>
 
 ```ruby
-client.channels.disconnect(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.channels.disconnect(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -1588,14 +1447,6 @@ client.channels.disconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1620,7 +1471,7 @@ client.channels.disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">update</a>(workspace_id:, channel_id:, request) -> Peal::Types::Channel</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">update</a>(channel_id:, request) -> Peal::Types::Channel</code></summary>
 <dl>
 <dd>
 
@@ -1648,7 +1499,6 @@ Gives the channel the name the workspace calls it by (`label`, 60 characters at 
 
 ```ruby
 client.channels.update(
-  workspace_id: "workspaceId",
   channel_id: "channelId",
   label: nil
 )
@@ -1662,14 +1512,6 @@ client.channels.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1702,7 +1544,7 @@ client.channels.update(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">disable</a>(workspace_id:, channel_id:) -> Peal::Types::Channel</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">disable</a>(channel_id:) -> Peal::Types::Channel</code></summary>
 <dl>
 <dd>
 
@@ -1729,10 +1571,7 @@ Turns the channel off: nothing goes out on it until it is turned back on. It kee
 <dd>
 
 ```ruby
-client.channels.disable(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.channels.disable(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -1743,14 +1582,6 @@ client.channels.disable(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1775,7 +1606,7 @@ client.channels.disable(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">enable</a>(workspace_id:, channel_id:) -> Peal::Types::Channel</code></summary>
+<details><summary><code>client.channels.<a href="/lib/peal/channels/client.rb">enable</a>(channel_id:) -> Peal::Types::Channel</code></summary>
 <dl>
 <dd>
 
@@ -1802,10 +1633,7 @@ Turns a channel back on. It posts again at once, or has the status `refreshNeede
 <dd>
 
 ```ruby
-client.channels.enable(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.channels.enable(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -1816,14 +1644,6 @@ client.channels.enable(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1849,7 +1669,7 @@ client.channels.enable(
 </details>
 
 ## posts
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">drafts</a>(workspace_id:) -> Peal::Types::DraftPage</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">drafts</a>() -> Peal::Types::DraftPage</code></summary>
 <dl>
 <dd>
 
@@ -1876,7 +1696,7 @@ Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50
 <dd>
 
 ```ruby
-client.posts.drafts(workspace_id: "workspaceId")
+client.posts.drafts
 ```
 </dd>
 </dl>
@@ -1887,14 +1707,6 @@ client.posts.drafts(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1927,7 +1739,7 @@ client.posts.drafts(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::Post]</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::Post]</code></summary>
 <dl>
 <dd>
 
@@ -1955,7 +1767,6 @@ Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 
 
 ```ruby
 client.posts.list(
-  workspace_id: "workspaceId",
   from: "from",
   to: "to"
 )
@@ -1969,14 +1780,6 @@ client.posts.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2009,7 +1812,7 @@ client.posts.list(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">create</a>(workspace_id:, request) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">create</a>(request) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -2037,7 +1840,6 @@ Creates a draft for some of the workspace's channels, possibly none yet, with op
 
 ```ruby
 client.posts.create(
-  workspace_id: "workspaceId",
   channel_ids: ["channelIds"],
   content: {
     media: [{
@@ -2065,14 +1867,6 @@ client.posts.create(
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `Peal::Types::PostDraft` 
     
 </dd>
@@ -2093,7 +1887,7 @@ client.posts.create(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">search</a>(workspace_id:) -> Peal::Types::PostPage</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">search</a>() -> Peal::Types::PostPage</code></summary>
 <dl>
 <dd>
 
@@ -2120,7 +1914,7 @@ Lists the workspace's posts, whatever their state, a page at a time: 20 unless `
 <dd>
 
 ```ruby
-client.posts.search(workspace_id: "workspaceId")
+client.posts.search
 ```
 </dd>
 </dl>
@@ -2131,14 +1925,6 @@ client.posts.search(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2275,7 +2061,7 @@ client.posts.search(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">send_</a>(workspace_id:, request) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">send_</a>(request) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -2303,7 +2089,6 @@ Creates a post and sends it to some of the workspace's channels in one call: `wh
 
 ```ruby
 client.posts.send_(
-  workspace_id: "workspaceId",
   channel_ids: ["channelIds"],
   content: {
     media: [{
@@ -2327,14 +2112,6 @@ client.posts.send_(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2447,7 +2224,7 @@ client.posts.send_(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">bulk</a>(workspace_id:, request) -> Peal::Types::BulkResult</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">bulk</a>(request) -> Peal::Types::BulkResult</code></summary>
 <dl>
 <dd>
 
@@ -2474,23 +2251,20 @@ Creates and sends up to 50 posts in one request, each as `send` would: one post 
 <dd>
 
 ```ruby
-client.posts.bulk(
-  workspace_id: "workspaceId",
-  posts: [{
-    channelIds: ["channelIds"],
-    content: {
-      media: [{
-        altText: "altText",
-        mediaId: "mediaId"
-      }],
-      overrides: [{
-        channelId: "channelId",
-        text: "text"
-      }],
+client.posts.bulk(posts: [{
+  channelIds: ["channelIds"],
+  content: {
+    media: [{
+      altText: "altText",
+      mediaId: "mediaId"
+    }],
+    overrides: [{
+      channelId: "channelId",
       text: "text"
-    }
-  }]
-)
+    }],
+    text: "text"
+  }
+}])
 ```
 </dd>
 </dl>
@@ -2501,14 +2275,6 @@ client.posts.bulk(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2541,7 +2307,7 @@ client.posts.bulk(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">import</a>(workspace_id:, request) -> Peal::Types::ImportResult</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">import</a>(request) -> Peal::Types::ImportResult</code></summary>
 <dl>
 <dd>
 
@@ -2568,10 +2334,7 @@ Creates and sends the posts a CSV file lists, one per row, at most 100 rows unde
 <dd>
 
 ```ruby
-client.posts.import(
-  workspace_id: "workspaceId",
-  csv: "csv"
-)
+client.posts.import(csv: "csv")
 ```
 </dd>
 </dl>
@@ -2582,14 +2345,6 @@ client.posts.import(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2630,7 +2385,7 @@ client.posts.import(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">validate</a>(workspace_id:, request) -> Peal::Types::PostValidation</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">validate</a>(request) -> Peal::Types::PostValidation</code></summary>
 <dl>
 <dd>
 
@@ -2658,7 +2413,6 @@ Checks a post without making it, and changes nothing: send what `send` takes, or
 
 ```ruby
 client.posts.validate(
-  workspace_id: "workspaceId",
   channel_ids: ["channelIds"],
   content: {
     media: [{
@@ -2682,14 +2436,6 @@ client.posts.validate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2778,7 +2524,7 @@ client.posts.validate(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">get</a>(workspace_id:, post_id:) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">get</a>(post_id:) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -2805,10 +2551,7 @@ Answers with a post of the workspace. Needs post:read.
 <dd>
 
 ```ruby
-client.posts.get(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.get(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -2819,14 +2562,6 @@ client.posts.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2851,7 +2586,7 @@ client.posts.get(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">update</a>(workspace_id:, post_id:, request) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">update</a>(post_id:, request) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -2879,7 +2614,6 @@ Replaces a draft's content, channels and options: options left out are removed. 
 
 ```ruby
 client.posts.update(
-  workspace_id: "workspaceId",
   post_id: "postId",
   channel_ids: ["channelIds"],
   content: {
@@ -2904,14 +2638,6 @@ client.posts.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2944,7 +2670,7 @@ client.posts.update(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">discard</a>(workspace_id:, post_id:) -> </code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">discard</a>(post_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -2971,10 +2697,7 @@ Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Need
 <dd>
 
 ```ruby
-client.posts.discard(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.discard(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -2985,14 +2708,6 @@ client.posts.discard(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3017,7 +2732,7 @@ client.posts.discard(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">outcome</a>(workspace_id:, post_id:) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">outcome</a>(post_id:) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3044,10 +2759,7 @@ Answers with a post once it has gone out: it waits up to `wait` seconds (60 at m
 <dd>
 
 ```ruby
-client.posts.outcome(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.outcome(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -3058,14 +2770,6 @@ client.posts.outcome(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3098,7 +2802,7 @@ client.posts.outcome(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">attempts</a>(workspace_id:, post_id:) -> Internal::Types::Array[Peal::Types::PublicationAttempt]</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">attempts</a>(post_id:) -> Internal::Types::Array[Peal::Types::PublicationAttempt]</code></summary>
 <dl>
 <dd>
 
@@ -3125,10 +2829,7 @@ Lists every attempt Peal made at publishing the post, by channel, round and atte
 <dd>
 
 ```ruby
-client.posts.attempts(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.attempts(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -3139,14 +2840,6 @@ client.posts.attempts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3171,7 +2864,7 @@ client.posts.attempts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">tag</a>(workspace_id:, post_id:, request) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">tag</a>(post_id:, request) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3199,7 +2892,6 @@ Files a post under these tags of the workspace, 10 at most, instead of those it 
 
 ```ruby
 client.posts.tag(
-  workspace_id: "workspaceId",
   post_id: "postId",
   tag_ids: ["tagIds"]
 )
@@ -3213,14 +2905,6 @@ client.posts.tag(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3253,7 +2937,7 @@ client.posts.tag(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">duplicate</a>(workspace_id:, post_id:) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">duplicate</a>(post_id:) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3280,10 +2964,7 @@ Makes a new draft that says what the post says, whatever the post's status: its 
 <dd>
 
 ```ruby
-client.posts.duplicate(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.duplicate(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -3294,14 +2975,6 @@ client.posts.duplicate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3326,7 +2999,7 @@ client.posts.duplicate(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">schedule</a>(workspace_id:, post_id:, request) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">schedule</a>(post_id:, request) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3354,7 +3027,6 @@ Schedules a draft on some of the workspace's channels at an instant, kept with t
 
 ```ruby
 client.posts.schedule(
-  workspace_id: "workspaceId",
   post_id: "postId",
   at: "at",
   channel_ids: ["channelIds"],
@@ -3370,14 +3042,6 @@ client.posts.schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3426,7 +3090,7 @@ client.posts.schedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">reschedule</a>(workspace_id:, post_id:, request) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">reschedule</a>(post_id:, request) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3454,7 +3118,6 @@ Moves a scheduled post, or one awaiting approval, to another instant, or schedul
 
 ```ruby
 client.posts.reschedule(
-  workspace_id: "workspaceId",
   post_id: "postId",
   at: "at",
   time_zone: "timeZone"
@@ -3469,14 +3132,6 @@ client.posts.reschedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3509,7 +3164,7 @@ client.posts.reschedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">enqueue</a>(workspace_id:, post_id:, request) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">enqueue</a>(post_id:, request) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3536,10 +3191,7 @@ Puts a post on the next free slot of a queue (`queueId`, or the workspace's defa
 <dd>
 
 ```ruby
-client.posts.enqueue(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.enqueue(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -3550,14 +3202,6 @@ client.posts.enqueue(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3598,7 +3242,7 @@ client.posts.enqueue(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">unschedule</a>(workspace_id:, post_id:) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">unschedule</a>(post_id:) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3625,10 +3269,7 @@ Takes a scheduled post back to draft, so its text and media can change: it goes 
 <dd>
 
 ```ruby
-client.posts.unschedule(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.unschedule(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -3639,14 +3280,6 @@ client.posts.unschedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3671,7 +3304,7 @@ client.posts.unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">repost</a>(workspace_id:, post_id:, target_id:) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">repost</a>(post_id:, target_id:) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3699,7 +3332,6 @@ Sends the post again, now, on one channel where it failed or is unconfirmed: a n
 
 ```ruby
 client.posts.repost(
-  workspace_id: "workspaceId",
   post_id: "postId",
   target_id: "targetId"
 )
@@ -3713,14 +3345,6 @@ client.posts.repost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3753,7 +3377,7 @@ client.posts.repost(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">remove_target</a>(workspace_id:, post_id:, target_id:) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">remove_target</a>(post_id:, target_id:) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3781,7 +3405,6 @@ Takes one channel off a post that waits for its time (scheduled, or awaiting app
 
 ```ruby
 client.posts.remove_target(
-  workspace_id: "workspaceId",
   post_id: "postId",
   target_id: "targetId"
 )
@@ -3795,14 +3418,6 @@ client.posts.remove_target(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3835,7 +3450,7 @@ client.posts.remove_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">confirm</a>(workspace_id:, post_id:, target_id:, request) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">confirm</a>(post_id:, target_id:, request) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3863,7 +3478,6 @@ Says what you found on the platform for a post unconfirmed on one channel: `publ
 
 ```ruby
 client.posts.confirm(
-  workspace_id: "workspaceId",
   post_id: "postId",
   target_id: "targetId"
 )
@@ -3877,14 +3491,6 @@ client.posts.confirm(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3925,7 +3531,7 @@ client.posts.confirm(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">leave_out_rest</a>(workspace_id:, post_id:, target_id:) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">leave_out_rest</a>(post_id:, target_id:) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -3953,7 +3559,6 @@ Publishes the post on one channel without the parts that did not go out after it
 
 ```ruby
 client.posts.leave_out_rest(
-  workspace_id: "workspaceId",
   post_id: "postId",
   target_id: "targetId"
 )
@@ -3967,14 +3572,6 @@ client.posts.leave_out_rest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4007,7 +3604,7 @@ client.posts.leave_out_rest(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">unpublish_target</a>(workspace_id:, post_id:, target_id:) -> Peal::Types::LivePostChange</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">unpublish_target</a>(post_id:, target_id:) -> Peal::Types::LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -4035,7 +3632,6 @@ Deletes the post from one channel's platform, for everyone: every part of a thre
 
 ```ruby
 client.posts.unpublish_target(
-  workspace_id: "workspaceId",
   post_id: "postId",
   target_id: "targetId"
 )
@@ -4049,14 +3645,6 @@ client.posts.unpublish_target(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4097,7 +3685,7 @@ client.posts.unpublish_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">edit_target</a>(workspace_id:, post_id:, target_id:, request) -> Peal::Types::LivePostChange</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">edit_target</a>(post_id:, target_id:, request) -> Peal::Types::LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -4125,7 +3713,6 @@ Replaces the text of one part of the post (`part`, from 0, the post itself by de
 
 ```ruby
 client.posts.edit_target(
-  workspace_id: "workspaceId",
   post_id: "postId",
   target_id: "targetId",
   text: "text"
@@ -4140,14 +3727,6 @@ client.posts.edit_target(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4204,7 +3783,7 @@ client.posts.edit_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">unpublish</a>(workspace_id:, post_id:) -> Peal::Types::PostUnpublish</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">unpublish</a>(post_id:) -> Peal::Types::PostUnpublish</code></summary>
 <dl>
 <dd>
 
@@ -4231,10 +3810,7 @@ Deletes the post from every channel's platform where it can be, as unpublishing 
 <dd>
 
 ```ruby
-client.posts.unpublish(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.unpublish(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -4245,14 +3821,6 @@ client.posts.unpublish(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4277,7 +3845,7 @@ client.posts.unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">changes</a>(workspace_id:, post_id:) -> Peal::Types::LivePostChanges</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">changes</a>(post_id:) -> Peal::Types::LivePostChanges</code></summary>
 <dl>
 <dd>
 
@@ -4304,10 +3872,7 @@ Lists the changes asked of the post once it was live (deleting it from a channel
 <dd>
 
 ```ruby
-client.posts.changes(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.changes(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -4318,14 +3883,6 @@ client.posts.changes(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4350,7 +3907,7 @@ client.posts.changes(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">cancel</a>(workspace_id:, post_id:) -> Peal::Types::Post</code></summary>
+<details><summary><code>client.posts.<a href="/lib/peal/posts/client.rb">cancel</a>(post_id:) -> Peal::Types::Post</code></summary>
 <dl>
 <dd>
 
@@ -4377,10 +3934,7 @@ Cancels a draft, a scheduled post or one awaiting approval. A post already publi
 <dd>
 
 ```ruby
-client.posts.cancel(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.posts.cancel(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -4391,14 +3945,6 @@ client.posts.cancel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4424,7 +3970,7 @@ client.posts.cancel(
 </details>
 
 ## articles
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">list</a>(workspace_id:) -> Peal::Types::ArticlePage</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">list</a>() -> Peal::Types::ArticlePage</code></summary>
 <dl>
 <dd>
 
@@ -4451,7 +3997,7 @@ Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 
 <dd>
 
 ```ruby
-client.articles.list(workspace_id: "workspaceId")
+client.articles.list
 ```
 </dd>
 </dl>
@@ -4462,14 +4008,6 @@ client.articles.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4510,7 +4048,7 @@ client.articles.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">create</a>(workspace_id:, request) -> Peal::Types::Article</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">create</a>(request) -> Peal::Types::Article</code></summary>
 <dl>
 <dd>
 
@@ -4538,7 +4076,6 @@ Writes an article for one of the workspace's websites (a channel connected with 
 
 ```ruby
 client.articles.create(
-  workspace_id: "workspaceId",
   body: {
     content: [],
     type: "doc"
@@ -4556,14 +4093,6 @@ client.articles.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4652,7 +4181,7 @@ client.articles.create(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">get</a>(workspace_id:, article_id:) -> Peal::Types::Article</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">get</a>(article_id:) -> Peal::Types::Article</code></summary>
 <dl>
 <dd>
 
@@ -4679,10 +4208,7 @@ Reads an article. Needs post:read.
 <dd>
 
 ```ruby
-client.articles.get(
-  workspace_id: "workspaceId",
-  article_id: "articleId"
-)
+client.articles.get(article_id: "articleId")
 ```
 </dd>
 </dl>
@@ -4693,14 +4219,6 @@ client.articles.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4725,7 +4243,7 @@ client.articles.get(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">delete</a>(workspace_id:, article_id:) -> </code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">delete</a>(article_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -4752,10 +4270,7 @@ Deletes the article from Peal, and its job when it waits to go out; never while 
 <dd>
 
 ```ruby
-client.articles.delete(
-  workspace_id: "workspaceId",
-  article_id: "articleId"
-)
+client.articles.delete(article_id: "articleId")
 ```
 </dd>
 </dl>
@@ -4766,14 +4281,6 @@ client.articles.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4798,7 +4305,7 @@ client.articles.delete(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">update</a>(workspace_id:, article_id:, request) -> Peal::Types::Article</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">update</a>(article_id:, request) -> Peal::Types::Article</code></summary>
 <dl>
 <dd>
 
@@ -4826,7 +4333,6 @@ Replaces what a draft, a scheduled article or one that failed says. A scheduled 
 
 ```ruby
 client.articles.update(
-  workspace_id: "workspaceId",
   article_id: "articleId",
   body: {
     content: [],
@@ -4844,14 +4350,6 @@ client.articles.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4884,7 +4382,7 @@ client.articles.update(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">schedule</a>(workspace_id:, article_id:, request) -> Peal::Types::Article</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">schedule</a>(article_id:, request) -> Peal::Types::Article</code></summary>
 <dl>
 <dd>
 
@@ -4912,7 +4410,6 @@ Schedules a draft, moves a scheduled article, or schedules one that failed again
 
 ```ruby
 client.articles.schedule(
-  workspace_id: "workspaceId",
   article_id: "articleId",
   time_zone: "timeZone"
 )
@@ -4926,14 +4423,6 @@ client.articles.schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4966,7 +4455,7 @@ client.articles.schedule(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">unschedule</a>(workspace_id:, article_id:) -> Peal::Types::Article</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">unschedule</a>(article_id:) -> Peal::Types::Article</code></summary>
 <dl>
 <dd>
 
@@ -4993,10 +4482,7 @@ Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 <dd>
 
 ```ruby
-client.articles.unschedule(
-  workspace_id: "workspaceId",
-  article_id: "articleId"
-)
+client.articles.unschedule(article_id: "articleId")
 ```
 </dd>
 </dl>
@@ -5007,14 +4493,6 @@ client.articles.unschedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5039,7 +4517,7 @@ client.articles.unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">retry_</a>(workspace_id:, article_id:) -> Peal::Types::Article</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">retry_</a>(article_id:) -> Peal::Types::Article</code></summary>
 <dl>
 <dd>
 
@@ -5066,10 +4544,7 @@ Sends a failed article again now, or one that was unconfirmed once a member chec
 <dd>
 
 ```ruby
-client.articles.retry_(
-  workspace_id: "workspaceId",
-  article_id: "articleId"
-)
+client.articles.retry_(article_id: "articleId")
 ```
 </dd>
 </dl>
@@ -5080,14 +4555,6 @@ client.articles.retry_(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5112,7 +4579,7 @@ client.articles.retry_(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">unpublish</a>(workspace_id:, article_id:) -> Peal::Types::Article</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">unpublish</a>(article_id:) -> Peal::Types::Article</code></summary>
 <dl>
 <dd>
 
@@ -5139,10 +4606,7 @@ Moves the article's post to the site's trash, where the site keeps it for a whil
 <dd>
 
 ```ruby
-client.articles.unpublish(
-  workspace_id: "workspaceId",
-  article_id: "articleId"
-)
+client.articles.unpublish(article_id: "articleId")
 ```
 </dd>
 </dl>
@@ -5153,14 +4617,6 @@ client.articles.unpublish(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5185,7 +4641,7 @@ client.articles.unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">update_on_site</a>(workspace_id:, article_id:, request) -> Peal::Types::Article</code></summary>
+<details><summary><code>client.articles.<a href="/lib/peal/articles/client.rb">update_on_site</a>(article_id:, request) -> Peal::Types::Article</code></summary>
 <dl>
 <dd>
 
@@ -5213,7 +4669,6 @@ Replaces what the article's post says on the site (title, body, excerpt, tags, c
 
 ```ruby
 client.articles.update_on_site(
-  workspace_id: "workspaceId",
   article_id: "articleId",
   body: {
     content: [],
@@ -5231,14 +4686,6 @@ client.articles.update_on_site(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5272,7 +4719,7 @@ client.articles.update_on_site(
 </details>
 
 ## media
-<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">list</a>(workspace_id:) -> Peal::Types::MediaPage</code></summary>
+<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">list</a>() -> Peal::Types::MediaPage</code></summary>
 <dl>
 <dd>
 
@@ -5299,7 +4746,7 @@ Lists the workspace's media, newest first, 30 a page unless `limit` (at most 100
 <dd>
 
 ```ruby
-client.media.list(workspace_id: "workspaceId")
+client.media.list
 ```
 </dd>
 </dl>
@@ -5310,14 +4757,6 @@ client.media.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5366,7 +4805,7 @@ client.media.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">create</a>(workspace_id:, request) -> Peal::Types::PreparedUpload</code></summary>
+<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">create</a>(request) -> Peal::Types::PreparedUpload</code></summary>
 <dl>
 <dd>
 
@@ -5394,7 +4833,6 @@ Records pending media and signs the upload of its file: one PUT for an image or 
 
 ```ruby
 client.media.create(
-  workspace_id: "workspaceId",
   byte_size: 1000000,
   content_type: "contentType"
 )
@@ -5408,14 +4846,6 @@ client.media.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5464,7 +4894,7 @@ client.media.create(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">import_from_url</a>(workspace_id:, request) -> Peal::Types::Media</code></summary>
+<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">import_from_url</a>(request) -> Peal::Types::Media</code></summary>
 <dl>
 <dd>
 
@@ -5491,10 +4921,7 @@ Fetches a file from a public address, stores it as media of the workspace and pr
 <dd>
 
 ```ruby
-client.media.import_from_url(
-  workspace_id: "workspaceId",
-  url: "url"
-)
+client.media.import_from_url(url: "url")
 ```
 </dd>
 </dl>
@@ -5505,14 +4932,6 @@ client.media.import_from_url(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5545,7 +4964,7 @@ client.media.import_from_url(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">get</a>(workspace_id:, media_id:) -> Peal::Types::Media</code></summary>
+<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">get</a>(media_id:) -> Peal::Types::Media</code></summary>
 <dl>
 <dd>
 
@@ -5572,10 +4991,7 @@ Shows one of the workspace's media. Needs media:read.
 <dd>
 
 ```ruby
-client.media.get(
-  workspace_id: "workspaceId",
-  media_id: "mediaId"
-)
+client.media.get(media_id: "mediaId")
 ```
 </dd>
 </dl>
@@ -5586,14 +5002,6 @@ client.media.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5618,7 +5026,7 @@ client.media.get(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">delete</a>(workspace_id:, media_id:) -> </code></summary>
+<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">delete</a>(media_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -5645,10 +5053,7 @@ Deletes the media and its file, and cancels its upload if it is still pending. D
 <dd>
 
 ```ruby
-client.media.delete(
-  workspace_id: "workspaceId",
-  media_id: "mediaId"
-)
+client.media.delete(media_id: "mediaId")
 ```
 </dd>
 </dl>
@@ -5659,14 +5064,6 @@ client.media.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5691,7 +5088,7 @@ client.media.delete(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">describe</a>(workspace_id:, media_id:, request) -> Peal::Types::Media</code></summary>
+<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">describe</a>(media_id:, request) -> Peal::Types::Media</code></summary>
 <dl>
 <dd>
 
@@ -5719,7 +5116,6 @@ Sets the media's description, which platforms show to people who cannot see it. 
 
 ```ruby
 client.media.describe(
-  workspace_id: "workspaceId",
   media_id: "mediaId",
   alt_text: nil
 )
@@ -5733,14 +5129,6 @@ client.media.describe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5773,7 +5161,7 @@ client.media.describe(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">complete</a>(workspace_id:, media_id:) -> Peal::Types::Media</code></summary>
+<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">complete</a>(media_id:) -> Peal::Types::Media</code></summary>
 <dl>
 <dd>
 
@@ -5800,10 +5188,7 @@ Checks that the file reached the store with the declared size and type, joining 
 <dd>
 
 ```ruby
-client.media.complete(
-  workspace_id: "workspaceId",
-  media_id: "mediaId"
-)
+client.media.complete(media_id: "mediaId")
 ```
 </dd>
 </dl>
@@ -5814,14 +5199,6 @@ client.media.complete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5846,7 +5223,7 @@ client.media.complete(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">usage</a>(workspace_id:, media_id:) -> Peal::Types::MediaUsage</code></summary>
+<details><summary><code>client.media.<a href="/lib/peal/media/client.rb">usage</a>(media_id:) -> Peal::Types::MediaUsage</code></summary>
 <dl>
 <dd>
 
@@ -5873,10 +5250,7 @@ Lists the posts that show the media: drafts, which lose it if it is deleted, and
 <dd>
 
 ```ruby
-client.media.usage(
-  workspace_id: "workspaceId",
-  media_id: "mediaId"
-)
+client.media.usage(media_id: "mediaId")
 ```
 </dd>
 </dl>
@@ -5887,14 +5261,6 @@ client.media.usage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5920,7 +5286,7 @@ client.media.usage(
 </details>
 
 ## mediaAudio
-<details><summary><code>client.media_audio.<a href="/lib/peal/media_audio/client.rb">create_voiceover</a>(workspace_id:, request) -> Peal::Types::Media</code></summary>
+<details><summary><code>client.media_audio.<a href="/lib/peal/media_audio/client.rb">create_voiceover</a>(request) -> Peal::Types::Media</code></summary>
 <dl>
 <dd>
 
@@ -5947,10 +5313,7 @@ Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models
 <dd>
 
 ```ruby
-client.media_audio.create_voiceover(
-  workspace_id: "workspaceId",
-  text: "text"
-)
+client.media_audio.create_voiceover(text: "text")
 ```
 </dd>
 </dl>
@@ -5961,14 +5324,6 @@ client.media_audio.create_voiceover(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6001,7 +5356,7 @@ client.media_audio.create_voiceover(
 </dl>
 </details>
 
-<details><summary><code>client.media_audio.<a href="/lib/peal/media_audio/client.rb">transcribe</a>(workspace_id:, media_id:, request) -> Peal::Types::Transcript</code></summary>
+<details><summary><code>client.media_audio.<a href="/lib/peal/media_audio/client.rb">transcribe</a>(media_id:, request) -> Peal::Types::Transcript</code></summary>
 <dl>
 <dd>
 
@@ -6028,10 +5383,7 @@ Sends a ready audio or video file of the media library, of at most 25000000 byte
 <dd>
 
 ```ruby
-client.media_audio.transcribe(
-  workspace_id: "workspaceId",
-  media_id: "mediaId"
-)
+client.media_audio.transcribe(media_id: "mediaId")
 ```
 </dd>
 </dl>
@@ -6042,14 +5394,6 @@ client.media_audio.transcribe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6449,7 +5793,7 @@ client.notification_preferences.update
 </details>
 
 ## assistant
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">status</a>(workspace_id:) -> Peal::Types::AssistantStatus</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">status</a>() -> Peal::Types::AssistantStatus</code></summary>
 <dl>
 <dd>
 
@@ -6476,7 +5820,7 @@ Tells whether the assistant writes for the workspace, so clients show it or hide
 <dd>
 
 ```ruby
-client.assistant.status(workspace_id: "workspaceId")
+client.assistant.status
 ```
 </dd>
 </dl>
@@ -6487,14 +5831,6 @@ client.assistant.status(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6511,7 +5847,7 @@ client.assistant.status(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">suggest</a>(workspace_id:, request) -> Peal::Types::Suggestion</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">suggest</a>(request) -> Peal::Types::Suggestion</code></summary>
 <dl>
 <dd>
 
@@ -6538,10 +5874,7 @@ Asks the language model to rewrite, shorten or translate a post's text, to sugge
 <dd>
 
 ```ruby
-client.assistant.suggest(
-  workspace_id: "workspaceId",
-  text: "text"
-)
+client.assistant.suggest(text: "text")
 ```
 </dd>
 </dl>
@@ -6552,14 +5885,6 @@ client.assistant.suggest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6592,7 +5917,7 @@ client.assistant.suggest(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">generate_image</a>(workspace_id:, request) -> Peal::Types::Media</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">generate_image</a>(request) -> Peal::Types::Media</code></summary>
 <dl>
 <dd>
 
@@ -6620,7 +5945,6 @@ Asks for one image from the prompt, in the aspect asked for, and answers with it
 
 ```ruby
 client.assistant.generate_image(
-  workspace_id: "workspaceId",
   aspect: "square",
   prompt: "prompt"
 )
@@ -6634,14 +5958,6 @@ client.assistant.generate_image(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6674,7 +5990,7 @@ client.assistant.generate_image(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">image_provider</a>(workspace_id:) -> Peal::Types::ImageProviderSetting</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">image_provider</a>() -> Peal::Types::ImageProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -6701,7 +6017,7 @@ Reads the image provider the workspace brought, a provider Peal knows by name (O
 <dd>
 
 ```ruby
-client.assistant.image_provider(workspace_id: "workspaceId")
+client.assistant.image_provider
 ```
 </dd>
 </dl>
@@ -6712,14 +6028,6 @@ client.assistant.image_provider(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6736,7 +6044,7 @@ client.assistant.image_provider(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">set_image_provider</a>(workspace_id:, request) -> Peal::Types::ImageProvider</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">set_image_provider</a>(request) -> Peal::Types::ImageProvider</code></summary>
 <dl>
 <dd>
 
@@ -6763,10 +6071,7 @@ Sets the image provider the workspace brings, a provider Peal knows by name (Ope
 <dd>
 
 ```ruby
-client.assistant.set_image_provider(
-  workspace_id: "workspaceId",
-  model: "model"
-)
+client.assistant.set_image_provider(model: "model")
 ```
 </dd>
 </dl>
@@ -6777,14 +6082,6 @@ client.assistant.set_image_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6833,7 +6130,7 @@ client.assistant.set_image_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">remove_image_provider</a>(workspace_id:) -> </code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">remove_image_provider</a>() -> </code></summary>
 <dl>
 <dd>
 
@@ -6860,7 +6157,7 @@ Removes the workspace's image provider and its key: images are made by the serve
 <dd>
 
 ```ruby
-client.assistant.remove_image_provider(workspace_id: "workspaceId")
+client.assistant.remove_image_provider
 ```
 </dd>
 </dl>
@@ -6871,14 +6168,6 @@ client.assistant.remove_image_provider(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6895,7 +6184,7 @@ client.assistant.remove_image_provider(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">text_provider</a>(workspace_id:) -> Peal::Types::TextProviderSetting</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">text_provider</a>() -> Peal::Types::TextProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -6922,7 +6211,7 @@ Reads the text provider the workspace brought, Anthropic's Messages API or an en
 <dd>
 
 ```ruby
-client.assistant.text_provider(workspace_id: "workspaceId")
+client.assistant.text_provider
 ```
 </dd>
 </dl>
@@ -6933,14 +6222,6 @@ client.assistant.text_provider(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6957,7 +6238,7 @@ client.assistant.text_provider(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">set_text_provider</a>(workspace_id:, request) -> Peal::Types::TextProvider</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">set_text_provider</a>(request) -> Peal::Types::TextProvider</code></summary>
 <dl>
 <dd>
 
@@ -6984,10 +6265,7 @@ Sets the text provider the workspace brings, Anthropic's Messages API or an endp
 <dd>
 
 ```ruby
-client.assistant.set_text_provider(
-  workspace_id: "workspaceId",
-  model: "model"
-)
+client.assistant.set_text_provider(model: "model")
 ```
 </dd>
 </dl>
@@ -6998,14 +6276,6 @@ client.assistant.set_text_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7062,7 +6332,7 @@ client.assistant.set_text_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">remove_text_provider</a>(workspace_id:) -> </code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">remove_text_provider</a>() -> </code></summary>
 <dl>
 <dd>
 
@@ -7089,7 +6359,7 @@ Removes the workspace's text provider and its key: the server's language model w
 <dd>
 
 ```ruby
-client.assistant.remove_text_provider(workspace_id: "workspaceId")
+client.assistant.remove_text_provider
 ```
 </dd>
 </dl>
@@ -7100,14 +6370,6 @@ client.assistant.remove_text_provider(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7124,7 +6386,7 @@ client.assistant.remove_text_provider(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">test_text_provider</a>(workspace_id:) -> </code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">test_text_provider</a>() -> </code></summary>
 <dl>
 <dd>
 
@@ -7151,7 +6413,7 @@ Sends the workspace's text provider one short request, a rewrite of a fixed sent
 <dd>
 
 ```ruby
-client.assistant.test_text_provider(workspace_id: "workspaceId")
+client.assistant.test_text_provider
 ```
 </dd>
 </dl>
@@ -7162,14 +6424,6 @@ client.assistant.test_text_provider(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7186,7 +6440,7 @@ client.assistant.test_text_provider(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">providers</a>(workspace_id:) -> Peal::Types::AiProviderConnections</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">providers</a>() -> Peal::Types::AiProviderConnections</code></summary>
 <dl>
 <dd>
 
@@ -7213,7 +6467,7 @@ Lists the AI providers the workspace connected with a key of its own: where each
 <dd>
 
 ```ruby
-client.assistant.providers(workspace_id: "workspaceId")
+client.assistant.providers
 ```
 </dd>
 </dl>
@@ -7224,14 +6478,6 @@ client.assistant.providers(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7248,7 +6494,7 @@ client.assistant.providers(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">connect_provider</a>(workspace_id:, provider:, request) -> Peal::Types::AiProviderConnection</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">connect_provider</a>(provider:, request) -> Peal::Types::AiProviderConnection</code></summary>
 <dl>
 <dd>
 
@@ -7275,10 +6521,7 @@ Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `open
 <dd>
 
 ```ruby
-client.assistant.connect_provider(
-  workspace_id: "workspaceId",
-  provider: "anthropic"
-)
+client.assistant.connect_provider(provider: "anthropic")
 ```
 </dd>
 </dl>
@@ -7289,14 +6532,6 @@ client.assistant.connect_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7337,7 +6572,7 @@ client.assistant.connect_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">disconnect_provider</a>(workspace_id:, provider:) -> </code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">disconnect_provider</a>(provider:) -> </code></summary>
 <dl>
 <dd>
 
@@ -7364,10 +6599,7 @@ Removes the provider and its key, and the uses it served: the server's model wor
 <dd>
 
 ```ruby
-client.assistant.disconnect_provider(
-  workspace_id: "workspaceId",
-  provider: "anthropic"
-)
+client.assistant.disconnect_provider(provider: "anthropic")
 ```
 </dd>
 </dl>
@@ -7378,14 +6610,6 @@ client.assistant.disconnect_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7410,7 +6634,7 @@ client.assistant.disconnect_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">test_provider</a>(workspace_id:, provider:, request) -> </code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">test_provider</a>(provider:, request) -> </code></summary>
 <dl>
 <dd>
 
@@ -7437,10 +6661,7 @@ Sends a connected provider one short request for text, a rewrite of a fixed sent
 <dd>
 
 ```ruby
-client.assistant.test_provider(
-  workspace_id: "workspaceId",
-  provider: "anthropic"
-)
+client.assistant.test_provider(provider: "anthropic")
 ```
 </dd>
 </dl>
@@ -7451,14 +6672,6 @@ client.assistant.test_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7491,7 +6704,7 @@ client.assistant.test_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">models</a>(workspace_id:) -> Peal::Types::AiCapabilityModels</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">models</a>() -> Peal::Types::AiCapabilityModels</code></summary>
 <dl>
 <dd>
 
@@ -7518,7 +6731,7 @@ Tells, for each use (text, images, videos, voice-overs, transcripts, slide video
 <dd>
 
 ```ruby
-client.assistant.models(workspace_id: "workspaceId")
+client.assistant.models
 ```
 </dd>
 </dl>
@@ -7529,14 +6742,6 @@ client.assistant.models(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7553,7 +6758,7 @@ client.assistant.models(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">set_model</a>(workspace_id:, capability:, request) -> Peal::Types::AiCapabilityModel</code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">set_model</a>(capability:, request) -> Peal::Types::AiCapabilityModel</code></summary>
 <dl>
 <dd>
 
@@ -7581,7 +6786,6 @@ Chooses the provider and the model for one use: the provider must be connected (
 
 ```ruby
 client.assistant.set_model(
-  workspace_id: "workspaceId",
   capability: "text",
   provider: "anthropic"
 )
@@ -7595,14 +6799,6 @@ client.assistant.set_model(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7643,7 +6839,7 @@ client.assistant.set_model(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">unset_model</a>(workspace_id:, capability:) -> </code></summary>
+<details><summary><code>client.assistant.<a href="/lib/peal/assistant/client.rb">unset_model</a>(capability:) -> </code></summary>
 <dl>
 <dd>
 
@@ -7670,10 +6866,7 @@ Leaves a use to the server's model, if it has one (`serverModel`), within the wo
 <dd>
 
 ```ruby
-client.assistant.unset_model(
-  workspace_id: "workspaceId",
-  capability: "text"
-)
+client.assistant.unset_model(capability: "text")
 ```
 </dd>
 </dl>
@@ -7684,14 +6877,6 @@ client.assistant.unset_model(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7717,7 +6902,7 @@ client.assistant.unset_model(
 </details>
 
 ## videoGenerations
-<details><summary><code>client.video_generations.<a href="/lib/peal/video_generations/client.rb">list</a>(workspace_id:) -> Peal::Types::VideoGenerations</code></summary>
+<details><summary><code>client.video_generations.<a href="/lib/peal/video_generations/client.rb">list</a>() -> Peal::Types::VideoGenerations</code></summary>
 <dl>
 <dd>
 
@@ -7744,7 +6929,7 @@ Lists the videos the workspace asked for, newest first, 50 at most, only those w
 <dd>
 
 ```ruby
-client.video_generations.list(workspace_id: "workspaceId")
+client.video_generations.list
 ```
 </dd>
 </dl>
@@ -7755,14 +6940,6 @@ client.video_generations.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7787,7 +6964,7 @@ client.video_generations.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.video_generations.<a href="/lib/peal/video_generations/client.rb">create</a>(workspace_id:, request) -> Peal::Types::VideoGeneration</code></summary>
+<details><summary><code>client.video_generations.<a href="/lib/peal/video_generations/client.rb">create</a>(request) -> Peal::Types::VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -7815,7 +6992,6 @@ Asks the provider the workspace chose for videos (`PUT .../assistant/models/vide
 
 ```ruby
 client.video_generations.create(
-  workspace_id: "workspaceId",
   aspect: "square",
   prompt: "prompt"
 )
@@ -7829,14 +7005,6 @@ client.video_generations.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7885,7 +7053,7 @@ client.video_generations.create(
 </dl>
 </details>
 
-<details><summary><code>client.video_generations.<a href="/lib/peal/video_generations/client.rb">get</a>(workspace_id:, generation_id:) -> Peal::Types::VideoGeneration</code></summary>
+<details><summary><code>client.video_generations.<a href="/lib/peal/video_generations/client.rb">get</a>(generation_id:) -> Peal::Types::VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -7912,10 +7080,7 @@ Reads where a video stands: queued, running, succeeded with its file (`mediaId`)
 <dd>
 
 ```ruby
-client.video_generations.get(
-  workspace_id: "workspaceId",
-  generation_id: "generationId"
-)
+client.video_generations.get(generation_id: "generationId")
 ```
 </dd>
 </dl>
@@ -7926,14 +7091,6 @@ client.video_generations.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7959,7 +7116,7 @@ client.video_generations.get(
 </details>
 
 ## slideshows
-<details><summary><code>client.slideshows.<a href="/lib/peal/slideshows/client.rb">list</a>(workspace_id:) -> Peal::Types::Slideshows</code></summary>
+<details><summary><code>client.slideshows.<a href="/lib/peal/slideshows/client.rb">list</a>() -> Peal::Types::Slideshows</code></summary>
 <dl>
 <dd>
 
@@ -7986,7 +7143,7 @@ Lists the slide videos the workspace asked for, newest first, 50 at most, only t
 <dd>
 
 ```ruby
-client.slideshows.list(workspace_id: "workspaceId")
+client.slideshows.list
 ```
 </dd>
 </dl>
@@ -7997,14 +7154,6 @@ client.slideshows.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8029,7 +7178,7 @@ client.slideshows.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="/lib/peal/slideshows/client.rb">create</a>(workspace_id:, request) -> Peal::Types::Slideshow</code></summary>
+<details><summary><code>client.slideshows.<a href="/lib/peal/slideshows/client.rb">create</a>(request) -> Peal::Types::Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -8057,7 +7206,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```ruby
 client.slideshows.create(
-  workspace_id: "workspaceId",
   aspect: "square",
   slides: [{
     mediaId: "mediaId"
@@ -8073,14 +7221,6 @@ client.slideshows.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8137,7 +7277,7 @@ client.slideshows.create(
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="/lib/peal/slideshows/client.rb">create_from_edit</a>(workspace_id:, request) -> Peal::Types::Slideshow</code></summary>
+<details><summary><code>client.slideshows.<a href="/lib/peal/slideshows/client.rb">create_from_edit</a>(request) -> Peal::Types::Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -8164,12 +7304,9 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 <dd>
 
 ```ruby
-client.slideshows.create_from_edit(
-  workspace_id: "workspaceId",
-  edit: {
-    key: "value"
-  }
-)
+client.slideshows.create_from_edit(edit: {
+  key: "value"
+})
 ```
 </dd>
 </dl>
@@ -8180,14 +7317,6 @@ client.slideshows.create_from_edit(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8212,7 +7341,7 @@ client.slideshows.create_from_edit(
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="/lib/peal/slideshows/client.rb">get</a>(workspace_id:, slideshow_id:) -> Peal::Types::Slideshow</code></summary>
+<details><summary><code>client.slideshows.<a href="/lib/peal/slideshows/client.rb">get</a>(slideshow_id:) -> Peal::Types::Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -8239,10 +7368,7 @@ Reads where a slide video stands: queued, running, succeeded with its file (`med
 <dd>
 
 ```ruby
-client.slideshows.get(
-  workspace_id: "workspaceId",
-  slideshow_id: "slideshowId"
-)
+client.slideshows.get(slideshow_id: "slideshowId")
 ```
 </dd>
 </dl>
@@ -8253,14 +7379,6 @@ client.slideshows.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8286,7 +7404,7 @@ client.slideshows.get(
 </details>
 
 ## members
-<details><summary><code>client.members.<a href="/lib/peal/members/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::WorkspaceMember]</code></summary>
+<details><summary><code>client.members.<a href="/lib/peal/members/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::WorkspaceMember]</code></summary>
 <dl>
 <dd>
 
@@ -8313,7 +7431,7 @@ Lists the workspace's members, in the order they joined, with their name, email 
 <dd>
 
 ```ruby
-client.members.list(workspace_id: "workspaceId")
+client.members.list
 ```
 </dd>
 </dl>
@@ -8324,14 +7442,6 @@ client.members.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8349,7 +7459,7 @@ client.members.list(workspace_id: "workspaceId")
 </details>
 
 ## invitations
-<details><summary><code>client.invitations.<a href="/lib/peal/invitations/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::Invitation]</code></summary>
+<details><summary><code>client.invitations.<a href="/lib/peal/invitations/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::Invitation]</code></summary>
 <dl>
 <dd>
 
@@ -8376,7 +7486,7 @@ Lists the workspace's pending invitations, oldest first, expired ones included. 
 <dd>
 
 ```ruby
-client.invitations.list(workspace_id: "workspaceId")
+client.invitations.list
 ```
 </dd>
 </dl>
@@ -8387,14 +7497,6 @@ client.invitations.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8411,7 +7513,7 @@ client.invitations.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.invitations.<a href="/lib/peal/invitations/client.rb">create</a>(workspace_id:, request) -> Peal::Types::Invitation</code></summary>
+<details><summary><code>client.invitations.<a href="/lib/peal/invitations/client.rb">create</a>(request) -> Peal::Types::Invitation</code></summary>
 <dl>
 <dd>
 
@@ -8439,7 +7541,6 @@ Invites someone to the workspace with a role: Peal emails them a link that works
 
 ```ruby
 client.invitations.create(
-  workspace_id: "workspaceId",
   email: "email",
   role: "owner"
 )
@@ -8453,14 +7554,6 @@ client.invitations.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8493,7 +7586,7 @@ client.invitations.create(
 </dl>
 </details>
 
-<details><summary><code>client.invitations.<a href="/lib/peal/invitations/client.rb">revoke</a>(workspace_id:, invitation_id:) -> </code></summary>
+<details><summary><code>client.invitations.<a href="/lib/peal/invitations/client.rb">revoke</a>(invitation_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -8520,10 +7613,7 @@ Revokes a pending invitation of the workspace: its link stops working at once. N
 <dd>
 
 ```ruby
-client.invitations.revoke(
-  workspace_id: "workspaceId",
-  invitation_id: "invitationId"
-)
+client.invitations.revoke(invitation_id: "invitationId")
 ```
 </dd>
 </dl>
@@ -8534,14 +7624,6 @@ client.invitations.revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8567,7 +7649,7 @@ client.invitations.revoke(
 </details>
 
 ## billing
-<details><summary><code>client.billing.<a href="/lib/peal/billing/client.rb">get</a>(workspace_id:) -> Peal::Types::Billing</code></summary>
+<details><summary><code>client.billing.<a href="/lib/peal/billing/client.rb">get</a>() -> Peal::Types::Billing</code></summary>
 <dl>
 <dd>
 
@@ -8594,7 +7676,7 @@ Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tie
 <dd>
 
 ```ruby
-client.billing.get(workspace_id: "workspaceId")
+client.billing.get
 ```
 </dd>
 </dl>
@@ -8605,14 +7687,6 @@ client.billing.get(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8629,7 +7703,7 @@ client.billing.get(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="/lib/peal/billing/client.rb">standing</a>(workspace_id:) -> Peal::Types::Standing</code></summary>
+<details><summary><code>client.billing.<a href="/lib/peal/billing/client.rb">standing</a>() -> Peal::Types::Standing</code></summary>
 <dl>
 <dd>
 
@@ -8656,7 +7730,7 @@ Answers where the workspace stands against its plan: what it holds beyond it, as
 <dd>
 
 ```ruby
-client.billing.standing(workspace_id: "workspaceId")
+client.billing.standing
 ```
 </dd>
 </dl>
@@ -8667,14 +7741,6 @@ client.billing.standing(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8692,7 +7758,7 @@ client.billing.standing(workspace_id: "workspaceId")
 </details>
 
 ## usage
-<details><summary><code>client.usage.<a href="/lib/peal/usage/client.rb">get</a>(workspace_id:) -> Peal::Types::WorkspaceUsageReport</code></summary>
+<details><summary><code>client.usage.<a href="/lib/peal/usage/client.rb">get</a>() -> Peal::Types::WorkspaceUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -8719,7 +7785,7 @@ Answers what the workspace uses of its plan now, and day by day from `from` to `
 <dd>
 
 ```ruby
-client.usage.get(workspace_id: "workspaceId")
+client.usage.get
 ```
 </dd>
 </dl>
@@ -8730,14 +7796,6 @@ client.usage.get(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8770,7 +7828,7 @@ client.usage.get(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.usage.<a href="/lib/peal/usage/client.rb">partner</a>(workspace_id:) -> Peal::Types::PartnerUsageReport</code></summary>
+<details><summary><code>client.usage.<a href="/lib/peal/usage/client.rb">partner</a>() -> Peal::Types::PartnerUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -8782,7 +7840,7 @@ client.usage.get(workspace_id: "workspaceId")
 <dl>
 <dd>
 
-Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
 </dd>
 </dl>
 </dd>
@@ -8797,7 +7855,7 @@ Answers what the partner account uses across the workspaces it holds, from `from
 <dd>
 
 ```ruby
-client.usage.partner(workspace_id: "workspaceId")
+client.usage.partner
 ```
 </dd>
 </dl>
@@ -8808,14 +7866,6 @@ client.usage.partner(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8865,7 +7915,7 @@ client.usage.partner(workspace_id: "workspaceId")
 </details>
 
 ## analytics
-<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">summary</a>(workspace_id:) -> Peal::Types::AnalyticsSummary</code></summary>
+<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">summary</a>() -> Peal::Types::AnalyticsSummary</code></summary>
 <dl>
 <dd>
 
@@ -8893,7 +7943,6 @@ Sums up the posts published from `from` to `to`, both included and at most 366 d
 
 ```ruby
 client.analytics.summary(
-  workspace_id: "workspaceId",
   from: "from",
   time_zone: "timeZone",
   to: "to"
@@ -8908,14 +7957,6 @@ client.analytics.summary(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8956,7 +7997,7 @@ client.analytics.summary(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">dashboard</a>(workspace_id:) -> Peal::Types::AnalyticsDashboard</code></summary>
+<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">dashboard</a>() -> Peal::Types::AnalyticsDashboard</code></summary>
 <dl>
 <dd>
 
@@ -8983,10 +8024,7 @@ Answers a workspace's analytics over a range in one call: the totals of the post
 <dd>
 
 ```ruby
-client.analytics.dashboard(
-  workspace_id: "workspaceId",
-  time_zone: "timeZone"
-)
+client.analytics.dashboard(time_zone: "timeZone")
 ```
 </dd>
 </dl>
@@ -8997,14 +8035,6 @@ client.analytics.dashboard(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9061,7 +8091,7 @@ client.analytics.dashboard(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">channel</a>(workspace_id:, channel_id:) -> Peal::Types::ChannelSeries</code></summary>
+<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">channel</a>(channel_id:) -> Peal::Types::ChannelSeries</code></summary>
 <dl>
 <dd>
 
@@ -9089,7 +8119,6 @@ Answers one channel's numbers day by day: its followers, the accounts it follows
 
 ```ruby
 client.analytics.channel(
-  workspace_id: "workspaceId",
   channel_id: "channelId",
   time_zone: "timeZone"
 )
@@ -9103,14 +8132,6 @@ client.analytics.channel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9167,7 +8188,7 @@ client.analytics.channel(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">export</a>(workspace_id:) -> String</code></summary>
+<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">export</a>() -> String</code></summary>
 <dl>
 <dd>
 
@@ -9195,7 +8216,6 @@ Streams the workspace's analytics as a file: `kind=posts` lists each post publis
 
 ```ruby
 client.analytics.export(
-  workspace_id: "workspaceId",
   time_zone: "timeZone",
   kind: "posts"
 )
@@ -9209,14 +8229,6 @@ client.analytics.export(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9281,7 +8293,7 @@ client.analytics.export(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">best_times</a>(workspace_id:) -> Peal::Types::BestTimes</code></summary>
+<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">best_times</a>() -> Peal::Types::BestTimes</code></summary>
 <dl>
 <dd>
 
@@ -9309,7 +8321,6 @@ Answers when one channel's posts did best, by weekday and hour as `timeZone` (an
 
 ```ruby
 client.analytics.best_times(
-  workspace_id: "workspaceId",
   channel_id: "channelId",
   time_zone: "timeZone"
 )
@@ -9323,14 +8334,6 @@ client.analytics.best_times(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9371,7 +8374,7 @@ client.analytics.best_times(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">post</a>(workspace_id:, post_id:) -> Peal::Types::PostAnalytics</code></summary>
+<details><summary><code>client.analytics.<a href="/lib/peal/analytics/client.rb">post</a>(post_id:) -> Peal::Types::PostAnalytics</code></summary>
 <dl>
 <dd>
 
@@ -9398,10 +8401,7 @@ Answers with the counts of a post on each channel it went live on, over time. A 
 <dd>
 
 ```ruby
-client.analytics.post(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.analytics.post(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -9412,14 +8412,6 @@ client.analytics.post(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9445,7 +8437,7 @@ client.analytics.post(
 </details>
 
 ## tiktok
-<details><summary><code>client.tiktok.<a href="/lib/peal/tiktok/client.rb">creator</a>(workspace_id:, channel_id:) -> Peal::Types::TikTokAccount</code></summary>
+<details><summary><code>client.tiktok.<a href="/lib/peal/tiktok/client.rb">creator</a>(channel_id:) -> Peal::Types::TikTokAccount</code></summary>
 <dl>
 <dd>
 
@@ -9472,10 +8464,7 @@ Reads a TikTok channel's creator from TikTok: their nickname, the audiences the 
 <dd>
 
 ```ruby
-client.tiktok.creator(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.tiktok.creator(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -9486,14 +8475,6 @@ client.tiktok.creator(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9519,7 +8500,7 @@ client.tiktok.creator(
 </details>
 
 ## capabilities
-<details><summary><code>client.capabilities.<a href="/lib/peal/capabilities/client.rb">platforms</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::PlatformCapabilities]</code></summary>
+<details><summary><code>client.capabilities.<a href="/lib/peal/capabilities/client.rb">platforms</a>() -> Internal::Types::Array[Peal::Types::PlatformCapabilities]</code></summary>
 <dl>
 <dd>
 
@@ -9546,7 +8527,7 @@ Describes what a post may hold on every platform, in Peal's order, whether or no
 <dd>
 
 ```ruby
-client.capabilities.platforms(workspace_id: "workspaceId")
+client.capabilities.platforms
 ```
 </dd>
 </dl>
@@ -9557,14 +8538,6 @@ client.capabilities.platforms(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9581,7 +8554,7 @@ client.capabilities.platforms(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="/lib/peal/capabilities/client.rb">channel</a>(workspace_id:, channel_id:) -> Peal::Types::ChannelCapabilities</code></summary>
+<details><summary><code>client.capabilities.<a href="/lib/peal/capabilities/client.rb">channel</a>(channel_id:) -> Peal::Types::ChannelCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -9608,10 +8581,7 @@ Describes what a post on this channel may hold: its platform's capabilities, and
 <dd>
 
 ```ruby
-client.capabilities.channel(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.capabilities.channel(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -9622,14 +8592,6 @@ client.capabilities.channel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9655,7 +8617,7 @@ client.capabilities.channel(
 </details>
 
 ## lookups
-<details><summary><code>client.lookups.<a href="/lib/peal/lookups/client.rb">list</a>(workspace_id:, channel_id:) -> Internal::Types::Array[Peal::Types::LookupDescription]</code></summary>
+<details><summary><code>client.lookups.<a href="/lib/peal/lookups/client.rb">list</a>(channel_id:) -> Internal::Types::Array[Peal::Types::LookupDescription]</code></summary>
 <dl>
 <dd>
 
@@ -9682,10 +8644,7 @@ Lists the lookups the channel has: what its platform tells about the account tha
 <dd>
 
 ```ruby
-client.lookups.list(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.lookups.list(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -9696,14 +8655,6 @@ client.lookups.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9728,7 +8679,7 @@ client.lookups.list(
 </dl>
 </details>
 
-<details><summary><code>client.lookups.<a href="/lib/peal/lookups/client.rb">run</a>(workspace_id:, channel_id:, name:, request) -> Peal::Types::LookupResult</code></summary>
+<details><summary><code>client.lookups.<a href="/lib/peal/lookups/client.rb">run</a>(channel_id:, name:, request) -> Peal::Types::LookupResult</code></summary>
 <dl>
 <dd>
 
@@ -9756,7 +8707,6 @@ Runs one of the channel's lookups: asks the platform now, with the channel's tok
 
 ```ruby
 client.lookups.run(
-  workspace_id: "workspaceId",
   channel_id: "channelId",
   name: "name"
 )
@@ -9770,14 +8720,6 @@ client.lookups.run(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9859,7 +8801,7 @@ client.lookups.run(
 </details>
 
 ## webhooks
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::WebhookEndpoint]</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::WebhookEndpoint]</code></summary>
 <dl>
 <dd>
 
@@ -9886,7 +8828,7 @@ Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 <dd>
 
 ```ruby
-client.webhooks.list(workspace_id: "workspaceId")
+client.webhooks.list
 ```
 </dd>
 </dl>
@@ -9897,14 +8839,6 @@ client.webhooks.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9921,7 +8855,7 @@ client.webhooks.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">create</a>(workspace_id:, request) -> Peal::Types::WebhookEndpointSecret</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">create</a>(request) -> Peal::Types::WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -9949,7 +8883,6 @@ Adds a webhook endpoint to the workspace, and answers with its signing secret, w
 
 ```ruby
 client.webhooks.create(
-  workspace_id: "workspaceId",
   event_types: ["post.scheduled"],
   url: "url"
 )
@@ -9963,14 +8896,6 @@ client.webhooks.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10051,7 +8976,7 @@ client.webhooks.create(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">search_deliveries</a>(workspace_id:) -> Peal::Types::WebhookDeliveryPage</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">search_deliveries</a>() -> Peal::Types::WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -10078,7 +9003,7 @@ Lists the workspace's deliveries across its endpoints, newest first, 30 a page u
 <dd>
 
 ```ruby
-client.webhooks.search_deliveries(workspace_id: "workspaceId")
+client.webhooks.search_deliveries
 ```
 </dd>
 </dl>
@@ -10089,14 +9014,6 @@ client.webhooks.search_deliveries(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10169,7 +9086,7 @@ client.webhooks.search_deliveries(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">redeliver_many</a>(workspace_id:, request) -> Peal::Types::WebhookBulkRedelivery</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">redeliver_many</a>(request) -> Peal::Types::WebhookBulkRedelivery</code></summary>
 <dl>
 <dd>
 
@@ -10196,10 +9113,7 @@ Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, o
 <dd>
 
 ```ruby
-client.webhooks.redeliver_many(
-  workspace_id: "workspaceId",
-  delivery_ids: ["deliveryIds"]
-)
+client.webhooks.redeliver_many(delivery_ids: ["deliveryIds"])
 ```
 </dd>
 </dl>
@@ -10210,14 +9124,6 @@ client.webhooks.redeliver_many(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10242,7 +9148,7 @@ client.webhooks.redeliver_many(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">get</a>(workspace_id:, endpoint_id:) -> Peal::Types::WebhookEndpoint</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">get</a>(endpoint_id:) -> Peal::Types::WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -10269,10 +9175,7 @@ Shows one of the workspace's webhook endpoints. Needs webhook:read.
 <dd>
 
 ```ruby
-client.webhooks.get(
-  workspace_id: "workspaceId",
-  endpoint_id: "endpointId"
-)
+client.webhooks.get(endpoint_id: "endpointId")
 ```
 </dd>
 </dl>
@@ -10283,14 +9186,6 @@ client.webhooks.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10315,7 +9210,7 @@ client.webhooks.get(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">delete</a>(workspace_id:, endpoint_id:) -> </code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">delete</a>(endpoint_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -10342,10 +9237,7 @@ Deletes an endpoint, its secret and its delivery log: nothing more is sent to it
 <dd>
 
 ```ruby
-client.webhooks.delete(
-  workspace_id: "workspaceId",
-  endpoint_id: "endpointId"
-)
+client.webhooks.delete(endpoint_id: "endpointId")
 ```
 </dd>
 </dl>
@@ -10356,14 +9248,6 @@ client.webhooks.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10388,7 +9272,7 @@ client.webhooks.delete(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">update</a>(workspace_id:, endpoint_id:, request) -> Peal::Types::WebhookEndpoint</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">update</a>(endpoint_id:, request) -> Peal::Types::WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -10415,10 +9299,7 @@ Changes an endpoint's address, description, events, filters or headers, or turns
 <dd>
 
 ```ruby
-client.webhooks.update(
-  workspace_id: "workspaceId",
-  endpoint_id: "endpointId"
-)
+client.webhooks.update(endpoint_id: "endpointId")
 ```
 </dd>
 </dl>
@@ -10429,14 +9310,6 @@ client.webhooks.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10517,7 +9390,7 @@ client.webhooks.update(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">rotate_secret</a>(workspace_id:, endpoint_id:) -> Peal::Types::WebhookEndpointSecret</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">rotate_secret</a>(endpoint_id:) -> Peal::Types::WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -10544,10 +9417,7 @@ Replaces an endpoint's signing secret, and answers with the new one, which is no
 <dd>
 
 ```ruby
-client.webhooks.rotate_secret(
-  workspace_id: "workspaceId",
-  endpoint_id: "endpointId"
-)
+client.webhooks.rotate_secret(endpoint_id: "endpointId")
 ```
 </dd>
 </dl>
@@ -10558,14 +9428,6 @@ client.webhooks.rotate_secret(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10590,7 +9452,7 @@ client.webhooks.rotate_secret(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">send_test</a>(workspace_id:, endpoint_id:) -> Peal::Types::WebhookDelivery</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">send_test</a>(endpoint_id:) -> Peal::Types::WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -10617,10 +9479,7 @@ Sends the endpoint a `webhook.test` event, or, with `eventType`, a sample of tha
 <dd>
 
 ```ruby
-client.webhooks.send_test(
-  workspace_id: "workspaceId",
-  endpoint_id: "endpointId"
-)
+client.webhooks.send_test(endpoint_id: "endpointId")
 ```
 </dd>
 </dl>
@@ -10631,14 +9490,6 @@ client.webhooks.send_test(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10671,7 +9522,7 @@ client.webhooks.send_test(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">list_deliveries</a>(workspace_id:, endpoint_id:) -> Peal::Types::WebhookDeliveryPage</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">list_deliveries</a>(endpoint_id:) -> Peal::Types::WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -10698,10 +9549,7 @@ Lists the endpoint's deliveries, newest first, of a `status` and an `eventType` 
 <dd>
 
 ```ruby
-client.webhooks.list_deliveries(
-  workspace_id: "workspaceId",
-  endpoint_id: "endpointId"
-)
+client.webhooks.list_deliveries(endpoint_id: "endpointId")
 ```
 </dd>
 </dl>
@@ -10712,14 +9560,6 @@ client.webhooks.list_deliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10776,7 +9616,7 @@ client.webhooks.list_deliveries(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">redeliver</a>(workspace_id:, endpoint_id:, delivery_id:) -> Peal::Types::WebhookDelivery</code></summary>
+<details><summary><code>client.webhooks.<a href="/lib/peal/webhooks/client.rb">redeliver</a>(endpoint_id:, delivery_id:) -> Peal::Types::WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -10804,7 +9644,6 @@ Sends the delivery's event to the endpoint again, as a new delivery of the same 
 
 ```ruby
 client.webhooks.redeliver(
-  workspace_id: "workspaceId",
   endpoint_id: "endpointId",
   delivery_id: "deliveryId"
 )
@@ -10818,14 +9657,6 @@ client.webhooks.redeliver(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10859,7 +9690,7 @@ client.webhooks.redeliver(
 </details>
 
 ## inbox
-<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">list_threads</a>(workspace_id:) -> Peal::Types::InboxThreadPage</code></summary>
+<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">list_threads</a>() -> Peal::Types::InboxThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -10886,7 +9717,7 @@ Lists the threads that have comments, one per post and channel: those with a com
 <dd>
 
 ```ruby
-client.inbox.list_threads(workspace_id: "workspaceId")
+client.inbox.list_threads
 ```
 </dd>
 </dl>
@@ -10897,14 +9728,6 @@ client.inbox.list_threads(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10961,7 +9784,7 @@ client.inbox.list_threads(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">get_thread</a>(workspace_id:, thread_id:) -> Peal::Types::InboxThreadDetail</code></summary>
+<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">get_thread</a>(thread_id:) -> Peal::Types::InboxThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -10988,10 +9811,7 @@ Shows a thread whole: its comments, oldest first, the replies sent from Peal, an
 <dd>
 
 ```ruby
-client.inbox.get_thread(
-  workspace_id: "workspaceId",
-  thread_id: "threadId"
-)
+client.inbox.get_thread(thread_id: "threadId")
 ```
 </dd>
 </dl>
@@ -11002,14 +9822,6 @@ client.inbox.get_thread(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11034,7 +9846,7 @@ client.inbox.get_thread(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">get_abilities</a>(workspace_id:, channel_id:) -> Peal::Types::InboxAbilities</code></summary>
+<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">get_abilities</a>(channel_id:) -> Peal::Types::InboxAbilities</code></summary>
 <dl>
 <dd>
 
@@ -11061,10 +9873,7 @@ Says what a channel can do about the comments under its posts, from its platform
 <dd>
 
 ```ruby
-client.inbox.get_abilities(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.inbox.get_abilities(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -11075,14 +9884,6 @@ client.inbox.get_abilities(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11107,7 +9908,7 @@ client.inbox.get_abilities(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">reply</a>(workspace_id:, comment_id:, request) -> Peal::Types::InboxReply</code></summary>
+<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">reply</a>(comment_id:, request) -> Peal::Types::InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -11135,7 +9936,6 @@ Answers a comment in public, as the channel's account: everyone who sees the pos
 
 ```ruby
 client.inbox.reply(
-  workspace_id: "workspaceId",
   comment_id: "commentId",
   text: "text"
 )
@@ -11149,14 +9949,6 @@ client.inbox.reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11197,7 +9989,7 @@ client.inbox.reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">set_answered</a>(workspace_id:, comment_id:, request) -> Peal::Types::InboxComment</code></summary>
+<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">set_answered</a>(comment_id:, request) -> Peal::Types::InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -11225,7 +10017,6 @@ Says a comment needs no answer (`answered: true`), or waits for one again (`fals
 
 ```ruby
 client.inbox.set_answered(
-  workspace_id: "workspaceId",
   comment_id: "commentId",
   answered: true
 )
@@ -11239,14 +10030,6 @@ client.inbox.set_answered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11279,7 +10062,7 @@ client.inbox.set_answered(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">moderate</a>(workspace_id:, comment_id:, request) -> Peal::Types::InboxComment</code></summary>
+<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">moderate</a>(comment_id:, request) -> Peal::Types::InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -11307,7 +10090,6 @@ Asks the channel's account to hide or show a comment, like it or take the like b
 
 ```ruby
 client.inbox.moderate(
-  workspace_id: "workspaceId",
   comment_id: "commentId",
   action: "hide"
 )
@@ -11321,14 +10103,6 @@ client.inbox.moderate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11361,7 +10135,7 @@ client.inbox.moderate(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">confirm_reply</a>(workspace_id:, reply_id:, request) -> Peal::Types::InboxReply</code></summary>
+<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">confirm_reply</a>(reply_id:, request) -> Peal::Types::InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -11389,7 +10163,6 @@ Records what someone found on the platform for an unconfirmed reply: it is there
 
 ```ruby
 client.inbox.confirm_reply(
-  workspace_id: "workspaceId",
   reply_id: "replyId",
   sent: true
 )
@@ -11403,14 +10176,6 @@ client.inbox.confirm_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11443,7 +10208,7 @@ client.inbox.confirm_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">withdraw_reply</a>(workspace_id:, reply_id:) -> Peal::Types::InboxReply</code></summary>
+<details><summary><code>client.inbox.<a href="/lib/peal/inbox/client.rb">withdraw_reply</a>(reply_id:) -> Peal::Types::InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -11470,10 +10235,7 @@ Deletes a reply sent from Peal from its platform, and answers with it, `withdraw
 <dd>
 
 ```ruby
-client.inbox.withdraw_reply(
-  workspace_id: "workspaceId",
-  reply_id: "replyId"
-)
+client.inbox.withdraw_reply(reply_id: "replyId")
 ```
 </dd>
 </dl>
@@ -11484,14 +10246,6 @@ client.inbox.withdraw_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11517,7 +10271,7 @@ client.inbox.withdraw_reply(
 </details>
 
 ## inboxReviews
-<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">list_review_threads</a>(workspace_id:) -> Peal::Types::InboxReviewThreadPage</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">list_review_threads</a>() -> Peal::Types::InboxReviewThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -11544,7 +10298,7 @@ Lists the locations that have reviews, one per channel: those with a review wait
 <dd>
 
 ```ruby
-client.inbox_reviews.list_review_threads(workspace_id: "workspaceId")
+client.inbox_reviews.list_review_threads
 ```
 </dd>
 </dl>
@@ -11555,14 +10309,6 @@ client.inbox_reviews.list_review_threads(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11611,7 +10357,7 @@ client.inbox_reviews.list_review_threads(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">get_review_thread</a>(workspace_id:, thread_id:) -> Peal::Types::InboxReviewThreadDetail</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">get_review_thread</a>(thread_id:) -> Peal::Types::InboxReviewThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -11638,10 +10384,7 @@ Shows a location's reviews whole, the latest first, the replies sent from Peal, 
 <dd>
 
 ```ruby
-client.inbox_reviews.get_review_thread(
-  workspace_id: "workspaceId",
-  thread_id: "threadId"
-)
+client.inbox_reviews.get_review_thread(thread_id: "threadId")
 ```
 </dd>
 </dl>
@@ -11652,14 +10395,6 @@ client.inbox_reviews.get_review_thread(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11684,7 +10419,7 @@ client.inbox_reviews.get_review_thread(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">reply_to_review</a>(workspace_id:, review_id:, request) -> Peal::Types::InboxReviewReply</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">reply_to_review</a>(review_id:, request) -> Peal::Types::InboxReviewReply</code></summary>
 <dl>
 <dd>
 
@@ -11712,7 +10447,6 @@ Answers a review in public, as the location: the reply replaces the one the revi
 
 ```ruby
 client.inbox_reviews.reply_to_review(
-  workspace_id: "workspaceId",
   review_id: "reviewId",
   text: "text"
 )
@@ -11726,14 +10460,6 @@ client.inbox_reviews.reply_to_review(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11774,7 +10500,7 @@ client.inbox_reviews.reply_to_review(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">withdraw_review_reply</a>(workspace_id:, review_id:) -> Peal::Types::InboxReview</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">withdraw_review_reply</a>(review_id:) -> Peal::Types::InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -11801,10 +10527,7 @@ Deletes the location's reply to a review from the platform, whoever wrote it, an
 <dd>
 
 ```ruby
-client.inbox_reviews.withdraw_review_reply(
-  workspace_id: "workspaceId",
-  review_id: "reviewId"
-)
+client.inbox_reviews.withdraw_review_reply(review_id: "reviewId")
 ```
 </dd>
 </dl>
@@ -11815,14 +10538,6 @@ client.inbox_reviews.withdraw_review_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11847,7 +10562,7 @@ client.inbox_reviews.withdraw_review_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">set_review_answered</a>(workspace_id:, review_id:, request) -> Peal::Types::InboxReview</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="/lib/peal/inbox_reviews/client.rb">set_review_answered</a>(review_id:, request) -> Peal::Types::InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -11875,7 +10590,6 @@ Says a review needs no answer (`answered: true`), or waits for one again (`false
 
 ```ruby
 client.inbox_reviews.set_review_answered(
-  workspace_id: "workspaceId",
   review_id: "reviewId",
   answered: true
 )
@@ -11889,14 +10603,6 @@ client.inbox_reviews.set_review_answered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11930,7 +10636,7 @@ client.inbox_reviews.set_review_answered(
 </details>
 
 ## inboxMessages
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">list_conversations</a>(workspace_id:) -> Peal::Types::InboxConversationPage</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">list_conversations</a>() -> Peal::Types::InboxConversationPage</code></summary>
 <dl>
 <dd>
 
@@ -11957,7 +10663,7 @@ Lists the workspace's conversations, the latest message first, 30 a page unless 
 <dd>
 
 ```ruby
-client.inbox_messages.list_conversations(workspace_id: "workspaceId")
+client.inbox_messages.list_conversations
 ```
 </dd>
 </dl>
@@ -11968,14 +10674,6 @@ client.inbox_messages.list_conversations(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12024,7 +10722,7 @@ client.inbox_messages.list_conversations(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">get_conversation</a>(workspace_id:, conversation_id:) -> Peal::Types::InboxConversationDetail</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">get_conversation</a>(conversation_id:) -> Peal::Types::InboxConversationDetail</code></summary>
 <dl>
 <dd>
 
@@ -12051,10 +10749,7 @@ Shows a conversation: a page of its messages (the latest 100 unless `limit` says
 <dd>
 
 ```ruby
-client.inbox_messages.get_conversation(
-  workspace_id: "workspaceId",
-  conversation_id: "conversationId"
-)
+client.inbox_messages.get_conversation(conversation_id: "conversationId")
 ```
 </dd>
 </dl>
@@ -12065,14 +10760,6 @@ client.inbox_messages.get_conversation(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12113,7 +10800,7 @@ client.inbox_messages.get_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">send_message</a>(workspace_id:, conversation_id:, request) -> Peal::Types::InboxOutgoingMessage</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">send_message</a>(conversation_id:, request) -> Peal::Types::InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -12141,7 +10828,6 @@ Answers a conversation privately, as the channel's account: the message goes to 
 
 ```ruby
 client.inbox_messages.send_message(
-  workspace_id: "workspaceId",
   conversation_id: "conversationId",
   text: "text"
 )
@@ -12155,14 +10841,6 @@ client.inbox_messages.send_message(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12203,7 +10881,7 @@ client.inbox_messages.send_message(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">send_private_reply</a>(workspace_id:, request) -> Peal::Types::InboxPrivateReply</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">send_private_reply</a>(request) -> Peal::Types::InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -12231,7 +10909,6 @@ Sends the author of a comment under the workspace's post one private message, as
 
 ```ruby
 client.inbox_messages.send_private_reply(
-  workspace_id: "workspaceId",
   comment_id: "commentId",
   text: "text"
 )
@@ -12245,14 +10922,6 @@ client.inbox_messages.send_private_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12293,7 +10962,7 @@ client.inbox_messages.send_private_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">get_private_reply</a>(workspace_id:, private_reply_id:) -> Peal::Types::InboxPrivateReply</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">get_private_reply</a>(private_reply_id:) -> Peal::Types::InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -12320,10 +10989,7 @@ Shows a private reply sent to a comment's author, and how it stands. Needs engag
 <dd>
 
 ```ruby
-client.inbox_messages.get_private_reply(
-  workspace_id: "workspaceId",
-  private_reply_id: "privateReplyId"
-)
+client.inbox_messages.get_private_reply(private_reply_id: "privateReplyId")
 ```
 </dd>
 </dl>
@@ -12334,14 +11000,6 @@ client.inbox_messages.get_private_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12366,7 +11024,7 @@ client.inbox_messages.get_private_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">confirm_private_reply</a>(workspace_id:, private_reply_id:, request) -> Peal::Types::InboxPrivateReply</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">confirm_private_reply</a>(private_reply_id:, request) -> Peal::Types::InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -12394,7 +11052,6 @@ Records what someone found in the person's conversation for an unconfirmed priva
 
 ```ruby
 client.inbox_messages.confirm_private_reply(
-  workspace_id: "workspaceId",
   private_reply_id: "privateReplyId",
   went: true
 )
@@ -12408,14 +11065,6 @@ client.inbox_messages.confirm_private_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12448,7 +11097,7 @@ client.inbox_messages.confirm_private_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">set_conversation_read</a>(workspace_id:, conversation_id:, request) -> Peal::Types::InboxConversation</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">set_conversation_read</a>(conversation_id:, request) -> Peal::Types::InboxConversation</code></summary>
 <dl>
 <dd>
 
@@ -12476,7 +11125,6 @@ Says a conversation was read (`read: true`), or is unread again (`false`). Nothi
 
 ```ruby
 client.inbox_messages.set_conversation_read(
-  workspace_id: "workspaceId",
   conversation_id: "conversationId",
   read: true
 )
@@ -12490,14 +11138,6 @@ client.inbox_messages.set_conversation_read(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12530,7 +11170,7 @@ client.inbox_messages.set_conversation_read(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">get_message_settings</a>(workspace_id:) -> Peal::Types::InboxMessageSettings</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">get_message_settings</a>() -> Peal::Types::InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -12557,7 +11197,7 @@ Lists the channels whose direct messages the workspace turned on, and the applic
 <dd>
 
 ```ruby
-client.inbox_messages.get_message_settings(workspace_id: "workspaceId")
+client.inbox_messages.get_message_settings
 ```
 </dd>
 </dl>
@@ -12568,14 +11208,6 @@ client.inbox_messages.get_message_settings(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12592,7 +11224,7 @@ client.inbox_messages.get_message_settings(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">set_channel_messages</a>(workspace_id:, channel_id:, request) -> Peal::Types::InboxMessageSettings</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">set_channel_messages</a>(channel_id:, request) -> Peal::Types::InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -12620,7 +11252,6 @@ Turns a channel's direct messages on (`enabled: true`): Peal reads its conversat
 
 ```ruby
 client.inbox_messages.set_channel_messages(
-  workspace_id: "workspaceId",
   channel_id: "channelId",
   enabled: true
 )
@@ -12634,14 +11265,6 @@ client.inbox_messages.set_channel_messages(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12674,7 +11297,7 @@ client.inbox_messages.set_channel_messages(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">set_message_application</a>(workspace_id:, request) -> Peal::Types::InboxMessageSettings</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">set_message_application</a>(request) -> Peal::Types::InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -12702,7 +11325,6 @@ Lets an application connected through OAuth (by its client id) read and answer t
 
 ```ruby
 client.inbox_messages.set_message_application(
-  workspace_id: "workspaceId",
   allowed: true,
   client_id: "clientId"
 )
@@ -12716,14 +11338,6 @@ client.inbox_messages.set_message_application(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12756,7 +11370,7 @@ client.inbox_messages.set_message_application(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">confirm_message</a>(workspace_id:, message_id:, request) -> Peal::Types::InboxOutgoingMessage</code></summary>
+<details><summary><code>client.inbox_messages.<a href="/lib/peal/inbox_messages/client.rb">confirm_message</a>(message_id:, request) -> Peal::Types::InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -12784,7 +11398,6 @@ Records what someone found on the platform for an unconfirmed message: it is the
 
 ```ruby
 client.inbox_messages.confirm_message(
-  workspace_id: "workspaceId",
   message_id: "messageId",
   sent: true
 )
@@ -12798,14 +11411,6 @@ client.inbox_messages.confirm_message(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12839,7 +11444,7 @@ client.inbox_messages.confirm_message(
 </details>
 
 ## ads
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">status</a>(workspace_id:) -> Peal::Types::AdsStatus</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">status</a>() -> Peal::Types::AdsStatus</code></summary>
 <dl>
 <dd>
 
@@ -12866,7 +11471,7 @@ Says what this server offers of ads (`off`, `read` or `spend`) and on which netw
 <dd>
 
 ```ruby
-client.ads.status(workspace_id: "workspaceId")
+client.ads.status
 ```
 </dd>
 </dl>
@@ -12877,14 +11482,6 @@ client.ads.status(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12901,7 +11498,7 @@ client.ads.status(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_connections</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::AdConnection]</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_connections</a>() -> Internal::Types::Array[Peal::Types::AdConnection]</code></summary>
 <dl>
 <dd>
 
@@ -12928,7 +11525,7 @@ Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whet
 <dd>
 
 ```ruby
-client.ads.list_connections(workspace_id: "workspaceId")
+client.ads.list_connections
 ```
 </dd>
 </dl>
@@ -12939,14 +11536,6 @@ client.ads.list_connections(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12963,7 +11552,7 @@ client.ads.list_connections(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">connect</a>(workspace_id:, network:) -> Peal::Types::AdSignIn</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">connect</a>(network:) -> Peal::Types::AdSignIn</code></summary>
 <dl>
 <dd>
 
@@ -12990,10 +11579,7 @@ Starts a sign-in to an ad network and answers the page to send the member's brow
 <dd>
 
 ```ruby
-client.ads.connect(
-  workspace_id: "workspaceId",
-  network: "meta"
-)
+client.ads.connect(network: "meta")
 ```
 </dd>
 </dl>
@@ -13004,14 +11590,6 @@ client.ads.connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13036,7 +11614,7 @@ client.ads.connect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">complete_connect</a>(workspace_id:, network:, request) -> Peal::Types::AdSignInResult</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">complete_connect</a>(network:, request) -> Peal::Types::AdSignInResult</code></summary>
 <dl>
 <dd>
 
@@ -13064,7 +11642,6 @@ Completes a sign-in with what the network's page sent back, and answers the ad a
 
 ```ruby
 client.ads.complete_connect(
-  workspace_id: "workspaceId",
   network: "meta",
   state: "state"
 )
@@ -13078,14 +11655,6 @@ client.ads.complete_connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13134,7 +11703,7 @@ client.ads.complete_connect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">reachable_accounts</a>(workspace_id:, connection_id:) -> Internal::Types::Array[Peal::Types::ReachableAdAccount]</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">reachable_accounts</a>(connection_id:) -> Internal::Types::Array[Peal::Types::ReachableAdAccount]</code></summary>
 <dl>
 <dd>
 
@@ -13161,10 +11730,7 @@ Lists the ad accounts a sign-in reaches now, as the network gives them: currency
 <dd>
 
 ```ruby
-client.ads.reachable_accounts(
-  workspace_id: "workspaceId",
-  connection_id: "connectionId"
-)
+client.ads.reachable_accounts(connection_id: "connectionId")
 ```
 </dd>
 </dl>
@@ -13175,14 +11741,6 @@ client.ads.reachable_accounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13207,7 +11765,7 @@ client.ads.reachable_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">connect_accounts</a>(workspace_id:, connection_id:, request) -> Internal::Types::Array[Peal::Types::AdAccount]</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">connect_accounts</a>(connection_id:, request) -> Internal::Types::Array[Peal::Types::AdAccount]</code></summary>
 <dl>
 <dd>
 
@@ -13235,7 +11793,6 @@ Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the n
 
 ```ruby
 client.ads.connect_accounts(
-  workspace_id: "workspaceId",
   connection_id: "connectionId",
   external_ids: ["externalIds"]
 )
@@ -13249,14 +11806,6 @@ client.ads.connect_accounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13289,7 +11838,7 @@ client.ads.connect_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">disconnect</a>(workspace_id:, connection_id:) -> </code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">disconnect</a>(connection_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -13316,10 +11865,7 @@ Removes a sign-in, its token, the ad accounts it connects and what was read of t
 <dd>
 
 ```ruby
-client.ads.disconnect(
-  workspace_id: "workspaceId",
-  connection_id: "connectionId"
-)
+client.ads.disconnect(connection_id: "connectionId")
 ```
 </dd>
 </dl>
@@ -13330,14 +11876,6 @@ client.ads.disconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13362,7 +11900,7 @@ client.ads.disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_accounts</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::AdAccount]</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_accounts</a>() -> Internal::Types::Array[Peal::Types::AdAccount]</code></summary>
 <dl>
 <dd>
 
@@ -13389,7 +11927,7 @@ Lists the workspace's connected ad accounts, oldest first, with whether each may
 <dd>
 
 ```ruby
-client.ads.list_accounts(workspace_id: "workspaceId")
+client.ads.list_accounts
 ```
 </dd>
 </dl>
@@ -13400,14 +11938,6 @@ client.ads.list_accounts(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13424,7 +11954,7 @@ client.ads.list_accounts(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">get_account</a>(workspace_id:, account_id:) -> Peal::Types::AdSpending</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">get_account</a>(account_id:) -> Peal::Types::AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -13451,10 +11981,7 @@ Shows an ad account with what its boosts made through Peal commit in the current
 <dd>
 
 ```ruby
-client.ads.get_account(
-  workspace_id: "workspaceId",
-  account_id: "accountId"
-)
+client.ads.get_account(account_id: "accountId")
 ```
 </dd>
 </dl>
@@ -13465,14 +11992,6 @@ client.ads.get_account(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13497,7 +12016,7 @@ client.ads.get_account(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">remove_account</a>(workspace_id:, account_id:) -> </code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">remove_account</a>(account_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -13524,10 +12043,7 @@ Disconnects an ad account: what was read of it goes with it, and its boosts' rec
 <dd>
 
 ```ruby
-client.ads.remove_account(
-  workspace_id: "workspaceId",
-  account_id: "accountId"
-)
+client.ads.remove_account(account_id: "accountId")
 ```
 </dd>
 </dl>
@@ -13538,14 +12054,6 @@ client.ads.remove_account(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13570,7 +12078,7 @@ client.ads.remove_account(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">set_spending</a>(workspace_id:, account_id:, request) -> Peal::Types::AdSpending</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">set_spending</a>(account_id:, request) -> Peal::Types::AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -13598,7 +12106,6 @@ Decides whether an ad account may spend through Peal, and how much: `enabled` wi
 
 ```ruby
 client.ads.set_spending(
-  workspace_id: "workspaceId",
   account_id: "accountId",
   enabled: true
 )
@@ -13612,14 +12119,6 @@ client.ads.set_spending(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13660,7 +12159,7 @@ client.ads.set_spending(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_campaigns</a>(workspace_id:, account_id:) -> Peal::Types::AdCampaignReport</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_campaigns</a>(account_id:) -> Peal::Types::AdCampaignReport</code></summary>
 <dl>
 <dd>
 
@@ -13687,10 +12186,7 @@ Lists an ad account's campaigns as last read from its network (every hour on Met
 <dd>
 
 ```ruby
-client.ads.list_campaigns(
-  workspace_id: "workspaceId",
-  account_id: "accountId"
-)
+client.ads.list_campaigns(account_id: "accountId")
 ```
 </dd>
 </dl>
@@ -13701,14 +12197,6 @@ client.ads.list_campaigns(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13749,7 +12237,7 @@ client.ads.list_campaigns(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_ads</a>(workspace_id:, account_id:) -> Peal::Types::AdReport</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_ads</a>(account_id:) -> Peal::Types::AdReport</code></summary>
 <dl>
 <dd>
 
@@ -13776,10 +12264,7 @@ Lists an ad account's ads as last read, those of one campaign with `campaignId` 
 <dd>
 
 ```ruby
-client.ads.list_ads(
-  workspace_id: "workspaceId",
-  account_id: "accountId"
-)
+client.ads.list_ads(account_id: "accountId")
 ```
 </dd>
 </dl>
@@ -13790,14 +12275,6 @@ client.ads.list_ads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13846,7 +12323,7 @@ client.ads.list_ads(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_insights</a>(workspace_id:, account_id:) -> Peal::Types::AdInsightReport</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_insights</a>(account_id:) -> Peal::Types::AdInsightReport</code></summary>
 <dl>
 <dd>
 
@@ -13873,10 +12350,7 @@ Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spe
 <dd>
 
 ```ruby
-client.ads.list_insights(
-  workspace_id: "workspaceId",
-  account_id: "accountId"
-)
+client.ads.list_insights(account_id: "accountId")
 ```
 </dd>
 </dl>
@@ -13887,14 +12361,6 @@ client.ads.list_insights(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13935,7 +12401,7 @@ client.ads.list_insights(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">post_performance</a>(workspace_id:, post_id:) -> Peal::Types::PostAdPerformance</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">post_performance</a>(post_id:) -> Peal::Types::PostAdPerformance</code></summary>
 <dl>
 <dd>
 
@@ -13962,10 +12428,7 @@ Shows a published post's organic counts on each channel beside what the ads that
 <dd>
 
 ```ruby
-client.ads.post_performance(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.ads.post_performance(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -13976,14 +12439,6 @@ client.ads.post_performance(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14008,7 +12463,7 @@ client.ads.post_performance(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">quote_boost</a>(workspace_id:, request) -> Peal::Types::BoostQuote</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">quote_boost</a>(request) -> Peal::Types::BoostQuote</code></summary>
 <dl>
 <dd>
 
@@ -14036,7 +12491,6 @@ Checks a boost as `createBoost` would, and says what it would commit and the roo
 
 ```ruby
 client.ads.quote_boost(
-  workspace_id: "workspaceId",
   account_id: "accountId",
   audience: {
     ageMax: 1,
@@ -14067,14 +12521,6 @@ client.ads.quote_boost(
 <dl>
 <dd>
 
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `Peal::Types::NewBoost` 
     
 </dd>
@@ -14095,7 +12541,7 @@ client.ads.quote_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_boosts</a>(workspace_id:) -> Peal::Types::BoostPage</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">list_boosts</a>() -> Peal::Types::BoostPage</code></summary>
 <dl>
 <dd>
 
@@ -14122,7 +12568,7 @@ Lists the workspace's boosts, newest first, 50 a page, those of one post with `p
 <dd>
 
 ```ruby
-client.ads.list_boosts(workspace_id: "workspaceId")
+client.ads.list_boosts
 ```
 </dd>
 </dl>
@@ -14133,14 +12579,6 @@ client.ads.list_boosts(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14173,7 +12611,7 @@ client.ads.list_boosts(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">create_boost</a>(workspace_id:, request) -> Peal::Types::Boost</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">create_boost</a>(request) -> Peal::Types::Boost</code></summary>
 <dl>
 <dd>
 
@@ -14201,7 +12639,6 @@ client.ads.list_boosts(workspace_id: "workspaceId")
 
 ```ruby
 client.ads.create_boost(
-  workspace_id: "workspaceId",
   idempotency_key: "idempotency-key",
   account_id: "accountId",
   audience: {
@@ -14229,14 +12666,6 @@ client.ads.create_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14269,7 +12698,7 @@ client.ads.create_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">get_boost</a>(workspace_id:, boost_id:) -> Peal::Types::BoostDetail</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">get_boost</a>(boost_id:) -> Peal::Types::BoostDetail</code></summary>
 <dl>
 <dd>
 
@@ -14296,10 +12725,7 @@ Shows a boost and the journal of the requests Peal sent the network for it, each
 <dd>
 
 ```ruby
-client.ads.get_boost(
-  workspace_id: "workspaceId",
-  boost_id: "boostId"
-)
+client.ads.get_boost(boost_id: "boostId")
 ```
 </dd>
 </dl>
@@ -14310,14 +12736,6 @@ client.ads.get_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14342,7 +12760,7 @@ client.ads.get_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">pause_boost</a>(workspace_id:, boost_id:) -> Peal::Types::Boost</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">pause_boost</a>(boost_id:) -> Peal::Types::Boost</code></summary>
 <dl>
 <dd>
 
@@ -14369,10 +12787,7 @@ Pauses a boost that runs or may run: its campaign is told to pause, and the boos
 <dd>
 
 ```ruby
-client.ads.pause_boost(
-  workspace_id: "workspaceId",
-  boost_id: "boostId"
-)
+client.ads.pause_boost(boost_id: "boostId")
 ```
 </dd>
 </dl>
@@ -14383,14 +12798,6 @@ client.ads.pause_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14415,7 +12822,7 @@ client.ads.pause_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">resume_boost</a>(workspace_id:, boost_id:) -> Peal::Types::Boost</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">resume_boost</a>(boost_id:) -> Peal::Types::Boost</code></summary>
 <dl>
 <dd>
 
@@ -14442,10 +12849,7 @@ client.ads.pause_boost(
 <dd>
 
 ```ruby
-client.ads.resume_boost(
-  workspace_id: "workspaceId",
-  boost_id: "boostId"
-)
+client.ads.resume_boost(boost_id: "boostId")
 ```
 </dd>
 </dl>
@@ -14456,14 +12860,6 @@ client.ads.resume_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14488,7 +12884,7 @@ client.ads.resume_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">stop_boost</a>(workspace_id:, boost_id:) -> Peal::Types::Boost</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">stop_boost</a>(boost_id:) -> Peal::Types::Boost</code></summary>
 <dl>
 <dd>
 
@@ -14515,10 +12911,7 @@ Stops a boost for good: its campaign is told to pause, and the boost is `stopped
 <dd>
 
 ```ruby
-client.ads.stop_boost(
-  workspace_id: "workspaceId",
-  boost_id: "boostId"
-)
+client.ads.stop_boost(boost_id: "boostId")
 ```
 </dd>
 </dl>
@@ -14529,14 +12922,6 @@ client.ads.stop_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14561,7 +12946,7 @@ client.ads.stop_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">audit_trail</a>(workspace_id:) -> Peal::Types::AdAuditPage</code></summary>
+<details><summary><code>client.ads.<a href="/lib/peal/ads/client.rb">audit_trail</a>() -> Peal::Types::AdAuditPage</code></summary>
 <dl>
 <dd>
 
@@ -14588,7 +12973,7 @@ Lists the ads audit trail, newest first, 100 a page: every decision about spendi
 <dd>
 
 ```ruby
-client.ads.audit_trail(workspace_id: "workspaceId")
+client.ads.audit_trail
 ```
 </dd>
 </dl>
@@ -14599,14 +12984,6 @@ client.ads.audit_trail(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14632,7 +13009,7 @@ client.ads.audit_trail(workspace_id: "workspaceId")
 </details>
 
 ## activity
-<details><summary><code>client.activity.<a href="/lib/peal/activity/client.rb">list</a>(workspace_id:) -> Peal::Types::ActivityPage</code></summary>
+<details><summary><code>client.activity.<a href="/lib/peal/activity/client.rb">list</a>() -> Peal::Types::ActivityPage</code></summary>
 <dl>
 <dd>
 
@@ -14659,7 +13036,7 @@ Lists the requests that asked to change something in the workspace, newest first
 <dd>
 
 ```ruby
-client.activity.list(workspace_id: "workspaceId")
+client.activity.list
 ```
 </dd>
 </dl>
@@ -14670,14 +13047,6 @@ client.activity.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15395,7 +13764,7 @@ client.partner_usage.get
 </details>
 
 ## partnerAccount
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">get</a>(workspace_id:) -> Peal::Types::PartnerStanding</code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">get</a>() -> Peal::Types::PartnerStanding</code></summary>
 <dl>
 <dd>
 
@@ -15422,7 +13791,7 @@ The workspace's partner account and what it holds, null when it has none, and wh
 <dd>
 
 ```ruby
-client.partner_account.get(workspace_id: "workspaceId")
+client.partner_account.get
 ```
 </dd>
 </dl>
@@ -15433,14 +13802,6 @@ client.partner_account.get(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15457,7 +13818,7 @@ client.partner_account.get(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">open</a>(workspace_id:, request) -> Peal::Types::Partner</code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">open</a>(request) -> Peal::Types::Partner</code></summary>
 <dl>
 <dd>
 
@@ -15484,10 +13845,7 @@ Opens a partner account for the workspace, which becomes its home workspace, und
 <dd>
 
 ```ruby
-client.partner_account.open(
-  workspace_id: "workspaceId",
-  name: "name"
-)
+client.partner_account.open(name: "name")
 ```
 </dd>
 </dl>
@@ -15498,14 +13856,6 @@ client.partner_account.open(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15530,7 +13880,7 @@ client.partner_account.open(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">close</a>(workspace_id:) -> </code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">close</a>() -> </code></summary>
 <dl>
 <dd>
 
@@ -15557,7 +13907,7 @@ Closes the workspace's partner account: its keys stop working at once. Refused w
 <dd>
 
 ```ruby
-client.partner_account.close(workspace_id: "workspaceId")
+client.partner_account.close
 ```
 </dd>
 </dl>
@@ -15568,14 +13918,6 @@ client.partner_account.close(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15592,7 +13934,7 @@ client.partner_account.close(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">update</a>(workspace_id:, request) -> Peal::Types::Partner</code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">update</a>(request) -> Peal::Types::Partner</code></summary>
 <dl>
 <dd>
 
@@ -15619,7 +13961,7 @@ Changes the partner account's name, its logo (an HTTPS URL, shown from that addr
 <dd>
 
 ```ruby
-client.partner_account.update(workspace_id: "workspaceId")
+client.partner_account.update
 ```
 </dd>
 </dl>
@@ -15630,14 +13972,6 @@ client.partner_account.update(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15686,7 +14020,7 @@ client.partner_account.update(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">list_keys</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::PartnerKey]</code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">list_keys</a>() -> Internal::Types::Array[Peal::Types::PartnerKey]</code></summary>
 <dl>
 <dd>
 
@@ -15713,7 +14047,7 @@ Lists the partner account's keys. Needs partner:read.
 <dd>
 
 ```ruby
-client.partner_account.list_keys(workspace_id: "workspaceId")
+client.partner_account.list_keys
 ```
 </dd>
 </dl>
@@ -15724,14 +14058,6 @@ client.partner_account.list_keys(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15748,7 +14074,7 @@ client.partner_account.list_keys(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">create_key</a>(workspace_id:, request) -> Peal::Types::CreatedPartnerKey</code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">create_key</a>(request) -> Peal::Types::CreatedPartnerKey</code></summary>
 <dl>
 <dd>
 
@@ -15776,7 +14102,6 @@ Creates a partner key, and answers with the key itself, which is not shown again
 
 ```ruby
 client.partner_account.create_key(
-  workspace_id: "workspaceId",
   name: "name",
   permissions: ["activity:read"],
   scopes: ["workspaces:read"]
@@ -15791,14 +14116,6 @@ client.partner_account.create_key(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15847,7 +14164,7 @@ client.partner_account.create_key(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">revoke_key</a>(workspace_id:, partner_key_id:) -> </code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">revoke_key</a>(partner_key_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -15874,10 +14191,7 @@ Revokes a partner key: it stops working at once. Needs partner:manage.
 <dd>
 
 ```ruby
-client.partner_account.revoke_key(
-  workspace_id: "workspaceId",
-  partner_key_id: "partnerKeyId"
-)
+client.partner_account.revoke_key(partner_key_id: "partnerKeyId")
 ```
 </dd>
 </dl>
@@ -15888,14 +14202,6 @@ client.partner_account.revoke_key(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15920,7 +14226,7 @@ client.partner_account.revoke_key(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">overview</a>(workspace_id:) -> Peal::Types::PartnerHealth</code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">overview</a>() -> Peal::Types::PartnerHealth</code></summary>
 <dl>
 <dd>
 
@@ -15947,7 +14253,7 @@ Answers, for each workspace the partner owns, what needs attention: its channels
 <dd>
 
 ```ruby
-client.partner_account.overview(workspace_id: "workspaceId")
+client.partner_account.overview
 ```
 </dd>
 </dl>
@@ -15958,14 +14264,6 @@ client.partner_account.overview(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15998,7 +14296,7 @@ client.partner_account.overview(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">list_workspaces</a>(workspace_id:) -> Peal::Types::CustomerWorkspacePage</code></summary>
+<details><summary><code>client.partner_account.<a href="/lib/peal/partner_account/client.rb">list_workspaces</a>() -> Peal::Types::CustomerWorkspacePage</code></summary>
 <dl>
 <dd>
 
@@ -16025,7 +14323,7 @@ Lists the workspaces the partner account owns, newest first, each with the numbe
 <dd>
 
 ```ruby
-client.partner_account.list_workspaces(workspace_id: "workspaceId")
+client.partner_account.list_workspaces
 ```
 </dd>
 </dl>
@@ -16036,14 +14334,6 @@ client.partner_account.list_workspaces(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16093,7 +14383,7 @@ client.partner_account.list_workspaces(workspace_id: "workspaceId")
 </details>
 
 ## connectLinks
-<details><summary><code>client.connect_links.<a href="/lib/peal/connect_links/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::ConnectLink]</code></summary>
+<details><summary><code>client.connect_links.<a href="/lib/peal/connect_links/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::ConnectLink]</code></summary>
 <dl>
 <dd>
 
@@ -16120,7 +14410,7 @@ Lists the workspace's connect links, newest first, the last 100: those waiting, 
 <dd>
 
 ```ruby
-client.connect_links.list(workspace_id: "workspaceId")
+client.connect_links.list
 ```
 </dd>
 </dl>
@@ -16131,14 +14421,6 @@ client.connect_links.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16155,7 +14437,7 @@ client.connect_links.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="/lib/peal/connect_links/client.rb">create</a>(workspace_id:, request) -> Peal::Types::CreatedConnectLink</code></summary>
+<details><summary><code>client.connect_links.<a href="/lib/peal/connect_links/client.rb">create</a>(request) -> Peal::Types::CreatedConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -16182,7 +14464,7 @@ Creates a link to hand to whoever owns an account of `platform`, or accounts of 
 <dd>
 
 ```ruby
-client.connect_links.create(workspace_id: "workspaceId")
+client.connect_links.create
 ```
 </dd>
 </dl>
@@ -16193,14 +14475,6 @@ client.connect_links.create(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16273,7 +14547,7 @@ client.connect_links.create(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="/lib/peal/connect_links/client.rb">get</a>(workspace_id:, link_id:) -> Peal::Types::ConnectLink</code></summary>
+<details><summary><code>client.connect_links.<a href="/lib/peal/connect_links/client.rb">get</a>(link_id:) -> Peal::Types::ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -16300,10 +14574,7 @@ One connect link of the workspace: where it stands, the channels it connected on
 <dd>
 
 ```ruby
-client.connect_links.get(
-  workspace_id: "workspaceId",
-  link_id: "linkId"
-)
+client.connect_links.get(link_id: "linkId")
 ```
 </dd>
 </dl>
@@ -16314,14 +14585,6 @@ client.connect_links.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16346,7 +14609,7 @@ client.connect_links.get(
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="/lib/peal/connect_links/client.rb">revoke</a>(workspace_id:, link_id:) -> Peal::Types::ConnectLink</code></summary>
+<details><summary><code>client.connect_links.<a href="/lib/peal/connect_links/client.rb">revoke</a>(link_id:) -> Peal::Types::ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -16373,10 +14636,7 @@ Takes a connect link back: it opens nothing more, and a sign-in in progress thro
 <dd>
 
 ```ruby
-client.connect_links.revoke(
-  workspace_id: "workspaceId",
-  link_id: "linkId"
-)
+client.connect_links.revoke(link_id: "linkId")
 ```
 </dd>
 </dl>
@@ -16387,14 +14647,6 @@ client.connect_links.revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16420,7 +14672,7 @@ client.connect_links.revoke(
 </details>
 
 ## review
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">settings</a>(workspace_id:) -> Peal::Types::ReviewSettings</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">settings</a>() -> Peal::Types::ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -16447,7 +14699,7 @@ Answers with the workspace's approval policy: which of its posts wait for an app
 <dd>
 
 ```ruby
-client.review.settings(workspace_id: "workspaceId")
+client.review.settings
 ```
 </dd>
 </dl>
@@ -16458,14 +14710,6 @@ client.review.settings(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16482,7 +14726,7 @@ client.review.settings(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">update_settings</a>(workspace_id:, request) -> Peal::Types::ReviewSettings</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">update_settings</a>(request) -> Peal::Types::ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -16509,10 +14753,7 @@ Chooses the workspace's approval policy. It applies to posts scheduled from then
 <dd>
 
 ```ruby
-client.review.update_settings(
-  workspace_id: "workspaceId",
-  approval_policy: "never"
-)
+client.review.update_settings(approval_policy: "never")
 ```
 </dd>
 </dl>
@@ -16523,14 +14764,6 @@ client.review.update_settings(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16555,7 +14788,7 @@ client.review.update_settings(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">pending</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::ApprovalRequest]</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">pending</a>() -> Internal::Types::Array[Peal::Types::ApprovalRequest]</code></summary>
 <dl>
 <dd>
 
@@ -16582,7 +14815,7 @@ Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs
 <dd>
 
 ```ruby
-client.review.pending(workspace_id: "workspaceId")
+client.review.pending
 ```
 </dd>
 </dl>
@@ -16593,14 +14826,6 @@ client.review.pending(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16617,7 +14842,7 @@ client.review.pending(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">thread</a>(workspace_id:, post_id:) -> Peal::Types::PostReview</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">thread</a>(post_id:) -> Peal::Types::PostReview</code></summary>
 <dl>
 <dd>
 
@@ -16644,10 +14869,7 @@ Answers with a post's review: its comments, oldest first, and the approvals aske
 <dd>
 
 ```ruby
-client.review.thread(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.review.thread(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -16658,14 +14880,6 @@ client.review.thread(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16690,7 +14904,7 @@ client.review.thread(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">comment</a>(workspace_id:, post_id:, request) -> Peal::Types::ReviewComment</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">comment</a>(post_id:, request) -> Peal::Types::ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -16718,7 +14932,6 @@ Comments on a post, starts a thread about one of its channels or some words of i
 
 ```ruby
 client.review.comment(
-  workspace_id: "workspaceId",
   post_id: "postId",
   text: "text"
 )
@@ -16732,14 +14945,6 @@ client.review.comment(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16788,7 +14993,7 @@ client.review.comment(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">resolve</a>(workspace_id:, post_id:, comment_id:, request) -> Peal::Types::ReviewComment</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">resolve</a>(post_id:, comment_id:, request) -> Peal::Types::ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -16816,7 +15021,6 @@ Resolves the thread a comment started, or reopens it. An answer is not resolved:
 
 ```ruby
 client.review.resolve(
-  workspace_id: "workspaceId",
   post_id: "postId",
   comment_id: "commentId",
   resolved: true
@@ -16831,14 +15035,6 @@ client.review.resolve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16879,7 +15075,7 @@ client.review.resolve(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">approve</a>(workspace_id:, post_id:, request) -> Peal::Types::ApprovalOutcome</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">approve</a>(post_id:, request) -> Peal::Types::ApprovalOutcome</code></summary>
 <dl>
 <dd>
 
@@ -16907,7 +15103,6 @@ Approves a post that waits for an approval, as the reviewer was shown it: send t
 
 ```ruby
 client.review.approve(
-  workspace_id: "workspaceId",
   post_id: "postId",
   approval_id: "approvalId",
   subject_hash: "subjectHash"
@@ -16922,14 +15117,6 @@ client.review.approve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16970,7 +15157,7 @@ client.review.approve(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">request_changes</a>(workspace_id:, post_id:, request) -> Peal::Types::ChangesOutcome</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">request_changes</a>(post_id:, request) -> Peal::Types::ChangesOutcome</code></summary>
 <dl>
 <dd>
 
@@ -16998,7 +15185,6 @@ Sends a post that waits for an approval back to draft, with a comment that says 
 
 ```ruby
 client.review.request_changes(
-  workspace_id: "workspaceId",
   post_id: "postId",
   approval_id: "approvalId",
   subject_hash: "subjectHash",
@@ -17014,14 +15200,6 @@ client.review.request_changes(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17070,7 +15248,7 @@ client.review.request_changes(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">links</a>(workspace_id:, post_id:) -> Internal::Types::Array[Peal::Types::ReviewLink]</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">links</a>(post_id:) -> Internal::Types::Array[Peal::Types::ReviewLink]</code></summary>
 <dl>
 <dd>
 
@@ -17097,10 +15275,7 @@ Lists a post's review links, newest first, ended ones included. No token is show
 <dd>
 
 ```ruby
-client.review.links(
-  workspace_id: "workspaceId",
-  post_id: "postId"
-)
+client.review.links(post_id: "postId")
 ```
 </dd>
 </dl>
@@ -17111,14 +15286,6 @@ client.review.links(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17143,7 +15310,7 @@ client.review.links(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">create_link</a>(workspace_id:, post_id:, request) -> Peal::Types::CreatedReviewLink</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">create_link</a>(post_id:, request) -> Peal::Types::CreatedReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -17171,7 +15338,6 @@ Makes a link that shows a draft, a post that waits for an approval or a schedule
 
 ```ruby
 client.review.create_link(
-  workspace_id: "workspaceId",
   post_id: "postId",
   access: "view"
 )
@@ -17185,14 +15351,6 @@ client.review.create_link(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17233,7 +15391,7 @@ client.review.create_link(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">revoke_link</a>(workspace_id:, link_id:) -> Peal::Types::ReviewLink</code></summary>
+<details><summary><code>client.review.<a href="/lib/peal/review/client.rb">revoke_link</a>(link_id:) -> Peal::Types::ReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -17260,10 +15418,7 @@ Ends a review link at once: whoever opens it is told it was revoked. Needs post:
 <dd>
 
 ```ruby
-client.review.revoke_link(
-  workspace_id: "workspaceId",
-  link_id: "linkId"
-)
+client.review.revoke_link(link_id: "linkId")
 ```
 </dd>
 </dl>
@@ -17274,14 +15429,6 @@ client.review.revoke_link(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17307,7 +15454,7 @@ client.review.revoke_link(
 </details>
 
 ## tags
-<details><summary><code>client.tags.<a href="/lib/peal/tags/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::Tag]</code></summary>
+<details><summary><code>client.tags.<a href="/lib/peal/tags/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::Tag]</code></summary>
 <dl>
 <dd>
 
@@ -17334,7 +15481,7 @@ Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`)
 <dd>
 
 ```ruby
-client.tags.list(workspace_id: "workspaceId")
+client.tags.list
 ```
 </dd>
 </dl>
@@ -17345,14 +15492,6 @@ client.tags.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17369,7 +15508,7 @@ client.tags.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="/lib/peal/tags/client.rb">create</a>(workspace_id:, request) -> Peal::Types::Tag</code></summary>
+<details><summary><code>client.tags.<a href="/lib/peal/tags/client.rb">create</a>(request) -> Peal::Types::Tag</code></summary>
 <dl>
 <dd>
 
@@ -17397,7 +15536,6 @@ Adds a tag to the workspace: a name of 40 characters at most, on one line, which
 
 ```ruby
 client.tags.create(
-  workspace_id: "workspaceId",
   colour: "gray",
   name: "name"
 )
@@ -17411,14 +15549,6 @@ client.tags.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17443,7 +15573,7 @@ client.tags.create(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="/lib/peal/tags/client.rb">delete</a>(workspace_id:, tag_id:) -> </code></summary>
+<details><summary><code>client.tags.<a href="/lib/peal/tags/client.rb">delete</a>(tag_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -17470,10 +15600,7 @@ Deletes a tag, and takes it off every post that had it; the posts stay. Needs po
 <dd>
 
 ```ruby
-client.tags.delete(
-  workspace_id: "workspaceId",
-  tag_id: "tagId"
-)
+client.tags.delete(tag_id: "tagId")
 ```
 </dd>
 </dl>
@@ -17484,14 +15611,6 @@ client.tags.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17516,7 +15635,7 @@ client.tags.delete(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="/lib/peal/tags/client.rb">update</a>(workspace_id:, tag_id:, request) -> Peal::Types::Tag</code></summary>
+<details><summary><code>client.tags.<a href="/lib/peal/tags/client.rb">update</a>(tag_id:, request) -> Peal::Types::Tag</code></summary>
 <dl>
 <dd>
 
@@ -17544,7 +15663,6 @@ Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
 ```ruby
 client.tags.update(
-  workspace_id: "workspaceId",
   tag_id: "tagId",
   colour: "gray",
   name: "name"
@@ -17559,14 +15677,6 @@ client.tags.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17600,7 +15710,7 @@ client.tags.update(
 </details>
 
 ## signatures
-<details><summary><code>client.signatures.<a href="/lib/peal/signatures/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::Signature]</code></summary>
+<details><summary><code>client.signatures.<a href="/lib/peal/signatures/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::Signature]</code></summary>
 <dl>
 <dd>
 
@@ -17627,7 +15737,7 @@ Lists the workspace's signatures, oldest first. Needs post:read.
 <dd>
 
 ```ruby
-client.signatures.list(workspace_id: "workspaceId")
+client.signatures.list
 ```
 </dd>
 </dl>
@@ -17638,14 +15748,6 @@ client.signatures.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17662,7 +15764,7 @@ client.signatures.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="/lib/peal/signatures/client.rb">create</a>(workspace_id:, request) -> Peal::Types::Signature</code></summary>
+<details><summary><code>client.signatures.<a href="/lib/peal/signatures/client.rb">create</a>(request) -> Peal::Types::Signature</code></summary>
 <dl>
 <dd>
 
@@ -17690,7 +15792,6 @@ Adds a signature to the workspace: a name no other signature of the workspace ha
 
 ```ruby
 client.signatures.create(
-  workspace_id: "workspaceId",
   name: "name",
   text: "text"
 )
@@ -17704,14 +15805,6 @@ client.signatures.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17736,7 +15829,7 @@ client.signatures.create(
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="/lib/peal/signatures/client.rb">update</a>(workspace_id:, signature_id:, request) -> Peal::Types::Signature</code></summary>
+<details><summary><code>client.signatures.<a href="/lib/peal/signatures/client.rb">update</a>(signature_id:, request) -> Peal::Types::Signature</code></summary>
 <dl>
 <dd>
 
@@ -17764,7 +15857,6 @@ Replaces a signature's name, text, scope and whether it is a default. Posts that
 
 ```ruby
 client.signatures.update(
-  workspace_id: "workspaceId",
   signature_id: "signatureId",
   name: "name",
   text: "text"
@@ -17779,14 +15871,6 @@ client.signatures.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17819,7 +15903,7 @@ client.signatures.update(
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="/lib/peal/signatures/client.rb">delete</a>(workspace_id:, signature_id:) -> </code></summary>
+<details><summary><code>client.signatures.<a href="/lib/peal/signatures/client.rb">delete</a>(signature_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -17846,10 +15930,7 @@ Deletes a signature. Posts that already hold its text keep it. Needs post:update
 <dd>
 
 ```ruby
-client.signatures.delete(
-  workspace_id: "workspaceId",
-  signature_id: "signatureId"
-)
+client.signatures.delete(signature_id: "signatureId")
 ```
 </dd>
 </dl>
@@ -17860,14 +15941,6 @@ client.signatures.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17893,7 +15966,7 @@ client.signatures.delete(
 </details>
 
 ## channelSets
-<details><summary><code>client.channel_sets.<a href="/lib/peal/channel_sets/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::ChannelSet]</code></summary>
+<details><summary><code>client.channel_sets.<a href="/lib/peal/channel_sets/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::ChannelSet]</code></summary>
 <dl>
 <dd>
 
@@ -17920,7 +15993,7 @@ Lists the workspace's channel sets, oldest first, each with the channels it keep
 <dd>
 
 ```ruby
-client.channel_sets.list(workspace_id: "workspaceId")
+client.channel_sets.list
 ```
 </dd>
 </dl>
@@ -17931,14 +16004,6 @@ client.channel_sets.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17955,7 +16020,7 @@ client.channel_sets.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="/lib/peal/channel_sets/client.rb">create</a>(workspace_id:, request) -> Peal::Types::ChannelSet</code></summary>
+<details><summary><code>client.channel_sets.<a href="/lib/peal/channel_sets/client.rb">create</a>(request) -> Peal::Types::ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -17983,7 +16048,6 @@ Saves a selection of the workspace's channels under a name no other set of the w
 
 ```ruby
 client.channel_sets.create(
-  workspace_id: "workspaceId",
   channel_ids: ["channelIds"],
   name: "name"
 )
@@ -17997,14 +16061,6 @@ client.channel_sets.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18029,7 +16085,7 @@ client.channel_sets.create(
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="/lib/peal/channel_sets/client.rb">update</a>(workspace_id:, channel_set_id:, request) -> Peal::Types::ChannelSet</code></summary>
+<details><summary><code>client.channel_sets.<a href="/lib/peal/channel_sets/client.rb">update</a>(channel_set_id:, request) -> Peal::Types::ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -18057,7 +16113,6 @@ Replaces a set's name, channels and options: every channel must be connected now
 
 ```ruby
 client.channel_sets.update(
-  workspace_id: "workspaceId",
   channel_set_id: "channelSetId",
   channel_ids: ["channelIds"],
   name: "name"
@@ -18072,14 +16127,6 @@ client.channel_sets.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18112,7 +16159,7 @@ client.channel_sets.update(
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="/lib/peal/channel_sets/client.rb">delete</a>(workspace_id:, channel_set_id:) -> </code></summary>
+<details><summary><code>client.channel_sets.<a href="/lib/peal/channel_sets/client.rb">delete</a>(channel_set_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -18139,10 +16186,7 @@ Deletes a channel set. Its channels, and the posts made with it, stay. Needs pos
 <dd>
 
 ```ruby
-client.channel_sets.delete(
-  workspace_id: "workspaceId",
-  channel_set_id: "channelSetId"
-)
+client.channel_sets.delete(channel_set_id: "channelSetId")
 ```
 </dd>
 </dl>
@@ -18153,14 +16197,6 @@ client.channel_sets.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18186,7 +16222,7 @@ client.channel_sets.delete(
 </details>
 
 ## queues
-<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">list</a>(workspace_id:) -> Internal::Types::Array[Peal::Types::Queue]</code></summary>
+<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">list</a>() -> Internal::Types::Array[Peal::Types::Queue]</code></summary>
 <dl>
 <dd>
 
@@ -18213,7 +16249,7 @@ Lists the workspace's queues, the default first, then by name, each with its slo
 <dd>
 
 ```ruby
-client.queues.list(workspace_id: "workspaceId")
+client.queues.list
 ```
 </dd>
 </dl>
@@ -18224,14 +16260,6 @@ client.queues.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18248,7 +16276,7 @@ client.queues.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">create</a>(workspace_id:, request) -> Peal::Types::Queue</code></summary>
+<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">create</a>(request) -> Peal::Types::Queue</code></summary>
 <dl>
 <dd>
 
@@ -18276,7 +16304,6 @@ Saves a queue. A slot is a weekday and a time of day (`HH:mm`) in the queue's IA
 
 ```ruby
 client.queues.create(
-  workspace_id: "workspaceId",
   name: "name",
   slots: [{
     day: "monday",
@@ -18294,14 +16321,6 @@ client.queues.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18326,7 +16345,7 @@ client.queues.create(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">get</a>(workspace_id:, queue_id:) -> Peal::Types::Queue</code></summary>
+<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">get</a>(queue_id:) -> Peal::Types::Queue</code></summary>
 <dl>
 <dd>
 
@@ -18353,10 +16372,7 @@ Answers with a queue of the workspace. Needs post:read and channel:read.
 <dd>
 
 ```ruby
-client.queues.get(
-  workspace_id: "workspaceId",
-  queue_id: "queueId"
-)
+client.queues.get(queue_id: "queueId")
 ```
 </dd>
 </dl>
@@ -18367,14 +16383,6 @@ client.queues.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18399,7 +16407,7 @@ client.queues.get(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">update</a>(workspace_id:, queue_id:, request) -> Peal::Types::Queue</code></summary>
+<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">update</a>(queue_id:, request) -> Peal::Types::Queue</code></summary>
 <dl>
 <dd>
 
@@ -18427,7 +16435,6 @@ Replaces a queue's name, zone, slots and channels: every channel must be connect
 
 ```ruby
 client.queues.update(
-  workspace_id: "workspaceId",
   queue_id: "queueId",
   name: "name",
   slots: [{
@@ -18446,14 +16453,6 @@ client.queues.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18486,7 +16485,7 @@ client.queues.update(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">delete</a>(workspace_id:, queue_id:) -> </code></summary>
+<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">delete</a>(queue_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -18513,10 +16512,7 @@ Deletes a queue. The posts it placed stay scheduled at their times, and no longe
 <dd>
 
 ```ruby
-client.queues.delete(
-  workspace_id: "workspaceId",
-  queue_id: "queueId"
-)
+client.queues.delete(queue_id: "queueId")
 ```
 </dd>
 </dl>
@@ -18527,14 +16523,6 @@ client.queues.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18559,7 +16547,7 @@ client.queues.delete(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">slots</a>(workspace_id:, queue_id:) -> Peal::Types::QueuePreview</code></summary>
+<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">slots</a>(queue_id:) -> Peal::Types::QueuePreview</code></summary>
 <dl>
 <dd>
 
@@ -18586,10 +16574,7 @@ Lists the queue's next `count` slots after now (10 unless given, 50 at most), ea
 <dd>
 
 ```ruby
-client.queues.slots(
-  workspace_id: "workspaceId",
-  queue_id: "queueId"
-)
+client.queues.slots(queue_id: "queueId")
 ```
 </dd>
 </dl>
@@ -18600,14 +16585,6 @@ client.queues.slots(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18640,7 +16617,7 @@ client.queues.slots(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">reshuffle</a>(workspace_id:, queue_id:) -> Peal::Types::QueueReshuffle</code></summary>
+<details><summary><code>client.queues.<a href="/lib/peal/queues/client.rb">reshuffle</a>(queue_id:) -> Peal::Types::QueueReshuffle</code></summary>
 <dl>
 <dd>
 
@@ -18667,10 +16644,7 @@ Moves the posts that wait in the queue (scheduled or awaiting approval, after no
 <dd>
 
 ```ruby
-client.queues.reshuffle(
-  workspace_id: "workspaceId",
-  queue_id: "queueId"
-)
+client.queues.reshuffle(queue_id: "queueId")
 ```
 </dd>
 </dl>
@@ -18681,14 +16655,6 @@ client.queues.reshuffle(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18714,7 +16680,7 @@ client.queues.reshuffle(
 </details>
 
 ## recycling
-<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">list</a>(workspace_id:) -> Peal::Types::RecyclingRulePage</code></summary>
+<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">list</a>() -> Peal::Types::RecyclingRulePage</code></summary>
 <dl>
 <dd>
 
@@ -18741,7 +16707,7 @@ Lists the workspace's recycling rules, oldest first, 50 a page unless `limit` (a
 <dd>
 
 ```ruby
-client.recycling.list(workspace_id: "workspaceId")
+client.recycling.list
 ```
 </dd>
 </dl>
@@ -18752,14 +16718,6 @@ client.recycling.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18800,7 +16758,7 @@ client.recycling.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">create</a>(workspace_id:, request) -> Peal::Types::RecyclingRule</code></summary>
+<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">create</a>(request) -> Peal::Types::RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18828,7 +16786,6 @@ Starts a rule that repeats a post that is scheduled, publishing or went out (del
 
 ```ruby
 client.recycling.create(
-  workspace_id: "workspaceId",
   every: {
     count: 1,
     unit: "days"
@@ -18845,14 +16802,6 @@ client.recycling.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18917,7 +16866,7 @@ client.recycling.create(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">get</a>(workspace_id:, rule_id:) -> Peal::Types::RecyclingRule</code></summary>
+<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">get</a>(rule_id:) -> Peal::Types::RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -18944,10 +16893,7 @@ Answers with a rule of the workspace and its next 3 posts to come, each with the
 <dd>
 
 ```ruby
-client.recycling.get(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.recycling.get(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -18958,14 +16904,6 @@ client.recycling.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18990,7 +16928,7 @@ client.recycling.get(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">delete</a>(workspace_id:, rule_id:) -> </code></summary>
+<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">delete</a>(rule_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -19017,10 +16955,7 @@ Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay 
 <dd>
 
 ```ruby
-client.recycling.delete(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.recycling.delete(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -19031,14 +16966,6 @@ client.recycling.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19063,7 +16990,7 @@ client.recycling.delete(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">update</a>(workspace_id:, rule_id:, request) -> Peal::Types::RecyclingRule</code></summary>
+<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">update</a>(rule_id:, request) -> Peal::Types::RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -19090,10 +17017,7 @@ Changes a rule's variants, its `count` or `until` (null takes it away), or pause
 <dd>
 
 ```ruby
-client.recycling.update(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.recycling.update(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -19104,14 +17028,6 @@ client.recycling.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19168,7 +17084,7 @@ client.recycling.update(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">resume</a>(workspace_id:, rule_id:, request) -> Peal::Types::RecyclingRule</code></summary>
+<details><summary><code>client.recycling.<a href="/lib/peal/recycling/client.rb">resume</a>(rule_id:, request) -> Peal::Types::RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -19195,10 +17111,7 @@ Sets a paused rule going again, or one that ended for a reason that can be put r
 <dd>
 
 ```ruby
-client.recycling.resume(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.recycling.resume(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -19209,14 +17122,6 @@ client.recycling.resume(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19250,7 +17155,7 @@ client.recycling.resume(
 </details>
 
 ## followUps
-<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">list</a>(workspace_id:) -> Peal::Types::FollowUpRulePage</code></summary>
+<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">list</a>() -> Peal::Types::FollowUpRulePage</code></summary>
 <dl>
 <dd>
 
@@ -19277,7 +17182,7 @@ Lists the workspace's follow-up rules, oldest first, 50 a page unless `limit` (a
 <dd>
 
 ```ruby
-client.follow_ups.list(workspace_id: "workspaceId")
+client.follow_ups.list
 ```
 </dd>
 </dl>
@@ -19288,14 +17193,6 @@ client.follow_ups.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19344,7 +17241,7 @@ client.follow_ups.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">create</a>(workspace_id:, request) -> Peal::Types::FollowUpRule</code></summary>
+<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">create</a>(request) -> Peal::Types::FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -19371,10 +17268,7 @@ Starts a rule on a post (`postId`) or on every post a channel publishes from now
 <dd>
 
 ```ruby
-client.follow_ups.create(
-  workspace_id: "workspaceId",
-  likes: 1
-)
+client.follow_ups.create(likes: 1)
 ```
 </dd>
 </dl>
@@ -19385,14 +17279,6 @@ client.follow_ups.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19449,7 +17335,7 @@ client.follow_ups.create(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">get</a>(workspace_id:, rule_id:) -> Peal::Types::FollowUpRule</code></summary>
+<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">get</a>(rule_id:) -> Peal::Types::FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -19476,10 +17362,7 @@ Answers with a rule of the workspace, what its channels can carry and its latest
 <dd>
 
 ```ruby
-client.follow_ups.get(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.follow_ups.get(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -19490,14 +17373,6 @@ client.follow_ups.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19522,7 +17397,7 @@ client.follow_ups.get(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">delete</a>(workspace_id:, rule_id:) -> </code></summary>
+<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">delete</a>(rule_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -19549,10 +17424,7 @@ Stops a rule: it ends `stopped`, what it armed and did not send is given up, and
 <dd>
 
 ```ruby
-client.follow_ups.delete(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.follow_ups.delete(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -19563,14 +17435,6 @@ client.follow_ups.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19595,7 +17459,7 @@ client.follow_ups.delete(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">update</a>(workspace_id:, rule_id:, request) -> Peal::Types::FollowUpRule</code></summary>
+<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">update</a>(rule_id:, request) -> Peal::Types::FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -19622,10 +17486,7 @@ Changes a rule's `likes`, its `comment` (null takes it away) or whether it repos
 <dd>
 
 ```ruby
-client.follow_ups.update(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.follow_ups.update(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -19636,14 +17497,6 @@ client.follow_ups.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19700,7 +17553,7 @@ client.follow_ups.update(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">approve</a>(workspace_id:, rule_id:) -> Peal::Types::FollowUpRule</code></summary>
+<details><summary><code>client.follow_ups.<a href="/lib/peal/follow_ups/client.rb">approve</a>(rule_id:) -> Peal::Types::FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -19727,10 +17580,7 @@ Approves what a rule sends, for a rule whose starter's posts wait for an approva
 <dd>
 
 ```ruby
-client.follow_ups.approve(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.follow_ups.approve(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -19741,14 +17591,6 @@ client.follow_ups.approve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19774,7 +17616,7 @@ client.follow_ups.approve(
 </details>
 
 ## inboxRules
-<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">list_comment_rules</a>(workspace_id:) -> Peal::Types::CommentRulePage</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">list_comment_rules</a>() -> Peal::Types::CommentRulePage</code></summary>
 <dl>
 <dd>
 
@@ -19801,7 +17643,7 @@ Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at 
 <dd>
 
 ```ruby
-client.inbox_rules.list_comment_rules(workspace_id: "workspaceId")
+client.inbox_rules.list_comment_rules
 ```
 </dd>
 </dl>
@@ -19812,14 +17654,6 @@ client.inbox_rules.list_comment_rules(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19860,7 +17694,7 @@ client.inbox_rules.list_comment_rules(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">create_comment_rule</a>(workspace_id:, request) -> Peal::Types::CommentRule</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">create_comment_rule</a>(request) -> Peal::Types::CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -19888,7 +17722,6 @@ Starts a rule on the comments of a post that went out (`postId`) or of every pos
 
 ```ruby
 client.inbox_rules.create_comment_rule(
-  workspace_id: "workspaceId",
   keywords: ["keywords"],
   reply: "reply"
 )
@@ -19902,14 +17735,6 @@ client.inbox_rules.create_comment_rule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19966,7 +17791,7 @@ client.inbox_rules.create_comment_rule(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">get_comment_rule</a>(workspace_id:, rule_id:) -> Peal::Types::CommentRule</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">get_comment_rule</a>(rule_id:) -> Peal::Types::CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -19993,10 +17818,7 @@ Answers a comment rule of the workspace, what its channels can carry and what it
 <dd>
 
 ```ruby
-client.inbox_rules.get_comment_rule(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.inbox_rules.get_comment_rule(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -20007,14 +17829,6 @@ client.inbox_rules.get_comment_rule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20039,7 +17853,7 @@ client.inbox_rules.get_comment_rule(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">delete_comment_rule</a>(workspace_id:, rule_id:) -> </code></summary>
+<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">delete_comment_rule</a>(rule_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -20066,10 +17880,7 @@ Stops a rule: it answers nothing more; the replies it sent stay, and the inbox w
 <dd>
 
 ```ruby
-client.inbox_rules.delete_comment_rule(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.inbox_rules.delete_comment_rule(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -20080,14 +17891,6 @@ client.inbox_rules.delete_comment_rule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20112,7 +17915,7 @@ client.inbox_rules.delete_comment_rule(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">update_comment_rule</a>(workspace_id:, rule_id:, request) -> Peal::Types::CommentRule</code></summary>
+<details><summary><code>client.inbox_rules.<a href="/lib/peal/inbox_rules/client.rb">update_comment_rule</a>(rule_id:, request) -> Peal::Types::CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -20139,10 +17942,7 @@ Changes a rule's keywords, reply or private reply (`privateReply` null takes it 
 <dd>
 
 ```ruby
-client.inbox_rules.update_comment_rule(
-  workspace_id: "workspaceId",
-  rule_id: "ruleId"
-)
+client.inbox_rules.update_comment_rule(rule_id: "ruleId")
 ```
 </dd>
 </dl>
@@ -20153,14 +17953,6 @@ client.inbox_rules.update_comment_rule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20218,7 +18010,7 @@ client.inbox_rules.update_comment_rule(
 </details>
 
 ## feeds
-<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">list</a>(workspace_id:) -> Peal::Types::FeedPage</code></summary>
+<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">list</a>() -> Peal::Types::FeedPage</code></summary>
 <dl>
 <dd>
 
@@ -20245,7 +18037,7 @@ Lists the workspace's feeds, oldest first, 50 a page unless `limit` (at most 100
 <dd>
 
 ```ruby
-client.feeds.list(workspace_id: "workspaceId")
+client.feeds.list
 ```
 </dd>
 </dl>
@@ -20256,14 +18048,6 @@ client.feeds.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20296,7 +18080,7 @@ client.feeds.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">create</a>(workspace_id:, request) -> Peal::Types::CreatedFeed</code></summary>
+<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">create</a>(request) -> Peal::Types::CreatedFeed</code></summary>
 <dl>
 <dd>
 
@@ -20323,10 +18107,7 @@ Follows a feed at `url`: it is read once, and refused when it is not a feed; eve
 <dd>
 
 ```ruby
-client.feeds.create(
-  workspace_id: "workspaceId",
-  url: "url"
-)
+client.feeds.create(url: "url")
 ```
 </dd>
 </dl>
@@ -20337,14 +18118,6 @@ client.feeds.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20417,7 +18190,7 @@ client.feeds.create(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">preview</a>(workspace_id:, request) -> Peal::Types::FeedPreview</code></summary>
+<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">preview</a>(request) -> Peal::Types::FeedPreview</code></summary>
 <dl>
 <dd>
 
@@ -20444,10 +18217,7 @@ Reads an address and answers its title and its 3 newest items, each with what `t
 <dd>
 
 ```ruby
-client.feeds.preview(
-  workspace_id: "workspaceId",
-  url: "url"
-)
+client.feeds.preview(url: "url")
 ```
 </dd>
 </dl>
@@ -20458,14 +18228,6 @@ client.feeds.preview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20498,7 +18260,7 @@ client.feeds.preview(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">get</a>(workspace_id:, feed_id:) -> Peal::Types::Feed</code></summary>
+<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">get</a>(feed_id:) -> Peal::Types::Feed</code></summary>
 <dl>
 <dd>
 
@@ -20525,10 +18287,7 @@ Answers with a feed of the workspace: its state, when it was last read and is ne
 <dd>
 
 ```ruby
-client.feeds.get(
-  workspace_id: "workspaceId",
-  feed_id: "feedId"
-)
+client.feeds.get(feed_id: "feedId")
 ```
 </dd>
 </dl>
@@ -20539,14 +18298,6 @@ client.feeds.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20571,7 +18322,7 @@ client.feeds.get(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">delete</a>(workspace_id:, feed_id:) -> </code></summary>
+<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">delete</a>(feed_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -20598,10 +18349,7 @@ Stops following a feed and forgets what it read; the drafts and posts it made st
 <dd>
 
 ```ruby
-client.feeds.delete(
-  workspace_id: "workspaceId",
-  feed_id: "feedId"
-)
+client.feeds.delete(feed_id: "feedId")
 ```
 </dd>
 </dl>
@@ -20612,14 +18360,6 @@ client.feeds.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20644,7 +18384,7 @@ client.feeds.delete(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">update</a>(workspace_id:, feed_id:, request) -> Peal::Types::Feed</code></summary>
+<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">update</a>(feed_id:, request) -> Peal::Types::Feed</code></summary>
 <dl>
 <dd>
 
@@ -20671,10 +18411,7 @@ Changes a feed; what the request leaves out stays. A new `url` is read at once, 
 <dd>
 
 ```ruby
-client.feeds.update(
-  workspace_id: "workspaceId",
-  feed_id: "feedId"
-)
+client.feeds.update(feed_id: "feedId")
 ```
 </dd>
 </dl>
@@ -20685,14 +18422,6 @@ client.feeds.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20781,7 +18510,7 @@ client.feeds.update(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">items</a>(workspace_id:, feed_id:) -> Peal::Types::FeedItems</code></summary>
+<details><summary><code>client.feeds.<a href="/lib/peal/feeds/client.rb">items</a>(feed_id:) -> Peal::Types::FeedItems</code></summary>
 <dl>
 <dd>
 
@@ -20808,10 +18537,7 @@ Lists a feed's 50 newest items, newest first: when each was seen, the date it ga
 <dd>
 
 ```ruby
-client.feeds.items(
-  workspace_id: "workspaceId",
-  feed_id: "feedId"
-)
+client.feeds.items(feed_id: "feedId")
 ```
 </dd>
 </dl>
@@ -20822,14 +18548,6 @@ client.feeds.items(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20855,7 +18573,7 @@ client.feeds.items(
 </details>
 
 ## channelDefaults
-<details><summary><code>client.channel_defaults.<a href="/lib/peal/channel_defaults/client.rb">get</a>(workspace_id:, channel_id:) -> Peal::Types::ChannelDefaults</code></summary>
+<details><summary><code>client.channel_defaults.<a href="/lib/peal/channel_defaults/client.rb">get</a>(channel_id:) -> Peal::Types::ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -20882,10 +18600,7 @@ Answers the options new posts take on the channel when they give none there, or 
 <dd>
 
 ```ruby
-client.channel_defaults.get(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.channel_defaults.get(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -20896,14 +18611,6 @@ client.channel_defaults.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20928,7 +18635,7 @@ client.channel_defaults.get(
 </dl>
 </details>
 
-<details><summary><code>client.channel_defaults.<a href="/lib/peal/channel_defaults/client.rb">set</a>(workspace_id:, channel_id:, request) -> Peal::Types::ChannelDefaults</code></summary>
+<details><summary><code>client.channel_defaults.<a href="/lib/peal/channel_defaults/client.rb">set</a>(channel_id:, request) -> Peal::Types::ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -20955,10 +18662,7 @@ Keeps these as the channel's default options, instead of any it had: options of 
 <dd>
 
 ```ruby
-client.channel_defaults.set(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.channel_defaults.set(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -20969,14 +18673,6 @@ client.channel_defaults.set(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21009,7 +18705,7 @@ client.channel_defaults.set(
 </dl>
 </details>
 
-<details><summary><code>client.channel_defaults.<a href="/lib/peal/channel_defaults/client.rb">clear</a>(workspace_id:, channel_id:) -> </code></summary>
+<details><summary><code>client.channel_defaults.<a href="/lib/peal/channel_defaults/client.rb">clear</a>(channel_id:) -> </code></summary>
 <dl>
 <dd>
 
@@ -21036,10 +18732,7 @@ Leaves the channel without default options. Posts already made keep theirs. Need
 <dd>
 
 ```ruby
-client.channel_defaults.clear(
-  workspace_id: "workspaceId",
-  channel_id: "channelId"
-)
+client.channel_defaults.clear(channel_id: "channelId")
 ```
 </dd>
 </dl>
@@ -21050,14 +18743,6 @@ client.channel_defaults.clear(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21083,7 +18768,7 @@ client.channel_defaults.clear(
 </details>
 
 ## shortLinks
-<details><summary><code>client.short_links.<a href="/lib/peal/short_links/client.rb">status</a>(workspace_id:) -> Peal::Types::ShortLinkStatus</code></summary>
+<details><summary><code>client.short_links.<a href="/lib/peal/short_links/client.rb">status</a>() -> Peal::Types::ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -21110,7 +18795,7 @@ Answers whether this server shortens links (`available`), what a short address s
 <dd>
 
 ```ruby
-client.short_links.status(workspace_id: "workspaceId")
+client.short_links.status
 ```
 </dd>
 </dl>
@@ -21121,14 +18806,6 @@ client.short_links.status(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21145,7 +18822,7 @@ client.short_links.status(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="/lib/peal/short_links/client.rb">set_default</a>(workspace_id:, request) -> Peal::Types::ShortLinkStatus</code></summary>
+<details><summary><code>client.short_links.<a href="/lib/peal/short_links/client.rb">set_default</a>(request) -> Peal::Types::ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -21172,10 +18849,7 @@ Sets whether the workspace's new posts ask for short links unless they say other
 <dd>
 
 ```ruby
-client.short_links.set_default(
-  workspace_id: "workspaceId",
-  by_default: true
-)
+client.short_links.set_default(by_default: true)
 ```
 </dd>
 </dl>
@@ -21186,14 +18860,6 @@ client.short_links.set_default(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21218,7 +18884,7 @@ client.short_links.set_default(
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="/lib/peal/short_links/client.rb">list</a>(workspace_id:) -> Peal::Types::ShortLinkPage</code></summary>
+<details><summary><code>client.short_links.<a href="/lib/peal/short_links/client.rb">list</a>() -> Peal::Types::ShortLinkPage</code></summary>
 <dl>
 <dd>
 
@@ -21245,7 +18911,7 @@ Lists the workspace's short links, newest first, 50 a page unless `limit` (at mo
 <dd>
 
 ```ruby
-client.short_links.list(workspace_id: "workspaceId")
+client.short_links.list
 ```
 </dd>
 </dl>
@@ -21256,14 +18922,6 @@ client.short_links.list(workspace_id: "workspaceId")
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21328,7 +18986,7 @@ client.short_links.list(workspace_id: "workspaceId")
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="/lib/peal/short_links/client.rb">get</a>(workspace_id:, link_id:) -> Peal::Types::ShortLinkReport</code></summary>
+<details><summary><code>client.short_links.<a href="/lib/peal/short_links/client.rb">get</a>(link_id:) -> Peal::Types::ShortLinkReport</code></summary>
 <dl>
 <dd>
 
@@ -21355,10 +19013,7 @@ Answers one short link with its clicks each day from `from` to `to` (UTC days, b
 <dd>
 
 ```ruby
-client.short_links.get(
-  workspace_id: "workspaceId",
-  link_id: "linkId"
-)
+client.short_links.get(link_id: "linkId")
 ```
 </dd>
 </dl>
@@ -21369,14 +19024,6 @@ client.short_links.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `String` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>

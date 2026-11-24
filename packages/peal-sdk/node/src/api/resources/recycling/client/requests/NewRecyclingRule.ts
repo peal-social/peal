@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         every: {
  *             count: 1,
  *             unit: "days"
@@ -14,7 +13,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface NewRecyclingRule {
-    workspaceId: string;
     count?: number;
     every: Peal.RecyclingInterval;
     postId: string;

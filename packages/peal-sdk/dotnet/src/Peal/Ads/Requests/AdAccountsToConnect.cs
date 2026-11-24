@@ -7,9 +7,6 @@ namespace Peal;
 public record AdAccountsToConnect
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ConnectionId { get; set; }
 
     [JsonPropertyName("externalIds")]

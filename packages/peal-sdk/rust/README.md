@@ -57,7 +57,6 @@ async fn main() {
     client
         .api_keys
         .create(
-            &"workspaceId".to_string(),
             &NewApiKey {
                 name: "name".to_string(),
                 permissions: vec![Permission::ActivityRead],

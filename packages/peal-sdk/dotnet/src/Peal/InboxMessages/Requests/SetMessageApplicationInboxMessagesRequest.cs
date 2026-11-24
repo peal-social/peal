@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record SetMessageApplicationInboxMessagesRequest
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("allowed")]
     public required bool Allowed { get; set; }
 

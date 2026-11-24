@@ -7,9 +7,6 @@ namespace Peal;
 public record ResumeBoostAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string BoostId { get; set; }
 
     /// <inheritdoc />

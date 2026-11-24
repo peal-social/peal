@@ -12,6 +12,7 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_gateway_error import BadGatewayError
+from ..errors.bad_request_error import BadRequestError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
 from ..errors.payment_required_error import PaymentRequiredError
@@ -47,16 +48,12 @@ class RawAssistantClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def status(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[AssistantStatus]:
+    def status(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[AssistantStatus]:
         """
         Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (`source`: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (`images.source`: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, `month` and `images.month` tell the billing account's month of the server's models (included, used, price and ceiling), and `reason` `paymentMethod` why they are off without a payment method. Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -66,7 +63,7 @@ class RawAssistantClient:
             AssistantStatus
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant",
+            "api/v1/assistant",
             method="GET",
             request_options=request_options,
         )
@@ -80,6 +77,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -134,20 +142,13 @@ class RawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def suggest(
-        self,
-        workspace_id: str,
-        *,
-        action: AssistantAction,
-        text: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, action: AssistantAction, text: str, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Suggestion]:
         """
         Asks the language model to rewrite, shorten or translate a post's text, to suggest hashtags for it, or to write a first post from a subject (`write`), and answers once the whole suggestion is checked. The text is sent to the model as data, never as instructions. When the workspace brought its own text provider (`source` `workspace` in the status), the text goes there, with the workspace's key, and the request costs none of the workspace's daily requests, on any plan, within a number of such requests a day (OwnTextLimitReached past it) and a few at once (TextProviderBusy past them); if that provider refuses, the answer is TextProviderRefused and the server's model is never asked instead. Otherwise, on a server that does not bill, each request counts toward the workspace's daily quota, unless the model's provider could not be reached (AssistantQuotaExceeded past it). On a server that bills, the server's model needs a payment method on the billing account (UsageAllowanceReached `paymentMethodRequired` without one, before anything is asked): each request counts toward the month's allowance across the account's workspaces (the status's `month`), then is billed at its price up to the ceiling the account set (UsageAllowanceReached `ceilingReached`); a request that brings no suggestion, a timeout included, is not counted. Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         action : AssistantAction
 
         text : str
@@ -164,7 +165,7 @@ class RawAssistantClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/suggestions",
+            "api/v1/assistant/suggestions",
             method="POST",
             json={
                 "action": convert_and_respect_annotation_metadata(
@@ -188,6 +189,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -286,20 +298,13 @@ class RawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def generate_image(
-        self,
-        workspace_id: str,
-        *,
-        aspect: ImageAspect,
-        prompt: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, aspect: ImageAspect, prompt: str, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Media]:
         """
         Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked `aiGenerated` and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's `images.requestCost` of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached `paymentMethodRequired` without one, before anything is asked) and counts one of the month's images (`images.month`), billed past the allowance up to the account's ceiling (UsageAllowanceReached `ceilingReached`); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube `containsSyntheticMedia`, TikTok `aiGenerated`, X `madeWithAi`). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (`images.source`).
 
         Parameters
         ----------
-        workspace_id : str
-
         aspect : ImageAspect
 
         prompt : str
@@ -316,7 +321,7 @@ class RawAssistantClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/images",
+            "api/v1/assistant/images",
             method="POST",
             json={
                 "aspect": aspect,
@@ -338,6 +343,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -436,15 +452,13 @@ class RawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def image_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ImageProviderSetting]:
         """
         Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -454,7 +468,7 @@ class RawAssistantClient:
             ImageProviderSetting
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/image-provider",
+            "api/v1/assistant/image-provider",
             method="GET",
             request_options=request_options,
         )
@@ -468,6 +482,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -523,7 +548,6 @@ class RawAssistantClient:
 
     def set_image_provider(
         self,
-        workspace_id: str,
         *,
         model: str,
         api_key: typing.Optional[str] = OMIT,
@@ -536,8 +560,6 @@ class RawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         model : str
 
         api_key : typing.Optional[str]
@@ -555,7 +577,7 @@ class RawAssistantClient:
             ImageProvider
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/image-provider",
+            "api/v1/assistant/image-provider",
             method="PUT",
             json={
                 "apiKey": api_key,
@@ -579,6 +601,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -654,16 +687,12 @@ class RawAssistantClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def remove_image_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def remove_image_provider(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -672,13 +701,24 @@ class RawAssistantClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/image-provider",
+            "api/v1/assistant/image-provider",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -733,15 +773,13 @@ class RawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def text_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[TextProviderSetting]:
         """
         Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -751,7 +789,7 @@ class RawAssistantClient:
             TextProviderSetting
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/text-provider",
+            "api/v1/assistant/text-provider",
             method="GET",
             request_options=request_options,
         )
@@ -765,6 +803,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -820,7 +869,6 @@ class RawAssistantClient:
 
     def set_text_provider(
         self,
-        workspace_id: str,
         *,
         model: str,
         api_key: typing.Optional[str] = OMIT,
@@ -834,8 +882,6 @@ class RawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         model : str
 
         api_key : typing.Optional[str]
@@ -855,7 +901,7 @@ class RawAssistantClient:
             TextProvider
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/text-provider",
+            "api/v1/assistant/text-provider",
             method="PUT",
             json={
                 "apiKey": api_key,
@@ -880,6 +926,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -955,16 +1012,12 @@ class RawAssistantClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def remove_text_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def remove_text_provider(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -973,13 +1026,24 @@ class RawAssistantClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/text-provider",
+            "api/v1/assistant/text-provider",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1033,16 +1097,12 @@ class RawAssistantClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def test_text_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def test_text_provider(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1054,13 +1114,24 @@ class RawAssistantClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/text-provider/test",
+            "api/v1/assistant/text-provider/test",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1126,15 +1197,13 @@ class RawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def providers(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[AiProviderConnections]:
         """
         Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1144,7 +1213,7 @@ class RawAssistantClient:
             AiProviderConnections
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/providers",
+            "api/v1/assistant/providers",
             method="GET",
             request_options=request_options,
         )
@@ -1158,6 +1227,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1213,7 +1293,6 @@ class RawAssistantClient:
 
     def connect_provider(
         self,
-        workspace_id: str,
         provider: AiProvider,
         *,
         api_key: typing.Optional[str] = OMIT,
@@ -1225,8 +1304,6 @@ class RawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         provider : AiProvider
 
         api_key : typing.Optional[str]
@@ -1242,7 +1319,7 @@ class RawAssistantClient:
             AiProviderConnection
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/providers/{encode_path_param(provider)}",
+            f"api/v1/assistant/providers/{encode_path_param(provider)}",
             method="PUT",
             json={
                 "apiKey": api_key,
@@ -1264,6 +1341,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1340,15 +1428,13 @@ class RawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def disconnect_provider(
-        self, workspace_id: str, provider: AiProvider, *, request_options: typing.Optional[RequestOptions] = None
+        self, provider: AiProvider, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
-        workspace_id : str
-
         provider : AiProvider
 
         request_options : typing.Optional[RequestOptions]
@@ -1359,13 +1445,24 @@ class RawAssistantClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/providers/{encode_path_param(provider)}",
+            f"api/v1/assistant/providers/{encode_path_param(provider)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1421,7 +1518,6 @@ class RawAssistantClient:
 
     def test_provider(
         self,
-        workspace_id: str,
         provider: AiProvider,
         *,
         model: typing.Optional[str] = OMIT,
@@ -1432,8 +1528,6 @@ class RawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         provider : AiProvider
 
         model : typing.Optional[str]
@@ -1449,7 +1543,7 @@ class RawAssistantClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/providers/{encode_path_param(provider)}/test",
+            f"api/v1/assistant/providers/{encode_path_param(provider)}/test",
             method="POST",
             json={
                 "model": model,
@@ -1463,6 +1557,17 @@ class RawAssistantClient:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1538,16 +1643,12 @@ class RawAssistantClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def models(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[AiCapabilityModels]:
+    def models(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[AiCapabilityModels]:
         """
         Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1557,7 +1658,7 @@ class RawAssistantClient:
             AiCapabilityModels
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/models",
+            "api/v1/assistant/models",
             method="GET",
             request_options=request_options,
         )
@@ -1571,6 +1672,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1626,7 +1738,6 @@ class RawAssistantClient:
 
     def set_model(
         self,
-        workspace_id: str,
         capability: AiCapability,
         *,
         provider: AiProvider,
@@ -1638,8 +1749,6 @@ class RawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         capability : AiCapability
 
         provider : AiProvider
@@ -1655,7 +1764,7 @@ class RawAssistantClient:
             AiCapabilityModel
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/models/{encode_path_param(capability)}",
+            f"api/v1/assistant/models/{encode_path_param(capability)}",
             method="PUT",
             json={
                 "model": model,
@@ -1677,6 +1786,17 @@ class RawAssistantClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1742,15 +1862,13 @@ class RawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unset_model(
-        self, workspace_id: str, capability: AiCapability, *, request_options: typing.Optional[RequestOptions] = None
+        self, capability: AiCapability, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Leaves a use to the server's model, if it has one (`serverModel`), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
-        workspace_id : str
-
         capability : AiCapability
 
         request_options : typing.Optional[RequestOptions]
@@ -1761,13 +1879,24 @@ class RawAssistantClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/models/{encode_path_param(capability)}",
+            f"api/v1/assistant/models/{encode_path_param(capability)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1827,15 +1956,13 @@ class AsyncRawAssistantClient:
         self._client_wrapper = client_wrapper
 
     async def status(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[AssistantStatus]:
         """
         Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (`source`: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (`images.source`: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, `month` and `images.month` tell the billing account's month of the server's models (included, used, price and ceiling), and `reason` `paymentMethod` why they are off without a payment method. Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1845,7 +1972,7 @@ class AsyncRawAssistantClient:
             AssistantStatus
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant",
+            "api/v1/assistant",
             method="GET",
             request_options=request_options,
         )
@@ -1859,6 +1986,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1913,20 +2051,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def suggest(
-        self,
-        workspace_id: str,
-        *,
-        action: AssistantAction,
-        text: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, action: AssistantAction, text: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Suggestion]:
         """
         Asks the language model to rewrite, shorten or translate a post's text, to suggest hashtags for it, or to write a first post from a subject (`write`), and answers once the whole suggestion is checked. The text is sent to the model as data, never as instructions. When the workspace brought its own text provider (`source` `workspace` in the status), the text goes there, with the workspace's key, and the request costs none of the workspace's daily requests, on any plan, within a number of such requests a day (OwnTextLimitReached past it) and a few at once (TextProviderBusy past them); if that provider refuses, the answer is TextProviderRefused and the server's model is never asked instead. Otherwise, on a server that does not bill, each request counts toward the workspace's daily quota, unless the model's provider could not be reached (AssistantQuotaExceeded past it). On a server that bills, the server's model needs a payment method on the billing account (UsageAllowanceReached `paymentMethodRequired` without one, before anything is asked): each request counts toward the month's allowance across the account's workspaces (the status's `month`), then is billed at its price up to the ceiling the account set (UsageAllowanceReached `ceilingReached`); a request that brings no suggestion, a timeout included, is not counted. Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         action : AssistantAction
 
         text : str
@@ -1943,7 +2074,7 @@ class AsyncRawAssistantClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/suggestions",
+            "api/v1/assistant/suggestions",
             method="POST",
             json={
                 "action": convert_and_respect_annotation_metadata(
@@ -1967,6 +2098,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2065,20 +2207,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def generate_image(
-        self,
-        workspace_id: str,
-        *,
-        aspect: ImageAspect,
-        prompt: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, aspect: ImageAspect, prompt: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Media]:
         """
         Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked `aiGenerated` and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's `images.requestCost` of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached `paymentMethodRequired` without one, before anything is asked) and counts one of the month's images (`images.month`), billed past the allowance up to the account's ceiling (UsageAllowanceReached `ceilingReached`); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube `containsSyntheticMedia`, TikTok `aiGenerated`, X `madeWithAi`). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (`images.source`).
 
         Parameters
         ----------
-        workspace_id : str
-
         aspect : ImageAspect
 
         prompt : str
@@ -2095,7 +2230,7 @@ class AsyncRawAssistantClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/images",
+            "api/v1/assistant/images",
             method="POST",
             json={
                 "aspect": aspect,
@@ -2117,6 +2252,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2215,15 +2361,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def image_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ImageProviderSetting]:
         """
         Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2233,7 +2377,7 @@ class AsyncRawAssistantClient:
             ImageProviderSetting
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/image-provider",
+            "api/v1/assistant/image-provider",
             method="GET",
             request_options=request_options,
         )
@@ -2247,6 +2391,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2302,7 +2457,6 @@ class AsyncRawAssistantClient:
 
     async def set_image_provider(
         self,
-        workspace_id: str,
         *,
         model: str,
         api_key: typing.Optional[str] = OMIT,
@@ -2315,8 +2469,6 @@ class AsyncRawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         model : str
 
         api_key : typing.Optional[str]
@@ -2334,7 +2486,7 @@ class AsyncRawAssistantClient:
             ImageProvider
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/image-provider",
+            "api/v1/assistant/image-provider",
             method="PUT",
             json={
                 "apiKey": api_key,
@@ -2358,6 +2510,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2434,15 +2597,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_image_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2451,13 +2612,24 @@ class AsyncRawAssistantClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/image-provider",
+            "api/v1/assistant/image-provider",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2512,15 +2684,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def text_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[TextProviderSetting]:
         """
         Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2530,7 +2700,7 @@ class AsyncRawAssistantClient:
             TextProviderSetting
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/text-provider",
+            "api/v1/assistant/text-provider",
             method="GET",
             request_options=request_options,
         )
@@ -2544,6 +2714,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2599,7 +2780,6 @@ class AsyncRawAssistantClient:
 
     async def set_text_provider(
         self,
-        workspace_id: str,
         *,
         model: str,
         api_key: typing.Optional[str] = OMIT,
@@ -2613,8 +2793,6 @@ class AsyncRawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         model : str
 
         api_key : typing.Optional[str]
@@ -2634,7 +2812,7 @@ class AsyncRawAssistantClient:
             TextProvider
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/text-provider",
+            "api/v1/assistant/text-provider",
             method="PUT",
             json={
                 "apiKey": api_key,
@@ -2659,6 +2837,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2735,15 +2924,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_text_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2752,13 +2939,24 @@ class AsyncRawAssistantClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/text-provider",
+            "api/v1/assistant/text-provider",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2813,15 +3011,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def test_text_provider(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2833,13 +3029,24 @@ class AsyncRawAssistantClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/text-provider/test",
+            "api/v1/assistant/text-provider/test",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2905,15 +3112,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def providers(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[AiProviderConnections]:
         """
         Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2923,7 +3128,7 @@ class AsyncRawAssistantClient:
             AiProviderConnections
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/providers",
+            "api/v1/assistant/providers",
             method="GET",
             request_options=request_options,
         )
@@ -2937,6 +3142,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2992,7 +3208,6 @@ class AsyncRawAssistantClient:
 
     async def connect_provider(
         self,
-        workspace_id: str,
         provider: AiProvider,
         *,
         api_key: typing.Optional[str] = OMIT,
@@ -3004,8 +3219,6 @@ class AsyncRawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         provider : AiProvider
 
         api_key : typing.Optional[str]
@@ -3021,7 +3234,7 @@ class AsyncRawAssistantClient:
             AiProviderConnection
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/providers/{encode_path_param(provider)}",
+            f"api/v1/assistant/providers/{encode_path_param(provider)}",
             method="PUT",
             json={
                 "apiKey": api_key,
@@ -3043,6 +3256,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3119,15 +3343,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def disconnect_provider(
-        self, workspace_id: str, provider: AiProvider, *, request_options: typing.Optional[RequestOptions] = None
+        self, provider: AiProvider, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
-        workspace_id : str
-
         provider : AiProvider
 
         request_options : typing.Optional[RequestOptions]
@@ -3138,13 +3360,24 @@ class AsyncRawAssistantClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/providers/{encode_path_param(provider)}",
+            f"api/v1/assistant/providers/{encode_path_param(provider)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3200,7 +3433,6 @@ class AsyncRawAssistantClient:
 
     async def test_provider(
         self,
-        workspace_id: str,
         provider: AiProvider,
         *,
         model: typing.Optional[str] = OMIT,
@@ -3211,8 +3443,6 @@ class AsyncRawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         provider : AiProvider
 
         model : typing.Optional[str]
@@ -3228,7 +3458,7 @@ class AsyncRawAssistantClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/providers/{encode_path_param(provider)}/test",
+            f"api/v1/assistant/providers/{encode_path_param(provider)}/test",
             method="POST",
             json={
                 "model": model,
@@ -3242,6 +3472,17 @@ class AsyncRawAssistantClient:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3318,15 +3559,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def models(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[AiCapabilityModels]:
         """
         Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -3336,7 +3575,7 @@ class AsyncRawAssistantClient:
             AiCapabilityModels
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/models",
+            "api/v1/assistant/models",
             method="GET",
             request_options=request_options,
         )
@@ -3350,6 +3589,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3405,7 +3655,6 @@ class AsyncRawAssistantClient:
 
     async def set_model(
         self,
-        workspace_id: str,
         capability: AiCapability,
         *,
         provider: AiProvider,
@@ -3417,8 +3666,6 @@ class AsyncRawAssistantClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         capability : AiCapability
 
         provider : AiProvider
@@ -3434,7 +3681,7 @@ class AsyncRawAssistantClient:
             AiCapabilityModel
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/models/{encode_path_param(capability)}",
+            f"api/v1/assistant/models/{encode_path_param(capability)}",
             method="PUT",
             json={
                 "model": model,
@@ -3456,6 +3703,17 @@ class AsyncRawAssistantClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3521,15 +3779,13 @@ class AsyncRawAssistantClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unset_model(
-        self, workspace_id: str, capability: AiCapability, *, request_options: typing.Optional[RequestOptions] = None
+        self, capability: AiCapability, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Leaves a use to the server's model, if it has one (`serverModel`), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
-        workspace_id : str
-
         capability : AiCapability
 
         request_options : typing.Optional[RequestOptions]
@@ -3540,13 +3796,24 @@ class AsyncRawAssistantClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/assistant/models/{encode_path_param(capability)}",
+            f"api/v1/assistant/models/{encode_path_param(capability)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

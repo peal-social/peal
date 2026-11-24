@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId"
  *     }
  */
 export interface DuplicatePostsRequest {
-    workspaceId: string;
     postId: string;
 }

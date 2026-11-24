@@ -18,24 +18,22 @@ module Peal
       # they are off without a payment method. Needs assistant:use.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.status(workspace_id: "workspaceId")
+      #   client.assistant.status
       #
       # @return [Peal::Types::AssistantStatus]
-      def status(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def status(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant",
+          path: "api/v1/assistant",
           request_options: request_options
         )
         begin
@@ -77,26 +75,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.suggest(
-      #     workspace_id: "workspaceId",
-      #     text: "text"
-      #   )
+      #   client.assistant.suggest(text: "text")
       #
       # @return [Peal::Types::Suggestion]
       def suggest(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Assistant::Types::SuggestionRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/suggestions",
-          body: body,
+          path: "api/v1/assistant/suggestions",
+          body: Peal::Assistant::Types::SuggestionRequest.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -142,11 +132,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.assistant.generate_image(
-      #     workspace_id: "workspaceId",
       #     aspect: "square",
       #     prompt: "prompt"
       #   )
@@ -154,15 +142,11 @@ module Peal
       # @return [Peal::Types::Media]
       def generate_image(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Assistant::Types::ImageRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/images",
-          body: body,
+          path: "api/v1/assistant/images",
+          body: Peal::Assistant::Types::ImageRequest.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -191,24 +175,22 @@ module Peal
       # any client with workspace:write did).
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.image_provider(workspace_id: "workspaceId")
+      #   client.assistant.image_provider
       #
       # @return [Peal::Types::ImageProviderSetting]
-      def image_provider(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def image_provider(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/image-provider",
+          path: "api/v1/assistant/image-provider",
           request_options: request_options
         )
         begin
@@ -247,26 +229,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.set_image_provider(
-      #     workspace_id: "workspaceId",
-      #     model: "model"
-      #   )
+      #   client.assistant.set_image_provider(model: "model")
       #
       # @return [Peal::Types::ImageProvider]
       def set_image_provider(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Assistant::Types::ImageProviderChange.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/image-provider",
-          body: body,
+          path: "api/v1/assistant/image-provider",
+          body: Peal::Assistant::Types::ImageProviderChange.new(params).to_h,
           request_options: request_options
         )
         begin
@@ -292,24 +266,22 @@ module Peal
       # command line (since 2026-11-13; before, any client with workspace:write did).
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.remove_image_provider(workspace_id: "workspaceId")
+      #   client.assistant.remove_image_provider
       #
       # @return [untyped]
-      def remove_image_provider(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def remove_image_provider(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/image-provider",
+          path: "api/v1/assistant/image-provider",
           request_options: request_options
         )
         begin
@@ -333,24 +305,22 @@ module Peal
       # speaks, its address and model, never its key, or null. Needs assistant:configure.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.text_provider(workspace_id: "workspaceId")
+      #   client.assistant.text_provider
       #
       # @return [Peal::Types::TextProviderSetting]
-      def text_provider(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def text_provider(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/text-provider",
+          path: "api/v1/assistant/text-provider",
           request_options: request_options
         )
         begin
@@ -388,26 +358,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.set_text_provider(
-      #     workspace_id: "workspaceId",
-      #     model: "model"
-      #   )
+      #   client.assistant.set_text_provider(model: "model")
       #
       # @return [Peal::Types::TextProvider]
       def set_text_provider(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Assistant::Types::TextProviderChange.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/text-provider",
-          body: body,
+          path: "api/v1/assistant/text-provider",
+          body: Peal::Assistant::Types::TextProviderChange.new(params).to_h,
           request_options: request_options
         )
         begin
@@ -432,24 +394,22 @@ module Peal
       # within the workspace's daily requests. Needs assistant:configure.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.remove_text_provider(workspace_id: "workspaceId")
+      #   client.assistant.remove_text_provider
       #
       # @return [untyped]
-      def remove_text_provider(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def remove_text_provider(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/text-provider",
+          path: "api/v1/assistant/text-provider",
           request_options: request_options
         )
         begin
@@ -476,24 +436,22 @@ module Peal
       # assistant:configure.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.test_text_provider(workspace_id: "workspaceId")
+      #   client.assistant.test_text_provider
       #
       # @return [untyped]
-      def test_text_provider(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def test_text_provider(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/text-provider/test",
+          path: "api/v1/assistant/text-provider/test",
           request_options: request_options,
           max_retries: 0
         )
@@ -518,24 +476,22 @@ module Peal
       # but Peal's command line.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.providers(workspace_id: "workspaceId")
+      #   client.assistant.providers
       #
       # @return [Peal::Types::AiProviderConnections]
-      def providers(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def providers(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/providers",
+          path: "api/v1/assistant/providers",
           request_options: request_options
         )
         begin
@@ -575,26 +531,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::AiProvider] :provider
       #
       # @example
-      #   client.assistant.connect_provider(
-      #     workspace_id: "workspaceId",
-      #     provider: "anthropic"
-      #   )
+      #   client.assistant.connect_provider(provider: "anthropic")
       #
       # @return [Peal::Types::AiProviderConnection]
       def connect_provider(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Assistant::Types::AiProviderConnectionChange.new(params).to_h
-        non_body_param_names = %w[workspaceId provider]
+        non_body_param_names = %w[provider]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}",
+          path: "api/v1/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}",
           body: body,
           request_options: request_options
         )
@@ -627,14 +579,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::AiProvider] :provider
       #
       # @example
-      #   client.assistant.disconnect_provider(
-      #     workspace_id: "workspaceId",
-      #     provider: "anthropic"
-      #   )
+      #   client.assistant.disconnect_provider(provider: "anthropic")
       #
       # @return [untyped]
       def disconnect_provider(request_options: {}, **params)
@@ -642,7 +590,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}",
+          path: "api/v1/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}",
           request_options: request_options
         )
         begin
@@ -677,26 +625,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::AiProvider] :provider
       #
       # @example
-      #   client.assistant.test_provider(
-      #     workspace_id: "workspaceId",
-      #     provider: "anthropic"
-      #   )
+      #   client.assistant.test_provider(provider: "anthropic")
       #
       # @return [untyped]
       def test_provider(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Assistant::Types::AiProviderTest.new(params).to_h
-        non_body_param_names = %w[workspaceId provider]
+        non_body_param_names = %w[provider]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}/test",
+          path: "api/v1/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}/test",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -722,24 +666,22 @@ module Peal
       # Needs assistant:configure, which no OAuth client holds but Peal's command line.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.assistant.models(workspace_id: "workspaceId")
+      #   client.assistant.models
       #
       # @return [Peal::Types::AiCapabilityModels]
-      def models(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def models(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/models",
+          path: "api/v1/assistant/models",
           request_options: request_options
         )
         begin
@@ -774,12 +716,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::AiCapability] :capability
       #
       # @example
       #   client.assistant.set_model(
-      #     workspace_id: "workspaceId",
       #     capability: "text",
       #     provider: "anthropic"
       #   )
@@ -788,13 +728,13 @@ module Peal
       def set_model(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Assistant::Types::AiCapabilityModelChange.new(params).to_h
-        non_body_param_names = %w[workspaceId capability]
+        non_body_param_names = %w[capability]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/models/#{URI.encode_uri_component(params[:capability].to_s)}",
+          path: "api/v1/assistant/models/#{URI.encode_uri_component(params[:capability].to_s)}",
           body: body,
           request_options: request_options
         )
@@ -826,14 +766,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::AiCapability] :capability
       #
       # @example
-      #   client.assistant.unset_model(
-      #     workspace_id: "workspaceId",
-      #     capability: "text"
-      #   )
+      #   client.assistant.unset_model(capability: "text")
       #
       # @return [untyped]
       def unset_model(request_options: {}, **params)
@@ -841,7 +777,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/models/#{URI.encode_uri_component(params[:capability].to_s)}",
+          path: "api/v1/assistant/models/#{URI.encode_uri_component(params[:capability].to_s)}",
           request_options: request_options
         )
         begin

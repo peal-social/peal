@@ -16,7 +16,7 @@ use Psr\Http\Client\ClientExceptionInterface;
 use Peal\Posts\Requests\ListPostsRequest;
 use Peal\Types\Post;
 use Peal\Core\Json\JsonDecoder;
-use Peal\Posts\Requests\CreatePostsRequest;
+use Peal\Types\PostDraft;
 use Peal\Posts\Requests\SearchPostsRequest;
 use Peal\Types\PostPage;
 use Peal\Posts\Requests\NewPost;
@@ -82,12 +82,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->drafts(
-     *     'workspaceId',
      *     new DraftsPostsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param DraftsPostsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -101,7 +99,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function drafts(string $workspaceId, DraftsPostsRequest $request = new DraftsPostsRequest(), ?array $options = null): ?DraftPage
+    public function drafts(DraftsPostsRequest $request = new DraftsPostsRequest(), ?array $options = null): ?DraftPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -115,7 +113,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/drafts",
+                    path: "api/v1/posts/drafts",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -147,7 +145,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->list(
-     *     'workspaceId',
      *     new ListPostsRequest([
      *         'from' => 'from',
      *         'to' => 'to',
@@ -155,7 +152,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListPostsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -169,7 +165,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListPostsRequest $request, ?array $options = null): ?array
+    public function list(ListPostsRequest $request, ?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -179,7 +175,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts",
+                    path: "api/v1/posts",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -211,34 +207,30 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->create(
-     *     'workspaceId',
-     *     new CreatePostsRequest([
-     *         'body' => new PostDraft([
-     *             'channelIds' => [
-     *                 'channelIds',
+     *     new PostDraft([
+     *         'channelIds' => [
+     *             'channelIds',
+     *         ],
+     *         'content' => new PostContent([
+     *             'media' => [
+     *                 new MediaAttachment([
+     *                     'altText' => 'altText',
+     *                     'mediaId' => 'mediaId',
+     *                 ]),
      *             ],
-     *             'content' => new PostContent([
-     *                 'media' => [
-     *                     new MediaAttachment([
-     *                         'altText' => 'altText',
-     *                         'mediaId' => 'mediaId',
-     *                     ]),
-     *                 ],
-     *                 'overrides' => [
-     *                     new TextOverride([
-     *                         'channelId' => 'channelId',
-     *                         'text' => 'text',
-     *                     ]),
-     *                 ],
-     *                 'text' => 'text',
-     *             ]),
+     *             'overrides' => [
+     *                 new TextOverride([
+     *                     'channelId' => 'channelId',
+     *                     'text' => 'text',
+     *                 ]),
+     *             ],
+     *             'text' => 'text',
      *         ]),
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param CreatePostsRequest $request
+     * @param PostDraft $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -251,7 +243,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, CreatePostsRequest $request, ?array $options = null): ?Post
+    public function create(PostDraft $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -259,9 +251,9 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts",
+                    path: "api/v1/posts",
                     method: HttpMethod::POST,
-                    body: $request->body,
+                    body: $request,
                 ),
                 $options,
             );
@@ -291,12 +283,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->search(
-     *     'workspaceId',
      *     new SearchPostsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param SearchPostsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -310,7 +300,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function search(string $workspaceId, SearchPostsRequest $request = new SearchPostsRequest(), ?array $options = null): ?PostPage
+    public function search(SearchPostsRequest $request = new SearchPostsRequest(), ?array $options = null): ?PostPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -363,7 +353,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/search",
+                    path: "api/v1/posts/search",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -395,7 +385,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->send(
-     *     'workspaceId',
      *     new NewPost([
      *         'channelIds' => [
      *             'channelIds',
@@ -420,7 +409,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewPost $request
      * @param ?array{
      *   baseUrl?: string,
@@ -434,7 +422,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function send(string $workspaceId, NewPost $request, ?array $options = null): ?Post
+    public function send(NewPost $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -450,7 +438,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/send",
+                    path: "api/v1/posts/send",
                     method: HttpMethod::POST,
                     headers: $headers,
                     query: $query,
@@ -484,7 +472,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->bulk(
-     *     'workspaceId',
      *     new BulkPosts([
      *         'posts' => [
      *             new BulkPost([
@@ -513,7 +500,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param BulkPosts $request
      * @param ?array{
      *   baseUrl?: string,
@@ -527,7 +513,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function bulk(string $workspaceId, BulkPosts $request, ?array $options = null): ?BulkResult
+    public function bulk(BulkPosts $request, ?array $options = null): ?BulkResult
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -539,7 +525,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/bulk",
+                    path: "api/v1/posts/bulk",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -572,14 +558,12 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->import(
-     *     'workspaceId',
      *     new PostImport([
      *         'csv' => 'csv',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param PostImport $request
      * @param ?array{
      *   baseUrl?: string,
@@ -593,7 +577,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function import(string $workspaceId, PostImport $request, ?array $options = null): ?ImportResult
+    public function import(PostImport $request, ?array $options = null): ?ImportResult
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -605,7 +589,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/import",
+                    path: "api/v1/posts/import",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -638,7 +622,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->validate(
-     *     'workspaceId',
      *     new PostToValidate([
      *         'channelIds' => [
      *             'channelIds',
@@ -662,7 +645,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param PostToValidate $request
      * @param ?array{
      *   baseUrl?: string,
@@ -676,7 +658,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function validate(string $workspaceId, PostToValidate $request, ?array $options = null): ?PostValidation
+    public function validate(PostToValidate $request, ?array $options = null): ?PostValidation
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -684,7 +666,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/validate",
+                    path: "api/v1/posts/validate",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -716,12 +698,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->get(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -735,14 +715,14 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $postId, ?array $options = null): ?Post
+    public function get(string $postId, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}",
+                    path: "api/v1/posts/{$postId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -773,7 +753,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->update(
-     *     'workspaceId',
      *     'postId',
      *     new UpdatePostsRequest([
      *         'body' => new PostDraft([
@@ -800,7 +779,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param UpdatePostsRequest $request
      * @param ?array{
@@ -815,14 +793,14 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $postId, UpdatePostsRequest $request, ?array $options = null): ?Post
+    public function update(string $postId, UpdatePostsRequest $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}",
+                    path: "api/v1/posts/{$postId}",
                     method: HttpMethod::PUT,
                     body: $request->body,
                 ),
@@ -854,12 +832,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->discard(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -872,14 +848,14 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function discard(string $workspaceId, string $postId, ?array $options = null): void
+    public function discard(string $postId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}",
+                    path: "api/v1/posts/{$postId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -904,13 +880,11 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->outcome(
-     *     'workspaceId',
      *     'postId',
      *     new OutcomePostsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param OutcomePostsRequest $request
      * @param ?array{
@@ -925,7 +899,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function outcome(string $workspaceId, string $postId, OutcomePostsRequest $request = new OutcomePostsRequest(), ?array $options = null): ?Post
+    public function outcome(string $postId, OutcomePostsRequest $request = new OutcomePostsRequest(), ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -936,7 +910,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/outcome",
+                    path: "api/v1/posts/{$postId}/outcome",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -968,12 +942,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->attempts(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -987,14 +959,14 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function attempts(string $workspaceId, string $postId, ?array $options = null): ?array
+    public function attempts(string $postId, ?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/attempts",
+                    path: "api/v1/posts/{$postId}/attempts",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -1025,7 +997,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->tag(
-     *     'workspaceId',
      *     'postId',
      *     new PostTags([
      *         'tagIds' => [
@@ -1035,7 +1006,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param PostTags $request
      * @param ?array{
@@ -1050,14 +1020,14 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function tag(string $workspaceId, string $postId, PostTags $request, ?array $options = null): ?Post
+    public function tag(string $postId, PostTags $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/tags",
+                    path: "api/v1/posts/{$postId}/tags",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -1089,12 +1059,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->duplicate(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -1108,7 +1076,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function duplicate(string $workspaceId, string $postId, ?array $options = null): ?Post
+    public function duplicate(string $postId, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1116,7 +1084,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/duplicate",
+                    path: "api/v1/posts/{$postId}/duplicate",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -1147,7 +1115,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->schedule(
-     *     'workspaceId',
      *     'postId',
      *     new SchedulePost([
      *         'at' => 'at',
@@ -1159,7 +1126,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param SchedulePost $request
      * @param ?array{
@@ -1174,7 +1140,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function schedule(string $workspaceId, string $postId, SchedulePost $request, ?array $options = null): ?Post
+    public function schedule(string $postId, SchedulePost $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1182,7 +1148,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/schedule",
+                    path: "api/v1/posts/{$postId}/schedule",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -1214,7 +1180,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->reschedule(
-     *     'workspaceId',
      *     'postId',
      *     new ReschedulePostsRequest([
      *         'body' => new PostSchedule([
@@ -1225,7 +1190,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ReschedulePostsRequest $request
      * @param ?array{
@@ -1240,7 +1204,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function reschedule(string $workspaceId, string $postId, ReschedulePostsRequest $request, ?array $options = null): ?Post
+    public function reschedule(string $postId, ReschedulePostsRequest $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1248,7 +1212,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/reschedule",
+                    path: "api/v1/posts/{$postId}/reschedule",
                     method: HttpMethod::POST,
                     body: $request->body,
                 ),
@@ -1280,13 +1244,11 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->enqueue(
-     *     'workspaceId',
      *     'postId',
      *     new QueuePost([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param QueuePost $request
      * @param ?array{
@@ -1301,7 +1263,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function enqueue(string $workspaceId, string $postId, QueuePost $request = new QueuePost(), ?array $options = null): ?Post
+    public function enqueue(string $postId, QueuePost $request = new QueuePost(), ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1309,7 +1271,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/queue",
+                    path: "api/v1/posts/{$postId}/queue",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -1341,12 +1303,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->unschedule(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -1360,7 +1320,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function unschedule(string $workspaceId, string $postId, ?array $options = null): ?Post
+    public function unschedule(string $postId, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1368,7 +1328,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/unschedule",
+                    path: "api/v1/posts/{$postId}/unschedule",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -1399,13 +1359,11 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->repost(
-     *     'workspaceId',
      *     'postId',
      *     'targetId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param string $targetId
      * @param ?array{
@@ -1420,7 +1378,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function repost(string $workspaceId, string $postId, string $targetId, ?array $options = null): ?Post
+    public function repost(string $postId, string $targetId, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1428,7 +1386,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/targets/{$targetId}/repost",
+                    path: "api/v1/posts/{$postId}/targets/{$targetId}/repost",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -1459,13 +1417,11 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->removeTarget(
-     *     'workspaceId',
      *     'postId',
      *     'targetId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param string $targetId
      * @param ?array{
@@ -1480,14 +1436,14 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function removeTarget(string $workspaceId, string $postId, string $targetId, ?array $options = null): ?Post
+    public function removeTarget(string $postId, string $targetId, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/targets/{$targetId}",
+                    path: "api/v1/posts/{$postId}/targets/{$targetId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -1518,7 +1474,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->confirm(
-     *     'workspaceId',
      *     'postId',
      *     'targetId',
      *     new ConfirmPostsRequest([
@@ -1529,7 +1484,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param string $targetId
      * @param ConfirmPostsRequest $request
@@ -1545,7 +1499,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function confirm(string $workspaceId, string $postId, string $targetId, ConfirmPostsRequest $request, ?array $options = null): ?Post
+    public function confirm(string $postId, string $targetId, ConfirmPostsRequest $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1553,7 +1507,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/targets/{$targetId}/confirm",
+                    path: "api/v1/posts/{$postId}/targets/{$targetId}/confirm",
                     method: HttpMethod::POST,
                     body: $request->body,
                 ),
@@ -1585,13 +1539,11 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->leaveOutRest(
-     *     'workspaceId',
      *     'postId',
      *     'targetId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param string $targetId
      * @param ?array{
@@ -1606,7 +1558,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function leaveOutRest(string $workspaceId, string $postId, string $targetId, ?array $options = null): ?Post
+    public function leaveOutRest(string $postId, string $targetId, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1614,7 +1566,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/targets/{$targetId}/leave-out-rest",
+                    path: "api/v1/posts/{$postId}/targets/{$targetId}/leave-out-rest",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -1645,14 +1597,12 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->unpublishTarget(
-     *     'workspaceId',
      *     'postId',
      *     'targetId',
      *     new UnpublishTargetPostsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param string $targetId
      * @param UnpublishTargetPostsRequest $request
@@ -1668,7 +1618,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function unpublishTarget(string $workspaceId, string $postId, string $targetId, UnpublishTargetPostsRequest $request = new UnpublishTargetPostsRequest(), ?array $options = null): ?LivePostChange
+    public function unpublishTarget(string $postId, string $targetId, UnpublishTargetPostsRequest $request = new UnpublishTargetPostsRequest(), ?array $options = null): ?LivePostChange
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1680,7 +1630,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/targets/{$targetId}/unpublish",
+                    path: "api/v1/posts/{$postId}/targets/{$targetId}/unpublish",
                     method: HttpMethod::POST,
                     query: $query,
                 ),
@@ -1712,7 +1662,6 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->editTarget(
-     *     'workspaceId',
      *     'postId',
      *     'targetId',
      *     new LivePostEdit([
@@ -1721,7 +1670,6 @@ class PostsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param string $targetId
      * @param LivePostEdit $request
@@ -1737,7 +1685,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function editTarget(string $workspaceId, string $postId, string $targetId, LivePostEdit $request, ?array $options = null): ?LivePostChange
+    public function editTarget(string $postId, string $targetId, LivePostEdit $request, ?array $options = null): ?LivePostChange
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1749,7 +1697,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/targets/{$targetId}/edit",
+                    path: "api/v1/posts/{$postId}/targets/{$targetId}/edit",
                     method: HttpMethod::POST,
                     query: $query,
                     body: $request,
@@ -1782,12 +1730,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->unpublish(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -1801,7 +1747,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function unpublish(string $workspaceId, string $postId, ?array $options = null): ?PostUnpublish
+    public function unpublish(string $postId, ?array $options = null): ?PostUnpublish
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1809,7 +1755,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/unpublish",
+                    path: "api/v1/posts/{$postId}/unpublish",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -1840,12 +1786,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->changes(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -1859,14 +1803,14 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function changes(string $workspaceId, string $postId, ?array $options = null): ?LivePostChanges
+    public function changes(string $postId, ?array $options = null): ?LivePostChanges
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/changes",
+                    path: "api/v1/posts/{$postId}/changes",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -1897,12 +1841,10 @@ class PostsClient
      * Example:
      * ```php
      * $client->posts->cancel(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -1916,7 +1858,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function cancel(string $workspaceId, string $postId, ?array $options = null): ?Post
+    public function cancel(string $postId, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1924,7 +1866,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/posts/{$postId}/cancel",
+                    path: "api/v1/posts/{$postId}/cancel",
                     method: HttpMethod::POST,
                 ),
                 $options,

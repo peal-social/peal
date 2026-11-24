@@ -32,7 +32,7 @@ public class SetModelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/models/text")
+                    .WithPath("/api/v1/assistant/models/text")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -47,7 +47,6 @@ public class SetModelTest : BaseMockServerTest
         var response = await Client.Assistant.SetModelAsync(
             new AiCapabilityModelChange
             {
-                WorkspaceId = "workspaceId",
                 Capability = AiCapability.Text,
                 Model = null,
                 Provider = AiProvider.Anthropic,
@@ -79,7 +78,7 @@ public class SetModelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/models/text")
+                    .WithPath("/api/v1/assistant/models/text")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -94,7 +93,6 @@ public class SetModelTest : BaseMockServerTest
         var response = await Client.Assistant.SetModelAsync(
             new AiCapabilityModelChange
             {
-                WorkspaceId = "workspaceId",
                 Capability = AiCapability.Text,
                 Provider = AiProvider.Anthropic,
             }

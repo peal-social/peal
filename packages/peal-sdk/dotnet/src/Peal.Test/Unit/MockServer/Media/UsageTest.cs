@@ -37,7 +37,7 @@ public class UsageTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId/usage")
+                    .WithPath("/api/v1/media/mediaId/usage")
                     .UsingGet()
             )
             .RespondWith(
@@ -47,9 +47,7 @@ public class UsageTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Media.UsageAsync(
-            new UsageMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-        );
+        var response = await Client.Media.UsageAsync(new UsageMediaRequest { MediaId = "mediaId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -77,7 +75,7 @@ public class UsageTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId/usage")
+                    .WithPath("/api/v1/media/mediaId/usage")
                     .UsingGet()
             )
             .RespondWith(
@@ -87,9 +85,7 @@ public class UsageTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Media.UsageAsync(
-            new UsageMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-        );
+        var response = await Client.Media.UsageAsync(new UsageMediaRequest { MediaId = "mediaId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

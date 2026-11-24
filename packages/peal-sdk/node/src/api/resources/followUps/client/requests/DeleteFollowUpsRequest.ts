@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         ruleId: "ruleId"
  *     }
  */
 export interface DeleteFollowUpsRequest {
-    workspaceId: string;
     ruleId: string;
 }

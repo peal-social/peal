@@ -61,7 +61,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media")
+                    .WithPath("/api/v1/media")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -76,7 +76,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Media.CreateAsync(
             new NewUpload
             {
-                WorkspaceId = "workspaceId",
                 AltText = null,
                 ByteSize = 1000000,
                 ContentType = "contentType",
@@ -138,7 +137,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media")
+                    .WithPath("/api/v1/media")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -151,12 +150,7 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Media.CreateAsync(
-            new NewUpload
-            {
-                WorkspaceId = "workspaceId",
-                ByteSize = 1000000,
-                ContentType = "contentType",
-            }
+            new NewUpload { ByteSize = 1000000, ContentType = "contentType" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         tagIds: ["tagIds"]
  *     }
  */
 export interface PostTags {
-    workspaceId: string;
     postId: string;
     tagIds: string[];
 }

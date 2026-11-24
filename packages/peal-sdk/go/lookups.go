@@ -10,13 +10,11 @@ import (
 )
 
 var (
-	listLookupsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listLookupsRequestFieldChannelID   = big.NewInt(1 << 1)
+	listLookupsRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type ListLookupsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (l *ListLookupsRequest) require(field *big.Int) {
 	l.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListLookupsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listLookupsRequestFieldWorkspaceID)
-}
-
 // SetChannelID sets the ChannelID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (l *ListLookupsRequest) SetChannelID(channelID string) {
@@ -46,27 +37,25 @@ func (l *ListLookupsRequest) SetChannelID(channelID string) {
 }
 
 var (
-	lookupInputFieldWorkspaceID = big.NewInt(1 << 0)
-	lookupInputFieldChannelID   = big.NewInt(1 << 1)
-	lookupInputFieldName        = big.NewInt(1 << 2)
-	lookupInputFieldBoardID     = big.NewInt(1 << 3)
-	lookupInputFieldCursor      = big.NewInt(1 << 4)
-	lookupInputFieldLanguage    = big.NewInt(1 << 5)
-	lookupInputFieldLimit       = big.NewInt(1 << 6)
-	lookupInputFieldRegionCode  = big.NewInt(1 << 7)
-	lookupInputFieldVanityName  = big.NewInt(1 << 8)
+	lookupInputFieldChannelID  = big.NewInt(1 << 0)
+	lookupInputFieldName       = big.NewInt(1 << 1)
+	lookupInputFieldBoardID    = big.NewInt(1 << 2)
+	lookupInputFieldCursor     = big.NewInt(1 << 3)
+	lookupInputFieldLanguage   = big.NewInt(1 << 4)
+	lookupInputFieldLimit      = big.NewInt(1 << 5)
+	lookupInputFieldRegionCode = big.NewInt(1 << 6)
+	lookupInputFieldVanityName = big.NewInt(1 << 7)
 )
 
 type LookupInput struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	ChannelID   string  `json:"-" url:"-"`
-	Name        string  `json:"-" url:"-"`
-	BoardID     *string `json:"boardId,omitempty" url:"-"`
-	Cursor      *string `json:"cursor,omitempty" url:"-"`
-	Language    *string `json:"language,omitempty" url:"-"`
-	Limit       *int    `json:"limit,omitempty" url:"-"`
-	RegionCode  *string `json:"regionCode,omitempty" url:"-"`
-	VanityName  *string `json:"vanityName,omitempty" url:"-"`
+	ChannelID  string  `json:"-" url:"-"`
+	Name       string  `json:"-" url:"-"`
+	BoardID    *string `json:"boardId,omitempty" url:"-"`
+	Cursor     *string `json:"cursor,omitempty" url:"-"`
+	Language   *string `json:"language,omitempty" url:"-"`
+	Limit      *int    `json:"limit,omitempty" url:"-"`
+	RegionCode *string `json:"regionCode,omitempty" url:"-"`
+	VanityName *string `json:"vanityName,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -79,13 +68,6 @@ func (l *LookupInput) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LookupInput) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(lookupInputFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;

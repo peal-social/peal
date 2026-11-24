@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         mediaId: "mediaId"
  *     }
  */
 export interface UsageMediaRequest {
-    workspaceId: string;
     mediaId: string;
 }

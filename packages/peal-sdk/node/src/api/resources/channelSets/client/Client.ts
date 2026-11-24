@@ -28,9 +28,9 @@ export class ChannelSetsClient {
     /**
      * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
      *
-     * @param {Peal.ListChannelSetsRequest} request
      * @param {ChannelSetsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class ChannelSetsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.channelSets.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.channelSets.list()
      */
-    public list(request: Peal.ListChannelSetsRequest, requestOptions?: ChannelSetsClient.RequestOptions): core.HttpResponsePromise<Peal.ChannelSet[]> {
-        return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
+    public list(requestOptions?: ChannelSetsClient.RequestOptions): core.HttpResponsePromise<Peal.ChannelSet[]> {
+        return core.HttpResponsePromise.fromPromise(this.__list(requestOptions));
     }
 
-    private async __list(request: Peal.ListChannelSetsRequest, requestOptions?: ChannelSetsClient.RequestOptions): Promise<core.WithRawResponse<Peal.ChannelSet[]>> {
-        const { workspaceId } = request;
+    private async __list(requestOptions?: ChannelSetsClient.RequestOptions): Promise<core.WithRawResponse<Peal.ChannelSet[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/channel-sets`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/channel-sets"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class ChannelSetsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,15 +78,16 @@ export class ChannelSetsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/channel-sets");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/channel-sets");
     }
 
     /**
      * Saves a selection of the workspace's channels under a name no other set of the workspace has whatever its case, 50 channels at most, with the options posts take on those whose platform has some (`TargetOptions`, of the channel's platform; unfinished options are kept, and checked when a post that takes them is scheduled). A post names a set by its id or its name (`channelSets`) instead of listing its channels. A workspace keeps 50 sets at most. Needs post:update and channel:read.
      *
-     * @param {Peal.CreateChannelSetsRequest} request
+     * @param {Peal.ChannelSetDetails} request
      * @param {ChannelSetsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -100,29 +99,25 @@ export class ChannelSetsClient {
      *
      * @example
      *     await client.channelSets.create({
-     *         workspaceId: "workspaceId",
-     *         body: {
-     *             channelIds: ["channelIds"],
-     *             name: "name"
-     *         }
+     *         channelIds: ["channelIds"],
+     *         name: "name"
      *     })
      */
-    public create(request: Peal.CreateChannelSetsRequest, requestOptions?: ChannelSetsClient.RequestOptions): core.HttpResponsePromise<Peal.ChannelSet> {
+    public create(request: Peal.ChannelSetDetails, requestOptions?: ChannelSetsClient.RequestOptions): core.HttpResponsePromise<Peal.ChannelSet> {
         return core.HttpResponsePromise.fromPromise(this.__create(request, requestOptions));
     }
 
-    private async __create(request: Peal.CreateChannelSetsRequest, requestOptions?: ChannelSetsClient.RequestOptions): Promise<core.WithRawResponse<Peal.ChannelSet>> {
-        const { workspaceId, body: _body } = request;
+    private async __create(request: Peal.ChannelSetDetails, requestOptions?: ChannelSetsClient.RequestOptions): Promise<core.WithRawResponse<Peal.ChannelSet>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/channel-sets`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/channel-sets"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -135,6 +130,7 @@ export class ChannelSetsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -149,7 +145,7 @@ export class ChannelSetsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/channel-sets");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/channel-sets");
     }
 
     /**
@@ -158,6 +154,7 @@ export class ChannelSetsClient {
      * @param {Peal.UpdateChannelSetsRequest} request
      * @param {ChannelSetsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -169,7 +166,6 @@ export class ChannelSetsClient {
      *
      * @example
      *     await client.channelSets.update({
-     *         workspaceId: "workspaceId",
      *         channelSetId: "channelSetId",
      *         body: {
      *             channelIds: ["channelIds"],
@@ -182,11 +178,11 @@ export class ChannelSetsClient {
     }
 
     private async __update(request: Peal.UpdateChannelSetsRequest, requestOptions?: ChannelSetsClient.RequestOptions): Promise<core.WithRawResponse<Peal.ChannelSet>> {
-        const { workspaceId, channelSetId, body: _body } = request;
+        const { channelSetId, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/channel-sets/${core.url.encodePathParam(channelSetId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/channel-sets/${core.url.encodePathParam(channelSetId, errors.PealError)}`),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
@@ -205,6 +201,7 @@ export class ChannelSetsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -219,7 +216,7 @@ export class ChannelSetsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/channel-sets/{channelSetId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/channel-sets/{channelSetId}");
     }
 
     /**
@@ -228,6 +225,7 @@ export class ChannelSetsClient {
      * @param {Peal.DeleteChannelSetsRequest} request
      * @param {ChannelSetsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -237,7 +235,6 @@ export class ChannelSetsClient {
      *
      * @example
      *     await client.channelSets.delete({
-     *         workspaceId: "workspaceId",
      *         channelSetId: "channelSetId"
      *     })
      */
@@ -246,11 +243,11 @@ export class ChannelSetsClient {
     }
 
     private async __delete(request: Peal.DeleteChannelSetsRequest, requestOptions?: ChannelSetsClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, channelSetId } = request;
+        const { channelSetId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/channel-sets/${core.url.encodePathParam(channelSetId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/channel-sets/${core.url.encodePathParam(channelSetId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -266,6 +263,7 @@ export class ChannelSetsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -278,6 +276,6 @@ export class ChannelSetsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/channel-sets/{channelSetId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/channel-sets/{channelSetId}");
     }
 }

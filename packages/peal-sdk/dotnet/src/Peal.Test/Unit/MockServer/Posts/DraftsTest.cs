@@ -544,7 +544,7 @@ public class DraftsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/drafts")
+                    .WithPath("/api/v1/posts/drafts")
                     .UsingGet()
             )
             .RespondWith(
@@ -554,9 +554,7 @@ public class DraftsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.DraftsAsync(
-            new DraftsPostsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Posts.DraftsAsync(new DraftsPostsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -641,7 +639,7 @@ public class DraftsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/drafts")
+                    .WithPath("/api/v1/posts/drafts")
                     .UsingGet()
             )
             .RespondWith(
@@ -651,9 +649,7 @@ public class DraftsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.DraftsAsync(
-            new DraftsPostsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Posts.DraftsAsync(new DraftsPostsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

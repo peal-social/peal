@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         privateReplyId: "privateReplyId",
  *         went: true
  *     }
  */
 export interface ConfirmPrivateReplyInboxMessagesRequest {
-    workspaceId: string;
     privateReplyId: string;
     went: boolean;
 }

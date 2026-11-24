@@ -88,9 +88,7 @@ func TestUsageGetWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.GetUsageRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.GetUsageRequest{}
 	_, invocationErr := client.Usage.Get(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestUsageGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestUsageGetWithWireMock", "GET", "/api/workspaces/workspaceId/usage", nil, 1)
+	VerifyRequestCount(t, "TestUsageGetWithWireMock", "GET", "/api/v1/usage", nil, 1)
 }
 
 func TestUsagePartnerWithWireMock(
@@ -114,9 +112,7 @@ func TestUsagePartnerWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.PartnerUsageRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.PartnerUsageRequest{}
 	_, invocationErr := client.Usage.Partner(
 		context.TODO(),
 		request,
@@ -126,5 +122,5 @@ func TestUsagePartnerWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestUsagePartnerWithWireMock", "GET", "/api/workspaces/workspaceId/usage/partner", nil, 1)
+	VerifyRequestCount(t, "TestUsagePartnerWithWireMock", "GET", "/api/v1/usage/partner", nil, 1)
 }

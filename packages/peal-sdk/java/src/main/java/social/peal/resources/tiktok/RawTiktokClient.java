@@ -20,6 +20,7 @@ import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
 import social.peal.errors.BadGatewayError;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
@@ -39,36 +40,32 @@ public class RawTiktokClient {
     /**
      * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
      */
-    public PealClientHttpResponse<TikTokAccount> creator(String workspaceId, String channelId) {
-        return creator(workspaceId, channelId, CreatorTiktokRequest.builder().build());
+    public PealClientHttpResponse<TikTokAccount> creator(String channelId) {
+        return creator(channelId, CreatorTiktokRequest.builder().build());
+    }
+
+    /**
+     * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
+     */
+    public PealClientHttpResponse<TikTokAccount> creator(String channelId, RequestOptions requestOptions) {
+        return creator(channelId, CreatorTiktokRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
+     */
+    public PealClientHttpResponse<TikTokAccount> creator(String channelId, CreatorTiktokRequest request) {
+        return creator(channelId, request, null);
     }
 
     /**
      * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
      */
     public PealClientHttpResponse<TikTokAccount> creator(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return creator(workspaceId, channelId, CreatorTiktokRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
-     */
-    public PealClientHttpResponse<TikTokAccount> creator(
-            String workspaceId, String channelId, CreatorTiktokRequest request) {
-        return creator(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
-     */
-    public PealClientHttpResponse<TikTokAccount> creator(
-            String workspaceId, String channelId, CreatorTiktokRequest request, RequestOptions requestOptions) {
+            String channelId, CreatorTiktokRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("tiktok-creator");
         if (requestOptions != null) {
@@ -104,6 +101,9 @@ public class RawTiktokClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

@@ -13,7 +13,6 @@ public partial class AdsClient : IAdsClient
     }
 
     private async Task<WithRawResponse<AdsStatus>> StatusAsyncCore(
-        StatusAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class AdsClient : IAdsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/ads",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/ads",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -155,7 +163,6 @@ public partial class AdsClient : IAdsClient
     }
 
     private async Task<WithRawResponse<IEnumerable<AdConnection>>> ListConnectionsAsyncCore(
-        ListConnectionsAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -174,10 +181,7 @@ public partial class AdsClient : IAdsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/ads/connections",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/ads/connections",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -228,6 +232,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -317,8 +333,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/connections/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/connections/{0}",
                         ValueConvert.ToPathParameterString(request.Network)
                     ),
                     QueryString = _queryString,
@@ -372,6 +387,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -461,8 +488,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/connections/{1}/callback",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/connections/{0}/callback",
                         ValueConvert.ToPathParameterString(request.Network)
                     ),
                     Body = request,
@@ -518,6 +544,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -631,8 +669,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/connections/{1}/accounts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/connections/{0}/accounts",
                         ValueConvert.ToPathParameterString(request.ConnectionId)
                     ),
                     QueryString = _queryString,
@@ -687,6 +724,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -788,8 +837,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/connections/{1}/accounts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/connections/{0}/accounts",
                         ValueConvert.ToPathParameterString(request.ConnectionId)
                     ),
                     Body = request,
@@ -845,6 +893,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -946,8 +1006,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/connections/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/connections/{0}",
                         ValueConvert.ToPathParameterString(request.ConnectionId)
                     ),
                     QueryString = _queryString,
@@ -974,6 +1033,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1055,7 +1126,6 @@ public partial class AdsClient : IAdsClient
     }
 
     private async Task<WithRawResponse<IEnumerable<AdAccount>>> ListAccountsAsyncCore(
-        ListAccountsAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1074,10 +1144,7 @@ public partial class AdsClient : IAdsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/ads/accounts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/ads/accounts",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -1128,6 +1195,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1217,8 +1296,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/accounts/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/accounts/{0}",
                         ValueConvert.ToPathParameterString(request.AccountId)
                     ),
                     QueryString = _queryString,
@@ -1271,6 +1349,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1360,8 +1450,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/accounts/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/accounts/{0}",
                         ValueConvert.ToPathParameterString(request.AccountId)
                     ),
                     QueryString = _queryString,
@@ -1388,6 +1477,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1489,8 +1590,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/accounts/{1}/spending",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/accounts/{0}/spending",
                         ValueConvert.ToPathParameterString(request.AccountId)
                     ),
                     Body = request,
@@ -1545,6 +1645,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1660,8 +1772,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/accounts/{1}/campaigns",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/accounts/{0}/campaigns",
                         ValueConvert.ToPathParameterString(request.AccountId)
                     ),
                     QueryString = _queryString,
@@ -1818,8 +1929,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/accounts/{1}/ads",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/accounts/{0}/ads",
                         ValueConvert.ToPathParameterString(request.AccountId)
                     ),
                     QueryString = _queryString,
@@ -1975,8 +2085,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/accounts/{1}/insights",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/accounts/{0}/insights",
                         ValueConvert.ToPathParameterString(request.AccountId)
                     ),
                     QueryString = _queryString,
@@ -2130,8 +2239,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/posts/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/posts/{0}",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -2184,6 +2292,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2253,7 +2373,7 @@ public partial class AdsClient : IAdsClient
     }
 
     private async Task<WithRawResponse<BoostQuote>> QuoteBoostAsyncCore(
-        QuoteBoostAdsRequest request,
+        NewBoost request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -2272,14 +2392,10 @@ public partial class AdsClient : IAdsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/ads/boosts/quote",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/ads/boosts/quote",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                     RetriesDisabled = true,
                 },
@@ -2329,6 +2445,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2443,10 +2571,7 @@ public partial class AdsClient : IAdsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/ads/boosts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/ads/boosts",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -2497,6 +2622,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2586,10 +2723,7 @@ public partial class AdsClient : IAdsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/ads/boosts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/ads/boosts",
                     Body = request.Body,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -2643,6 +2777,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2768,8 +2914,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/boosts/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/boosts/{0}",
                         ValueConvert.ToPathParameterString(request.BoostId)
                     ),
                     QueryString = _queryString,
@@ -2822,6 +2967,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2911,8 +3068,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/boosts/{1}/pause",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/boosts/{0}/pause",
                         ValueConvert.ToPathParameterString(request.BoostId)
                     ),
                     QueryString = _queryString,
@@ -2966,6 +3122,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3079,8 +3247,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/boosts/{1}/resume",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/boosts/{0}/resume",
                         ValueConvert.ToPathParameterString(request.BoostId)
                     ),
                     QueryString = _queryString,
@@ -3134,6 +3301,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3247,8 +3426,7 @@ public partial class AdsClient : IAdsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/ads/boosts/{1}/stop",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/ads/boosts/{0}/stop",
                         ValueConvert.ToPathParameterString(request.BoostId)
                     ),
                     QueryString = _queryString,
@@ -3302,6 +3480,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3415,10 +3605,7 @@ public partial class AdsClient : IAdsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/ads/audit",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/ads/audit",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -3469,6 +3656,18 @@ public partial class AdsClient : IAdsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3541,35 +3740,29 @@ public partial class AdsClient : IAdsClient
     /// Says what this server offers of ads (`off`, `read` or `spend`) and on which networks. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.StatusAsync(new StatusAdsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Ads.StatusAsync();
     /// </code></example>
     public WithRawResponseTask<AdsStatus> StatusAsync(
-        StatusAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask<AdsStatus>(
-            StatusAsyncCore(request, options, cancellationToken)
-        );
+        return new WithRawResponseTask<AdsStatus>(StatusAsyncCore(options, cancellationToken));
     }
 
     /// <summary>
     /// Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.ListConnectionsAsync(
-    ///     new ListConnectionsAdsRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Ads.ListConnectionsAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<AdConnection>> ListConnectionsAsync(
-        ListConnectionsAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<AdConnection>>(
-            ListConnectionsAsyncCore(request, options, cancellationToken)
+            ListConnectionsAsyncCore(options, cancellationToken)
         );
     }
 
@@ -3577,9 +3770,7 @@ public partial class AdsClient : IAdsClient
     /// Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.ConnectAsync(
-    ///     new ConnectAdsRequest { WorkspaceId = "workspaceId", Network = AdNetwork.Meta }
-    /// );
+    /// await client.Ads.ConnectAsync(new ConnectAdsRequest { Network = AdNetwork.Meta });
     /// </code></example>
     public WithRawResponseTask<AdSignIn> ConnectAsync(
         ConnectAdsRequest request,
@@ -3597,12 +3788,7 @@ public partial class AdsClient : IAdsClient
     /// </summary>
     /// <example><code>
     /// await client.Ads.CompleteConnectAsync(
-    ///     new AdSignInCallback
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Network = AdNetwork.Meta,
-    ///         State = "state",
-    ///     }
+    ///     new AdSignInCallback { Network = AdNetwork.Meta, State = "state" }
     /// );
     /// </code></example>
     public WithRawResponseTask<AdSignInResult> CompleteConnectAsync(
@@ -3621,7 +3807,7 @@ public partial class AdsClient : IAdsClient
     /// </summary>
     /// <example><code>
     /// await client.Ads.ReachableAccountsAsync(
-    ///     new ReachableAccountsAdsRequest { WorkspaceId = "workspaceId", ConnectionId = "connectionId" }
+    ///     new ReachableAccountsAdsRequest { ConnectionId = "connectionId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<IEnumerable<ReachableAdAccount>> ReachableAccountsAsync(
@@ -3642,7 +3828,6 @@ public partial class AdsClient : IAdsClient
     /// await client.Ads.ConnectAccountsAsync(
     ///     new AdAccountsToConnect
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         ConnectionId = "connectionId",
     ///         ExternalIds = new List&lt;string&gt;() { "externalIds" },
     ///     }
@@ -3663,9 +3848,7 @@ public partial class AdsClient : IAdsClient
     /// Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (`AdAccountBusy`): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.DisconnectAsync(
-    ///     new DisconnectAdsRequest { WorkspaceId = "workspaceId", ConnectionId = "connectionId" }
-    /// );
+    /// await client.Ads.DisconnectAsync(new DisconnectAdsRequest { ConnectionId = "connectionId" });
     /// </code></example>
     public WithRawResponseTask DisconnectAsync(
         DisconnectAdsRequest request,
@@ -3680,16 +3863,15 @@ public partial class AdsClient : IAdsClient
     /// Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.ListAccountsAsync(new ListAccountsAdsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Ads.ListAccountsAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<AdAccount>> ListAccountsAsync(
-        ListAccountsAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<AdAccount>>(
-            ListAccountsAsyncCore(request, options, cancellationToken)
+            ListAccountsAsyncCore(options, cancellationToken)
         );
     }
 
@@ -3697,9 +3879,7 @@ public partial class AdsClient : IAdsClient
     /// Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.GetAccountAsync(
-    ///     new GetAccountAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-    /// );
+    /// await client.Ads.GetAccountAsync(new GetAccountAdsRequest { AccountId = "accountId" });
     /// </code></example>
     public WithRawResponseTask<AdSpending> GetAccountAsync(
         GetAccountAdsRequest request,
@@ -3716,9 +3896,7 @@ public partial class AdsClient : IAdsClient
     /// Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (`AdAccountBusy`), as a paused campaign may run again. Needs ads:manage.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.RemoveAccountAsync(
-    ///     new RemoveAccountAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-    /// );
+    /// await client.Ads.RemoveAccountAsync(new RemoveAccountAdsRequest { AccountId = "accountId" });
     /// </code></example>
     public WithRawResponseTask RemoveAccountAsync(
         RemoveAccountAdsRequest request,
@@ -3734,12 +3912,7 @@ public partial class AdsClient : IAdsClient
     /// </summary>
     /// <example><code>
     /// await client.Ads.SetSpendingAsync(
-    ///     new AdSpendingDecision
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         AccountId = "accountId",
-    ///         Enabled = true,
-    ///     }
+    ///     new AdSpendingDecision { AccountId = "accountId", Enabled = true }
     /// );
     /// </code></example>
     public WithRawResponseTask<AdSpending> SetSpendingAsync(
@@ -3757,9 +3930,7 @@ public partial class AdsClient : IAdsClient
     /// Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose `reach` reads 0 and `results` null. A thousand at most. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.ListCampaignsAsync(
-    ///     new ListCampaignsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-    /// );
+    /// await client.Ads.ListCampaignsAsync(new ListCampaignsAdsRequest { AccountId = "accountId" });
     /// </code></example>
     public WithRawResponseTask<AdCampaignReport> ListCampaignsAsync(
         ListCampaignsAdsRequest request,
@@ -3776,9 +3947,7 @@ public partial class AdsClient : IAdsClient
     /// Lists an ad account's ads as last read, those of one campaign with `campaignId` (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose `capabilities.ads` is false (Google Ads, read by campaign) answers none. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.ListAdsAsync(
-    ///     new ListAdsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-    /// );
+    /// await client.Ads.ListAdsAsync(new ListAdsAdsRequest { AccountId = "accountId" });
     /// </code></example>
     public WithRawResponseTask<AdReport> ListAdsAsync(
         ListAdsAdsRequest request,
@@ -3795,9 +3964,7 @@ public partial class AdsClient : IAdsClient
     /// Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days `from` to `to` of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where `capabilities.reach` or `capabilities.results` is false, `reach` reads 0 and `results` null. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.ListInsightsAsync(
-    ///     new ListInsightsAdsRequest { WorkspaceId = "workspaceId", AccountId = "accountId" }
-    /// );
+    /// await client.Ads.ListInsightsAsync(new ListInsightsAdsRequest { AccountId = "accountId" });
     /// </code></example>
     public WithRawResponseTask<AdInsightReport> ListInsightsAsync(
         ListInsightsAdsRequest request,
@@ -3814,9 +3981,7 @@ public partial class AdsClient : IAdsClient
     /// Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.PostPerformanceAsync(
-    ///     new PostPerformanceAdsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Ads.PostPerformanceAsync(new PostPerformanceAdsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<PostAdPerformance> PostPerformanceAsync(
         PostPerformanceAdsRequest request,
@@ -3834,30 +3999,26 @@ public partial class AdsClient : IAdsClient
     /// </summary>
     /// <example><code>
     /// await client.Ads.QuoteBoostAsync(
-    ///     new QuoteBoostAdsRequest
+    ///     new NewBoost
     ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new NewBoost
+    ///         AccountId = "accountId",
+    ///         Audience = new BoostAudience
     ///         {
-    ///             AccountId = "accountId",
-    ///             Audience = new BoostAudience
-    ///             {
-    ///                 AgeMax = 1,
-    ///                 AgeMin = 1,
-    ///                 Countries = new List&lt;string&gt;() { "countries" },
-    ///             },
-    ///             Budget = new BoostBudget { Amount = 1000000, Kind = BoostBudgetKind.Total },
-    ///             ChannelId = "channelId",
-    ///             Currency = "currency",
-    ///             EndsAt = "endsAt",
-    ///             PostId = "postId",
-    ///             SpecialAdCategory = SpecialAdCategory.None,
+    ///             AgeMax = 1,
+    ///             AgeMin = 1,
+    ///             Countries = new List&lt;string&gt;() { "countries" },
     ///         },
+    ///         Budget = new BoostBudget { Amount = 1000000, Kind = BoostBudgetKind.Total },
+    ///         ChannelId = "channelId",
+    ///         Currency = "currency",
+    ///         EndsAt = "endsAt",
+    ///         PostId = "postId",
+    ///         SpecialAdCategory = SpecialAdCategory.None,
     ///     }
     /// );
     /// </code></example>
     public WithRawResponseTask<BoostQuote> QuoteBoostAsync(
-        QuoteBoostAdsRequest request,
+        NewBoost request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -3871,7 +4032,7 @@ public partial class AdsClient : IAdsClient
     /// Lists the workspace's boosts, newest first, 50 a page, those of one post with `postId`. Pass the page's `nextCursor` as `cursor` for the next one. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.ListBoostsAsync(new ListBoostsAdsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Ads.ListBoostsAsync(new ListBoostsAdsRequest());
     /// </code></example>
     public WithRawResponseTask<BoostPage> ListBoostsAsync(
         ListBoostsAdsRequest request,
@@ -3891,7 +4052,6 @@ public partial class AdsClient : IAdsClient
     /// await client.Ads.CreateBoostAsync(
     ///     new CreateBoostAdsRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         IdempotencyKey = "idempotency-key",
     ///         Body = new NewBoost
     ///         {
@@ -3927,9 +4087,7 @@ public partial class AdsClient : IAdsClient
     /// Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.GetBoostAsync(
-    ///     new GetBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
-    /// );
+    /// await client.Ads.GetBoostAsync(new GetBoostAdsRequest { BoostId = "boostId" });
     /// </code></example>
     public WithRawResponseTask<BoostDetail> GetBoostAsync(
         GetBoostAdsRequest request,
@@ -3946,9 +4104,7 @@ public partial class AdsClient : IAdsClient
     /// Pauses a boost that runs or may run: its campaign is told to pause, and the boost is `paused` once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.PauseBoostAsync(
-    ///     new PauseBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
-    /// );
+    /// await client.Ads.PauseBoostAsync(new PauseBoostAdsRequest { BoostId = "boostId" });
     /// </code></example>
     public WithRawResponseTask<Boost> PauseBoostAsync(
         PauseBoostAdsRequest request,
@@ -3965,9 +4121,7 @@ public partial class AdsClient : IAdsClient
     /// **Spends money.** Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.ResumeBoostAsync(
-    ///     new ResumeBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
-    /// );
+    /// await client.Ads.ResumeBoostAsync(new ResumeBoostAdsRequest { BoostId = "boostId" });
     /// </code></example>
     public WithRawResponseTask<Boost> ResumeBoostAsync(
         ResumeBoostAdsRequest request,
@@ -3984,9 +4138,7 @@ public partial class AdsClient : IAdsClient
     /// Stops a boost for good: its campaign is told to pause, and the boost is `stopped` once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
     /// </summary>
     /// <example><code>
-    /// await client.Ads.StopBoostAsync(
-    ///     new StopBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
-    /// );
+    /// await client.Ads.StopBoostAsync(new StopBoostAdsRequest { BoostId = "boostId" });
     /// </code></example>
     public WithRawResponseTask<Boost> StopBoostAsync(
         StopBoostAdsRequest request,
@@ -4003,7 +4155,7 @@ public partial class AdsClient : IAdsClient
     /// Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
     /// </summary>
     /// <example><code>
-    /// await client.Ads.AuditTrailAsync(new AuditTrailAdsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Ads.AuditTrailAsync(new AuditTrailAdsRequest());
     /// </code></example>
     public WithRawResponseTask<AdAuditPage> AuditTrailAsync(
         AuditTrailAdsRequest request,

@@ -30,9 +30,7 @@ public class GetPrivateReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/private-replies/privateReplyId"
-                    )
+                    .WithPath("/api/v1/inbox/messages/private-replies/privateReplyId")
                     .UsingGet()
             )
             .RespondWith(
@@ -43,11 +41,7 @@ public class GetPrivateReplyTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.GetPrivateReplyAsync(
-            new GetPrivateReplyInboxMessagesRequest
-            {
-                WorkspaceId = "workspaceId",
-                PrivateReplyId = "privateReplyId",
-            }
+            new GetPrivateReplyInboxMessagesRequest { PrivateReplyId = "privateReplyId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -73,9 +67,7 @@ public class GetPrivateReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/private-replies/privateReplyId"
-                    )
+                    .WithPath("/api/v1/inbox/messages/private-replies/privateReplyId")
                     .UsingGet()
             )
             .RespondWith(
@@ -86,11 +78,7 @@ public class GetPrivateReplyTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.GetPrivateReplyAsync(
-            new GetPrivateReplyInboxMessagesRequest
-            {
-                WorkspaceId = "workspaceId",
-                PrivateReplyId = "privateReplyId",
-            }
+            new GetPrivateReplyInboxMessagesRequest { PrivateReplyId = "privateReplyId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

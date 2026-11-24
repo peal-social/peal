@@ -35,17 +35,10 @@ impl PartnerAccountClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .partner_account
-    ///         .get(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.partner_account.get(None).await;
     /// }
     /// ```
-    pub async fn get(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<PartnerStanding, ApiError> {
+    pub async fn get(&self, options: Option<RequestOptions>) -> Result<PartnerStanding, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -54,13 +47,7 @@ impl PartnerAccountClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/partner", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/partner-account", None, None, options)
             .await
     }
 
@@ -89,7 +76,6 @@ impl PartnerAccountClient {
     ///     client
     ///         .partner_account
     ///         .open(
-    ///             &"workspaceId".to_string(),
     ///             &OpenPartner {
     ///                 name: "name".to_string(),
     ///             },
@@ -100,7 +86,6 @@ impl PartnerAccountClient {
     /// ```
     pub async fn open(
         &self,
-        workspace_id: &str,
         request: &OpenPartner,
         options: Option<RequestOptions>,
     ) -> Result<Partner, ApiError> {
@@ -115,7 +100,7 @@ impl PartnerAccountClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/partner", workspace_id),
+                "api/v1/partner-account",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -145,17 +130,10 @@ impl PartnerAccountClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .partner_account
-    ///         .close(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.partner_account.close(None).await;
     /// }
     /// ```
-    pub async fn close(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<(), ApiError> {
+    pub async fn close(&self, options: Option<RequestOptions>) -> Result<(), ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -166,7 +144,7 @@ impl PartnerAccountClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/partner", workspace_id),
+                "api/v1/partner-account",
                 None,
                 None,
                 options,
@@ -199,7 +177,6 @@ impl PartnerAccountClient {
     ///     client
     ///         .partner_account
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &PartnerChange {
     ///                 ..Default::default()
     ///             },
@@ -210,7 +187,6 @@ impl PartnerAccountClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         request: &PartnerChange,
         options: Option<RequestOptions>,
     ) -> Result<Partner, ApiError> {
@@ -225,7 +201,7 @@ impl PartnerAccountClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/partner", workspace_id),
+                "api/v1/partner-account",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -255,15 +231,11 @@ impl PartnerAccountClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .partner_account
-    ///         .list_keys(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.partner_account.list_keys(None).await;
     /// }
     /// ```
     pub async fn list_keys(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<PartnerKey>, ApiError> {
         let options = {
@@ -276,7 +248,7 @@ impl PartnerAccountClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/partner/keys", workspace_id),
+                "api/v1/partner-account/keys",
                 None,
                 None,
                 options,
@@ -309,7 +281,6 @@ impl PartnerAccountClient {
     ///     client
     ///         .partner_account
     ///         .create_key(
-    ///             &"workspaceId".to_string(),
     ///             &NewPartnerKey {
     ///                 name: "name".to_string(),
     ///                 permissions: vec![Permission::ActivityRead],
@@ -323,7 +294,6 @@ impl PartnerAccountClient {
     /// ```
     pub async fn create_key(
         &self,
-        workspace_id: &str,
         request: &NewPartnerKey,
         options: Option<RequestOptions>,
     ) -> Result<CreatedPartnerKey, ApiError> {
@@ -338,7 +308,7 @@ impl PartnerAccountClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/partner/keys", workspace_id),
+                "api/v1/partner-account/keys",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -370,17 +340,12 @@ impl PartnerAccountClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .partner_account
-    ///         .revoke_key(
-    ///             &"workspaceId".to_string(),
-    ///             &"partnerKeyId".to_string(),
-    ///             None,
-    ///         )
+    ///         .revoke_key(&"partnerKeyId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn revoke_key(
         &self,
-        workspace_id: &str,
         partner_key_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -394,10 +359,7 @@ impl PartnerAccountClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/partner/keys/{}",
-                    workspace_id, partner_key_id
-                ),
+                &format!("api/v1/partner-account/keys/{}", partner_key_id),
                 None,
                 None,
                 options,
@@ -430,7 +392,6 @@ impl PartnerAccountClient {
     ///     client
     ///         .partner_account
     ///         .overview(
-    ///             &"workspaceId".to_string(),
     ///             &PartnerAccountOverviewQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -441,7 +402,6 @@ impl PartnerAccountClient {
     /// ```
     pub async fn overview(
         &self,
-        workspace_id: &str,
         request: &PartnerAccountOverviewQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<PartnerHealth, ApiError> {
@@ -455,7 +415,7 @@ impl PartnerAccountClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/partner/overview", workspace_id),
+                "api/v1/partner-account/overview",
                 None,
                 QueryBuilder::new()
                     .string("before", request.before.clone())
@@ -491,7 +451,6 @@ impl PartnerAccountClient {
     ///     client
     ///         .partner_account
     ///         .list_workspaces(
-    ///             &"workspaceId".to_string(),
     ///             &PartnerAccountListWorkspacesQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -502,7 +461,6 @@ impl PartnerAccountClient {
     /// ```
     pub async fn list_workspaces(
         &self,
-        workspace_id: &str,
         request: &PartnerAccountListWorkspacesQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<CustomerWorkspacePage, ApiError> {
@@ -516,7 +474,7 @@ impl PartnerAccountClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/partner/workspaces", workspace_id),
+                "api/v1/partner-account/workspaces",
                 None,
                 QueryBuilder::new()
                     .string("before", request.before.clone())

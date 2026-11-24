@@ -60,12 +60,10 @@ class RecyclingClient
      * Example:
      * ```php
      * $client->recycling->list(
-     *     'workspaceId',
      *     new ListRecyclingRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListRecyclingRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -79,7 +77,7 @@ class RecyclingClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListRecyclingRequest $request = new ListRecyclingRequest(), ?array $options = null): ?RecyclingRulePage
+    public function list(ListRecyclingRequest $request = new ListRecyclingRequest(), ?array $options = null): ?RecyclingRulePage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -96,7 +94,7 @@ class RecyclingClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/recycling",
+                    path: "api/v1/recycling",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -128,7 +126,6 @@ class RecyclingClient
      * Example:
      * ```php
      * $client->recycling->create(
-     *     'workspaceId',
      *     new NewRecyclingRule([
      *         'every' => new RecyclingInterval([
      *             'count' => 1,
@@ -139,7 +136,6 @@ class RecyclingClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewRecyclingRule $request
      * @param ?array{
      *   baseUrl?: string,
@@ -153,7 +149,7 @@ class RecyclingClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, NewRecyclingRule $request, ?array $options = null): ?RecyclingRule
+    public function create(NewRecyclingRule $request, ?array $options = null): ?RecyclingRule
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -161,7 +157,7 @@ class RecyclingClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/recycling",
+                    path: "api/v1/recycling",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -193,12 +189,10 @@ class RecyclingClient
      * Example:
      * ```php
      * $client->recycling->get(
-     *     'workspaceId',
      *     'ruleId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param ?array{
      *   baseUrl?: string,
@@ -212,14 +206,14 @@ class RecyclingClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $ruleId, ?array $options = null): ?RecyclingRule
+    public function get(string $ruleId, ?array $options = null): ?RecyclingRule
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/recycling/{$ruleId}",
+                    path: "api/v1/recycling/{$ruleId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -250,12 +244,10 @@ class RecyclingClient
      * Example:
      * ```php
      * $client->recycling->delete(
-     *     'workspaceId',
      *     'ruleId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param ?array{
      *   baseUrl?: string,
@@ -268,14 +260,14 @@ class RecyclingClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $ruleId, ?array $options = null): void
+    public function delete(string $ruleId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/recycling/{$ruleId}",
+                    path: "api/v1/recycling/{$ruleId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -300,13 +292,11 @@ class RecyclingClient
      * Example:
      * ```php
      * $client->recycling->update(
-     *     'workspaceId',
      *     'ruleId',
      *     new RecyclingRuleChange([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param RecyclingRuleChange $request
      * @param ?array{
@@ -321,7 +311,7 @@ class RecyclingClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $ruleId, RecyclingRuleChange $request = new RecyclingRuleChange(), ?array $options = null): ?RecyclingRule
+    public function update(string $ruleId, RecyclingRuleChange $request = new RecyclingRuleChange(), ?array $options = null): ?RecyclingRule
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -329,7 +319,7 @@ class RecyclingClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/recycling/{$ruleId}",
+                    path: "api/v1/recycling/{$ruleId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -361,13 +351,11 @@ class RecyclingClient
      * Example:
      * ```php
      * $client->recycling->resume(
-     *     'workspaceId',
      *     'ruleId',
      *     new RecyclingResume([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param RecyclingResume $request
      * @param ?array{
@@ -382,7 +370,7 @@ class RecyclingClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function resume(string $workspaceId, string $ruleId, RecyclingResume $request = new RecyclingResume(), ?array $options = null): ?RecyclingRule
+    public function resume(string $ruleId, RecyclingResume $request = new RecyclingResume(), ?array $options = null): ?RecyclingRule
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -390,7 +378,7 @@ class RecyclingClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/recycling/{$ruleId}/resume",
+                    path: "api/v1/recycling/{$ruleId}/resume",
                     method: HttpMethod::POST,
                     body: $request,
                 ),

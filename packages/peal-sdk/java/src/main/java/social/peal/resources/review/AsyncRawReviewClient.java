@@ -28,6 +28,7 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
@@ -40,12 +41,9 @@ import social.peal.resources.review.requests.ChangesRequest;
 import social.peal.resources.review.requests.LinksReviewRequest;
 import social.peal.resources.review.requests.NewComment;
 import social.peal.resources.review.requests.NewReviewLink;
-import social.peal.resources.review.requests.PendingReviewRequest;
 import social.peal.resources.review.requests.ResolveReviewRequest;
 import social.peal.resources.review.requests.RevokeLinkReviewRequest;
-import social.peal.resources.review.requests.SettingsReviewRequest;
 import social.peal.resources.review.requests.ThreadReviewRequest;
-import social.peal.resources.review.requests.UpdateSettingsReviewRequest;
 import social.peal.types.ApprovalOutcome;
 import social.peal.types.ApprovalRequest;
 import social.peal.types.ChangesOutcome;
@@ -66,48 +64,28 @@ public class AsyncRawReviewClient {
     /**
      * Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ReviewSettings>> settings(String workspaceId) {
-        return settings(workspaceId, SettingsReviewRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ReviewSettings>> settings() {
+        return settings(null);
     }
 
     /**
      * Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ReviewSettings>> settings(
-            String workspaceId, RequestOptions requestOptions) {
-        return settings(workspaceId, SettingsReviewRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ReviewSettings>> settings(
-            String workspaceId, SettingsReviewRequest request) {
-        return settings(workspaceId, request, null);
-    }
-
-    /**
-     * Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ReviewSettings>> settings(
-            String workspaceId, SettingsReviewRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<ReviewSettings>> settings(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("review")
-                .addPathSegments("settings");
+                .addPathSegments("api/v1/review/settings");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -136,6 +114,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -189,22 +172,18 @@ public class AsyncRawReviewClient {
     /**
      * Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
      */
-    public CompletableFuture<PealClientHttpResponse<ReviewSettings>> updateSettings(
-            String workspaceId, UpdateSettingsReviewRequest request) {
-        return updateSettings(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<ReviewSettings>> updateSettings(ReviewSettings request) {
+        return updateSettings(request, null);
     }
 
     /**
      * Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ReviewSettings>> updateSettings(
-            String workspaceId, UpdateSettingsReviewRequest request, RequestOptions requestOptions) {
+            ReviewSettings request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("review")
-                .addPathSegments("settings");
+                .addPathSegments("api/v1/review/settings");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -214,7 +193,7 @@ public class AsyncRawReviewClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -254,6 +233,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -307,47 +291,28 @@ public class AsyncRawReviewClient {
     /**
      * Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> pending(String workspaceId) {
-        return pending(workspaceId, PendingReviewRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> pending() {
+        return pending(null);
     }
 
     /**
      * Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> pending(
-            String workspaceId, RequestOptions requestOptions) {
-        return pending(workspaceId, PendingReviewRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> pending(
-            String workspaceId, PendingReviewRequest request) {
-        return pending(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> pending(
-            String workspaceId, PendingReviewRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> pending(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("approvals");
+                .addPathSegments("api/v1/approvals");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -377,6 +342,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -430,36 +400,32 @@ public class AsyncRawReviewClient {
     /**
      * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<PostReview>> thread(String workspaceId, String postId) {
-        return thread(workspaceId, postId, ThreadReviewRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<PostReview>> thread(String postId) {
+        return thread(postId, ThreadReviewRequest.builder().build());
+    }
+
+    /**
+     * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<PostReview>> thread(String postId, RequestOptions requestOptions) {
+        return thread(postId, ThreadReviewRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<PostReview>> thread(String postId, ThreadReviewRequest request) {
+        return thread(postId, request, null);
     }
 
     /**
      * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<PostReview>> thread(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return thread(workspaceId, postId, ThreadReviewRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<PostReview>> thread(
-            String workspaceId, String postId, ThreadReviewRequest request) {
-        return thread(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<PostReview>> thread(
-            String workspaceId, String postId, ThreadReviewRequest request, RequestOptions requestOptions) {
+            String postId, ThreadReviewRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("review");
         if (requestOptions != null) {
@@ -500,6 +466,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -553,21 +524,18 @@ public class AsyncRawReviewClient {
     /**
      * Comments on a post, starts a thread about one of its channels or some words of its text there, or answers a thread. The text is kept as plain text, 2000 characters at most, without control characters. Those who follow the post are told. Needs post:create or post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<PealClientHttpResponse<ReviewComment>> comment(
-            String workspaceId, String postId, NewComment request) {
-        return comment(workspaceId, postId, request, null);
+    public CompletableFuture<PealClientHttpResponse<ReviewComment>> comment(String postId, NewComment request) {
+        return comment(postId, request, null);
     }
 
     /**
      * Comments on a post, starts a thread about one of its channels or some words of its text there, or answers a thread. The text is kept as plain text, 2000 characters at most, without control characters. Those who follow the post are told. Needs post:create or post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ReviewComment>> comment(
-            String workspaceId, String postId, NewComment request, RequestOptions requestOptions) {
+            String postId, NewComment request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("comments");
         if (requestOptions != null) {
@@ -614,6 +582,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -673,24 +646,18 @@ public class AsyncRawReviewClient {
      * Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, <code>parent</code>). Needs post:create or post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ReviewComment>> resolve(
-            String workspaceId, String postId, String commentId, ResolveReviewRequest request) {
-        return resolve(workspaceId, postId, commentId, request, null);
+            String postId, String commentId, ResolveReviewRequest request) {
+        return resolve(postId, commentId, request, null);
     }
 
     /**
      * Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, <code>parent</code>). Needs post:create or post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ReviewComment>> resolve(
-            String workspaceId,
-            String postId,
-            String commentId,
-            ResolveReviewRequest request,
-            RequestOptions requestOptions) {
+            String postId, String commentId, ResolveReviewRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("comments")
                 .addPathSegment(PathSegments.validate(commentId));
@@ -738,6 +705,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -796,21 +768,18 @@ public class AsyncRawReviewClient {
     /**
      * Approves a post that waits for an approval, as the reviewer was shown it: send the <code>id</code> and the <code>subjectHash</code> of the approval that waits, as the post's review or the list of approvals gave them. When the post was asked again or says something else since, nothing is approved (ApprovalChanged): read it again. It is scheduled for the time it was asked for, and its job starts. Approved after that time (beyond a minute), nothing is published late: the post goes back to draft, still approved, and <code>late</code> is true; scheduling it again needs no new approval while it says the same. Recorded with who approved and when. In a workspace that holds more channels or members than its plan allows, which schedules nothing, nothing is approved (PlanLimitReached) and the post keeps waiting. Needs post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<PealClientHttpResponse<ApprovalOutcome>> approve(
-            String workspaceId, String postId, ApprovalDecision request) {
-        return approve(workspaceId, postId, request, null);
+    public CompletableFuture<PealClientHttpResponse<ApprovalOutcome>> approve(String postId, ApprovalDecision request) {
+        return approve(postId, request, null);
     }
 
     /**
      * Approves a post that waits for an approval, as the reviewer was shown it: send the <code>id</code> and the <code>subjectHash</code> of the approval that waits, as the post's review or the list of approvals gave them. When the post was asked again or says something else since, nothing is approved (ApprovalChanged): read it again. It is scheduled for the time it was asked for, and its job starts. Approved after that time (beyond a minute), nothing is published late: the post goes back to draft, still approved, and <code>late</code> is true; scheduling it again needs no new approval while it says the same. Recorded with who approved and when. In a workspace that holds more channels or members than its plan allows, which schedules nothing, nothing is approved (PlanLimitReached) and the post keeps waiting. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ApprovalOutcome>> approve(
-            String workspaceId, String postId, ApprovalDecision request, RequestOptions requestOptions) {
+            String postId, ApprovalDecision request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("approve");
         if (requestOptions != null) {
@@ -857,6 +826,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -921,20 +895,18 @@ public class AsyncRawReviewClient {
      * Sends a post that waits for an approval back to draft, with a comment that says what to change, and the <code>id</code> and <code>subjectHash</code> of the approval it refuses, as for approving. Its author and whoever asked are told. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ChangesOutcome>> requestChanges(
-            String workspaceId, String postId, ChangesRequest request) {
-        return requestChanges(workspaceId, postId, request, null);
+            String postId, ChangesRequest request) {
+        return requestChanges(postId, request, null);
     }
 
     /**
      * Sends a post that waits for an approval back to draft, with a comment that says what to change, and the <code>id</code> and <code>subjectHash</code> of the approval it refuses, as for approving. Its author and whoever asked are told. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ChangesOutcome>> requestChanges(
-            String workspaceId, String postId, ChangesRequest request, RequestOptions requestOptions) {
+            String postId, ChangesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("request-changes");
         if (requestOptions != null) {
@@ -981,6 +953,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1044,36 +1021,34 @@ public class AsyncRawReviewClient {
     /**
      * Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> links(String workspaceId, String postId) {
-        return links(workspaceId, postId, LinksReviewRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> links(String postId) {
+        return links(postId, LinksReviewRequest.builder().build());
     }
 
     /**
      * Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> links(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return links(workspaceId, postId, LinksReviewRequest.builder().build(), requestOptions);
+            String postId, RequestOptions requestOptions) {
+        return links(postId, LinksReviewRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> links(
-            String workspaceId, String postId, LinksReviewRequest request) {
-        return links(workspaceId, postId, request, null);
+            String postId, LinksReviewRequest request) {
+        return links(postId, request, null);
     }
 
     /**
      * Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> links(
-            String workspaceId, String postId, LinksReviewRequest request, RequestOptions requestOptions) {
+            String postId, LinksReviewRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("review-links");
         if (requestOptions != null) {
@@ -1116,6 +1091,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1170,20 +1150,18 @@ public class AsyncRawReviewClient {
      * Makes a link that shows a draft, a post that waits for an approval or a scheduled post to whoever holds it, without an account: the post as each channel will receive it, and nothing else of the workspace. It lets them view, comment, or approve, and works 14 days unless <code>expiresInHours</code> says otherwise (90 days at most), until it is revoked, or the post is published, cancelled or deleted. A post has 20 working links at most. The answer holds the link's address, which is not shown again. Needs post:approve, and is refused to staff acting as a member. A link that lets its holders approve is made in the web app only: an API key or an OAuth client is refused one, as it would approve its own posts with it.
      */
     public CompletableFuture<PealClientHttpResponse<CreatedReviewLink>> createLink(
-            String workspaceId, String postId, NewReviewLink request) {
-        return createLink(workspaceId, postId, request, null);
+            String postId, NewReviewLink request) {
+        return createLink(postId, request, null);
     }
 
     /**
      * Makes a link that shows a draft, a post that waits for an approval or a scheduled post to whoever holds it, without an account: the post as each channel will receive it, and nothing else of the workspace. It lets them view, comment, or approve, and works 14 days unless <code>expiresInHours</code> says otherwise (90 days at most), until it is revoked, or the post is published, cancelled or deleted. A post has 20 working links at most. The answer holds the link's address, which is not shown again. Needs post:approve, and is refused to staff acting as a member. A link that lets its holders approve is made in the web app only: an API key or an OAuth client is refused one, as it would approve its own posts with it.
      */
     public CompletableFuture<PealClientHttpResponse<CreatedReviewLink>> createLink(
-            String workspaceId, String postId, NewReviewLink request, RequestOptions requestOptions) {
+            String postId, NewReviewLink request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("review-links");
         if (requestOptions != null) {
@@ -1230,6 +1208,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1288,36 +1271,34 @@ public class AsyncRawReviewClient {
     /**
      * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<PealClientHttpResponse<ReviewLink>> revokeLink(String workspaceId, String linkId) {
-        return revokeLink(workspaceId, linkId, RevokeLinkReviewRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ReviewLink>> revokeLink(String linkId) {
+        return revokeLink(linkId, RevokeLinkReviewRequest.builder().build());
     }
 
     /**
      * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ReviewLink>> revokeLink(
-            String workspaceId, String linkId, RequestOptions requestOptions) {
-        return revokeLink(workspaceId, linkId, RevokeLinkReviewRequest.builder().build(), requestOptions);
+            String linkId, RequestOptions requestOptions) {
+        return revokeLink(linkId, RevokeLinkReviewRequest.builder().build(), requestOptions);
     }
 
     /**
      * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ReviewLink>> revokeLink(
-            String workspaceId, String linkId, RevokeLinkReviewRequest request) {
-        return revokeLink(workspaceId, linkId, request, null);
+            String linkId, RevokeLinkReviewRequest request) {
+        return revokeLink(linkId, request, null);
     }
 
     /**
      * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<PealClientHttpResponse<ReviewLink>> revokeLink(
-            String workspaceId, String linkId, RevokeLinkReviewRequest request, RequestOptions requestOptions) {
+            String linkId, RevokeLinkReviewRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("review-links")
+                .addPathSegments("api/v1/review-links")
                 .addPathSegment(PathSegments.validate(linkId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1360,6 +1341,11 @@ public class AsyncRawReviewClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

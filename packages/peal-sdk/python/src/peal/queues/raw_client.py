@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -32,16 +33,12 @@ class RawQueuesClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[Queue]]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[Queue]]:
         """
         Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -51,7 +48,7 @@ class RawQueuesClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues",
+            "api/v1/queues",
             method="GET",
             request_options=request_options,
         )
@@ -65,6 +62,17 @@ class RawQueuesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -120,7 +128,6 @@ class RawQueuesClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         slots: typing.Sequence[QueueSlot],
@@ -135,8 +142,6 @@ class RawQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         slots : typing.Sequence[QueueSlot]
@@ -161,7 +166,7 @@ class RawQueuesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues",
+            "api/v1/queues",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -172,9 +177,6 @@ class RawQueuesClient:
                     object_=slots, annotation=typing.Sequence[QueueSlot], direction="write"
                 ),
                 "timeZone": time_zone,
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -189,6 +191,17 @@ class RawQueuesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -264,16 +277,12 @@ class RawQueuesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[Queue]:
+    def get(self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Queue]:
         """
         Answers with a queue of the workspace. Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -285,7 +294,7 @@ class RawQueuesClient:
             Queue
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}",
+            f"api/v1/queues/{encode_path_param(queue_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -299,6 +308,17 @@ class RawQueuesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -354,7 +374,6 @@ class RawQueuesClient:
 
     def update(
         self,
-        workspace_id: str,
         queue_id: str,
         *,
         name: str,
@@ -370,8 +389,6 @@ class RawQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         name : str
@@ -395,7 +412,7 @@ class RawQueuesClient:
             Queue
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}",
+            f"api/v1/queues/{encode_path_param(queue_id)}",
             method="PUT",
             json={
                 "channelIds": channel_ids,
@@ -423,6 +440,17 @@ class RawQueuesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -498,16 +526,12 @@ class RawQueuesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def delete(self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (`queueId` null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -518,13 +542,24 @@ class RawQueuesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}",
+            f"api/v1/queues/{encode_path_param(queue_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -580,7 +615,6 @@ class RawQueuesClient:
 
     def slots(
         self,
-        workspace_id: str,
         queue_id: str,
         *,
         count: typing.Optional[str] = None,
@@ -591,8 +625,6 @@ class RawQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         count : typing.Optional[str]
@@ -606,7 +638,7 @@ class RawQueuesClient:
             QueuePreview
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}/slots",
+            f"api/v1/queues/{encode_path_param(queue_id)}/slots",
             method="GET",
             params={
                 "count": count,
@@ -623,6 +655,17 @@ class RawQueuesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -677,15 +720,13 @@ class RawQueuesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reshuffle(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[QueueReshuffle]:
         """
         Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and `post.scheduled` told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (`post.approval_requested` is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (`stoppedBy` `planLimit`), when no slot is left within 366 days (`full`), or when the queue was saved meanwhile (`changed`); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (`noSlots`) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -700,7 +741,7 @@ class RawQueuesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}/reshuffle",
+            f"api/v1/queues/{encode_path_param(queue_id)}/reshuffle",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -714,6 +755,17 @@ class RawQueuesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -784,15 +836,13 @@ class AsyncRawQueuesClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[Queue]]:
         """
         Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -802,7 +852,7 @@ class AsyncRawQueuesClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues",
+            "api/v1/queues",
             method="GET",
             request_options=request_options,
         )
@@ -816,6 +866,17 @@ class AsyncRawQueuesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -871,7 +932,6 @@ class AsyncRawQueuesClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         slots: typing.Sequence[QueueSlot],
@@ -886,8 +946,6 @@ class AsyncRawQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         slots : typing.Sequence[QueueSlot]
@@ -912,7 +970,7 @@ class AsyncRawQueuesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues",
+            "api/v1/queues",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -923,9 +981,6 @@ class AsyncRawQueuesClient:
                     object_=slots, annotation=typing.Sequence[QueueSlot], direction="write"
                 ),
                 "timeZone": time_zone,
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -940,6 +995,17 @@ class AsyncRawQueuesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1016,15 +1082,13 @@ class AsyncRawQueuesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Queue]:
         """
         Answers with a queue of the workspace. Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1036,7 +1100,7 @@ class AsyncRawQueuesClient:
             Queue
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}",
+            f"api/v1/queues/{encode_path_param(queue_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1050,6 +1114,17 @@ class AsyncRawQueuesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1105,7 +1180,6 @@ class AsyncRawQueuesClient:
 
     async def update(
         self,
-        workspace_id: str,
         queue_id: str,
         *,
         name: str,
@@ -1121,8 +1195,6 @@ class AsyncRawQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         name : str
@@ -1146,7 +1218,7 @@ class AsyncRawQueuesClient:
             Queue
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}",
+            f"api/v1/queues/{encode_path_param(queue_id)}",
             method="PUT",
             json={
                 "channelIds": channel_ids,
@@ -1174,6 +1246,17 @@ class AsyncRawQueuesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1250,15 +1333,13 @@ class AsyncRawQueuesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Deletes a queue. The posts it placed stay scheduled at their times, and no longer name it (`queueId` null). Deleting the default leaves the workspace without one until another is made default. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1269,13 +1350,24 @@ class AsyncRawQueuesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}",
+            f"api/v1/queues/{encode_path_param(queue_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1331,7 +1423,6 @@ class AsyncRawQueuesClient:
 
     async def slots(
         self,
-        workspace_id: str,
         queue_id: str,
         *,
         count: typing.Optional[str] = None,
@@ -1342,8 +1433,6 @@ class AsyncRawQueuesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         count : typing.Optional[str]
@@ -1357,7 +1446,7 @@ class AsyncRawQueuesClient:
             QueuePreview
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}/slots",
+            f"api/v1/queues/{encode_path_param(queue_id)}/slots",
             method="GET",
             params={
                 "count": count,
@@ -1374,6 +1463,17 @@ class AsyncRawQueuesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1428,15 +1528,13 @@ class AsyncRawQueuesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reshuffle(
-        self, workspace_id: str, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, queue_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[QueueReshuffle]:
         """
         Moves the posts that wait in the queue (scheduled or awaiting approval, after now) onto its slots as they are now, after its timetable changed: in the order of their times, the first onto the first free slot, and so on, those moved by hand included; a slot a publishing post holds is skipped. Each move is what moving a post by hand does (a new time, the month's room in the plan, and `post.scheduled` told for a scheduled post), but for approvals: a scheduled post goes through the approval policy as the caller's, and a post that waits for an approval keeps waiting, at its new time, whoever calls, under the request it had (`post.approval_requested` is told with the new time, and nobody is asked again to decide); moving it by hand is how a caller whose posts need no approval schedules it. A post already on its slot is left as it is. Answers how many posts moved, how many were left where they were (on their slots already, scheduled ones when the caller may only ask for posts to go out, or those moved, sent back or cancelled by someone else meanwhile), and how many remain unplaced: it stops, keeping what it moved, at a month the plan has no room in (`stoppedBy` `planLimit`), when no slot is left within 366 days (`full`), or when the queue was saved meanwhile (`changed`); call it again to go on. Called twice, the second call moves nothing. QueueHasNoRoom (`noSlots`) for a queue without slots. Needs post:schedule, or post:create where posts wait for an approval.
 
         Parameters
         ----------
-        workspace_id : str
-
         queue_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1451,7 +1549,7 @@ class AsyncRawQueuesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/queues/{encode_path_param(queue_id)}/reshuffle",
+            f"api/v1/queues/{encode_path_param(queue_id)}/reshuffle",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -1465,6 +1563,17 @@ class AsyncRawQueuesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

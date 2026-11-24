@@ -89,7 +89,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/follow-ups/ruleId")
+                    .WithPath("/api/v1/follow-ups/ruleId")
                     .UsingGet()
             )
             .RespondWith(
@@ -100,7 +100,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.FollowUps.GetAsync(
-            new GetFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new GetFollowUpsRequest { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -162,7 +162,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/follow-ups/ruleId")
+                    .WithPath("/api/v1/follow-ups/ruleId")
                     .UsingGet()
             )
             .RespondWith(
@@ -173,7 +173,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.FollowUps.GetAsync(
-            new GetFollowUpsRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new GetFollowUpsRequest { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

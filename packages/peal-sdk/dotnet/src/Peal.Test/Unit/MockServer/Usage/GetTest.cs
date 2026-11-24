@@ -123,12 +123,7 @@ public class GetTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/usage")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/usage").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -136,9 +131,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Usage.GetAsync(
-            new GetUsageRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Usage.GetAsync(new GetUsageRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -221,12 +214,7 @@ public class GetTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/usage")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/usage").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -234,9 +222,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Usage.GetAsync(
-            new GetUsageRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Usage.GetAsync(new GetUsageRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

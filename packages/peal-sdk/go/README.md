@@ -50,7 +50,6 @@ func do() error {
         ),
     )
     request := &peal.NewAPIKey{
-        WorkspaceID: "workspaceId",
         Name: "name",
         Permissions: []peal.Permission{
             peal.PermissionActivityRead,

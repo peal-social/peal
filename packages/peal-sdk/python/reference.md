@@ -1,6 +1,6 @@
 # Reference
 ## system
-<details><summary><code>client.system.<a href="src/peal/system/client.py#L26-L49">health</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/peal/system/client.py#L26-L50">health</a>()</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.system.health()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/peal/system/client.py#L51-L74">ready</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/peal/system/client.py#L52-L76">ready</a>()</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.system.ready()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/peal/system/client.py#L76-L100">changelog</a>() -> ApiChangelog</code></summary>
+<details><summary><code>client.system.<a href="src/peal/system/client.py#L78-L103">changelog</a>() -> ApiChangelog</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.system.changelog()
 </details>
 
 ## session
-<details><summary><code>client.session.<a href="src/peal/session/client.py#L26-L50">me</a>() -> Me</code></summary>
+<details><summary><code>client.session.<a href="src/peal/session/client.py#L26-L51">me</a>() -> Me</code></summary>
 <dl>
 <dd>
 
@@ -254,7 +254,7 @@ client.session.me()
 </details>
 
 ## credential
-<details><summary><code>client.credential.<a href="src/peal/credential/client.py#L26-L50">get</a>() -> Credential</code></summary>
+<details><summary><code>client.credential.<a href="src/peal/credential/client.py#L26-L51">get</a>() -> Credential</code></summary>
 <dl>
 <dd>
 
@@ -318,7 +318,7 @@ client.credential.get()
 </details>
 
 ## apiKeys
-<details><summary><code>client.api_keys.<a href="src/peal/api_keys/client.py#L31-L61">list</a>(...) -> typing.List[ApiKey]</code></summary>
+<details><summary><code>client.api_keys.<a href="src/peal/api_keys/client.py#L31-L56">list</a>() -> typing.List[ApiKey]</code></summary>
 <dl>
 <dd>
 
@@ -353,9 +353,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.api_keys.list(
-    workspace_id="workspaceId",
-)
+client.api_keys.list()
 
 ```
 </dd>
@@ -367,14 +365,6 @@ client.api_keys.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -391,7 +381,7 @@ client.api_keys.list(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/peal/api_keys/client.py#L63-L113">create</a>(...) -> CreatedApiKey</code></summary>
+<details><summary><code>client.api_keys.<a href="src/peal/api_keys/client.py#L58-L101">create</a>(...) -> CreatedApiKey</code></summary>
 <dl>
 <dd>
 
@@ -427,7 +417,6 @@ client = Peal(
 )
 
 client.api_keys.create(
-    workspace_id="workspaceId",
     name="name",
     permissions=[
         "activity:read"
@@ -444,14 +433,6 @@ client.api_keys.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -492,7 +473,7 @@ client.api_keys.create(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/peal/api_keys/client.py#L115-L147">revoke</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/peal/api_keys/client.py#L103-L131">revoke</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -528,7 +509,6 @@ client = Peal(
 )
 
 client.api_keys.revoke(
-    workspace_id="workspaceId",
     api_key_id="apiKeyId",
 )
 
@@ -542,14 +522,6 @@ client.api_keys.revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -575,7 +547,7 @@ client.api_keys.revoke(
 </details>
 
 ## channels
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L42-L72">list</a>(...) -> typing.List[Channel]</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L42-L67">list</a>() -> typing.List[Channel]</code></summary>
 <dl>
 <dd>
 
@@ -610,9 +582,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.channels.list(
-    workspace_id="workspaceId",
-)
+client.channels.list()
 
 ```
 </dd>
@@ -624,14 +594,6 @@ client.channels.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -648,7 +610,7 @@ client.channels.list(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L74-L130">find</a>(...) -> ChannelPage</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L69-L115">find</a>(...) -> ChannelPage</code></summary>
 <dl>
 <dd>
 
@@ -683,9 +645,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.channels.find(
-    workspace_id="workspaceId",
-)
+client.channels.find()
 
 ```
 </dd>
@@ -697,14 +657,6 @@ client.channels.find(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -761,7 +713,7 @@ client.channels.find(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L132-L162">platforms</a>(...) -> ConnectablePlatforms</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L117-L142">platforms</a>() -> ConnectablePlatforms</code></summary>
 <dl>
 <dd>
 
@@ -796,9 +748,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.channels.platforms(
-    workspace_id="workspaceId",
-)
+client.channels.platforms()
 
 ```
 </dd>
@@ -810,14 +760,6 @@ client.channels.platforms(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -834,7 +776,7 @@ client.channels.platforms(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L164-L220">connect_site</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L144-L196">connect_site</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -870,7 +812,6 @@ client = Peal(
 )
 
 client.channels.connect_site(
-    workspace_id="workspaceId",
     address="address",
     application_password="applicationPassword",
     platform="wordpress",
@@ -887,14 +828,6 @@ client.channels.connect_site(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -943,7 +876,7 @@ client.channels.connect_site(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L222-L268">connect_site_with_key</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L198-L241">connect_site_with_key</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -979,7 +912,6 @@ client = Peal(
 )
 
 client.channels.connect_site_with_key(
-    workspace_id="workspaceId",
     api_key="apiKey",
     platform="devto",
 )
@@ -994,14 +926,6 @@ client.channels.connect_site_with_key(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1042,7 +966,7 @@ client.channels.connect_site_with_key(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L270-L305">connect_chat</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L243-L274">connect_chat</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1078,7 +1002,6 @@ client = Peal(
 )
 
 client.channels.connect_chat(
-    workspace_id="workspaceId",
     request=ConnectChat_Discord(
         webhook_url="webhookUrl",
     ),
@@ -1094,14 +1017,6 @@ client.channels.connect_chat(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1126,7 +1041,7 @@ client.channels.connect_chat(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L307-L349">start_site_sign_in</a>(...) -> Authorization</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L276-L315">start_site_sign_in</a>(...) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1162,7 +1077,6 @@ client = Peal(
 )
 
 client.channels.start_site_sign_in(
-    workspace_id="workspaceId",
     platform="wordpressCom",
 )
 
@@ -1176,14 +1090,6 @@ client.channels.start_site_sign_in(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1216,7 +1122,7 @@ client.channels.start_site_sign_in(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L351-L400">complete_site_sign_in</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L317-L363">complete_site_sign_in</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1252,7 +1158,6 @@ client = Peal(
 )
 
 client.channels.complete_site_sign_in(
-    workspace_id="workspaceId",
     platform="wordpressCom",
     state="state",
 )
@@ -1267,14 +1172,6 @@ client.channels.complete_site_sign_in(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1323,7 +1220,7 @@ client.channels.complete_site_sign_in(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L402-L455">connect</a>(...) -> Authorization</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L365-L410">connect</a>(...) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1359,7 +1256,6 @@ client = Peal(
 )
 
 client.channels.connect(
-    workspace_id="workspaceId",
     platform="x",
 )
 
@@ -1373,14 +1269,6 @@ client.channels.connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1429,7 +1317,7 @@ client.channels.connect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L457-L509">complete_connect</a>(...) -> ConnectOutcome</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L412-L461">complete_connect</a>(...) -> ConnectOutcome</code></summary>
 <dl>
 <dd>
 
@@ -1465,7 +1353,6 @@ client = Peal(
 )
 
 client.channels.complete_connect(
-    workspace_id="workspaceId",
     platform="x",
     state="state",
 )
@@ -1480,14 +1367,6 @@ client.channels.complete_connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1544,7 +1423,7 @@ client.channels.complete_connect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L511-L558">choose_accounts</a>(...) -> typing.List[Channel]</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L463-L507">choose_accounts</a>(...) -> typing.List[Channel]</code></summary>
 <dl>
 <dd>
 
@@ -1580,7 +1459,6 @@ client = Peal(
 )
 
 client.channels.choose_accounts(
-    workspace_id="workspaceId",
     platform="x",
     account_ids=[
         "accountIds"
@@ -1598,14 +1476,6 @@ client.channels.choose_accounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1646,7 +1516,7 @@ client.channels.choose_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L560-L605">reconnect</a>(...) -> Authorization</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L509-L551">reconnect</a>(...) -> Authorization</code></summary>
 <dl>
 <dd>
 
@@ -1682,7 +1552,6 @@ client = Peal(
 )
 
 client.channels.reconnect(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -1696,14 +1565,6 @@ client.channels.reconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1744,7 +1605,7 @@ client.channels.reconnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L607-L639">disconnect</a>(...)</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L553-L581">disconnect</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1780,7 +1641,6 @@ client = Peal(
 )
 
 client.channels.disconnect(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -1794,14 +1654,6 @@ client.channels.disconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1826,7 +1678,7 @@ client.channels.disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L641-L681">update</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L583-L620">update</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1862,7 +1714,6 @@ client = Peal(
 )
 
 client.channels.update(
-    workspace_id="workspaceId",
     channel_id="channelId",
     label=None,
 )
@@ -1877,14 +1728,6 @@ client.channels.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1917,7 +1760,7 @@ client.channels.update(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L683-L716">disable</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L622-L651">disable</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -1953,7 +1796,6 @@ client = Peal(
 )
 
 client.channels.disable(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -1967,14 +1809,6 @@ client.channels.disable(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -1999,7 +1833,7 @@ client.channels.disable(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L718-L751">enable</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/peal/channels/client.py#L653-L682">enable</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -2035,7 +1869,6 @@ client = Peal(
 )
 
 client.channels.enable(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -2049,14 +1882,6 @@ client.channels.enable(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2082,7 +1907,7 @@ client.channels.enable(
 </details>
 
 ## posts
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L49-L88">drafts</a>(...) -> DraftPage</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L49-L84">drafts</a>(...) -> DraftPage</code></summary>
 <dl>
 <dd>
 
@@ -2117,9 +1942,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.posts.drafts(
-    workspace_id="workspaceId",
-)
+client.posts.drafts()
 
 ```
 </dd>
@@ -2131,14 +1954,6 @@ client.posts.drafts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2171,7 +1986,7 @@ client.posts.drafts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L90-L126">list</a>(...) -> typing.List[Post]</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L86-L120">list</a>(...) -> typing.List[Post]</code></summary>
 <dl>
 <dd>
 
@@ -2207,7 +2022,6 @@ client = Peal(
 )
 
 client.posts.list(
-    workspace_id="workspaceId",
     from_="from",
     to="to",
 )
@@ -2222,14 +2036,6 @@ client.posts.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2262,7 +2068,7 @@ client.posts.list(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L128-L212">create</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L122-L202">create</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -2298,7 +2104,6 @@ client = Peal(
 )
 
 client.posts.create(
-    workspace_id="workspaceId",
     channel_ids=[
         "channelIds"
     ],
@@ -2333,14 +2138,6 @@ client.posts.create(
 <dl>
 <dd>
 
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `PostDraft` 
     
 </dd>
@@ -2361,7 +2158,7 @@ client.posts.create(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L214-L310">search</a>(...) -> PostPage</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L204-L295">search</a>(...) -> PostPage</code></summary>
 <dl>
 <dd>
 
@@ -2396,9 +2193,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.posts.search(
-    workspace_id="workspaceId",
-)
+client.posts.search()
 
 ```
 </dd>
@@ -2410,14 +2205,6 @@ client.posts.search(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2554,7 +2341,7 @@ client.posts.search(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L312-L419">send</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L297-L400">send</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -2590,7 +2377,6 @@ client = Peal(
 )
 
 client.posts.send(
-    workspace_id="workspaceId",
     channel_ids=[
         "channelIds"
     ],
@@ -2622,14 +2408,6 @@ client.posts.send(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2742,7 +2520,7 @@ client.posts.send(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L421-L490">bulk</a>(...) -> BulkResult</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L402-L466">bulk</a>(...) -> BulkResult</code></summary>
 <dl>
 <dd>
 
@@ -2778,7 +2556,6 @@ client = Peal(
 )
 
 client.posts.bulk(
-    workspace_id="workspaceId",
     posts=[
         BulkPost(
             channel_ids=[
@@ -2814,14 +2591,6 @@ client.posts.bulk(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2890,7 +2659,6 @@ client = Peal(
 )
 
 client.posts.import_(
-    workspace_id="workspaceId",
     csv="csv",
 )
 
@@ -2904,14 +2672,6 @@ client.posts.import_(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -2952,7 +2712,7 @@ client.posts.import_(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L539-L627">validate</a>(...) -> PostValidation</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L512-L596">validate</a>(...) -> PostValidation</code></summary>
 <dl>
 <dd>
 
@@ -2988,7 +2748,6 @@ client = Peal(
 )
 
 client.posts.validate(
-    workspace_id="workspaceId",
     channel_ids=[
         "channelIds"
     ],
@@ -3019,14 +2778,6 @@ client.posts.validate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3115,7 +2866,7 @@ client.posts.validate(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L629-L660">get</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L598-L627">get</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3151,7 +2902,6 @@ client = Peal(
 )
 
 client.posts.get(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -3165,14 +2915,6 @@ client.posts.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3197,7 +2939,7 @@ client.posts.get(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L662-L751">update</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L629-L714">update</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3233,7 +2975,6 @@ client = Peal(
 )
 
 client.posts.update(
-    workspace_id="workspaceId",
     post_id="postId",
     channel_ids=[
         "channelIds"
@@ -3269,14 +3010,6 @@ client.posts.update(
 <dl>
 <dd>
 
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **post_id:** `str` 
     
 </dd>
@@ -3305,7 +3038,7 @@ client.posts.update(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L753-L785">discard</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L716-L744">discard</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3341,7 +3074,6 @@ client = Peal(
 )
 
 client.posts.discard(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -3355,14 +3087,6 @@ client.posts.discard(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3387,7 +3111,7 @@ client.posts.discard(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L787-L827">outcome</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L746-L783">outcome</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3423,7 +3147,6 @@ client = Peal(
 )
 
 client.posts.outcome(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -3437,14 +3160,6 @@ client.posts.outcome(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3477,7 +3192,7 @@ client.posts.outcome(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L829-L862">attempts</a>(...) -> typing.List[PublicationAttempt]</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L785-L816">attempts</a>(...) -> typing.List[PublicationAttempt]</code></summary>
 <dl>
 <dd>
 
@@ -3513,7 +3228,6 @@ client = Peal(
 )
 
 client.posts.attempts(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -3527,14 +3241,6 @@ client.posts.attempts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3559,7 +3265,7 @@ client.posts.attempts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L864-L905">tag</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L818-L852">tag</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3595,7 +3301,6 @@ client = Peal(
 )
 
 client.posts.tag(
-    workspace_id="workspaceId",
     post_id="postId",
     tag_ids=[
         "tagIds"
@@ -3612,14 +3317,6 @@ client.posts.tag(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3652,7 +3349,7 @@ client.posts.tag(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L907-L940">duplicate</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L854-L883">duplicate</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3688,7 +3385,6 @@ client = Peal(
 )
 
 client.posts.duplicate(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -3702,14 +3398,6 @@ client.posts.duplicate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3734,7 +3422,7 @@ client.posts.duplicate(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L942-L993">schedule</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L885-L933">schedule</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3770,7 +3458,6 @@ client = Peal(
 )
 
 client.posts.schedule(
-    workspace_id="workspaceId",
     post_id="postId",
     at="at",
     channel_ids=[
@@ -3789,14 +3476,6 @@ client.posts.schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3845,7 +3524,7 @@ client.posts.schedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L995-L1042">reschedule</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L935-L972">reschedule</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3881,7 +3560,6 @@ client = Peal(
 )
 
 client.posts.reschedule(
-    workspace_id="workspaceId",
     post_id="postId",
     at="at",
     time_zone="timeZone",
@@ -3897,14 +3575,6 @@ client.posts.reschedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -3937,7 +3607,7 @@ client.posts.reschedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1044-L1089">enqueue</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L974-L1016">enqueue</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3973,7 +3643,6 @@ client = Peal(
 )
 
 client.posts.enqueue(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -3987,14 +3656,6 @@ client.posts.enqueue(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4035,7 +3696,7 @@ client.posts.enqueue(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1091-L1124">unschedule</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1018-L1047">unschedule</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -4071,7 +3732,6 @@ client = Peal(
 )
 
 client.posts.unschedule(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -4085,14 +3745,6 @@ client.posts.unschedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4117,7 +3769,7 @@ client.posts.unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1126-L1167">repost</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1049-L1081">repost</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -4153,7 +3805,6 @@ client = Peal(
 )
 
 client.posts.repost(
-    workspace_id="workspaceId",
     post_id="postId",
     target_id="targetId",
 )
@@ -4168,14 +3819,6 @@ client.posts.repost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4208,7 +3851,7 @@ client.posts.repost(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1169-L1210">remove_target</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1083-L1117">remove_target</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -4244,7 +3887,6 @@ client = Peal(
 )
 
 client.posts.remove_target(
-    workspace_id="workspaceId",
     post_id="postId",
     target_id="targetId",
 )
@@ -4259,14 +3901,6 @@ client.posts.remove_target(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4299,7 +3933,7 @@ client.posts.remove_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1212-L1259">confirm</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1119-L1161">confirm</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -4335,7 +3969,6 @@ client = Peal(
 )
 
 client.posts.confirm(
-    workspace_id="workspaceId",
     post_id="postId",
     target_id="targetId",
     request=TargetConfirmation_Published(
@@ -4353,14 +3986,6 @@ client.posts.confirm(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4401,7 +4026,7 @@ client.posts.confirm(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1261-L1302">leave_out_rest</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1163-L1197">leave_out_rest</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -4437,7 +4062,6 @@ client = Peal(
 )
 
 client.posts.leave_out_rest(
-    workspace_id="workspaceId",
     post_id="postId",
     target_id="targetId",
 )
@@ -4452,14 +4076,6 @@ client.posts.leave_out_rest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4492,7 +4108,7 @@ client.posts.leave_out_rest(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1304-L1350">unpublish_target</a>(...) -> LivePostChange</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1199-L1240">unpublish_target</a>(...) -> LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -4528,7 +4144,6 @@ client = Peal(
 )
 
 client.posts.unpublish_target(
-    workspace_id="workspaceId",
     post_id="postId",
     target_id="targetId",
 )
@@ -4543,14 +4158,6 @@ client.posts.unpublish_target(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4591,7 +4198,7 @@ client.posts.unpublish_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1352-L1405">edit_target</a>(...) -> LivePostChange</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1242-L1292">edit_target</a>(...) -> LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -4627,7 +4234,6 @@ client = Peal(
 )
 
 client.posts.edit_target(
-    workspace_id="workspaceId",
     post_id="postId",
     target_id="targetId",
     text="text",
@@ -4643,14 +4249,6 @@ client.posts.edit_target(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4707,7 +4305,7 @@ client.posts.edit_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1407-L1440">unpublish</a>(...) -> PostUnpublish</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1294-L1323">unpublish</a>(...) -> PostUnpublish</code></summary>
 <dl>
 <dd>
 
@@ -4743,7 +4341,6 @@ client = Peal(
 )
 
 client.posts.unpublish(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -4757,14 +4354,6 @@ client.posts.unpublish(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4789,7 +4378,7 @@ client.posts.unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1442-L1475">changes</a>(...) -> LivePostChanges</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1325-L1354">changes</a>(...) -> LivePostChanges</code></summary>
 <dl>
 <dd>
 
@@ -4825,7 +4414,6 @@ client = Peal(
 )
 
 client.posts.changes(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -4839,14 +4427,6 @@ client.posts.changes(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4871,7 +4451,7 @@ client.posts.changes(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1477-L1510">cancel</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1356-L1385">cancel</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -4907,7 +4487,6 @@ client = Peal(
 )
 
 client.posts.cancel(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -4921,14 +4500,6 @@ client.posts.cancel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -4954,7 +4525,7 @@ client.posts.cancel(
 </details>
 
 ## articles
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L34-L78">list</a>(...) -> ArticlePage</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L34-L72">list</a>(...) -> ArticlePage</code></summary>
 <dl>
 <dd>
 
@@ -4989,9 +4560,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.articles.list(
-    workspace_id="workspaceId",
-)
+client.articles.list()
 
 ```
 </dd>
@@ -5003,14 +4572,6 @@ client.articles.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5051,7 +4612,7 @@ client.articles.list(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L80-L158">create</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L74-L148">create</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5087,7 +4648,6 @@ client = Peal(
 )
 
 client.articles.create(
-    workspace_id="workspaceId",
     body=ArticleBody(
         content=[],
         type="doc",
@@ -5106,14 +4666,6 @@ client.articles.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5202,7 +4754,7 @@ client.articles.create(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L160-L193">get</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L150-L179">get</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5238,7 +4790,6 @@ client = Peal(
 )
 
 client.articles.get(
-    workspace_id="workspaceId",
     article_id="articleId",
 )
 
@@ -5252,14 +4803,6 @@ client.articles.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5284,7 +4827,7 @@ client.articles.get(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L195-L227">delete</a>(...)</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L181-L209">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5320,7 +4863,6 @@ client = Peal(
 )
 
 client.articles.delete(
-    workspace_id="workspaceId",
     article_id="articleId",
 )
 
@@ -5334,14 +4876,6 @@ client.articles.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5366,7 +4900,7 @@ client.articles.delete(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L229-L303">update</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L211-L281">update</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5402,7 +4936,6 @@ client = Peal(
 )
 
 client.articles.update(
-    workspace_id="workspaceId",
     article_id="articleId",
     body=ArticleBody(
         content=[],
@@ -5421,14 +4954,6 @@ client.articles.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5461,7 +4986,7 @@ client.articles.update(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L305-L351">schedule</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L283-L324">schedule</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5497,7 +5022,6 @@ client = Peal(
 )
 
 client.articles.schedule(
-    workspace_id="workspaceId",
     article_id="articleId",
     time_zone="timeZone",
 )
@@ -5512,14 +5036,6 @@ client.articles.schedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5552,7 +5068,7 @@ client.articles.schedule(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L353-L386">unschedule</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L326-L355">unschedule</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5588,7 +5104,6 @@ client = Peal(
 )
 
 client.articles.unschedule(
-    workspace_id="workspaceId",
     article_id="articleId",
 )
 
@@ -5602,14 +5117,6 @@ client.articles.unschedule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5634,7 +5141,7 @@ client.articles.unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L388-L421">retry</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L357-L386">retry</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5670,7 +5177,6 @@ client = Peal(
 )
 
 client.articles.retry(
-    workspace_id="workspaceId",
     article_id="articleId",
 )
 
@@ -5684,14 +5190,6 @@ client.articles.retry(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5716,7 +5214,7 @@ client.articles.retry(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L423-L456">unpublish</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L388-L417">unpublish</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5752,7 +5250,6 @@ client = Peal(
 )
 
 client.articles.unpublish(
-    workspace_id="workspaceId",
     article_id="articleId",
 )
 
@@ -5766,14 +5263,6 @@ client.articles.unpublish(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5798,7 +5287,7 @@ client.articles.unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L458-L532">update_on_site</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L419-L489">update_on_site</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -5834,7 +5323,6 @@ client = Peal(
 )
 
 client.articles.update_on_site(
-    workspace_id="workspaceId",
     article_id="articleId",
     body=ArticleBody(
         content=[],
@@ -5853,14 +5341,6 @@ client.articles.update_on_site(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5894,7 +5374,7 @@ client.articles.update_on_site(
 </details>
 
 ## media
-<details><summary><code>client.media.<a href="src/peal/media/client.py#L34-L81">list</a>(...) -> MediaPage</code></summary>
+<details><summary><code>client.media.<a href="src/peal/media/client.py#L34-L75">list</a>(...) -> MediaPage</code></summary>
 <dl>
 <dd>
 
@@ -5929,9 +5409,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.media.list(
-    workspace_id="workspaceId",
-)
+client.media.list()
 
 ```
 </dd>
@@ -5943,14 +5421,6 @@ client.media.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5999,7 +5469,7 @@ client.media.list(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/peal/media/client.py#L83-L137">create</a>(...) -> PreparedUpload</code></summary>
+<details><summary><code>client.media.<a href="src/peal/media/client.py#L77-L127">create</a>(...) -> PreparedUpload</code></summary>
 <dl>
 <dd>
 
@@ -6035,7 +5505,6 @@ client = Peal(
 )
 
 client.media.create(
-    workspace_id="workspaceId",
     byte_size=1000000,
     content_type="contentType",
 )
@@ -6050,14 +5519,6 @@ client.media.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6106,7 +5567,7 @@ client.media.create(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/peal/media/client.py#L139-L181">import_from_url</a>(...) -> Media</code></summary>
+<details><summary><code>client.media.<a href="src/peal/media/client.py#L129-L166">import_from_url</a>(...) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -6142,7 +5603,6 @@ client = Peal(
 )
 
 client.media.import_from_url(
-    workspace_id="workspaceId",
     url="url",
 )
 
@@ -6156,14 +5616,6 @@ client.media.import_from_url(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6196,7 +5648,7 @@ client.media.import_from_url(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/peal/media/client.py#L183-L216">get</a>(...) -> Media</code></summary>
+<details><summary><code>client.media.<a href="src/peal/media/client.py#L168-L197">get</a>(...) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -6232,7 +5684,6 @@ client = Peal(
 )
 
 client.media.get(
-    workspace_id="workspaceId",
     media_id="mediaId",
 )
 
@@ -6246,14 +5697,6 @@ client.media.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6278,7 +5721,7 @@ client.media.get(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/peal/media/client.py#L218-L250">delete</a>(...)</code></summary>
+<details><summary><code>client.media.<a href="src/peal/media/client.py#L199-L227">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6314,7 +5757,6 @@ client = Peal(
 )
 
 client.media.delete(
-    workspace_id="workspaceId",
     media_id="mediaId",
 )
 
@@ -6328,14 +5770,6 @@ client.media.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6360,7 +5794,7 @@ client.media.delete(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/peal/media/client.py#L252-L294">describe</a>(...) -> Media</code></summary>
+<details><summary><code>client.media.<a href="src/peal/media/client.py#L229-L266">describe</a>(...) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -6396,7 +5830,6 @@ client = Peal(
 )
 
 client.media.describe(
-    workspace_id="workspaceId",
     media_id="mediaId",
     alt_text=None,
 )
@@ -6411,14 +5844,6 @@ client.media.describe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6451,7 +5876,7 @@ client.media.describe(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/peal/media/client.py#L296-L329">complete</a>(...) -> Media</code></summary>
+<details><summary><code>client.media.<a href="src/peal/media/client.py#L268-L297">complete</a>(...) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -6487,7 +5912,6 @@ client = Peal(
 )
 
 client.media.complete(
-    workspace_id="workspaceId",
     media_id="mediaId",
 )
 
@@ -6501,14 +5925,6 @@ client.media.complete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6533,7 +5949,7 @@ client.media.complete(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/peal/media/client.py#L331-L364">usage</a>(...) -> MediaUsage</code></summary>
+<details><summary><code>client.media.<a href="src/peal/media/client.py#L299-L328">usage</a>(...) -> MediaUsage</code></summary>
 <dl>
 <dd>
 
@@ -6569,7 +5985,6 @@ client = Peal(
 )
 
 client.media.usage(
-    workspace_id="workspaceId",
     media_id="mediaId",
 )
 
@@ -6583,14 +5998,6 @@ client.media.usage(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6616,7 +6023,7 @@ client.media.usage(
 </details>
 
 ## mediaAudio
-<details><summary><code>client.media_audio.<a href="src/peal/media_audio/client.py#L30-L72">create_voiceover</a>(...) -> Media</code></summary>
+<details><summary><code>client.media_audio.<a href="src/peal/media_audio/client.py#L30-L63">create_voiceover</a>(...) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -6652,7 +6059,6 @@ client = Peal(
 )
 
 client.media_audio.create_voiceover(
-    workspace_id="workspaceId",
     text="text",
 )
 
@@ -6666,14 +6072,6 @@ client.media_audio.create_voiceover(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6706,7 +6104,7 @@ client.media_audio.create_voiceover(
 </dl>
 </details>
 
-<details><summary><code>client.media_audio.<a href="src/peal/media_audio/client.py#L74-L116">transcribe</a>(...) -> Transcript</code></summary>
+<details><summary><code>client.media_audio.<a href="src/peal/media_audio/client.py#L65-L104">transcribe</a>(...) -> Transcript</code></summary>
 <dl>
 <dd>
 
@@ -6742,7 +6140,6 @@ client = Peal(
 )
 
 client.media_audio.transcribe(
-    workspace_id="workspaceId",
     media_id="mediaId",
 )
 
@@ -6756,14 +6153,6 @@ client.media_audio.transcribe(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6797,7 +6186,7 @@ client.media_audio.transcribe(
 </details>
 
 ## notices
-<details><summary><code>client.notices.<a href="src/peal/notices/client.py#L30-L64">list</a>(...) -> NoticePage</code></summary>
+<details><summary><code>client.notices.<a href="src/peal/notices/client.py#L30-L65">list</a>(...) -> NoticePage</code></summary>
 <dl>
 <dd>
 
@@ -6876,7 +6265,7 @@ client.notices.list()
 </dl>
 </details>
 
-<details><summary><code>client.notices.<a href="src/peal/notices/client.py#L66-L90">unread</a>() -> UnreadNotices</code></summary>
+<details><summary><code>client.notices.<a href="src/peal/notices/client.py#L67-L92">unread</a>() -> UnreadNotices</code></summary>
 <dl>
 <dd>
 
@@ -6939,7 +6328,7 @@ client.notices.unread()
 </dl>
 </details>
 
-<details><summary><code>client.notices.<a href="src/peal/notices/client.py#L92-L122">mark_read</a>(...) -> UnreadNotices</code></summary>
+<details><summary><code>client.notices.<a href="src/peal/notices/client.py#L94-L125">mark_read</a>(...) -> UnreadNotices</code></summary>
 <dl>
 <dd>
 
@@ -7014,7 +6403,7 @@ client.notices.mark_read(
 </dl>
 </details>
 
-<details><summary><code>client.notices.<a href="src/peal/notices/client.py#L124-L148">mark_all_read</a>() -> UnreadNotices</code></summary>
+<details><summary><code>client.notices.<a href="src/peal/notices/client.py#L127-L152">mark_all_read</a>() -> UnreadNotices</code></summary>
 <dl>
 <dd>
 
@@ -7078,7 +6467,7 @@ client.notices.mark_all_read()
 </details>
 
 ## notificationPreferences
-<details><summary><code>client.notification_preferences.<a href="src/peal/notification_preferences/client.py#L30-L54">get</a>() -> NotificationPreferences</code></summary>
+<details><summary><code>client.notification_preferences.<a href="src/peal/notification_preferences/client.py#L30-L55">get</a>() -> NotificationPreferences</code></summary>
 <dl>
 <dd>
 
@@ -7141,7 +6530,7 @@ client.notification_preferences.get()
 </dl>
 </details>
 
-<details><summary><code>client.notification_preferences.<a href="src/peal/notification_preferences/client.py#L56-L90">update</a>(...) -> NotificationPreferences</code></summary>
+<details><summary><code>client.notification_preferences.<a href="src/peal/notification_preferences/client.py#L57-L92">update</a>(...) -> NotificationPreferences</code></summary>
 <dl>
 <dd>
 
@@ -7221,7 +6610,7 @@ client.notification_preferences.update()
 </details>
 
 ## assistant
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L45-L73">status</a>(...) -> AssistantStatus</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L45-L70">status</a>() -> AssistantStatus</code></summary>
 <dl>
 <dd>
 
@@ -7256,9 +6645,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.assistant.status(
-    workspace_id="workspaceId",
-)
+client.assistant.status()
 
 ```
 </dd>
@@ -7270,14 +6657,6 @@ client.assistant.status(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7294,7 +6673,7 @@ client.assistant.status(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L75-L118">suggest</a>(...) -> Suggestion</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L72-L108">suggest</a>(...) -> Suggestion</code></summary>
 <dl>
 <dd>
 
@@ -7330,7 +6709,6 @@ client = Peal(
 )
 
 client.assistant.suggest(
-    workspace_id="workspaceId",
     action=AssistantAction_Rewrite(
         tone="professional",
     ),
@@ -7347,14 +6725,6 @@ client.assistant.suggest(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7387,7 +6757,7 @@ client.assistant.suggest(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L120-L163">generate_image</a>(...) -> Media</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L110-L144">generate_image</a>(...) -> Media</code></summary>
 <dl>
 <dd>
 
@@ -7423,7 +6793,6 @@ client = Peal(
 )
 
 client.assistant.generate_image(
-    workspace_id="workspaceId",
     aspect="square",
     prompt="prompt",
 )
@@ -7438,14 +6807,6 @@ client.assistant.generate_image(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7478,7 +6839,7 @@ client.assistant.generate_image(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L165-L195">image_provider</a>(...) -> ImageProviderSetting</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L146-L171">image_provider</a>() -> ImageProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -7513,9 +6874,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.assistant.image_provider(
-    workspace_id="workspaceId",
-)
+client.assistant.image_provider()
 
 ```
 </dd>
@@ -7527,14 +6886,6 @@ client.assistant.image_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7551,7 +6902,7 @@ client.assistant.image_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L197-L250">set_image_provider</a>(...) -> ImageProvider</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L173-L218">set_image_provider</a>(...) -> ImageProvider</code></summary>
 <dl>
 <dd>
 
@@ -7587,7 +6938,6 @@ client = Peal(
 )
 
 client.assistant.set_image_provider(
-    workspace_id="workspaceId",
     model="model",
 )
 
@@ -7601,14 +6951,6 @@ client.assistant.set_image_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7657,7 +6999,7 @@ client.assistant.set_image_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L252-L281">remove_image_provider</a>(...)</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L220-L244">remove_image_provider</a>()</code></summary>
 <dl>
 <dd>
 
@@ -7692,9 +7034,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.assistant.remove_image_provider(
-    workspace_id="workspaceId",
-)
+client.assistant.remove_image_provider()
 
 ```
 </dd>
@@ -7706,14 +7046,6 @@ client.assistant.remove_image_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7730,7 +7062,7 @@ client.assistant.remove_image_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L283-L313">text_provider</a>(...) -> TextProviderSetting</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L246-L271">text_provider</a>() -> TextProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -7765,9 +7097,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.assistant.text_provider(
-    workspace_id="workspaceId",
-)
+client.assistant.text_provider()
 
 ```
 </dd>
@@ -7779,14 +7109,6 @@ client.assistant.text_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7803,7 +7125,7 @@ client.assistant.text_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L315-L372">set_text_provider</a>(...) -> TextProvider</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L273-L326">set_text_provider</a>(...) -> TextProvider</code></summary>
 <dl>
 <dd>
 
@@ -7839,7 +7161,6 @@ client = Peal(
 )
 
 client.assistant.set_text_provider(
-    workspace_id="workspaceId",
     model="model",
 )
 
@@ -7853,14 +7174,6 @@ client.assistant.set_text_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7917,7 +7230,7 @@ client.assistant.set_text_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L374-L403">remove_text_provider</a>(...)</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L328-L352">remove_text_provider</a>()</code></summary>
 <dl>
 <dd>
 
@@ -7952,9 +7265,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.assistant.remove_text_provider(
-    workspace_id="workspaceId",
-)
+client.assistant.remove_text_provider()
 
 ```
 </dd>
@@ -7966,14 +7277,6 @@ client.assistant.remove_text_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7990,7 +7293,7 @@ client.assistant.remove_text_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L405-L432">test_text_provider</a>(...)</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L354-L378">test_text_provider</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8025,9 +7328,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.assistant.test_text_provider(
-    workspace_id="workspaceId",
-)
+client.assistant.test_text_provider()
 
 ```
 </dd>
@@ -8039,14 +7340,6 @@ client.assistant.test_text_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8063,7 +7356,7 @@ client.assistant.test_text_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L434-L464">providers</a>(...) -> AiProviderConnections</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L380-L405">providers</a>() -> AiProviderConnections</code></summary>
 <dl>
 <dd>
 
@@ -8098,9 +7391,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.assistant.providers(
-    workspace_id="workspaceId",
-)
+client.assistant.providers()
 
 ```
 </dd>
@@ -8112,14 +7403,6 @@ client.assistant.providers(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8136,7 +7419,7 @@ client.assistant.providers(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L466-L511">connect_provider</a>(...) -> AiProviderConnection</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L407-L449">connect_provider</a>(...) -> AiProviderConnection</code></summary>
 <dl>
 <dd>
 
@@ -8172,7 +7455,6 @@ client = Peal(
 )
 
 client.assistant.connect_provider(
-    workspace_id="workspaceId",
     provider="anthropic",
 )
 
@@ -8186,14 +7468,6 @@ client.assistant.connect_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8234,7 +7508,7 @@ client.assistant.connect_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L513-L545">disconnect_provider</a>(...)</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L451-L481">disconnect_provider</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8270,7 +7544,6 @@ client = Peal(
 )
 
 client.assistant.disconnect_provider(
-    workspace_id="workspaceId",
     provider="anthropic",
 )
 
@@ -8284,14 +7557,6 @@ client.assistant.disconnect_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8316,7 +7581,7 @@ client.assistant.disconnect_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L547-L586">test_provider</a>(...)</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L483-L519">test_provider</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8352,7 +7617,6 @@ client = Peal(
 )
 
 client.assistant.test_provider(
-    workspace_id="workspaceId",
     provider="anthropic",
 )
 
@@ -8366,14 +7630,6 @@ client.assistant.test_provider(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8406,7 +7662,7 @@ client.assistant.test_provider(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L588-L618">models</a>(...) -> AiCapabilityModels</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L521-L546">models</a>() -> AiCapabilityModels</code></summary>
 <dl>
 <dd>
 
@@ -8441,9 +7697,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.assistant.models(
-    workspace_id="workspaceId",
-)
+client.assistant.models()
 
 ```
 </dd>
@@ -8455,14 +7709,6 @@ client.assistant.models(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8479,7 +7725,7 @@ client.assistant.models(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L620-L666">set_model</a>(...) -> AiCapabilityModel</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L548-L591">set_model</a>(...) -> AiCapabilityModel</code></summary>
 <dl>
 <dd>
 
@@ -8515,7 +7761,6 @@ client = Peal(
 )
 
 client.assistant.set_model(
-    workspace_id="workspaceId",
     capability="text",
     provider="anthropic",
 )
@@ -8530,14 +7775,6 @@ client.assistant.set_model(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8578,7 +7815,7 @@ client.assistant.set_model(
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L668-L700">unset_model</a>(...)</code></summary>
+<details><summary><code>client.assistant.<a href="src/peal/assistant/client.py#L593-L621">unset_model</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8614,7 +7851,6 @@ client = Peal(
 )
 
 client.assistant.unset_model(
-    workspace_id="workspaceId",
     capability="text",
 )
 
@@ -8628,14 +7864,6 @@ client.assistant.unset_model(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8661,7 +7889,7 @@ client.assistant.unset_model(
 </details>
 
 ## videoGenerations
-<details><summary><code>client.video_generations.<a href="src/peal/video_generations/client.py#L32-L68">list</a>(...) -> VideoGenerations</code></summary>
+<details><summary><code>client.video_generations.<a href="src/peal/video_generations/client.py#L32-L64">list</a>(...) -> VideoGenerations</code></summary>
 <dl>
 <dd>
 
@@ -8696,9 +7924,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.video_generations.list(
-    workspace_id="workspaceId",
-)
+client.video_generations.list()
 
 ```
 </dd>
@@ -8710,14 +7936,6 @@ client.video_generations.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8742,7 +7960,7 @@ client.video_generations.list(
 </dl>
 </details>
 
-<details><summary><code>client.video_generations.<a href="src/peal/video_generations/client.py#L70-L124">create</a>(...) -> VideoGeneration</code></summary>
+<details><summary><code>client.video_generations.<a href="src/peal/video_generations/client.py#L66-L116">create</a>(...) -> VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -8778,7 +7996,6 @@ client = Peal(
 )
 
 client.video_generations.create(
-    workspace_id="workspaceId",
     aspect="square",
     prompt="prompt",
 )
@@ -8793,14 +8010,6 @@ client.video_generations.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8849,7 +8058,7 @@ client.video_generations.create(
 </dl>
 </details>
 
-<details><summary><code>client.video_generations.<a href="src/peal/video_generations/client.py#L126-L159">get</a>(...) -> VideoGeneration</code></summary>
+<details><summary><code>client.video_generations.<a href="src/peal/video_generations/client.py#L118-L147">get</a>(...) -> VideoGeneration</code></summary>
 <dl>
 <dd>
 
@@ -8885,7 +8094,6 @@ client = Peal(
 )
 
 client.video_generations.get(
-    workspace_id="workspaceId",
     generation_id="generationId",
 )
 
@@ -8899,14 +8107,6 @@ client.video_generations.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8932,7 +8132,7 @@ client.video_generations.get(
 </details>
 
 ## slideshows
-<details><summary><code>client.slideshows.<a href="src/peal/slideshows/client.py#L34-L70">list</a>(...) -> Slideshows</code></summary>
+<details><summary><code>client.slideshows.<a href="src/peal/slideshows/client.py#L34-L66">list</a>(...) -> Slideshows</code></summary>
 <dl>
 <dd>
 
@@ -8967,9 +8167,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.slideshows.list(
-    workspace_id="workspaceId",
-)
+client.slideshows.list()
 
 ```
 </dd>
@@ -8981,14 +8179,6 @@ client.slideshows.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9013,7 +8203,7 @@ client.slideshows.list(
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="src/peal/slideshows/client.py#L72-L134">create</a>(...) -> Slideshow</code></summary>
+<details><summary><code>client.slideshows.<a href="src/peal/slideshows/client.py#L68-L126">create</a>(...) -> Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -9049,7 +8239,6 @@ client = Peal(
 )
 
 client.slideshows.create(
-    workspace_id="workspaceId",
     aspect="square",
     slides=[
         Slide(
@@ -9068,14 +8257,6 @@ client.slideshows.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9132,7 +8313,7 @@ client.slideshows.create(
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="src/peal/slideshows/client.py#L136-L173">create_from_edit</a>(...) -> Slideshow</code></summary>
+<details><summary><code>client.slideshows.<a href="src/peal/slideshows/client.py#L128-L159">create_from_edit</a>(...) -> Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -9168,7 +8349,6 @@ client = Peal(
 )
 
 client.slideshows.create_from_edit(
-    workspace_id="workspaceId",
     edit={
         "key": "value"
     },
@@ -9184,14 +8364,6 @@ client.slideshows.create_from_edit(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9216,7 +8388,7 @@ client.slideshows.create_from_edit(
 </dl>
 </details>
 
-<details><summary><code>client.slideshows.<a href="src/peal/slideshows/client.py#L175-L208">get</a>(...) -> Slideshow</code></summary>
+<details><summary><code>client.slideshows.<a href="src/peal/slideshows/client.py#L161-L190">get</a>(...) -> Slideshow</code></summary>
 <dl>
 <dd>
 
@@ -9252,7 +8424,6 @@ client = Peal(
 )
 
 client.slideshows.get(
-    workspace_id="workspaceId",
     slideshow_id="slideshowId",
 )
 
@@ -9266,14 +8437,6 @@ client.slideshows.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9299,7 +8462,7 @@ client.slideshows.get(
 </details>
 
 ## members
-<details><summary><code>client.members.<a href="src/peal/members/client.py#L26-L56">list</a>(...) -> typing.List[WorkspaceMember]</code></summary>
+<details><summary><code>client.members.<a href="src/peal/members/client.py#L26-L51">list</a>() -> typing.List[WorkspaceMember]</code></summary>
 <dl>
 <dd>
 
@@ -9334,9 +8497,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.members.list(
-    workspace_id="workspaceId",
-)
+client.members.list()
 
 ```
 </dd>
@@ -9348,14 +8509,6 @@ client.members.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9373,7 +8526,7 @@ client.members.list(
 </details>
 
 ## invitations
-<details><summary><code>client.invitations.<a href="src/peal/invitations/client.py#L30-L60">list</a>(...) -> typing.List[Invitation]</code></summary>
+<details><summary><code>client.invitations.<a href="src/peal/invitations/client.py#L30-L55">list</a>() -> typing.List[Invitation]</code></summary>
 <dl>
 <dd>
 
@@ -9408,9 +8561,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.invitations.list(
-    workspace_id="workspaceId",
-)
+client.invitations.list()
 
 ```
 </dd>
@@ -9422,14 +8573,6 @@ client.invitations.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9446,7 +8589,7 @@ client.invitations.list(
 </dl>
 </details>
 
-<details><summary><code>client.invitations.<a href="src/peal/invitations/client.py#L62-L98">create</a>(...) -> Invitation</code></summary>
+<details><summary><code>client.invitations.<a href="src/peal/invitations/client.py#L57-L89">create</a>(...) -> Invitation</code></summary>
 <dl>
 <dd>
 
@@ -9482,7 +8625,6 @@ client = Peal(
 )
 
 client.invitations.create(
-    workspace_id="workspaceId",
     email="email",
     role="owner",
 )
@@ -9497,14 +8639,6 @@ client.invitations.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9537,7 +8671,7 @@ client.invitations.create(
 </dl>
 </details>
 
-<details><summary><code>client.invitations.<a href="src/peal/invitations/client.py#L100-L132">revoke</a>(...)</code></summary>
+<details><summary><code>client.invitations.<a href="src/peal/invitations/client.py#L91-L119">revoke</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9573,7 +8707,6 @@ client = Peal(
 )
 
 client.invitations.revoke(
-    workspace_id="workspaceId",
     invitation_id="invitationId",
 )
 
@@ -9587,14 +8720,6 @@ client.invitations.revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9620,7 +8745,7 @@ client.invitations.revoke(
 </details>
 
 ## billing
-<details><summary><code>client.billing.<a href="src/peal/billing/client.py#L27-L55">get</a>(...) -> Billing</code></summary>
+<details><summary><code>client.billing.<a href="src/peal/billing/client.py#L27-L52">get</a>() -> Billing</code></summary>
 <dl>
 <dd>
 
@@ -9655,9 +8780,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.billing.get(
-    workspace_id="workspaceId",
-)
+client.billing.get()
 
 ```
 </dd>
@@ -9669,14 +8792,6 @@ client.billing.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9693,7 +8808,7 @@ client.billing.get(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/peal/billing/client.py#L57-L85">standing</a>(...) -> Standing</code></summary>
+<details><summary><code>client.billing.<a href="src/peal/billing/client.py#L54-L79">standing</a>() -> Standing</code></summary>
 <dl>
 <dd>
 
@@ -9728,9 +8843,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.billing.standing(
-    workspace_id="workspaceId",
-)
+client.billing.standing()
 
 ```
 </dd>
@@ -9742,14 +8855,6 @@ client.billing.standing(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9767,7 +8872,7 @@ client.billing.standing(
 </details>
 
 ## usage
-<details><summary><code>client.usage.<a href="src/peal/usage/client.py#L28-L67">get</a>(...) -> WorkspaceUsageReport</code></summary>
+<details><summary><code>client.usage.<a href="src/peal/usage/client.py#L28-L63">get</a>(...) -> WorkspaceUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -9802,9 +8907,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.usage.get(
-    workspace_id="workspaceId",
-)
+client.usage.get()
 
 ```
 </dd>
@@ -9816,14 +8919,6 @@ client.usage.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9856,7 +8951,7 @@ client.usage.get(
 </dl>
 </details>
 
-<details><summary><code>client.usage.<a href="src/peal/usage/client.py#L69-L116">partner</a>(...) -> PartnerUsageReport</code></summary>
+<details><summary><code>client.usage.<a href="src/peal/usage/client.py#L65-L108">partner</a>(...) -> PartnerUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -9868,7 +8963,7 @@ client.usage.get(
 <dl>
 <dd>
 
-Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
 </dd>
 </dl>
 </dd>
@@ -9891,9 +8986,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.usage.partner(
-    workspace_id="workspaceId",
-)
+client.usage.partner()
 
 ```
 </dd>
@@ -9905,14 +8998,6 @@ client.usage.partner(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -9962,7 +9047,7 @@ client.usage.partner(
 </details>
 
 ## analytics
-<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L33-L80">summary</a>(...) -> AnalyticsSummary</code></summary>
+<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L33-L75">summary</a>(...) -> AnalyticsSummary</code></summary>
 <dl>
 <dd>
 
@@ -9998,7 +9083,6 @@ client = Peal(
 )
 
 client.analytics.summary(
-    workspace_id="workspaceId",
     from_="from",
     time_zone="timeZone",
     to="to",
@@ -10014,14 +9098,6 @@ client.analytics.summary(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10062,7 +9138,7 @@ client.analytics.summary(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L82-L139">dashboard</a>(...) -> AnalyticsDashboard</code></summary>
+<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L77-L125">dashboard</a>(...) -> AnalyticsDashboard</code></summary>
 <dl>
 <dd>
 
@@ -10098,7 +9174,6 @@ client = Peal(
 )
 
 client.analytics.dashboard(
-    workspace_id="workspaceId",
     time_zone="timeZone",
 )
 
@@ -10112,14 +9187,6 @@ client.analytics.dashboard(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10176,7 +9243,7 @@ client.analytics.dashboard(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L141-L199">channel</a>(...) -> ChannelSeries</code></summary>
+<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L127-L176">channel</a>(...) -> ChannelSeries</code></summary>
 <dl>
 <dd>
 
@@ -10212,7 +9279,6 @@ client = Peal(
 )
 
 client.analytics.channel(
-    workspace_id="workspaceId",
     channel_id="channelId",
     time_zone="timeZone",
 )
@@ -10227,14 +9293,6 @@ client.analytics.channel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10291,7 +9349,7 @@ client.analytics.channel(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L201-L263">export</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L178-L236">export</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -10327,7 +9385,6 @@ client = Peal(
 )
 
 client.analytics.export(
-    workspace_id="workspaceId",
     time_zone="timeZone",
     kind="posts",
 )
@@ -10342,14 +9399,6 @@ client.analytics.export(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10414,7 +9463,7 @@ client.analytics.export(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L265-L311">best_times</a>(...) -> BestTimes</code></summary>
+<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L238-L281">best_times</a>(...) -> BestTimes</code></summary>
 <dl>
 <dd>
 
@@ -10450,7 +9499,6 @@ client = Peal(
 )
 
 client.analytics.best_times(
-    workspace_id="workspaceId",
     channel_id="channelId",
     time_zone="timeZone",
 )
@@ -10465,14 +9513,6 @@ client.analytics.best_times(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10513,7 +9553,7 @@ client.analytics.best_times(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L313-L346">post</a>(...) -> PostAnalytics</code></summary>
+<details><summary><code>client.analytics.<a href="src/peal/analytics/client.py#L283-L312">post</a>(...) -> PostAnalytics</code></summary>
 <dl>
 <dd>
 
@@ -10549,7 +9589,6 @@ client = Peal(
 )
 
 client.analytics.post(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -10563,14 +9602,6 @@ client.analytics.post(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10596,7 +9627,7 @@ client.analytics.post(
 </details>
 
 ## tiktok
-<details><summary><code>client.tiktok.<a href="src/peal/tiktok/client.py#L26-L59">creator</a>(...) -> TikTokAccount</code></summary>
+<details><summary><code>client.tiktok.<a href="src/peal/tiktok/client.py#L26-L55">creator</a>(...) -> TikTokAccount</code></summary>
 <dl>
 <dd>
 
@@ -10632,7 +9663,6 @@ client = Peal(
 )
 
 client.tiktok.creator(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -10646,14 +9676,6 @@ client.tiktok.creator(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10679,7 +9701,7 @@ client.tiktok.creator(
 </details>
 
 ## capabilities
-<details><summary><code>client.capabilities.<a href="src/peal/capabilities/client.py#L27-L57">platforms</a>(...) -> typing.List[PlatformCapabilities]</code></summary>
+<details><summary><code>client.capabilities.<a href="src/peal/capabilities/client.py#L27-L54">platforms</a>() -> typing.List[PlatformCapabilities]</code></summary>
 <dl>
 <dd>
 
@@ -10714,9 +9736,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.capabilities.platforms(
-    workspace_id="workspaceId",
-)
+client.capabilities.platforms()
 
 ```
 </dd>
@@ -10728,14 +9748,6 @@ client.capabilities.platforms(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10752,7 +9764,7 @@ client.capabilities.platforms(
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/peal/capabilities/client.py#L59-L92">channel</a>(...) -> ChannelCapabilities</code></summary>
+<details><summary><code>client.capabilities.<a href="src/peal/capabilities/client.py#L56-L87">channel</a>(...) -> ChannelCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -10788,7 +9800,6 @@ client = Peal(
 )
 
 client.capabilities.channel(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -10802,14 +9813,6 @@ client.capabilities.channel(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10835,7 +9838,7 @@ client.capabilities.channel(
 </details>
 
 ## lookups
-<details><summary><code>client.lookups.<a href="src/peal/lookups/client.py#L30-L63">list</a>(...) -> typing.List[LookupDescription]</code></summary>
+<details><summary><code>client.lookups.<a href="src/peal/lookups/client.py#L30-L61">list</a>(...) -> typing.List[LookupDescription]</code></summary>
 <dl>
 <dd>
 
@@ -10871,7 +9874,6 @@ client = Peal(
 )
 
 client.lookups.list(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -10885,14 +9887,6 @@ client.lookups.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10917,7 +9911,7 @@ client.lookups.list(
 </dl>
 </details>
 
-<details><summary><code>client.lookups.<a href="src/peal/lookups/client.py#L65-L135">run</a>(...) -> LookupResult</code></summary>
+<details><summary><code>client.lookups.<a href="src/peal/lookups/client.py#L63-L129">run</a>(...) -> LookupResult</code></summary>
 <dl>
 <dd>
 
@@ -10953,7 +9947,6 @@ client = Peal(
 )
 
 client.lookups.run(
-    workspace_id="workspaceId",
     channel_id="channelId",
     name="name",
 )
@@ -10968,14 +9961,6 @@ client.lookups.run(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11057,7 +10042,7 @@ client.lookups.run(
 </details>
 
 ## webhooks
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L40-L70">list</a>(...) -> typing.List[WebhookEndpoint]</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L40-L65">list</a>() -> typing.List[WebhookEndpoint]</code></summary>
 <dl>
 <dd>
 
@@ -11092,9 +10077,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.webhooks.list(
-    workspace_id="workspaceId",
-)
+client.webhooks.list()
 
 ```
 </dd>
@@ -11106,14 +10089,6 @@ client.webhooks.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11130,7 +10105,7 @@ client.webhooks.list(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L72-L142">create</a>(...) -> WebhookEndpointSecret</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L67-L133">create</a>(...) -> WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -11166,7 +10141,6 @@ client = Peal(
 )
 
 client.webhooks.create(
-    workspace_id="workspaceId",
     event_types=[
         "post.scheduled"
     ],
@@ -11183,14 +10157,6 @@ client.webhooks.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11271,7 +10237,7 @@ client.webhooks.create(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L144-L208">search_deliveries</a>(...) -> WebhookDeliveryPage</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L135-L194">search_deliveries</a>(...) -> WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -11306,9 +10272,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.webhooks.search_deliveries(
-    workspace_id="workspaceId",
-)
+client.webhooks.search_deliveries()
 
 ```
 </dd>
@@ -11320,14 +10284,6 @@ client.webhooks.search_deliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11400,7 +10356,7 @@ client.webhooks.search_deliveries(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L210-L249">redeliver_many</a>(...) -> WebhookBulkRedelivery</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L196-L229">redeliver_many</a>(...) -> WebhookBulkRedelivery</code></summary>
 <dl>
 <dd>
 
@@ -11436,7 +10392,6 @@ client = Peal(
 )
 
 client.webhooks.redeliver_many(
-    workspace_id="workspaceId",
     request=WebhookRedeliveryByIds(
         delivery_ids=[
             "deliveryIds"
@@ -11454,14 +10409,6 @@ client.webhooks.redeliver_many(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11486,7 +10433,7 @@ client.webhooks.redeliver_many(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L251-L284">get</a>(...) -> WebhookEndpoint</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L231-L260">get</a>(...) -> WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -11522,7 +10469,6 @@ client = Peal(
 )
 
 client.webhooks.get(
-    workspace_id="workspaceId",
     endpoint_id="endpointId",
 )
 
@@ -11536,14 +10482,6 @@ client.webhooks.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11568,7 +10506,7 @@ client.webhooks.get(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L286-L318">delete</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L262-L290">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11604,7 +10542,6 @@ client = Peal(
 )
 
 client.webhooks.delete(
-    workspace_id="workspaceId",
     endpoint_id="endpointId",
 )
 
@@ -11618,14 +10555,6 @@ client.webhooks.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11650,7 +10579,7 @@ client.webhooks.delete(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L320-L389">update</a>(...) -> WebhookEndpoint</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L292-L357">update</a>(...) -> WebhookEndpoint</code></summary>
 <dl>
 <dd>
 
@@ -11686,7 +10615,6 @@ client = Peal(
 )
 
 client.webhooks.update(
-    workspace_id="workspaceId",
     endpoint_id="endpointId",
 )
 
@@ -11700,14 +10628,6 @@ client.webhooks.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11788,7 +10708,7 @@ client.webhooks.update(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L391-L424">rotate_secret</a>(...) -> WebhookEndpointSecret</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L359-L390">rotate_secret</a>(...) -> WebhookEndpointSecret</code></summary>
 <dl>
 <dd>
 
@@ -11824,7 +10744,6 @@ client = Peal(
 )
 
 client.webhooks.rotate_secret(
-    workspace_id="workspaceId",
     endpoint_id="endpointId",
 )
 
@@ -11838,14 +10757,6 @@ client.webhooks.rotate_secret(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11870,7 +10781,7 @@ client.webhooks.rotate_secret(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L426-L468">send_test</a>(...) -> WebhookDelivery</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L392-L429">send_test</a>(...) -> WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -11906,7 +10817,6 @@ client = Peal(
 )
 
 client.webhooks.send_test(
-    workspace_id="workspaceId",
     endpoint_id="endpointId",
 )
 
@@ -11920,14 +10830,6 @@ client.webhooks.send_test(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -11960,7 +10862,7 @@ client.webhooks.send_test(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L470-L527">list_deliveries</a>(...) -> WebhookDeliveryPage</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L431-L484">list_deliveries</a>(...) -> WebhookDeliveryPage</code></summary>
 <dl>
 <dd>
 
@@ -11996,7 +10898,6 @@ client = Peal(
 )
 
 client.webhooks.list_deliveries(
-    workspace_id="workspaceId",
     endpoint_id="endpointId",
 )
 
@@ -12010,14 +10911,6 @@ client.webhooks.list_deliveries(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12074,7 +10967,7 @@ client.webhooks.list_deliveries(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L529-L570">redeliver</a>(...) -> WebhookDelivery</code></summary>
+<details><summary><code>client.webhooks.<a href="src/peal/webhooks/client.py#L486-L520">redeliver</a>(...) -> WebhookDelivery</code></summary>
 <dl>
 <dd>
 
@@ -12110,7 +11003,6 @@ client = Peal(
 )
 
 client.webhooks.redeliver(
-    workspace_id="workspaceId",
     endpoint_id="endpointId",
     delivery_id="deliveryId",
 )
@@ -12125,14 +11017,6 @@ client.webhooks.redeliver(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12166,7 +11050,7 @@ client.webhooks.redeliver(
 </details>
 
 ## inbox
-<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L35-L91">list_threads</a>(...) -> InboxThreadPage</code></summary>
+<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L35-L86">list_threads</a>(...) -> InboxThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -12201,9 +11085,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.inbox.list_threads(
-    workspace_id="workspaceId",
-)
+client.inbox.list_threads()
 
 ```
 </dd>
@@ -12215,14 +11097,6 @@ client.inbox.list_threads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12279,7 +11153,7 @@ client.inbox.list_threads(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L93-L126">get_thread</a>(...) -> InboxThreadDetail</code></summary>
+<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L88-L119">get_thread</a>(...) -> InboxThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -12315,7 +11189,6 @@ client = Peal(
 )
 
 client.inbox.get_thread(
-    workspace_id="workspaceId",
     thread_id="threadId",
 )
 
@@ -12329,14 +11202,6 @@ client.inbox.get_thread(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12361,7 +11226,7 @@ client.inbox.get_thread(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L128-L161">get_abilities</a>(...) -> InboxAbilities</code></summary>
+<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L121-L152">get_abilities</a>(...) -> InboxAbilities</code></summary>
 <dl>
 <dd>
 
@@ -12397,7 +11262,6 @@ client = Peal(
 )
 
 client.inbox.get_abilities(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -12411,14 +11275,6 @@ client.inbox.get_abilities(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12443,7 +11299,7 @@ client.inbox.get_abilities(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L163-L209">reply</a>(...) -> InboxReply</code></summary>
+<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L154-L197">reply</a>(...) -> InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -12479,7 +11335,6 @@ client = Peal(
 )
 
 client.inbox.reply(
-    workspace_id="workspaceId",
     comment_id="commentId",
     text="text",
 )
@@ -12494,14 +11349,6 @@ client.inbox.reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12542,7 +11389,7 @@ client.inbox.reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L211-L254">set_answered</a>(...) -> InboxComment</code></summary>
+<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L199-L233">set_answered</a>(...) -> InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -12578,7 +11425,6 @@ client = Peal(
 )
 
 client.inbox.set_answered(
-    workspace_id="workspaceId",
     comment_id="commentId",
     answered=True,
 )
@@ -12593,14 +11439,6 @@ client.inbox.set_answered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12633,7 +11471,7 @@ client.inbox.set_answered(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L256-L297">moderate</a>(...) -> InboxComment</code></summary>
+<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L235-L269">moderate</a>(...) -> InboxComment</code></summary>
 <dl>
 <dd>
 
@@ -12669,7 +11507,6 @@ client = Peal(
 )
 
 client.inbox.moderate(
-    workspace_id="workspaceId",
     comment_id="commentId",
     action="hide",
 )
@@ -12684,14 +11521,6 @@ client.inbox.moderate(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12724,7 +11553,7 @@ client.inbox.moderate(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L299-L335">confirm_reply</a>(...) -> InboxReply</code></summary>
+<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L271-L305">confirm_reply</a>(...) -> InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -12760,7 +11589,6 @@ client = Peal(
 )
 
 client.inbox.confirm_reply(
-    workspace_id="workspaceId",
     reply_id="replyId",
     sent=True,
 )
@@ -12775,14 +11603,6 @@ client.inbox.confirm_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12815,7 +11635,7 @@ client.inbox.confirm_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L337-L370">withdraw_reply</a>(...) -> InboxReply</code></summary>
+<details><summary><code>client.inbox.<a href="src/peal/inbox/client.py#L307-L336">withdraw_reply</a>(...) -> InboxReply</code></summary>
 <dl>
 <dd>
 
@@ -12851,7 +11671,6 @@ client = Peal(
 )
 
 client.inbox.withdraw_reply(
-    workspace_id="workspaceId",
     reply_id="replyId",
 )
 
@@ -12865,14 +11684,6 @@ client.inbox.withdraw_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12898,7 +11709,7 @@ client.inbox.withdraw_reply(
 </details>
 
 ## inboxReviews
-<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L33-L85">list_review_threads</a>(...) -> InboxReviewThreadPage</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L33-L76">list_review_threads</a>(...) -> InboxReviewThreadPage</code></summary>
 <dl>
 <dd>
 
@@ -12933,9 +11744,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.inbox_reviews.list_review_threads(
-    workspace_id="workspaceId",
-)
+client.inbox_reviews.list_review_threads()
 
 ```
 </dd>
@@ -12947,14 +11756,6 @@ client.inbox_reviews.list_review_threads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13003,7 +11804,7 @@ client.inbox_reviews.list_review_threads(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L87-L120">get_review_thread</a>(...) -> InboxReviewThreadDetail</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L78-L109">get_review_thread</a>(...) -> InboxReviewThreadDetail</code></summary>
 <dl>
 <dd>
 
@@ -13039,7 +11840,6 @@ client = Peal(
 )
 
 client.inbox_reviews.get_review_thread(
-    workspace_id="workspaceId",
     thread_id="threadId",
 )
 
@@ -13053,14 +11853,6 @@ client.inbox_reviews.get_review_thread(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13085,7 +11877,7 @@ client.inbox_reviews.get_review_thread(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L122-L168">reply_to_review</a>(...) -> InboxReviewReply</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L111-L154">reply_to_review</a>(...) -> InboxReviewReply</code></summary>
 <dl>
 <dd>
 
@@ -13121,7 +11913,6 @@ client = Peal(
 )
 
 client.inbox_reviews.reply_to_review(
-    workspace_id="workspaceId",
     review_id="reviewId",
     text="text",
 )
@@ -13136,14 +11927,6 @@ client.inbox_reviews.reply_to_review(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13184,7 +11967,7 @@ client.inbox_reviews.reply_to_review(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L170-L203">withdraw_review_reply</a>(...) -> InboxReview</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L156-L187">withdraw_review_reply</a>(...) -> InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -13220,7 +12003,6 @@ client = Peal(
 )
 
 client.inbox_reviews.withdraw_review_reply(
-    workspace_id="workspaceId",
     review_id="reviewId",
 )
 
@@ -13234,14 +12016,6 @@ client.inbox_reviews.withdraw_review_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13266,7 +12040,7 @@ client.inbox_reviews.withdraw_review_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L205-L248">set_review_answered</a>(...) -> InboxReview</code></summary>
+<details><summary><code>client.inbox_reviews.<a href="src/peal/inbox_reviews/client.py#L189-L223">set_review_answered</a>(...) -> InboxReview</code></summary>
 <dl>
 <dd>
 
@@ -13302,7 +12076,6 @@ client = Peal(
 )
 
 client.inbox_reviews.set_review_answered(
-    workspace_id="workspaceId",
     review_id="reviewId",
     answered=True,
 )
@@ -13317,14 +12090,6 @@ client.inbox_reviews.set_review_answered(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13358,7 +12123,7 @@ client.inbox_reviews.set_review_answered(
 </details>
 
 ## inboxMessages
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L35-L87">list_conversations</a>(...) -> InboxConversationPage</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L35-L78">list_conversations</a>(...) -> InboxConversationPage</code></summary>
 <dl>
 <dd>
 
@@ -13393,9 +12158,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.inbox_messages.list_conversations(
-    workspace_id="workspaceId",
-)
+client.inbox_messages.list_conversations()
 
 ```
 </dd>
@@ -13407,14 +12170,6 @@ client.inbox_messages.list_conversations(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13463,7 +12218,7 @@ client.inbox_messages.list_conversations(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L89-L134">get_conversation</a>(...) -> InboxConversationDetail</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L80-L122">get_conversation</a>(...) -> InboxConversationDetail</code></summary>
 <dl>
 <dd>
 
@@ -13499,7 +12254,6 @@ client = Peal(
 )
 
 client.inbox_messages.get_conversation(
-    workspace_id="workspaceId",
     conversation_id="conversationId",
 )
 
@@ -13513,14 +12267,6 @@ client.inbox_messages.get_conversation(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13561,7 +12307,7 @@ client.inbox_messages.get_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L136-L182">send_message</a>(...) -> InboxOutgoingMessage</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L124-L167">send_message</a>(...) -> InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -13597,7 +12343,6 @@ client = Peal(
 )
 
 client.inbox_messages.send_message(
-    workspace_id="workspaceId",
     conversation_id="conversationId",
     text="text",
 )
@@ -13612,14 +12357,6 @@ client.inbox_messages.send_message(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13660,7 +12397,7 @@ client.inbox_messages.send_message(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L184-L234">send_private_reply</a>(...) -> InboxPrivateReply</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L169-L212">send_private_reply</a>(...) -> InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -13696,7 +12433,6 @@ client = Peal(
 )
 
 client.inbox_messages.send_private_reply(
-    workspace_id="workspaceId",
     comment_id="commentId",
     text="text",
 )
@@ -13711,14 +12447,6 @@ client.inbox_messages.send_private_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13759,7 +12487,7 @@ client.inbox_messages.send_private_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L236-L269">get_private_reply</a>(...) -> InboxPrivateReply</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L214-L245">get_private_reply</a>(...) -> InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -13795,7 +12523,6 @@ client = Peal(
 )
 
 client.inbox_messages.get_private_reply(
-    workspace_id="workspaceId",
     private_reply_id="privateReplyId",
 )
 
@@ -13809,14 +12536,6 @@ client.inbox_messages.get_private_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13841,7 +12560,7 @@ client.inbox_messages.get_private_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L271-L314">confirm_private_reply</a>(...) -> InboxPrivateReply</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L247-L281">confirm_private_reply</a>(...) -> InboxPrivateReply</code></summary>
 <dl>
 <dd>
 
@@ -13877,7 +12596,6 @@ client = Peal(
 )
 
 client.inbox_messages.confirm_private_reply(
-    workspace_id="workspaceId",
     private_reply_id="privateReplyId",
     went=True,
 )
@@ -13892,14 +12610,6 @@ client.inbox_messages.confirm_private_reply(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13932,7 +12642,7 @@ client.inbox_messages.confirm_private_reply(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L316-L359">set_conversation_read</a>(...) -> InboxConversation</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L283-L317">set_conversation_read</a>(...) -> InboxConversation</code></summary>
 <dl>
 <dd>
 
@@ -13968,7 +12678,6 @@ client = Peal(
 )
 
 client.inbox_messages.set_conversation_read(
-    workspace_id="workspaceId",
     conversation_id="conversationId",
     read=True,
 )
@@ -13983,14 +12692,6 @@ client.inbox_messages.set_conversation_read(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14023,7 +12724,7 @@ client.inbox_messages.set_conversation_read(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L361-L391">get_message_settings</a>(...) -> InboxMessageSettings</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L319-L344">get_message_settings</a>() -> InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -14058,9 +12759,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.inbox_messages.get_message_settings(
-    workspace_id="workspaceId",
-)
+client.inbox_messages.get_message_settings()
 
 ```
 </dd>
@@ -14072,14 +12771,6 @@ client.inbox_messages.get_message_settings(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14096,7 +12787,7 @@ client.inbox_messages.get_message_settings(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L393-L436">set_channel_messages</a>(...) -> InboxMessageSettings</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L346-L380">set_channel_messages</a>(...) -> InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -14132,7 +12823,6 @@ client = Peal(
 )
 
 client.inbox_messages.set_channel_messages(
-    workspace_id="workspaceId",
     channel_id="channelId",
     enabled=True,
 )
@@ -14147,14 +12837,6 @@ client.inbox_messages.set_channel_messages(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14187,7 +12869,7 @@ client.inbox_messages.set_channel_messages(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L438-L481">set_message_application</a>(...) -> InboxMessageSettings</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L382-L418">set_message_application</a>(...) -> InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -14223,7 +12905,6 @@ client = Peal(
 )
 
 client.inbox_messages.set_message_application(
-    workspace_id="workspaceId",
     allowed=True,
     client_id="clientId",
 )
@@ -14238,14 +12919,6 @@ client.inbox_messages.set_message_application(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14278,7 +12951,7 @@ client.inbox_messages.set_message_application(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L483-L521">confirm_message</a>(...) -> InboxOutgoingMessage</code></summary>
+<details><summary><code>client.inbox_messages.<a href="src/peal/inbox_messages/client.py#L420-L454">confirm_message</a>(...) -> InboxOutgoingMessage</code></summary>
 <dl>
 <dd>
 
@@ -14314,7 +12987,6 @@ client = Peal(
 )
 
 client.inbox_messages.confirm_message(
-    workspace_id="workspaceId",
     message_id="messageId",
     sent=True,
 )
@@ -14329,14 +13001,6 @@ client.inbox_messages.confirm_message(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14370,7 +13034,7 @@ client.inbox_messages.confirm_message(
 </details>
 
 ## ads
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L50-L78">status</a>(...) -> AdsStatus</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L50-L75">status</a>() -> AdsStatus</code></summary>
 <dl>
 <dd>
 
@@ -14405,9 +13069,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.ads.status(
-    workspace_id="workspaceId",
-)
+client.ads.status()
 
 ```
 </dd>
@@ -14419,14 +13081,6 @@ client.ads.status(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14443,7 +13097,7 @@ client.ads.status(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L80-L110">list_connections</a>(...) -> typing.List[AdConnection]</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L77-L102">list_connections</a>() -> typing.List[AdConnection]</code></summary>
 <dl>
 <dd>
 
@@ -14478,9 +13132,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.ads.list_connections(
-    workspace_id="workspaceId",
-)
+client.ads.list_connections()
 
 ```
 </dd>
@@ -14492,14 +13144,6 @@ client.ads.list_connections(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14516,7 +13160,7 @@ client.ads.list_connections(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L112-L145">connect</a>(...) -> AdSignIn</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L104-L133">connect</a>(...) -> AdSignIn</code></summary>
 <dl>
 <dd>
 
@@ -14552,7 +13196,6 @@ client = Peal(
 )
 
 client.ads.connect(
-    workspace_id="workspaceId",
     network="meta",
 )
 
@@ -14566,14 +13209,6 @@ client.ads.connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14598,7 +13233,7 @@ client.ads.connect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L147-L196">complete_connect</a>(...) -> AdSignInResult</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L135-L181">complete_connect</a>(...) -> AdSignInResult</code></summary>
 <dl>
 <dd>
 
@@ -14634,7 +13269,6 @@ client = Peal(
 )
 
 client.ads.complete_connect(
-    workspace_id="workspaceId",
     network="meta",
     state="state",
 )
@@ -14649,14 +13283,6 @@ client.ads.complete_connect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14705,7 +13331,7 @@ client.ads.complete_connect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L198-L231">reachable_accounts</a>(...) -> typing.List[ReachableAdAccount]</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L183-L214">reachable_accounts</a>(...) -> typing.List[ReachableAdAccount]</code></summary>
 <dl>
 <dd>
 
@@ -14741,7 +13367,6 @@ client = Peal(
 )
 
 client.ads.reachable_accounts(
-    workspace_id="workspaceId",
     connection_id="connectionId",
 )
 
@@ -14755,14 +13380,6 @@ client.ads.reachable_accounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14787,7 +13404,7 @@ client.ads.reachable_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L233-L276">connect_accounts</a>(...) -> typing.List[AdAccount]</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L216-L256">connect_accounts</a>(...) -> typing.List[AdAccount]</code></summary>
 <dl>
 <dd>
 
@@ -14823,7 +13440,6 @@ client = Peal(
 )
 
 client.ads.connect_accounts(
-    workspace_id="workspaceId",
     connection_id="connectionId",
     external_ids=[
         "externalIds"
@@ -14840,14 +13456,6 @@ client.ads.connect_accounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14880,7 +13488,7 @@ client.ads.connect_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L278-L310">disconnect</a>(...)</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L258-L286">disconnect</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14916,7 +13524,6 @@ client = Peal(
 )
 
 client.ads.disconnect(
-    workspace_id="workspaceId",
     connection_id="connectionId",
 )
 
@@ -14930,14 +13537,6 @@ client.ads.disconnect(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14962,7 +13561,7 @@ client.ads.disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L312-L342">list_accounts</a>(...) -> typing.List[AdAccount]</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L288-L313">list_accounts</a>() -> typing.List[AdAccount]</code></summary>
 <dl>
 <dd>
 
@@ -14997,9 +13596,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.ads.list_accounts(
-    workspace_id="workspaceId",
-)
+client.ads.list_accounts()
 
 ```
 </dd>
@@ -15011,14 +13608,6 @@ client.ads.list_accounts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15035,7 +13624,7 @@ client.ads.list_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L344-L377">get_account</a>(...) -> AdSpending</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L315-L344">get_account</a>(...) -> AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -15071,7 +13660,6 @@ client = Peal(
 )
 
 client.ads.get_account(
-    workspace_id="workspaceId",
     account_id="accountId",
 )
 
@@ -15085,14 +13673,6 @@ client.ads.get_account(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15117,7 +13697,7 @@ client.ads.get_account(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L379-L411">remove_account</a>(...)</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L346-L374">remove_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15153,7 +13733,6 @@ client = Peal(
 )
 
 client.ads.remove_account(
-    workspace_id="workspaceId",
     account_id="accountId",
 )
 
@@ -15167,14 +13746,6 @@ client.ads.remove_account(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15199,7 +13770,7 @@ client.ads.remove_account(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L413-L459">set_spending</a>(...) -> AdSpending</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L376-L419">set_spending</a>(...) -> AdSpending</code></summary>
 <dl>
 <dd>
 
@@ -15235,7 +13806,6 @@ client = Peal(
 )
 
 client.ads.set_spending(
-    workspace_id="workspaceId",
     account_id="accountId",
     enabled=True,
 )
@@ -15250,14 +13820,6 @@ client.ads.set_spending(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15298,7 +13860,7 @@ client.ads.set_spending(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L461-L506">list_campaigns</a>(...) -> AdCampaignReport</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L421-L461">list_campaigns</a>(...) -> AdCampaignReport</code></summary>
 <dl>
 <dd>
 
@@ -15334,7 +13896,6 @@ client = Peal(
 )
 
 client.ads.list_campaigns(
-    workspace_id="workspaceId",
     account_id="accountId",
 )
 
@@ -15348,14 +13909,6 @@ client.ads.list_campaigns(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15396,7 +13949,7 @@ client.ads.list_campaigns(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L508-L556">list_ads</a>(...) -> AdReport</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L463-L508">list_ads</a>(...) -> AdReport</code></summary>
 <dl>
 <dd>
 
@@ -15432,7 +13985,6 @@ client = Peal(
 )
 
 client.ads.list_ads(
-    workspace_id="workspaceId",
     account_id="accountId",
 )
 
@@ -15446,14 +13998,6 @@ client.ads.list_ads(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15502,7 +14046,7 @@ client.ads.list_ads(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L558-L603">list_insights</a>(...) -> AdInsightReport</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L510-L550">list_insights</a>(...) -> AdInsightReport</code></summary>
 <dl>
 <dd>
 
@@ -15538,7 +14082,6 @@ client = Peal(
 )
 
 client.ads.list_insights(
-    workspace_id="workspaceId",
     account_id="accountId",
 )
 
@@ -15552,14 +14095,6 @@ client.ads.list_insights(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15600,7 +14135,7 @@ client.ads.list_insights(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L605-L638">post_performance</a>(...) -> PostAdPerformance</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L552-L583">post_performance</a>(...) -> PostAdPerformance</code></summary>
 <dl>
 <dd>
 
@@ -15636,7 +14171,6 @@ client = Peal(
 )
 
 client.ads.post_performance(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -15650,14 +14184,6 @@ client.ads.post_performance(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15682,7 +14208,7 @@ client.ads.post_performance(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L640-L736">quote_boost</a>(...) -> BoostQuote</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L585-L677">quote_boost</a>(...) -> BoostQuote</code></summary>
 <dl>
 <dd>
 
@@ -15718,7 +14244,6 @@ client = Peal(
 )
 
 client.ads.quote_boost(
-    workspace_id="workspaceId",
     account_id="accountId",
     audience=BoostAudience(
         age_max=1,
@@ -15752,14 +14277,6 @@ client.ads.quote_boost(
 <dl>
 <dd>
 
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `NewBoost` 
     
 </dd>
@@ -15780,7 +14297,7 @@ client.ads.quote_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L738-L779">list_boosts</a>(...) -> BoostPage</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L679-L714">list_boosts</a>(...) -> BoostPage</code></summary>
 <dl>
 <dd>
 
@@ -15815,9 +14332,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.ads.list_boosts(
-    workspace_id="workspaceId",
-)
+client.ads.list_boosts()
 
 ```
 </dd>
@@ -15829,14 +14344,6 @@ client.ads.list_boosts(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15869,7 +14376,7 @@ client.ads.list_boosts(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L781-L882">create_boost</a>(...) -> Boost</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L716-L813">create_boost</a>(...) -> Boost</code></summary>
 <dl>
 <dd>
 
@@ -15905,7 +14412,6 @@ client = Peal(
 )
 
 client.ads.create_boost(
-    workspace_id="workspaceId",
     idempotency_key="idempotency-key",
     account_id="accountId",
     audience=BoostAudience(
@@ -15940,14 +14446,6 @@ client.ads.create_boost(
 <dl>
 <dd>
 
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **idempotency_key:** `str` 
     
 </dd>
@@ -15976,7 +14474,7 @@ client.ads.create_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L884-L917">get_boost</a>(...) -> BoostDetail</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L815-L844">get_boost</a>(...) -> BoostDetail</code></summary>
 <dl>
 <dd>
 
@@ -16012,7 +14510,6 @@ client = Peal(
 )
 
 client.ads.get_boost(
-    workspace_id="workspaceId",
     boost_id="boostId",
 )
 
@@ -16026,14 +14523,6 @@ client.ads.get_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16058,7 +14547,7 @@ client.ads.get_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L919-L952">pause_boost</a>(...) -> Boost</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L846-L875">pause_boost</a>(...) -> Boost</code></summary>
 <dl>
 <dd>
 
@@ -16094,7 +14583,6 @@ client = Peal(
 )
 
 client.ads.pause_boost(
-    workspace_id="workspaceId",
     boost_id="boostId",
 )
 
@@ -16108,14 +14596,6 @@ client.ads.pause_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16140,7 +14620,7 @@ client.ads.pause_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L954-L987">resume_boost</a>(...) -> Boost</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L877-L906">resume_boost</a>(...) -> Boost</code></summary>
 <dl>
 <dd>
 
@@ -16176,7 +14656,6 @@ client = Peal(
 )
 
 client.ads.resume_boost(
-    workspace_id="workspaceId",
     boost_id="boostId",
 )
 
@@ -16190,14 +14669,6 @@ client.ads.resume_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16222,7 +14693,7 @@ client.ads.resume_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L989-L1022">stop_boost</a>(...) -> Boost</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L908-L937">stop_boost</a>(...) -> Boost</code></summary>
 <dl>
 <dd>
 
@@ -16258,7 +14729,6 @@ client = Peal(
 )
 
 client.ads.stop_boost(
-    workspace_id="workspaceId",
     boost_id="boostId",
 )
 
@@ -16272,14 +14742,6 @@ client.ads.stop_boost(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16304,7 +14766,7 @@ client.ads.stop_boost(
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L1024-L1060">audit_trail</a>(...) -> AdAuditPage</code></summary>
+<details><summary><code>client.ads.<a href="src/peal/ads/client.py#L939-L968">audit_trail</a>(...) -> AdAuditPage</code></summary>
 <dl>
 <dd>
 
@@ -16339,9 +14801,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.ads.audit_trail(
-    workspace_id="workspaceId",
-)
+client.ads.audit_trail()
 
 ```
 </dd>
@@ -16353,14 +14813,6 @@ client.ads.audit_trail(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16386,7 +14838,7 @@ client.ads.audit_trail(
 </details>
 
 ## activity
-<details><summary><code>client.activity.<a href="src/peal/activity/client.py#L26-L73">list</a>(...) -> ActivityPage</code></summary>
+<details><summary><code>client.activity.<a href="src/peal/activity/client.py#L26-L69">list</a>(...) -> ActivityPage</code></summary>
 <dl>
 <dd>
 
@@ -16421,9 +14873,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.activity.list(
-    workspace_id="workspaceId",
-)
+client.activity.list()
 
 ```
 </dd>
@@ -16435,14 +14885,6 @@ client.activity.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -16492,7 +14934,7 @@ client.activity.list(
 </details>
 
 ## partner
-<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L33-L57">account</a>() -> PartnerOverview</code></summary>
+<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L33-L58">account</a>() -> PartnerOverview</code></summary>
 <dl>
 <dd>
 
@@ -16555,7 +14997,7 @@ client.partner.account()
 </dl>
 </details>
 
-<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L59-L93">overview</a>(...) -> PartnerHealth</code></summary>
+<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L60-L95">overview</a>(...) -> PartnerHealth</code></summary>
 <dl>
 <dd>
 
@@ -16634,7 +15076,7 @@ client.partner.overview()
 </dl>
 </details>
 
-<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L95-L137">list_workspaces</a>(...) -> CustomerWorkspacePage</code></summary>
+<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L97-L140">list_workspaces</a>(...) -> CustomerWorkspacePage</code></summary>
 <dl>
 <dd>
 
@@ -16729,7 +15171,7 @@ client.partner.list_workspaces()
 </dl>
 </details>
 
-<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L139-L180">create_workspace</a>(...) -> CustomerWorkspace</code></summary>
+<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L142-L184">create_workspace</a>(...) -> CustomerWorkspace</code></summary>
 <dl>
 <dd>
 
@@ -16818,7 +15260,7 @@ client.partner.create_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L182-L212">get_workspace</a>(...) -> CustomerWorkspace</code></summary>
+<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L186-L217">get_workspace</a>(...) -> CustomerWorkspace</code></summary>
 <dl>
 <dd>
 
@@ -16891,7 +15333,7 @@ client.partner.get_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L214-L241">delete_workspace</a>(...)</code></summary>
+<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L219-L247">delete_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16964,7 +15406,7 @@ client.partner.delete_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L243-L284">update_workspace</a>(...) -> CustomerWorkspace</code></summary>
+<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L249-L291">update_workspace</a>(...) -> CustomerWorkspace</code></summary>
 <dl>
 <dd>
 
@@ -17053,7 +15495,7 @@ client.partner.update_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L286-L336">move_channel</a>(...) -> MovedChannel</code></summary>
+<details><summary><code>client.partner.<a href="src/peal/partner/client.py#L293-L344">move_channel</a>(...) -> MovedChannel</code></summary>
 <dl>
 <dd>
 
@@ -17153,7 +15595,7 @@ client.partner.move_channel(
 </details>
 
 ## partnerUsage
-<details><summary><code>client.partner_usage.<a href="src/peal/partner_usage/client.py#L27-L69">get</a>(...) -> PartnerUsageReport</code></summary>
+<details><summary><code>client.partner_usage.<a href="src/peal/partner_usage/client.py#L27-L70">get</a>(...) -> PartnerUsageReport</code></summary>
 <dl>
 <dd>
 
@@ -17249,7 +15691,7 @@ client.partner_usage.get()
 </details>
 
 ## partnerAccount
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L36-L64">get</a>(...) -> PartnerStanding</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L36-L61">get</a>() -> PartnerStanding</code></summary>
 <dl>
 <dd>
 
@@ -17284,9 +15726,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.partner_account.get(
-    workspace_id="workspaceId",
-)
+client.partner_account.get()
 
 ```
 </dd>
@@ -17298,14 +15738,6 @@ client.partner_account.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17322,7 +15754,7 @@ client.partner_account.get(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L66-L97">open</a>(...) -> Partner</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L63-L92">open</a>(...) -> Partner</code></summary>
 <dl>
 <dd>
 
@@ -17358,7 +15790,6 @@ client = Peal(
 )
 
 client.partner_account.open(
-    workspace_id="workspaceId",
     name="name",
 )
 
@@ -17372,14 +15803,6 @@ client.partner_account.open(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17404,7 +15827,7 @@ client.partner_account.open(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L99-L126">close</a>(...)</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L94-L118">close</a>()</code></summary>
 <dl>
 <dd>
 
@@ -17439,9 +15862,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.partner_account.close(
-    workspace_id="workspaceId",
-)
+client.partner_account.close()
 
 ```
 </dd>
@@ -17453,14 +15874,6 @@ client.partner_account.close(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17477,7 +15890,7 @@ client.partner_account.close(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L128-L180">update</a>(...) -> Partner</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L120-L167">update</a>(...) -> Partner</code></summary>
 <dl>
 <dd>
 
@@ -17512,9 +15925,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.partner_account.update(
-    workspace_id="workspaceId",
-)
+client.partner_account.update()
 
 ```
 </dd>
@@ -17526,14 +15937,6 @@ client.partner_account.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17582,7 +15985,7 @@ client.partner_account.update(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L182-L212">list_keys</a>(...) -> typing.List[PartnerKey]</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L169-L194">list_keys</a>() -> typing.List[PartnerKey]</code></summary>
 <dl>
 <dd>
 
@@ -17617,9 +16020,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.partner_account.list_keys(
-    workspace_id="workspaceId",
-)
+client.partner_account.list_keys()
 
 ```
 </dd>
@@ -17631,14 +16032,6 @@ client.partner_account.list_keys(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17655,7 +16048,7 @@ client.partner_account.list_keys(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L214-L269">create_key</a>(...) -> CreatedPartnerKey</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L196-L247">create_key</a>(...) -> CreatedPartnerKey</code></summary>
 <dl>
 <dd>
 
@@ -17691,7 +16084,6 @@ client = Peal(
 )
 
 client.partner_account.create_key(
-    workspace_id="workspaceId",
     name="name",
     permissions=[
         "activity:read"
@@ -17711,14 +16103,6 @@ client.partner_account.create_key(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17767,7 +16151,7 @@ client.partner_account.create_key(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L271-L303">revoke_key</a>(...)</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L249-L277">revoke_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17803,7 +16187,6 @@ client = Peal(
 )
 
 client.partner_account.revoke_key(
-    workspace_id="workspaceId",
     partner_key_id="partnerKeyId",
 )
 
@@ -17817,14 +16200,6 @@ client.partner_account.revoke_key(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17849,7 +16224,7 @@ client.partner_account.revoke_key(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L305-L344">overview</a>(...) -> PartnerHealth</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L279-L314">overview</a>(...) -> PartnerHealth</code></summary>
 <dl>
 <dd>
 
@@ -17884,9 +16259,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.partner_account.overview(
-    workspace_id="workspaceId",
-)
+client.partner_account.overview()
 
 ```
 </dd>
@@ -17898,14 +16271,6 @@ client.partner_account.overview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17938,7 +16303,7 @@ client.partner_account.overview(
 </dl>
 </details>
 
-<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L346-L398">list_workspaces</a>(...) -> CustomerWorkspacePage</code></summary>
+<details><summary><code>client.partner_account.<a href="src/peal/partner_account/client.py#L316-L359">list_workspaces</a>(...) -> CustomerWorkspacePage</code></summary>
 <dl>
 <dd>
 
@@ -17973,9 +16338,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.partner_account.list_workspaces(
-    workspace_id="workspaceId",
-)
+client.partner_account.list_workspaces()
 
 ```
 </dd>
@@ -17987,14 +16350,6 @@ client.partner_account.list_workspaces(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18044,7 +16399,7 @@ client.partner_account.list_workspaces(
 </details>
 
 ## connectLinks
-<details><summary><code>client.connect_links.<a href="src/peal/connect_links/client.py#L33-L63">list</a>(...) -> typing.List[ConnectLink]</code></summary>
+<details><summary><code>client.connect_links.<a href="src/peal/connect_links/client.py#L33-L58">list</a>() -> typing.List[ConnectLink]</code></summary>
 <dl>
 <dd>
 
@@ -18079,9 +16434,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.connect_links.list(
-    workspace_id="workspaceId",
-)
+client.connect_links.list()
 
 ```
 </dd>
@@ -18093,14 +16446,6 @@ client.connect_links.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18117,7 +16462,7 @@ client.connect_links.list(
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="src/peal/connect_links/client.py#L65-L129">create</a>(...) -> CreatedConnectLink</code></summary>
+<details><summary><code>client.connect_links.<a href="src/peal/connect_links/client.py#L60-L119">create</a>(...) -> CreatedConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -18152,9 +16497,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.connect_links.create(
-    workspace_id="workspaceId",
-)
+client.connect_links.create()
 
 ```
 </dd>
@@ -18166,14 +16509,6 @@ client.connect_links.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18246,7 +16581,7 @@ client.connect_links.create(
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="src/peal/connect_links/client.py#L131-L164">get</a>(...) -> ConnectLink</code></summary>
+<details><summary><code>client.connect_links.<a href="src/peal/connect_links/client.py#L121-L150">get</a>(...) -> ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -18282,7 +16617,6 @@ client = Peal(
 )
 
 client.connect_links.get(
-    workspace_id="workspaceId",
     link_id="linkId",
 )
 
@@ -18296,14 +16630,6 @@ client.connect_links.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18328,7 +16654,7 @@ client.connect_links.get(
 </dl>
 </details>
 
-<details><summary><code>client.connect_links.<a href="src/peal/connect_links/client.py#L166-L199">revoke</a>(...) -> ConnectLink</code></summary>
+<details><summary><code>client.connect_links.<a href="src/peal/connect_links/client.py#L152-L181">revoke</a>(...) -> ConnectLink</code></summary>
 <dl>
 <dd>
 
@@ -18364,7 +16690,6 @@ client = Peal(
 )
 
 client.connect_links.revoke(
-    workspace_id="workspaceId",
     link_id="linkId",
 )
 
@@ -18378,14 +16703,6 @@ client.connect_links.revoke(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18411,7 +16728,7 @@ client.connect_links.revoke(
 </details>
 
 ## review
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L39-L67">settings</a>(...) -> ReviewSettings</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L39-L64">settings</a>() -> ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -18446,9 +16763,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.review.settings(
-    workspace_id="workspaceId",
-)
+client.review.settings()
 
 ```
 </dd>
@@ -18460,14 +16775,6 @@ client.review.settings(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18484,7 +16791,7 @@ client.review.settings(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L69-L108">update_settings</a>(...) -> ReviewSettings</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L66-L97">update_settings</a>(...) -> ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -18520,7 +16827,6 @@ client = Peal(
 )
 
 client.review.update_settings(
-    workspace_id="workspaceId",
     approval_policy="never",
 )
 
@@ -18534,14 +16840,6 @@ client.review.update_settings(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18566,7 +16864,7 @@ client.review.update_settings(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L110-L140">pending</a>(...) -> typing.List[ApprovalRequest]</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L99-L124">pending</a>() -> typing.List[ApprovalRequest]</code></summary>
 <dl>
 <dd>
 
@@ -18601,9 +16899,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.review.pending(
-    workspace_id="workspaceId",
-)
+client.review.pending()
 
 ```
 </dd>
@@ -18615,14 +16911,6 @@ client.review.pending(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18639,7 +16927,7 @@ client.review.pending(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L142-L175">thread</a>(...) -> PostReview</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L126-L155">thread</a>(...) -> PostReview</code></summary>
 <dl>
 <dd>
 
@@ -18675,7 +16963,6 @@ client = Peal(
 )
 
 client.review.thread(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -18689,14 +16976,6 @@ client.review.thread(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18721,7 +17000,7 @@ client.review.thread(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L177-L226">comment</a>(...) -> ReviewComment</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L157-L203">comment</a>(...) -> ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -18757,7 +17036,6 @@ client = Peal(
 )
 
 client.review.comment(
-    workspace_id="workspaceId",
     post_id="postId",
     text="text",
 )
@@ -18772,14 +17050,6 @@ client.review.comment(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18828,7 +17098,7 @@ client.review.comment(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L228-L275">resolve</a>(...) -> ReviewComment</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L205-L242">resolve</a>(...) -> ReviewComment</code></summary>
 <dl>
 <dd>
 
@@ -18864,7 +17134,6 @@ client = Peal(
 )
 
 client.review.resolve(
-    workspace_id="workspaceId",
     post_id="postId",
     comment_id="commentId",
     resolved=True,
@@ -18880,14 +17149,6 @@ client.review.resolve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -18928,7 +17189,7 @@ client.review.resolve(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L277-L324">approve</a>(...) -> ApprovalOutcome</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L244-L288">approve</a>(...) -> ApprovalOutcome</code></summary>
 <dl>
 <dd>
 
@@ -18964,7 +17225,6 @@ client = Peal(
 )
 
 client.review.approve(
-    workspace_id="workspaceId",
     post_id="postId",
     approval_id="approvalId",
     subject_hash="subjectHash",
@@ -18980,14 +17240,6 @@ client.review.approve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19028,7 +17280,7 @@ client.review.approve(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L326-L382">request_changes</a>(...) -> ChangesOutcome</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L290-L342">request_changes</a>(...) -> ChangesOutcome</code></summary>
 <dl>
 <dd>
 
@@ -19064,7 +17316,6 @@ client = Peal(
 )
 
 client.review.request_changes(
-    workspace_id="workspaceId",
     post_id="postId",
     approval_id="approvalId",
     subject_hash="subjectHash",
@@ -19081,14 +17332,6 @@ client.review.request_changes(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19137,7 +17380,7 @@ client.review.request_changes(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L384-L417">links</a>(...) -> typing.List[ReviewLink]</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L344-L375">links</a>(...) -> typing.List[ReviewLink]</code></summary>
 <dl>
 <dd>
 
@@ -19173,7 +17416,6 @@ client = Peal(
 )
 
 client.review.links(
-    workspace_id="workspaceId",
     post_id="postId",
 )
 
@@ -19187,14 +17429,6 @@ client.review.links(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19219,7 +17453,7 @@ client.review.links(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L419-L465">create_link</a>(...) -> CreatedReviewLink</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L377-L420">create_link</a>(...) -> CreatedReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -19255,7 +17489,6 @@ client = Peal(
 )
 
 client.review.create_link(
-    workspace_id="workspaceId",
     post_id="postId",
     access="view",
 )
@@ -19270,14 +17503,6 @@ client.review.create_link(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19318,7 +17543,7 @@ client.review.create_link(
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="src/peal/review/client.py#L467-L500">revoke_link</a>(...) -> ReviewLink</code></summary>
+<details><summary><code>client.review.<a href="src/peal/review/client.py#L422-L451">revoke_link</a>(...) -> ReviewLink</code></summary>
 <dl>
 <dd>
 
@@ -19354,7 +17579,6 @@ client = Peal(
 )
 
 client.review.revoke_link(
-    workspace_id="workspaceId",
     link_id="linkId",
 )
 
@@ -19368,14 +17592,6 @@ client.review.revoke_link(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19401,7 +17617,7 @@ client.review.revoke_link(
 </details>
 
 ## tags
-<details><summary><code>client.tags.<a href="src/peal/tags/client.py#L30-L58">list</a>(...) -> typing.List[Tag]</code></summary>
+<details><summary><code>client.tags.<a href="src/peal/tags/client.py#L30-L55">list</a>() -> typing.List[Tag]</code></summary>
 <dl>
 <dd>
 
@@ -19436,9 +17652,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.tags.list(
-    workspace_id="workspaceId",
-)
+client.tags.list()
 
 ```
 </dd>
@@ -19450,14 +17664,6 @@ client.tags.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19474,7 +17680,7 @@ client.tags.list(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/peal/tags/client.py#L60-L101">create</a>(...) -> Tag</code></summary>
+<details><summary><code>client.tags.<a href="src/peal/tags/client.py#L57-L89">create</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -19510,7 +17716,6 @@ client = Peal(
 )
 
 client.tags.create(
-    workspace_id="workspaceId",
     colour="gray",
     name="name",
 )
@@ -19525,14 +17730,6 @@ client.tags.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19557,7 +17754,7 @@ client.tags.create(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/peal/tags/client.py#L103-L135">delete</a>(...)</code></summary>
+<details><summary><code>client.tags.<a href="src/peal/tags/client.py#L91-L119">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19593,7 +17790,6 @@ client = Peal(
 )
 
 client.tags.delete(
-    workspace_id="workspaceId",
     tag_id="tagId",
 )
 
@@ -19607,14 +17803,6 @@ client.tags.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19639,7 +17827,7 @@ client.tags.delete(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/peal/tags/client.py#L137-L184">update</a>(...) -> Tag</code></summary>
+<details><summary><code>client.tags.<a href="src/peal/tags/client.py#L121-L158">update</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -19675,7 +17863,6 @@ client = Peal(
 )
 
 client.tags.update(
-    workspace_id="workspaceId",
     tag_id="tagId",
     colour="gray",
     name="name",
@@ -19691,14 +17878,6 @@ client.tags.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19732,7 +17911,7 @@ client.tags.update(
 </details>
 
 ## signatures
-<details><summary><code>client.signatures.<a href="src/peal/signatures/client.py#L30-L60">list</a>(...) -> typing.List[Signature]</code></summary>
+<details><summary><code>client.signatures.<a href="src/peal/signatures/client.py#L30-L55">list</a>() -> typing.List[Signature]</code></summary>
 <dl>
 <dd>
 
@@ -19767,9 +17946,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.signatures.list(
-    workspace_id="workspaceId",
-)
+client.signatures.list()
 
 ```
 </dd>
@@ -19781,14 +17958,6 @@ client.signatures.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19805,7 +17974,7 @@ client.signatures.list(
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="src/peal/signatures/client.py#L62-L111">create</a>(...) -> Signature</code></summary>
+<details><summary><code>client.signatures.<a href="src/peal/signatures/client.py#L57-L103">create</a>(...) -> Signature</code></summary>
 <dl>
 <dd>
 
@@ -19841,7 +18010,6 @@ client = Peal(
 )
 
 client.signatures.create(
-    workspace_id="workspaceId",
     name="name",
     text="text",
 )
@@ -19856,14 +18024,6 @@ client.signatures.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19888,7 +18048,7 @@ client.signatures.create(
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="src/peal/signatures/client.py#L113-L172">update</a>(...) -> Signature</code></summary>
+<details><summary><code>client.signatures.<a href="src/peal/signatures/client.py#L105-L155">update</a>(...) -> Signature</code></summary>
 <dl>
 <dd>
 
@@ -19924,7 +18084,6 @@ client = Peal(
 )
 
 client.signatures.update(
-    workspace_id="workspaceId",
     signature_id="signatureId",
     name="name",
     text="text",
@@ -19940,14 +18099,6 @@ client.signatures.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -19980,7 +18131,7 @@ client.signatures.update(
 </dl>
 </details>
 
-<details><summary><code>client.signatures.<a href="src/peal/signatures/client.py#L174-L206">delete</a>(...)</code></summary>
+<details><summary><code>client.signatures.<a href="src/peal/signatures/client.py#L157-L185">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20016,7 +18167,6 @@ client = Peal(
 )
 
 client.signatures.delete(
-    workspace_id="workspaceId",
     signature_id="signatureId",
 )
 
@@ -20030,14 +18180,6 @@ client.signatures.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20063,7 +18205,7 @@ client.signatures.delete(
 </details>
 
 ## channelSets
-<details><summary><code>client.channel_sets.<a href="src/peal/channel_sets/client.py#L30-L60">list</a>(...) -> typing.List[ChannelSet]</code></summary>
+<details><summary><code>client.channel_sets.<a href="src/peal/channel_sets/client.py#L30-L55">list</a>() -> typing.List[ChannelSet]</code></summary>
 <dl>
 <dd>
 
@@ -20098,9 +18240,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.channel_sets.list(
-    workspace_id="workspaceId",
-)
+client.channel_sets.list()
 
 ```
 </dd>
@@ -20112,14 +18252,6 @@ client.channel_sets.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20136,7 +18268,7 @@ client.channel_sets.list(
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="src/peal/channel_sets/client.py#L62-L108">create</a>(...) -> ChannelSet</code></summary>
+<details><summary><code>client.channel_sets.<a href="src/peal/channel_sets/client.py#L57-L100">create</a>(...) -> ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -20172,7 +18304,6 @@ client = Peal(
 )
 
 client.channel_sets.create(
-    workspace_id="workspaceId",
     channel_ids=[
         "channelIds"
     ],
@@ -20189,14 +18320,6 @@ client.channel_sets.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20221,7 +18344,7 @@ client.channel_sets.create(
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="src/peal/channel_sets/client.py#L110-L165">update</a>(...) -> ChannelSet</code></summary>
+<details><summary><code>client.channel_sets.<a href="src/peal/channel_sets/client.py#L102-L149">update</a>(...) -> ChannelSet</code></summary>
 <dl>
 <dd>
 
@@ -20257,7 +18380,6 @@ client = Peal(
 )
 
 client.channel_sets.update(
-    workspace_id="workspaceId",
     channel_set_id="channelSetId",
     channel_ids=[
         "channelIds"
@@ -20275,14 +18397,6 @@ client.channel_sets.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20315,7 +18429,7 @@ client.channel_sets.update(
 </dl>
 </details>
 
-<details><summary><code>client.channel_sets.<a href="src/peal/channel_sets/client.py#L167-L199">delete</a>(...)</code></summary>
+<details><summary><code>client.channel_sets.<a href="src/peal/channel_sets/client.py#L151-L179">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20351,7 +18465,6 @@ client = Peal(
 )
 
 client.channel_sets.delete(
-    workspace_id="workspaceId",
     channel_set_id="channelSetId",
 )
 
@@ -20365,14 +18478,6 @@ client.channel_sets.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20398,7 +18503,7 @@ client.channel_sets.delete(
 </details>
 
 ## queues
-<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L32-L60">list</a>(...) -> typing.List[Queue]</code></summary>
+<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L32-L57">list</a>() -> typing.List[Queue]</code></summary>
 <dl>
 <dd>
 
@@ -20433,9 +18538,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.queues.list(
-    workspace_id="workspaceId",
-)
+client.queues.list()
 
 ```
 </dd>
@@ -20447,14 +18550,6 @@ client.queues.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20471,7 +18566,7 @@ client.queues.list(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L62-L130">create</a>(...) -> Queue</code></summary>
+<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L59-L123">create</a>(...) -> Queue</code></summary>
 <dl>
 <dd>
 
@@ -20507,7 +18602,6 @@ client = Peal(
 )
 
 client.queues.create(
-    workspace_id="workspaceId",
     name="name",
     slots=[
         QueueSlot(
@@ -20532,14 +18626,6 @@ client.queues.create(
 <dl>
 <dd>
 
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **request:** `QueueDetails` 
     
 </dd>
@@ -20560,7 +18646,7 @@ client.queues.create(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L132-L165">get</a>(...) -> Queue</code></summary>
+<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L125-L154">get</a>(...) -> Queue</code></summary>
 <dl>
 <dd>
 
@@ -20596,7 +18682,6 @@ client = Peal(
 )
 
 client.queues.get(
-    workspace_id="workspaceId",
     queue_id="queueId",
 )
 
@@ -20610,14 +18695,6 @@ client.queues.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20642,7 +18719,7 @@ client.queues.get(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L167-L240">update</a>(...) -> Queue</code></summary>
+<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L156-L225">update</a>(...) -> Queue</code></summary>
 <dl>
 <dd>
 
@@ -20678,7 +18755,6 @@ client = Peal(
 )
 
 client.queues.update(
-    workspace_id="workspaceId",
     queue_id="queueId",
     name="name",
     slots=[
@@ -20700,14 +18776,6 @@ client.queues.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20740,7 +18808,7 @@ client.queues.update(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L242-L274">delete</a>(...)</code></summary>
+<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L227-L255">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20776,7 +18844,6 @@ client = Peal(
 )
 
 client.queues.delete(
-    workspace_id="workspaceId",
     queue_id="queueId",
 )
 
@@ -20790,14 +18857,6 @@ client.queues.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20822,7 +18881,7 @@ client.queues.delete(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L276-L316">slots</a>(...) -> QueuePreview</code></summary>
+<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L257-L294">slots</a>(...) -> QueuePreview</code></summary>
 <dl>
 <dd>
 
@@ -20858,7 +18917,6 @@ client = Peal(
 )
 
 client.queues.slots(
-    workspace_id="workspaceId",
     queue_id="queueId",
 )
 
@@ -20872,14 +18930,6 @@ client.queues.slots(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20912,7 +18962,7 @@ client.queues.slots(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L318-L351">reshuffle</a>(...) -> QueueReshuffle</code></summary>
+<details><summary><code>client.queues.<a href="src/peal/queues/client.py#L296-L325">reshuffle</a>(...) -> QueueReshuffle</code></summary>
 <dl>
 <dd>
 
@@ -20948,7 +18998,6 @@ client = Peal(
 )
 
 client.queues.reshuffle(
-    workspace_id="workspaceId",
     queue_id="queueId",
 )
 
@@ -20962,14 +19011,6 @@ client.queues.reshuffle(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -20995,7 +19036,7 @@ client.queues.reshuffle(
 </details>
 
 ## recycling
-<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L34-L78">list</a>(...) -> RecyclingRulePage</code></summary>
+<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L34-L72">list</a>(...) -> RecyclingRulePage</code></summary>
 <dl>
 <dd>
 
@@ -21030,9 +19071,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.recycling.list(
-    workspace_id="workspaceId",
-)
+client.recycling.list()
 
 ```
 </dd>
@@ -21044,14 +19083,6 @@ client.recycling.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21092,7 +19123,7 @@ client.recycling.list(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L80-L145">create</a>(...) -> RecyclingRule</code></summary>
+<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L74-L135">create</a>(...) -> RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -21128,7 +19159,6 @@ client = Peal(
 )
 
 client.recycling.create(
-    workspace_id="workspaceId",
     every=RecyclingInterval(
         count=1,
         unit="days",
@@ -21146,14 +19176,6 @@ client.recycling.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21218,7 +19240,7 @@ client.recycling.create(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L147-L180">get</a>(...) -> RecyclingRule</code></summary>
+<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L137-L166">get</a>(...) -> RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -21254,7 +19276,6 @@ client = Peal(
 )
 
 client.recycling.get(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -21268,14 +19289,6 @@ client.recycling.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21300,7 +19313,7 @@ client.recycling.get(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L182-L214">delete</a>(...)</code></summary>
+<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L168-L196">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21336,7 +19349,6 @@ client = Peal(
 )
 
 client.recycling.delete(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -21350,14 +19362,6 @@ client.recycling.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21382,7 +19386,7 @@ client.recycling.delete(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L216-L273">update</a>(...) -> RecyclingRule</code></summary>
+<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L198-L246">update</a>(...) -> RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -21418,7 +19422,6 @@ client = Peal(
 )
 
 client.recycling.update(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -21432,14 +19435,6 @@ client.recycling.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21496,7 +19491,7 @@ client.recycling.update(
 </dl>
 </details>
 
-<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L275-L315">resume</a>(...) -> RecyclingRule</code></summary>
+<details><summary><code>client.recycling.<a href="src/peal/recycling/client.py#L248-L285">resume</a>(...) -> RecyclingRule</code></summary>
 <dl>
 <dd>
 
@@ -21532,7 +19527,6 @@ client = Peal(
 )
 
 client.recycling.resume(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -21546,14 +19540,6 @@ client.recycling.resume(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21587,7 +19573,7 @@ client.recycling.resume(
 </details>
 
 ## followUps
-<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L31-L78">list</a>(...) -> FollowUpRulePage</code></summary>
+<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L31-L74">list</a>(...) -> FollowUpRulePage</code></summary>
 <dl>
 <dd>
 
@@ -21622,9 +19608,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.follow_ups.list(
-    workspace_id="workspaceId",
-)
+client.follow_ups.list()
 
 ```
 </dd>
@@ -21636,14 +19620,6 @@ client.follow_ups.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21692,7 +19668,7 @@ client.follow_ups.list(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L80-L137">create</a>(...) -> FollowUpRule</code></summary>
+<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L76-L129">create</a>(...) -> FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -21728,7 +19704,6 @@ client = Peal(
 )
 
 client.follow_ups.create(
-    workspace_id="workspaceId",
     likes=1,
 )
 
@@ -21742,14 +19717,6 @@ client.follow_ups.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21806,7 +19773,7 @@ client.follow_ups.create(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L139-L172">get</a>(...) -> FollowUpRule</code></summary>
+<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L131-L160">get</a>(...) -> FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -21842,7 +19809,6 @@ client = Peal(
 )
 
 client.follow_ups.get(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -21856,14 +19822,6 @@ client.follow_ups.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21888,7 +19846,7 @@ client.follow_ups.get(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L174-L206">delete</a>(...)</code></summary>
+<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L162-L190">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21924,7 +19882,6 @@ client = Peal(
 )
 
 client.follow_ups.delete(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -21938,14 +19895,6 @@ client.follow_ups.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -21970,7 +19919,7 @@ client.follow_ups.delete(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L208-L265">update</a>(...) -> FollowUpRule</code></summary>
+<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L192-L240">update</a>(...) -> FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -22006,7 +19955,6 @@ client = Peal(
 )
 
 client.follow_ups.update(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -22020,14 +19968,6 @@ client.follow_ups.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22084,7 +20024,7 @@ client.follow_ups.update(
 </dl>
 </details>
 
-<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L267-L300">approve</a>(...) -> FollowUpRule</code></summary>
+<details><summary><code>client.follow_ups.<a href="src/peal/follow_ups/client.py#L242-L271">approve</a>(...) -> FollowUpRule</code></summary>
 <dl>
 <dd>
 
@@ -22120,7 +20060,6 @@ client = Peal(
 )
 
 client.follow_ups.approve(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -22134,14 +20073,6 @@ client.follow_ups.approve(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22167,7 +20098,7 @@ client.follow_ups.approve(
 </details>
 
 ## inboxRules
-<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L31-L75">list_comment_rules</a>(...) -> CommentRulePage</code></summary>
+<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L31-L71">list_comment_rules</a>(...) -> CommentRulePage</code></summary>
 <dl>
 <dd>
 
@@ -22202,9 +20133,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.inbox_rules.list_comment_rules(
-    workspace_id="workspaceId",
-)
+client.inbox_rules.list_comment_rules()
 
 ```
 </dd>
@@ -22216,14 +20145,6 @@ client.inbox_rules.list_comment_rules(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22264,7 +20185,7 @@ client.inbox_rules.list_comment_rules(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L77-L135">create_comment_rule</a>(...) -> CommentRule</code></summary>
+<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L73-L127">create_comment_rule</a>(...) -> CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -22300,7 +20221,6 @@ client = Peal(
 )
 
 client.inbox_rules.create_comment_rule(
-    workspace_id="workspaceId",
     keywords=[
         "keywords"
     ],
@@ -22317,14 +20237,6 @@ client.inbox_rules.create_comment_rule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22381,7 +20293,7 @@ client.inbox_rules.create_comment_rule(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L137-L170">get_comment_rule</a>(...) -> CommentRule</code></summary>
+<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L129-L158">get_comment_rule</a>(...) -> CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -22417,7 +20329,6 @@ client = Peal(
 )
 
 client.inbox_rules.get_comment_rule(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -22431,14 +20342,6 @@ client.inbox_rules.get_comment_rule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22463,7 +20366,7 @@ client.inbox_rules.get_comment_rule(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L172-L204">delete_comment_rule</a>(...)</code></summary>
+<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L160-L188">delete_comment_rule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22499,7 +20402,6 @@ client = Peal(
 )
 
 client.inbox_rules.delete_comment_rule(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -22513,14 +20415,6 @@ client.inbox_rules.delete_comment_rule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22545,7 +20439,7 @@ client.inbox_rules.delete_comment_rule(
 </dl>
 </details>
 
-<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L206-L263">update_comment_rule</a>(...) -> CommentRule</code></summary>
+<details><summary><code>client.inbox_rules.<a href="src/peal/inbox_rules/client.py#L190-L243">update_comment_rule</a>(...) -> CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -22581,7 +20475,6 @@ client = Peal(
 )
 
 client.inbox_rules.update_comment_rule(
-    workspace_id="workspaceId",
     rule_id="ruleId",
 )
 
@@ -22595,14 +20488,6 @@ client.inbox_rules.update_comment_rule(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22660,7 +20545,7 @@ client.inbox_rules.update_comment_rule(
 </details>
 
 ## feeds
-<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L35-L74">list</a>(...) -> FeedPage</code></summary>
+<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L35-L70">list</a>(...) -> FeedPage</code></summary>
 <dl>
 <dd>
 
@@ -22695,9 +20580,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.feeds.list(
-    workspace_id="workspaceId",
-)
+client.feeds.list()
 
 ```
 </dd>
@@ -22709,14 +20592,6 @@ client.feeds.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22749,7 +20624,7 @@ client.feeds.list(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L76-L141">create</a>(...) -> CreatedFeed</code></summary>
+<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L72-L133">create</a>(...) -> CreatedFeed</code></summary>
 <dl>
 <dd>
 
@@ -22785,7 +20660,6 @@ client = Peal(
 )
 
 client.feeds.create(
-    workspace_id="workspaceId",
     url="url",
 )
 
@@ -22799,14 +20673,6 @@ client.feeds.create(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22879,7 +20745,7 @@ client.feeds.create(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L143-L183">preview</a>(...) -> FeedPreview</code></summary>
+<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L135-L172">preview</a>(...) -> FeedPreview</code></summary>
 <dl>
 <dd>
 
@@ -22915,7 +20781,6 @@ client = Peal(
 )
 
 client.feeds.preview(
-    workspace_id="workspaceId",
     url="url",
 )
 
@@ -22929,14 +20794,6 @@ client.feeds.preview(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -22969,7 +20826,7 @@ client.feeds.preview(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L185-L216">get</a>(...) -> Feed</code></summary>
+<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L174-L203">get</a>(...) -> Feed</code></summary>
 <dl>
 <dd>
 
@@ -23005,7 +20862,6 @@ client = Peal(
 )
 
 client.feeds.get(
-    workspace_id="workspaceId",
     feed_id="feedId",
 )
 
@@ -23019,14 +20875,6 @@ client.feeds.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23051,7 +20899,7 @@ client.feeds.get(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L218-L250">delete</a>(...)</code></summary>
+<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L205-L233">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -23087,7 +20935,6 @@ client = Peal(
 )
 
 client.feeds.delete(
-    workspace_id="workspaceId",
     feed_id="feedId",
 )
 
@@ -23101,14 +20948,6 @@ client.feeds.delete(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23133,7 +20972,7 @@ client.feeds.delete(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L252-L325">update</a>(...) -> Feed</code></summary>
+<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L235-L304">update</a>(...) -> Feed</code></summary>
 <dl>
 <dd>
 
@@ -23169,7 +21008,6 @@ client = Peal(
 )
 
 client.feeds.update(
-    workspace_id="workspaceId",
     feed_id="feedId",
 )
 
@@ -23183,14 +21021,6 @@ client.feeds.update(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23279,7 +21109,7 @@ client.feeds.update(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L327-L360">items</a>(...) -> FeedItems</code></summary>
+<details><summary><code>client.feeds.<a href="src/peal/feeds/client.py#L306-L335">items</a>(...) -> FeedItems</code></summary>
 <dl>
 <dd>
 
@@ -23315,7 +21145,6 @@ client = Peal(
 )
 
 client.feeds.items(
-    workspace_id="workspaceId",
     feed_id="feedId",
 )
 
@@ -23329,14 +21158,6 @@ client.feeds.items(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23362,7 +21183,7 @@ client.feeds.items(
 </details>
 
 ## channelDefaults
-<details><summary><code>client.channel_defaults.<a href="src/peal/channel_defaults/client.py#L30-L63">get</a>(...) -> ChannelDefaults</code></summary>
+<details><summary><code>client.channel_defaults.<a href="src/peal/channel_defaults/client.py#L30-L59">get</a>(...) -> ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -23398,7 +21219,6 @@ client = Peal(
 )
 
 client.channel_defaults.get(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -23412,14 +21232,6 @@ client.channel_defaults.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23444,7 +21256,7 @@ client.channel_defaults.get(
 </dl>
 </details>
 
-<details><summary><code>client.channel_defaults.<a href="src/peal/channel_defaults/client.py#L65-L106">set</a>(...) -> ChannelDefaults</code></summary>
+<details><summary><code>client.channel_defaults.<a href="src/peal/channel_defaults/client.py#L61-L95">set</a>(...) -> ChannelDefaults</code></summary>
 <dl>
 <dd>
 
@@ -23480,7 +21292,6 @@ client = Peal(
 )
 
 client.channel_defaults.set(
-    workspace_id="workspaceId",
     channel_id="channelId",
     options=TargetOptions_Youtube(),
 )
@@ -23495,14 +21306,6 @@ client.channel_defaults.set(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23535,7 +21338,7 @@ client.channel_defaults.set(
 </dl>
 </details>
 
-<details><summary><code>client.channel_defaults.<a href="src/peal/channel_defaults/client.py#L108-L140">clear</a>(...)</code></summary>
+<details><summary><code>client.channel_defaults.<a href="src/peal/channel_defaults/client.py#L97-L125">clear</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -23571,7 +21374,6 @@ client = Peal(
 )
 
 client.channel_defaults.clear(
-    workspace_id="workspaceId",
     channel_id="channelId",
 )
 
@@ -23585,14 +21387,6 @@ client.channel_defaults.clear(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23618,7 +21412,7 @@ client.channel_defaults.clear(
 </details>
 
 ## shortLinks
-<details><summary><code>client.short_links.<a href="src/peal/short_links/client.py#L32-L60">status</a>(...) -> ShortLinkStatus</code></summary>
+<details><summary><code>client.short_links.<a href="src/peal/short_links/client.py#L32-L57">status</a>() -> ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -23653,9 +21447,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.short_links.status(
-    workspace_id="workspaceId",
-)
+client.short_links.status()
 
 ```
 </dd>
@@ -23667,14 +21459,6 @@ client.short_links.status(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23691,7 +21475,7 @@ client.short_links.status(
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="src/peal/short_links/client.py#L62-L95">set_default</a>(...) -> ShortLinkStatus</code></summary>
+<details><summary><code>client.short_links.<a href="src/peal/short_links/client.py#L59-L90">set_default</a>(...) -> ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -23727,7 +21511,6 @@ client = Peal(
 )
 
 client.short_links.set_default(
-    workspace_id="workspaceId",
     by_default=True,
 )
 
@@ -23741,14 +21524,6 @@ client.short_links.set_default(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23773,7 +21548,7 @@ client.short_links.set_default(
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="src/peal/short_links/client.py#L97-L157">list</a>(...) -> ShortLinkPage</code></summary>
+<details><summary><code>client.short_links.<a href="src/peal/short_links/client.py#L92-L147">list</a>(...) -> ShortLinkPage</code></summary>
 <dl>
 <dd>
 
@@ -23808,9 +21583,7 @@ client = Peal(
     environment=PealEnvironment.DEFAULT,
 )
 
-client.short_links.list(
-    workspace_id="workspaceId",
-)
+client.short_links.list()
 
 ```
 </dd>
@@ -23822,14 +21595,6 @@ client.short_links.list(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -23894,7 +21659,7 @@ client.short_links.list(
 </dl>
 </details>
 
-<details><summary><code>client.short_links.<a href="src/peal/short_links/client.py#L159-L202">get</a>(...) -> ShortLinkReport</code></summary>
+<details><summary><code>client.short_links.<a href="src/peal/short_links/client.py#L149-L189">get</a>(...) -> ShortLinkReport</code></summary>
 <dl>
 <dd>
 
@@ -23930,7 +21695,6 @@ client = Peal(
 )
 
 client.short_links.get(
-    workspace_id="workspaceId",
     link_id="linkId",
 )
 
@@ -23944,14 +21708,6 @@ client.short_links.get(
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**workspace_id:** `str` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>

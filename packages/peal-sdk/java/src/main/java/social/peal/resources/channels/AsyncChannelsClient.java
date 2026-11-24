@@ -12,21 +12,19 @@ import social.peal.resources.channels.requests.ChannelUpdate;
 import social.peal.resources.channels.requests.ChooseAccounts;
 import social.peal.resources.channels.requests.ConnectCallback;
 import social.peal.resources.channels.requests.ConnectChannel;
-import social.peal.resources.channels.requests.ConnectChatChannelsRequest;
 import social.peal.resources.channels.requests.ConnectSite;
 import social.peal.resources.channels.requests.ConnectSiteWithKey;
 import social.peal.resources.channels.requests.DisableChannelsRequest;
 import social.peal.resources.channels.requests.DisconnectChannelsRequest;
 import social.peal.resources.channels.requests.EnableChannelsRequest;
 import social.peal.resources.channels.requests.FindChannelsRequest;
-import social.peal.resources.channels.requests.ListChannelsRequest;
-import social.peal.resources.channels.requests.PlatformsChannelsRequest;
 import social.peal.resources.channels.requests.ReconnectChannelsRequest;
 import social.peal.resources.channels.requests.SiteSignInCallback;
 import social.peal.resources.channels.requests.StartSiteSignIn;
 import social.peal.types.Authorization;
 import social.peal.types.Channel;
 import social.peal.types.ChannelPage;
+import social.peal.types.ConnectChat;
 import social.peal.types.ConnectOutcome;
 import social.peal.types.ConnectablePlatforms;
 import social.peal.types.OAuthSitePlatform;
@@ -52,8 +50,8 @@ public class AsyncChannelsClient {
     /**
      * Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
      */
-    public CompletableFuture<List<Channel>> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<Channel>>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<List<Channel>> list() {
+        CompletableFuture<PealClientHttpResponse<List<Channel>>> rawFuture = this.rawClient.list();
         CompletableFuture<List<Channel>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -66,39 +64,8 @@ public class AsyncChannelsClient {
     /**
      * Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
      */
-    public CompletableFuture<List<Channel>> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Channel>>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<List<Channel>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
-     */
-    public CompletableFuture<List<Channel>> list(String workspaceId, ListChannelsRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<Channel>>> rawFuture = this.rawClient.list(workspaceId, request);
-        CompletableFuture<List<Channel>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
-     */
-    public CompletableFuture<List<Channel>> list(
-            String workspaceId, ListChannelsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Channel>>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<List<Channel>> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<Channel>>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<List<Channel>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -111,8 +78,8 @@ public class AsyncChannelsClient {
     /**
      * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
      */
-    public CompletableFuture<ChannelPage> find(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<ChannelPage>> rawFuture = this.rawClient.find(workspaceId);
+    public CompletableFuture<ChannelPage> find() {
+        CompletableFuture<PealClientHttpResponse<ChannelPage>> rawFuture = this.rawClient.find();
         CompletableFuture<ChannelPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -125,9 +92,8 @@ public class AsyncChannelsClient {
     /**
      * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
      */
-    public CompletableFuture<ChannelPage> find(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ChannelPage>> rawFuture =
-                this.rawClient.find(workspaceId, requestOptions);
+    public CompletableFuture<ChannelPage> find(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<ChannelPage>> rawFuture = this.rawClient.find(requestOptions);
         CompletableFuture<ChannelPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -140,8 +106,8 @@ public class AsyncChannelsClient {
     /**
      * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
      */
-    public CompletableFuture<ChannelPage> find(String workspaceId, FindChannelsRequest request) {
-        CompletableFuture<PealClientHttpResponse<ChannelPage>> rawFuture = this.rawClient.find(workspaceId, request);
+    public CompletableFuture<ChannelPage> find(FindChannelsRequest request) {
+        CompletableFuture<PealClientHttpResponse<ChannelPage>> rawFuture = this.rawClient.find(request);
         CompletableFuture<ChannelPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -154,10 +120,8 @@ public class AsyncChannelsClient {
     /**
      * Lists the workspace's channels a page at a time, oldest first: 50 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>platform</code>, <code>status</code> (<code>active</code>, <code>refreshNeeded</code> or <code>disabled</code>) and <code>q</code>, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. <code>counts</code> says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
      */
-    public CompletableFuture<ChannelPage> find(
-            String workspaceId, FindChannelsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ChannelPage>> rawFuture =
-                this.rawClient.find(workspaceId, request, requestOptions);
+    public CompletableFuture<ChannelPage> find(FindChannelsRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<ChannelPage>> rawFuture = this.rawClient.find(request, requestOptions);
         CompletableFuture<ChannelPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -170,9 +134,8 @@ public class AsyncChannelsClient {
     /**
      * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
      */
-    public CompletableFuture<ConnectablePlatforms> platforms(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> rawFuture =
-                this.rawClient.platforms(workspaceId);
+    public CompletableFuture<ConnectablePlatforms> platforms() {
+        CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> rawFuture = this.rawClient.platforms();
         CompletableFuture<ConnectablePlatforms> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -185,40 +148,9 @@ public class AsyncChannelsClient {
     /**
      * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
      */
-    public CompletableFuture<ConnectablePlatforms> platforms(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<ConnectablePlatforms> platforms(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> rawFuture =
-                this.rawClient.platforms(workspaceId, requestOptions);
-        CompletableFuture<ConnectablePlatforms> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
-     */
-    public CompletableFuture<ConnectablePlatforms> platforms(String workspaceId, PlatformsChannelsRequest request) {
-        CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> rawFuture =
-                this.rawClient.platforms(workspaceId, request);
-        CompletableFuture<ConnectablePlatforms> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. <code>platforms</code> are those with a sign-in page; the chats, which connect with a secret (connectChat), are in <code>chats</code>, and the websites in <code>sites</code>. Needs channel:connect.
-     */
-    public CompletableFuture<ConnectablePlatforms> platforms(
-            String workspaceId, PlatformsChannelsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ConnectablePlatforms>> rawFuture =
-                this.rawClient.platforms(workspaceId, request, requestOptions);
+                this.rawClient.platforms(requestOptions);
         CompletableFuture<ConnectablePlatforms> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -231,8 +163,8 @@ public class AsyncChannelsClient {
     /**
      * Connects a website, to publish articles to it: a WordPress site, by its address, the login name of the user Peal publishes as and an application password made for Peal on that user's profile page. Peal finds the site's REST API, checks the user may publish posts and upload files, and keeps the password encrypted. The site must be on HTTPS at a public address (SiteNotConnected <code>addressNotAllowed</code>); one that has no WordPress REST API is <code>notWordPress</code>, a refused password <code>credentialsRefused</code>, a user who may not publish <code>cannotPublish</code>. A site that does not answer, or fails on its side, is PlatformUnreachable. The REST API must be on the same site as the home page (<code>addressNotAllowed</code>). A site the workspace has already, at the same home page, is reconnected with the new password, even where its API's address changed. A site counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the site is called. A workspace tries 30 times an hour at most (SiteConnectLimited). Needs channel:connect.
      */
-    public CompletableFuture<Channel> connectSite(String workspaceId, ConnectSite request) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.connectSite(workspaceId, request);
+    public CompletableFuture<Channel> connectSite(ConnectSite request) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.connectSite(request);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -245,10 +177,9 @@ public class AsyncChannelsClient {
     /**
      * Connects a website, to publish articles to it: a WordPress site, by its address, the login name of the user Peal publishes as and an application password made for Peal on that user's profile page. Peal finds the site's REST API, checks the user may publish posts and upload files, and keeps the password encrypted. The site must be on HTTPS at a public address (SiteNotConnected <code>addressNotAllowed</code>); one that has no WordPress REST API is <code>notWordPress</code>, a refused password <code>credentialsRefused</code>, a user who may not publish <code>cannotPublish</code>. A site that does not answer, or fails on its side, is PlatformUnreachable. The REST API must be on the same site as the home page (<code>addressNotAllowed</code>). A site the workspace has already, at the same home page, is reconnected with the new password, even where its API's address changed. A site counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the site is called. A workspace tries 30 times an hour at most (SiteConnectLimited). Needs channel:connect.
      */
-    public CompletableFuture<Channel> connectSite(
-            String workspaceId, ConnectSite request, RequestOptions requestOptions) {
+    public CompletableFuture<Channel> connectSite(ConnectSite request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.connectSite(workspaceId, request, requestOptions);
+                this.rawClient.connectSite(request, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -261,9 +192,8 @@ public class AsyncChannelsClient {
     /**
      * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (<code>devto</code>), an API key from the account's settings (Extensions); on Hashnode (<code>hashnode</code>), a personal access token from the account's settings (Developer) and the publication's address in <code>publication</code>, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected <code>credentialsRefused</code>; a Hashnode publication that is not found is <code>publicationNotFound</code>, one of a team that lists the member as a contributor <code>cannotPublish</code> (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several <code>publicationRequired</code>, and one without Hashnode's Pro plan, which its API needs for every request, <code>planRequired</code>; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
-    public CompletableFuture<Channel> connectSiteWithKey(String workspaceId, ConnectSiteWithKey request) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.connectSiteWithKey(workspaceId, request);
+    public CompletableFuture<Channel> connectSiteWithKey(ConnectSiteWithKey request) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.connectSiteWithKey(request);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -276,10 +206,9 @@ public class AsyncChannelsClient {
     /**
      * Connects an account on a publishing platform, to publish articles to it, with a key the member made there for Peal: on DEV (<code>devto</code>), an API key from the account's settings (Extensions); on Hashnode (<code>hashnode</code>), a personal access token from the account's settings (Developer) and the publication's address in <code>publication</code>, which may be left out when the member has only one. Peal checks the key on the platform and keeps it encrypted; the channel is the account the key belongs to, on Hashnode the publication. A key the platform refuses is SiteNotConnected <code>credentialsRefused</code>; a Hashnode publication that is not found is <code>publicationNotFound</code>, one of a team that lists the member as a contributor <code>cannotPublish</code> (a member the publication keeps private is connected, and the first article says whether they may publish), one to name among several <code>publicationRequired</code>, and one without Hashnode's Pro plan, which its API needs for every request, <code>planRequired</code>; a platform that does not answer, or fails on its side, is PlatformUnreachable. An account the workspace has already is reconnected with the new key. An account counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no channel of it. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
-    public CompletableFuture<Channel> connectSiteWithKey(
-            String workspaceId, ConnectSiteWithKey request, RequestOptions requestOptions) {
+    public CompletableFuture<Channel> connectSiteWithKey(ConnectSiteWithKey request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.connectSiteWithKey(workspaceId, request, requestOptions);
+                this.rawClient.connectSiteWithKey(request, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -292,8 +221,8 @@ public class AsyncChannelsClient {
     /**
      * Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (<code>discord</code>) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (<code>telegram</code>) by the token of the member's own bot and the chat, its public name (<code>@name</code>) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected <code>addressNotAWebhook</code>, before any call; a webhook Discord does not have <code>webhookNotFound</code>, one that does not post messages <code>webhookKindNotSupported</code>; a bot's token Telegram refuses <code>credentialsRefused</code>, a chat it does not know or the bot is not in <code>chatNotFound</code>, a private chat <code>chatKindNotSupported</code>, and a chat the bot may not post in <code>cannotPost</code> (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With <code>channelId</code>, it reconnects that channel, and the secret must reach its chat again (ConnectFailed <code>accountMismatch</code>). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed <code>notConfigured</code>. Needs channel:connect.
      */
-    public CompletableFuture<Channel> connectChat(String workspaceId, ConnectChatChannelsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.connectChat(workspaceId, request);
+    public CompletableFuture<Channel> connectChat(ConnectChat request) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.connectChat(request);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -306,10 +235,9 @@ public class AsyncChannelsClient {
     /**
      * Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (<code>discord</code>) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (<code>telegram</code>) by the token of the member's own bot and the chat, its public name (<code>@name</code>) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected <code>addressNotAWebhook</code>, before any call; a webhook Discord does not have <code>webhookNotFound</code>, one that does not post messages <code>webhookKindNotSupported</code>; a bot's token Telegram refuses <code>credentialsRefused</code>, a chat it does not know or the bot is not in <code>chatNotFound</code>, a private chat <code>chatKindNotSupported</code>, and a chat the bot may not post in <code>cannotPost</code> (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With <code>channelId</code>, it reconnects that channel, and the secret must reach its chat again (ConnectFailed <code>accountMismatch</code>). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed <code>notConfigured</code>. Needs channel:connect.
      */
-    public CompletableFuture<Channel> connectChat(
-            String workspaceId, ConnectChatChannelsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Channel> connectChat(ConnectChat request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.connectChat(workspaceId, request, requestOptions);
+                this.rawClient.connectChat(request, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -322,9 +250,38 @@ public class AsyncChannelsClient {
     /**
      * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
-    public CompletableFuture<Authorization> startSiteSignIn(String workspaceId, OAuthSitePlatform platform) {
+    public CompletableFuture<Authorization> startSiteSignIn(OAuthSitePlatform platform) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture = this.rawClient.startSiteSignIn(platform);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> startSiteSignIn(OAuthSitePlatform platform, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.startSiteSignIn(workspaceId, platform);
+                this.rawClient.startSiteSignIn(platform, requestOptions);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> startSiteSignIn(OAuthSitePlatform platform, StartSiteSignIn request) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
+                this.rawClient.startSiteSignIn(platform, request);
         CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -338,41 +295,9 @@ public class AsyncChannelsClient {
      * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
      */
     public CompletableFuture<Authorization> startSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, RequestOptions requestOptions) {
+            OAuthSitePlatform platform, StartSiteSignIn request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.startSiteSignIn(workspaceId, platform, requestOptions);
-        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
-     */
-    public CompletableFuture<Authorization> startSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, StartSiteSignIn request) {
-        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.startSiteSignIn(workspaceId, platform, request);
-        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Starts connecting a website by signing in on its platform: on WordPress.com (<code>wordpressCom</code>), a site there or a Jetpack site the member reaches there, which the member picks on WordPress.com's page. Answers with that page, where the browser goes next; the connection is tied to the caller and the workspace, and must be completed within 15 minutes. With <code>channelId</code>, it reconnects that channel, and the sign-in must reach its site again. A server without the platform's app answers ConnectFailed <code>notConfigured</code>. A new site needs room in the workspace's plan (PlanLimitReached), checked now when the workspace has no site of that platform. A workspace tries 30 times an hour at most, all ways of connecting a website together (SiteConnectLimited). Needs channel:connect.
-     */
-    public CompletableFuture<Authorization> startSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, StartSiteSignIn request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.startSiteSignIn(workspaceId, platform, request, requestOptions);
+                this.rawClient.startSiteSignIn(platform, request, requestOptions);
         CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -385,10 +310,9 @@ public class AsyncChannelsClient {
     /**
      * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected <code>cannotPublish</code>; a reconnect that reached another site ConnectFailed <code>accountMismatch</code>. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
      */
-    public CompletableFuture<Channel> completeSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, SiteSignInCallback request) {
+    public CompletableFuture<Channel> completeSiteSignIn(OAuthSitePlatform platform, SiteSignInCallback request) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.completeSiteSignIn(workspaceId, platform, request);
+                this.rawClient.completeSiteSignIn(platform, request);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -402,9 +326,9 @@ public class AsyncChannelsClient {
      * Completes a website sign-in with what the platform sent back: the site becomes a channel of the workspace, or the channel it reconnects takes its new token. Only the member who started it can complete it, once. A member who may not publish posts and upload files on the site is SiteNotConnected <code>cannotPublish</code>; a reconnect that reached another site ConnectFailed <code>accountMismatch</code>. A new site needs room in the workspace's plan (PlanLimitReached). Needs channel:connect.
      */
     public CompletableFuture<Channel> completeSiteSignIn(
-            String workspaceId, OAuthSitePlatform platform, SiteSignInCallback request, RequestOptions requestOptions) {
+            OAuthSitePlatform platform, SiteSignInCallback request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.completeSiteSignIn(workspaceId, platform, request, requestOptions);
+                this.rawClient.completeSiteSignIn(platform, request, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -417,9 +341,37 @@ public class AsyncChannelsClient {
     /**
      * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
      */
-    public CompletableFuture<Authorization> connect(String workspaceId, Platform platform) {
+    public CompletableFuture<Authorization> connect(Platform platform) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture = this.rawClient.connect(platform);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> connect(Platform platform, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.connect(workspaceId, platform);
+                this.rawClient.connect(platform, requestOptions);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> connect(Platform platform, ConnectChannel request) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture = this.rawClient.connect(platform, request);
         CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -433,40 +385,9 @@ public class AsyncChannelsClient {
      * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
      */
     public CompletableFuture<Authorization> connect(
-            String workspaceId, Platform platform, RequestOptions requestOptions) {
+            Platform platform, ConnectChannel request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.connect(workspaceId, platform, requestOptions);
-        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
-     */
-    public CompletableFuture<Authorization> connect(String workspaceId, Platform platform, ConnectChannel request) {
-        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.connect(workspaceId, platform, request);
-        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, <code>connection</code> picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (<code>unifiedLogin</code>: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached <code>xApi</code>, <code>paymentMethodRequired</code> without one). Needs channel:connect.
-     */
-    public CompletableFuture<Authorization> connect(
-            String workspaceId, Platform platform, ConnectChannel request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.connect(workspaceId, platform, request, requestOptions);
+                this.rawClient.connect(platform, request, requestOptions);
         CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -479,10 +400,9 @@ public class AsyncChannelsClient {
     /**
      * Completes a connection with what the platform sent back: the account becomes a channel of the workspace, or the channel it reconnects takes its new tokens. When the sign-in reached several accounts, as the Pages a Facebook user manages, the answer lists them instead, to choose with chooseAccounts. Only the member who started the connection can complete it, once. A new account needs room in the workspace's plan (PlanLimitReached), and, on a server that bills, an X account a payment method (UsageAllowanceReached <code>xApi</code>). Needs channel:connect.
      */
-    public CompletableFuture<ConnectOutcome> completeConnect(
-            String workspaceId, Platform platform, ConnectCallback request) {
+    public CompletableFuture<ConnectOutcome> completeConnect(Platform platform, ConnectCallback request) {
         CompletableFuture<PealClientHttpResponse<ConnectOutcome>> rawFuture =
-                this.rawClient.completeConnect(workspaceId, platform, request);
+                this.rawClient.completeConnect(platform, request);
         CompletableFuture<ConnectOutcome> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -496,9 +416,9 @@ public class AsyncChannelsClient {
      * Completes a connection with what the platform sent back: the account becomes a channel of the workspace, or the channel it reconnects takes its new tokens. When the sign-in reached several accounts, as the Pages a Facebook user manages, the answer lists them instead, to choose with chooseAccounts. Only the member who started the connection can complete it, once. A new account needs room in the workspace's plan (PlanLimitReached), and, on a server that bills, an X account a payment method (UsageAllowanceReached <code>xApi</code>). Needs channel:connect.
      */
     public CompletableFuture<ConnectOutcome> completeConnect(
-            String workspaceId, Platform platform, ConnectCallback request, RequestOptions requestOptions) {
+            Platform platform, ConnectCallback request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ConnectOutcome>> rawFuture =
-                this.rawClient.completeConnect(workspaceId, platform, request, requestOptions);
+                this.rawClient.completeConnect(platform, request, requestOptions);
         CompletableFuture<ConnectOutcome> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -511,10 +431,9 @@ public class AsyncChannelsClient {
     /**
      * Connects the accounts the member chose among those a completed sign-in listed: each becomes a channel of the workspace, or reconnects the one it has. The new accounts chosen need room in the workspace's plan, all of them: otherwise none is connected (PlanLimitReached), and the choice can be made again with fewer. Only the member who completed the sign-in can choose, within 15 minutes, and once an account is connected: a choice that failed before connecting any can be made again. Needs channel:connect.
      */
-    public CompletableFuture<List<Channel>> chooseAccounts(
-            String workspaceId, Platform platform, ChooseAccounts request) {
+    public CompletableFuture<List<Channel>> chooseAccounts(Platform platform, ChooseAccounts request) {
         CompletableFuture<PealClientHttpResponse<List<Channel>>> rawFuture =
-                this.rawClient.chooseAccounts(workspaceId, platform, request);
+                this.rawClient.chooseAccounts(platform, request);
         CompletableFuture<List<Channel>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -528,9 +447,9 @@ public class AsyncChannelsClient {
      * Connects the accounts the member chose among those a completed sign-in listed: each becomes a channel of the workspace, or reconnects the one it has. The new accounts chosen need room in the workspace's plan, all of them: otherwise none is connected (PlanLimitReached), and the choice can be made again with fewer. Only the member who completed the sign-in can choose, within 15 minutes, and once an account is connected: a choice that failed before connecting any can be made again. Needs channel:connect.
      */
     public CompletableFuture<List<Channel>> chooseAccounts(
-            String workspaceId, Platform platform, ChooseAccounts request, RequestOptions requestOptions) {
+            Platform platform, ChooseAccounts request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<Channel>>> rawFuture =
-                this.rawClient.chooseAccounts(workspaceId, platform, request, requestOptions);
+                this.rawClient.chooseAccounts(platform, request, requestOptions);
         CompletableFuture<List<Channel>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -543,9 +462,38 @@ public class AsyncChannelsClient {
     /**
      * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
-    public CompletableFuture<Authorization> reconnect(String workspaceId, String channelId) {
+    public CompletableFuture<Authorization> reconnect(String channelId) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture = this.rawClient.reconnect(channelId);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> reconnect(String channelId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.reconnect(workspaceId, channelId);
+                this.rawClient.reconnect(channelId, requestOptions);
+        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+     */
+    public CompletableFuture<Authorization> reconnect(String channelId, ReconnectChannelsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
+                this.rawClient.reconnect(channelId, request);
         CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -559,41 +507,9 @@ public class AsyncChannelsClient {
      * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
     public CompletableFuture<Authorization> reconnect(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
+            String channelId, ReconnectChannelsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.reconnect(workspaceId, channelId, requestOptions);
-        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
-     */
-    public CompletableFuture<Authorization> reconnect(
-            String workspaceId, String channelId, ReconnectChannelsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.reconnect(workspaceId, channelId, request);
-        CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
-     */
-    public CompletableFuture<Authorization> reconnect(
-            String workspaceId, String channelId, ReconnectChannelsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
-                this.rawClient.reconnect(workspaceId, channelId, request, requestOptions);
+                this.rawClient.reconnect(channelId, request, requestOptions);
         CompletableFuture<Authorization> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -606,8 +522,8 @@ public class AsyncChannelsClient {
     /**
      * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
      */
-    public CompletableFuture<Void> disconnect(String workspaceId, String channelId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.disconnect(workspaceId, channelId);
+    public CompletableFuture<Void> disconnect(String channelId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.disconnect(channelId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -620,9 +536,9 @@ public class AsyncChannelsClient {
     /**
      * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
      */
-    public CompletableFuture<Void> disconnect(String workspaceId, String channelId, RequestOptions requestOptions) {
+    public CompletableFuture<Void> disconnect(String channelId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnect(workspaceId, channelId, requestOptions);
+                this.rawClient.disconnect(channelId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -635,9 +551,8 @@ public class AsyncChannelsClient {
     /**
      * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
      */
-    public CompletableFuture<Void> disconnect(String workspaceId, String channelId, DisconnectChannelsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnect(workspaceId, channelId, request);
+    public CompletableFuture<Void> disconnect(String channelId, DisconnectChannelsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.disconnect(channelId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -651,9 +566,9 @@ public class AsyncChannelsClient {
      * Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
      */
     public CompletableFuture<Void> disconnect(
-            String workspaceId, String channelId, DisconnectChannelsRequest request, RequestOptions requestOptions) {
+            String channelId, DisconnectChannelsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnect(workspaceId, channelId, request, requestOptions);
+                this.rawClient.disconnect(channelId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -666,9 +581,8 @@ public class AsyncChannelsClient {
     /**
      * Gives the channel the name the workspace calls it by (<code>label</code>, 60 characters at most, on one line), or takes it back with null. The name is Peal's own: it is shown beside the handle and name the platform gives the account, which stay, and is sent to no platform. Needs channel:connect.
      */
-    public CompletableFuture<Channel> update(String workspaceId, String channelId, ChannelUpdate request) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.update(workspaceId, channelId, request);
+    public CompletableFuture<Channel> update(String channelId, ChannelUpdate request) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.update(channelId, request);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -681,10 +595,9 @@ public class AsyncChannelsClient {
     /**
      * Gives the channel the name the workspace calls it by (<code>label</code>, 60 characters at most, on one line), or takes it back with null. The name is Peal's own: it is shown beside the handle and name the platform gives the account, which stay, and is sent to no platform. Needs channel:connect.
      */
-    public CompletableFuture<Channel> update(
-            String workspaceId, String channelId, ChannelUpdate request, RequestOptions requestOptions) {
+    public CompletableFuture<Channel> update(String channelId, ChannelUpdate request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.update(workspaceId, channelId, request, requestOptions);
+                this.rawClient.update(channelId, request, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -697,8 +610,8 @@ public class AsyncChannelsClient {
     /**
      * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
      */
-    public CompletableFuture<Channel> disable(String workspaceId, String channelId) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.disable(workspaceId, channelId);
+    public CompletableFuture<Channel> disable(String channelId) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.disable(channelId);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -711,9 +624,9 @@ public class AsyncChannelsClient {
     /**
      * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
      */
-    public CompletableFuture<Channel> disable(String workspaceId, String channelId, RequestOptions requestOptions) {
+    public CompletableFuture<Channel> disable(String channelId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.disable(workspaceId, channelId, requestOptions);
+                this.rawClient.disable(channelId, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -726,9 +639,8 @@ public class AsyncChannelsClient {
     /**
      * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
      */
-    public CompletableFuture<Channel> disable(String workspaceId, String channelId, DisableChannelsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.disable(workspaceId, channelId, request);
+    public CompletableFuture<Channel> disable(String channelId, DisableChannelsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.disable(channelId, request);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -742,9 +654,9 @@ public class AsyncChannelsClient {
      * Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (<code>channelDisabled</code>) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
      */
     public CompletableFuture<Channel> disable(
-            String workspaceId, String channelId, DisableChannelsRequest request, RequestOptions requestOptions) {
+            String channelId, DisableChannelsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.disable(workspaceId, channelId, request, requestOptions);
+                this.rawClient.disable(channelId, request, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -757,8 +669,8 @@ public class AsyncChannelsClient {
     /**
      * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
      */
-    public CompletableFuture<Channel> enable(String workspaceId, String channelId) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.enable(workspaceId, channelId);
+    public CompletableFuture<Channel> enable(String channelId) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.enable(channelId);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -771,9 +683,8 @@ public class AsyncChannelsClient {
     /**
      * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
      */
-    public CompletableFuture<Channel> enable(String workspaceId, String channelId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.enable(workspaceId, channelId, requestOptions);
+    public CompletableFuture<Channel> enable(String channelId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.enable(channelId, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -786,9 +697,8 @@ public class AsyncChannelsClient {
     /**
      * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
      */
-    public CompletableFuture<Channel> enable(String workspaceId, String channelId, EnableChannelsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.enable(workspaceId, channelId, request);
+    public CompletableFuture<Channel> enable(String channelId, EnableChannelsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Channel>> rawFuture = this.rawClient.enable(channelId, request);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -802,9 +712,9 @@ public class AsyncChannelsClient {
      * Turns a channel back on. It posts again at once, or has the status <code>refreshNeeded</code> when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
      */
     public CompletableFuture<Channel> enable(
-            String workspaceId, String channelId, EnableChannelsRequest request, RequestOptions requestOptions) {
+            String channelId, EnableChannelsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Channel>> rawFuture =
-                this.rawClient.enable(workspaceId, channelId, request, requestOptions);
+                this.rawClient.enable(channelId, request, requestOptions);
         CompletableFuture<Channel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

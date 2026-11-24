@@ -33,8 +33,8 @@ public class AsyncVideoGenerationsClient {
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public CompletableFuture<VideoGenerations> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<VideoGenerations>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<VideoGenerations> list() {
+        CompletableFuture<PealClientHttpResponse<VideoGenerations>> rawFuture = this.rawClient.list();
         CompletableFuture<VideoGenerations> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -47,9 +47,8 @@ public class AsyncVideoGenerationsClient {
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public CompletableFuture<VideoGenerations> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<VideoGenerations>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
+    public CompletableFuture<VideoGenerations> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<VideoGenerations>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<VideoGenerations> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -62,9 +61,8 @@ public class AsyncVideoGenerationsClient {
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public CompletableFuture<VideoGenerations> list(String workspaceId, ListVideoGenerationsRequest request) {
-        CompletableFuture<PealClientHttpResponse<VideoGenerations>> rawFuture =
-                this.rawClient.list(workspaceId, request);
+    public CompletableFuture<VideoGenerations> list(ListVideoGenerationsRequest request) {
+        CompletableFuture<PealClientHttpResponse<VideoGenerations>> rawFuture = this.rawClient.list(request);
         CompletableFuture<VideoGenerations> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -78,9 +76,9 @@ public class AsyncVideoGenerationsClient {
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
     public CompletableFuture<VideoGenerations> list(
-            String workspaceId, ListVideoGenerationsRequest request, RequestOptions requestOptions) {
+            ListVideoGenerationsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<VideoGenerations>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+                this.rawClient.list(request, requestOptions);
         CompletableFuture<VideoGenerations> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -93,9 +91,8 @@ public class AsyncVideoGenerationsClient {
     /**
      * Asks the provider the workspace chose for videos (<code>PUT .../assistant/models/video</code>) for one video from the prompt, in the aspect asked, optionally of a length and from a first frame, and answers 202 with the job, <code>queued</code>: making a video takes minutes. Follow it with <code>GET .../media/videos/generations/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>), ready to attach, marked <code>aiGenerated</code>, and the member who asked is told in the app. Only the workspace's own provider makes videos, with its key, under its terms and at its prices: Peal bills nothing for them. One video at a time a workspace (VideoBusy), 20 a UTC day (VideoAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is made fails it (<code>interrupted</code>), as the provider may have made and billed it. Neither the prompt nor the video is logged, and the prompt is kept only while the video is made. Needs assistant:use and media:upload.
      */
-    public CompletableFuture<VideoGeneration> create(String workspaceId, VideoGenerationRequest request) {
-        CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture =
-                this.rawClient.create(workspaceId, request);
+    public CompletableFuture<VideoGeneration> create(VideoGenerationRequest request) {
+        CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture = this.rawClient.create(request);
         CompletableFuture<VideoGeneration> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -108,10 +105,9 @@ public class AsyncVideoGenerationsClient {
     /**
      * Asks the provider the workspace chose for videos (<code>PUT .../assistant/models/video</code>) for one video from the prompt, in the aspect asked, optionally of a length and from a first frame, and answers 202 with the job, <code>queued</code>: making a video takes minutes. Follow it with <code>GET .../media/videos/generations/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>), ready to attach, marked <code>aiGenerated</code>, and the member who asked is told in the app. Only the workspace's own provider makes videos, with its key, under its terms and at its prices: Peal bills nothing for them. One video at a time a workspace (VideoBusy), 20 a UTC day (VideoAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is made fails it (<code>interrupted</code>), as the provider may have made and billed it. Neither the prompt nor the video is logged, and the prompt is kept only while the video is made. Needs assistant:use and media:upload.
      */
-    public CompletableFuture<VideoGeneration> create(
-            String workspaceId, VideoGenerationRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<VideoGeneration> create(VideoGenerationRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+                this.rawClient.create(request, requestOptions);
         CompletableFuture<VideoGeneration> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -124,9 +120,38 @@ public class AsyncVideoGenerationsClient {
     /**
      * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public CompletableFuture<VideoGeneration> get(String workspaceId, String generationId) {
+    public CompletableFuture<VideoGeneration> get(String generationId) {
+        CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture = this.rawClient.get(generationId);
+        CompletableFuture<VideoGeneration> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
+     */
+    public CompletableFuture<VideoGeneration> get(String generationId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture =
-                this.rawClient.get(workspaceId, generationId);
+                this.rawClient.get(generationId, requestOptions);
+        CompletableFuture<VideoGeneration> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
+     */
+    public CompletableFuture<VideoGeneration> get(String generationId, GetVideoGenerationsRequest request) {
+        CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture =
+                this.rawClient.get(generationId, request);
         CompletableFuture<VideoGeneration> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -140,44 +165,9 @@ public class AsyncVideoGenerationsClient {
      * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
     public CompletableFuture<VideoGeneration> get(
-            String workspaceId, String generationId, RequestOptions requestOptions) {
+            String generationId, GetVideoGenerationsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture =
-                this.rawClient.get(workspaceId, generationId, requestOptions);
-        CompletableFuture<VideoGeneration> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
-     */
-    public CompletableFuture<VideoGeneration> get(
-            String workspaceId, String generationId, GetVideoGenerationsRequest request) {
-        CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture =
-                this.rawClient.get(workspaceId, generationId, request);
-        CompletableFuture<VideoGeneration> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
-     */
-    public CompletableFuture<VideoGeneration> get(
-            String workspaceId,
-            String generationId,
-            GetVideoGenerationsRequest request,
-            RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<VideoGeneration>> rawFuture =
-                this.rawClient.get(workspaceId, generationId, request, requestOptions);
+                this.rawClient.get(generationId, request, requestOptions);
         CompletableFuture<VideoGeneration> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

@@ -51,7 +51,7 @@ public class ResumeBoostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts/boostId/resume")
+                    .WithPath("/api/v1/ads/boosts/boostId/resume")
                     .UsingPost()
             )
             .RespondWith(
@@ -62,7 +62,7 @@ public class ResumeBoostTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ResumeBoostAsync(
-            new ResumeBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
+            new ResumeBoostAdsRequest { BoostId = "boostId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -108,7 +108,7 @@ public class ResumeBoostTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/boosts/boostId/resume")
+                    .WithPath("/api/v1/ads/boosts/boostId/resume")
                     .UsingPost()
             )
             .RespondWith(
@@ -119,7 +119,7 @@ public class ResumeBoostTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.ResumeBoostAsync(
-            new ResumeBoostAdsRequest { WorkspaceId = "workspaceId", BoostId = "boostId" }
+            new ResumeBoostAdsRequest { BoostId = "boostId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

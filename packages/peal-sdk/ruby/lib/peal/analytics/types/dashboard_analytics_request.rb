@@ -4,8 +4,6 @@ module Peal
   module Analytics
     module Types
       class DashboardAnalyticsRequest < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :days, -> { String }, optional: true, nullable: false
 
         field :from, -> { String }, optional: true, nullable: false

@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         aspect: "square",
  *         prompt: "prompt"
  *     }
  */
 export interface VideoGenerationRequest {
-    workspaceId: string;
     aspect: Peal.ImageAspect;
     durationSeconds?: number;
     imageMediaId?: string;

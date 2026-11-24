@@ -7,9 +7,6 @@ namespace Peal;
 public record PostImport
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? IdempotencyKey { get; set; }
 
     [JsonPropertyName("csv")]

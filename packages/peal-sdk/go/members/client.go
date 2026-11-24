@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListMembersRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Members.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListMembersRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.WorkspaceMember, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {

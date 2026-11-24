@@ -40,25 +40,23 @@ export class RecyclingClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.recycling.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.recycling.list()
      */
-    public list(request: Peal.ListRecyclingRequest, requestOptions?: RecyclingClient.RequestOptions): core.HttpResponsePromise<Peal.RecyclingRulePage> {
+    public list(request: Peal.ListRecyclingRequest = {}, requestOptions?: RecyclingClient.RequestOptions): core.HttpResponsePromise<Peal.RecyclingRulePage> {
         return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
     }
 
-    private async __list(request: Peal.ListRecyclingRequest, requestOptions?: RecyclingClient.RequestOptions): Promise<core.WithRawResponse<Peal.RecyclingRulePage>> {
-        const { workspaceId, cursor, limit, status } = request;
+    private async __list(request: Peal.ListRecyclingRequest = {}, requestOptions?: RecyclingClient.RequestOptions): Promise<core.WithRawResponse<Peal.RecyclingRulePage>> {
+        const { cursor, limit, status } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
             limit,
             status: status != null ? status : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/recycling`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/recycling"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -87,7 +85,7 @@ export class RecyclingClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/recycling");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/recycling");
     }
 
     /**
@@ -96,6 +94,7 @@ export class RecyclingClient {
      * @param {Peal.NewRecyclingRule} request
      * @param {RecyclingClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -107,7 +106,6 @@ export class RecyclingClient {
      *
      * @example
      *     await client.recycling.create({
-     *         workspaceId: "workspaceId",
      *         every: {
      *             count: 1,
      *             unit: "days"
@@ -120,17 +118,16 @@ export class RecyclingClient {
     }
 
     private async __create(request: Peal.NewRecyclingRule, requestOptions?: RecyclingClient.RequestOptions): Promise<core.WithRawResponse<Peal.RecyclingRule>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/recycling`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/recycling"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -143,6 +140,7 @@ export class RecyclingClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -157,7 +155,7 @@ export class RecyclingClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/recycling");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/recycling");
     }
 
     /**
@@ -166,6 +164,7 @@ export class RecyclingClient {
      * @param {Peal.GetRecyclingRequest} request
      * @param {RecyclingClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -175,7 +174,6 @@ export class RecyclingClient {
      *
      * @example
      *     await client.recycling.get({
-     *         workspaceId: "workspaceId",
      *         ruleId: "ruleId"
      *     })
      */
@@ -184,11 +182,11 @@ export class RecyclingClient {
     }
 
     private async __get(request: Peal.GetRecyclingRequest, requestOptions?: RecyclingClient.RequestOptions): Promise<core.WithRawResponse<Peal.RecyclingRule>> {
-        const { workspaceId, ruleId } = request;
+        const { ruleId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/recycling/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/recycling/${core.url.encodePathParam(ruleId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -204,6 +202,7 @@ export class RecyclingClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -216,7 +215,7 @@ export class RecyclingClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/recycling/{ruleId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/recycling/{ruleId}");
     }
 
     /**
@@ -225,6 +224,7 @@ export class RecyclingClient {
      * @param {Peal.DeleteRecyclingRequest} request
      * @param {RecyclingClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -234,7 +234,6 @@ export class RecyclingClient {
      *
      * @example
      *     await client.recycling.delete({
-     *         workspaceId: "workspaceId",
      *         ruleId: "ruleId"
      *     })
      */
@@ -243,11 +242,11 @@ export class RecyclingClient {
     }
 
     private async __delete(request: Peal.DeleteRecyclingRequest, requestOptions?: RecyclingClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, ruleId } = request;
+        const { ruleId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/recycling/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/recycling/${core.url.encodePathParam(ruleId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -263,6 +262,7 @@ export class RecyclingClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -275,7 +275,7 @@ export class RecyclingClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/recycling/{ruleId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/recycling/{ruleId}");
     }
 
     /**
@@ -284,6 +284,7 @@ export class RecyclingClient {
      * @param {Peal.RecyclingRuleChange} request
      * @param {RecyclingClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -295,7 +296,6 @@ export class RecyclingClient {
      *
      * @example
      *     await client.recycling.update({
-     *         workspaceId: "workspaceId",
      *         ruleId: "ruleId"
      *     })
      */
@@ -304,11 +304,11 @@ export class RecyclingClient {
     }
 
     private async __update(request: Peal.RecyclingRuleChange, requestOptions?: RecyclingClient.RequestOptions): Promise<core.WithRawResponse<Peal.RecyclingRule>> {
-        const { workspaceId, ruleId, ..._body } = request;
+        const { ruleId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/recycling/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/recycling/${core.url.encodePathParam(ruleId, errors.PealError)}`),
             method: "PATCH",
             headers: _headers,
             contentType: "application/json",
@@ -327,6 +327,7 @@ export class RecyclingClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -341,7 +342,7 @@ export class RecyclingClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/workspaces/{workspaceId}/recycling/{ruleId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/v1/recycling/{ruleId}");
     }
 
     /**
@@ -350,6 +351,7 @@ export class RecyclingClient {
      * @param {Peal.RecyclingResume} request
      * @param {RecyclingClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -361,7 +363,6 @@ export class RecyclingClient {
      *
      * @example
      *     await client.recycling.resume({
-     *         workspaceId: "workspaceId",
      *         ruleId: "ruleId"
      *     })
      */
@@ -370,11 +371,11 @@ export class RecyclingClient {
     }
 
     private async __resume(request: Peal.RecyclingResume, requestOptions?: RecyclingClient.RequestOptions): Promise<core.WithRawResponse<Peal.RecyclingRule>> {
-        const { workspaceId, ruleId, ..._body } = request;
+        const { ruleId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/recycling/${core.url.encodePathParam(ruleId, errors.PealError)}/resume`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/recycling/${core.url.encodePathParam(ruleId, errors.PealError)}/resume`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -393,6 +394,7 @@ export class RecyclingClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -407,6 +409,6 @@ export class RecyclingClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/recycling/{ruleId}/resume");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/recycling/{ruleId}/resume");
     }
 }

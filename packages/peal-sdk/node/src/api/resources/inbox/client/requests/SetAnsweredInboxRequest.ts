@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         commentId: "commentId",
  *         answered: true
  *     }
  */
 export interface SetAnsweredInboxRequest {
-    workspaceId: string;
     commentId: string;
     answered: boolean;
 }

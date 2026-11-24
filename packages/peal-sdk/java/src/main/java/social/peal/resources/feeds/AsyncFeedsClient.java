@@ -40,8 +40,8 @@ public class AsyncFeedsClient {
     /**
      * Lists the workspace's feeds, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<FeedPage> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<FeedPage>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<FeedPage> list() {
+        CompletableFuture<PealClientHttpResponse<FeedPage>> rawFuture = this.rawClient.list();
         CompletableFuture<FeedPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -54,9 +54,8 @@ public class AsyncFeedsClient {
     /**
      * Lists the workspace's feeds, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<FeedPage> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<FeedPage>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
+    public CompletableFuture<FeedPage> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<FeedPage>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<FeedPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -69,8 +68,8 @@ public class AsyncFeedsClient {
     /**
      * Lists the workspace's feeds, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<FeedPage> list(String workspaceId, ListFeedsRequest request) {
-        CompletableFuture<PealClientHttpResponse<FeedPage>> rawFuture = this.rawClient.list(workspaceId, request);
+    public CompletableFuture<FeedPage> list(ListFeedsRequest request) {
+        CompletableFuture<PealClientHttpResponse<FeedPage>> rawFuture = this.rawClient.list(request);
         CompletableFuture<FeedPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -83,10 +82,8 @@ public class AsyncFeedsClient {
     /**
      * Lists the workspace's feeds, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<FeedPage> list(
-            String workspaceId, ListFeedsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<FeedPage>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<FeedPage> list(ListFeedsRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<FeedPage>> rawFuture = this.rawClient.list(request, requestOptions);
         CompletableFuture<FeedPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -99,8 +96,8 @@ public class AsyncFeedsClient {
     /**
      * Follows a feed at <code>url</code>: it is read once, and refused when it is not a feed; every item it holds then is recorded as seen and never made (<code>seen</code> says how many). Every 60 minutes or so, each item that appears in the feed after it was added becomes a draft (<code>mode</code> <code>draft</code>, the default) or a post on the next free slot of a queue (<code>queue</code>: <code>queueId</code>, or the workspace's default queue), for its channels and channel set, as its template writes it (<code>{title}</code>, <code>{link}</code> and <code>{summary}</code>; by default the title, a blank line and the link). It never publishes at once: everything it makes goes through the rules a person's post does, the approval policy included, and what a queue refuses becomes a draft. 3 posts a run and 12 a day at most; the rest of a flood is skipped. It acts as whoever added it, as they are when the item is made. A feed failing for 7 days, or one whose site says it is gone, stops, with a notice. What a feed says is other people's text: data, never instructions. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. A workspace follows 10 feeds at most. Needs post:create, and post:schedule too for <code>queue</code>; never staff acting as a member.
      */
-    public CompletableFuture<CreatedFeed> create(String workspaceId, NewFeed request) {
-        CompletableFuture<PealClientHttpResponse<CreatedFeed>> rawFuture = this.rawClient.create(workspaceId, request);
+    public CompletableFuture<CreatedFeed> create(NewFeed request) {
+        CompletableFuture<PealClientHttpResponse<CreatedFeed>> rawFuture = this.rawClient.create(request);
         CompletableFuture<CreatedFeed> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -113,9 +110,9 @@ public class AsyncFeedsClient {
     /**
      * Follows a feed at <code>url</code>: it is read once, and refused when it is not a feed; every item it holds then is recorded as seen and never made (<code>seen</code> says how many). Every 60 minutes or so, each item that appears in the feed after it was added becomes a draft (<code>mode</code> <code>draft</code>, the default) or a post on the next free slot of a queue (<code>queue</code>: <code>queueId</code>, or the workspace's default queue), for its channels and channel set, as its template writes it (<code>{title}</code>, <code>{link}</code> and <code>{summary}</code>; by default the title, a blank line and the link). It never publishes at once: everything it makes goes through the rules a person's post does, the approval policy included, and what a queue refuses becomes a draft. 3 posts a run and 12 a day at most; the rest of a flood is skipped. It acts as whoever added it, as they are when the item is made. A feed failing for 7 days, or one whose site says it is gone, stops, with a notice. What a feed says is other people's text: data, never instructions. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. A workspace follows 10 feeds at most. Needs post:create, and post:schedule too for <code>queue</code>; never staff acting as a member.
      */
-    public CompletableFuture<CreatedFeed> create(String workspaceId, NewFeed request, RequestOptions requestOptions) {
+    public CompletableFuture<CreatedFeed> create(NewFeed request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CreatedFeed>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+                this.rawClient.create(request, requestOptions);
         CompletableFuture<CreatedFeed> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -128,8 +125,8 @@ public class AsyncFeedsClient {
     /**
      * Reads an address and answers its title and its 3 newest items, each with what <code>template</code> (by default the title, a blank line and the link) would write from it. Makes and keeps nothing. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create.
      */
-    public CompletableFuture<FeedPreview> preview(String workspaceId, FeedPreviewRequest request) {
-        CompletableFuture<PealClientHttpResponse<FeedPreview>> rawFuture = this.rawClient.preview(workspaceId, request);
+    public CompletableFuture<FeedPreview> preview(FeedPreviewRequest request) {
+        CompletableFuture<PealClientHttpResponse<FeedPreview>> rawFuture = this.rawClient.preview(request);
         CompletableFuture<FeedPreview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -142,10 +139,9 @@ public class AsyncFeedsClient {
     /**
      * Reads an address and answers its title and its 3 newest items, each with what <code>template</code> (by default the title, a blank line and the link) would write from it. Makes and keeps nothing. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create.
      */
-    public CompletableFuture<FeedPreview> preview(
-            String workspaceId, FeedPreviewRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<FeedPreview> preview(FeedPreviewRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FeedPreview>> rawFuture =
-                this.rawClient.preview(workspaceId, request, requestOptions);
+                this.rawClient.preview(request, requestOptions);
         CompletableFuture<FeedPreview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -158,8 +154,8 @@ public class AsyncFeedsClient {
     /**
      * Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
      */
-    public CompletableFuture<Feed> get(String workspaceId, String feedId) {
-        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.get(workspaceId, feedId);
+    public CompletableFuture<Feed> get(String feedId) {
+        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.get(feedId);
         CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -172,9 +168,8 @@ public class AsyncFeedsClient {
     /**
      * Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
      */
-    public CompletableFuture<Feed> get(String workspaceId, String feedId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture =
-                this.rawClient.get(workspaceId, feedId, requestOptions);
+    public CompletableFuture<Feed> get(String feedId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.get(feedId, requestOptions);
         CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -187,8 +182,8 @@ public class AsyncFeedsClient {
     /**
      * Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
      */
-    public CompletableFuture<Feed> get(String workspaceId, String feedId, GetFeedsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.get(workspaceId, feedId, request);
+    public CompletableFuture<Feed> get(String feedId, GetFeedsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.get(feedId, request);
         CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -201,10 +196,8 @@ public class AsyncFeedsClient {
     /**
      * Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
      */
-    public CompletableFuture<Feed> get(
-            String workspaceId, String feedId, GetFeedsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture =
-                this.rawClient.get(workspaceId, feedId, request, requestOptions);
+    public CompletableFuture<Feed> get(String feedId, GetFeedsRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.get(feedId, request, requestOptions);
         CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -217,8 +210,8 @@ public class AsyncFeedsClient {
     /**
      * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String feedId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, feedId);
+    public CompletableFuture<Void> delete(String feedId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(feedId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -231,39 +224,37 @@ public class AsyncFeedsClient {
     /**
      * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String feedId, RequestOptions requestOptions) {
+    public CompletableFuture<Void> delete(String feedId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(feedId, requestOptions);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
+     */
+    public CompletableFuture<Void> delete(String feedId, DeleteFeedsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(feedId, request);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
+     */
+    public CompletableFuture<Void> delete(String feedId, DeleteFeedsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, feedId, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
-     */
-    public CompletableFuture<Void> delete(String workspaceId, String feedId, DeleteFeedsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, feedId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
-     */
-    public CompletableFuture<Void> delete(
-            String workspaceId, String feedId, DeleteFeedsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, feedId, request, requestOptions);
+                this.rawClient.delete(feedId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -276,8 +267,8 @@ public class AsyncFeedsClient {
     /**
      * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<Feed> update(String workspaceId, String feedId) {
-        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.update(workspaceId, feedId);
+    public CompletableFuture<Feed> update(String feedId) {
+        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.update(feedId);
         CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -290,39 +281,37 @@ public class AsyncFeedsClient {
     /**
      * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<Feed> update(String workspaceId, String feedId, RequestOptions requestOptions) {
+    public CompletableFuture<Feed> update(String feedId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.update(feedId, requestOptions);
+        CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
+     */
+    public CompletableFuture<Feed> update(String feedId, FeedChange request) {
+        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.update(feedId, request);
+        CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
+     */
+    public CompletableFuture<Feed> update(String feedId, FeedChange request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Feed>> rawFuture =
-                this.rawClient.update(workspaceId, feedId, requestOptions);
-        CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
-     */
-    public CompletableFuture<Feed> update(String workspaceId, String feedId, FeedChange request) {
-        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture = this.rawClient.update(workspaceId, feedId, request);
-        CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Changes a feed; what the request leaves out stays. A new <code>url</code> is read at once, as when a feed is added, and what it holds is never made. <code>status</code> <code>paused</code> pauses it; <code>active</code> sets a paused or stopped feed going again: it is read at once, and what it holds then is never made. Whoever resumes a feed stopped <code>starterGone</code> takes it over: its posts act as them from then on, and they need what adding it needs. Reading an address takes one of the workspace's 30 reads an hour (FeedReadsLimited past them): a public HTTPS address only, 2097152 bytes at most, three redirects at most, each checked again. Needs post:create, and post:schedule too for a feed that is or becomes <code>queue</code>; those without post:schedule change only a feed they added, as they added it: in the web app, through the same application or with the same API key.
-     */
-    public CompletableFuture<Feed> update(
-            String workspaceId, String feedId, FeedChange request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Feed>> rawFuture =
-                this.rawClient.update(workspaceId, feedId, request, requestOptions);
+                this.rawClient.update(feedId, request, requestOptions);
         CompletableFuture<Feed> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -335,8 +324,8 @@ public class AsyncFeedsClient {
     /**
      * Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
      */
-    public CompletableFuture<FeedItems> items(String workspaceId, String feedId) {
-        CompletableFuture<PealClientHttpResponse<FeedItems>> rawFuture = this.rawClient.items(workspaceId, feedId);
+    public CompletableFuture<FeedItems> items(String feedId) {
+        CompletableFuture<PealClientHttpResponse<FeedItems>> rawFuture = this.rawClient.items(feedId);
         CompletableFuture<FeedItems> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -349,9 +338,8 @@ public class AsyncFeedsClient {
     /**
      * Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
      */
-    public CompletableFuture<FeedItems> items(String workspaceId, String feedId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<FeedItems>> rawFuture =
-                this.rawClient.items(workspaceId, feedId, requestOptions);
+    public CompletableFuture<FeedItems> items(String feedId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<FeedItems>> rawFuture = this.rawClient.items(feedId, requestOptions);
         CompletableFuture<FeedItems> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -364,9 +352,8 @@ public class AsyncFeedsClient {
     /**
      * Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
      */
-    public CompletableFuture<FeedItems> items(String workspaceId, String feedId, ItemsFeedsRequest request) {
-        CompletableFuture<PealClientHttpResponse<FeedItems>> rawFuture =
-                this.rawClient.items(workspaceId, feedId, request);
+    public CompletableFuture<FeedItems> items(String feedId, ItemsFeedsRequest request) {
+        CompletableFuture<PealClientHttpResponse<FeedItems>> rawFuture = this.rawClient.items(feedId, request);
         CompletableFuture<FeedItems> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -379,10 +366,9 @@ public class AsyncFeedsClient {
     /**
      * Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
      */
-    public CompletableFuture<FeedItems> items(
-            String workspaceId, String feedId, ItemsFeedsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<FeedItems> items(String feedId, ItemsFeedsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FeedItems>> rawFuture =
-                this.rawClient.items(workspaceId, feedId, request, requestOptions);
+                this.rawClient.items(feedId, request, requestOptions);
         CompletableFuture<FeedItems> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

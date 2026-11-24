@@ -34,7 +34,6 @@ class FeedsClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -45,8 +44,6 @@ class FeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -64,18 +61,16 @@ class FeedsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.feeds.list(
-            workspace_id="workspaceId",
-        )
+        client.feeds.list()
         """
-        _response = self._raw_client.list(workspace_id, cursor=cursor, limit=limit, request_options=request_options)
+        _response = self._raw_client.list(cursor=cursor, limit=limit, request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         url: str,
         attach_picture: typing.Optional[bool] = OMIT,
@@ -91,8 +86,6 @@ class FeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         attach_picture : typing.Optional[bool]
@@ -120,15 +113,14 @@ class FeedsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.feeds.create(
-            workspace_id="workspaceId",
             url="url",
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             url=url,
             attach_picture=attach_picture,
             channel_ids=channel_ids,
@@ -142,7 +134,6 @@ class FeedsClient:
 
     def preview(
         self,
-        workspace_id: str,
         *,
         url: str,
         template: typing.Optional[str] = OMIT,
@@ -153,8 +144,6 @@ class FeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         template : typing.Optional[str]
@@ -172,24 +161,22 @@ class FeedsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.feeds.preview(
-            workspace_id="workspaceId",
             url="url",
         )
         """
-        _response = self._raw_client.preview(workspace_id, url=url, template=template, request_options=request_options)
+        _response = self._raw_client.preview(url=url, template=template, request_options=request_options)
         return _response.data
 
-    def get(self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Feed:
+    def get(self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Feed:
         """
         Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -205,26 +192,22 @@ class FeedsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.feeds.get(
-            workspace_id="workspaceId",
             feed_id="feedId",
         )
         """
-        _response = self._raw_client.get(workspace_id, feed_id, request_options=request_options)
+        _response = self._raw_client.get(feed_id, request_options=request_options)
         return _response.data
 
-    def delete(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -239,19 +222,18 @@ class FeedsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.feeds.delete(
-            workspace_id="workspaceId",
             feed_id="feedId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, feed_id, request_options=request_options)
+        _response = self._raw_client.delete(feed_id, request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         feed_id: str,
         *,
         attach_picture: typing.Optional[bool] = OMIT,
@@ -269,8 +251,6 @@ class FeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         attach_picture : typing.Optional[bool]
@@ -302,15 +282,14 @@ class FeedsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.feeds.update(
-            workspace_id="workspaceId",
             feed_id="feedId",
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
             feed_id,
             attach_picture=attach_picture,
             channel_ids=channel_ids,
@@ -324,16 +303,12 @@ class FeedsClient:
         )
         return _response.data
 
-    def items(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> FeedItems:
+    def items(self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> FeedItems:
         """
         Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -349,14 +324,14 @@ class FeedsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.feeds.items(
-            workspace_id="workspaceId",
             feed_id="feedId",
         )
         """
-        _response = self._raw_client.items(workspace_id, feed_id, request_options=request_options)
+        _response = self._raw_client.items(feed_id, request_options=request_options)
         return _response.data
 
 
@@ -377,7 +352,6 @@ class AsyncFeedsClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -388,8 +362,6 @@ class AsyncFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -409,26 +381,22 @@ class AsyncFeedsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.feeds.list(
-                workspace_id="workspaceId",
-            )
+            await client.feeds.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
-            workspace_id, cursor=cursor, limit=limit, request_options=request_options
-        )
+        _response = await self._raw_client.list(cursor=cursor, limit=limit, request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         url: str,
         attach_picture: typing.Optional[bool] = OMIT,
@@ -444,8 +412,6 @@ class AsyncFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         attach_picture : typing.Optional[bool]
@@ -475,13 +441,13 @@ class AsyncFeedsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.feeds.create(
-                workspace_id="workspaceId",
                 url="url",
             )
 
@@ -489,7 +455,6 @@ class AsyncFeedsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             url=url,
             attach_picture=attach_picture,
             channel_ids=channel_ids,
@@ -503,7 +468,6 @@ class AsyncFeedsClient:
 
     async def preview(
         self,
-        workspace_id: str,
         *,
         url: str,
         template: typing.Optional[str] = OMIT,
@@ -514,8 +478,6 @@ class AsyncFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         template : typing.Optional[str]
@@ -535,34 +497,28 @@ class AsyncFeedsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.feeds.preview(
-                workspace_id="workspaceId",
                 url="url",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.preview(
-            workspace_id, url=url, template=template, request_options=request_options
-        )
+        _response = await self._raw_client.preview(url=url, template=template, request_options=request_options)
         return _response.data
 
-    async def get(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Feed:
+    async def get(self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Feed:
         """
         Answers with a feed of the workspace: its state, when it was last read and is next, and why its reads fail, if they do. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -580,32 +536,28 @@ class AsyncFeedsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.feeds.get(
-                workspace_id="workspaceId",
                 feed_id="feedId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, feed_id, request_options=request_options)
+        _response = await self._raw_client.get(feed_id, request_options=request_options)
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Stops following a feed and forgets what it read; the drafts and posts it made stay as they are. Needs post:create, as changing it does.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -622,25 +574,24 @@ class AsyncFeedsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.feeds.delete(
-                workspace_id="workspaceId",
                 feed_id="feedId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, feed_id, request_options=request_options)
+        _response = await self._raw_client.delete(feed_id, request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         feed_id: str,
         *,
         attach_picture: typing.Optional[bool] = OMIT,
@@ -658,8 +609,6 @@ class AsyncFeedsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         attach_picture : typing.Optional[bool]
@@ -693,13 +642,13 @@ class AsyncFeedsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.feeds.update(
-                workspace_id="workspaceId",
                 feed_id="feedId",
             )
 
@@ -707,7 +656,6 @@ class AsyncFeedsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
             feed_id,
             attach_picture=attach_picture,
             channel_ids=channel_ids,
@@ -721,16 +669,12 @@ class AsyncFeedsClient:
         )
         return _response.data
 
-    async def items(
-        self, workspace_id: str, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> FeedItems:
+    async def items(self, feed_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> FeedItems:
         """
         Lists a feed's 50 newest items, newest first: when each was seen, the date it gave, what became of it and the post made, if one. Never what an item says, which Peal does not keep. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         feed_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -748,18 +692,18 @@ class AsyncFeedsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.feeds.items(
-                workspace_id="workspaceId",
                 feed_id="feedId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.items(workspace_id, feed_id, request_options=request_options)
+        _response = await self._raw_client.items(feed_id, request_options=request_options)
         return _response.data

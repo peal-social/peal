@@ -13,7 +13,7 @@ use Peal\Core\Client\HttpMethod;
 use Peal\Core\Json\JsonDecoder;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Peal\Tags\Requests\CreateTagsRequest;
+use Peal\Types\TagDetails;
 use Peal\Tags\Requests\UpdateTagsRequest;
 
 class TagsClient
@@ -57,12 +57,9 @@ class TagsClient
      *
      * Example:
      * ```php
-     * $client->tags->list(
-     *     'workspaceId',
-     * );
+     * $client->tags->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -75,14 +72,14 @@ class TagsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/tags",
+                    path: "api/v1/tags",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -113,18 +110,14 @@ class TagsClient
      * Example:
      * ```php
      * $client->tags->create(
-     *     'workspaceId',
-     *     new CreateTagsRequest([
-     *         'body' => new TagDetails([
-     *             'colour' => TagColour::Gray->value,
-     *             'name' => 'name',
-     *         ]),
+     *     new TagDetails([
+     *         'colour' => TagColour::Gray->value,
+     *         'name' => 'name',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param CreateTagsRequest $request
+     * @param TagDetails $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -137,7 +130,7 @@ class TagsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, CreateTagsRequest $request, ?array $options = null): ?Tag
+    public function create(TagDetails $request, ?array $options = null): ?Tag
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -145,9 +138,9 @@ class TagsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/tags",
+                    path: "api/v1/tags",
                     method: HttpMethod::POST,
-                    body: $request->body,
+                    body: $request,
                 ),
                 $options,
             );
@@ -177,12 +170,10 @@ class TagsClient
      * Example:
      * ```php
      * $client->tags->delete(
-     *     'workspaceId',
      *     'tagId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $tagId
      * @param ?array{
      *   baseUrl?: string,
@@ -195,14 +186,14 @@ class TagsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $tagId, ?array $options = null): void
+    public function delete(string $tagId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/tags/{$tagId}",
+                    path: "api/v1/tags/{$tagId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -227,7 +218,6 @@ class TagsClient
      * Example:
      * ```php
      * $client->tags->update(
-     *     'workspaceId',
      *     'tagId',
      *     new UpdateTagsRequest([
      *         'body' => new TagDetails([
@@ -238,7 +228,6 @@ class TagsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $tagId
      * @param UpdateTagsRequest $request
      * @param ?array{
@@ -253,7 +242,7 @@ class TagsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $tagId, UpdateTagsRequest $request, ?array $options = null): ?Tag
+    public function update(string $tagId, UpdateTagsRequest $request, ?array $options = null): ?Tag
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -261,7 +250,7 @@ class TagsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/tags/{$tagId}",
+                    path: "api/v1/tags/{$tagId}",
                     method: HttpMethod::PATCH,
                     body: $request->body,
                 ),

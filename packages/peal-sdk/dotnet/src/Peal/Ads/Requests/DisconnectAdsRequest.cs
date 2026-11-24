@@ -7,9 +7,6 @@ namespace Peal;
 public record DisconnectAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ConnectionId { get; set; }
 
     /// <inheritdoc />

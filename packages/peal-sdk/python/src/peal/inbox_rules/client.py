@@ -30,7 +30,6 @@ class InboxRulesClient:
 
     def list_comment_rules(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -42,8 +41,6 @@ class InboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -63,20 +60,18 @@ class InboxRulesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.inbox_rules.list_comment_rules(
-            workspace_id="workspaceId",
-        )
+        client.inbox_rules.list_comment_rules()
         """
         _response = self._raw_client.list_comment_rules(
-            workspace_id, cursor=cursor, limit=limit, status=status, request_options=request_options
+            cursor=cursor, limit=limit, status=status, request_options=request_options
         )
         return _response.data
 
     def create_comment_rule(
         self,
-        workspace_id: str,
         *,
         keywords: typing.Sequence[str],
         reply: str,
@@ -90,8 +85,6 @@ class InboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         keywords : typing.Sequence[str]
 
         reply : str
@@ -115,16 +108,15 @@ class InboxRulesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_rules.create_comment_rule(
-            workspace_id="workspaceId",
             keywords=["keywords"],
             reply="reply",
         )
         """
         _response = self._raw_client.create_comment_rule(
-            workspace_id,
             keywords=keywords,
             reply=reply,
             channel_id=channel_id,
@@ -134,16 +126,12 @@ class InboxRulesClient:
         )
         return _response.data
 
-    def get_comment_rule(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> CommentRule:
+    def get_comment_rule(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> CommentRule:
         """
         Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -159,26 +147,22 @@ class InboxRulesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_rules.get_comment_rule(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
-        _response = self._raw_client.get_comment_rule(workspace_id, rule_id, request_options=request_options)
+        _response = self._raw_client.get_comment_rule(rule_id, request_options=request_options)
         return _response.data
 
-    def delete_comment_rule(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete_comment_rule(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -193,19 +177,18 @@ class InboxRulesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_rules.delete_comment_rule(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
-        _response = self._raw_client.delete_comment_rule(workspace_id, rule_id, request_options=request_options)
+        _response = self._raw_client.delete_comment_rule(rule_id, request_options=request_options)
         return _response.data
 
     def update_comment_rule(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         keywords: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -219,8 +202,6 @@ class InboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         keywords : typing.Optional[typing.Sequence[str]]
@@ -244,15 +225,14 @@ class InboxRulesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_rules.update_comment_rule(
-            workspace_id="workspaceId",
             rule_id="ruleId",
         )
         """
         _response = self._raw_client.update_comment_rule(
-            workspace_id,
             rule_id,
             keywords=keywords,
             paused=paused,
@@ -280,7 +260,6 @@ class AsyncInboxRulesClient:
 
     async def list_comment_rules(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -292,8 +271,6 @@ class AsyncInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -315,26 +292,24 @@ class AsyncInboxRulesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.inbox_rules.list_comment_rules(
-                workspace_id="workspaceId",
-            )
+            await client.inbox_rules.list_comment_rules()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list_comment_rules(
-            workspace_id, cursor=cursor, limit=limit, status=status, request_options=request_options
+            cursor=cursor, limit=limit, status=status, request_options=request_options
         )
         return _response.data
 
     async def create_comment_rule(
         self,
-        workspace_id: str,
         *,
         keywords: typing.Sequence[str],
         reply: str,
@@ -348,8 +323,6 @@ class AsyncInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         keywords : typing.Sequence[str]
 
         reply : str
@@ -375,13 +348,13 @@ class AsyncInboxRulesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_rules.create_comment_rule(
-                workspace_id="workspaceId",
                 keywords=["keywords"],
                 reply="reply",
             )
@@ -390,7 +363,6 @@ class AsyncInboxRulesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create_comment_rule(
-            workspace_id,
             keywords=keywords,
             reply=reply,
             channel_id=channel_id,
@@ -401,15 +373,13 @@ class AsyncInboxRulesClient:
         return _response.data
 
     async def get_comment_rule(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> CommentRule:
         """
         Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -427,32 +397,30 @@ class AsyncInboxRulesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_rules.get_comment_rule(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_comment_rule(workspace_id, rule_id, request_options=request_options)
+        _response = await self._raw_client.get_comment_rule(rule_id, request_options=request_options)
         return _response.data
 
     async def delete_comment_rule(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> None:
         """
         Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -469,25 +437,24 @@ class AsyncInboxRulesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_rules.delete_comment_rule(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete_comment_rule(workspace_id, rule_id, request_options=request_options)
+        _response = await self._raw_client.delete_comment_rule(rule_id, request_options=request_options)
         return _response.data
 
     async def update_comment_rule(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         keywords: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -501,8 +468,6 @@ class AsyncInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         keywords : typing.Optional[typing.Sequence[str]]
@@ -528,13 +493,13 @@ class AsyncInboxRulesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_rules.update_comment_rule(
-                workspace_id="workspaceId",
                 rule_id="ruleId",
             )
 
@@ -542,7 +507,6 @@ class AsyncInboxRulesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update_comment_rule(
-            workspace_id,
             rule_id,
             keywords=keywords,
             paused=paused,

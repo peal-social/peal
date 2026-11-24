@@ -7,9 +7,6 @@ namespace Peal;
 public record NewComment
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PostId { get; set; }
 
     [JsonPropertyName("anchor")]

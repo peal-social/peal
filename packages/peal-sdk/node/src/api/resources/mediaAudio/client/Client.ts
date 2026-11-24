@@ -31,6 +31,7 @@ export class MediaAudioClient {
      * @param {Peal.VoiceoverRequest} request
      * @param {MediaAudioClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.PaymentRequiredError}
      * @throws {@link Peal.ForbiddenError}
@@ -45,7 +46,6 @@ export class MediaAudioClient {
      *
      * @example
      *     await client.mediaAudio.createVoiceover({
-     *         workspaceId: "workspaceId",
      *         text: "text"
      *     })
      */
@@ -54,17 +54,16 @@ export class MediaAudioClient {
     }
 
     private async __createVoiceover(request: Peal.VoiceoverRequest, requestOptions?: MediaAudioClient.RequestOptions): Promise<core.WithRawResponse<Peal.Media>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/media/voiceovers`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/media/voiceovers"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -77,6 +76,7 @@ export class MediaAudioClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
@@ -94,7 +94,7 @@ export class MediaAudioClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/media/voiceovers");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/media/voiceovers");
     }
 
     /**
@@ -103,6 +103,7 @@ export class MediaAudioClient {
      * @param {Peal.TranscriptionRequest} request
      * @param {MediaAudioClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -116,7 +117,6 @@ export class MediaAudioClient {
      *
      * @example
      *     await client.mediaAudio.transcribe({
-     *         workspaceId: "workspaceId",
      *         mediaId: "mediaId"
      *     })
      */
@@ -125,11 +125,11 @@ export class MediaAudioClient {
     }
 
     private async __transcribe(request: Peal.TranscriptionRequest, requestOptions?: MediaAudioClient.RequestOptions): Promise<core.WithRawResponse<Peal.Transcript>> {
-        const { workspaceId, mediaId, ..._body } = request;
+        const { mediaId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/media/${core.url.encodePathParam(mediaId, errors.PealError)}/transcription`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/media/${core.url.encodePathParam(mediaId, errors.PealError)}/transcription`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -148,6 +148,7 @@ export class MediaAudioClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -164,6 +165,6 @@ export class MediaAudioClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/media/{mediaId}/transcription");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/media/{mediaId}/transcription");
     }
 }

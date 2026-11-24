@@ -39,24 +39,22 @@ export class UsageClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.usage.get({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.usage.get()
      */
-    public get(request: Peal.GetUsageRequest, requestOptions?: UsageClient.RequestOptions): core.HttpResponsePromise<Peal.WorkspaceUsageReport> {
+    public get(request: Peal.GetUsageRequest = {}, requestOptions?: UsageClient.RequestOptions): core.HttpResponsePromise<Peal.WorkspaceUsageReport> {
         return core.HttpResponsePromise.fromPromise(this.__get(request, requestOptions));
     }
 
-    private async __get(request: Peal.GetUsageRequest, requestOptions?: UsageClient.RequestOptions): Promise<core.WithRawResponse<Peal.WorkspaceUsageReport>> {
-        const { workspaceId, "from": from_, to } = request;
+    private async __get(request: Peal.GetUsageRequest = {}, requestOptions?: UsageClient.RequestOptions): Promise<core.WithRawResponse<Peal.WorkspaceUsageReport>> {
+        const { "from": from_, to } = request;
         const _queryParams: Record<string, unknown> = {
             from: from_,
             to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/usage`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/usage"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -85,11 +83,11 @@ export class UsageClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/usage");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/usage");
     }
 
     /**
-     * Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+     * Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
      *
      * @param {Peal.PartnerUsageRequest} request
      * @param {UsageClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -103,16 +101,14 @@ export class UsageClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.usage.partner({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.usage.partner()
      */
-    public partner(request: Peal.PartnerUsageRequest, requestOptions?: UsageClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerUsageReport> {
+    public partner(request: Peal.PartnerUsageRequest = {}, requestOptions?: UsageClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerUsageReport> {
         return core.HttpResponsePromise.fromPromise(this.__partner(request, requestOptions));
     }
 
-    private async __partner(request: Peal.PartnerUsageRequest, requestOptions?: UsageClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerUsageReport>> {
-        const { workspaceId, before, "from": from_, limit, to } = request;
+    private async __partner(request: Peal.PartnerUsageRequest = {}, requestOptions?: UsageClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerUsageReport>> {
+        const { before, "from": from_, limit, to } = request;
         const _queryParams: Record<string, unknown> = {
             before,
             from: from_,
@@ -120,9 +116,9 @@ export class UsageClient {
             to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/usage/partner`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/usage/partner"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -151,6 +147,6 @@ export class UsageClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/usage/partner");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/usage/partner");
     }
 }

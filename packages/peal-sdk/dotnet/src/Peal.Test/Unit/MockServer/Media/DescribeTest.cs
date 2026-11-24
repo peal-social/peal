@@ -45,7 +45,7 @@ public class DescribeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId")
+                    .WithPath("/api/v1/media/mediaId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -58,12 +58,7 @@ public class DescribeTest : BaseMockServerTest
             );
 
         var response = await Client.Media.DescribeAsync(
-            new MediaDescription
-            {
-                WorkspaceId = "workspaceId",
-                MediaId = "mediaId",
-                AltText = null,
-            }
+            new MediaDescription { MediaId = "mediaId", AltText = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -104,7 +99,7 @@ public class DescribeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId")
+                    .WithPath("/api/v1/media/mediaId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -117,12 +112,7 @@ public class DescribeTest : BaseMockServerTest
             );
 
         var response = await Client.Media.DescribeAsync(
-            new MediaDescription
-            {
-                WorkspaceId = "workspaceId",
-                MediaId = "mediaId",
-                AltText = null,
-            }
+            new MediaDescription { MediaId = "mediaId", AltText = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

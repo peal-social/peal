@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) Get(
 	ctx context.Context,
-	request *peal.GetPartnerAccountRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.PartnerStanding], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) Get(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/partner-account"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -88,10 +84,7 @@ func (r *RawClient) Open(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/partner-account"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -126,7 +119,6 @@ func (r *RawClient) Open(
 
 func (r *RawClient) Close(
 	ctx context.Context,
-	request *peal.ClosePartnerAccountRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[any], error) {
 	options := core.NewRequestOptions(opts...)
@@ -135,10 +127,7 @@ func (r *RawClient) Close(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/partner-account"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -178,10 +167,7 @@ func (r *RawClient) Update(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/partner-account"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -216,7 +202,6 @@ func (r *RawClient) Update(
 
 func (r *RawClient) ListKeys(
 	ctx context.Context,
-	request *peal.ListKeysPartnerAccountRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.PartnerKey], error) {
 	options := core.NewRequestOptions(opts...)
@@ -225,10 +210,7 @@ func (r *RawClient) ListKeys(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner/keys",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/partner-account/keys"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -270,10 +252,7 @@ func (r *RawClient) CreateKey(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner/keys",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/partner-account/keys"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -318,8 +297,7 @@ func (r *RawClient) RevokeKey(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner/keys/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/partner-account/keys/%v",
 		request.PartnerKeyID,
 	)
 	headers := internal.MergeHeaders(
@@ -361,10 +339,7 @@ func (r *RawClient) Overview(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner/overview",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/partner-account/overview"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -413,10 +388,7 @@ func (r *RawClient) ListWorkspaces(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/partner/workspaces",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/partner-account/workspaces"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err

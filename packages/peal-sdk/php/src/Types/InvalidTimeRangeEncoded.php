@@ -8,12 +8,6 @@ use Peal\Core\Json\JsonProperty;
 class InvalidTimeRangeEncoded extends JsonSerializableType
 {
     /**
-     * @var value-of<InvalidTimeRangeEncodedTag> $tag
-     */
-    #[JsonProperty('_tag')]
-    public string $tag;
-
-    /**
      * @var ?string $code
      */
     #[JsonProperty('code')]
@@ -33,16 +27,14 @@ class InvalidTimeRangeEncoded extends JsonSerializableType
 
     /**
      * @param array{
-     *   tag: value-of<InvalidTimeRangeEncodedTag>,
      *   code?: ?string,
      *   message?: ?string,
      *   requestId?: ?string,
      * } $values
      */
     public function __construct(
-        array $values,
+        array $values = [],
     ) {
-        $this->tag = $values['tag'];
         $this->code = $values['code'] ?? null;
         $this->message = $values['message'] ?? null;
         $this->requestId = $values['requestId'] ?? null;

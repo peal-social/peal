@@ -7,7 +7,6 @@ import java.util.List;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
 import social.peal.resources.capabilities.requests.ChannelCapabilitiesRequest;
-import social.peal.resources.capabilities.requests.PlatformsCapabilitiesRequest;
 import social.peal.types.ChannelCapabilities;
 import social.peal.types.PlatformCapabilities;
 
@@ -31,60 +30,43 @@ public class CapabilitiesClient {
     /**
      * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
      */
-    public List<PlatformCapabilities> platforms(String workspaceId) {
-        return this.rawClient.platforms(workspaceId).body();
+    public List<PlatformCapabilities> platforms() {
+        return this.rawClient.platforms().body();
     }
 
     /**
      * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
      */
-    public List<PlatformCapabilities> platforms(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.platforms(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
-     */
-    public List<PlatformCapabilities> platforms(String workspaceId, PlatformsCapabilitiesRequest request) {
-        return this.rawClient.platforms(workspaceId, request).body();
-    }
-
-    /**
-     * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
-     */
-    public List<PlatformCapabilities> platforms(
-            String workspaceId, PlatformsCapabilitiesRequest request, RequestOptions requestOptions) {
-        return this.rawClient.platforms(workspaceId, request, requestOptions).body();
+    public List<PlatformCapabilities> platforms(RequestOptions requestOptions) {
+        return this.rawClient.platforms(requestOptions).body();
     }
 
     /**
      * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
      */
-    public ChannelCapabilities channel(String workspaceId, String channelId) {
-        return this.rawClient.channel(workspaceId, channelId).body();
+    public ChannelCapabilities channel(String channelId) {
+        return this.rawClient.channel(channelId).body();
     }
 
     /**
      * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
      */
-    public ChannelCapabilities channel(String workspaceId, String channelId, RequestOptions requestOptions) {
-        return this.rawClient.channel(workspaceId, channelId, requestOptions).body();
+    public ChannelCapabilities channel(String channelId, RequestOptions requestOptions) {
+        return this.rawClient.channel(channelId, requestOptions).body();
     }
 
     /**
      * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
      */
-    public ChannelCapabilities channel(String workspaceId, String channelId, ChannelCapabilitiesRequest request) {
-        return this.rawClient.channel(workspaceId, channelId, request).body();
+    public ChannelCapabilities channel(String channelId, ChannelCapabilitiesRequest request) {
+        return this.rawClient.channel(channelId, request).body();
     }
 
     /**
      * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
      */
     public ChannelCapabilities channel(
-            String workspaceId, String channelId, ChannelCapabilitiesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .channel(workspaceId, channelId, request, requestOptions)
-                .body();
+            String channelId, ChannelCapabilitiesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.channel(channelId, request, requestOptions).body();
     }
 }

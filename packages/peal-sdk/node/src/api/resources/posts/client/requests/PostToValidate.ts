@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelIds: ["channelIds"],
  *         content: {
  *             media: [{
@@ -21,7 +20,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface PostToValidate {
-    workspaceId: string;
     allowDuplicate?: boolean;
     channelIds: string[];
     channelSets?: string[];

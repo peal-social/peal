@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         url: "url"
  *     }
  */
 export interface MediaImport {
-    workspaceId: string;
     altText?: string | null;
     url: string;
 }

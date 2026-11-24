@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record VoiceoverRequest
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("text")]
     public required string Text { get; set; }
 

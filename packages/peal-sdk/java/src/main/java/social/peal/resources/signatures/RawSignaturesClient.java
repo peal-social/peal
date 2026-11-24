@@ -24,17 +24,17 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.errors.UnprocessableEntityError;
-import social.peal.resources.signatures.requests.CreateSignaturesRequest;
 import social.peal.resources.signatures.requests.DeleteSignaturesRequest;
-import social.peal.resources.signatures.requests.ListSignaturesRequest;
 import social.peal.resources.signatures.requests.UpdateSignaturesRequest;
 import social.peal.types.Signature;
+import social.peal.types.SignatureDetails;
 import social.peal.types.UnauthenticatedEncoded;
 
 public class RawSignaturesClient {
@@ -47,45 +47,28 @@ public class RawSignaturesClient {
     /**
      * Lists the workspace's signatures, oldest first. Needs post:read.
      */
-    public PealClientHttpResponse<List<Signature>> list(String workspaceId) {
-        return list(workspaceId, ListSignaturesRequest.builder().build());
+    public PealClientHttpResponse<List<Signature>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's signatures, oldest first. Needs post:read.
      */
-    public PealClientHttpResponse<List<Signature>> list(String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListSignaturesRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's signatures, oldest first. Needs post:read.
-     */
-    public PealClientHttpResponse<List<Signature>> list(String workspaceId, ListSignaturesRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's signatures, oldest first. Needs post:read.
-     */
-    public PealClientHttpResponse<List<Signature>> list(
-            String workspaceId, ListSignaturesRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<List<Signature>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("signatures");
+                .addPathSegments("api/v1/signatures");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -110,6 +93,9 @@ public class RawSignaturesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -140,20 +126,17 @@ public class RawSignaturesClient {
     /**
      * Adds a signature to the workspace: a name no other signature of the workspace has whatever its case, a text of 2000 characters at most, and the <code>scope</code> it is meant for (the whole <code>workspace</code>, a <code>platform</code>, or one <code>channel</code> of the workspace). With <code>isDefault</code>, new posts that ask for the default signatures take it in its scope, and the signature that was the default of that scope is one no longer. A signature is text of the post once added: it counts against each platform's limit when the post is scheduled. A workspace keeps 50 signatures at most. Needs post:update, and channel:read for a channel's.
      */
-    public PealClientHttpResponse<Signature> create(String workspaceId, CreateSignaturesRequest request) {
-        return create(workspaceId, request, null);
+    public PealClientHttpResponse<Signature> create(SignatureDetails request) {
+        return create(request, null);
     }
 
     /**
      * Adds a signature to the workspace: a name no other signature of the workspace has whatever its case, a text of 2000 characters at most, and the <code>scope</code> it is meant for (the whole <code>workspace</code>, a <code>platform</code>, or one <code>channel</code> of the workspace). With <code>isDefault</code>, new posts that ask for the default signatures take it in its scope, and the signature that was the default of that scope is one no longer. A signature is text of the post once added: it counts against each platform's limit when the post is scheduled. A workspace keeps 50 signatures at most. Needs post:update, and channel:read for a channel's.
      */
-    public PealClientHttpResponse<Signature> create(
-            String workspaceId, CreateSignaturesRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Signature> create(SignatureDetails request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("signatures");
+                .addPathSegments("api/v1/signatures");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -163,7 +146,7 @@ public class RawSignaturesClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -192,6 +175,9 @@ public class RawSignaturesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -228,21 +214,18 @@ public class RawSignaturesClient {
     /**
      * Replaces a signature's name, text, scope and whether it is a default. Posts that already hold its text keep it as it was. Needs post:update, and channel:read for a channel's.
      */
-    public PealClientHttpResponse<Signature> update(
-            String workspaceId, String signatureId, UpdateSignaturesRequest request) {
-        return update(workspaceId, signatureId, request, null);
+    public PealClientHttpResponse<Signature> update(String signatureId, UpdateSignaturesRequest request) {
+        return update(signatureId, request, null);
     }
 
     /**
      * Replaces a signature's name, text, scope and whether it is a default. Posts that already hold its text keep it as it was. Needs post:update, and channel:read for a channel's.
      */
     public PealClientHttpResponse<Signature> update(
-            String workspaceId, String signatureId, UpdateSignaturesRequest request, RequestOptions requestOptions) {
+            String signatureId, UpdateSignaturesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("signatures")
+                .addPathSegments("api/v1/signatures")
                 .addPathSegment(PathSegments.validate(signatureId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -287,6 +270,9 @@ public class RawSignaturesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -323,37 +309,32 @@ public class RawSignaturesClient {
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String signatureId) {
-        return delete(
-                workspaceId, signatureId, DeleteSignaturesRequest.builder().build());
+    public PealClientHttpResponse<Void> delete(String signatureId) {
+        return delete(signatureId, DeleteSignaturesRequest.builder().build());
     }
 
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String signatureId, RequestOptions requestOptions) {
-        return delete(
-                workspaceId, signatureId, DeleteSignaturesRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Void> delete(String signatureId, RequestOptions requestOptions) {
+        return delete(signatureId, DeleteSignaturesRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
+     */
+    public PealClientHttpResponse<Void> delete(String signatureId, DeleteSignaturesRequest request) {
+        return delete(signatureId, request, null);
     }
 
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
     public PealClientHttpResponse<Void> delete(
-            String workspaceId, String signatureId, DeleteSignaturesRequest request) {
-        return delete(workspaceId, signatureId, request, null);
-    }
-
-    /**
-     * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
-     */
-    public PealClientHttpResponse<Void> delete(
-            String workspaceId, String signatureId, DeleteSignaturesRequest request, RequestOptions requestOptions) {
+            String signatureId, DeleteSignaturesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("signatures")
+                .addPathSegments("api/v1/signatures")
                 .addPathSegment(PathSegments.validate(signatureId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -390,6 +371,9 @@ public class RawSignaturesClient {
             String responseBodyString = responseBody != null ? responseBody.string() : "{}";
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

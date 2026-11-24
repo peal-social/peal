@@ -89,8 +89,7 @@ func TestChannelDefaultsGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetChannelDefaultsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	_, invocationErr := client.ChannelDefaults.Get(
 		context.TODO(),
@@ -101,7 +100,7 @@ func TestChannelDefaultsGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelDefaultsGetWithWireMock", "GET", "/api/workspaces/workspaceId/channels/channelId/default-options", nil, 1)
+	VerifyRequestCount(t, "TestChannelDefaultsGetWithWireMock", "GET", "/api/v1/channels/channelId/default-options", nil, 1)
 }
 
 func TestChannelDefaultsSetWithWireMock(
@@ -116,8 +115,7 @@ func TestChannelDefaultsSetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewChannelDefaults{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 		Options: &peal.TargetOptions{
 			Youtube: &peal.YouTubeOptions{},
 		},
@@ -131,7 +129,7 @@ func TestChannelDefaultsSetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelDefaultsSetWithWireMock", "PUT", "/api/workspaces/workspaceId/channels/channelId/default-options", nil, 1)
+	VerifyRequestCount(t, "TestChannelDefaultsSetWithWireMock", "PUT", "/api/v1/channels/channelId/default-options", nil, 1)
 }
 
 func TestChannelDefaultsClearWithWireMock(
@@ -146,8 +144,7 @@ func TestChannelDefaultsClearWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ClearChannelDefaultsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	invocationErr := client.ChannelDefaults.Clear(
 		context.TODO(),
@@ -158,5 +155,5 @@ func TestChannelDefaultsClearWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelDefaultsClearWithWireMock", "DELETE", "/api/workspaces/workspaceId/channels/channelId/default-options", nil, 1)
+	VerifyRequestCount(t, "TestChannelDefaultsClearWithWireMock", "DELETE", "/api/v1/channels/channelId/default-options", nil, 1)
 }

@@ -36,10 +36,7 @@ public partial class MediaClient : IMediaClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -202,10 +199,7 @@ public partial class MediaClient : IMediaClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -259,6 +253,18 @@ public partial class MediaClient : IMediaClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -383,10 +389,7 @@ public partial class MediaClient : IMediaClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media/import",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media/import",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -440,6 +443,18 @@ public partial class MediaClient : IMediaClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -565,8 +580,7 @@ public partial class MediaClient : IMediaClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/media/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/media/{0}",
                         ValueConvert.ToPathParameterString(request.MediaId)
                     ),
                     QueryString = _queryString,
@@ -619,6 +633,18 @@ public partial class MediaClient : IMediaClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -720,8 +746,7 @@ public partial class MediaClient : IMediaClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/media/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/media/{0}",
                         ValueConvert.ToPathParameterString(request.MediaId)
                     ),
                     QueryString = _queryString,
@@ -748,6 +773,18 @@ public partial class MediaClient : IMediaClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -861,8 +898,7 @@ public partial class MediaClient : IMediaClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/media/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/media/{0}",
                         ValueConvert.ToPathParameterString(request.MediaId)
                     ),
                     Body = request,
@@ -918,6 +954,18 @@ public partial class MediaClient : IMediaClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1031,8 +1079,7 @@ public partial class MediaClient : IMediaClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/media/{1}/complete",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/media/{0}/complete",
                         ValueConvert.ToPathParameterString(request.MediaId)
                     ),
                     QueryString = _queryString,
@@ -1086,6 +1133,18 @@ public partial class MediaClient : IMediaClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1223,8 +1282,7 @@ public partial class MediaClient : IMediaClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/media/{1}/usage",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/media/{0}/usage",
                         ValueConvert.ToPathParameterString(request.MediaId)
                     ),
                     QueryString = _queryString,
@@ -1277,6 +1335,18 @@ public partial class MediaClient : IMediaClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1349,7 +1419,7 @@ public partial class MediaClient : IMediaClient
     /// Lists the workspace's media, newest first, 30 a page unless `limit` (at most 100) says otherwise. Every filter given must hold: `kind` (`image`, `video`, `document` or `audio`), and `q`, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's `nextCursor` as `cursor`, with the same filters, for the next one. Needs media:read.
     /// </summary>
     /// <example><code>
-    /// await client.Media.ListAsync(new ListMediaRequest { WorkspaceId = "workspaceId" });
+    /// await client.Media.ListAsync(new ListMediaRequest());
     /// </code></example>
     public WithRawResponseTask<MediaPage> ListAsync(
         ListMediaRequest request,
@@ -1366,14 +1436,7 @@ public partial class MediaClient : IMediaClient
     /// Records pending media and signs the upload of its file: one PUT for an image or a video up to 16 MiB, one PUT per part for a larger video. Send the file with them, then complete the upload. Give `fileName`, what the file is called on the device, so members find it in the library by its name. The requests only take the declared size and content type. On a server that bills, the declared size must fit the plan's media storage with what the workspace stores (PlanLimitReached `mediaStorage`). Needs media:upload.
     /// </summary>
     /// <example><code>
-    /// await client.Media.CreateAsync(
-    ///     new NewUpload
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ByteSize = 1000000,
-    ///         ContentType = "contentType",
-    ///     }
-    /// );
+    /// await client.Media.CreateAsync(new NewUpload { ByteSize = 1000000, ContentType = "contentType" });
     /// </code></example>
     public WithRawResponseTask<PreparedUpload> CreateAsync(
         NewUpload request,
@@ -1390,7 +1453,7 @@ public partial class MediaClient : IMediaClient
     /// Fetches a file from a public address, stores it as media of the workspace and probes it, as completing an upload does: the answer is the media, ready, or uploaded with why it could not be probed. The media is named after the last segment of the address's path, once redirects are followed, never its query. The server fetches it itself, from HTTPS URLs on the default port whose host resolves to public addresses only, without credentials or cookies, following at most three redirects, each checked the same way (MediaSourceNotPublic otherwise). The file's type is read from its first bytes, not from what the host says: JPEG, PNG, GIF and WebP images up to 16 MiB, MP4 and QuickTime videos up to 1 GiB (UnsupportedMediaType, MediaTooLarge). It must arrive within 90 seconds (MediaSourceUnreachable `tooSlow`): upload larger or slower files instead. On a server that bills, it must fit the plan's media storage with what the workspace stores (PlanLimitReached `mediaStorage`). A workspace imports two files at once, and the server eight (429 MediaImportBusy: ask again in a moment). Needs media:upload.
     /// </summary>
     /// <example><code>
-    /// await client.Media.ImportFromUrlAsync(new MediaImport { WorkspaceId = "workspaceId", Url = "url" });
+    /// await client.Media.ImportFromUrlAsync(new MediaImport { Url = "url" });
     /// </code></example>
     public WithRawResponseTask<Media> ImportFromUrlAsync(
         MediaImport request,
@@ -1407,9 +1470,7 @@ public partial class MediaClient : IMediaClient
     /// Shows one of the workspace's media. Needs media:read.
     /// </summary>
     /// <example><code>
-    /// await client.Media.GetAsync(
-    ///     new GetMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-    /// );
+    /// await client.Media.GetAsync(new GetMediaRequest { MediaId = "mediaId" });
     /// </code></example>
     public WithRawResponseTask<Media> GetAsync(
         GetMediaRequest request,
@@ -1424,9 +1485,7 @@ public partial class MediaClient : IMediaClient
     /// Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (`MediaInUse`, listing them): take them back to draft first. Needs media:delete.
     /// </summary>
     /// <example><code>
-    /// await client.Media.DeleteAsync(
-    ///     new DeleteMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-    /// );
+    /// await client.Media.DeleteAsync(new DeleteMediaRequest { MediaId = "mediaId" });
     /// </code></example>
     public WithRawResponseTask DeleteAsync(
         DeleteMediaRequest request,
@@ -1441,14 +1500,7 @@ public partial class MediaClient : IMediaClient
     /// Sets the media's description, which platforms show to people who cannot see it. It can be written while the file uploads. Needs media:upload.
     /// </summary>
     /// <example><code>
-    /// await client.Media.DescribeAsync(
-    ///     new MediaDescription
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         MediaId = "mediaId",
-    ///         AltText = null,
-    ///     }
-    /// );
+    /// await client.Media.DescribeAsync(new MediaDescription { MediaId = "mediaId", AltText = null });
     /// </code></example>
     public WithRawResponseTask<Media> DescribeAsync(
         MediaDescription request,
@@ -1465,9 +1517,7 @@ public partial class MediaClient : IMediaClient
     /// Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (`tooLarge`, `tooManyPages`, `unreadable`), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached `mediaStorage`). Needs media:upload.
     /// </summary>
     /// <example><code>
-    /// await client.Media.CompleteAsync(
-    ///     new CompleteMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-    /// );
+    /// await client.Media.CompleteAsync(new CompleteMediaRequest { MediaId = "mediaId" });
     /// </code></example>
     public WithRawResponseTask<Media> CompleteAsync(
         CompleteMediaRequest request,
@@ -1484,9 +1534,7 @@ public partial class MediaClient : IMediaClient
     /// Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
     /// </summary>
     /// <example><code>
-    /// await client.Media.UsageAsync(
-    ///     new UsageMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-    /// );
+    /// await client.Media.UsageAsync(new UsageMediaRequest { MediaId = "mediaId" });
     /// </code></example>
     public WithRawResponseTask<MediaUsage> UsageAsync(
         UsageMediaRequest request,

@@ -7,9 +7,6 @@ namespace Peal;
 public record DeleteWebhooksRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string EndpointId { get; set; }
 
     /// <inheritdoc />

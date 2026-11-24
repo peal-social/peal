@@ -73,12 +73,9 @@ class AssistantClient
      *
      * Example:
      * ```php
-     * $client->assistant->status(
-     *     'workspaceId',
-     * );
+     * $client->assistant->status();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -91,14 +88,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function status(string $workspaceId, ?array $options = null): ?AssistantStatus
+    public function status(?array $options = null): ?AssistantStatus
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant",
+                    path: "api/v1/assistant",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -129,7 +126,6 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->suggest(
-     *     'workspaceId',
      *     new SuggestionRequest([
      *         'action' => AssistantAction::rewrite(new AssistantActionRewrite([
      *             'tone' => AssistantTone::Professional->value,
@@ -139,7 +135,6 @@ class AssistantClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param SuggestionRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -153,7 +148,7 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function suggest(string $workspaceId, SuggestionRequest $request, ?array $options = null): ?Suggestion
+    public function suggest(SuggestionRequest $request, ?array $options = null): ?Suggestion
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -161,7 +156,7 @@ class AssistantClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/suggestions",
+                    path: "api/v1/assistant/suggestions",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -193,7 +188,6 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->generateImage(
-     *     'workspaceId',
      *     new ImageRequest([
      *         'aspect' => ImageAspect::Square->value,
      *         'prompt' => 'prompt',
@@ -201,7 +195,6 @@ class AssistantClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ImageRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -215,7 +208,7 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function generateImage(string $workspaceId, ImageRequest $request, ?array $options = null): ?Media
+    public function generateImage(ImageRequest $request, ?array $options = null): ?Media
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -223,7 +216,7 @@ class AssistantClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/images",
+                    path: "api/v1/assistant/images",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -254,12 +247,9 @@ class AssistantClient
      *
      * Example:
      * ```php
-     * $client->assistant->imageProvider(
-     *     'workspaceId',
-     * );
+     * $client->assistant->imageProvider();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -272,14 +262,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function imageProvider(string $workspaceId, ?array $options = null): ?ImageProviderSetting
+    public function imageProvider(?array $options = null): ?ImageProviderSetting
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/image-provider",
+                    path: "api/v1/assistant/image-provider",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -310,14 +300,12 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->setImageProvider(
-     *     'workspaceId',
      *     new ImageProviderChange([
      *         'model' => 'model',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ImageProviderChange $request
      * @param ?array{
      *   baseUrl?: string,
@@ -331,14 +319,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setImageProvider(string $workspaceId, ImageProviderChange $request, ?array $options = null): ?ImageProvider
+    public function setImageProvider(ImageProviderChange $request, ?array $options = null): ?ImageProvider
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/image-provider",
+                    path: "api/v1/assistant/image-provider",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -369,12 +357,9 @@ class AssistantClient
      *
      * Example:
      * ```php
-     * $client->assistant->removeImageProvider(
-     *     'workspaceId',
-     * );
+     * $client->assistant->removeImageProvider();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -386,14 +371,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function removeImageProvider(string $workspaceId, ?array $options = null): void
+    public function removeImageProvider(?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/image-provider",
+                    path: "api/v1/assistant/image-provider",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -417,12 +402,9 @@ class AssistantClient
      *
      * Example:
      * ```php
-     * $client->assistant->textProvider(
-     *     'workspaceId',
-     * );
+     * $client->assistant->textProvider();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -435,14 +417,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function textProvider(string $workspaceId, ?array $options = null): ?TextProviderSetting
+    public function textProvider(?array $options = null): ?TextProviderSetting
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/text-provider",
+                    path: "api/v1/assistant/text-provider",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -473,14 +455,12 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->setTextProvider(
-     *     'workspaceId',
      *     new TextProviderChange([
      *         'model' => 'model',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param TextProviderChange $request
      * @param ?array{
      *   baseUrl?: string,
@@ -494,14 +474,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setTextProvider(string $workspaceId, TextProviderChange $request, ?array $options = null): ?TextProvider
+    public function setTextProvider(TextProviderChange $request, ?array $options = null): ?TextProvider
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/text-provider",
+                    path: "api/v1/assistant/text-provider",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -532,12 +512,9 @@ class AssistantClient
      *
      * Example:
      * ```php
-     * $client->assistant->removeTextProvider(
-     *     'workspaceId',
-     * );
+     * $client->assistant->removeTextProvider();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -549,14 +526,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function removeTextProvider(string $workspaceId, ?array $options = null): void
+    public function removeTextProvider(?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/text-provider",
+                    path: "api/v1/assistant/text-provider",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -580,12 +557,9 @@ class AssistantClient
      *
      * Example:
      * ```php
-     * $client->assistant->testTextProvider(
-     *     'workspaceId',
-     * );
+     * $client->assistant->testTextProvider();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -597,7 +571,7 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function testTextProvider(string $workspaceId, ?array $options = null): void
+    public function testTextProvider(?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -605,7 +579,7 @@ class AssistantClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/text-provider/test",
+                    path: "api/v1/assistant/text-provider/test",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -629,12 +603,9 @@ class AssistantClient
      *
      * Example:
      * ```php
-     * $client->assistant->providers(
-     *     'workspaceId',
-     * );
+     * $client->assistant->providers();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -647,14 +618,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function providers(string $workspaceId, ?array $options = null): ?AiProviderConnections
+    public function providers(?array $options = null): ?AiProviderConnections
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/providers",
+                    path: "api/v1/assistant/providers",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -685,13 +656,11 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->connectProvider(
-     *     'workspaceId',
      *     AiProvider::Anthropic->value,
      *     new AiProviderConnectionChange([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<AiProvider> $provider
      * @param AiProviderConnectionChange $request
      * @param ?array{
@@ -706,14 +675,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function connectProvider(string $workspaceId, string $provider, AiProviderConnectionChange $request = new AiProviderConnectionChange(), ?array $options = null): ?AiProviderConnection
+    public function connectProvider(string $provider, AiProviderConnectionChange $request = new AiProviderConnectionChange(), ?array $options = null): ?AiProviderConnection
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/providers/{$provider}",
+                    path: "api/v1/assistant/providers/{$provider}",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -745,12 +714,10 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->disconnectProvider(
-     *     'workspaceId',
      *     AiProvider::Anthropic->value,
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<AiProvider> $provider
      * @param ?array{
      *   baseUrl?: string,
@@ -763,14 +730,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function disconnectProvider(string $workspaceId, string $provider, ?array $options = null): void
+    public function disconnectProvider(string $provider, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/providers/{$provider}",
+                    path: "api/v1/assistant/providers/{$provider}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -795,13 +762,11 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->testProvider(
-     *     'workspaceId',
      *     AiProvider::Anthropic->value,
      *     new AiProviderTest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<AiProvider> $provider
      * @param AiProviderTest $request
      * @param ?array{
@@ -815,7 +780,7 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function testProvider(string $workspaceId, string $provider, AiProviderTest $request = new AiProviderTest(), ?array $options = null): void
+    public function testProvider(string $provider, AiProviderTest $request = new AiProviderTest(), ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -823,7 +788,7 @@ class AssistantClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/providers/{$provider}/test",
+                    path: "api/v1/assistant/providers/{$provider}/test",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -848,12 +813,9 @@ class AssistantClient
      *
      * Example:
      * ```php
-     * $client->assistant->models(
-     *     'workspaceId',
-     * );
+     * $client->assistant->models();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -866,14 +828,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function models(string $workspaceId, ?array $options = null): ?AiCapabilityModels
+    public function models(?array $options = null): ?AiCapabilityModels
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/models",
+                    path: "api/v1/assistant/models",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -904,7 +866,6 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->setModel(
-     *     'workspaceId',
      *     AiCapability::Text->value,
      *     new AiCapabilityModelChange([
      *         'provider' => AiProvider::Anthropic->value,
@@ -912,7 +873,6 @@ class AssistantClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<AiCapability> $capability
      * @param AiCapabilityModelChange $request
      * @param ?array{
@@ -927,14 +887,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setModel(string $workspaceId, string $capability, AiCapabilityModelChange $request, ?array $options = null): ?AiCapabilityModel
+    public function setModel(string $capability, AiCapabilityModelChange $request, ?array $options = null): ?AiCapabilityModel
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/models/{$capability}",
+                    path: "api/v1/assistant/models/{$capability}",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -966,12 +926,10 @@ class AssistantClient
      * Example:
      * ```php
      * $client->assistant->unsetModel(
-     *     'workspaceId',
      *     AiCapability::Text->value,
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<AiCapability> $capability
      * @param ?array{
      *   baseUrl?: string,
@@ -984,14 +942,14 @@ class AssistantClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function unsetModel(string $workspaceId, string $capability, ?array $options = null): void
+    public function unsetModel(string $capability, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/assistant/models/{$capability}",
+                    path: "api/v1/assistant/models/{$capability}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

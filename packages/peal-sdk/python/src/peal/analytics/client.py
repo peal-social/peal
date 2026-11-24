@@ -32,7 +32,6 @@ class AnalyticsClient:
 
     def summary(
         self,
-        workspace_id: str,
         *,
         from_: CalendarDay,
         time_zone: str,
@@ -44,8 +43,6 @@ class AnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         from_ : CalendarDay
 
         time_zone : str
@@ -65,23 +62,20 @@ class AnalyticsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.analytics.summary(
-            workspace_id="workspaceId",
             from_="from",
             time_zone="timeZone",
             to="to",
         )
         """
-        _response = self._raw_client.summary(
-            workspace_id, from_=from_, time_zone=time_zone, to=to, request_options=request_options
-        )
+        _response = self._raw_client.summary(from_=from_, time_zone=time_zone, to=to, request_options=request_options)
         return _response.data
 
     def dashboard(
         self,
-        workspace_id: str,
         *,
         time_zone: str,
         days: typing.Optional[str] = None,
@@ -95,8 +89,6 @@ class AnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         time_zone : str
 
         days : typing.Optional[str]
@@ -120,27 +112,20 @@ class AnalyticsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.analytics.dashboard(
-            workspace_id="workspaceId",
             time_zone="timeZone",
         )
         """
         _response = self._raw_client.dashboard(
-            workspace_id,
-            time_zone=time_zone,
-            days=days,
-            from_=from_,
-            to=to,
-            top_posts=top_posts,
-            request_options=request_options,
+            time_zone=time_zone, days=days, from_=from_, to=to, top_posts=top_posts, request_options=request_options
         )
         return _response.data
 
     def channel(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         time_zone: str,
@@ -154,8 +139,6 @@ class AnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         time_zone : str
@@ -179,28 +162,21 @@ class AnalyticsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.analytics.channel(
-            workspace_id="workspaceId",
             channel_id="channelId",
             time_zone="timeZone",
         )
         """
         _response = self._raw_client.channel(
-            workspace_id,
-            channel_id,
-            time_zone=time_zone,
-            days=days,
-            from_=from_,
-            to=to,
-            request_options=request_options,
+            channel_id, time_zone=time_zone, days=days, from_=from_, to=to, request_options=request_options
         )
         return _response.data
 
     def export(
         self,
-        workspace_id: str,
         *,
         time_zone: str,
         kind: AnalyticsExportKind,
@@ -215,8 +191,6 @@ class AnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         time_zone : str
 
         kind : AnalyticsExportKind
@@ -242,16 +216,15 @@ class AnalyticsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.analytics.export(
-            workspace_id="workspaceId",
             time_zone="timeZone",
             kind="posts",
         )
         """
         with self._raw_client.export(
-            workspace_id,
             time_zone=time_zone,
             kind=kind,
             days=days,
@@ -264,7 +237,6 @@ class AnalyticsClient:
 
     def best_times(
         self,
-        workspace_id: str,
         *,
         channel_id: str,
         time_zone: str,
@@ -276,8 +248,6 @@ class AnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         time_zone : str
@@ -297,29 +267,25 @@ class AnalyticsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.analytics.best_times(
-            workspace_id="workspaceId",
             channel_id="channelId",
             time_zone="timeZone",
         )
         """
         _response = self._raw_client.best_times(
-            workspace_id, channel_id=channel_id, time_zone=time_zone, days=days, request_options=request_options
+            channel_id=channel_id, time_zone=time_zone, days=days, request_options=request_options
         )
         return _response.data
 
-    def post(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> PostAnalytics:
+    def post(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> PostAnalytics:
         """
         Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -335,14 +301,14 @@ class AnalyticsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.analytics.post(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.post(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.post(post_id, request_options=request_options)
         return _response.data
 
 
@@ -363,7 +329,6 @@ class AsyncAnalyticsClient:
 
     async def summary(
         self,
-        workspace_id: str,
         *,
         from_: CalendarDay,
         time_zone: str,
@@ -375,8 +340,6 @@ class AsyncAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         from_ : CalendarDay
 
         time_zone : str
@@ -398,13 +361,13 @@ class AsyncAnalyticsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.analytics.summary(
-                workspace_id="workspaceId",
                 from_="from",
                 time_zone="timeZone",
                 to="to",
@@ -414,13 +377,12 @@ class AsyncAnalyticsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.summary(
-            workspace_id, from_=from_, time_zone=time_zone, to=to, request_options=request_options
+            from_=from_, time_zone=time_zone, to=to, request_options=request_options
         )
         return _response.data
 
     async def dashboard(
         self,
-        workspace_id: str,
         *,
         time_zone: str,
         days: typing.Optional[str] = None,
@@ -434,8 +396,6 @@ class AsyncAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         time_zone : str
 
         days : typing.Optional[str]
@@ -461,13 +421,13 @@ class AsyncAnalyticsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.analytics.dashboard(
-                workspace_id="workspaceId",
                 time_zone="timeZone",
             )
 
@@ -475,19 +435,12 @@ class AsyncAnalyticsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.dashboard(
-            workspace_id,
-            time_zone=time_zone,
-            days=days,
-            from_=from_,
-            to=to,
-            top_posts=top_posts,
-            request_options=request_options,
+            time_zone=time_zone, days=days, from_=from_, to=to, top_posts=top_posts, request_options=request_options
         )
         return _response.data
 
     async def channel(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         time_zone: str,
@@ -501,8 +454,6 @@ class AsyncAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         time_zone : str
@@ -528,13 +479,13 @@ class AsyncAnalyticsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.analytics.channel(
-                workspace_id="workspaceId",
                 channel_id="channelId",
                 time_zone="timeZone",
             )
@@ -543,19 +494,12 @@ class AsyncAnalyticsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.channel(
-            workspace_id,
-            channel_id,
-            time_zone=time_zone,
-            days=days,
-            from_=from_,
-            to=to,
-            request_options=request_options,
+            channel_id, time_zone=time_zone, days=days, from_=from_, to=to, request_options=request_options
         )
         return _response.data
 
     async def export(
         self,
-        workspace_id: str,
         *,
         time_zone: str,
         kind: AnalyticsExportKind,
@@ -570,8 +514,6 @@ class AsyncAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         time_zone : str
 
         kind : AnalyticsExportKind
@@ -599,13 +541,13 @@ class AsyncAnalyticsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.analytics.export(
-                workspace_id="workspaceId",
                 time_zone="timeZone",
                 kind="posts",
             )
@@ -614,7 +556,6 @@ class AsyncAnalyticsClient:
         asyncio.run(main())
         """
         async with self._raw_client.export(
-            workspace_id,
             time_zone=time_zone,
             kind=kind,
             days=days,
@@ -628,7 +569,6 @@ class AsyncAnalyticsClient:
 
     async def best_times(
         self,
-        workspace_id: str,
         *,
         channel_id: str,
         time_zone: str,
@@ -640,8 +580,6 @@ class AsyncAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         time_zone : str
@@ -663,13 +601,13 @@ class AsyncAnalyticsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.analytics.best_times(
-                workspace_id="workspaceId",
                 channel_id="channelId",
                 time_zone="timeZone",
             )
@@ -678,20 +616,16 @@ class AsyncAnalyticsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.best_times(
-            workspace_id, channel_id=channel_id, time_zone=time_zone, days=days, request_options=request_options
+            channel_id=channel_id, time_zone=time_zone, days=days, request_options=request_options
         )
         return _response.data
 
-    async def post(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> PostAnalytics:
+    async def post(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> PostAnalytics:
         """
         Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -709,18 +643,18 @@ class AsyncAnalyticsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.analytics.post(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.post(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.post(post_id, request_options=request_options)
         return _response.data

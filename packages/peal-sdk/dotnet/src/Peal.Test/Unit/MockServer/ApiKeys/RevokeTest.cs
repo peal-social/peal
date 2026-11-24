@@ -15,15 +15,13 @@ public class RevokeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/api-keys/apiKeyId")
+                    .WithPath("/api/v1/api-keys/apiKeyId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.ApiKeys.RevokeAsync(
-                new RevokeApiKeysRequest { WorkspaceId = "workspaceId", ApiKeyId = "apiKeyId" }
-            )
+            await Client.ApiKeys.RevokeAsync(new RevokeApiKeysRequest { ApiKeyId = "apiKeyId" })
         );
     }
 
@@ -34,15 +32,13 @@ public class RevokeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/api-keys/apiKeyId")
+                    .WithPath("/api/v1/api-keys/apiKeyId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.ApiKeys.RevokeAsync(
-                new RevokeApiKeysRequest { WorkspaceId = "workspaceId", ApiKeyId = "apiKeyId" }
-            )
+            await Client.ApiKeys.RevokeAsync(new RevokeApiKeysRequest { ApiKeyId = "apiKeyId" })
         );
     }
 }

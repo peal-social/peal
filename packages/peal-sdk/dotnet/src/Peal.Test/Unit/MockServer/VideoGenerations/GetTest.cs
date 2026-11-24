@@ -31,7 +31,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/videos/generations/generationId")
+                    .WithPath("/api/v1/media/videos/generations/generationId")
                     .UsingGet()
             )
             .RespondWith(
@@ -42,11 +42,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.VideoGenerations.GetAsync(
-            new GetVideoGenerationsRequest
-            {
-                WorkspaceId = "workspaceId",
-                GenerationId = "generationId",
-            }
+            new GetVideoGenerationsRequest { GenerationId = "generationId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -73,7 +69,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/videos/generations/generationId")
+                    .WithPath("/api/v1/media/videos/generations/generationId")
                     .UsingGet()
             )
             .RespondWith(
@@ -84,11 +80,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.VideoGenerations.GetAsync(
-            new GetVideoGenerationsRequest
-            {
-                WorkspaceId = "workspaceId",
-                GenerationId = "generationId",
-            }
+            new GetVideoGenerationsRequest { GenerationId = "generationId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -88,8 +88,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channel-sets")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/channel-sets")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -101,15 +100,11 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.ChannelSets.CreateAsync(
-            new CreateChannelSetsRequest
+            new ChannelSetDetails
             {
-                WorkspaceId = "workspaceId",
-                Body = new ChannelSetDetails
-                {
-                    ChannelIds = new List<string>() { "channelIds", "channelIds" },
-                    Name = "x",
-                    Options = null,
-                },
+                ChannelIds = new List<string>() { "channelIds", "channelIds" },
+                Name = "x",
+                Options = null,
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -153,8 +148,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channel-sets")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/channel-sets")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -166,14 +160,10 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.ChannelSets.CreateAsync(
-            new CreateChannelSetsRequest
+            new ChannelSetDetails
             {
-                WorkspaceId = "workspaceId",
-                Body = new ChannelSetDetails
-                {
-                    ChannelIds = new List<string>() { "channelIds" },
-                    Name = "name",
-                },
+                ChannelIds = new List<string>() { "channelIds" },
+                Name = "name",
             }
         );
         JsonAssert.AreEqual(response, mockResponse);

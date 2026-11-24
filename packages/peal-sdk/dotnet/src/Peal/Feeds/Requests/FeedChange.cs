@@ -7,9 +7,6 @@ namespace Peal;
 public record FeedChange
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string FeedId { get; set; }
 
     [JsonPropertyName("attachPicture")]

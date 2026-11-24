@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         posts: [{
  *                 channelIds: ["channelIds"],
  *                 content: {
@@ -26,7 +25,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface BulkPosts {
-    workspaceId: string;
     "idempotency-key"?: string;
     posts: Peal.BulkPost[];
 }

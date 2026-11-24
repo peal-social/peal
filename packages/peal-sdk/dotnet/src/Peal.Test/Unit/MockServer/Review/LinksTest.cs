@@ -41,7 +41,7 @@ public class LinksTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/review-links")
+                    .WithPath("/api/v1/posts/postId/review-links")
                     .UsingGet()
             )
             .RespondWith(
@@ -51,9 +51,7 @@ public class LinksTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Review.LinksAsync(
-            new LinksReviewRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-        );
+        var response = await Client.Review.LinksAsync(new LinksReviewRequest { PostId = "postId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -79,7 +77,7 @@ public class LinksTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/review-links")
+                    .WithPath("/api/v1/posts/postId/review-links")
                     .UsingGet()
             )
             .RespondWith(
@@ -89,9 +87,7 @@ public class LinksTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Review.LinksAsync(
-            new LinksReviewRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-        );
+        var response = await Client.Review.LinksAsync(new LinksReviewRequest { PostId = "postId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

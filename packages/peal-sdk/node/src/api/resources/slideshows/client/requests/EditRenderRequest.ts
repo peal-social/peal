@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         edit: {
  *             "key": "value"
  *         }
  *     }
  */
 export interface EditRenderRequest {
-    workspaceId: string;
     edit: Record<string, unknown>;
 }

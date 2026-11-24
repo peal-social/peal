@@ -47,14 +47,12 @@ class AdsClient:
         """
         return self._raw_client
 
-    def status(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> AdsStatus:
+    def status(self, *, request_options: typing.Optional[RequestOptions] = None) -> AdsStatus:
         """
         Says what this server offers of ads (`off`, `read` or `spend`) and on which networks. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -68,25 +66,20 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.ads.status(
-            workspace_id="workspaceId",
-        )
+        client.ads.status()
         """
-        _response = self._raw_client.status(workspace_id, request_options=request_options)
+        _response = self._raw_client.status(request_options=request_options)
         return _response.data
 
-    def list_connections(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[AdConnection]:
+    def list_connections(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[AdConnection]:
         """
         Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -100,25 +93,20 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.ads.list_connections(
-            workspace_id="workspaceId",
-        )
+        client.ads.list_connections()
         """
-        _response = self._raw_client.list_connections(workspace_id, request_options=request_options)
+        _response = self._raw_client.list_connections(request_options=request_options)
         return _response.data
 
-    def connect(
-        self, workspace_id: str, network: AdNetwork, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AdSignIn:
+    def connect(self, network: AdNetwork, *, request_options: typing.Optional[RequestOptions] = None) -> AdSignIn:
         """
         Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
 
         Parameters
         ----------
-        workspace_id : str
-
         network : AdNetwork
 
         request_options : typing.Optional[RequestOptions]
@@ -134,19 +122,18 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.connect(
-            workspace_id="workspaceId",
             network="meta",
         )
         """
-        _response = self._raw_client.connect(workspace_id, network, request_options=request_options)
+        _response = self._raw_client.connect(network, request_options=request_options)
         return _response.data
 
     def complete_connect(
         self,
-        workspace_id: str,
         network: AdNetwork,
         *,
         state: str,
@@ -159,8 +146,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         network : AdNetwork
 
         state : str
@@ -182,29 +167,27 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.complete_connect(
-            workspace_id="workspaceId",
             network="meta",
             state="state",
         )
         """
         _response = self._raw_client.complete_connect(
-            workspace_id, network, state=state, code=code, error=error, request_options=request_options
+            network, state=state, code=code, error=error, request_options=request_options
         )
         return _response.data
 
     def reachable_accounts(
-        self, workspace_id: str, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[ReachableAdAccount]:
         """
         Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -220,19 +203,18 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.reachable_accounts(
-            workspace_id="workspaceId",
             connection_id="connectionId",
         )
         """
-        _response = self._raw_client.reachable_accounts(workspace_id, connection_id, request_options=request_options)
+        _response = self._raw_client.reachable_accounts(connection_id, request_options=request_options)
         return _response.data
 
     def connect_accounts(
         self,
-        workspace_id: str,
         connection_id: str,
         *,
         external_ids: typing.Sequence[str],
@@ -243,8 +225,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         external_ids : typing.Sequence[str]
@@ -262,29 +242,25 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.connect_accounts(
-            workspace_id="workspaceId",
             connection_id="connectionId",
             external_ids=["externalIds"],
         )
         """
         _response = self._raw_client.connect_accounts(
-            workspace_id, connection_id, external_ids=external_ids, request_options=request_options
+            connection_id, external_ids=external_ids, request_options=request_options
         )
         return _response.data
 
-    def disconnect(
-        self, workspace_id: str, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def disconnect(self, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (`AdAccountBusy`): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -299,26 +275,22 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.disconnect(
-            workspace_id="workspaceId",
             connection_id="connectionId",
         )
         """
-        _response = self._raw_client.disconnect(workspace_id, connection_id, request_options=request_options)
+        _response = self._raw_client.disconnect(connection_id, request_options=request_options)
         return _response.data
 
-    def list_accounts(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[AdAccount]:
+    def list_accounts(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[AdAccount]:
         """
         Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -332,25 +304,20 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.ads.list_accounts(
-            workspace_id="workspaceId",
-        )
+        client.ads.list_accounts()
         """
-        _response = self._raw_client.list_accounts(workspace_id, request_options=request_options)
+        _response = self._raw_client.list_accounts(request_options=request_options)
         return _response.data
 
-    def get_account(
-        self, workspace_id: str, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AdSpending:
+    def get_account(self, account_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> AdSpending:
         """
         Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -366,26 +333,22 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.get_account(
-            workspace_id="workspaceId",
             account_id="accountId",
         )
         """
-        _response = self._raw_client.get_account(workspace_id, account_id, request_options=request_options)
+        _response = self._raw_client.get_account(account_id, request_options=request_options)
         return _response.data
 
-    def remove_account(
-        self, workspace_id: str, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def remove_account(self, account_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (`AdAccountBusy`), as a paused campaign may run again. Needs ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -400,19 +363,18 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.remove_account(
-            workspace_id="workspaceId",
             account_id="accountId",
         )
         """
-        _response = self._raw_client.remove_account(workspace_id, account_id, request_options=request_options)
+        _response = self._raw_client.remove_account(account_id, request_options=request_options)
         return _response.data
 
     def set_spending(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         enabled: bool,
@@ -424,8 +386,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         enabled : bool
@@ -445,22 +405,21 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.set_spending(
-            workspace_id="workspaceId",
             account_id="accountId",
             enabled=True,
         )
         """
         _response = self._raw_client.set_spending(
-            workspace_id, account_id, enabled=enabled, monthly_ceiling=monthly_ceiling, request_options=request_options
+            account_id, enabled=enabled, monthly_ceiling=monthly_ceiling, request_options=request_options
         )
         return _response.data
 
     def list_campaigns(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -472,8 +431,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -493,21 +450,18 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.list_campaigns(
-            workspace_id="workspaceId",
             account_id="accountId",
         )
         """
-        _response = self._raw_client.list_campaigns(
-            workspace_id, account_id, from_=from_, to=to, request_options=request_options
-        )
+        _response = self._raw_client.list_campaigns(account_id, from_=from_, to=to, request_options=request_options)
         return _response.data
 
     def list_ads(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -520,8 +474,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -543,21 +495,20 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.list_ads(
-            workspace_id="workspaceId",
             account_id="accountId",
         )
         """
         _response = self._raw_client.list_ads(
-            workspace_id, account_id, from_=from_, to=to, campaign_id=campaign_id, request_options=request_options
+            account_id, from_=from_, to=to, campaign_id=campaign_id, request_options=request_options
         )
         return _response.data
 
     def list_insights(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -569,8 +520,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -590,28 +539,24 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.list_insights(
-            workspace_id="workspaceId",
             account_id="accountId",
         )
         """
-        _response = self._raw_client.list_insights(
-            workspace_id, account_id, from_=from_, to=to, request_options=request_options
-        )
+        _response = self._raw_client.list_insights(account_id, from_=from_, to=to, request_options=request_options)
         return _response.data
 
     def post_performance(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> PostAdPerformance:
         """
         Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -627,19 +572,18 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.post_performance(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.post_performance(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.post_performance(post_id, request_options=request_options)
         return _response.data
 
     def quote_boost(
         self,
-        workspace_id: str,
         *,
         account_id: str,
         audience: BoostAudience,
@@ -659,8 +603,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         audience : BoostAudience
@@ -697,10 +639,10 @@ class AdsClient:
         from peal import BoostAudience, BoostBudget, Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.quote_boost(
-            workspace_id="workspaceId",
             account_id="accountId",
             audience=BoostAudience(
                 age_max=1,
@@ -719,7 +661,6 @@ class AdsClient:
         )
         """
         _response = self._raw_client.quote_boost(
-            workspace_id,
             account_id=account_id,
             audience=audience,
             budget=budget,
@@ -737,7 +678,6 @@ class AdsClient:
 
     def list_boosts(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         post_id: typing.Optional[str] = None,
@@ -748,8 +688,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         post_id : typing.Optional[str]
@@ -767,20 +705,16 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.ads.list_boosts(
-            workspace_id="workspaceId",
-        )
+        client.ads.list_boosts()
         """
-        _response = self._raw_client.list_boosts(
-            workspace_id, cursor=cursor, post_id=post_id, request_options=request_options
-        )
+        _response = self._raw_client.list_boosts(cursor=cursor, post_id=post_id, request_options=request_options)
         return _response.data
 
     def create_boost(
         self,
-        workspace_id: str,
         *,
         idempotency_key: str,
         account_id: str,
@@ -801,8 +735,6 @@ class AdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         idempotency_key : str
 
         account_id : str
@@ -841,10 +773,10 @@ class AdsClient:
         from peal import BoostAudience, BoostBudget, Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.create_boost(
-            workspace_id="workspaceId",
             idempotency_key="idempotency-key",
             account_id="accountId",
             audience=BoostAudience(
@@ -864,7 +796,6 @@ class AdsClient:
         )
         """
         _response = self._raw_client.create_boost(
-            workspace_id,
             idempotency_key=idempotency_key,
             account_id=account_id,
             audience=audience,
@@ -881,16 +812,12 @@ class AdsClient:
         )
         return _response.data
 
-    def get_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> BoostDetail:
+    def get_boost(self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> BoostDetail:
         """
         Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -906,26 +833,22 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.get_boost(
-            workspace_id="workspaceId",
             boost_id="boostId",
         )
         """
-        _response = self._raw_client.get_boost(workspace_id, boost_id, request_options=request_options)
+        _response = self._raw_client.get_boost(boost_id, request_options=request_options)
         return _response.data
 
-    def pause_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Boost:
+    def pause_boost(self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Boost:
         """
         Pauses a boost that runs or may run: its campaign is told to pause, and the boost is `paused` once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -941,26 +864,22 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.pause_boost(
-            workspace_id="workspaceId",
             boost_id="boostId",
         )
         """
-        _response = self._raw_client.pause_boost(workspace_id, boost_id, request_options=request_options)
+        _response = self._raw_client.pause_boost(boost_id, request_options=request_options)
         return _response.data
 
-    def resume_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Boost:
+    def resume_boost(self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Boost:
         """
         **Spends money.** Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -976,26 +895,22 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.resume_boost(
-            workspace_id="workspaceId",
             boost_id="boostId",
         )
         """
-        _response = self._raw_client.resume_boost(workspace_id, boost_id, request_options=request_options)
+        _response = self._raw_client.resume_boost(boost_id, request_options=request_options)
         return _response.data
 
-    def stop_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Boost:
+    def stop_boost(self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Boost:
         """
         Stops a boost for good: its campaign is told to pause, and the boost is `stopped` once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1011,30 +926,24 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.ads.stop_boost(
-            workspace_id="workspaceId",
             boost_id="boostId",
         )
         """
-        _response = self._raw_client.stop_boost(workspace_id, boost_id, request_options=request_options)
+        _response = self._raw_client.stop_boost(boost_id, request_options=request_options)
         return _response.data
 
     def audit_trail(
-        self,
-        workspace_id: str,
-        *,
-        cursor: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, cursor: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
     ) -> AdAuditPage:
         """
         Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
@@ -1050,13 +959,12 @@ class AdsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.ads.audit_trail(
-            workspace_id="workspaceId",
-        )
+        client.ads.audit_trail()
         """
-        _response = self._raw_client.audit_trail(workspace_id, cursor=cursor, request_options=request_options)
+        _response = self._raw_client.audit_trail(cursor=cursor, request_options=request_options)
         return _response.data
 
 
@@ -1075,14 +983,12 @@ class AsyncAdsClient:
         """
         return self._raw_client
 
-    async def status(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> AdsStatus:
+    async def status(self, *, request_options: typing.Optional[RequestOptions] = None) -> AdsStatus:
         """
         Says what this server offers of ads (`off`, `read` or `spend`) and on which networks. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1098,31 +1004,28 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.ads.status(
-                workspace_id="workspaceId",
-            )
+            await client.ads.status()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.status(workspace_id, request_options=request_options)
+        _response = await self._raw_client.status(request_options=request_options)
         return _response.data
 
     async def list_connections(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[AdConnection]:
         """
         Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1138,31 +1041,26 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.ads.list_connections(
-                workspace_id="workspaceId",
-            )
+            await client.ads.list_connections()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_connections(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list_connections(request_options=request_options)
         return _response.data
 
-    async def connect(
-        self, workspace_id: str, network: AdNetwork, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AdSignIn:
+    async def connect(self, network: AdNetwork, *, request_options: typing.Optional[RequestOptions] = None) -> AdSignIn:
         """
         Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
 
         Parameters
         ----------
-        workspace_id : str
-
         network : AdNetwork
 
         request_options : typing.Optional[RequestOptions]
@@ -1180,25 +1078,24 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.connect(
-                workspace_id="workspaceId",
                 network="meta",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.connect(workspace_id, network, request_options=request_options)
+        _response = await self._raw_client.connect(network, request_options=request_options)
         return _response.data
 
     async def complete_connect(
         self,
-        workspace_id: str,
         network: AdNetwork,
         *,
         state: str,
@@ -1211,8 +1108,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         network : AdNetwork
 
         state : str
@@ -1236,13 +1131,13 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.complete_connect(
-                workspace_id="workspaceId",
                 network="meta",
                 state="state",
             )
@@ -1251,20 +1146,18 @@ class AsyncAdsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.complete_connect(
-            workspace_id, network, state=state, code=code, error=error, request_options=request_options
+            network, state=state, code=code, error=error, request_options=request_options
         )
         return _response.data
 
     async def reachable_accounts(
-        self, workspace_id: str, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[ReachableAdAccount]:
         """
         Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1282,27 +1175,24 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.reachable_accounts(
-                workspace_id="workspaceId",
                 connection_id="connectionId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.reachable_accounts(
-            workspace_id, connection_id, request_options=request_options
-        )
+        _response = await self._raw_client.reachable_accounts(connection_id, request_options=request_options)
         return _response.data
 
     async def connect_accounts(
         self,
-        workspace_id: str,
         connection_id: str,
         *,
         external_ids: typing.Sequence[str],
@@ -1313,8 +1203,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         external_ids : typing.Sequence[str]
@@ -1334,13 +1222,13 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.connect_accounts(
-                workspace_id="workspaceId",
                 connection_id="connectionId",
                 external_ids=["externalIds"],
             )
@@ -1349,20 +1237,16 @@ class AsyncAdsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.connect_accounts(
-            workspace_id, connection_id, external_ids=external_ids, request_options=request_options
+            connection_id, external_ids=external_ids, request_options=request_options
         )
         return _response.data
 
-    async def disconnect(
-        self, workspace_id: str, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def disconnect(self, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (`AdAccountBusy`): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1379,32 +1263,28 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.disconnect(
-                workspace_id="workspaceId",
                 connection_id="connectionId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.disconnect(workspace_id, connection_id, request_options=request_options)
+        _response = await self._raw_client.disconnect(connection_id, request_options=request_options)
         return _response.data
 
-    async def list_accounts(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[AdAccount]:
+    async def list_accounts(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[AdAccount]:
         """
         Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1420,31 +1300,28 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.ads.list_accounts(
-                workspace_id="workspaceId",
-            )
+            await client.ads.list_accounts()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_accounts(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list_accounts(request_options=request_options)
         return _response.data
 
     async def get_account(
-        self, workspace_id: str, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AdSpending:
         """
         Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1462,32 +1339,28 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.get_account(
-                workspace_id="workspaceId",
                 account_id="accountId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_account(workspace_id, account_id, request_options=request_options)
+        _response = await self._raw_client.get_account(account_id, request_options=request_options)
         return _response.data
 
-    async def remove_account(
-        self, workspace_id: str, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def remove_account(self, account_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (`AdAccountBusy`), as a paused campaign may run again. Needs ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1504,25 +1377,24 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.remove_account(
-                workspace_id="workspaceId",
                 account_id="accountId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.remove_account(workspace_id, account_id, request_options=request_options)
+        _response = await self._raw_client.remove_account(account_id, request_options=request_options)
         return _response.data
 
     async def set_spending(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         enabled: bool,
@@ -1534,8 +1406,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         enabled : bool
@@ -1557,13 +1427,13 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.set_spending(
-                workspace_id="workspaceId",
                 account_id="accountId",
                 enabled=True,
             )
@@ -1572,13 +1442,12 @@ class AsyncAdsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.set_spending(
-            workspace_id, account_id, enabled=enabled, monthly_ceiling=monthly_ceiling, request_options=request_options
+            account_id, enabled=enabled, monthly_ceiling=monthly_ceiling, request_options=request_options
         )
         return _response.data
 
     async def list_campaigns(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -1590,8 +1459,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -1613,13 +1480,13 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.list_campaigns(
-                workspace_id="workspaceId",
                 account_id="accountId",
             )
 
@@ -1627,13 +1494,12 @@ class AsyncAdsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.list_campaigns(
-            workspace_id, account_id, from_=from_, to=to, request_options=request_options
+            account_id, from_=from_, to=to, request_options=request_options
         )
         return _response.data
 
     async def list_ads(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -1646,8 +1512,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -1671,13 +1535,13 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.list_ads(
-                workspace_id="workspaceId",
                 account_id="accountId",
             )
 
@@ -1685,13 +1549,12 @@ class AsyncAdsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.list_ads(
-            workspace_id, account_id, from_=from_, to=to, campaign_id=campaign_id, request_options=request_options
+            account_id, from_=from_, to=to, campaign_id=campaign_id, request_options=request_options
         )
         return _response.data
 
     async def list_insights(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -1703,8 +1566,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -1726,13 +1587,13 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.list_insights(
-                workspace_id="workspaceId",
                 account_id="accountId",
             )
 
@@ -1740,20 +1601,18 @@ class AsyncAdsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.list_insights(
-            workspace_id, account_id, from_=from_, to=to, request_options=request_options
+            account_id, from_=from_, to=to, request_options=request_options
         )
         return _response.data
 
     async def post_performance(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> PostAdPerformance:
         """
         Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1771,25 +1630,24 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.post_performance(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.post_performance(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.post_performance(post_id, request_options=request_options)
         return _response.data
 
     async def quote_boost(
         self,
-        workspace_id: str,
         *,
         account_id: str,
         audience: BoostAudience,
@@ -1809,8 +1667,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         audience : BoostAudience
@@ -1849,13 +1705,13 @@ class AsyncAdsClient:
         from peal import AsyncPeal, BoostAudience, BoostBudget
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.quote_boost(
-                workspace_id="workspaceId",
                 account_id="accountId",
                 audience=BoostAudience(
                     age_max=1,
@@ -1877,7 +1733,6 @@ class AsyncAdsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.quote_boost(
-            workspace_id,
             account_id=account_id,
             audience=audience,
             budget=budget,
@@ -1895,7 +1750,6 @@ class AsyncAdsClient:
 
     async def list_boosts(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         post_id: typing.Optional[str] = None,
@@ -1906,8 +1760,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         post_id : typing.Optional[str]
@@ -1927,26 +1779,22 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.ads.list_boosts(
-                workspace_id="workspaceId",
-            )
+            await client.ads.list_boosts()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_boosts(
-            workspace_id, cursor=cursor, post_id=post_id, request_options=request_options
-        )
+        _response = await self._raw_client.list_boosts(cursor=cursor, post_id=post_id, request_options=request_options)
         return _response.data
 
     async def create_boost(
         self,
-        workspace_id: str,
         *,
         idempotency_key: str,
         account_id: str,
@@ -1967,8 +1815,6 @@ class AsyncAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         idempotency_key : str
 
         account_id : str
@@ -2009,13 +1855,13 @@ class AsyncAdsClient:
         from peal import AsyncPeal, BoostAudience, BoostBudget
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.create_boost(
-                workspace_id="workspaceId",
                 idempotency_key="idempotency-key",
                 account_id="accountId",
                 audience=BoostAudience(
@@ -2038,7 +1884,6 @@ class AsyncAdsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create_boost(
-            workspace_id,
             idempotency_key=idempotency_key,
             account_id=account_id,
             audience=audience,
@@ -2055,16 +1900,12 @@ class AsyncAdsClient:
         )
         return _response.data
 
-    async def get_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> BoostDetail:
+    async def get_boost(self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> BoostDetail:
         """
         Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2082,32 +1923,28 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.get_boost(
-                workspace_id="workspaceId",
                 boost_id="boostId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_boost(workspace_id, boost_id, request_options=request_options)
+        _response = await self._raw_client.get_boost(boost_id, request_options=request_options)
         return _response.data
 
-    async def pause_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Boost:
+    async def pause_boost(self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Boost:
         """
         Pauses a boost that runs or may run: its campaign is told to pause, and the boost is `paused` once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2125,32 +1962,28 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.pause_boost(
-                workspace_id="workspaceId",
                 boost_id="boostId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.pause_boost(workspace_id, boost_id, request_options=request_options)
+        _response = await self._raw_client.pause_boost(boost_id, request_options=request_options)
         return _response.data
 
-    async def resume_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Boost:
+    async def resume_boost(self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Boost:
         """
         **Spends money.** Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2168,32 +2001,28 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.resume_boost(
-                workspace_id="workspaceId",
                 boost_id="boostId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.resume_boost(workspace_id, boost_id, request_options=request_options)
+        _response = await self._raw_client.resume_boost(boost_id, request_options=request_options)
         return _response.data
 
-    async def stop_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Boost:
+    async def stop_boost(self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Boost:
         """
         Stops a boost for good: its campaign is told to pause, and the boost is `stopped` once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2211,36 +2040,30 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.ads.stop_boost(
-                workspace_id="workspaceId",
                 boost_id="boostId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.stop_boost(workspace_id, boost_id, request_options=request_options)
+        _response = await self._raw_client.stop_boost(boost_id, request_options=request_options)
         return _response.data
 
     async def audit_trail(
-        self,
-        workspace_id: str,
-        *,
-        cursor: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, cursor: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
     ) -> AdAuditPage:
         """
         Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
@@ -2258,17 +2081,16 @@ class AsyncAdsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.ads.audit_trail(
-                workspace_id="workspaceId",
-            )
+            await client.ads.audit_trail()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.audit_trail(workspace_id, cursor=cursor, request_options=request_options)
+        _response = await self._raw_client.audit_trail(cursor=cursor, request_options=request_options)
         return _response.data

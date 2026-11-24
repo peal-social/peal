@@ -7,9 +7,6 @@ namespace Peal;
 public record RemoveTargetPostsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PostId { get; set; }
 
     [JsonIgnore]

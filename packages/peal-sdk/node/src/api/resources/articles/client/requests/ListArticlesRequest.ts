@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListArticlesRequest {
-    workspaceId: string;
     cursor?: string;
     limit?: string;
     status?: Peal.ArticleStateName;

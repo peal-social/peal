@@ -6,7 +6,6 @@ public partial interface IConnectLinksClient
     /// Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<ConnectLink>> ListAsync(
-        ListConnectLinksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

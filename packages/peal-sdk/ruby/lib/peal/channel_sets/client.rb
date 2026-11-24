@@ -14,24 +14,22 @@ module Peal
       # since (`unavailableChannelIds`). Needs post:read and channel:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.channel_sets.list(workspace_id: "workspaceId")
+      #   client.channel_sets.list
       #
       # @return [Array[Peal::Types::ChannelSet]]
-      def list(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channel-sets",
+          path: "api/v1/channel-sets",
           request_options: request_options
         )
         begin
@@ -65,11 +63,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.channel_sets.create(
-      #     workspace_id: "workspaceId",
       #     channel_ids: ["channelIds"],
       #     name: "name"
       #   )
@@ -77,14 +73,11 @@ module Peal
       # @return [Peal::Types::ChannelSet]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channel-sets",
-          body: Peal::Types::ChannelSetDetails.new(body_params).to_h,
+          path: "api/v1/channel-sets",
+          body: Peal::Types::ChannelSetDetails.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -117,12 +110,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_set_id
       #
       # @example
       #   client.channel_sets.update(
-      #     workspace_id: "workspaceId",
       #     channel_set_id: "channelSetId",
       #     channel_ids: ["channelIds"],
       #     name: "name"
@@ -131,13 +122,13 @@ module Peal
       # @return [Peal::Types::ChannelSet]
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id channel_set_id]
+        path_param_names = %i[channel_set_id]
         body_params = params.except(*path_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channel-sets/#{URI.encode_uri_component(params[:channel_set_id].to_s)}",
+          path: "api/v1/channel-sets/#{URI.encode_uri_component(params[:channel_set_id].to_s)}",
           body: Peal::Types::ChannelSetDetails.new(body_params).to_h,
           request_options: request_options
         )
@@ -168,14 +159,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_set_id
       #
       # @example
-      #   client.channel_sets.delete(
-      #     workspace_id: "workspaceId",
-      #     channel_set_id: "channelSetId"
-      #   )
+      #   client.channel_sets.delete(channel_set_id: "channelSetId")
       #
       # @return [untyped]
       def delete(request_options: {}, **params)
@@ -183,7 +170,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channel-sets/#{URI.encode_uri_component(params[:channel_set_id].to_s)}",
+          path: "api/v1/channel-sets/#{URI.encode_uri_component(params[:channel_set_id].to_s)}",
           request_options: request_options
         )
         begin

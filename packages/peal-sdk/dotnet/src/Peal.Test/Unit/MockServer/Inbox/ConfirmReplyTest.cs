@@ -37,7 +37,7 @@ public class ConfirmReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/replies/replyId/confirmation")
+                    .WithPath("/api/v1/inbox/replies/replyId/confirmation")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -50,12 +50,7 @@ public class ConfirmReplyTest : BaseMockServerTest
             );
 
         var response = await Client.Inbox.ConfirmReplyAsync(
-            new ConfirmReplyInboxRequest
-            {
-                WorkspaceId = "workspaceId",
-                ReplyId = "replyId",
-                Sent = true,
-            }
+            new ConfirmReplyInboxRequest { ReplyId = "replyId", Sent = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -88,7 +83,7 @@ public class ConfirmReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/replies/replyId/confirmation")
+                    .WithPath("/api/v1/inbox/replies/replyId/confirmation")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -101,12 +96,7 @@ public class ConfirmReplyTest : BaseMockServerTest
             );
 
         var response = await Client.Inbox.ConfirmReplyAsync(
-            new ConfirmReplyInboxRequest
-            {
-                WorkspaceId = "workspaceId",
-                ReplyId = "replyId",
-                Sent = true,
-            }
+            new ConfirmReplyInboxRequest { ReplyId = "replyId", Sent = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

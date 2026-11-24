@@ -6,7 +6,6 @@ public partial interface ICapabilitiesClient
     /// Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<PlatformCapabilities>> PlatformsAsync(
-        PlatformsCapabilitiesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

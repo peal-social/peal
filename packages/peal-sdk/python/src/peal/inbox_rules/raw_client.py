@@ -33,7 +33,6 @@ class RawInboxRulesClient:
 
     def list_comment_rules(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -45,8 +44,6 @@ class RawInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -62,7 +59,7 @@ class RawInboxRulesClient:
             CommentRulePage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules",
+            "api/v1/inbox/rules",
             method="GET",
             params={
                 "cursor": cursor,
@@ -147,7 +144,6 @@ class RawInboxRulesClient:
 
     def create_comment_rule(
         self,
-        workspace_id: str,
         *,
         keywords: typing.Sequence[str],
         reply: str,
@@ -161,8 +157,6 @@ class RawInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         keywords : typing.Sequence[str]
 
         reply : str
@@ -185,7 +179,7 @@ class RawInboxRulesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules",
+            "api/v1/inbox/rules",
             method="POST",
             json={
                 "channelId": channel_id,
@@ -297,15 +291,13 @@ class RawInboxRulesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_comment_rule(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[CommentRule]:
         """
         Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -317,7 +309,7 @@ class RawInboxRulesClient:
             CommentRule
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules/{encode_path_param(rule_id)}",
+            f"api/v1/inbox/rules/{encode_path_param(rule_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -331,6 +323,17 @@ class RawInboxRulesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -385,15 +388,13 @@ class RawInboxRulesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete_comment_rule(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -404,13 +405,24 @@ class RawInboxRulesClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules/{encode_path_param(rule_id)}",
+            f"api/v1/inbox/rules/{encode_path_param(rule_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -466,7 +478,6 @@ class RawInboxRulesClient:
 
     def update_comment_rule(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         keywords: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -480,8 +491,6 @@ class RawInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         keywords : typing.Optional[typing.Sequence[str]]
@@ -504,7 +513,7 @@ class RawInboxRulesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules/{encode_path_param(rule_id)}",
+            f"api/v1/inbox/rules/{encode_path_param(rule_id)}",
             method="PATCH",
             json={
                 "keywords": keywords,
@@ -528,6 +537,17 @@ class RawInboxRulesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -610,7 +630,6 @@ class AsyncRawInboxRulesClient:
 
     async def list_comment_rules(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -622,8 +641,6 @@ class AsyncRawInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -639,7 +656,7 @@ class AsyncRawInboxRulesClient:
             CommentRulePage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules",
+            "api/v1/inbox/rules",
             method="GET",
             params={
                 "cursor": cursor,
@@ -724,7 +741,6 @@ class AsyncRawInboxRulesClient:
 
     async def create_comment_rule(
         self,
-        workspace_id: str,
         *,
         keywords: typing.Sequence[str],
         reply: str,
@@ -738,8 +754,6 @@ class AsyncRawInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         keywords : typing.Sequence[str]
 
         reply : str
@@ -762,7 +776,7 @@ class AsyncRawInboxRulesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules",
+            "api/v1/inbox/rules",
             method="POST",
             json={
                 "channelId": channel_id,
@@ -874,15 +888,13 @@ class AsyncRawInboxRulesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_comment_rule(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[CommentRule]:
         """
         Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -894,7 +906,7 @@ class AsyncRawInboxRulesClient:
             CommentRule
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules/{encode_path_param(rule_id)}",
+            f"api/v1/inbox/rules/{encode_path_param(rule_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -908,6 +920,17 @@ class AsyncRawInboxRulesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -962,15 +985,13 @@ class AsyncRawInboxRulesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete_comment_rule(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -981,13 +1002,24 @@ class AsyncRawInboxRulesClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules/{encode_path_param(rule_id)}",
+            f"api/v1/inbox/rules/{encode_path_param(rule_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1043,7 +1075,6 @@ class AsyncRawInboxRulesClient:
 
     async def update_comment_rule(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         keywords: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -1057,8 +1088,6 @@ class AsyncRawInboxRulesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         keywords : typing.Optional[typing.Sequence[str]]
@@ -1081,7 +1110,7 @@ class AsyncRawInboxRulesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/rules/{encode_path_param(rule_id)}",
+            f"api/v1/inbox/rules/{encode_path_param(rule_id)}",
             method="PATCH",
             json={
                 "keywords": keywords,
@@ -1105,6 +1134,17 @@ class AsyncRawInboxRulesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

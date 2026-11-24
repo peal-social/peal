@@ -23,6 +23,7 @@ import social.peal.core.PealClientHttpResponse;
 import social.peal.core.QueryStringMapper;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
@@ -48,35 +49,31 @@ public class RawSlideshowsClient {
     /**
      * Lists the slide videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public PealClientHttpResponse<Slideshows> list(String workspaceId) {
-        return list(workspaceId, ListSlideshowsRequest.builder().build());
+    public PealClientHttpResponse<Slideshows> list() {
+        return list(ListSlideshowsRequest.builder().build());
     }
 
     /**
      * Lists the slide videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public PealClientHttpResponse<Slideshows> list(String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListSlideshowsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Slideshows> list(RequestOptions requestOptions) {
+        return list(ListSlideshowsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the slide videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public PealClientHttpResponse<Slideshows> list(String workspaceId, ListSlideshowsRequest request) {
-        return list(workspaceId, request, null);
+    public PealClientHttpResponse<Slideshows> list(ListSlideshowsRequest request) {
+        return list(request, null);
     }
 
     /**
      * Lists the slide videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public PealClientHttpResponse<Slideshows> list(
-            String workspaceId, ListSlideshowsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Slideshows> list(ListSlideshowsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
-                .addPathSegments("slideshows");
+                .addPathSegments("api/v1/media/slideshows");
         if (request.getStatus().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "status", request.getStatus().get(), false);
@@ -114,6 +111,9 @@ public class RawSlideshowsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -144,21 +144,17 @@ public class RawSlideshowsClient {
     /**
      * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to compose 2 to 10 images of its library, in order, each with an optional caption and motion, optionally over a voice-over of its library, in the aspect asked, and answers 202 with the job, <code>queued</code>. Each slide lasts <code>secondsPerSlide</code>, or the voice-over's length shared between them, 90 seconds at most in all. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>, MP4 at 1080p), marked <code>aiGenerated</code> when a file it is made of was, and the member who asked is told in the app. The service receives each file through a link that works for an hour, and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. Its sandbox, when the connection names it, is free and watermarks every video. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One slide video at a time a workspace (CompositionBusy), 20 a UTC day (CompositionAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is composed fails it (<code>interrupted</code>). Neither the captions nor the video are logged, and the captions are kept only while the video is composed. Needs assistant:use and media:upload.
      */
-    public PealClientHttpResponse<Slideshow> create(String workspaceId, SlideshowRequest request) {
-        return create(workspaceId, request, null);
+    public PealClientHttpResponse<Slideshow> create(SlideshowRequest request) {
+        return create(request, null);
     }
 
     /**
      * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to compose 2 to 10 images of its library, in order, each with an optional caption and motion, optionally over a voice-over of its library, in the aspect asked, and answers 202 with the job, <code>queued</code>. Each slide lasts <code>secondsPerSlide</code>, or the voice-over's length shared between them, 90 seconds at most in all. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>, MP4 at 1080p), marked <code>aiGenerated</code> when a file it is made of was, and the member who asked is told in the app. The service receives each file through a link that works for an hour, and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. Its sandbox, when the connection names it, is free and watermarks every video. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One slide video at a time a workspace (CompositionBusy), 20 a UTC day (CompositionAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is composed fails it (<code>interrupted</code>). Neither the captions nor the video are logged, and the captions are kept only while the video is composed. Needs assistant:use and media:upload.
      */
-    public PealClientHttpResponse<Slideshow> create(
-            String workspaceId, SlideshowRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Slideshow> create(SlideshowRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
-                .addPathSegments("slideshows");
+                .addPathSegments("api/v1/media/slideshows");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -197,6 +193,9 @@ public class RawSlideshowsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -236,21 +235,17 @@ public class RawSlideshowsClient {
     /**
      * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to render a whole <a href="https://shotstack.io/docs/api/#tocs_edit">Shotstack Edit</a>, as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, <code>queued</code>, as a slide video's. A file of the workspace's library is named <code>peal:media/&lt;mediaId&gt;</code>: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from <code>https://fonts.gstatic.com/</code>; an asset Shotstack generates from a <code>prompt</code> needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (<code>format</code> <code>mp4</code> or none), at <code>preview</code>, <code>mobile</code>, <code>sd</code>, <code>hd</code> or <code>1080</code> (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's <code>aspect</code>), at 30 frames a second at most, without <code>size</code>, <code>range</code>, <code>scaleTo</code>, <code>repeat</code>, <code>poster</code> or <code>thumbnail</code>; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops <code>callback</code> and <code>disk</code>. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (<code>durationSeconds</code> is the latest such end). The job lists every library file the edit names in <code>imageMediaIds</code>, images or not. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
      */
-    public PealClientHttpResponse<Slideshow> createFromEdit(String workspaceId, EditRenderRequest request) {
-        return createFromEdit(workspaceId, request, null);
+    public PealClientHttpResponse<Slideshow> createFromEdit(EditRenderRequest request) {
+        return createFromEdit(request, null);
     }
 
     /**
      * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to render a whole <a href="https://shotstack.io/docs/api/#tocs_edit">Shotstack Edit</a>, as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, <code>queued</code>, as a slide video's. A file of the workspace's library is named <code>peal:media/&lt;mediaId&gt;</code>: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from <code>https://fonts.gstatic.com/</code>; an asset Shotstack generates from a <code>prompt</code> needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (<code>format</code> <code>mp4</code> or none), at <code>preview</code>, <code>mobile</code>, <code>sd</code>, <code>hd</code> or <code>1080</code> (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's <code>aspect</code>), at 30 frames a second at most, without <code>size</code>, <code>range</code>, <code>scaleTo</code>, <code>repeat</code>, <code>poster</code> or <code>thumbnail</code>; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops <code>callback</code> and <code>disk</code>. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (<code>durationSeconds</code> is the latest such end). The job lists every library file the edit names in <code>imageMediaIds</code>, images or not. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
      */
-    public PealClientHttpResponse<Slideshow> createFromEdit(
-            String workspaceId, EditRenderRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Slideshow> createFromEdit(EditRenderRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media/slideshows")
-                .addPathSegments("edits");
+                .addPathSegments("api/v1/media/slideshows/edits");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -289,6 +284,9 @@ public class RawSlideshowsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -328,35 +326,32 @@ public class RawSlideshowsClient {
     /**
      * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public PealClientHttpResponse<Slideshow> get(String workspaceId, String slideshowId) {
-        return get(workspaceId, slideshowId, GetSlideshowsRequest.builder().build());
+    public PealClientHttpResponse<Slideshow> get(String slideshowId) {
+        return get(slideshowId, GetSlideshowsRequest.builder().build());
+    }
+
+    /**
+     * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
+     */
+    public PealClientHttpResponse<Slideshow> get(String slideshowId, RequestOptions requestOptions) {
+        return get(slideshowId, GetSlideshowsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
+     */
+    public PealClientHttpResponse<Slideshow> get(String slideshowId, GetSlideshowsRequest request) {
+        return get(slideshowId, request, null);
     }
 
     /**
      * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
     public PealClientHttpResponse<Slideshow> get(
-            String workspaceId, String slideshowId, RequestOptions requestOptions) {
-        return get(workspaceId, slideshowId, GetSlideshowsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
-     */
-    public PealClientHttpResponse<Slideshow> get(String workspaceId, String slideshowId, GetSlideshowsRequest request) {
-        return get(workspaceId, slideshowId, request, null);
-    }
-
-    /**
-     * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
-     */
-    public PealClientHttpResponse<Slideshow> get(
-            String workspaceId, String slideshowId, GetSlideshowsRequest request, RequestOptions requestOptions) {
+            String slideshowId, GetSlideshowsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media/slideshows")
+                .addPathSegments("api/v1/media/slideshows")
                 .addPathSegment(PathSegments.validate(slideshowId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -391,6 +386,9 @@ public class RawSlideshowsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

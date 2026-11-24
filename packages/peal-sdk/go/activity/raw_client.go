@@ -43,10 +43,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/activity",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/activity"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err

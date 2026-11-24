@@ -4,11 +4,8 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListSlideshowsRequest {
-    workspaceId: string;
     status?: Peal.SlideshowStatus;
 }

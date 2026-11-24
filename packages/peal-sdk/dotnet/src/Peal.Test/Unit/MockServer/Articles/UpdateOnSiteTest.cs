@@ -69,7 +69,7 @@ public class UpdateOnSiteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId/site")
+                    .WithPath("/api/v1/articles/articleId/site")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -84,7 +84,6 @@ public class UpdateOnSiteTest : BaseMockServerTest
         var response = await Client.Articles.UpdateOnSiteAsync(
             new UpdateOnSiteArticlesRequest
             {
-                WorkspaceId = "workspaceId",
                 ArticleId = "articleId",
                 Body = new ArticleInput
                 {
@@ -157,7 +156,7 @@ public class UpdateOnSiteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId/site")
+                    .WithPath("/api/v1/articles/articleId/site")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -172,7 +171,6 @@ public class UpdateOnSiteTest : BaseMockServerTest
         var response = await Client.Articles.UpdateOnSiteAsync(
             new UpdateOnSiteArticlesRequest
             {
-                WorkspaceId = "workspaceId",
                 ArticleId = "articleId",
                 Body = new ArticleInput
                 {

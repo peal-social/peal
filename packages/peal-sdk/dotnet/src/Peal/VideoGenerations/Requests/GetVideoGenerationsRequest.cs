@@ -7,9 +7,6 @@ namespace Peal;
 public record GetVideoGenerationsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string GenerationId { get; set; }
 
     /// <inheritdoc />

@@ -6,11 +6,10 @@ package social.peal.resources.tags;
 import java.util.List;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
-import social.peal.resources.tags.requests.CreateTagsRequest;
 import social.peal.resources.tags.requests.DeleteTagsRequest;
-import social.peal.resources.tags.requests.ListTagsRequest;
 import social.peal.resources.tags.requests.UpdateTagsRequest;
 import social.peal.types.Tag;
+import social.peal.types.TagDetails;
 
 public class TagsClient {
     protected final ClientOptions clientOptions;
@@ -32,86 +31,70 @@ public class TagsClient {
     /**
      * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
      */
-    public List<Tag> list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public List<Tag> list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
      */
-    public List<Tag> list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
-     */
-    public List<Tag> list(String workspaceId, ListTagsRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
-    }
-
-    /**
-     * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
-     */
-    public List<Tag> list(String workspaceId, ListTagsRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public List<Tag> list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
      */
-    public Tag create(String workspaceId, CreateTagsRequest request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public Tag create(TagDetails request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
      */
-    public Tag create(String workspaceId, CreateTagsRequest request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public Tag create(TagDetails request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
      */
-    public void delete(String workspaceId, String tagId) {
-        this.rawClient.delete(workspaceId, tagId).body();
+    public void delete(String tagId) {
+        this.rawClient.delete(tagId).body();
     }
 
     /**
      * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
      */
-    public void delete(String workspaceId, String tagId, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, tagId, requestOptions).body();
+    public void delete(String tagId, RequestOptions requestOptions) {
+        this.rawClient.delete(tagId, requestOptions).body();
     }
 
     /**
      * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
      */
-    public void delete(String workspaceId, String tagId, DeleteTagsRequest request) {
-        this.rawClient.delete(workspaceId, tagId, request).body();
+    public void delete(String tagId, DeleteTagsRequest request) {
+        this.rawClient.delete(tagId, request).body();
     }
 
     /**
      * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
      */
-    public void delete(String workspaceId, String tagId, DeleteTagsRequest request, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, tagId, request, requestOptions).body();
+    public void delete(String tagId, DeleteTagsRequest request, RequestOptions requestOptions) {
+        this.rawClient.delete(tagId, request, requestOptions).body();
     }
 
     /**
      * Gives a tag another name or colour. Its posts keep it. Needs post:update.
      */
-    public Tag update(String workspaceId, String tagId, UpdateTagsRequest request) {
-        return this.rawClient.update(workspaceId, tagId, request).body();
+    public Tag update(String tagId, UpdateTagsRequest request) {
+        return this.rawClient.update(tagId, request).body();
     }
 
     /**
      * Gives a tag another name or colour. Its posts keep it. Needs post:update.
      */
-    public Tag update(String workspaceId, String tagId, UpdateTagsRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .update(workspaceId, tagId, request, requestOptions)
-                .body();
+    public Tag update(String tagId, UpdateTagsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.update(tagId, request, requestOptions).body();
     }
 }

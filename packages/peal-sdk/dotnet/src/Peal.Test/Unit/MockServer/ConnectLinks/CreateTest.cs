@@ -50,7 +50,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/connect-links")
+                    .WithPath("/api/v1/connect-links")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -65,7 +65,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.ConnectLinks.CreateAsync(
             new NewConnectLink
             {
-                WorkspaceId = "workspaceId",
                 ChannelId = null,
                 Connection = null,
                 ExpiresInHours = null,
@@ -116,7 +115,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/connect-links")
+                    .WithPath("/api/v1/connect-links")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -128,9 +127,7 @@ public class CreateTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.ConnectLinks.CreateAsync(
-            new NewConnectLink { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.ConnectLinks.CreateAsync(new NewConnectLink());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

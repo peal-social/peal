@@ -7,9 +7,6 @@ namespace Peal;
 public record QueuePost
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PostId { get; set; }
 
     [JsonPropertyName("channelIds")]

@@ -7,9 +7,6 @@ namespace Peal;
 public record ListSlideshowsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public SlideshowStatus? Status { get; set; }
 
     /// <inheritdoc />

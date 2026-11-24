@@ -15,15 +15,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId")
+                    .WithPath("/api/v1/media/mediaId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Media.DeleteAsync(
-                new DeleteMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-            )
+            await Client.Media.DeleteAsync(new DeleteMediaRequest { MediaId = "mediaId" })
         );
     }
 
@@ -34,15 +32,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/mediaId")
+                    .WithPath("/api/v1/media/mediaId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Media.DeleteAsync(
-                new DeleteMediaRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-            )
+            await Client.Media.DeleteAsync(new DeleteMediaRequest { MediaId = "mediaId" })
         );
     }
 }

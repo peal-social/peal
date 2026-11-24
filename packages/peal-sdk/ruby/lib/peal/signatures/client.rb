@@ -13,24 +13,22 @@ module Peal
       # Lists the workspace's signatures, oldest first. Needs post:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.signatures.list(workspace_id: "workspaceId")
+      #   client.signatures.list
       #
       # @return [Array[Peal::Types::Signature]]
-      def list(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/signatures",
+          path: "api/v1/signatures",
           request_options: request_options
         )
         begin
@@ -65,11 +63,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.signatures.create(
-      #     workspace_id: "workspaceId",
       #     name: "name",
       #     text: "text"
       #   )
@@ -77,14 +73,11 @@ module Peal
       # @return [Peal::Types::Signature]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/signatures",
-          body: Peal::Types::SignatureDetails.new(body_params).to_h,
+          path: "api/v1/signatures",
+          body: Peal::Types::SignatureDetails.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -116,12 +109,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :signature_id
       #
       # @example
       #   client.signatures.update(
-      #     workspace_id: "workspaceId",
       #     signature_id: "signatureId",
       #     name: "name",
       #     text: "text"
@@ -130,13 +121,13 @@ module Peal
       # @return [Peal::Types::Signature]
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id signature_id]
+        path_param_names = %i[signature_id]
         body_params = params.except(*path_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/signatures/#{URI.encode_uri_component(params[:signature_id].to_s)}",
+          path: "api/v1/signatures/#{URI.encode_uri_component(params[:signature_id].to_s)}",
           body: Peal::Types::SignatureDetails.new(body_params).to_h,
           request_options: request_options
         )
@@ -167,14 +158,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :signature_id
       #
       # @example
-      #   client.signatures.delete(
-      #     workspace_id: "workspaceId",
-      #     signature_id: "signatureId"
-      #   )
+      #   client.signatures.delete(signature_id: "signatureId")
       #
       # @return [untyped]
       def delete(request_options: {}, **params)
@@ -182,7 +169,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/signatures/#{URI.encode_uri_component(params[:signature_id].to_s)}",
+          path: "api/v1/signatures/#{URI.encode_uri_component(params[:signature_id].to_s)}",
           request_options: request_options
         )
         begin

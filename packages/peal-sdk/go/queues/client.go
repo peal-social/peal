@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListQueuesRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Queues.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListQueuesRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.Queue, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,18 +59,15 @@ func (c *Client) List(
 //
 // Example:
 //
-//	request := &peal.CreateQueuesRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.QueueDetails{
-//	        Name: "name",
-//	        Slots: []*peal.QueueSlot{
-//	            &peal.QueueSlot{
-//	                Day: peal.WeekdayMonday,
-//	                Time: "time",
-//	            },
+//	request := &peal.QueueDetails{
+//	    Name: "name",
+//	    Slots: []*peal.QueueSlot{
+//	        &peal.QueueSlot{
+//	            Day: peal.WeekdayMonday,
+//	            Time: "time",
 //	        },
-//	        TimeZone: "timeZone",
 //	    },
+//	    TimeZone: "timeZone",
 //	}
 //	_, err := client.Queues.Create(
 //	    context.TODO(),
@@ -84,7 +75,7 @@ func (c *Client) List(
 //	)
 func (c *Client) Create(
 	ctx context.Context,
-	request *peal.CreateQueuesRequest,
+	request *peal.QueueDetails,
 	opts ...option.RequestOption,
 ) (*peal.Queue, error) {
 	response, err := c.WithRawResponse.Create(
@@ -103,7 +94,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.GetQueuesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    QueueID: "queueId",
 //	}
 //	_, err := client.Queues.Get(
@@ -131,7 +121,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.UpdateQueuesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    QueueID: "queueId",
 //	    Body: &peal.QueueDetails{
 //	        Name: "name",
@@ -169,7 +158,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.DeleteQueuesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    QueueID: "queueId",
 //	}
 //	err := client.Queues.Delete(
@@ -197,7 +185,6 @@ func (c *Client) Delete(
 // Example:
 //
 //	request := &peal.SlotsQueuesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    QueueID: "queueId",
 //	}
 //	_, err := client.Queues.Slots(
@@ -225,7 +212,6 @@ func (c *Client) Slots(
 // Example:
 //
 //	request := &peal.ReshuffleQueuesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    QueueID: "queueId",
 //	}
 //	_, err := client.Queues.Reshuffle(

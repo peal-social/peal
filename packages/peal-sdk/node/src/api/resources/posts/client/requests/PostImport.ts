@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         csv: "csv"
  *     }
  */
 export interface PostImport {
-    workspaceId: string;
     "idempotency-key"?: string;
     csv: string;
     dryRun?: boolean;

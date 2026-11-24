@@ -25,6 +25,7 @@ public class BaseMockServerTest
         // Initialize the Client
         Client = new PealClient(
             "TOKEN",
+            "WORKSPACE",
             clientOptions: new ClientOptions { BaseUrl = Server.Urls[0], MaxRetries = 0 }
         );
     }

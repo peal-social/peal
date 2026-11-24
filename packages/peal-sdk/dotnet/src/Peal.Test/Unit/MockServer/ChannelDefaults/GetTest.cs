@@ -40,7 +40,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/default-options")
+                    .WithPath("/api/v1/channels/channelId/default-options")
                     .UsingGet()
             )
             .RespondWith(
@@ -51,7 +51,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.ChannelDefaults.GetAsync(
-            new GetChannelDefaultsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new GetChannelDefaultsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -86,7 +86,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/default-options")
+                    .WithPath("/api/v1/channels/channelId/default-options")
                     .UsingGet()
             )
             .RespondWith(
@@ -97,7 +97,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.ChannelDefaults.GetAsync(
-            new GetChannelDefaultsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new GetChannelDefaultsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

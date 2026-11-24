@@ -39,7 +39,6 @@ func NewClient(options *core.RequestOptions) *Client {
 // Example:
 //
 //	request := &peal.CreatorTiktokRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.Tiktok.Creator(

@@ -17,19 +17,15 @@ import social.peal.resources.ads.requests.CreateBoostAdsRequest;
 import social.peal.resources.ads.requests.DisconnectAdsRequest;
 import social.peal.resources.ads.requests.GetAccountAdsRequest;
 import social.peal.resources.ads.requests.GetBoostAdsRequest;
-import social.peal.resources.ads.requests.ListAccountsAdsRequest;
 import social.peal.resources.ads.requests.ListAdsAdsRequest;
 import social.peal.resources.ads.requests.ListBoostsAdsRequest;
 import social.peal.resources.ads.requests.ListCampaignsAdsRequest;
-import social.peal.resources.ads.requests.ListConnectionsAdsRequest;
 import social.peal.resources.ads.requests.ListInsightsAdsRequest;
 import social.peal.resources.ads.requests.PauseBoostAdsRequest;
 import social.peal.resources.ads.requests.PostPerformanceAdsRequest;
-import social.peal.resources.ads.requests.QuoteBoostAdsRequest;
 import social.peal.resources.ads.requests.ReachableAccountsAdsRequest;
 import social.peal.resources.ads.requests.RemoveAccountAdsRequest;
 import social.peal.resources.ads.requests.ResumeBoostAdsRequest;
-import social.peal.resources.ads.requests.StatusAdsRequest;
 import social.peal.resources.ads.requests.StopBoostAdsRequest;
 import social.peal.types.AdAccount;
 import social.peal.types.AdAuditPage;
@@ -46,6 +42,7 @@ import social.peal.types.Boost;
 import social.peal.types.BoostDetail;
 import social.peal.types.BoostPage;
 import social.peal.types.BoostQuote;
+import social.peal.types.NewBoost;
 import social.peal.types.PostAdPerformance;
 import social.peal.types.ReachableAdAccount;
 
@@ -69,8 +66,8 @@ public class AsyncAdsClient {
     /**
      * Says what this server offers of ads (<code>off</code>, <code>read</code> or <code>spend</code>) and on which networks. Needs ads:read.
      */
-    public CompletableFuture<AdsStatus> status(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<AdsStatus>> rawFuture = this.rawClient.status(workspaceId);
+    public CompletableFuture<AdsStatus> status() {
+        CompletableFuture<PealClientHttpResponse<AdsStatus>> rawFuture = this.rawClient.status();
         CompletableFuture<AdsStatus> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -83,39 +80,8 @@ public class AsyncAdsClient {
     /**
      * Says what this server offers of ads (<code>off</code>, <code>read</code> or <code>spend</code>) and on which networks. Needs ads:read.
      */
-    public CompletableFuture<AdsStatus> status(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AdsStatus>> rawFuture =
-                this.rawClient.status(workspaceId, requestOptions);
-        CompletableFuture<AdsStatus> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Says what this server offers of ads (<code>off</code>, <code>read</code> or <code>spend</code>) and on which networks. Needs ads:read.
-     */
-    public CompletableFuture<AdsStatus> status(String workspaceId, StatusAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AdsStatus>> rawFuture = this.rawClient.status(workspaceId, request);
-        CompletableFuture<AdsStatus> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Says what this server offers of ads (<code>off</code>, <code>read</code> or <code>spend</code>) and on which networks. Needs ads:read.
-     */
-    public CompletableFuture<AdsStatus> status(
-            String workspaceId, StatusAdsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AdsStatus>> rawFuture =
-                this.rawClient.status(workspaceId, request, requestOptions);
+    public CompletableFuture<AdsStatus> status(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<AdsStatus>> rawFuture = this.rawClient.status(requestOptions);
         CompletableFuture<AdsStatus> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -128,9 +94,8 @@ public class AsyncAdsClient {
     /**
      * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
      */
-    public CompletableFuture<List<AdConnection>> listConnections(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<AdConnection>>> rawFuture =
-                this.rawClient.listConnections(workspaceId);
+    public CompletableFuture<List<AdConnection>> listConnections() {
+        CompletableFuture<PealClientHttpResponse<List<AdConnection>>> rawFuture = this.rawClient.listConnections();
         CompletableFuture<List<AdConnection>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -143,41 +108,9 @@ public class AsyncAdsClient {
     /**
      * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
      */
-    public CompletableFuture<List<AdConnection>> listConnections(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<List<AdConnection>> listConnections(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<AdConnection>>> rawFuture =
-                this.rawClient.listConnections(workspaceId, requestOptions);
-        CompletableFuture<List<AdConnection>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
-     */
-    public CompletableFuture<List<AdConnection>> listConnections(
-            String workspaceId, ListConnectionsAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<AdConnection>>> rawFuture =
-                this.rawClient.listConnections(workspaceId, request);
-        CompletableFuture<List<AdConnection>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
-     */
-    public CompletableFuture<List<AdConnection>> listConnections(
-            String workspaceId, ListConnectionsAdsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<AdConnection>>> rawFuture =
-                this.rawClient.listConnections(workspaceId, request, requestOptions);
+                this.rawClient.listConnections(requestOptions);
         CompletableFuture<List<AdConnection>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -190,8 +123,8 @@ public class AsyncAdsClient {
     /**
      * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
      */
-    public CompletableFuture<AdSignIn> connect(String workspaceId, AdNetwork network) {
-        CompletableFuture<PealClientHttpResponse<AdSignIn>> rawFuture = this.rawClient.connect(workspaceId, network);
+    public CompletableFuture<AdSignIn> connect(AdNetwork network) {
+        CompletableFuture<PealClientHttpResponse<AdSignIn>> rawFuture = this.rawClient.connect(network);
         CompletableFuture<AdSignIn> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -204,9 +137,8 @@ public class AsyncAdsClient {
     /**
      * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
      */
-    public CompletableFuture<AdSignIn> connect(String workspaceId, AdNetwork network, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AdSignIn>> rawFuture =
-                this.rawClient.connect(workspaceId, network, requestOptions);
+    public CompletableFuture<AdSignIn> connect(AdNetwork network, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<AdSignIn>> rawFuture = this.rawClient.connect(network, requestOptions);
         CompletableFuture<AdSignIn> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -219,9 +151,8 @@ public class AsyncAdsClient {
     /**
      * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
      */
-    public CompletableFuture<AdSignIn> connect(String workspaceId, AdNetwork network, ConnectAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AdSignIn>> rawFuture =
-                this.rawClient.connect(workspaceId, network, request);
+    public CompletableFuture<AdSignIn> connect(AdNetwork network, ConnectAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<AdSignIn>> rawFuture = this.rawClient.connect(network, request);
         CompletableFuture<AdSignIn> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -235,9 +166,9 @@ public class AsyncAdsClient {
      * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
      */
     public CompletableFuture<AdSignIn> connect(
-            String workspaceId, AdNetwork network, ConnectAdsRequest request, RequestOptions requestOptions) {
+            AdNetwork network, ConnectAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdSignIn>> rawFuture =
-                this.rawClient.connect(workspaceId, network, request, requestOptions);
+                this.rawClient.connect(network, request, requestOptions);
         CompletableFuture<AdSignIn> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -250,10 +181,9 @@ public class AsyncAdsClient {
     /**
      * Completes a sign-in with what the network's page sent back, and answers the ad accounts it reaches. Nothing is connected yet: <code>connectAccounts</code> connects those chosen. A sign-in is completed once, within 15 minutes, by who started it. Needs ads:manage, in person.
      */
-    public CompletableFuture<AdSignInResult> completeConnect(
-            String workspaceId, AdNetwork network, AdSignInCallback request) {
+    public CompletableFuture<AdSignInResult> completeConnect(AdNetwork network, AdSignInCallback request) {
         CompletableFuture<PealClientHttpResponse<AdSignInResult>> rawFuture =
-                this.rawClient.completeConnect(workspaceId, network, request);
+                this.rawClient.completeConnect(network, request);
         CompletableFuture<AdSignInResult> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -267,9 +197,9 @@ public class AsyncAdsClient {
      * Completes a sign-in with what the network's page sent back, and answers the ad accounts it reaches. Nothing is connected yet: <code>connectAccounts</code> connects those chosen. A sign-in is completed once, within 15 minutes, by who started it. Needs ads:manage, in person.
      */
     public CompletableFuture<AdSignInResult> completeConnect(
-            String workspaceId, AdNetwork network, AdSignInCallback request, RequestOptions requestOptions) {
+            AdNetwork network, AdSignInCallback request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdSignInResult>> rawFuture =
-                this.rawClient.completeConnect(workspaceId, network, request, requestOptions);
+                this.rawClient.completeConnect(network, request, requestOptions);
         CompletableFuture<AdSignInResult> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -282,9 +212,9 @@ public class AsyncAdsClient {
     /**
      * Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
      */
-    public CompletableFuture<List<ReachableAdAccount>> reachableAccounts(String workspaceId, String connectionId) {
+    public CompletableFuture<List<ReachableAdAccount>> reachableAccounts(String connectionId) {
         CompletableFuture<PealClientHttpResponse<List<ReachableAdAccount>>> rawFuture =
-                this.rawClient.reachableAccounts(workspaceId, connectionId);
+                this.rawClient.reachableAccounts(connectionId);
         CompletableFuture<List<ReachableAdAccount>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -298,9 +228,9 @@ public class AsyncAdsClient {
      * Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
      */
     public CompletableFuture<List<ReachableAdAccount>> reachableAccounts(
-            String workspaceId, String connectionId, RequestOptions requestOptions) {
+            String connectionId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<ReachableAdAccount>>> rawFuture =
-                this.rawClient.reachableAccounts(workspaceId, connectionId, requestOptions);
+                this.rawClient.reachableAccounts(connectionId, requestOptions);
         CompletableFuture<List<ReachableAdAccount>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -314,9 +244,9 @@ public class AsyncAdsClient {
      * Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
      */
     public CompletableFuture<List<ReachableAdAccount>> reachableAccounts(
-            String workspaceId, String connectionId, ReachableAccountsAdsRequest request) {
+            String connectionId, ReachableAccountsAdsRequest request) {
         CompletableFuture<PealClientHttpResponse<List<ReachableAdAccount>>> rawFuture =
-                this.rawClient.reachableAccounts(workspaceId, connectionId, request);
+                this.rawClient.reachableAccounts(connectionId, request);
         CompletableFuture<List<ReachableAdAccount>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -330,12 +260,9 @@ public class AsyncAdsClient {
      * Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
      */
     public CompletableFuture<List<ReachableAdAccount>> reachableAccounts(
-            String workspaceId,
-            String connectionId,
-            ReachableAccountsAdsRequest request,
-            RequestOptions requestOptions) {
+            String connectionId, ReachableAccountsAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<ReachableAdAccount>>> rawFuture =
-                this.rawClient.reachableAccounts(workspaceId, connectionId, request, requestOptions);
+                this.rawClient.reachableAccounts(connectionId, request, requestOptions);
         CompletableFuture<List<ReachableAdAccount>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -348,10 +275,9 @@ public class AsyncAdsClient {
     /**
      * Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the network gives them. The network is asked again which accounts the sign-in reaches: one it does not reach is <code>AdAccountNotFound</code>, and nothing is connected. An account connected before stays as it is. Spending is off on every new account until an owner turns it on. Only who signed in does this (ads:manage, in person).
      */
-    public CompletableFuture<List<AdAccount>> connectAccounts(
-            String workspaceId, String connectionId, AdAccountsToConnect request) {
+    public CompletableFuture<List<AdAccount>> connectAccounts(String connectionId, AdAccountsToConnect request) {
         CompletableFuture<PealClientHttpResponse<List<AdAccount>>> rawFuture =
-                this.rawClient.connectAccounts(workspaceId, connectionId, request);
+                this.rawClient.connectAccounts(connectionId, request);
         CompletableFuture<List<AdAccount>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -365,9 +291,9 @@ public class AsyncAdsClient {
      * Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the network gives them. The network is asked again which accounts the sign-in reaches: one it does not reach is <code>AdAccountNotFound</code>, and nothing is connected. An account connected before stays as it is. Spending is off on every new account until an owner turns it on. Only who signed in does this (ads:manage, in person).
      */
     public CompletableFuture<List<AdAccount>> connectAccounts(
-            String workspaceId, String connectionId, AdAccountsToConnect request, RequestOptions requestOptions) {
+            String connectionId, AdAccountsToConnect request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<AdAccount>>> rawFuture =
-                this.rawClient.connectAccounts(workspaceId, connectionId, request, requestOptions);
+                this.rawClient.connectAccounts(connectionId, request, requestOptions);
         CompletableFuture<List<AdAccount>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -380,9 +306,8 @@ public class AsyncAdsClient {
     /**
      * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
      */
-    public CompletableFuture<Void> disconnect(String workspaceId, String connectionId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnect(workspaceId, connectionId);
+    public CompletableFuture<Void> disconnect(String connectionId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.disconnect(connectionId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -395,9 +320,9 @@ public class AsyncAdsClient {
     /**
      * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
      */
-    public CompletableFuture<Void> disconnect(String workspaceId, String connectionId, RequestOptions requestOptions) {
+    public CompletableFuture<Void> disconnect(String connectionId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnect(workspaceId, connectionId, requestOptions);
+                this.rawClient.disconnect(connectionId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -410,9 +335,8 @@ public class AsyncAdsClient {
     /**
      * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
      */
-    public CompletableFuture<Void> disconnect(String workspaceId, String connectionId, DisconnectAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnect(workspaceId, connectionId, request);
+    public CompletableFuture<Void> disconnect(String connectionId, DisconnectAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.disconnect(connectionId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -426,9 +350,9 @@ public class AsyncAdsClient {
      * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
      */
     public CompletableFuture<Void> disconnect(
-            String workspaceId, String connectionId, DisconnectAdsRequest request, RequestOptions requestOptions) {
+            String connectionId, DisconnectAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnect(workspaceId, connectionId, request, requestOptions);
+                this.rawClient.disconnect(connectionId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -441,8 +365,8 @@ public class AsyncAdsClient {
     /**
      * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
      */
-    public CompletableFuture<List<AdAccount>> listAccounts(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<AdAccount>>> rawFuture = this.rawClient.listAccounts(workspaceId);
+    public CompletableFuture<List<AdAccount>> listAccounts() {
+        CompletableFuture<PealClientHttpResponse<List<AdAccount>>> rawFuture = this.rawClient.listAccounts();
         CompletableFuture<List<AdAccount>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -455,40 +379,9 @@ public class AsyncAdsClient {
     /**
      * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
      */
-    public CompletableFuture<List<AdAccount>> listAccounts(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<List<AdAccount>> listAccounts(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<AdAccount>>> rawFuture =
-                this.rawClient.listAccounts(workspaceId, requestOptions);
-        CompletableFuture<List<AdAccount>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
-     */
-    public CompletableFuture<List<AdAccount>> listAccounts(String workspaceId, ListAccountsAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<AdAccount>>> rawFuture =
-                this.rawClient.listAccounts(workspaceId, request);
-        CompletableFuture<List<AdAccount>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
-     */
-    public CompletableFuture<List<AdAccount>> listAccounts(
-            String workspaceId, ListAccountsAdsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<AdAccount>>> rawFuture =
-                this.rawClient.listAccounts(workspaceId, request, requestOptions);
+                this.rawClient.listAccounts(requestOptions);
         CompletableFuture<List<AdAccount>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -501,9 +394,37 @@ public class AsyncAdsClient {
     /**
      * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
      */
-    public CompletableFuture<AdSpending> getAccount(String workspaceId, String accountId) {
+    public CompletableFuture<AdSpending> getAccount(String accountId) {
+        CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture = this.rawClient.getAccount(accountId);
+        CompletableFuture<AdSpending> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
+     */
+    public CompletableFuture<AdSpending> getAccount(String accountId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture =
-                this.rawClient.getAccount(workspaceId, accountId);
+                this.rawClient.getAccount(accountId, requestOptions);
+        CompletableFuture<AdSpending> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
+     */
+    public CompletableFuture<AdSpending> getAccount(String accountId, GetAccountAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture = this.rawClient.getAccount(accountId, request);
         CompletableFuture<AdSpending> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -517,41 +438,9 @@ public class AsyncAdsClient {
      * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
      */
     public CompletableFuture<AdSpending> getAccount(
-            String workspaceId, String accountId, RequestOptions requestOptions) {
+            String accountId, GetAccountAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture =
-                this.rawClient.getAccount(workspaceId, accountId, requestOptions);
-        CompletableFuture<AdSpending> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
-     */
-    public CompletableFuture<AdSpending> getAccount(
-            String workspaceId, String accountId, GetAccountAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture =
-                this.rawClient.getAccount(workspaceId, accountId, request);
-        CompletableFuture<AdSpending> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
-     */
-    public CompletableFuture<AdSpending> getAccount(
-            String workspaceId, String accountId, GetAccountAdsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture =
-                this.rawClient.getAccount(workspaceId, accountId, request, requestOptions);
+                this.rawClient.getAccount(accountId, request, requestOptions);
         CompletableFuture<AdSpending> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -564,9 +453,8 @@ public class AsyncAdsClient {
     /**
      * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
      */
-    public CompletableFuture<Void> removeAccount(String workspaceId, String accountId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeAccount(workspaceId, accountId);
+    public CompletableFuture<Void> removeAccount(String accountId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.removeAccount(accountId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -579,9 +467,23 @@ public class AsyncAdsClient {
     /**
      * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
      */
-    public CompletableFuture<Void> removeAccount(String workspaceId, String accountId, RequestOptions requestOptions) {
+    public CompletableFuture<Void> removeAccount(String accountId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeAccount(workspaceId, accountId, requestOptions);
+                this.rawClient.removeAccount(accountId, requestOptions);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
+     */
+    public CompletableFuture<Void> removeAccount(String accountId, RemoveAccountAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.removeAccount(accountId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -595,25 +497,9 @@ public class AsyncAdsClient {
      * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
      */
     public CompletableFuture<Void> removeAccount(
-            String workspaceId, String accountId, RemoveAccountAdsRequest request) {
+            String accountId, RemoveAccountAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeAccount(workspaceId, accountId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
-     */
-    public CompletableFuture<Void> removeAccount(
-            String workspaceId, String accountId, RemoveAccountAdsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeAccount(workspaceId, accountId, request, requestOptions);
+                this.rawClient.removeAccount(accountId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -626,9 +512,9 @@ public class AsyncAdsClient {
     /**
      * Decides whether an ad account may spend through Peal, and how much: <code>enabled</code> with a <code>monthlyCeiling</code> in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (<code>AdAccountBusy</code>). Turning it on is refused (<code>AdSpendingUnavailable</code>) on a server that offers no spending, and on an account whose <code>capabilities.boosts</code> is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
      */
-    public CompletableFuture<AdSpending> setSpending(String workspaceId, String accountId, AdSpendingDecision request) {
+    public CompletableFuture<AdSpending> setSpending(String accountId, AdSpendingDecision request) {
         CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture =
-                this.rawClient.setSpending(workspaceId, accountId, request);
+                this.rawClient.setSpending(accountId, request);
         CompletableFuture<AdSpending> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -642,9 +528,9 @@ public class AsyncAdsClient {
      * Decides whether an ad account may spend through Peal, and how much: <code>enabled</code> with a <code>monthlyCeiling</code> in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (<code>AdAccountBusy</code>). Turning it on is refused (<code>AdSpendingUnavailable</code>) on a server that offers no spending, and on an account whose <code>capabilities.boosts</code> is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
      */
     public CompletableFuture<AdSpending> setSpending(
-            String workspaceId, String accountId, AdSpendingDecision request, RequestOptions requestOptions) {
+            String accountId, AdSpendingDecision request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdSpending>> rawFuture =
-                this.rawClient.setSpending(workspaceId, accountId, request, requestOptions);
+                this.rawClient.setSpending(accountId, request, requestOptions);
         CompletableFuture<AdSpending> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -657,9 +543,38 @@ public class AsyncAdsClient {
     /**
      * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
      */
-    public CompletableFuture<AdCampaignReport> listCampaigns(String workspaceId, String accountId) {
+    public CompletableFuture<AdCampaignReport> listCampaigns(String accountId) {
+        CompletableFuture<PealClientHttpResponse<AdCampaignReport>> rawFuture = this.rawClient.listCampaigns(accountId);
+        CompletableFuture<AdCampaignReport> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
+     */
+    public CompletableFuture<AdCampaignReport> listCampaigns(String accountId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdCampaignReport>> rawFuture =
-                this.rawClient.listCampaigns(workspaceId, accountId);
+                this.rawClient.listCampaigns(accountId, requestOptions);
+        CompletableFuture<AdCampaignReport> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
+     */
+    public CompletableFuture<AdCampaignReport> listCampaigns(String accountId, ListCampaignsAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<AdCampaignReport>> rawFuture =
+                this.rawClient.listCampaigns(accountId, request);
         CompletableFuture<AdCampaignReport> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -673,41 +588,9 @@ public class AsyncAdsClient {
      * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
      */
     public CompletableFuture<AdCampaignReport> listCampaigns(
-            String workspaceId, String accountId, RequestOptions requestOptions) {
+            String accountId, ListCampaignsAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdCampaignReport>> rawFuture =
-                this.rawClient.listCampaigns(workspaceId, accountId, requestOptions);
-        CompletableFuture<AdCampaignReport> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
-     */
-    public CompletableFuture<AdCampaignReport> listCampaigns(
-            String workspaceId, String accountId, ListCampaignsAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AdCampaignReport>> rawFuture =
-                this.rawClient.listCampaigns(workspaceId, accountId, request);
-        CompletableFuture<AdCampaignReport> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
-     */
-    public CompletableFuture<AdCampaignReport> listCampaigns(
-            String workspaceId, String accountId, ListCampaignsAdsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AdCampaignReport>> rawFuture =
-                this.rawClient.listCampaigns(workspaceId, accountId, request, requestOptions);
+                this.rawClient.listCampaigns(accountId, request, requestOptions);
         CompletableFuture<AdCampaignReport> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -720,8 +603,8 @@ public class AsyncAdsClient {
     /**
      * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
-    public CompletableFuture<AdReport> listAds(String workspaceId, String accountId) {
-        CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture = this.rawClient.listAds(workspaceId, accountId);
+    public CompletableFuture<AdReport> listAds(String accountId) {
+        CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture = this.rawClient.listAds(accountId);
         CompletableFuture<AdReport> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -734,9 +617,9 @@ public class AsyncAdsClient {
     /**
      * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
-    public CompletableFuture<AdReport> listAds(String workspaceId, String accountId, RequestOptions requestOptions) {
+    public CompletableFuture<AdReport> listAds(String accountId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture =
-                this.rawClient.listAds(workspaceId, accountId, requestOptions);
+                this.rawClient.listAds(accountId, requestOptions);
         CompletableFuture<AdReport> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -749,9 +632,8 @@ public class AsyncAdsClient {
     /**
      * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
-    public CompletableFuture<AdReport> listAds(String workspaceId, String accountId, ListAdsAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture =
-                this.rawClient.listAds(workspaceId, accountId, request);
+    public CompletableFuture<AdReport> listAds(String accountId, ListAdsAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture = this.rawClient.listAds(accountId, request);
         CompletableFuture<AdReport> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -765,9 +647,9 @@ public class AsyncAdsClient {
      * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
     public CompletableFuture<AdReport> listAds(
-            String workspaceId, String accountId, ListAdsAdsRequest request, RequestOptions requestOptions) {
+            String accountId, ListAdsAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdReport>> rawFuture =
-                this.rawClient.listAds(workspaceId, accountId, request, requestOptions);
+                this.rawClient.listAds(accountId, request, requestOptions);
         CompletableFuture<AdReport> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -780,9 +662,38 @@ public class AsyncAdsClient {
     /**
      * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
      */
-    public CompletableFuture<AdInsightReport> listInsights(String workspaceId, String accountId) {
+    public CompletableFuture<AdInsightReport> listInsights(String accountId) {
+        CompletableFuture<PealClientHttpResponse<AdInsightReport>> rawFuture = this.rawClient.listInsights(accountId);
+        CompletableFuture<AdInsightReport> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
+     */
+    public CompletableFuture<AdInsightReport> listInsights(String accountId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdInsightReport>> rawFuture =
-                this.rawClient.listInsights(workspaceId, accountId);
+                this.rawClient.listInsights(accountId, requestOptions);
+        CompletableFuture<AdInsightReport> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
+     */
+    public CompletableFuture<AdInsightReport> listInsights(String accountId, ListInsightsAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<AdInsightReport>> rawFuture =
+                this.rawClient.listInsights(accountId, request);
         CompletableFuture<AdInsightReport> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -796,41 +707,9 @@ public class AsyncAdsClient {
      * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
      */
     public CompletableFuture<AdInsightReport> listInsights(
-            String workspaceId, String accountId, RequestOptions requestOptions) {
+            String accountId, ListInsightsAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdInsightReport>> rawFuture =
-                this.rawClient.listInsights(workspaceId, accountId, requestOptions);
-        CompletableFuture<AdInsightReport> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
-     */
-    public CompletableFuture<AdInsightReport> listInsights(
-            String workspaceId, String accountId, ListInsightsAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AdInsightReport>> rawFuture =
-                this.rawClient.listInsights(workspaceId, accountId, request);
-        CompletableFuture<AdInsightReport> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
-     */
-    public CompletableFuture<AdInsightReport> listInsights(
-            String workspaceId, String accountId, ListInsightsAdsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AdInsightReport>> rawFuture =
-                this.rawClient.listInsights(workspaceId, accountId, request, requestOptions);
+                this.rawClient.listInsights(accountId, request, requestOptions);
         CompletableFuture<AdInsightReport> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -843,9 +722,38 @@ public class AsyncAdsClient {
     /**
      * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
      */
-    public CompletableFuture<PostAdPerformance> postPerformance(String workspaceId, String postId) {
+    public CompletableFuture<PostAdPerformance> postPerformance(String postId) {
+        CompletableFuture<PealClientHttpResponse<PostAdPerformance>> rawFuture = this.rawClient.postPerformance(postId);
+        CompletableFuture<PostAdPerformance> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
+     */
+    public CompletableFuture<PostAdPerformance> postPerformance(String postId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<PostAdPerformance>> rawFuture =
-                this.rawClient.postPerformance(workspaceId, postId);
+                this.rawClient.postPerformance(postId, requestOptions);
+        CompletableFuture<PostAdPerformance> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
+     */
+    public CompletableFuture<PostAdPerformance> postPerformance(String postId, PostPerformanceAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<PostAdPerformance>> rawFuture =
+                this.rawClient.postPerformance(postId, request);
         CompletableFuture<PostAdPerformance> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -859,41 +767,9 @@ public class AsyncAdsClient {
      * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
      */
     public CompletableFuture<PostAdPerformance> postPerformance(
-            String workspaceId, String postId, RequestOptions requestOptions) {
+            String postId, PostPerformanceAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<PostAdPerformance>> rawFuture =
-                this.rawClient.postPerformance(workspaceId, postId, requestOptions);
-        CompletableFuture<PostAdPerformance> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
-     */
-    public CompletableFuture<PostAdPerformance> postPerformance(
-            String workspaceId, String postId, PostPerformanceAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<PostAdPerformance>> rawFuture =
-                this.rawClient.postPerformance(workspaceId, postId, request);
-        CompletableFuture<PostAdPerformance> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
-     */
-    public CompletableFuture<PostAdPerformance> postPerformance(
-            String workspaceId, String postId, PostPerformanceAdsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<PostAdPerformance>> rawFuture =
-                this.rawClient.postPerformance(workspaceId, postId, request, requestOptions);
+                this.rawClient.postPerformance(postId, request, requestOptions);
         CompletableFuture<PostAdPerformance> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -906,9 +782,8 @@ public class AsyncAdsClient {
     /**
      * Checks a boost as <code>createBoost</code> would, and says what it would commit and the room it has, without reserving or sending anything: show it before the last step. A total budget commits its amount; a daily budget commits, for each calendar week of the account's zone (Sunday to Saturday) the run touches, its amount and 75% more for each day of the run in that week, which the network may spend on any day, and never more than 7 times its amount, the most the network spends in a week. Needs ads:spend.
      */
-    public CompletableFuture<BoostQuote> quoteBoost(String workspaceId, QuoteBoostAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<BoostQuote>> rawFuture =
-                this.rawClient.quoteBoost(workspaceId, request);
+    public CompletableFuture<BoostQuote> quoteBoost(NewBoost request) {
+        CompletableFuture<PealClientHttpResponse<BoostQuote>> rawFuture = this.rawClient.quoteBoost(request);
         CompletableFuture<BoostQuote> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -921,10 +796,9 @@ public class AsyncAdsClient {
     /**
      * Checks a boost as <code>createBoost</code> would, and says what it would commit and the room it has, without reserving or sending anything: show it before the last step. A total budget commits its amount; a daily budget commits, for each calendar week of the account's zone (Sunday to Saturday) the run touches, its amount and 75% more for each day of the run in that week, which the network may spend on any day, and never more than 7 times its amount, the most the network spends in a week. Needs ads:spend.
      */
-    public CompletableFuture<BoostQuote> quoteBoost(
-            String workspaceId, QuoteBoostAdsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<BoostQuote> quoteBoost(NewBoost request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<BoostQuote>> rawFuture =
-                this.rawClient.quoteBoost(workspaceId, request, requestOptions);
+                this.rawClient.quoteBoost(request, requestOptions);
         CompletableFuture<BoostQuote> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -937,8 +811,8 @@ public class AsyncAdsClient {
     /**
      * Lists the workspace's boosts, newest first, 50 a page, those of one post with <code>postId</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs ads:read.
      */
-    public CompletableFuture<BoostPage> listBoosts(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<BoostPage>> rawFuture = this.rawClient.listBoosts(workspaceId);
+    public CompletableFuture<BoostPage> listBoosts() {
+        CompletableFuture<PealClientHttpResponse<BoostPage>> rawFuture = this.rawClient.listBoosts();
         CompletableFuture<BoostPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -951,9 +825,8 @@ public class AsyncAdsClient {
     /**
      * Lists the workspace's boosts, newest first, 50 a page, those of one post with <code>postId</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs ads:read.
      */
-    public CompletableFuture<BoostPage> listBoosts(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<BoostPage>> rawFuture =
-                this.rawClient.listBoosts(workspaceId, requestOptions);
+    public CompletableFuture<BoostPage> listBoosts(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<BoostPage>> rawFuture = this.rawClient.listBoosts(requestOptions);
         CompletableFuture<BoostPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -966,9 +839,8 @@ public class AsyncAdsClient {
     /**
      * Lists the workspace's boosts, newest first, 50 a page, those of one post with <code>postId</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs ads:read.
      */
-    public CompletableFuture<BoostPage> listBoosts(String workspaceId, ListBoostsAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<BoostPage>> rawFuture =
-                this.rawClient.listBoosts(workspaceId, request);
+    public CompletableFuture<BoostPage> listBoosts(ListBoostsAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<BoostPage>> rawFuture = this.rawClient.listBoosts(request);
         CompletableFuture<BoostPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -981,10 +853,9 @@ public class AsyncAdsClient {
     /**
      * Lists the workspace's boosts, newest first, 50 a page, those of one post with <code>postId</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs ads:read.
      */
-    public CompletableFuture<BoostPage> listBoosts(
-            String workspaceId, ListBoostsAdsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<BoostPage> listBoosts(ListBoostsAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<BoostPage>> rawFuture =
-                this.rawClient.listBoosts(workspaceId, request, requestOptions);
+                this.rawClient.listBoosts(request, requestOptions);
         CompletableFuture<BoostPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -997,8 +868,8 @@ public class AsyncAdsClient {
     /**
      * <strong>Spends money.</strong> Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until <code>endsAt</code>. The <code>Idempotency-Key</code> header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as <code>requested</code>, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose <code>capabilities.boosts</code> is false, Google Ads: <code>AdAccountUnusable</code>), the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached <code>paymentMethodRequired</code>); running boosts are never touched. Needs ads:spend; never staff acting as a member.
      */
-    public CompletableFuture<Boost> createBoost(String workspaceId, CreateBoostAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.createBoost(workspaceId, request);
+    public CompletableFuture<Boost> createBoost(CreateBoostAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.createBoost(request);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1011,10 +882,9 @@ public class AsyncAdsClient {
     /**
      * <strong>Spends money.</strong> Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until <code>endsAt</code>. The <code>Idempotency-Key</code> header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as <code>requested</code>, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose <code>capabilities.boosts</code> is false, Google Ads: <code>AdAccountUnusable</code>), the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached <code>paymentMethodRequired</code>); running boosts are never touched. Needs ads:spend; never staff acting as a member.
      */
-    public CompletableFuture<Boost> createBoost(
-            String workspaceId, CreateBoostAdsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Boost> createBoost(CreateBoostAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.createBoost(workspaceId, request, requestOptions);
+                this.rawClient.createBoost(request, requestOptions);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1027,9 +897,8 @@ public class AsyncAdsClient {
     /**
      * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
      */
-    public CompletableFuture<BoostDetail> getBoost(String workspaceId, String boostId) {
-        CompletableFuture<PealClientHttpResponse<BoostDetail>> rawFuture =
-                this.rawClient.getBoost(workspaceId, boostId);
+    public CompletableFuture<BoostDetail> getBoost(String boostId) {
+        CompletableFuture<PealClientHttpResponse<BoostDetail>> rawFuture = this.rawClient.getBoost(boostId);
         CompletableFuture<BoostDetail> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1042,9 +911,9 @@ public class AsyncAdsClient {
     /**
      * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
      */
-    public CompletableFuture<BoostDetail> getBoost(String workspaceId, String boostId, RequestOptions requestOptions) {
+    public CompletableFuture<BoostDetail> getBoost(String boostId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<BoostDetail>> rawFuture =
-                this.rawClient.getBoost(workspaceId, boostId, requestOptions);
+                this.rawClient.getBoost(boostId, requestOptions);
         CompletableFuture<BoostDetail> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1057,9 +926,8 @@ public class AsyncAdsClient {
     /**
      * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
      */
-    public CompletableFuture<BoostDetail> getBoost(String workspaceId, String boostId, GetBoostAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<BoostDetail>> rawFuture =
-                this.rawClient.getBoost(workspaceId, boostId, request);
+    public CompletableFuture<BoostDetail> getBoost(String boostId, GetBoostAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<BoostDetail>> rawFuture = this.rawClient.getBoost(boostId, request);
         CompletableFuture<BoostDetail> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1073,9 +941,9 @@ public class AsyncAdsClient {
      * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
      */
     public CompletableFuture<BoostDetail> getBoost(
-            String workspaceId, String boostId, GetBoostAdsRequest request, RequestOptions requestOptions) {
+            String boostId, GetBoostAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<BoostDetail>> rawFuture =
-                this.rawClient.getBoost(workspaceId, boostId, request, requestOptions);
+                this.rawClient.getBoost(boostId, request, requestOptions);
         CompletableFuture<BoostDetail> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1088,8 +956,8 @@ public class AsyncAdsClient {
     /**
      * Pauses a boost that runs or may run: its campaign is told to pause, and the boost is <code>paused</code> once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
      */
-    public CompletableFuture<Boost> pauseBoost(String workspaceId, String boostId) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.pauseBoost(workspaceId, boostId);
+    public CompletableFuture<Boost> pauseBoost(String boostId) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.pauseBoost(boostId);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1102,9 +970,8 @@ public class AsyncAdsClient {
     /**
      * Pauses a boost that runs or may run: its campaign is told to pause, and the boost is <code>paused</code> once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
      */
-    public CompletableFuture<Boost> pauseBoost(String workspaceId, String boostId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.pauseBoost(workspaceId, boostId, requestOptions);
+    public CompletableFuture<Boost> pauseBoost(String boostId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.pauseBoost(boostId, requestOptions);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1117,9 +984,8 @@ public class AsyncAdsClient {
     /**
      * Pauses a boost that runs or may run: its campaign is told to pause, and the boost is <code>paused</code> once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
      */
-    public CompletableFuture<Boost> pauseBoost(String workspaceId, String boostId, PauseBoostAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.pauseBoost(workspaceId, boostId, request);
+    public CompletableFuture<Boost> pauseBoost(String boostId, PauseBoostAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.pauseBoost(boostId, request);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1133,9 +999,9 @@ public class AsyncAdsClient {
      * Pauses a boost that runs or may run: its campaign is told to pause, and the boost is <code>paused</code> once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
      */
     public CompletableFuture<Boost> pauseBoost(
-            String workspaceId, String boostId, PauseBoostAdsRequest request, RequestOptions requestOptions) {
+            String boostId, PauseBoostAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.pauseBoost(workspaceId, boostId, request, requestOptions);
+                this.rawClient.pauseBoost(boostId, request, requestOptions);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1148,8 +1014,8 @@ public class AsyncAdsClient {
     /**
      * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
      */
-    public CompletableFuture<Boost> resumeBoost(String workspaceId, String boostId) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.resumeBoost(workspaceId, boostId);
+    public CompletableFuture<Boost> resumeBoost(String boostId) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.resumeBoost(boostId);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1162,9 +1028,9 @@ public class AsyncAdsClient {
     /**
      * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
      */
-    public CompletableFuture<Boost> resumeBoost(String workspaceId, String boostId, RequestOptions requestOptions) {
+    public CompletableFuture<Boost> resumeBoost(String boostId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.resumeBoost(workspaceId, boostId, requestOptions);
+                this.rawClient.resumeBoost(boostId, requestOptions);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1177,9 +1043,8 @@ public class AsyncAdsClient {
     /**
      * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
      */
-    public CompletableFuture<Boost> resumeBoost(String workspaceId, String boostId, ResumeBoostAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.resumeBoost(workspaceId, boostId, request);
+    public CompletableFuture<Boost> resumeBoost(String boostId, ResumeBoostAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.resumeBoost(boostId, request);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1193,9 +1058,9 @@ public class AsyncAdsClient {
      * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
      */
     public CompletableFuture<Boost> resumeBoost(
-            String workspaceId, String boostId, ResumeBoostAdsRequest request, RequestOptions requestOptions) {
+            String boostId, ResumeBoostAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.resumeBoost(workspaceId, boostId, request, requestOptions);
+                this.rawClient.resumeBoost(boostId, request, requestOptions);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1208,8 +1073,8 @@ public class AsyncAdsClient {
     /**
      * Stops a boost for good: its campaign is told to pause, and the boost is <code>stopped</code> once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
      */
-    public CompletableFuture<Boost> stopBoost(String workspaceId, String boostId) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.stopBoost(workspaceId, boostId);
+    public CompletableFuture<Boost> stopBoost(String boostId) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.stopBoost(boostId);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1222,9 +1087,8 @@ public class AsyncAdsClient {
     /**
      * Stops a boost for good: its campaign is told to pause, and the boost is <code>stopped</code> once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
      */
-    public CompletableFuture<Boost> stopBoost(String workspaceId, String boostId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.stopBoost(workspaceId, boostId, requestOptions);
+    public CompletableFuture<Boost> stopBoost(String boostId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.stopBoost(boostId, requestOptions);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1237,9 +1101,8 @@ public class AsyncAdsClient {
     /**
      * Stops a boost for good: its campaign is told to pause, and the boost is <code>stopped</code> once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
      */
-    public CompletableFuture<Boost> stopBoost(String workspaceId, String boostId, StopBoostAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.stopBoost(workspaceId, boostId, request);
+    public CompletableFuture<Boost> stopBoost(String boostId, StopBoostAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Boost>> rawFuture = this.rawClient.stopBoost(boostId, request);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1253,9 +1116,9 @@ public class AsyncAdsClient {
      * Stops a boost for good: its campaign is told to pause, and the boost is <code>stopped</code> once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
      */
     public CompletableFuture<Boost> stopBoost(
-            String workspaceId, String boostId, StopBoostAdsRequest request, RequestOptions requestOptions) {
+            String boostId, StopBoostAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Boost>> rawFuture =
-                this.rawClient.stopBoost(workspaceId, boostId, request, requestOptions);
+                this.rawClient.stopBoost(boostId, request, requestOptions);
         CompletableFuture<Boost> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1268,8 +1131,8 @@ public class AsyncAdsClient {
     /**
      * Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
      */
-    public CompletableFuture<AdAuditPage> auditTrail(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<AdAuditPage>> rawFuture = this.rawClient.auditTrail(workspaceId);
+    public CompletableFuture<AdAuditPage> auditTrail() {
+        CompletableFuture<PealClientHttpResponse<AdAuditPage>> rawFuture = this.rawClient.auditTrail();
         CompletableFuture<AdAuditPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1282,9 +1145,8 @@ public class AsyncAdsClient {
     /**
      * Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
      */
-    public CompletableFuture<AdAuditPage> auditTrail(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AdAuditPage>> rawFuture =
-                this.rawClient.auditTrail(workspaceId, requestOptions);
+    public CompletableFuture<AdAuditPage> auditTrail(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<AdAuditPage>> rawFuture = this.rawClient.auditTrail(requestOptions);
         CompletableFuture<AdAuditPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1297,9 +1159,8 @@ public class AsyncAdsClient {
     /**
      * Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
      */
-    public CompletableFuture<AdAuditPage> auditTrail(String workspaceId, AuditTrailAdsRequest request) {
-        CompletableFuture<PealClientHttpResponse<AdAuditPage>> rawFuture =
-                this.rawClient.auditTrail(workspaceId, request);
+    public CompletableFuture<AdAuditPage> auditTrail(AuditTrailAdsRequest request) {
+        CompletableFuture<PealClientHttpResponse<AdAuditPage>> rawFuture = this.rawClient.auditTrail(request);
         CompletableFuture<AdAuditPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1312,10 +1173,9 @@ public class AsyncAdsClient {
     /**
      * Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
      */
-    public CompletableFuture<AdAuditPage> auditTrail(
-            String workspaceId, AuditTrailAdsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<AdAuditPage> auditTrail(AuditTrailAdsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AdAuditPage>> rawFuture =
-                this.rawClient.auditTrail(workspaceId, request, requestOptions);
+                this.rawClient.auditTrail(request, requestOptions);
         CompletableFuture<AdAuditPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

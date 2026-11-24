@@ -13,7 +13,6 @@ public partial class ApiKeysClient : IApiKeysClient
     }
 
     private async Task<WithRawResponse<IEnumerable<ApiKey>>> ListAsyncCore(
-        ListApiKeysRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class ApiKeysClient : IApiKeysClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/api-keys",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/api-keys",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class ApiKeysClient : IApiKeysClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -174,10 +182,7 @@ public partial class ApiKeysClient : IApiKeysClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/api-keys",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/api-keys",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -231,6 +236,18 @@ public partial class ApiKeysClient : IApiKeysClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -320,8 +337,7 @@ public partial class ApiKeysClient : IApiKeysClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/api-keys/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/api-keys/{0}",
                         ValueConvert.ToPathParameterString(request.ApiKeyId)
                     ),
                     QueryString = _queryString,
@@ -348,6 +364,18 @@ public partial class ApiKeysClient : IApiKeysClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -420,16 +448,15 @@ public partial class ApiKeysClient : IApiKeysClient
     /// Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
     /// </summary>
     /// <example><code>
-    /// await client.ApiKeys.ListAsync(new ListApiKeysRequest { WorkspaceId = "workspaceId" });
+    /// await client.ApiKeys.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<ApiKey>> ListAsync(
-        ListApiKeysRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<ApiKey>>(
-            ListAsyncCore(request, options, cancellationToken)
+            ListAsyncCore(options, cancellationToken)
         );
     }
 
@@ -440,7 +467,6 @@ public partial class ApiKeysClient : IApiKeysClient
     /// await client.ApiKeys.CreateAsync(
     ///     new NewApiKey
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Name = "name",
     ///         Permissions = new List<permission>() { Permission.ActivityRead },
     ///     }
@@ -462,9 +488,7 @@ public partial class ApiKeysClient : IApiKeysClient
     /// Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
     /// </summary>
     /// <example><code>
-    /// await client.ApiKeys.RevokeAsync(
-    ///     new RevokeApiKeysRequest { WorkspaceId = "workspaceId", ApiKeyId = "apiKeyId" }
-    /// );
+    /// await client.ApiKeys.RevokeAsync(new RevokeApiKeysRequest { ApiKeyId = "apiKeyId" });
     /// </code></example>
     public WithRawResponseTask RevokeAsync(
         RevokeApiKeysRequest request,

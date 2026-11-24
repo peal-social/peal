@@ -6,7 +6,6 @@ public partial interface ITagsClient
     /// Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`). Needs post:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<Tag>> ListAsync(
-        ListTagsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -15,7 +14,7 @@ public partial interface ITagsClient
     /// Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
     /// </summary>
     WithRawResponseTask<Tag> CreateAsync(
-        CreateTagsRequest request,
+        TagDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

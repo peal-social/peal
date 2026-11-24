@@ -28,9 +28,9 @@ export class TagsClient {
     /**
      * Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`). Needs post:read.
      *
-     * @param {Peal.ListTagsRequest} request
      * @param {TagsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class TagsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.tags.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.tags.list()
      */
-    public list(request: Peal.ListTagsRequest, requestOptions?: TagsClient.RequestOptions): core.HttpResponsePromise<Peal.Tag[]> {
-        return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
+    public list(requestOptions?: TagsClient.RequestOptions): core.HttpResponsePromise<Peal.Tag[]> {
+        return core.HttpResponsePromise.fromPromise(this.__list(requestOptions));
     }
 
-    private async __list(request: Peal.ListTagsRequest, requestOptions?: TagsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Tag[]>> {
-        const { workspaceId } = request;
+    private async __list(requestOptions?: TagsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Tag[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/tags`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/tags"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class TagsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,15 +78,16 @@ export class TagsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/tags");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/tags");
     }
 
     /**
      * Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
      *
-     * @param {Peal.CreateTagsRequest} request
+     * @param {Peal.TagDetails} request
      * @param {TagsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -99,29 +98,25 @@ export class TagsClient {
      *
      * @example
      *     await client.tags.create({
-     *         workspaceId: "workspaceId",
-     *         body: {
-     *             colour: "gray",
-     *             name: "name"
-     *         }
+     *         colour: "gray",
+     *         name: "name"
      *     })
      */
-    public create(request: Peal.CreateTagsRequest, requestOptions?: TagsClient.RequestOptions): core.HttpResponsePromise<Peal.Tag> {
+    public create(request: Peal.TagDetails, requestOptions?: TagsClient.RequestOptions): core.HttpResponsePromise<Peal.Tag> {
         return core.HttpResponsePromise.fromPromise(this.__create(request, requestOptions));
     }
 
-    private async __create(request: Peal.CreateTagsRequest, requestOptions?: TagsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Tag>> {
-        const { workspaceId, body: _body } = request;
+    private async __create(request: Peal.TagDetails, requestOptions?: TagsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Tag>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/tags`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/tags"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -134,6 +129,7 @@ export class TagsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -147,7 +143,7 @@ export class TagsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/tags");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/tags");
     }
 
     /**
@@ -156,6 +152,7 @@ export class TagsClient {
      * @param {Peal.DeleteTagsRequest} request
      * @param {TagsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -165,7 +162,6 @@ export class TagsClient {
      *
      * @example
      *     await client.tags.delete({
-     *         workspaceId: "workspaceId",
      *         tagId: "tagId"
      *     })
      */
@@ -174,11 +170,11 @@ export class TagsClient {
     }
 
     private async __delete(request: Peal.DeleteTagsRequest, requestOptions?: TagsClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, tagId } = request;
+        const { tagId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/tags/${core.url.encodePathParam(tagId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/tags/${core.url.encodePathParam(tagId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -194,6 +190,7 @@ export class TagsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -206,7 +203,7 @@ export class TagsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/tags/{tagId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/tags/{tagId}");
     }
 
     /**
@@ -215,6 +212,7 @@ export class TagsClient {
      * @param {Peal.UpdateTagsRequest} request
      * @param {TagsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -225,7 +223,6 @@ export class TagsClient {
      *
      * @example
      *     await client.tags.update({
-     *         workspaceId: "workspaceId",
      *         tagId: "tagId",
      *         body: {
      *             colour: "gray",
@@ -238,11 +235,11 @@ export class TagsClient {
     }
 
     private async __update(request: Peal.UpdateTagsRequest, requestOptions?: TagsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Tag>> {
-        const { workspaceId, tagId, body: _body } = request;
+        const { tagId, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/tags/${core.url.encodePathParam(tagId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/tags/${core.url.encodePathParam(tagId, errors.PealError)}`),
             method: "PATCH",
             headers: _headers,
             contentType: "application/json",
@@ -261,6 +258,7 @@ export class TagsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -274,6 +272,6 @@ export class TagsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/workspaces/{workspaceId}/tags/{tagId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/v1/tags/{tagId}");
     }
 }

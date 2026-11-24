@@ -73,6 +73,7 @@ class Peal:
 
 
 
+    workspace : typing.Optional[str]
     token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
@@ -104,6 +105,7 @@ class Peal:
     from peal import Peal
 
     client = Peal(
+        workspace="YOUR_WORKSPACE",
         token="YOUR_TOKEN",
     )
     """
@@ -113,6 +115,7 @@ class Peal:
         *,
         base_url: typing.Optional[str] = None,
         environment: PealEnvironment = PealEnvironment.DEFAULT,
+        workspace: typing.Optional[str] = None,
         token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
@@ -128,6 +131,7 @@ class Peal:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
+            workspace=workspace,
             token=token,
             headers=headers,
             httpx_client=httpx_client
@@ -567,6 +571,7 @@ class AsyncPeal:
 
 
 
+    workspace : typing.Optional[str]
     token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
@@ -601,6 +606,7 @@ class AsyncPeal:
     from peal import AsyncPeal
 
     client = AsyncPeal(
+        workspace="YOUR_WORKSPACE",
         token="YOUR_TOKEN",
     )
     """
@@ -610,6 +616,7 @@ class AsyncPeal:
         *,
         base_url: typing.Optional[str] = None,
         environment: PealEnvironment = PealEnvironment.DEFAULT,
+        workspace: typing.Optional[str] = None,
         token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
@@ -626,6 +633,7 @@ class AsyncPeal:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
+            workspace=workspace,
             token=token,
             headers=headers,
             async_token=async_token,

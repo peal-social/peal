@@ -6,7 +6,6 @@ package social.peal.resources.apikeys;
 import java.util.List;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
-import social.peal.resources.apikeys.requests.ListApiKeysRequest;
 import social.peal.resources.apikeys.requests.NewApiKey;
 import social.peal.resources.apikeys.requests.RevokeApiKeysRequest;
 import social.peal.types.ApiKey;
@@ -32,71 +31,56 @@ public class ApiKeysClient {
     /**
      * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
-    public List<ApiKey> list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public List<ApiKey> list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
-    public List<ApiKey> list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
-     */
-    public List<ApiKey> list(String workspaceId, ListApiKeysRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
-    }
-
-    /**
-     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
-     */
-    public List<ApiKey> list(String workspaceId, ListApiKeysRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public List<ApiKey> list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
-    public CreatedApiKey create(String workspaceId, NewApiKey request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public CreatedApiKey create(NewApiKey request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
-    public CreatedApiKey create(String workspaceId, NewApiKey request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public CreatedApiKey create(NewApiKey request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
-    public void revoke(String workspaceId, String apiKeyId) {
-        this.rawClient.revoke(workspaceId, apiKeyId).body();
+    public void revoke(String apiKeyId) {
+        this.rawClient.revoke(apiKeyId).body();
     }
 
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
-    public void revoke(String workspaceId, String apiKeyId, RequestOptions requestOptions) {
-        this.rawClient.revoke(workspaceId, apiKeyId, requestOptions).body();
+    public void revoke(String apiKeyId, RequestOptions requestOptions) {
+        this.rawClient.revoke(apiKeyId, requestOptions).body();
     }
 
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
-    public void revoke(String workspaceId, String apiKeyId, RevokeApiKeysRequest request) {
-        this.rawClient.revoke(workspaceId, apiKeyId, request).body();
+    public void revoke(String apiKeyId, RevokeApiKeysRequest request) {
+        this.rawClient.revoke(apiKeyId, request).body();
     }
 
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
-    public void revoke(
-            String workspaceId, String apiKeyId, RevokeApiKeysRequest request, RequestOptions requestOptions) {
-        this.rawClient.revoke(workspaceId, apiKeyId, request, requestOptions).body();
+    public void revoke(String apiKeyId, RevokeApiKeysRequest request, RequestOptions requestOptions) {
+        this.rawClient.revoke(apiKeyId, request, requestOptions).body();
     }
 }

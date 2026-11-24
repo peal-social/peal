@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         access: "view"
  *     }
  */
 export interface NewReviewLink {
-    workspaceId: string;
     postId: string;
     access: Peal.ReviewLinkAccess;
     expiresInHours?: number;

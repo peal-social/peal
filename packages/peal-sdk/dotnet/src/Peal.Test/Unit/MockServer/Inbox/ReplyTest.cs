@@ -37,7 +37,7 @@ public class ReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/comments/commentId/replies")
+                    .WithPath("/api/v1/inbox/comments/commentId/replies")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -50,12 +50,7 @@ public class ReplyTest : BaseMockServerTest
             );
 
         var response = await Client.Inbox.ReplyAsync(
-            new NewInboxReply
-            {
-                WorkspaceId = "workspaceId",
-                CommentId = "commentId",
-                Text = "x",
-            }
+            new NewInboxReply { CommentId = "commentId", Text = "x" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -88,7 +83,7 @@ public class ReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/comments/commentId/replies")
+                    .WithPath("/api/v1/inbox/comments/commentId/replies")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -101,12 +96,7 @@ public class ReplyTest : BaseMockServerTest
             );
 
         var response = await Client.Inbox.ReplyAsync(
-            new NewInboxReply
-            {
-                WorkspaceId = "workspaceId",
-                CommentId = "commentId",
-                Text = "text",
-            }
+            new NewInboxReply { CommentId = "commentId", Text = "text" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

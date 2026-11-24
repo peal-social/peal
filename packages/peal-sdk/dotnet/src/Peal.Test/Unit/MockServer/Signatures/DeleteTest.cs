@@ -15,18 +15,14 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/signatures/signatureId")
+                    .WithPath("/api/v1/signatures/signatureId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Signatures.DeleteAsync(
-                new DeleteSignaturesRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    SignatureId = "signatureId",
-                }
+                new DeleteSignaturesRequest { SignatureId = "signatureId" }
             )
         );
     }
@@ -38,18 +34,14 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/signatures/signatureId")
+                    .WithPath("/api/v1/signatures/signatureId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Signatures.DeleteAsync(
-                new DeleteSignaturesRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    SignatureId = "signatureId",
-                }
+                new DeleteSignaturesRequest { SignatureId = "signatureId" }
             )
         );
     }

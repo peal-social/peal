@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListMediaRequest {
-    workspaceId: string;
     cursor?: string;
     kind?: Peal.MediaKind;
     limit?: string;

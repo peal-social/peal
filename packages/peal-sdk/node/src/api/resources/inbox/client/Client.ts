@@ -40,16 +40,14 @@ export class InboxClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.inbox.listThreads({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.inbox.listThreads()
      */
-    public listThreads(request: Peal.ListThreadsInboxRequest, requestOptions?: InboxClient.RequestOptions): core.HttpResponsePromise<Peal.InboxThreadPage> {
+    public listThreads(request: Peal.ListThreadsInboxRequest = {}, requestOptions?: InboxClient.RequestOptions): core.HttpResponsePromise<Peal.InboxThreadPage> {
         return core.HttpResponsePromise.fromPromise(this.__listThreads(request, requestOptions));
     }
 
-    private async __listThreads(request: Peal.ListThreadsInboxRequest, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxThreadPage>> {
-        const { workspaceId, channelId, cursor, limit, postId, unanswered } = request;
+    private async __listThreads(request: Peal.ListThreadsInboxRequest = {}, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxThreadPage>> {
+        const { channelId, cursor, limit, postId, unanswered } = request;
         const _queryParams: Record<string, unknown> = {
             channelId,
             cursor,
@@ -58,9 +56,9 @@ export class InboxClient {
             unanswered: unanswered != null ? unanswered : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/threads`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/inbox/threads"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -89,7 +87,7 @@ export class InboxClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/threads");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/threads");
     }
 
     /**
@@ -98,6 +96,7 @@ export class InboxClient {
      * @param {Peal.GetThreadInboxRequest} request
      * @param {InboxClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -107,7 +106,6 @@ export class InboxClient {
      *
      * @example
      *     await client.inbox.getThread({
-     *         workspaceId: "workspaceId",
      *         threadId: "threadId"
      *     })
      */
@@ -116,11 +114,11 @@ export class InboxClient {
     }
 
     private async __getThread(request: Peal.GetThreadInboxRequest, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxThreadDetail>> {
-        const { workspaceId, threadId } = request;
+        const { threadId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/threads/${core.url.encodePathParam(threadId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/threads/${core.url.encodePathParam(threadId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -136,6 +134,7 @@ export class InboxClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -148,7 +147,7 @@ export class InboxClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/threads/{threadId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/threads/{threadId}");
     }
 
     /**
@@ -157,6 +156,7 @@ export class InboxClient {
      * @param {Peal.GetAbilitiesInboxRequest} request
      * @param {InboxClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -166,7 +166,6 @@ export class InboxClient {
      *
      * @example
      *     await client.inbox.getAbilities({
-     *         workspaceId: "workspaceId",
      *         channelId: "channelId"
      *     })
      */
@@ -175,11 +174,11 @@ export class InboxClient {
     }
 
     private async __getAbilities(request: Peal.GetAbilitiesInboxRequest, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxAbilities>> {
-        const { workspaceId, channelId } = request;
+        const { channelId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/channels/${core.url.encodePathParam(channelId, errors.PealError)}/abilities`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/channels/${core.url.encodePathParam(channelId, errors.PealError)}/abilities`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -195,6 +194,7 @@ export class InboxClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -207,7 +207,7 @@ export class InboxClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/channels/{channelId}/abilities");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/channels/{channelId}/abilities");
     }
 
     /**
@@ -216,6 +216,7 @@ export class InboxClient {
      * @param {Peal.NewInboxReply} request
      * @param {InboxClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.PaymentRequiredError}
      * @throws {@link Peal.ForbiddenError}
@@ -228,7 +229,6 @@ export class InboxClient {
      *
      * @example
      *     await client.inbox.reply({
-     *         workspaceId: "workspaceId",
      *         commentId: "commentId",
      *         text: "text"
      *     })
@@ -238,11 +238,11 @@ export class InboxClient {
     }
 
     private async __reply(request: Peal.NewInboxReply, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReply>> {
-        const { workspaceId, commentId, "idempotency-key": idempotencyKey, ..._body } = request;
+        const { commentId, "idempotency-key": idempotencyKey, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/comments/${core.url.encodePathParam(commentId, errors.PealError)}/replies`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/comments/${core.url.encodePathParam(commentId, errors.PealError)}/replies`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -261,6 +261,7 @@ export class InboxClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
@@ -276,7 +277,7 @@ export class InboxClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/comments/{commentId}/replies");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/comments/{commentId}/replies");
     }
 
     /**
@@ -285,6 +286,7 @@ export class InboxClient {
      * @param {Peal.SetAnsweredInboxRequest} request
      * @param {InboxClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -295,7 +297,6 @@ export class InboxClient {
      *
      * @example
      *     await client.inbox.setAnswered({
-     *         workspaceId: "workspaceId",
      *         commentId: "commentId",
      *         answered: true
      *     })
@@ -305,11 +306,11 @@ export class InboxClient {
     }
 
     private async __setAnswered(request: Peal.SetAnsweredInboxRequest, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxComment>> {
-        const { workspaceId, commentId, ..._body } = request;
+        const { commentId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/comments/${core.url.encodePathParam(commentId, errors.PealError)}/answered`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/comments/${core.url.encodePathParam(commentId, errors.PealError)}/answered`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -328,6 +329,7 @@ export class InboxClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -341,7 +343,7 @@ export class InboxClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/comments/{commentId}/answered");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/comments/{commentId}/answered");
     }
 
     /**
@@ -350,6 +352,7 @@ export class InboxClient {
      * @param {Peal.ModerateInboxRequest} request
      * @param {InboxClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -361,7 +364,6 @@ export class InboxClient {
      *
      * @example
      *     await client.inbox.moderate({
-     *         workspaceId: "workspaceId",
      *         commentId: "commentId",
      *         action: "hide"
      *     })
@@ -371,11 +373,11 @@ export class InboxClient {
     }
 
     private async __moderate(request: Peal.ModerateInboxRequest, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxComment>> {
-        const { workspaceId, commentId, ..._body } = request;
+        const { commentId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/comments/${core.url.encodePathParam(commentId, errors.PealError)}/moderation`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/comments/${core.url.encodePathParam(commentId, errors.PealError)}/moderation`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -394,6 +396,7 @@ export class InboxClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -408,7 +411,7 @@ export class InboxClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/comments/{commentId}/moderation");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/comments/{commentId}/moderation");
     }
 
     /**
@@ -417,6 +420,7 @@ export class InboxClient {
      * @param {Peal.ConfirmReplyInboxRequest} request
      * @param {InboxClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -427,7 +431,6 @@ export class InboxClient {
      *
      * @example
      *     await client.inbox.confirmReply({
-     *         workspaceId: "workspaceId",
      *         replyId: "replyId",
      *         sent: true
      *     })
@@ -437,11 +440,11 @@ export class InboxClient {
     }
 
     private async __confirmReply(request: Peal.ConfirmReplyInboxRequest, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReply>> {
-        const { workspaceId, replyId, ..._body } = request;
+        const { replyId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/replies/${core.url.encodePathParam(replyId, errors.PealError)}/confirmation`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/replies/${core.url.encodePathParam(replyId, errors.PealError)}/confirmation`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -460,6 +463,7 @@ export class InboxClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -473,7 +477,7 @@ export class InboxClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/replies/{replyId}/confirmation");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/replies/{replyId}/confirmation");
     }
 
     /**
@@ -482,6 +486,7 @@ export class InboxClient {
      * @param {Peal.WithdrawReplyInboxRequest} request
      * @param {InboxClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -493,7 +498,6 @@ export class InboxClient {
      *
      * @example
      *     await client.inbox.withdrawReply({
-     *         workspaceId: "workspaceId",
      *         replyId: "replyId"
      *     })
      */
@@ -502,11 +506,11 @@ export class InboxClient {
     }
 
     private async __withdrawReply(request: Peal.WithdrawReplyInboxRequest, requestOptions?: InboxClient.RequestOptions): Promise<core.WithRawResponse<Peal.InboxReply>> {
-        const { workspaceId, replyId } = request;
+        const { replyId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/replies/${core.url.encodePathParam(replyId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/replies/${core.url.encodePathParam(replyId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -522,6 +526,7 @@ export class InboxClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -536,6 +541,6 @@ export class InboxClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/inbox/replies/{replyId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/inbox/replies/{replyId}");
     }
 }

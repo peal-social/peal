@@ -7,9 +7,6 @@ namespace Peal;
 public record AiCapabilityModelChange
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required AiCapability Capability { get; set; }
 
     [JsonPropertyName("model")]

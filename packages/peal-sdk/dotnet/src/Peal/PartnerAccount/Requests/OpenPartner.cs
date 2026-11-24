@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record OpenPartner
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("name")]
     public required string Name { get; set; }
 

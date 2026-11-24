@@ -27,14 +27,12 @@ class TagsClient:
         """
         return self._raw_client
 
-    def list(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Tag]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Tag]:
         """
         Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`). Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -48,30 +46,20 @@ class TagsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.tags.list(
-            workspace_id="workspaceId",
-        )
+        client.tags.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
-    def create(
-        self,
-        workspace_id: str,
-        *,
-        colour: TagColour,
-        name: str,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> Tag:
+    def create(self, *, colour: TagColour, name: str, request_options: typing.Optional[RequestOptions] = None) -> Tag:
         """
         Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         colour : TagColour
 
         name : str
@@ -89,27 +77,23 @@ class TagsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.tags.create(
-            workspace_id="workspaceId",
             colour="gray",
             name="name",
         )
         """
-        _response = self._raw_client.create(workspace_id, colour=colour, name=name, request_options=request_options)
+        _response = self._raw_client.create(colour=colour, name=name, request_options=request_options)
         return _response.data
 
-    def delete(
-        self, workspace_id: str, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         tag_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -124,32 +108,24 @@ class TagsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.tags.delete(
-            workspace_id="workspaceId",
             tag_id="tagId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, tag_id, request_options=request_options)
+        _response = self._raw_client.delete(tag_id, request_options=request_options)
         return _response.data
 
     def update(
-        self,
-        workspace_id: str,
-        tag_id: str,
-        *,
-        colour: TagColour,
-        name: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, tag_id: str, *, colour: TagColour, name: str, request_options: typing.Optional[RequestOptions] = None
     ) -> Tag:
         """
         Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         tag_id : str
 
         colour : TagColour
@@ -169,18 +145,16 @@ class TagsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.tags.update(
-            workspace_id="workspaceId",
             tag_id="tagId",
             colour="gray",
             name="name",
         )
         """
-        _response = self._raw_client.update(
-            workspace_id, tag_id, colour=colour, name=name, request_options=request_options
-        )
+        _response = self._raw_client.update(tag_id, colour=colour, name=name, request_options=request_options)
         return _response.data
 
 
@@ -199,16 +173,12 @@ class AsyncTagsClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[Tag]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Tag]:
         """
         Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`). Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -224,36 +194,28 @@ class AsyncTagsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.tags.list(
-                workspace_id="workspaceId",
-            )
+            await client.tags.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def create(
-        self,
-        workspace_id: str,
-        *,
-        colour: TagColour,
-        name: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, colour: TagColour, name: str, request_options: typing.Optional[RequestOptions] = None
     ) -> Tag:
         """
         Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         colour : TagColour
 
         name : str
@@ -273,13 +235,13 @@ class AsyncTagsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.tags.create(
-                workspace_id="workspaceId",
                 colour="gray",
                 name="name",
             )
@@ -287,21 +249,15 @@ class AsyncTagsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create(
-            workspace_id, colour=colour, name=name, request_options=request_options
-        )
+        _response = await self._raw_client.create(colour=colour, name=name, request_options=request_options)
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         tag_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -318,38 +274,30 @@ class AsyncTagsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.tags.delete(
-                workspace_id="workspaceId",
                 tag_id="tagId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, tag_id, request_options=request_options)
+        _response = await self._raw_client.delete(tag_id, request_options=request_options)
         return _response.data
 
     async def update(
-        self,
-        workspace_id: str,
-        tag_id: str,
-        *,
-        colour: TagColour,
-        name: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, tag_id: str, *, colour: TagColour, name: str, request_options: typing.Optional[RequestOptions] = None
     ) -> Tag:
         """
         Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         tag_id : str
 
         colour : TagColour
@@ -371,13 +319,13 @@ class AsyncTagsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.tags.update(
-                workspace_id="workspaceId",
                 tag_id="tagId",
                 colour="gray",
                 name="name",
@@ -386,7 +334,5 @@ class AsyncTagsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.update(
-            workspace_id, tag_id, colour=colour, name=name, request_options=request_options
-        )
+        _response = await self._raw_client.update(tag_id, colour=colour, name=name, request_options=request_options)
         return _response.data

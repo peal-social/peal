@@ -88,19 +88,15 @@ func TestSignaturesListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListSignaturesRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Signatures.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestSignaturesListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestSignaturesListWithWireMock", "GET", "/api/workspaces/workspaceId/signatures", nil, 1)
+	VerifyRequestCount(t, "TestSignaturesListWithWireMock", "GET", "/api/v1/signatures", nil, 1)
 }
 
 func TestSignaturesCreateWithWireMock(
@@ -114,12 +110,9 @@ func TestSignaturesCreateWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.CreateSignaturesRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.SignatureDetails{
-			Name: "name",
-			Text: "text",
-		},
+	request := &peal.SignatureDetails{
+		Name: "name",
+		Text: "text",
 	}
 	_, invocationErr := client.Signatures.Create(
 		context.TODO(),
@@ -130,7 +123,7 @@ func TestSignaturesCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestSignaturesCreateWithWireMock", "POST", "/api/workspaces/workspaceId/signatures", nil, 1)
+	VerifyRequestCount(t, "TestSignaturesCreateWithWireMock", "POST", "/api/v1/signatures", nil, 1)
 }
 
 func TestSignaturesUpdateWithWireMock(
@@ -145,7 +138,6 @@ func TestSignaturesUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UpdateSignaturesRequest{
-		WorkspaceID: "workspaceId",
 		SignatureID: "signatureId",
 		Body: &peal.SignatureDetails{
 			Name: "name",
@@ -161,7 +153,7 @@ func TestSignaturesUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestSignaturesUpdateWithWireMock", "PUT", "/api/workspaces/workspaceId/signatures/signatureId", nil, 1)
+	VerifyRequestCount(t, "TestSignaturesUpdateWithWireMock", "PUT", "/api/v1/signatures/signatureId", nil, 1)
 }
 
 func TestSignaturesDeleteWithWireMock(
@@ -176,7 +168,6 @@ func TestSignaturesDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteSignaturesRequest{
-		WorkspaceID: "workspaceId",
 		SignatureID: "signatureId",
 	}
 	invocationErr := client.Signatures.Delete(
@@ -188,5 +179,5 @@ func TestSignaturesDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestSignaturesDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/signatures/signatureId", nil, 1)
+	VerifyRequestCount(t, "TestSignaturesDeleteWithWireMock", "DELETE", "/api/v1/signatures/signatureId", nil, 1)
 }

@@ -68,7 +68,7 @@ public class ChannelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/analytics/channels/channelId")
+                    .WithPath("/api/v1/analytics/channels/channelId")
                     .WithParam("timeZone", "timeZone")
                     .UsingGet()
             )
@@ -80,12 +80,7 @@ public class ChannelTest : BaseMockServerTest
             );
 
         var response = await Client.Analytics.ChannelAsync(
-            new ChannelAnalyticsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                TimeZone = "timeZone",
-            }
+            new ChannelAnalyticsRequest { ChannelId = "channelId", TimeZone = "timeZone" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -137,7 +132,7 @@ public class ChannelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/analytics/channels/channelId")
+                    .WithPath("/api/v1/analytics/channels/channelId")
                     .WithParam("timeZone", "timeZone")
                     .UsingGet()
             )
@@ -149,12 +144,7 @@ public class ChannelTest : BaseMockServerTest
             );
 
         var response = await Client.Analytics.ChannelAsync(
-            new ChannelAnalyticsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                TimeZone = "timeZone",
-            }
+            new ChannelAnalyticsRequest { ChannelId = "channelId", TimeZone = "timeZone" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -7,9 +7,6 @@ namespace Peal;
 public record MediaDescription
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string MediaId { get; set; }
 
     [JsonPropertyName("altText")]

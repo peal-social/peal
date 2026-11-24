@@ -68,7 +68,7 @@ public class OverviewTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/overview")
+                    .WithPath("/api/v1/partner/overview")
                     .UsingGet()
             )
             .RespondWith(
@@ -121,7 +121,7 @@ public class OverviewTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/overview")
+                    .WithPath("/api/v1/partner/overview")
                     .UsingGet()
             )
             .RespondWith(
