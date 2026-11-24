@@ -1,11 +1,9 @@
-import { Cron, DateTime, Duration, Effect, Metric } from "effect";
+import { Cron, DateTime, Duration, Effect } from "effect";
 import { ClusterCron } from "effect/cluster";
 
-import { Feeds } from "#publishing/application/feeds.ts";
-import { FollowUps } from "#publishing/application/follow-ups.ts";
+import { Feeds } from "#publishing/application/feeds/feeds.ts";
 import { PlatformQuota } from "#publishing/application/platform-quota.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
-import { Recycling } from "#publishing/application/recycling.ts";
 import { quotaLedgerKeptDays } from "#publishing/domain/quota-retention.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import { addDays, localDateOf } from "#shared/domain/wall-clock.ts";
@@ -46,142 +44,6 @@ export const IdempotencyRetentionCron = ClusterCron.make({
 });
 
 /**
- * How long after a rule's latest time (a queue's slot included) it may stay
- * unmade before it counts as overdue.
- */
-export const recyclingOverdueAfter = Duration.minutes(30);
-
-const overdue = Metric.gauge("peal.publishing.recycling.overdue", {
-  description:
-    "Active recycling rules a run should have made more than 30 minutes ago, but those it left to wait",
-});
-
-/**
- * Every ten minutes from minute 4: makes the occurrences of the recycling
- * rules due (`Recycling.makeDue`), on one runner. It calls no platform: each
- * occurrence is an ordinary post, which its own job publishes. A run that
- * meets the next one is safe, as each rule's row is locked, skipped when
- * held, and an occurrence's place among its rule's posts is unique. It says
- * how many it made, left and ended, then how many rules are overdue
- * (`peal.publishing.recycling.overdue`), which an alert watches.
- */
-export const RecyclingCron = ClusterCron.make({
-  cron: Cron.parseUnsafe("4-59/10 * * * *", "UTC"),
-  execute: Effect.gen(function* recycling() {
-    const rules = yield* Recycling;
-    const run = yield* rules.makeDue;
-
-    yield* Effect.logInfo("Made the recycling rules' occurrences due").pipe(
-      Effect.annotateLogs({ ended: run.ended, left: run.left, made: run.made })
-    );
-
-    const late = yield* rules.overdue(
-      DateTime.subtractDuration(yield* DateTime.now, recyclingOverdueAfter),
-      run
-    );
-
-    yield* Metric.update(overdue, late);
-  }).pipe(
-    Effect.catchCause((cause) =>
-      Effect.logWarning("Making the recycling rules' occurrences failed", cause)
-    )
-  ),
-  name: "publishing.recycling",
-  skipIfOlderThan: Duration.minutes(10),
-});
-
-/**
- * How long after it was due an active feed may stay unread before it
- * counts as overdue.
- */
-export const feedsOverdueAfter = Duration.hours(1);
-
-const feedsOverdue = Metric.gauge("peal.publishing.feeds.overdue", {
-  description: "Active feeds due more than an hour ago and not read",
-});
-
-const feedsLeft = Metric.gauge("peal.publishing.feeds.left", {
-  description:
-    "Feeds still due when the last run ended: not reached before its budget",
-});
-
-const feedsDuration = Metric.gauge("peal.publishing.feeds.duration", {
-  description: "How long the last run of the feeds took, in seconds",
-});
-
-const feedsUnfinished = Metric.counter("peal.publishing.feeds.unfinished", {
-  description: "Runs of the feeds that stopped at their budget with feeds due",
-  incremental: true,
-});
-
-/**
- * Every ten minutes from minute 6: reads the feeds that are due and makes
- * their new items (`Feeds.poll`), on one runner. It calls no platform:
- * each item becomes an ordinary draft, or an ordinary post whose own job
- * publishes it. A run that meets the next one is safe, as each feed is
- * taken under its row's lock, skipped when held, and an item is made once
- * (unique per feed). It stops starting reads eight minutes after its
- * time, says what it made and left, and sets
- * `peal.publishing.feeds.overdue`, which an alert watches.
- */
-export const FeedsCron = ClusterCron.make({
-  cron: Cron.parseUnsafe("6-59/10 * * * *", "UTC"),
-  execute: Effect.gen(function* feeds() {
-    const at = yield* ClusterCron.CurrentScheduledTime;
-    const started = yield* DateTime.now;
-    const service = yield* Feeds;
-
-    // A run that fails still says what is left and late, below.
-    const run = yield* service.poll(at).pipe(
-      Effect.catchCause((cause) =>
-        Effect.logWarning("Reading the feeds failed", cause).pipe(
-          Effect.as({
-            failed: 0,
-            left: 0,
-            made: 0,
-            read: 0,
-            stopped: 0,
-            unfinished: true,
-          })
-        )
-      )
-    );
-
-    const ended = yield* DateTime.now;
-
-    yield* Metric.update(
-      feedsDuration,
-      Duration.toSeconds(DateTime.distance(started, ended))
-    );
-    yield* Metric.update(feedsLeft, run.left);
-
-    if (run.unfinished) {
-      yield* Metric.update(feedsUnfinished, 1);
-      yield* Effect.logWarning(
-        "The feeds' run stopped at its budget: the feeds left are read by the runs that follow"
-      ).pipe(Effect.annotateLogs({ ...run }));
-    } else if (run.read > 0) {
-      yield* Effect.logInfo("Read the feeds due").pipe(
-        Effect.annotateLogs({ ...run })
-      );
-    }
-
-    yield* Metric.update(
-      feedsOverdue,
-      yield* service.overdue(
-        DateTime.subtractDuration(ended, feedsOverdueAfter)
-      )
-    );
-  }).pipe(
-    Effect.catchCause((cause) =>
-      Effect.logWarning("Reading the feeds failed", cause)
-    )
-  ),
-  name: "publishing.feeds",
-  skipIfOlderThan: Duration.minutes(10),
-});
-
-/**
  * Every day at 04:23 UTC: deletes the quota ledger's days a week past
  * (`PlatformQuota.purge`). Every bucket counts one day, the day a platform
  * counts (Pacific for YouTube, UTC for LinkedIn), so a past day counts
@@ -209,34 +71,4 @@ export const QuotaRetentionCron = ClusterCron.make({
   ),
   name: "publishing.quota-retention",
   skipIfOlderThan: Duration.hours(12),
-});
-
-/**
- * Every ten minutes from minute 9: reads the likes analytics last counted
- * of every armed follow-up and sets out those past their rule's threshold
- * (`FollowUps.runDue`), on one runner, then hands over those no job
- * settled (`FollowUps.settleStranded`). It calls no platform itself and
- * makes no read: each follow-up is sent by its own job, through its
- * channel's gate. A run that meets the next one is safe, as each
- * follow-up's row is locked, skipped when held, and moves only from the
- * state it was read in. What it did is counted in
- * `peal.publishing.follow_ups`.
- */
-export const FollowUpsCron = ClusterCron.make({
-  cron: Cron.parseUnsafe("9-59/10 * * * *", "UTC"),
-  execute: Effect.gen(function* followUps() {
-    const rules = yield* FollowUps;
-    const run = yield* rules.runDue;
-    const stranded = yield* rules.settleStranded;
-
-    yield* Effect.logInfo("Ran the follow-up rules").pipe(
-      Effect.annotateLogs({ ...run, stranded })
-    );
-  }).pipe(
-    Effect.catchCause((cause) =>
-      Effect.logWarning("Running the follow-up rules failed", cause)
-    )
-  ),
-  name: "publishing.follow-ups",
-  skipIfOlderThan: Duration.minutes(10),
 });

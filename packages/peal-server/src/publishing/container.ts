@@ -1,29 +1,27 @@
-import { Effect, Layer } from "effect";
+import { Layer } from "effect";
 import { Digest, Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
 import { AccountRules } from "#publishing/application/account-rules.ts";
 import { AccountStandings } from "#publishing/application/account-standings.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
-import { ArticleRecords } from "#publishing/application/article-records.ts";
-import { Articles } from "#publishing/application/articles.ts";
 import type { AttachableMedia } from "#publishing/application/attachable-media.ts";
 import { ChannelDefaults } from "#publishing/application/channel-defaults.ts";
 import { ChannelLookups } from "#publishing/application/channel-lookups.ts";
 import { ChannelSets } from "#publishing/application/channel-sets.ts";
-import { FeedNotices } from "#publishing/application/feed-notices.ts";
-import { FeedPictures } from "#publishing/application/feed-pictures.ts";
-import { FeedSource } from "#publishing/application/feed-source.ts";
-import { Feeds } from "#publishing/application/feeds.ts";
-import { FollowUpChannels } from "#publishing/application/follow-up-channels.ts";
-import { FollowUpCounts } from "#publishing/application/follow-up-counts.ts";
-import { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
-import { FollowUpRules } from "#publishing/application/follow-up-rules.ts";
-import { FollowUps } from "#publishing/application/follow-ups.ts";
+import { FeedNotices } from "#publishing/application/feeds/feed-notices.ts";
+import { FeedPictures } from "#publishing/application/feeds/feed-pictures.ts";
+import { FeedSource } from "#publishing/application/feeds/feed-source.ts";
+import { Feeds } from "#publishing/application/feeds/feeds.ts";
+import { FollowUpChannels } from "#publishing/application/follow-ups/follow-up-channels.ts";
+import { FollowUpCounts } from "#publishing/application/follow-ups/follow-up-counts.ts";
+import { FollowUpNotices } from "#publishing/application/follow-ups/follow-up-notices.ts";
+import { FollowUpRules } from "#publishing/application/follow-ups/follow-up-rules.ts";
+import { FollowUps } from "#publishing/application/follow-ups/follow-ups.ts";
+import { RoutedFollowUpPublisher } from "#publishing/application/follow-ups/routed-follow-up-publisher.ts";
+import { SendFollowUp } from "#publishing/application/follow-ups/send-follow-up.ts";
 import { HeldPosts } from "#publishing/application/held-posts.ts";
 import { LivePostChanges } from "#publishing/application/live-post-changes.ts";
-import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import { LivePostEdits } from "#publishing/application/live-post-edits.ts";
 import { LivePostEvents } from "#publishing/application/live-post-events.ts";
 import { LivePostHolds } from "#publishing/application/live-post-holds.ts";
@@ -31,7 +29,6 @@ import { LiveTargetParts } from "#publishing/application/live-target-parts.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { pacedLookups } from "#publishing/application/paced-lookups.ts";
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
-import type { PlatformPublisher } from "#publishing/application/platform-publisher.ts";
 import type { PostAllowance } from "#publishing/application/post-allowance.ts";
 import { PostAttention } from "#publishing/application/post-attention.ts";
 import { PostBatches } from "#publishing/application/post-batches.ts";
@@ -52,48 +49,24 @@ import { PostUsage } from "#publishing/application/post-usage.ts";
 import { PostingCapabilities } from "#publishing/application/posting-capabilities.ts";
 import { Queues } from "#publishing/application/queues.ts";
 import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
-import { RecyclingNotices } from "#publishing/application/recycling-notices.ts";
-import { Recycling } from "#publishing/application/recycling.ts";
-import { RoutedFollowUpPublisher } from "#publishing/application/routed-follow-up-publisher.ts";
+import { RecyclingNotices } from "#publishing/application/recycling/recycling-notices.ts";
+import { Recycling } from "#publishing/application/recycling/recycling.ts";
 import { RoutedPlatformPublisher } from "#publishing/application/routed-platform-publisher.ts";
-import { SendFollowUp } from "#publishing/application/send-follow-up.ts";
 import type { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import { Signatures } from "#publishing/application/signatures.ts";
 import { TikTokCreatorInfo } from "#publishing/application/tiktok-creator-info.ts";
 import type { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
 import { AdsLivePostHolds } from "#publishing/infrastructure/ads-live-post-holds.ts";
 import { AnalyticsCountedPlatforms } from "#publishing/infrastructure/analytics-counted-platforms.ts";
-import { AnalyticsFollowUpCounts } from "#publishing/infrastructure/analytics-follow-up-counts.ts";
-import {
-  ChannelAccessCredentials,
-  ChannelAccessSiteCredentials,
-} from "#publishing/infrastructure/channel-access-credentials.ts";
+import { ChannelAccessCredentials } from "#publishing/infrastructure/channel-access-credentials.ts";
 import { ChannelAccessGrants } from "#publishing/infrastructure/channel-access-grants.ts";
 import {
-  ChannelGateLive,
-  GatedFollowUpPublisher,
-  GatedLivePostClients,
-  GatedPlatformPublisher,
-  UnreadComments,
-  UnreadMetrics,
-} from "#publishing/infrastructure/channel-gate.ts";
-import {
-  FeedsCron,
-  FollowUpsCron,
   IdempotencyRetentionCron,
   QuotaRetentionCron,
-  RecyclingCron,
 } from "#publishing/infrastructure/crons.ts";
-import {
-  DrizzleArticleJournal,
-  DrizzleArticleStore,
-} from "#publishing/infrastructure/drizzle-article-store.ts";
 import { DrizzleChannelDefaultsStore } from "#publishing/infrastructure/drizzle-channel-defaults-store.ts";
 import { DrizzleChannelSetStore } from "#publishing/infrastructure/drizzle-channel-set-store.ts";
 import { DrizzleContentFingerprints } from "#publishing/infrastructure/drizzle-content-fingerprints.ts";
-import { DrizzleFeedReads } from "#publishing/infrastructure/drizzle-feed-reads.ts";
-import { DrizzleFeedStore } from "#publishing/infrastructure/drizzle-feed-store.ts";
-import { DrizzleFollowUpStore } from "#publishing/infrastructure/drizzle-follow-up-store.ts";
 import { DrizzleIdempotencyKeys } from "#publishing/infrastructure/drizzle-idempotency-keys.ts";
 import { DrizzleLivePostChangeStore } from "#publishing/infrastructure/drizzle-live-post-change-store.ts";
 import { DrizzlePlatformQuota } from "#publishing/infrastructure/drizzle-platform-quota.ts";
@@ -104,65 +77,60 @@ import { DrizzlePublicationProgress } from "#publishing/infrastructure/drizzle-p
 import { DrizzlePublishedTargets } from "#publishing/infrastructure/drizzle-published-targets.ts";
 import { DrizzleQueueStore } from "#publishing/infrastructure/drizzle-queue-store.ts";
 import { DrizzleRecordedPosts } from "#publishing/infrastructure/drizzle-recorded-posts.ts";
-import { DrizzleRecyclingStore } from "#publishing/infrastructure/drizzle-recycling-store.ts";
 import { DrizzleSignatureStore } from "#publishing/infrastructure/drizzle-signature-store.ts";
 import { DrizzleTagStore } from "#publishing/infrastructure/drizzle-tag-store.ts";
 import { DrizzleUploadSessions } from "#publishing/infrastructure/drizzle-upload-sessions.ts";
 import { DrizzleWorkspacePostStore } from "#publishing/infrastructure/drizzle-workspace-post-store.ts";
+import { DrizzleFeedReads } from "#publishing/infrastructure/feeds/drizzle-feed-reads.ts";
+import { DrizzleFeedStore } from "#publishing/infrastructure/feeds/drizzle-feed-store.ts";
+import { FeedsCron } from "#publishing/infrastructure/feeds/feeds-cron.ts";
 import { HttpFeedSource } from "#publishing/infrastructure/feeds/http-feed-source.ts";
-import { armedOutcomes } from "#publishing/infrastructure/follow-up-outcomes.ts";
+import { LibraryFeedPictures } from "#publishing/infrastructure/feeds/library-feed-pictures.ts";
+import { NotifiedFeedNotices } from "#publishing/infrastructure/feeds/notified-feed-notices.ts";
+import { AnalyticsFollowUpCounts } from "#publishing/infrastructure/follow-ups/analytics-follow-up-counts.ts";
+import { DrizzleFollowUpStore } from "#publishing/infrastructure/follow-ups/drizzle-follow-up-store.ts";
+import { armedOutcomes } from "#publishing/infrastructure/follow-ups/follow-up-outcomes.ts";
+import { FollowUpsCron } from "#publishing/infrastructure/follow-ups/follow-ups-cron.ts";
+import { NotifiedFollowUpNotices } from "#publishing/infrastructure/follow-ups/notified-follow-up-notices.ts";
+import { PlatformRepostsLive } from "#publishing/infrastructure/follow-ups/platforms/platform-reposts-live.ts";
+import { WorkflowFollowUpJobs } from "#publishing/infrastructure/follow-ups/workflow-follow-up-jobs.ts";
+import { SendFollowUpV1Live } from "#publishing/infrastructure/follow-ups/workflows/send-follow-up.ts";
 import { LibraryAttachableMedia } from "#publishing/infrastructure/library-attachable-media.ts";
-import { LibraryFeedPictures } from "#publishing/infrastructure/library-feed-pictures.ts";
 import { LibraryMediaForPublishing } from "#publishing/infrastructure/library-media-for-publishing.ts";
 import { ListedChannelConnections } from "#publishing/infrastructure/listed-channel-connections.ts";
-import { ListedSiteChannels } from "#publishing/infrastructure/listed-site-channels.ts";
 import { ListedWorkspaceChannels } from "#publishing/infrastructure/listed-workspace-channels.ts";
 import { LoggedChannelHealth } from "#publishing/infrastructure/logged-channel-health.ts";
 import { LoggedOperatorAlerts } from "#publishing/infrastructure/logged-operator-alerts.ts";
 import { meteredOutcomes } from "#publishing/infrastructure/metered-publication-outcomes.ts";
 import { MeteredXPostsLive } from "#publishing/infrastructure/metered-x-posts.ts";
 import { NamedPostOrigins } from "#publishing/infrastructure/named-post-origins.ts";
-import { NotifiedFeedNotices } from "#publishing/infrastructure/notified-feed-notices.ts";
-import { NotifiedFollowUpNotices } from "#publishing/infrastructure/notified-follow-up-notices.ts";
 import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified-publication-outcomes.ts";
-import { NotifiedRecyclingNotices } from "#publishing/infrastructure/notified-recycling-notices.ts";
 import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allowance.ts";
-import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
-import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashnode/hashnode-articles.ts";
 import { LivePostClientsLive } from "#publishing/infrastructure/platforms/live-post-clients-live.ts";
 import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platform-clients-live.ts";
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
-import { PlatformRepostsLive } from "#publishing/infrastructure/platforms/platform-reposts-live.ts";
 import { TikTokCreatorsLive } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
-import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
-import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
+import { DrizzleRecyclingStore } from "#publishing/infrastructure/recycling/drizzle-recycling-store.ts";
+import { NotifiedRecyclingNotices } from "#publishing/infrastructure/recycling/notified-recycling-notices.ts";
+import { RecyclingCron } from "#publishing/infrastructure/recycling/recycling-cron.ts";
 import { ShortLinksLinkShortener } from "#publishing/infrastructure/shortlinks-link-shortener.ts";
 import { ShortLinksShortLinkDefaults } from "#publishing/infrastructure/shortlinks-short-link-defaults.ts";
-import { SqlArticleSendTurns } from "#publishing/infrastructure/sql-article-send-turns.ts";
 import { SqlPostAttentionReads } from "#publishing/infrastructure/sql-post-attention-reads.ts";
 import { ToldLivePostEvents } from "#publishing/infrastructure/told-live-post-events.ts";
 import { limitedUploads } from "#publishing/infrastructure/upload-slots.ts";
-import { WebhookArticleEvents } from "#publishing/infrastructure/webhook-article-events.ts";
 import {
   webhookOutcomes,
   WebhookPostEvents,
 } from "#publishing/infrastructure/webhook-post-events.ts";
-import { WorkflowArticleJobs } from "#publishing/infrastructure/workflow-article-jobs.ts";
-import { WorkflowFollowUpJobs } from "#publishing/infrastructure/workflow-follow-up-jobs.ts";
 import { WorkflowLivePostJobs } from "#publishing/infrastructure/workflow-live-post-jobs.ts";
 import { WorkflowPublicationScheduler } from "#publishing/infrastructure/workflow-publication-scheduler.ts";
 import { ChangeLivePostV1Live } from "#publishing/infrastructure/workflows/change-live-post.ts";
-import { PublishArticleV1Live } from "#publishing/infrastructure/workflows/publish-article.ts";
 import { PublishTargetV2Live } from "#publishing/infrastructure/workflows/publish-parts.ts";
 import { PublishPostV1Live } from "#publishing/infrastructure/workflows/publish-post.ts";
 import { PublishTargetV1Live } from "#publishing/infrastructure/workflows/publish-target.ts";
-import { SendFollowUpV1Live } from "#publishing/infrastructure/workflows/send-follow-up.ts";
 import { WorkspaceRecyclingActors } from "#publishing/infrastructure/workspace-recycling-actors.ts";
 import { XThreadsLive } from "#publishing/infrastructure/x-threads.ts";
-import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
-import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
-import { wordpressComHosts } from "#shared/infrastructure/platforms/wordpress-api.ts";
 
 // The use cases over their adapters, asking whatever ApprovalGate they are
 // given before a post is scheduled.
@@ -535,12 +503,12 @@ export const PublishingLive = publishingOver(
 );
 
 /**
- * Which posts and articles show a media asset, for the media context to
- * ask before it deletes one (MediaInPosts). Needs the database (Drizzle) and a
+ * Which posts show a media asset, for the media context to ask before it
+ * deletes one (MediaInPosts). Needs the database (Drizzle) and a
  * TransactionRunner.
  */
 export const MediaInPostsLive = MediaInPosts.layer.pipe(
-  Layer.provide(Layer.merge(DrizzlePostRepository, DrizzleArticleStore))
+  Layer.provide(DrizzlePostRepository)
 );
 
 /**
@@ -566,11 +534,11 @@ export { ChannelSetsHandlers as ChannelSetsApiLive } from "#publishing/api/chann
 
 export { QueuesHandlers as QueuesApiLive } from "#publishing/api/queues.ts";
 
-export { RecyclingHandlers as RecyclingApiLive } from "#publishing/api/recycling.ts";
+export { RecyclingHandlers as RecyclingApiLive } from "#publishing/api/recycling/recycling.ts";
 
-export { FollowUpsHandlers as FollowUpsApiLive } from "#publishing/api/follow-ups.ts";
+export { FollowUpsHandlers as FollowUpsApiLive } from "#publishing/api/follow-ups/follow-ups.ts";
 
-export { FeedsHandlers as FeedsApiLive } from "#publishing/api/feeds.ts";
+export { FeedsHandlers as FeedsApiLive } from "#publishing/api/feeds/feeds.ts";
 
 export { ChannelDefaultsHandlers as ChannelDefaultsApiLive } from "#publishing/api/channel-defaults.ts";
 
@@ -586,64 +554,44 @@ export { CapabilitiesHandlers as CapabilitiesApiLive } from "#publishing/api/cap
 
 export { LookupsHandlers as LookupsApiLive } from "#publishing/api/lookups.ts";
 
-// What the gates read analytics' counts with (MetricsReader): the readers
-// the composition root brings, or none.
-type GateReaders<E, R> = Layer.Layer<Layer.Success<typeof UnreadMetrics>, E, R>;
+/**
+ * Registers the publishing workflows, which call the platforms through the
+ * PlatformPublisher, LivePostClients and FollowUpPublisher they are given:
+ * on the server, the channels context's, which send each call through its
+ * channel's gate. They take the gated PlatformPublisher, LivePostClients
+ * and FollowUpPublisher, never the direct adapters (PlatformsLive and the
+ * others), which would publish without the channel's order, and
+ * `src/app/publishing-workers.ts` is the one place that provides them.
+ * Needs the cluster and what PublishingLive provides, PublicationOutcomes
+ * included.
+ */
+export const PublishingWorkersLive = Layer.mergeAll(
+  PublishPostV1Live,
+  PublishTargetV1Live,
+  PublishTargetV2Live,
+  ChangeLivePostV1Live,
+  SendFollowUpV1Live.pipe(Layer.provide(SendFollowUp.layer))
+);
 
-// What the gates read comments and answer them with (CommentSource,
-// ReplySender): engagement's platforms, or none.
-type GateEngagement<E, R> = Layer.Layer<
-  Layer.Success<typeof UnreadComments>,
-  E,
-  R
->;
+// The files as platforms and sites get them, the large ones a few at a
+// time: one limiter for every consumer of a build.
+const UploadsLive = limitedUploads.pipe(
+  Layer.provide(LibraryMediaForPublishing)
+);
 
 /**
- * Registers the publishing workflows and the channel gates, which call the
- * platforms through `platforms`, and read counts for analytics with
- * `readers` (by default, none), and comments for engagement with
- * `engagement` (by default, none). Needs the cluster and what
- * PublishingLive provides, PublicationOutcomes included.
+ * What articles go out under, from publishing: the library's ready files
+ * (AttachableMedia), the plan's room (PostAllowance), and the files as
+ * sites get them, on the server's one limiter of large uploads
+ * (MediaForPublishing, `UploadsLive`, the one this file provides). Needs
+ * what those need: MediaLibrary, MediaForPlatforms and the billing
+ * context's entitlements.
  */
-export const publishingWorkers = <
-  E,
-  R,
-  E2 = never,
-  R2 = never,
-  E3 = never,
-  R3 = never,
-  E4 = never,
-  R4 = never,
-  E5 = never,
-  R5 = never,
->(
-  platforms: Layer.Layer<PlatformPublisher, E, R>,
-  readers: GateReaders<E2, R2> = UnreadMetrics,
-  engagement: GateEngagement<E3, R3> = UnreadComments,
-  live: Layer.Layer<LivePostClients, E4, R4> = LivePostClients.none,
-  followUps: Layer.Layer<FollowUpPublisher, E5, R5> = FollowUpPublisher.none
-) =>
-  Layer.mergeAll(
-    PublishPostV1Live,
-    PublishTargetV1Live,
-    PublishTargetV2Live
-  ).pipe(
-    Layer.provide(GatedPlatformPublisher),
-    Layer.merge(ChangeLivePostV1Live.pipe(Layer.provide(GatedLivePostClients))),
-    Layer.merge(
-      SendFollowUpV1Live.pipe(
-        Layer.provide(SendFollowUp.layer),
-        Layer.provide(GatedFollowUpPublisher)
-      )
-    ),
-    Layer.merge(
-      ChannelGateLive.pipe(
-        Layer.provide(
-          Layer.mergeAll(platforms, readers, engagement, live, followUps)
-        )
-      )
-    )
-  );
+export const PostingServicesLive = Layer.mergeAll(
+  LibraryAttachableMedia,
+  PlanPostAllowanceLive,
+  UploadsLive
+);
 
 /**
  * The platforms the gates publish to, Mastodon, Bluesky, LinkedIn, X,
@@ -666,7 +614,7 @@ export const PlatformsLive = RoutedPlatformPublisher.pipe(
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessCredentials,
-      limitedUploads.pipe(Layer.provide(LibraryMediaForPublishing)),
+      UploadsLive,
       DrizzlePublicationProgress,
       DrizzleUploadSessions,
       DrizzlePlatformQuota,
@@ -696,7 +644,7 @@ export const FollowUpPlatformsLive = RoutedFollowUpPublisher.pipe(
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessCredentials,
-      limitedUploads.pipe(Layer.provide(LibraryMediaForPublishing)),
+      UploadsLive,
       DrizzlePublicationProgress,
       DrizzleUploadSessions,
       DrizzlePlatformQuota,
@@ -715,25 +663,12 @@ export const FollowUpPlatformsLive = RoutedFollowUpPublisher.pipe(
 );
 
 /**
- * The workers as the server runs them, publishing to the platforms, with
- * the readers analytics' counts come from (MetricsReader), which the
- * composition root provides.
+ * What the gates delete the posts members unpublish with, and edit those
+ * they edit, with the channels' tokens and the edits' texts.
  */
-export const publishingWorkersReading = <E, R, E2, R2>(
-  readers: GateReaders<E, R>,
-  engagement: GateEngagement<E2, R2>
-) =>
-  publishingWorkers(
-    PlatformsLive,
-    readers,
-    engagement,
-    // What deletes the posts members unpublish, and edits those they
-    // edit, with the channels' tokens and the edits' texts.
-    LivePostClientsLive.pipe(
-      Layer.provide(Layer.merge(ChannelAccessCredentials, LivePostEdits.layer))
-    ),
-    FollowUpPlatformsLive
-  );
+export const LivePostPlatformsLive = LivePostClientsLive.pipe(
+  Layer.provide(Layer.merge(ChannelAccessCredentials, LivePostEdits.layer))
+);
 
 /**
  * The server's ledger of the platforms' daily quotas, in Postgres: for
@@ -741,26 +676,6 @@ export const publishingWorkersReading = <E, R, E2, R2>(
  * day with publishing. Needs the database (Drizzle).
  */
 export { DrizzlePlatformQuota as PlatformQuotaLive } from "#publishing/infrastructure/drizzle-platform-quota.ts";
-
-/**
- * The MetricsReader that sends each read through its channel's gate, for
- * analytics' collection.
- */
-export { GatedMetricsReader } from "#publishing/infrastructure/channel-gate.ts";
-
-/**
- * The CommentSource and ReplySender, the ReviewSource and
- * ReviewReplySender (GatedReviews), and the MessageSource and
- * MessageSender (GatedMessages), that send each call through its
- * channel's gate, for engagement.
- */
-export {
-  GatedCommentSource,
-  GatedReplySender,
-  GatedMessages,
-  GatedReviews,
-  UnreadComments,
-} from "#publishing/infrastructure/channel-gate.ts";
 
 /**
  * The idempotency keys' daily retention, the recycling rules'
@@ -774,76 +689,3 @@ export const PublishingCronsLive = Layer.mergeAll(
   FeedsCron,
   QuotaRetentionCron.pipe(Layer.provide(DrizzlePlatformQuota))
 );
-
-// The websites articles go to: WordPress sites, on WordPress.com too,
-// DEV and Hashnode, with the tokens the channels
-// context hands out and the files the media context does, over the
-// guarded public client.
-const SitePublisherLive = routedSitePublisher(
-  Effect.gen(function* siteAdapters() {
-    const wordpress = yield* wordpressSiteAdapter(wordpressComHosts);
-
-    return {
-      devto: yield* devtoSiteAdapter(devtoHosts),
-      hashnode: yield* hashnodeSiteAdapter(hashnodeHosts),
-      wordpress,
-      wordpressCom: wordpress,
-    };
-  })
-).pipe(
-  Layer.provide(
-    Layer.mergeAll(
-      ChannelAccessSiteCredentials,
-      limitedUploads.pipe(Layer.provide(LibraryMediaForPublishing)),
-      DrizzleArticleStore,
-      DrizzleArticleJournal
-    )
-  ),
-  Layer.provide(OutboundGuard.layer),
-  Layer.provide(FetchHttpClient.layer)
-);
-
-/**
- * The articles' use cases (`Articles`), for the handlers: on the channels
- * of websites the channels context lists, with the media its library
- * holds, sent by `PublishArticleV1` jobs, within the workspace's plan.
- * Needs the database, the workflow engine, a TransactionRunner, Ids, Dns,
- * ListChannels, ChannelAccess, MediaLibrary, MediaForPlatforms, the
- * billing context's entitlements and the ApprovalGate.
- */
-export const ArticlesLive = Layer.merge(
-  Articles.layer,
-  ArticleRecords.layer
-).pipe(
-  Layer.provide(
-    Layer.mergeAll(
-      DrizzleArticleStore,
-      DrizzleArticleJournal,
-      WorkflowArticleJobs,
-      ListedSiteChannels,
-      LibraryAttachableMedia,
-      PlanPostAllowanceLive,
-      SitePublisherLive
-    )
-  )
-);
-
-/**
- * The job that sends articles to their sites (`PublishArticleV1`), whose
- * endings the workspace's webhook endpoints hear. Needs the cluster and
- * what ArticlesLive needs, with WebhookEvents and ChannelRepository.
- */
-export const ArticleWorkersLive = PublishArticleV1Live.pipe(
-  Layer.provide(
-    Layer.mergeAll(
-      SqlArticleSendTurns,
-      DrizzleArticleStore,
-      DrizzleArticleJournal,
-      WebhookArticleEvents,
-      PlanPostAllowanceLive,
-      SitePublisherLive
-    )
-  )
-);
-
-export { ArticlesHandlers as ArticlesApiLive } from "#publishing/api/articles.ts";

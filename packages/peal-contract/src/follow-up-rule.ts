@@ -4,9 +4,10 @@ import { PlatformSchema } from "./platform.ts";
 import { postOrChannel } from "./post-or-channel.ts";
 import { PostOriginSchema } from "./posts.ts";
 
-// The limits below are the server's (src/publishing/domain/follow-up-*.ts
-// and src/publishing/application/follow-up-rules.ts): a test keeps them
-// equal.
+// The limits below are the server's
+// (src/publishing/domain/follow-ups/follow-up-*.ts and
+// src/publishing/application/follow-ups/follow-up-rules.ts): a test keeps
+// them equal.
 
 /** The most rules a workspace keeps active or paused. */
 export const maxFollowUpRulesPerWorkspace = 100;

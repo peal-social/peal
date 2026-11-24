@@ -8,6 +8,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import type { PostId, UserId, WorkspaceId } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 
 import { InvalidPostTransition } from "./invalid-post-transition.ts";
 import type { PostAction } from "./invalid-post-transition.ts";
@@ -24,7 +25,6 @@ import type { PostTarget } from "./post-target.ts";
 import { QueueIdSchema } from "./queue-id.ts";
 import type { QueueId } from "./queue-id.ts";
 import { ScheduleInPast } from "./schedule-in-past.ts";
-import { Schedule } from "./schedule.ts";
 import type { TagId } from "./tag-id.ts";
 import { PostTagIdsSchema } from "./tag.ts";
 
@@ -62,7 +62,7 @@ import { PostTagIdsSchema } from "./tag.ts";
  * status, never from this alone.
  *
  * `occurrence` says which recycling rule made it, and its place among the
- * rule's posts (`./recycling-rule.ts`): an ordinary post otherwise, with
+ * rule's posts (`./recycling/recycling-rule.ts`): an ordinary post otherwise, with
  * its own job and outcome, which a member moves or cancels as any other.
  *
  * `scheduleRevision` counts the times the post was scheduled or taken back

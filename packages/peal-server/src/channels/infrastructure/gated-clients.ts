@@ -1,0 +1,780 @@
+import { Context, Effect, Layer, Schedule } from "effect";
+
+import { MetricsReader } from "#analytics/application/metrics-reader.ts";
+import type {
+  MetricsBatch,
+  MetricsReadFailure,
+} from "#analytics/application/metrics-reader.ts";
+import { ChannelGate } from "#channels/infrastructure/channel-gate.ts";
+import { CommentSource } from "#engagement/application/ports/comment-source.ts";
+import type {
+  CommentsBatch,
+  CommentsReadFailure,
+} from "#engagement/application/ports/comment-source.ts";
+import { MessageSender } from "#engagement/application/ports/message-sender.ts";
+import type {
+  MessageSendOutcome,
+  MessageSendRequest,
+} from "#engagement/application/ports/message-sender.ts";
+import { MessageSource } from "#engagement/application/ports/message-source.ts";
+import type {
+  MessagesBatch,
+  MessagesFollowOutcome,
+  MessagesFollowRequest,
+  MessagesReadFailure,
+  MessagesRequestSchema,
+} from "#engagement/application/ports/message-source.ts";
+import { PrivateReplySender } from "#engagement/application/ports/private-reply-sender.ts";
+import type {
+  PrivateReplyOutcome,
+  PrivateReplyRequest,
+} from "#engagement/application/ports/private-reply-sender.ts";
+import { ReplySender } from "#engagement/application/ports/reply-sender.ts";
+import type {
+  ActionOutcome,
+  SendOutcome,
+} from "#engagement/application/ports/reply-sender.ts";
+import { ReviewReplySender } from "#engagement/application/ports/review-reply-sender.ts";
+import type {
+  ReviewActionOutcome,
+  ReviewReplyCheck,
+  ReviewReplyRequest,
+  ReviewSendOutcome,
+} from "#engagement/application/ports/review-reply-sender.ts";
+import { ReviewSource } from "#engagement/application/ports/review-source.ts";
+import type {
+  ReviewsBatch,
+  ReviewsReadFailure,
+  ReviewsRequestSchema,
+} from "#engagement/application/ports/review-source.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
+import { LivePostClients } from "#publishing/application/live-post-clients.ts";
+import type {
+  EditOutcome,
+  RemovalFailure,
+  RemovalOutcome,
+} from "#publishing/application/live-post-clients.ts";
+import { PlatformPublisher } from "#publishing/application/platform-publisher.ts";
+import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
+import type { PublishFailure } from "#shared/domain/publish-failure.ts";
+import type { PublishResult } from "#shared/domain/publish-result.ts";
+
+// The gate did not take the call, so it was not sent: worth a few quick
+// retries before the platform counts as unavailable.
+const notTakenRetry = Schedule.exponential("100 millis", 2);
+
+const notSent = () => Effect.fail(new PlatformUnavailable());
+
+// A resume the gate did not take checked nothing: the earlier run may still
+// have posted, so it is not a refusal.
+const notChecked = () =>
+  Effect.succeed<PublishResult>({
+    _tag: "unconfirmed",
+    reason: "interrupted",
+  });
+
+const unknownOutcome = (cause: unknown) =>
+  Effect.logError("A platform call failed in its adapter", cause).pipe(
+    Effect.as<PublishResult>({ _tag: "unconfirmed", reason: "adapterFailure" })
+  );
+
+/**
+ * The PlatformPublisher the publishing jobs use: each call goes through its
+ * channel's gate. Provide ChannelGateLive, with the real adapters, beside it.
+ */
+export const GatedPlatformPublisher = Layer.effect(
+  PlatformPublisher,
+  Effect.gen(function* GatedPlatformPublisher() {
+    const gateFor = yield* ChannelGate.client;
+
+    // Publish and Resume answer alike.
+    type GateCall = ReturnType<ReturnType<typeof gateFor>["Publish"]>;
+
+    const gated = (
+      call: GateCall,
+      notTaken: () => Effect.Effect<PublishResult, PublishFailure>
+    ) =>
+      call.pipe(
+        Effect.retry({
+          schedule: notTakenRetry,
+          times: 4,
+          while: (error) =>
+            error._tag === "MailboxFull" ||
+            error._tag === "EntityNotAssignedToRunner",
+        }),
+        Effect.catchTags({
+          // A request with this id is being handled: it may have gone out.
+          AlreadyProcessingMessage: () =>
+            Effect.succeed<PublishResult>({
+              _tag: "unconfirmed",
+              reason: "noResponse",
+            }),
+          EntityNotAssignedToRunner: notTaken,
+          MailboxFull: notTaken,
+          PersistenceError: notTaken,
+        }),
+        // The adapter broke during the call, after the request may have
+        // left: never a reason to send it again.
+        Effect.catchDefect(unknownOutcome)
+      );
+
+    return PlatformPublisher.of({
+      publish: (request) =>
+        gated(gateFor(request.channelId).Publish({ request }), notSent),
+      resume: (request) =>
+        gated(gateFor(request.channelId).Resume({ request }), notChecked),
+    });
+  })
+);
+
+/**
+ * The FollowUpPublisher the follow-ups' jobs use: each call goes through
+ * its channel's gate, in turn with the channel's publishing, answering as
+ * the publishing calls do (`GatedPlatformPublisher`): a call the gate did
+ * not take was not sent, one it lost may have gone out. Provide
+ * ChannelGateLive, with the real publisher, beside it.
+ */
+export const GatedFollowUpPublisher = Layer.effect(
+  FollowUpPublisher,
+  Effect.gen(function* GatedFollowUpPublisher() {
+    const gateFor = yield* ChannelGate.client;
+
+    type GateCall = ReturnType<ReturnType<typeof gateFor>["SendFollowUp"]>;
+
+    const gated = (
+      call: GateCall,
+      notTaken: () => Effect.Effect<PublishResult, PublishFailure>
+    ) =>
+      call.pipe(
+        Effect.retry({
+          schedule: notTakenRetry,
+          times: 4,
+          while: (error) =>
+            error._tag === "MailboxFull" ||
+            error._tag === "EntityNotAssignedToRunner",
+        }),
+        Effect.catchTags({
+          AlreadyProcessingMessage: () =>
+            Effect.succeed<PublishResult>({
+              _tag: "unconfirmed",
+              reason: "noResponse",
+            }),
+          EntityNotAssignedToRunner: notTaken,
+          MailboxFull: notTaken,
+          PersistenceError: notTaken,
+        }),
+        Effect.catchDefect(unknownOutcome)
+      );
+
+    return FollowUpPublisher.of({
+      resume: (request) =>
+        gated(
+          gateFor(request.channelId).ResumeFollowUp({ request }),
+          notChecked
+        ),
+      send: (request) =>
+        gated(gateFor(request.channelId).SendFollowUp({ request }), notSent),
+    });
+  })
+);
+
+// The gate did not take the read, or a bug broke it: it read nothing, and
+// the next collection tries again.
+const unread = (): Effect.Effect<never, MetricsReadFailure> =>
+  Effect.fail(new PlatformUnavailable());
+
+/**
+ * The MetricsReader analytics collects with: each read goes through its
+ * channel's gate, after the calls already waiting there. Provide
+ * ChannelGateLive, with the real readers, beside it.
+ */
+export const GatedMetricsReader = Layer.effect(
+  MetricsReader,
+  Effect.gen(function* GatedMetricsReader() {
+    const gateFor = yield* ChannelGate.client;
+
+    // ReadMetrics and ReadAccount are taken, or not, alike.
+    const gated = <A>(
+      call: Effect.Effect<
+        A,
+        | MetricsReadFailure
+        | Effect.Error<ReturnType<ReturnType<typeof gateFor>["ReadMetrics"]>>
+      >
+    ): Effect.Effect<A, MetricsReadFailure> =>
+      call.pipe(
+        Effect.retry({
+          schedule: notTakenRetry,
+          times: 4,
+          while: (error) =>
+            error._tag === "MailboxFull" ||
+            error._tag === "EntityNotAssignedToRunner",
+        }),
+        Effect.catchTags({
+          AlreadyProcessingMessage: unread,
+          EntityNotAssignedToRunner: unread,
+          MailboxFull: unread,
+          PersistenceError: unread,
+        }),
+        Effect.catchDefect((cause) =>
+          Effect.logError("A metrics read failed in its adapter", cause).pipe(
+            Effect.andThen(unread())
+          )
+        )
+      );
+
+    return MetricsReader.of({
+      account: (request) =>
+        gated(gateFor(request.channelId).ReadAccount({ request })),
+      read: (request): Effect.Effect<MetricsBatch, MetricsReadFailure> =>
+        gated(gateFor(request.channelId).ReadMetrics({ request })),
+    });
+  })
+);
+
+// The gate did not take the read, or a bug broke it: it read nothing, and
+// the next collection tries again.
+const noComments = (): Effect.Effect<never, CommentsReadFailure> =>
+  Effect.fail(new PlatformUnavailable());
+
+/**
+ * The CommentSource engagement collects with: each read goes through its
+ * channel's gate, after the calls already waiting there. Provide
+ * ChannelGateLive, with the real readers, beside it.
+ */
+export const GatedCommentSource = Layer.effect(
+  CommentSource,
+  Effect.gen(function* GatedCommentSource() {
+    const gateFor = yield* ChannelGate.client;
+
+    return CommentSource.of({
+      read: (request): Effect.Effect<CommentsBatch, CommentsReadFailure> =>
+        gateFor(request.channelId)
+          .ReadComments({ request })
+          .pipe(
+            Effect.retry({
+              schedule: notTakenRetry,
+              times: 4,
+              while: (error) =>
+                error._tag === "MailboxFull" ||
+                error._tag === "EntityNotAssignedToRunner",
+            }),
+            Effect.catchTags({
+              AlreadyProcessingMessage: noComments,
+              EntityNotAssignedToRunner: noComments,
+              MailboxFull: noComments,
+              PersistenceError: noComments,
+            }),
+            Effect.catchDefect((cause) =>
+              Effect.logError(
+                "A comments read failed in its adapter",
+                cause
+              ).pipe(Effect.andThen(noComments()))
+            )
+          ),
+    });
+  })
+);
+
+// The gate did not take the reply, so it was not sent.
+const replyNotSent = () =>
+  Effect.succeed<SendOutcome>({
+    _tag: "failed",
+    reason: "platformUnavailable",
+  });
+
+// A call that may have reached the platform before the gate lost it.
+const replyUnknown = (
+  reason: "adapterFailure" | "interrupted" | "noResponse"
+) => Effect.succeed<SendOutcome>({ _tag: "unconfirmed", reason });
+
+// An action the gate did not take, or lost: asking again is safe.
+const notDone = () =>
+  Effect.succeed<ActionOutcome>({
+    _tag: "failed",
+    reason: "platformUnavailable",
+  });
+
+/**
+ * The ReplySender engagement acts with: each call goes through its
+ * channel's gate, in turn with the channel's publishing. A reply the gate
+ * did not take was not sent; one it lost during the call, or whose adapter
+ * broke, may have gone out, and is never sent again for that. Provide
+ * ChannelGateLive, with the real senders, beside it.
+ */
+export const GatedReplySender = Layer.effect(
+  ReplySender,
+  Effect.gen(function* GatedReplySender() {
+    const gateFor = yield* ChannelGate.client;
+
+    type SendCall = ReturnType<ReturnType<typeof gateFor>["SendReply"]>;
+
+    type ActionCall = ReturnType<ReturnType<typeof gateFor>["WithdrawReply"]>;
+
+    const sending = (
+      call: SendCall,
+      notTaken: () => Effect.Effect<SendOutcome>
+    ) =>
+      call.pipe(
+        Effect.retry({
+          schedule: notTakenRetry,
+          times: 4,
+          while: (error) =>
+            error._tag === "MailboxFull" ||
+            error._tag === "EntityNotAssignedToRunner",
+        }),
+        Effect.catchTags({
+          AlreadyProcessingMessage: () => replyUnknown("noResponse"),
+          EntityNotAssignedToRunner: notTaken,
+          MailboxFull: notTaken,
+          PersistenceError: notTaken,
+        }),
+        Effect.catchDefect((cause) =>
+          Effect.logError("A reply failed in its adapter", cause).pipe(
+            Effect.andThen(replyUnknown("adapterFailure"))
+          )
+        )
+      );
+
+    const acting = (call: ActionCall) =>
+      call.pipe(
+        Effect.catchTags({
+          AlreadyProcessingMessage: notDone,
+          EntityNotAssignedToRunner: notDone,
+          MailboxFull: notDone,
+          PersistenceError: notDone,
+        }),
+        Effect.catchDefect((cause) =>
+          Effect.logError("A comment action failed in its adapter", cause).pipe(
+            Effect.andThen(notDone())
+          )
+        )
+      );
+
+    return ReplySender.of({
+      moderate: (request) =>
+        acting(gateFor(request.channelId).ModerateComment({ request })),
+      resume: (request) =>
+        sending(gateFor(request.channelId).ResumeReply({ request }), () =>
+          replyUnknown("interrupted")
+        ),
+      send: (request) =>
+        sending(
+          gateFor(request.channelId).SendReply({ request }),
+          replyNotSent
+        ),
+      withdraw: (request) =>
+        acting(gateFor(request.channelId).WithdrawReply({ request })),
+    });
+  })
+);
+
+// The gate did not take the removal, lost it, or a bug broke it: the post
+// may still be there, and deleting it again is safe.
+const notRemoved = (): Effect.Effect<RemovalOutcome, RemovalFailure> =>
+  Effect.fail(new PlatformUnavailable());
+
+// The same of an edit: the post may still say what it did, and editing
+// it again with the same text is safe.
+const notEdited = (): Effect.Effect<EditOutcome, RemovalFailure> =>
+  Effect.fail(new PlatformUnavailable());
+
+/**
+ * The LivePostClients the jobs that unpublish and edit posts use: each
+ * call goes through its channel's gate, in turn with the channel's
+ * publishing. Provide ChannelGateLive, with the real clients, beside it.
+ */
+export const GatedLivePostClients = Layer.effect(
+  LivePostClients,
+  Effect.gen(function* GatedLivePostClients() {
+    const gateFor = yield* ChannelGate.client;
+
+    return LivePostClients.of({
+      edit: (request) =>
+        gateFor(request.channelId)
+          .EditLivePost({ request })
+          .pipe(
+            Effect.retry({
+              schedule: notTakenRetry,
+              times: 4,
+              while: (error) =>
+                error._tag === "MailboxFull" ||
+                error._tag === "EntityNotAssignedToRunner",
+            }),
+            Effect.catchTags({
+              AlreadyProcessingMessage: notEdited,
+              EntityNotAssignedToRunner: notEdited,
+              MailboxFull: notEdited,
+              PersistenceError: notEdited,
+            }),
+            Effect.catchDefect((cause) =>
+              Effect.logError("An edit failed in its adapter", cause).pipe(
+                Effect.andThen(notEdited())
+              )
+            )
+          ),
+      remove: (request) =>
+        gateFor(request.channelId)
+          .RemoveLivePost({ request })
+          .pipe(
+            Effect.retry({
+              schedule: notTakenRetry,
+              times: 4,
+              while: (error) =>
+                error._tag === "MailboxFull" ||
+                error._tag === "EntityNotAssignedToRunner",
+            }),
+            Effect.catchTags({
+              AlreadyProcessingMessage: notRemoved,
+              EntityNotAssignedToRunner: notRemoved,
+              MailboxFull: notRemoved,
+              PersistenceError: notRemoved,
+            }),
+            Effect.catchDefect((cause) =>
+              Effect.logError("A removal failed in its adapter", cause).pipe(
+                Effect.andThen(notRemoved())
+              )
+            )
+          ),
+    });
+  })
+);
+
+// The gate did not take the read, or a bug broke it: it read nothing, and
+// the next collection tries again.
+const noReviews = (): Effect.Effect<never, ReviewsReadFailure> =>
+  Effect.fail(new PlatformUnavailable());
+
+// A read back the gate did not take, or lost: nothing is settled from it.
+const unknownCheck: ReviewReplyCheck = { _tag: "unknown" };
+
+const notSentReply = () =>
+  Effect.succeed<ReviewSendOutcome>({
+    _tag: "failed",
+    reason: "platformUnavailable",
+  });
+
+const unchecked = () =>
+  Effect.succeed<ReviewSendOutcome>({
+    _tag: "unconfirmed",
+    reason: "interrupted",
+  });
+
+const notWithdrawn = () =>
+  Effect.succeed<ReviewActionOutcome>({
+    _tag: "failed",
+    reason: "platformUnavailable",
+  });
+
+/**
+ * The ReviewSource and ReviewReplySender engagement reads and answers
+ * reviews with: each call goes through its channel's gate, in turn with
+ * the channel's publishing. A reply the gate did not take was not sent;
+ * one it lost during the call, or whose adapter broke, may have gone out,
+ * and the next read of its location says. Provide ChannelGateLive, with
+ * the real adapters, beside it.
+ */
+export const GatedReviews = Layer.effectContext(
+  Effect.gen(function* GatedReviews() {
+    const gateFor = yield* ChannelGate.client;
+
+    const taken = {
+      schedule: notTakenRetry,
+      times: 4,
+      while: (error: { readonly _tag: string }) =>
+        error._tag === "MailboxFull" ||
+        error._tag === "EntityNotAssignedToRunner",
+    };
+
+    const read = (request: typeof ReviewsRequestSchema.Type) =>
+      gateFor(request.channelId)
+        .ReadReviews({ request })
+        .pipe(
+          Effect.retry(taken),
+          Effect.catchTags({
+            AlreadyProcessingMessage: noReviews,
+            EntityNotAssignedToRunner: noReviews,
+            MailboxFull: noReviews,
+            PersistenceError: noReviews,
+          }),
+          Effect.catchDefect((cause) =>
+            Effect.logError("A reviews read failed in its adapter", cause).pipe(
+              Effect.andThen(noReviews())
+            )
+          )
+        ) satisfies Effect.Effect<ReviewsBatch, ReviewsReadFailure>;
+
+    const sending = (
+      call: Effect.Effect<
+        ReviewSendOutcome,
+        Effect.Error<ReturnType<ReturnType<typeof gateFor>["SendReviewReply"]>>
+      >,
+      notTaken: () => Effect.Effect<ReviewSendOutcome>
+    ): Effect.Effect<ReviewSendOutcome> =>
+      call.pipe(
+        Effect.retry(taken),
+        Effect.catchTags({
+          AlreadyProcessingMessage: () =>
+            Effect.succeed<ReviewSendOutcome>({
+              _tag: "unconfirmed",
+              reason: "noResponse",
+            }),
+          EntityNotAssignedToRunner: notTaken,
+          MailboxFull: notTaken,
+          PersistenceError: notTaken,
+        }),
+        Effect.catchDefect((cause) =>
+          Effect.logError(
+            "A reply to a review failed in its adapter",
+            cause
+          ).pipe(
+            Effect.as<ReviewSendOutcome>({
+              _tag: "unconfirmed",
+              reason: "adapterFailure",
+            })
+          )
+        )
+      );
+
+    return Context.make(ReviewSource, ReviewSource.of({ read })).pipe(
+      Context.add(
+        ReviewReplySender,
+        ReviewReplySender.of({
+          check: (request: ReviewReplyRequest) =>
+            gateFor(request.channelId)
+              .CheckReviewReply({ request })
+              .pipe(
+                Effect.retry(taken),
+                Effect.orElseSucceed(() => unknownCheck),
+                Effect.catchDefect(() => Effect.succeed(unknownCheck))
+              ),
+          resume: (request: ReviewReplyRequest) =>
+            sending(
+              gateFor(request.channelId).ResumeReviewReply({ request }),
+              unchecked
+            ),
+          send: (request: ReviewReplyRequest) =>
+            sending(
+              gateFor(request.channelId).SendReviewReply({ request }),
+              notSentReply
+            ),
+          withdraw: (request) =>
+            gateFor(request.channelId)
+              .WithdrawReviewReply({ request })
+              .pipe(
+                Effect.retry(taken),
+                Effect.catchTags({
+                  AlreadyProcessingMessage: notWithdrawn,
+                  EntityNotAssignedToRunner: notWithdrawn,
+                  MailboxFull: notWithdrawn,
+                  PersistenceError: notWithdrawn,
+                }),
+                Effect.catchDefect(notWithdrawn)
+              ),
+        })
+      )
+    );
+  })
+);
+
+// The gate did not take the read, or a bug broke it: it read nothing, and
+// the next collection tries again.
+const noMessages = (): Effect.Effect<never, MessagesReadFailure> =>
+  Effect.fail(new PlatformUnavailable());
+
+const notSubscribed = noMessages;
+
+const messageNotSent = () =>
+  Effect.succeed<MessageSendOutcome>({
+    _tag: "failed",
+    reason: "platformUnavailable",
+  });
+
+/**
+ * What a private reply the gate did not take answers: a send was not
+ * made; a resume checked nothing, and the earlier run may have sent it.
+ */
+export const privateReplyNotTaken = (
+  mode: "resume" | "send"
+): Effect.Effect<PrivateReplyOutcome> =>
+  Effect.succeed<PrivateReplyOutcome>(
+    mode === "send"
+      ? { _tag: "failed", reason: "platformUnavailable" }
+      : { _tag: "unconfirmed", reason: "interrupted" }
+  );
+
+const messageUnchecked = () =>
+  Effect.succeed<MessageSendOutcome>({
+    _tag: "unconfirmed",
+    reason: "interrupted",
+  });
+
+/**
+ * The MessageSource and MessageSender engagement reads and answers direct
+ * messages with, and the PrivateReplySender it sends private replies
+ * with: each call goes through its channel's gate, in turn with
+ * the channel's publishing. A message the gate did not take was not sent;
+ * one it lost during the call, or whose adapter broke, may have gone out,
+ * and a person checks. Provide ChannelGateLive, with the real adapters,
+ * beside it.
+ */
+export const GatedMessages = Layer.effectContext(
+  Effect.gen(function* GatedMessages() {
+    const gateFor = yield* ChannelGate.client;
+
+    const taken = {
+      schedule: notTakenRetry,
+      times: 4,
+      while: (error: { readonly _tag: string }) =>
+        error._tag === "MailboxFull" ||
+        error._tag === "EntityNotAssignedToRunner",
+    };
+
+    const read = (request: typeof MessagesRequestSchema.Type) =>
+      gateFor(request.channelId)
+        .ReadMessages({ request })
+        .pipe(
+          Effect.retry(taken),
+          Effect.catchTags({
+            AlreadyProcessingMessage: noMessages,
+            EntityNotAssignedToRunner: noMessages,
+            MailboxFull: noMessages,
+            PersistenceError: noMessages,
+          }),
+          // Logged without the cause, which may quote what people wrote.
+          Effect.catchDefect(() =>
+            Effect.logError(
+              "A direct messages read failed in its adapter"
+            ).pipe(Effect.andThen(noMessages()))
+          )
+        ) satisfies Effect.Effect<MessagesBatch, MessagesReadFailure>;
+
+    const sending = (
+      call: Effect.Effect<
+        MessageSendOutcome,
+        Effect.Error<ReturnType<ReturnType<typeof gateFor>["SendMessage"]>>
+      >,
+      notTaken: () => Effect.Effect<MessageSendOutcome>
+    ): Effect.Effect<MessageSendOutcome> =>
+      call.pipe(
+        Effect.retry(taken),
+        Effect.catchTags({
+          AlreadyProcessingMessage: () =>
+            Effect.succeed<MessageSendOutcome>({
+              _tag: "unconfirmed",
+              reason: "noResponse",
+            }),
+          EntityNotAssignedToRunner: notTaken,
+          MailboxFull: notTaken,
+          PersistenceError: notTaken,
+        }),
+        Effect.catchDefect(() =>
+          Effect.logError("A direct message failed in its adapter").pipe(
+            Effect.as<MessageSendOutcome>({
+              _tag: "unconfirmed",
+              reason: "adapterFailure",
+            })
+          )
+        )
+      );
+
+    // A private reply the gate did not take was not sent; one it lost
+    // during the call, or whose adapter broke, may have gone out.
+    const privately = (
+      call: Effect.Effect<
+        PrivateReplyOutcome,
+        Effect.Error<ReturnType<ReturnType<typeof gateFor>["SendPrivateReply"]>>
+      >,
+      notTaken: () => Effect.Effect<PrivateReplyOutcome>
+    ): Effect.Effect<PrivateReplyOutcome> =>
+      call.pipe(
+        Effect.retry(taken),
+        Effect.catchTags({
+          AlreadyProcessingMessage: () =>
+            Effect.succeed<PrivateReplyOutcome>({
+              _tag: "unconfirmed",
+              reason: "noResponse",
+            }),
+          EntityNotAssignedToRunner: notTaken,
+          MailboxFull: notTaken,
+          PersistenceError: notTaken,
+        }),
+        // Logged without the cause, which may quote the message.
+        Effect.catchDefect(() =>
+          Effect.logError("A private reply failed in its adapter").pipe(
+            Effect.as<PrivateReplyOutcome>({
+              _tag: "unconfirmed",
+              reason: "adapterFailure",
+            })
+          )
+        )
+      );
+
+    // A subscription the gate did not take was not asked for: the next
+    // read asks again.
+    const subscription =
+      (mode: "FollowMessages" | "UnfollowMessages") =>
+      (request: MessagesFollowRequest) => {
+        const gate = gateFor(request.channelId);
+
+        const call =
+          mode === "FollowMessages"
+            ? gate.FollowMessages({ request })
+            : gate.UnfollowMessages({ request });
+
+        return call.pipe(
+          Effect.retry(taken),
+          Effect.catchTags({
+            AlreadyProcessingMessage: notSubscribed,
+            EntityNotAssignedToRunner: notSubscribed,
+            MailboxFull: notSubscribed,
+            PersistenceError: notSubscribed,
+          }),
+          Effect.catchDefect(() =>
+            Effect.logError(
+              "A direct messages subscription failed in its adapter"
+            ).pipe(Effect.andThen(notSubscribed()))
+          )
+        ) satisfies Effect.Effect<MessagesFollowOutcome, MessagesReadFailure>;
+      };
+
+    return Context.make(
+      MessageSource,
+      MessageSource.of({
+        follow: subscription("FollowMessages"),
+        read,
+        unfollow: subscription("UnfollowMessages"),
+      })
+    ).pipe(
+      Context.add(
+        PrivateReplySender,
+        PrivateReplySender.of({
+          resume: (request: PrivateReplyRequest) =>
+            privately(
+              gateFor(request.channelId).ResumePrivateReply({ request }),
+              () => privateReplyNotTaken("resume")
+            ),
+          send: (request: PrivateReplyRequest) =>
+            privately(
+              gateFor(request.channelId).SendPrivateReply({ request }),
+              () => privateReplyNotTaken("send")
+            ),
+        })
+      ),
+      Context.add(
+        MessageSender,
+        MessageSender.of({
+          resume: (request: MessageSendRequest) =>
+            sending(
+              gateFor(request.channelId).ResumeMessage({ request }),
+              messageUnchecked
+            ),
+          send: (request: MessageSendRequest) =>
+            sending(
+              gateFor(request.channelId).SendMessage({ request }),
+              messageNotSent
+            ),
+        })
+      )
+    );
+  })
+);

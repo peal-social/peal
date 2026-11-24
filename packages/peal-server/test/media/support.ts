@@ -7,6 +7,7 @@ import { ConfigProvider, Effect, Layer, Option } from "effect";
 import { MessageStorage, ShardingConfig } from "effect/cluster";
 import { Dns } from "effect/net";
 
+import { MediaInArticlesLive } from "#articles/container.ts";
 import { MediaLive } from "#media/container.ts";
 import { MediaInPostsLive } from "#publishing/container.ts";
 import { Actor } from "#shared/domain/access.ts";
@@ -60,10 +61,13 @@ export const NoWebhooks = Layer.succeed(
 );
 
 /**
- * Which posts show media, as the publishing context tells, on the database
- * the test gives, in transactions of its own: no job starts in them.
+ * Which articles and posts show media, as they tell, on the database the
+ * test gives, in transactions of their own: no job starts in them.
  */
-export const MediaInPostsTest = MediaInPostsLive.pipe(
+export const MediaHoldersTest = Layer.merge(
+  MediaInPostsLive,
+  MediaInArticlesLive
+).pipe(
   Layer.provide(TransactionRunnerLive),
   Layer.provide(
     MessageStorage.layerMemory.pipe(Layer.provide(ShardingConfig.layer()))
@@ -71,7 +75,7 @@ export const MediaInPostsTest = MediaInPostsLive.pipe(
 );
 
 /**
- * The media context as the server builds it, with MediaInPostsTest, on a
+ * The media context as the server builds it, with MediaHoldersTest, on a
  * server that does not bill, or with the entitlements given, telling
  * `webhooks` how uploads end.
  */
@@ -82,7 +86,7 @@ export const mediaTestWith = <E = never, R = never>(
   MediaLive.pipe(
     Layer.provide(
       Layer.mergeAll(
-        MediaInPostsTest,
+        MediaHoldersTest,
         entitlements,
         NoAccountsConnectedTest,
         webhooks,

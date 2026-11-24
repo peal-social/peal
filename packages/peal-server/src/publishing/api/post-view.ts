@@ -18,9 +18,9 @@ import type { PostStatus } from "#publishing/domain/post-status.ts";
 import { livePartsOf } from "#publishing/domain/post-target.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import { failureReasonOf } from "#publishing/domain/publication-policy.ts";
-import type { AttemptOutcome } from "#publishing/domain/publication-policy.ts";
-import type { Schedule } from "#publishing/domain/schedule.ts";
 import { TargetOptionsSchema } from "#publishing/domain/target-options.ts";
+import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
+import type { Schedule } from "#shared/domain/schedule.ts";
 
 /**
  * What a post's request is told of the channels its sets, or its queue,

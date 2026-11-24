@@ -2,11 +2,12 @@ import type { Buffer } from "node:buffer";
 import { once } from "node:events";
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { buffer } from "node:stream/consumers";
 
 import { Clock, Effect, Option, Schema } from "effect";
 
 import type { GraphQlVariables } from "#shared/infrastructure/platforms/hashnode-api.ts";
+import { fakeHandler } from "#test/shared/fake-handler.ts";
+import { receivedBody } from "#test/shared/received-body.ts";
 
 // Hashnode's GraphQL API on a loopback port, as its schema and its agent
 // guide document it: a member's personal access token in
@@ -475,7 +476,12 @@ export const fakeHashnode = (options: FakeHashnodeOptions = {}) =>
           incoming: IncomingMessage,
           response: ServerResponse
         ) => {
-          const body = await buffer(incoming);
+          const body = await receivedBody(incoming);
+
+          if (body === undefined) {
+            return;
+          }
+
           const url = new URL(incoming.url ?? "/", origin);
 
           // The presigned upload, which carries no token.
@@ -544,9 +550,7 @@ export const fakeHashnode = (options: FakeHashnodeOptions = {}) =>
           send(response, answered);
         };
 
-        const server = createServer((incoming, response) => {
-          void answer(incoming, response);
-        });
+        const server = createServer(fakeHandler(answer));
 
         server.listen(0, "127.0.0.1");
         await once(server, "listening");

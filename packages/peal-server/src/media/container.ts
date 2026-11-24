@@ -12,10 +12,10 @@ import { CountedProbeSlots } from "#media/infrastructure/counted-probe-slots.ts"
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
 import { DrizzleMediaRecords } from "#media/infrastructure/drizzle-media-records.ts";
 import { DrizzleMediaSweepStore } from "#media/infrastructure/drizzle-media-sweep-store.ts";
+import { HoldersMediaUsage } from "#media/infrastructure/holders-media-usage.ts";
 import { HttpRemoteMedia } from "#media/infrastructure/http-remote-media.ts";
 import { MediaProbeLive } from "#media/infrastructure/media-probe.ts";
 import { PlanStorageAllowanceLive } from "#media/infrastructure/plan-storage-allowance.ts";
-import { PublishingMediaUsage } from "#media/infrastructure/publishing-media-usage.ts";
 import {
   S3MediaBucketLive,
   S3MediaFoldersLive,
@@ -45,7 +45,8 @@ export { MediaHandlers as MediaApiLive } from "#media/api/media.ts";
  * policy its settings give), fetching the files members import from
  * `remote`.
  * The composition root provides `Drizzle` and `Ids`, the publishing
- * context's MediaInPosts, which says where posts show media, the billing
+ * context's MediaInPosts and the articles context's MediaInArticles,
+ * which say where posts and articles show media, the billing
  * context's WorkspaceEntitlements, whose plans limit storage, the webhooks
  * context's WebhookEvents, which hear how uploads and imports end, a
  * TransactionRunner, and the environment the store's settings (see
@@ -68,7 +69,7 @@ export const mediaWith = <E, R>(remote: Layer.Layer<RemoteMedia, E, R>) =>
         webhookMediaAssets(DrizzleMediaAssetsLive),
         MediaProbeLive,
         S3MediaStorageLive,
-        PublishingMediaUsage,
+        HoldersMediaUsage,
         PlanStorageAllowanceLive,
         CountedImportSlots,
         CountedProbeSlots,

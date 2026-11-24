@@ -4,14 +4,14 @@ import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
-import { FeedStore } from "#publishing/application/feed-store.ts";
-import type { CreateFeedRequest } from "#publishing/application/feeds.ts";
-import { Feeds } from "#publishing/application/feeds.ts";
+import { FeedStore } from "#publishing/application/feeds/feed-store.ts";
+import type { CreateFeedRequest } from "#publishing/application/feeds/feeds.ts";
+import { Feeds } from "#publishing/application/feeds/feeds.ts";
 import { PostEvents } from "#publishing/application/post-events.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { Queues } from "#publishing/application/queues.ts";
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
-import type { FeedId } from "#publishing/domain/feed-id.ts";
+import type { FeedId } from "#publishing/domain/feeds/feed-id.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
 import { newId } from "#shared/application/ids.ts";
 import { Actor } from "#shared/domain/access.ts";
@@ -86,6 +86,14 @@ const forgetFeeds = Effect.gen(function* forgetFeeds() {
   }
 }).pipe(Effect.orDie);
 
+// The feeds an earlier run left, stopped before it forgot them (killed, or
+// its database gone for a moment): a poll reads every feed due, so this
+// suite would read them, stop them and tell it. Only it adds feeds in 2001.
+const forgetLeftFeeds = SqlClient.SqlClient.use(
+  (sql) =>
+    sql`DELETE FROM publishing.feeds WHERE created_at < '2002-01-01T00:00:00Z'`
+).pipe(Effect.orDie);
+
 const serverWith = (
   gate: Layer.Layer<ApprovalGate> = ApprovalGate.open,
   allowance: ReturnType<typeof postAllowance> = postAllowance(),
@@ -122,7 +130,11 @@ const onServer = <A, E>(
   setTime(start).pipe(
     Effect.andThen(Effect.all([resetRecycling, resetFeeds])),
     Effect.andThen(
-      test.pipe(Effect.ensuring(forgetFeeds), Effect.provide(server))
+      forgetLeftFeeds.pipe(
+        Effect.andThen(test),
+        Effect.ensuring(forgetFeeds),
+        Effect.provide(server)
+      )
     )
   );
 

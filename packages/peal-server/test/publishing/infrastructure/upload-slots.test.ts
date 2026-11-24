@@ -1,6 +1,7 @@
 import { assert, describe, it } from "@effect/vitest";
 import {
   ConfigProvider,
+  Context,
   Deferred,
   Duration,
   Effect,
@@ -284,6 +285,123 @@ describe("upload slots", () => {
       }).pipe(Effect.provide(layer));
     })
   );
+
+  // Posts, follow-ups and articles each provide `limitedUploads` to what
+  // reads their files: one build holds one limiter for them all, because
+  // Effect builds a layer once per build by its object, however the
+  // `provide` around it is written. The control builds a second limiter on
+  // purpose (`Layer.fresh`), and its uploads do not wait: the test can fail.
+  describe("is one limiter for every consumer of a build", () => {
+    const First = Context.Service<
+      "FirstUploads",
+      MediaForPublishing["Service"]
+    >("test/upload-slots/FirstUploads");
+
+    const Second = Context.Service<
+      "SecondUploads",
+      MediaForPublishing["Service"]
+    >("test/upload-slots/SecondUploads");
+
+    const consumers = <E>(
+      fake: Layer.Layer<MediaForPublishing>,
+      second: Layer.Layer<MediaForPublishing, E>
+    ) =>
+      Layer.mergeAll(
+        Layer.effect(First, MediaForPublishing).pipe(
+          Layer.provide(limitedUploads.pipe(Layer.provide(fake)))
+        ),
+        Layer.effect(Second, MediaForPublishing).pipe(Layer.provide(second))
+      ).pipe(Layer.provide(settings({ PEAL_MAX_CONCURRENT_UPLOADS: "1" })));
+
+    // The first consumer holds a large file; then the second asks for one.
+    const secondWaits = <E>(
+      layer: Layer.Layer<"FirstUploads" | "SecondUploads", E>,
+      files: Effect.Success<typeof store>
+    ) =>
+      Effect.gen(function* shared() {
+        const first = yield* First;
+        const second = yield* Second;
+        const release = yield* Deferred.make<true>();
+        const taken = yield* Deferred.make<true>();
+
+        const holding = yield* first
+          .held(workspaceId, mediaId(1))
+          .pipe(
+            Effect.andThen(Deferred.succeed(taken, true)),
+            Effect.andThen(Deferred.await(release)),
+            Effect.scoped,
+            Effect.forkChild
+          );
+
+        yield* Deferred.await(taken);
+
+        const handed = yield* Ref.make(false);
+
+        const asking = yield* second
+          .held(workspaceId, mediaId(2))
+          .pipe(
+            Effect.andThen(Ref.set(handed, true)),
+            Effect.scoped,
+            Effect.forkChild
+          );
+
+        yield* TestClock.adjust(Duration.seconds(1));
+
+        const waited = {
+          handed: yield* Ref.get(handed),
+          waiting: yield* uploadsWaiting,
+        };
+
+        yield* Deferred.succeed(release, true);
+        yield* Fiber.join(holding);
+        yield* Fiber.join(asking);
+        yield* Deferred.succeed(files.finish, true);
+
+        return {
+          after: {
+            handed: yield* Ref.get(handed),
+            waiting: yield* uploadsWaiting,
+          },
+          waited,
+        };
+      }).pipe(Effect.provide(layer));
+
+    it.effect("makes the second consumer wait for the first one's slot", () =>
+      Effect.gen(function* oneLimiter() {
+        const files = yield* store;
+
+        // Written apart, as the container's consumers are: the same
+        // `limitedUploads` object under both.
+        const result = yield* secondWaits(
+          consumers(
+            files.layer,
+            limitedUploads.pipe(Layer.provide(files.layer))
+          ),
+          files
+        );
+
+        assert.isAbove(described(mediaId(1)).byteSize, largeUpload);
+        assert.deepStrictEqual(result.waited, { handed: false, waiting: 1 });
+        assert.deepStrictEqual(result.after, { handed: true, waiting: 0 });
+      })
+    );
+
+    it.effect("lets a second limiter, built on purpose, through at once", () =>
+      Effect.gen(function* twoLimiters() {
+        const files = yield* store;
+
+        const result = yield* secondWaits(
+          consumers(
+            files.layer,
+            Layer.fresh(limitedUploads).pipe(Layer.provide(files.layer))
+          ),
+          files
+        );
+
+        assert.deepStrictEqual(result.waited, { handed: true, waiting: 0 });
+      })
+    );
+  });
 
   it("allows more uploads at once on a server with more memory, within bounds", () => {
     const gibibyte = 1024 * mebibyte;

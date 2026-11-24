@@ -1,9 +1,8 @@
 import { DateTime, Duration, Match, Schema } from "effect";
 
+import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import type { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
-import { PublishFailureSchema } from "#shared/domain/publish-failure.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
-import { PublishResultSchema } from "#shared/domain/publish-result.ts";
 import type { RateLimited } from "#shared/domain/rate-limited.ts";
 
 import {
@@ -120,14 +119,6 @@ export const PublicationDecisionSchema = Schema.Union([
 ]);
 
 export type PublicationDecision = typeof PublicationDecisionSchema.Type;
-
-/** How a publishing attempt ended: a result, or the platform's refusal. */
-export const AttemptOutcomeSchema = Schema.Union([
-  PublishResultSchema,
-  PublishFailureSchema,
-]);
-
-export type AttemptOutcome = typeof AttemptOutcomeSchema.Type;
 
 /**
  * How many earlier attempts of a round ended in each refusal that is retried,
