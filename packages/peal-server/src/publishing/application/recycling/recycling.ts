@@ -194,7 +194,7 @@ const scheduledAt = (post: Post) =>
 /**
  * Repeating posts: rules that make a new post from a source post at an
  * interval, until a count or a date, with text variants taken in turn
- * (`#publishing/domain/recycling-rule.ts`).
+ * (`#publishing/domain/recycling/recycling-rule.ts`).
  *
  * Reading rules needs post:read. Starting one needs to be able to ask for
  * posts to go out (`PostScheduling.mayAsk`), in person or as a key or an
