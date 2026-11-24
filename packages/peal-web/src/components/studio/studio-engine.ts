@@ -9,6 +9,8 @@ import type {
   StudioTrack,
 } from "#studio/edit-document.ts";
 
+import type { StudioTool } from "./studio-tools.ts";
+
 // Shotstack's Studio SDK, whole: its document, preview, timeline, toolbars
 // and keys. Peal starts and stops it, and adds library files and texts.
 
@@ -84,10 +86,6 @@ const relayFetches = (origin: string): (() => void) => {
 /** The element the SDK's preview and toolbars go in, which it finds by itself. */
 export const canvasAttribute = "data-shotstack-studio";
 
-// The SDK's toolbar takes its icons as SVG text.
-const textIcon =
-  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3H13"/><path d="M8 3V13"/><path d="M5 13H11"/></svg>';
-
 // Keeps the preview fitted to its box.
 const fitted = (fit: () => void): (() => void) => {
   const stage = document.querySelector(`[${canvasAttribute}]`);
@@ -108,15 +106,14 @@ const fitted = (fit: () => void): (() => void) => {
  * `canvasAttribute`, its timeline in `timelineBox`.
  */
 export const startStudio = async ({
-  addTextLabel,
   initial,
-  onAddText,
   timelineBox,
+  tools,
 }: {
-  readonly addTextLabel: string;
   readonly initial: StudioEdit;
-  readonly onAddText: (studio: Studio) => void;
   readonly timelineBox: HTMLElement;
+  /** The buttons beside the preview, in order. */
+  readonly tools: readonly StudioTool[];
 }): Promise<Studio> => {
   const stops = [relayFetches(window.location.origin)];
 
@@ -150,11 +147,13 @@ export const startStudio = async ({
       time: () => edit.playbackTime,
     };
 
-    ui.registerButton({ icon: textIcon, id: "text", tooltip: addTextLabel });
+    for (const { icon, id, label, onPress } of tools) {
+      ui.registerButton({ icon, id, tooltip: label });
 
-    ui.on("button:text", () => {
-      onAddText(studio);
-    });
+      ui.on(`button:${id}`, () => {
+        onPress(studio);
+      });
+    }
 
     await canvas.load();
 

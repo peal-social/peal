@@ -124,10 +124,17 @@ const sizedOutput = (output: StudioEdit["output"]): StudioEdit["output"] => {
   return named === undefined ? output : { ...rest, ...named };
 };
 
+// The SDK adds a font it has by the relay's address again by its host's.
+const eachOnce = (
+  fonts: NonNullable<StudioEdit["timeline"]["fonts"]>
+): NonNullable<StudioEdit["timeline"]["fonts"]> => [
+  ...new Map(fonts.map((font) => [font.src, font])).values(),
+];
+
 /**
  * The document as it is stored and sent: each library file's address
- * swapped back for its name, each relayed address back to its host's, and
- * the size chosen as the server names it. An address the editor did not
+ * swapped back for its name, each relayed address back to its host's, each
+ * font once, and the size chosen as the server names it. An address the editor did not
  * hand out stays.
  */
 export const storedOf = (
@@ -143,7 +150,16 @@ export const storedOf = (
       : mediaRefOf(mediaId);
   });
 
-  return { ...stored, output: sizedOutput(stored.output) };
+  const { fonts } = stored.timeline;
+
+  return {
+    ...stored,
+    output: sizedOutput(stored.output),
+    timeline:
+      fonts === undefined
+        ? stored.timeline
+        : { ...stored.timeline, fonts: eachOnce(fonts) },
+  };
 };
 
 /** A new portrait edit of these clips, on one track. */

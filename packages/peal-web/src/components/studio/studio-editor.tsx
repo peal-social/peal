@@ -12,6 +12,7 @@ import type { AssistantStatus, Media } from "peal-contract";
 import { Alert, AlertTitle } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
+import { toast } from "peal-ui/components/toast";
 import { cn } from "peal-ui/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -37,6 +38,7 @@ import { useLibraryFiles } from "#studio/library-files.ts";
 
 import { canvasAttribute, startStudio } from "./studio-engine.ts";
 import type { Studio } from "./studio-engine.ts";
+import { captionsTool, textTool } from "./studio-tools.ts";
 import { useStudioExport } from "./use-studio-export.ts";
 import type { StudioExport } from "./use-studio-export.ts";
 
@@ -156,7 +158,9 @@ const LoadedStudio = ({
   const exporting = useStudioExport(workspaceId);
   useFullWindow(full);
 
-  const addTextLabel = t("addText");
+  const addCaptions = t("addCaptions");
+  const addText = t("addText");
+  const captionsNeedVoice = t("captionsNeedVoice");
   const newText = t("newText");
 
   // The SDK starts once, and stops with the page.
@@ -168,16 +172,18 @@ const LoadedStudio = ({
     const start = async (element: HTMLElement) => {
       try {
         const started = await startStudio({
-          addTextLabel,
           initial: previewOf(
             initial,
             (mediaId) => files.current.get(mediaId)?.url ?? null,
             window.location.origin
           ),
-          onAddText: (to) => {
-            void to.addTrack("over", [textClipOf(newText, to.time())]);
-          },
           timelineBox: element,
+          tools: [
+            textTool(addText, newText),
+            captionsTool(addCaptions, () => {
+              toast.info(captionsNeedVoice);
+            }),
+          ],
         });
 
         if (stopped) {
@@ -204,7 +210,7 @@ const LoadedStudio = ({
       stopped = true;
       running?.dispose();
     };
-  }, [addTextLabel, initial, newText, workspaceId]);
+  }, [addCaptions, addText, captionsNeedVoice, initial, newText, workspaceId]);
 
   // The draft is kept a moment after each change.
   useEffect(() => {
