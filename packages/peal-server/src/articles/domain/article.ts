@@ -14,7 +14,7 @@ import { Schedule } from "#shared/domain/schedule.ts";
 
 import { bodyMediaOf, bodyTextLength } from "./article-body.ts";
 import { ArticleContent } from "./article-content.ts";
-import { ArticleFailureReasonSchema } from "./article-failure.ts";
+import { ArticleStoredFailureReasonSchema } from "./article-failure.ts";
 import type { ArticleSettlement } from "./article-failure.ts";
 import { ArticleIdSchema } from "./article-id.ts";
 import type { ArticleViolationSchema } from "./article-rejected.ts";
@@ -64,7 +64,7 @@ export const ArticleStateSchema = Schema.Union([
   Schema.TaggedStruct("failed", {
     code: Schema.optionalKey(Schema.String),
     failedAt: Schema.DateTimeUtc,
-    reason: ArticleFailureReasonSchema,
+    reason: ArticleStoredFailureReasonSchema,
     schedule: Schedule,
   }),
   Schema.TaggedStruct("unconfirmed", {

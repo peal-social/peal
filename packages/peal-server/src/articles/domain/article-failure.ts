@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema, SchemaTransformation } from "effect";
 
 import {
   PublishedSchema,
@@ -45,6 +45,57 @@ export const ArticleFailureReasonSchema = Schema.Literals([
 export type ArticleFailureReason = typeof ArticleFailureReasonSchema.Type;
 
 /**
+ * The reasons posts fail for that an article never does. Before articles
+ * had reasons of their own, they failed for the posts' ones, and a site
+ * answering a code posts read as Peal's own (`appNotAudited`,
+ * `repliesNotAllowed` and the others) was stored as that reason: the
+ * release before still does. Such a reason is read as `contentRejected`,
+ * the site's refusal it was, with its code kept. It is the posts' list
+ * less articles' ten, which `test/articles/domain/article-policy.test.ts`
+ * checks: a reason posts gain fails that test until someone decides how
+ * articles read it.
+ */
+export const postReasonsReadAsContentRejected = [
+  "notPublished",
+  "quotaExceeded",
+  "appNotAudited",
+  "appBillingLimit",
+  "partsNotSent",
+  "repliesNotAllowed",
+  "paymentMethodRequired",
+  "xCeilingReached",
+  "paymentFailed",
+  "perAccountPricingRequired",
+  "xThreadCut",
+  "forumThreadNameRequired",
+  "chatMigrated",
+  "cannotPost",
+] as const;
+
+const isArticleReason = Schema.is(ArticleFailureReasonSchema);
+
+/**
+ * Why a stored article failed, as articles read it back: the ten as they
+ * are, and the posts' others (`postReasonsReadAsContentRejected`) as
+ * `contentRejected`. It encodes the ten unchanged, and only those are
+ * ever written; any other string fails to decode, so a corrupted row is
+ * not hidden.
+ */
+export const ArticleStoredFailureReasonSchema = Schema.Literals([
+  ...ArticleFailureReasonSchema.literals,
+  ...postReasonsReadAsContentRejected,
+]).pipe(
+  Schema.decodeTo(
+    ArticleFailureReasonSchema,
+    SchemaTransformation.transform({
+      decode: (reason): ArticleFailureReason =>
+        isArticleReason(reason) ? reason : "contentRejected",
+      encode: (reason) => reason,
+    })
+  )
+);
+
+/**
  * How sending an article ended, once no attempt is left to make: on its
  * site, unconfirmed, failed and why, or cancelled, when it was deleted
  * while its job waited. Stored in the job's history, so members and fields
@@ -62,7 +113,7 @@ export const ArticleSettlementSchema = Schema.Union([
   Schema.TaggedStruct("failed", {
     // The site's own reason, or Peal's, for support. Never content.
     code: Schema.optionalKey(Schema.String),
-    reason: ArticleFailureReasonSchema,
+    reason: ArticleStoredFailureReasonSchema,
   }),
   Schema.TaggedStruct("cancelled", {}),
 ]);

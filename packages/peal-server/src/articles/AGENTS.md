@@ -162,6 +162,16 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   publishing's `LibraryMediaForPublishing` writes: keep them equal. The
   contract shows the posts' `FailureReason` for an article, of which
   these ten are a subset.
+- A stored reason outside the ten that posts know reads as
+  `contentRejected`, with its code kept. Articles failed with the posts'
+  reasons before they had their own, and the release before still writes
+  one when a site answers a code posts read as Peal's own. The list is
+  `postReasonsReadAsContentRejected` in `domain/article-failure.ts`, read
+  by `ArticleStoredFailureReasonSchema` in an article's state and in a
+  stored decision's settlement. `test/articles/domain/article-policy.test.ts`
+  keeps it equal to the posts' reasons less the ten, so a reason posts
+  gain fails there until someone decides how articles read it. Only the
+  ten are written, and any other string still fails to decode.
 - What articles ask other contexts, always through their `application`
   layer, never their domain: publishing's `ApprovalGate`, `PostAllowance`
   and `withinPlan` behind `ArticleGates` (`PostingArticleGates`), its
