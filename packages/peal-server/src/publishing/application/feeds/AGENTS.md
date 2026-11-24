@@ -2,7 +2,7 @@
 
 Feeds are a module of the publishing context: a `feeds/` folder in each of
 its layers (`src/publishing/<layer>/feeds/`, the paths below are from
-`src/publishing/`). The server guide's "Modules"
+`src/publishing/`). The server guide's paragraph on modules
 ([`../../../../AGENTS.md`](../../../../AGENTS.md)) says how lint keeps it
 apart; the rest of publishing's rules are in
 [`../../AGENTS.md`](../../AGENTS.md). Two files of the rest of publishing
