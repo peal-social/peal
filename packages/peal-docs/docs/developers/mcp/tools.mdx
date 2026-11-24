@@ -64,7 +64,23 @@ These tools read, and change nothing:
 
 ### Find a tool [#find-tools]
 
-`find_tools` takes an `area`, a `query`, both or neither. The areas are `account`, `posts`, `tags`, `saved`, `media`, `reports`, `people`, `webhooks`, `connect`, `channels`, `review`, `inbox`, `ads` and `feeds`. For each tool, it answers:
+`find_tools` takes an `area`, a `query`, both or neither. The areas are:
+
+| Area          | Its tools                                                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workspace`   | Who the connection is and what it may do, the workspace, the server, members, the plan and usage, the activity log, the partner account     |
+| `posts`       | Drafts, scheduling, publishing, outcomes, tags and signatures                                                                               |
+| `approvals`   | Posts waiting for an approval, and review links                                                                                             |
+| `channels`    | The connected accounts, their names, turning one off or on, what each platform takes, lookups, channel sets, default options, connect links |
+| `media`       | Images and videos, generated ones included                                                                                                  |
+| `inbox`       | Comments, direct messages and reviews, and answering them                                                                                   |
+| `automations` | What acts on its own: queues, repeating posts, follow-ups, feeds and comment rules                                                          |
+| `analytics`   | The figures of posts and channels, and the best times to post                                                                               |
+| `links`       | Short links and their clicks                                                                                                                |
+| `ads`         | Ad accounts, campaigns and boosts                                                                                                           |
+| `webhooks`    | Endpoints and their deliveries                                                                                                              |
+
+For each tool, it answers:
 
 | Field            | What it says                                                                                                 |
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
