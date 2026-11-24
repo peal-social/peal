@@ -888,7 +888,10 @@ and media:upload).
 - Sizes and frame rates the server does not render are hidden from the
   SDK's menus.
 - Under the timeline, in small muted text, where an export goes and how
-  many are left today, and a refusal above it.
+  many are left today, with a refusal above it, then what generating
+  costs and how much is left, where the workspace makes something.
+- Under 1280 px the header's actions are their icons alone, named for
+  screen readers; under 1024 px the chosen clip's toolbar wraps.
 - Exports on their way show under the timeline as the library's
   placeholders do, and a toast says when one lands in Media or why it
   failed.

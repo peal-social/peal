@@ -217,6 +217,8 @@ interface MediaPickerProps {
   readonly accepts?: (media: Media) => boolean;
   /** The media the post shows already. */
   readonly attached: readonly string[];
+  /** A page's action: a small ghost button, its icon alone under 1280 px. */
+  readonly compact?: boolean;
   /**
    * Whether the member may have the assistant make an image here (they
    * hold assistant:use and media:upload): the new image is then picked.
@@ -238,6 +240,7 @@ interface MediaPickerProps {
 export const MediaPicker = ({
   accepts,
   attached,
+  compact = false,
   canGenerate = false,
   disabled,
   onPick,
@@ -273,10 +276,18 @@ export const MediaPicker = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
-        render={<Button variant="outline" disabled={disabled || room === 0} />}
+        render={
+          <Button
+            size={compact ? "sm" : "default"}
+            variant={compact ? "ghost" : "outline"}
+            disabled={disabled || room === 0}
+          />
+        }
       >
         <LibraryIcon aria-hidden data-icon="inline-start" />
-        {texts?.open ?? t("open")}
+        <span className={compact ? "max-xl:sr-only" : undefined}>
+          {texts?.open ?? t("open")}
+        </span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl" closeLabel={t("close")}>
         <DialogHeader>
