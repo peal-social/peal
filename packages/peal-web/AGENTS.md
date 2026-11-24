@@ -376,7 +376,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   sets a given zone on part of a page. Calendar and Analytics name the zone
   they read in with `TimeZoneLine` (`components/lists/time-zone-line.tsx`,
   `Lists.timeZoneLine`, tested), rendered after hydration: beside the
-  calendar's dates, and under the Period on Analytics.
+  calendar's dates, and above the board on Analytics.
 - The support chat (DESIGN.md, "Support chat"): where `PEAL_CRISP_WEBSITE_ID`
   names a Crisp website (`#shell/support-chat.ts`, read per request), the
   workspace layout puts `SupportLauncher` in the bottom bar, which makes
@@ -704,20 +704,34 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   uploads in flight.
 - A span of days is chosen with `PeriodMenu` and `usePeriod`
   (`components/lists/period-menu.tsx`), never a select of a screen's own:
-  Analytics in `PageActions`, the billing usage history
-  and the partner's usage per customer in their card's header, each in
-  the address as `?period=` (the default left out); the best-times card
-  keeps its own under `?bestTimes=`.
+  the billing usage history and the partner's usage per customer in
+  their card's header, each in the address as `?period=` (the default
+  left out). An analytics widget keeps its own period in the board,
+  chosen in its Filter.
 - Charts use peal-ui's `chart` (recharts) and come with the same figures as
   a table, behind **Chart** and **Table** tabs; the chart itself is
   `aria-hidden`. Write calendar days, such as a summary's, in UTC
   (`#analytics/report.ts` `dayDate`), and instants in the reader's zone.
-- The analytics page ends with `BestTimesCard`
-  (`components/analytics/best-times.tsx`, view in `best-times-view.tsx`):
-  one channel at a time, picked, over 30, 90 or 180 days, the best hours,
-  a weekday by hour grid (`aria-hidden`) and the same figures as a table,
-  in words that say it is the channel's past, never a prediction, and
-  that nothing is ranked under the floor (`Analytics.bestTimes`).
+- The analytics page is a board of widgets (DESIGN.md, "Analytics
+  board"; `components/analytics/widgets/`): `AnalyticsBoard` lays them
+  out, `WidgetCardView` draws one, `widget-bodies.tsx` holds what each
+  kind shows (views that take links and excerpts as components, so
+  tests render them), `widget-controls.tsx` the Filter, the menu and
+  renaming, `add-widgets.tsx` the sheet. The kinds, their sizes,
+  periods and channel filter, the board's changes and each period's
+  days are `#analytics/widgets.ts` (pure, tested): a new kind goes
+  there, with its name and line in `Analytics.widgets`. The board is
+  the person's, kept per workspace in `localStorage`
+  (`#analytics/board-store.ts`, `peal.analytics.board.<workspace>`,
+  decoded with Schema, the default board when it does not read), the
+  same in every tab through the storage event. A widget reads the
+  dashboard of its own range (queries of one range are shared), and
+  one channel's series beside it when it shows one channel
+  (`channelFigures`). Best times (`best-times-view.tsx`) takes one
+  channel, over 30, 90 or 180 days, with the best hours, a weekday by
+  hour grid (`aria-hidden`) and the same figures as a table, in words
+  that say it is the channel's past, never a prediction, and that
+  nothing is ranked under the floor (`Analytics.bestTimes`).
 - A post's page (`PostMetrics`) names the platforms this server counts
   from its capabilities (`GET …/platforms/capabilities`,
   `analytics.perPost`: `countedOn`), never from the contract's

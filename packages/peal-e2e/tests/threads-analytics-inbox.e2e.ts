@@ -148,24 +148,36 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     ).toBeHidden();
 
     // And the same numbers as files.
-    const exports = screen.getByRole("region", "Export");
+    const exports = screen.getByRole("article", "Export");
 
     await expect(exports.getByRole("link", "Posts of the range")).toBeVisible();
     await expect(
       exports.getByRole("link", "Accounts, day by day")
     ).toBeVisible();
 
-    // Period, in the header, keeps the days shown in the address.
-    await screen.getByRole("button", "Period: Last 30 days").tap();
-    await screen.getByRole("menuitemradio", "Last 7 days").tap();
+    // Each widget keeps a period of its own, chosen in its filter.
+    const followers = screen.getByRole("article", "Followers");
 
-    await expect(browser).toHaveURL(`/${slug}/analytics?period=7`);
-    await expect(
-      screen.getByRole("button", "Period: Last 7 days")
-    ).toBeVisible();
-    await expect(
-      screen.getByRole("heading", "Against the 7 days before")
-    ).toBeVisible();
+    await followers.getByRole("button", "Filter Followers").tap();
+    await screen.getByRole("combobox", "Period").tap();
+    await screen.getByRole("option", "Last 7 days").tap();
+    await screen.getByRole("combobox", "Period").press("Escape");
+
+    await expect(followers).toContainText("Last 7 days");
+    await expect(exports).toContainText("Last 30 days");
+
+    // Widgets are added from the sheet, and the board stays as arranged.
+    await screen.getByRole("button", "Add widgets").tap();
+    await screen.getByRole("button", "Add Reach").tap();
+    await screen
+      .getByRole("dialog", "Add widgets")
+      .getByRole("button", "Close")
+      .tap();
+
+    await expect(screen.getByRole("article", "Reach")).toBeVisible();
+
+    await app.open(`/${slug}/analytics`);
+    await expect(screen.getByRole("article", "Reach")).toBeVisible();
   });
 
   test("reads a comment in the inbox and settles it", async ({

@@ -1205,18 +1205,17 @@ way, so a person who learns one screen knows them all.
   **Ordering** (what the list is sorted by) with a button that turns its
   direction, and where a screen has them, grouping and its other views
   (list, calendar).
-- **`period-menu`** — Wherever a screen shows a span of days (Analytics,
-  usage), **Period** chooses it: a small outline button (30 px)
+- **`period-menu`** — Wherever a screen shows a span of days (usage),
+  **Period** chooses it (an analytics widget chooses its own in its
+  Filter, see Analytics board): a small outline button (30 px)
   with a calendar icon and the span's name ("Last 30 days"), opening a
   menu (level 3) of the spans the screen offers, the chosen one ticked. It
   sits in the page's actions, or at the end of the header of the card it
-  governs. It lives in the address as `?period=` and a number of days; a
-  card with a span of its own beside the page's takes a key of its own
-  (`?bestTimes=`).
+  governs. It lives in the address as `?period=` and a number of days.
 - **Time zone** — A screen that places posts at times or counts by day
   (Calendar, Analytics) says once which zone it reads them in:
   one line in `{typography.caption}`, muted, at the end of the content's
-  first row (beside the dates the calendar names, under the Period on
+  first row (beside the dates the calendar names, above the board on
   Analytics): "Times are in your time zone, Europe/Paris." The zone is
   the browser's, so the line appears once the page has hydrated. It is
   not a description, and never sits in the panel's header.
@@ -1343,6 +1342,45 @@ them beside the one open, so the list stays where it was.
   follow it, so a link opens both. On a phone the list fills the panel;
   an item opens alone under the header, with a way back at its header's
   start.
+
+### Analytics board
+
+Analytics is a board of widgets the person arranges, each showing one
+thing over a period of its own.
+
+- **`widget-board`** — A grid four up from 1280 px, two up from 640
+  px, one on a phone, 24 px apart. A widget is `small` (one column),
+  `medium` (two) or `wide` (the whole row); the board keeps the person's
+  order and leaves a gap rather than reorder what they placed. The board
+  is the person's, kept in their browser for each workspace; a new
+  workspace starts with the default one, and **Reset layout** brings it
+  back.
+- **`widget`** — A `card` (24 px inside). Its header holds the name
+  (`card-title`) with one muted line under it, the period and, where it
+  shows one, the channel ("This year · @peal.social"), and at its end two
+  `icon-sm` ghost buttons: **Filter** (a popover with Period and,
+  where the widget may show one channel, Channel; a 6 px `brand` dot on
+  the button while either differs from the widget's own) and **…**
+  (Duplicate, Rename, Move earlier, Move later, then Remove in
+  destructive text). Remove and Reset layout say so in a toast with
+  **Undo**. A handle at the card's start edge, shown on hover, drags it;
+  a 2 px `brand` line marks where it lands. The menu's moves are the
+  keyboard's way to do the same.
+- Under the header: the headline number (`headline`, tabular), one muted
+  line with its change against the days before or what it gained, then
+  what draws it: a line on a faint `brand` area with the first, middle
+  and last days under it, bars by platform in `brand`, a table, or the
+  engagement chart with its **Chart** and **Table** tabs. A line is
+  `aria-hidden`, its figures a table screen readers take. A number a
+  platform does not give is a dash with "Not given by the platform"
+  under it, never zero.
+- **Add widgets**, a small ghost button in the page's actions, opens a
+  sheet from the right: a search field, then the kinds by section
+  (Suggestions, Audience, Posts, Files), each a card with a drawing of
+  what it shows (`brand` on `card`), its name and one line; choosing
+  one adds it at the board's end with a toast. **Reset layout** sits at
+  the sheet's foot. An empty board is the empty state, with **Add
+  widgets**.
 
 ### Settings
 

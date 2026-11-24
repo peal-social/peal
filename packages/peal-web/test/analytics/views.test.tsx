@@ -12,16 +12,20 @@ import type {
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import {
-  AccountDaysTable,
-  AccountNumbers,
-} from "#components/analytics/account-numbers.tsx";
-import { ChannelTotals } from "#components/analytics/channel-totals.tsx";
+import { workspaceFigures } from "#analytics/widgets.ts";
 import { EngagementChart } from "#components/analytics/engagement-chart.tsx";
 import {
   countedOn,
   PostMetricsView,
 } from "#components/analytics/post-metrics.tsx";
+import {
+  ChannelsBody,
+  ComparisonBody,
+  DayCountBody,
+  ExportBody,
+  StatBody,
+} from "#components/analytics/widgets/widget-bodies.tsx";
+import { WidgetCardView } from "#components/analytics/widgets/widget-card.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
 const render = async (
@@ -92,44 +96,6 @@ const summary: AnalyticsSummary = {
     reposts: 43,
   },
 };
-
-describe(ChannelTotals, () => {
-  it("names each channel, a disconnected one too", async () => {
-    const html = await render(
-      "en",
-      <ChannelTotals channels={[channel]} summary={summary} />
-    );
-
-    expect(html).toContain("@alice@mastodon.test");
-    expect(html).toContain("A disconnected channel");
-    expect(html).toContain("1,234");
-    expect(html).toContain("All channels");
-  });
-
-  it("shows a count only where a platform gives it", async () => {
-    const html = await render(
-      "en",
-      <ChannelTotals channels={[channel]} summary={summary} />
-    );
-
-    expect(html).toContain("Quotes");
-    expect(html).toContain("Not given by the platform");
-    // Neither platform tells impressions: no column for them.
-    expect(html).not.toContain("Impressions");
-  });
-
-  it("is written in French", async () => {
-    const html = await render(
-      "fr",
-      <ChannelTotals channels={[channel]} summary={summary} />
-    );
-
-    expect(html).toContain("Publications");
-    expect(html).toContain("J’aime");
-    expect(html).toContain("Non fourni par la plateforme");
-    expect(html).toContain("1 234");
-  });
-});
 
 describe(EngagementChart, () => {
   it("offers the figures as a table beside the chart", async () => {
@@ -477,104 +443,156 @@ const dashboard: AnalyticsDashboard = {
   topPosts: [],
 };
 
-const shown = async (shownDashboard: AnalyticsDashboard = dashboard) => {
-  const html = await render(
-    "en",
-    <AccountNumbers
-      channels={[channel]}
-      dashboard={shownDashboard}
-      exports={{
-        accounts: "/export?kind=accounts",
-        posts: "/export?kind=posts",
-      }}
-    />
-  );
+const figures = workspaceFigures(dashboard);
 
-  return html;
-};
-
-describe("the accounts' numbers", () => {
-  it("shows the trend against the period before", async () => {
-    const html = await shown();
-
-    expect(html).toContain("Against the 2 days before");
-    // 14 interactions against 10: 4 more, 40%.
-    expect(html).toContain("4 more (+40%)");
-    // Unknown is written, never as zero, and said once in its card.
-    expect(html).toContain("Not given by the platform");
-    expect(html).not.toMatch(
-      /<dd[^>]*>(?:(?!<\/dd>).)*Not given by the platform(?:(?!<\/dd>).)*Not given by the platform/su
+describe(WidgetCardView, () => {
+  it("names the widget in a heading, with its period under it", async () => {
+    const html = await render(
+      "en",
+      <WidgetCardView name="Followers" size="small" subtitle="Last 30 days">
+        <p>body</p>
+      </WidgetCardView>
     );
-    expect(html).toContain('href="/export?kind=posts"');
+
+    expect(html).toMatch(/<article aria-labelledby="[^"]+"/u);
+    expect(html).toContain(">Followers</h2>");
+    expect(html).toContain(">Last 30 days<");
+    expect(html).toContain("col-span-1");
+  });
+});
+
+describe(DayCountBody, () => {
+  it("shows followers with what they gained, and their line", async () => {
+    const html = await render(
+      "en",
+      <DayCountBody count="followers" figures={figures} name="Followers" />
+    );
+
+    expect(html).toContain(">1,250<");
+    expect(html).toContain("30 more over the range");
+    // The line is hidden from screen readers, who take its table.
+    expect(html).toMatch(/data-slot="chart"[^>]*aria-hidden="true"/u);
+    expect(html).toContain("Followers, day by day");
+    // The day nothing was read says so.
+    expect(html).toContain("Not given by the platform");
+  });
+
+  it("shows the engagement against the period before", async () => {
+    const html = await render(
+      "en",
+      <DayCountBody count="engagement" figures={figures} name="Engagement" />
+    );
+
+    // 14 interactions against 10: 4 more, 40%.
+    expect(html).toContain(">14<");
+    expect(html).toContain("4 more (+40%)");
   });
 
   it("shows no change against a range before that a platform no longer keeps", async () => {
-    const html = await shown({ ...dashboard, previousKept: false });
+    const html = await render(
+      "en",
+      <DayCountBody
+        count="engagement"
+        figures={{ ...figures, previousKept: false }}
+        name="Engagement"
+      />
+    );
 
     expect(html).toContain(
       "No comparison: a platform’s terms keep its figures for less than the range before goes back"
     );
     expect(html).not.toContain("4 more (+40%)");
-    expect(html).not.toContain("over the range before");
   });
 
-  it("shows followers with what they gained, in all and by channel", async () => {
-    const html = await shown();
-
-    expect(html).toContain(">1,250<");
-    expect(html).toContain("30 more over the range");
-    expect(html).toContain("4 fewer over the range before");
-    expect(html).toContain("@alice@mastodon.test");
-    expect(html).toContain("A channel no longer connected");
-  });
-
-  it("hides the followers chart from screen readers", async () => {
-    const html = await shown();
-
-    expect(html).toContain('aria-label="Show the followers as"');
-    expect(html).toMatch(/data-slot="chart"[^>]*aria-hidden="true"/u);
-    expect(html).toContain(
-      "Followers at the end of each day, from Nov 8, 2026 to Nov 9, 2026."
-    );
-  });
-
-  it("gives the chart's figures as a table, with views and reach", async () => {
-    const table = await render(
+  it("adds up the accounts' views over the days", async () => {
+    const html = await render(
       "en",
-      <AccountDaysTable days={dashboard.days} />
+      <DayCountBody count="views" figures={figures} name="Account views" />
     );
 
-    expect(table).toContain("Followers, views and reach each day");
-    expect(table).toContain("Nov 9, 2026");
-    expect(table).toContain(">1,250<");
-    expect(table).toContain(">420<");
-    // The day nothing was read says so.
-    expect(table).toContain("Not given by the platform");
+    expect(html).toContain(">420<");
+    expect(html).toContain("Over 2 days");
   });
 
-  it("shows nothing of followers where no account was read yet", async () => {
+  it("says when nothing was read, with no line", async () => {
     const html = await render(
       "fr",
-      <AccountNumbers
-        channels={[channel]}
-        dashboard={{
-          ...dashboard,
-          channels: [],
-          days: dashboard.days.map((day) => ({
-            ...day,
-            followers: null,
-            reach: null,
-            views: null,
-          })),
+      <DayCountBody
+        count="followers"
+        figures={{
+          ...figures,
+          days: figures.days.map((day) => ({ ...day, followers: null })),
           followers: { current: null, gained: null },
         }}
-        exports={{ accounts: "/a", posts: "/p" }}
+        name="Abonnés"
       />
     );
 
-    expect(html).toContain(
-      "Peal relève les abonnés de chaque canal une fois par jour"
+    expect(html).toContain("Rien n’a encore été lu sur cette période.");
+    expect(html).not.toContain('data-slot="chart"');
+  });
+});
+
+describe(StatBody, () => {
+  it("shows a total with its trend and each platform's share", async () => {
+    const html = await render(
+      "en",
+      <StatBody count="posts" figures={figures} />
     );
-    expect(html).not.toContain("recharts");
+
+    expect(html).toContain(">3<");
+    expect(html).toContain("No change");
+    expect(html).toContain("Mastodon");
+  });
+
+  it("says a count no platform gives, never zero, with no trend", async () => {
+    const html = await render(
+      "en",
+      <StatBody count="impressions" figures={figures} />
+    );
+
+    expect(html).toContain("Not given by the platform");
+    expect(html).not.toContain("No change");
+    expect(html).not.toContain(">0<");
+  });
+});
+
+describe(ComparisonBody, () => {
+  it("puts the range's totals beside the range before", async () => {
+    const html = await render("en", <ComparisonBody figures={figures} />);
+
+    expect(html).toContain("4 more (+40%)");
+    // Unknown is written once in its tile, never as zero.
+    expect(html).not.toMatch(
+      /<dd[^>]*>(?:(?!<\/dd>).)*Not given by the platform(?:(?!<\/dd>).)*Not given by the platform/su
+    );
+  });
+});
+
+describe(ChannelsBody, () => {
+  it("names each channel, one no longer connected too", async () => {
+    const html = await render(
+      "en",
+      <ChannelsBody channels={[channel]} dashboard={dashboard} />
+    );
+
+    expect(html).toContain("@alice@mastodon.test");
+    expect(html).toContain("A channel no longer connected");
+    expect(html).toContain(">1,250<");
+    expect(html).toContain(
+      "The latest counts of the range’s posts, by channel"
+    );
+  });
+});
+
+describe(ExportBody, () => {
+  it("links both files", async () => {
+    const html = await render(
+      "fr",
+      <ExportBody accounts="/export?kind=accounts" posts="/export?kind=posts" />
+    );
+
+    expect(html).toContain('href="/export?kind=posts"');
+    expect(html).toContain('href="/export?kind=accounts"');
   });
 });

@@ -14,14 +14,6 @@ export interface SummaryRange {
   readonly to: CalendarDay;
 }
 
-/** The workspace's posts published over the range, summed up. */
-export const analyticsSummary = (workspaceId: string, range: SummaryRange) =>
-  PealApi.query("analytics", "summary", {
-    params: { workspaceId },
-    query: range,
-    reactivityKeys: analyticsKeys,
-  });
-
 /** A post's counts on each of its channels, over time. */
 export const postAnalytics = (workspaceId: string, postId: string) =>
   PealApi.query("analytics", "post", {
@@ -67,5 +59,17 @@ export const bestTimes = (
   PealApi.query("analytics", "bestTimes", {
     params: { workspaceId },
     query: { channelId, days, timeZone },
+    reactivityKeys: analyticsKeys,
+  });
+
+/** One channel's numbers day by day over the range. */
+export const analyticsChannel = (
+  workspaceId: string,
+  channelId: string,
+  range: SummaryRange
+) =>
+  PealApi.query("analytics", "channel", {
+    params: { channelId, workspaceId },
+    query: range,
     reactivityKeys: analyticsKeys,
   });
