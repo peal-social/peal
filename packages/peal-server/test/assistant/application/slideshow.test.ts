@@ -571,6 +571,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("a slide video's job", (it) => {
         assert.deepStrictEqual(ended.mediaId, Option.some(storedSlideshowId));
         assert.isNull(yield* planOf(slideshow.id));
         assert.deepStrictEqual(yield* Ref.get(records.stored), [videoBytes]);
+        assert.deepStrictEqual(yield* Ref.get(records.marked), [false]);
         assert.deepStrictEqual(
           (yield* Ref.get(records.told)).map(({ id, status }) => ({
             id,
@@ -583,6 +584,35 @@ layer(DatabaseTest, { timeout: "60 seconds" })("a slide video's job", (it) => {
         assert.strictEqual(yield* running(slideshow.id), "superseded");
         assert.lengthOf(yield* Ref.get(composer.asked), 1);
       }).pipe(Effect.provide(slideshowsTest()))
+  );
+
+  it.effect("marks a video holding a file made by AI as made by AI", () =>
+    Effect.gen(function* marks() {
+      const workspaceId = yield* workspaceComposing();
+
+      const slideshow = yield* requesting(
+        editorIn(workspaceId),
+        asked({ voiceoverMediaId: voice })
+      );
+
+      assert.strictEqual(yield* running(slideshow.id), "succeeded");
+
+      const records = yield* SlideshowRecords;
+
+      assert.deepStrictEqual(yield* Ref.get(records.marked), [true]);
+    }).pipe(
+      Effect.provide(
+        slideshowsTest({
+          script: {
+            ...library,
+            files: new Map([
+              ...(library.files ?? []),
+              [voice, audioFile(13, true)],
+            ]),
+          },
+        })
+      )
+    )
   );
 
   it.effect("fails a job the service refused, sent once, never again", () =>
@@ -666,6 +696,7 @@ const editLibrary: SlideshowLibraryScript = {
     [
       clipFile,
       {
+        aiGenerated: false,
         contentType: "video/mp4",
         durationSeconds: Option.some(8),
         kind: "video",

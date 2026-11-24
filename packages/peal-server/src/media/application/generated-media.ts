@@ -20,6 +20,8 @@ import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
 
 /** A ready file of the workspace, as a composition takes it. */
 export interface SourceFile {
+  /** Whether it was made by AI. */
+  readonly aiGenerated: boolean;
   readonly contentType: string;
   /** Its length in seconds, when the probe read one. */
   readonly durationSeconds: Option.Option<number>;
@@ -53,8 +55,7 @@ export class GeneratedMedia extends Context.Service<
     ) => Effect.Effect<void, PlanLimitReached>;
     /**
      * Stores a video, marked as made by AI unless `aiGenerated` is false
-     * (a slide video composed of the workspace's own files), and probes
-     * it.
+     * (a slide video composed of files none of which was), and probes it.
      */
     readonly storeVideo: (
       workspaceId: WorkspaceId,
@@ -102,6 +103,7 @@ export class GeneratedMedia extends Context.Service<
           ready(workspaceId, assetId).pipe(
             Effect.map(
               Option.map((asset): SourceFile => ({
+                aiGenerated: asset.aiGenerated,
                 contentType: asset.contentType,
                 durationSeconds: asset.metadata.duration.pipe(
                   Option.map(Duration.toSeconds)

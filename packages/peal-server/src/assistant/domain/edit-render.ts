@@ -362,6 +362,29 @@ export const editMediaIdsOf = (edit: Schema.JsonObject): readonly string[] => {
   return [...ids];
 };
 
+// The assets Shotstack makes itself, whatever they hold.
+const madeAssets: ReadonlySet<string> = new Set([
+  "image-to-video",
+  "text-to-image",
+  "text-to-speech",
+]);
+
+/**
+ * Whether an edit has the service generate something: an asset of a kind
+ * it makes, or one with a prompt.
+ */
+export const editGenerates = (edit: Schema.JsonObject): boolean =>
+  (arrayAt(objectAt(edit, "timeline") ?? {}, "tracks") ?? [])
+    .flatMap((track) => arrayAt(jsonObjectOf(track) ?? {}, "clips") ?? [])
+    .some((clip) => {
+      const asset = objectAt(jsonObjectOf(clip) ?? {}, "asset") ?? {};
+
+      return (
+        madeAssets.has(stringAt(asset, "type") ?? "") ||
+        stringAt(asset, "prompt") !== undefined
+      );
+    });
+
 /**
  * The edit with each library file it names swapped for its link, as the
  * service fetches it; a file without a link is left as it is named.

@@ -502,8 +502,9 @@
   `sourceLinkLifetime`, an hour, whether or not the bucket is public;
   `mediaUnavailable` when one is gone; for an edit, one link a file it
   names, swapped in by `editWithLinks`), asks `OwnComposer`, and keeps the
-  video through `GeneratedMedia.storeVideo` with `aiGenerated: false` (the
-  workspace's own files, put together), probed. Its notice is
+  video through `GeneratedMedia.storeVideo`, probed, marked `aiGenerated`
+  when a file it is made of was, or its edit has the service generate
+  something (`editGenerates`). Its notice is
   `SlideshowEnded`, keyed `slideshow:<id>`, to the member who asked alone,
   in the app.
 - `OwnComposer` (`own-composer.ts`, on `shotstack/client.ts`, outside

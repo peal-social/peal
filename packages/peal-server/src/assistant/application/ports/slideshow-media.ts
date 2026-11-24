@@ -7,6 +7,8 @@ import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
 
 /** A ready file of the library, as a slide video takes it. */
 export interface SlideshowSource {
+  /** Whether it was made by AI. */
+  readonly aiGenerated: boolean;
   /** `image`, `video`, `audio` or `document`. */
   readonly kind: string;
   /** Its media type, such as `image/png`. */
@@ -44,14 +46,15 @@ export class SlideshowMedia extends Context.Service<
       expiresIn: Duration.Duration
     ) => Effect.Effect<Option.Option<string>>;
     /**
-     * Keeps the bytes as they came, not marked as made by AI:
+     * Keeps the bytes as they came, marked as made by AI or not:
      * `storageFull` when the plan has no room, `unusableAnswer` for bytes
      * that are no video the library takes, `notStored` when the store
      * fails.
      */
     readonly store: (
       workspaceId: WorkspaceId,
-      bytes: Uint8Array
+      bytes: Uint8Array,
+      options: { readonly aiGenerated: boolean }
     ) => Effect.Effect<MediaAssetId, SlideshowFailed>;
   }
 >()("peal-server/assistant/application/SlideshowMedia") {}
