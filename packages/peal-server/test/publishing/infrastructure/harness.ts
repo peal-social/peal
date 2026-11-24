@@ -43,7 +43,6 @@ import { Schedule } from "#publishing/domain/schedule.ts";
 import { DrizzleChannelDefaultsStore } from "#publishing/infrastructure/drizzle-channel-defaults-store.ts";
 import { DrizzleChannelSetStore } from "#publishing/infrastructure/drizzle-channel-set-store.ts";
 import { DrizzleContentFingerprints } from "#publishing/infrastructure/drizzle-content-fingerprints.ts";
-import { DrizzleFollowUpStore } from "#publishing/infrastructure/drizzle-follow-up-store.ts";
 import { DrizzleIdempotencyKeys } from "#publishing/infrastructure/drizzle-idempotency-keys.ts";
 import { DrizzleLivePostChangeStore } from "#publishing/infrastructure/drizzle-live-post-change-store.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
@@ -55,6 +54,7 @@ import {
   FakePlatform,
   FakePlatformPublisher,
 } from "#publishing/infrastructure/fake-platform-publisher.ts";
+import { DrizzleFollowUpStore } from "#publishing/infrastructure/follow-ups/drizzle-follow-up-store.ts";
 import { WorkflowPublicationScheduler } from "#publishing/infrastructure/workflow-publication-scheduler.ts";
 import { PublishTargetV2 } from "#publishing/infrastructure/workflows/publish-parts.ts";
 import { PublishPostV1 } from "#publishing/infrastructure/workflows/publish-post.ts";

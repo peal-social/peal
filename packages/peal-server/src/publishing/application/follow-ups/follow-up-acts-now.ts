@@ -1,11 +1,13 @@
 import { Effect } from "effect";
 
-import { mayAct } from "#publishing/domain/follow-up-rule.ts";
-import type { FollowUpRule } from "#publishing/domain/follow-up-rule.ts";
+import type {
+  RuleStarter,
+  StartedIn,
+} from "#publishing/application/recycling-actors.ts";
+import { mayAct } from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import type { FollowUpRule } from "#publishing/domain/follow-ups/follow-up-rule.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Actor } from "#shared/domain/access.ts";
-
-import type { RuleStarter, StartedIn } from "./recycling-actors.ts";
 
 /** Who a rule's starter is now (`RecyclingActors.of`), and whether the policy holds them (`ApprovalGate.holds`). */
 export interface StarterNow {

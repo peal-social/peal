@@ -1,13 +1,17 @@
 import { DateTime, Effect, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 
-import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
 import type {
   OutgoingRepost,
   RepostClient,
-} from "#publishing/application/platform-reposts.ts";
-import { blueskyRepostCollection } from "#publishing/domain/follow-up-ability.ts";
+} from "#publishing/application/follow-ups/platform-reposts.ts";
+import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
+import { blueskyRepostCollection } from "#publishing/domain/follow-ups/follow-up-ability.ts";
 import { platformRefusalCodes } from "#publishing/domain/own-refusals.ts";
+import {
+  recordRefusal,
+  XrpcErrorSchema,
+} from "#publishing/infrastructure/platforms/bluesky/bluesky-refusal.ts";
 import { invalidPlatformId } from "#publishing/infrastructure/platforms/live-post-remover.ts";
 import {
   commitUnanswered,
@@ -22,8 +26,6 @@ import type { BlueskySession } from "#shared/infrastructure/platforms/bluesky/bl
 import { dpopSender } from "#shared/infrastructure/platforms/bluesky/dpop.ts";
 import type { BlueskyHttp } from "#shared/infrastructure/platforms/bluesky/dpop.ts";
 import { recordKeyOf } from "#shared/infrastructure/platforms/bluesky/record-key.ts";
-
-import { recordRefusal, XrpcErrorSchema } from "./bluesky-refusal.ts";
 
 const postCollection = "app.bsky.feed.post";
 

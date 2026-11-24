@@ -4,26 +4,27 @@ Each context's rules are in a guide of its own. Read it before changing the
 context, its tests under `test/<context>/` included, and each one's when a
 change crosses several:
 
-| Context              | Guide                                                                                      |
-| -------------------- | ------------------------------------------------------------------------------------------ |
-| `workspace`, `staff` | [`src/workspace/AGENTS.md`](src/workspace/AGENTS.md)                                       |
-| `legal`              | [`src/legal/AGENTS.md`](src/legal/AGENTS.md)                                               |
-| `channels`           | [`src/channels/AGENTS.md`](src/channels/AGENTS.md)                                         |
-| `publishing`         | [`src/publishing/AGENTS.md`](src/publishing/AGENTS.md)                                     |
-| publishing's feeds   | [`src/publishing/application/feeds/AGENTS.md`](src/publishing/application/feeds/AGENTS.md) |
-| `media`              | [`src/media/AGENTS.md`](src/media/AGENTS.md)                                               |
-| `notifications`      | [`src/notifications/AGENTS.md`](src/notifications/AGENTS.md)                               |
-| `assistant`          | [`src/assistant/AGENTS.md`](src/assistant/AGENTS.md)                                       |
-| `billing`            | [`src/billing/AGENTS.md`](src/billing/AGENTS.md)                                           |
-| `analytics`          | [`src/analytics/AGENTS.md`](src/analytics/AGENTS.md)                                       |
-| `webhooks`           | [`src/webhooks/AGENTS.md`](src/webhooks/AGENTS.md)                                         |
-| `review`             | [`src/review/AGENTS.md`](src/review/AGENTS.md)                                             |
-| `engagement`         | [`src/engagement/AGENTS.md`](src/engagement/AGENTS.md)                                     |
-| `activity`           | [`src/activity/AGENTS.md`](src/activity/AGENTS.md)                                         |
-| `ads`                | [`src/ads/AGENTS.md`](src/ads/AGENTS.md)                                                   |
-| `shortlinks`         | [`src/shortlinks/AGENTS.md`](src/shortlinks/AGENTS.md)                                     |
-| `agent`              | [`src/agent/AGENTS.md`](src/agent/AGENTS.md)                                               |
-| the MCP endpoint     | [`src/app/mcp/AGENTS.md`](src/app/mcp/AGENTS.md)                                           |
+| Context                 | Guide                                                                                                |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `workspace`, `staff`    | [`src/workspace/AGENTS.md`](src/workspace/AGENTS.md)                                                 |
+| `legal`                 | [`src/legal/AGENTS.md`](src/legal/AGENTS.md)                                                         |
+| `channels`              | [`src/channels/AGENTS.md`](src/channels/AGENTS.md)                                                   |
+| `publishing`            | [`src/publishing/AGENTS.md`](src/publishing/AGENTS.md)                                               |
+| publishing's feeds      | [`src/publishing/application/feeds/AGENTS.md`](src/publishing/application/feeds/AGENTS.md)           |
+| publishing's follow-ups | [`src/publishing/application/follow-ups/AGENTS.md`](src/publishing/application/follow-ups/AGENTS.md) |
+| `media`                 | [`src/media/AGENTS.md`](src/media/AGENTS.md)                                                         |
+| `notifications`         | [`src/notifications/AGENTS.md`](src/notifications/AGENTS.md)                                         |
+| `assistant`             | [`src/assistant/AGENTS.md`](src/assistant/AGENTS.md)                                                 |
+| `billing`               | [`src/billing/AGENTS.md`](src/billing/AGENTS.md)                                                     |
+| `analytics`             | [`src/analytics/AGENTS.md`](src/analytics/AGENTS.md)                                                 |
+| `webhooks`              | [`src/webhooks/AGENTS.md`](src/webhooks/AGENTS.md)                                                   |
+| `review`                | [`src/review/AGENTS.md`](src/review/AGENTS.md)                                                       |
+| `engagement`            | [`src/engagement/AGENTS.md`](src/engagement/AGENTS.md)                                               |
+| `activity`              | [`src/activity/AGENTS.md`](src/activity/AGENTS.md)                                                   |
+| `ads`                   | [`src/ads/AGENTS.md`](src/ads/AGENTS.md)                                                             |
+| `shortlinks`            | [`src/shortlinks/AGENTS.md`](src/shortlinks/AGENTS.md)                                               |
+| `agent`                 | [`src/agent/AGENTS.md`](src/agent/AGENTS.md)                                                         |
+| the MCP endpoint        | [`src/app/mcp/AGENTS.md`](src/app/mcp/AGENTS.md)                                                     |
 
 The shared kernel's rules are below.
 
@@ -78,7 +79,7 @@ and no socket, for tests.
 - A context may hold modules: a part that speaks the context's language
   and acts in its transactions, kept apart inside it as a folder of the
   same name in each layer (`src/<context>/<layer>/<module>/`; publishing's
-  `feeds`). A module's files keep their layer's rules and may import the
+  `feeds` and `follow-ups`). A module's files keep their layer's rules and may import the
   rest of the context; the rest of the context imports a module only from
   the container and the seams its entry in `test/lint-modules.ts` (which
   `oxlint.config.ts` reads) names, each with its reason, and modules never

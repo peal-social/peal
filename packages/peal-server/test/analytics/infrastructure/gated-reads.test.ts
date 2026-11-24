@@ -12,7 +12,7 @@ import {
   UnreadComments,
 } from "#channels/infrastructure/channel-gate-live.ts";
 import { GatedMetricsReader } from "#channels/infrastructure/gated-clients.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import { FakePlatformPublisher } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { ChannelIdSchema, PostTargetIdSchema } from "#shared/domain/ids.ts";

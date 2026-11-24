@@ -42,7 +42,7 @@ import {
   SendReplyV1,
   SendReplyV1Live,
 } from "#engagement/infrastructure/workflows/send-reply.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import { FakePlatformPublisher } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";

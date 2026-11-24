@@ -1,6 +1,6 @@
 import { Effect, Layer } from "effect";
 
-import { FollowUps } from "#publishing/application/follow-ups.ts";
+import { FollowUps } from "#publishing/application/follow-ups/follow-ups.ts";
 import { PublicationOutcomes } from "#publishing/application/publication-outcomes.ts";
 
 /**

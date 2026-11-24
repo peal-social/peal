@@ -1,6 +1,6 @@
 import { Context, Effect, Layer, Schema } from "effect";
 
-import { FollowUpIdSchema } from "#publishing/domain/follow-up-id.ts";
+import { FollowUpIdSchema } from "#publishing/domain/follow-ups/follow-up-id.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";

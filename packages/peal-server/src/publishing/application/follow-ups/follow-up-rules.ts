@@ -1,25 +1,36 @@
 import { Context, DateTime, Effect, Layer, Option } from "effect";
 
-import { carriesSome } from "#publishing/domain/follow-up-ability.ts";
-import type { ChannelFollowUps } from "#publishing/domain/follow-up-ability.ts";
-import type { FollowUpRuleEnded } from "#publishing/domain/follow-up-rule-ended.ts";
-import { FollowUpRuleIdSchema } from "#publishing/domain/follow-up-rule-id.ts";
-import type { FollowUpRuleId } from "#publishing/domain/follow-up-rule-id.ts";
+import { ApprovalGate } from "#publishing/application/approval-gate.ts";
+import type { PostNotFound } from "#publishing/application/post-not-found.ts";
+import { PostOrigins } from "#publishing/application/post-origins.ts";
+import { PostRepository } from "#publishing/application/post-repository.ts";
+import {
+  mayChangeStarted,
+  notImpersonating,
+  starterOf,
+} from "#publishing/application/started-by.ts";
+import { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
+import { findInWorkspace } from "#publishing/application/workspace-posts.ts";
+import { carriesSome } from "#publishing/domain/follow-ups/follow-up-ability.ts";
+import type { ChannelFollowUps } from "#publishing/domain/follow-ups/follow-up-ability.ts";
+import type { FollowUpRuleEnded } from "#publishing/domain/follow-ups/follow-up-rule-ended.ts";
+import { FollowUpRuleIdSchema } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
+import type { FollowUpRuleId } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
 import {
   approveFollowUpRule,
   changeFollowUpRule,
   endFollowUpRule,
   maxFollowUpRulesPerWorkspace,
   startFollowUpRule,
-} from "#publishing/domain/follow-up-rule.ts";
+} from "#publishing/domain/follow-ups/follow-up-rule.ts";
 import type {
   FollowUpChange,
   FollowUpChanger,
   FollowUpRule,
   FollowUpRuleStatus,
   FollowUpScope,
-} from "#publishing/domain/follow-up-rule.ts";
-import type { FollowUp } from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import type { FollowUp } from "#publishing/domain/follow-ups/follow-up.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
@@ -30,20 +41,13 @@ import type { ChannelId, PostId, UserId } from "#shared/domain/ids.ts";
 import { MissingPermission } from "#shared/domain/missing-permission.ts";
 import { storableText } from "#shared/domain/platform-text.ts";
 
-import { ApprovalGate } from "./approval-gate.ts";
 import { FollowUpChannels } from "./follow-up-channels.ts";
 import { FollowUpNotPossible } from "./follow-up-not-possible.ts";
 import { FollowUpRuleNotFound } from "./follow-up-rule-not-found.ts";
 import { FollowUpRuleTaken } from "./follow-up-rule-taken.ts";
 import { FollowUpStore } from "./follow-up-store.ts";
 import { FollowUps, askOf } from "./follow-ups.ts";
-import type { PostNotFound } from "./post-not-found.ts";
-import { PostOrigins } from "./post-origins.ts";
-import { PostRepository } from "./post-repository.ts";
-import { mayChangeStarted, notImpersonating, starterOf } from "./started-by.ts";
 import { TooManyFollowUpRules } from "./too-many-follow-up-rules.ts";
-import { WorkspaceChannels } from "./workspace-channels.ts";
-import { findInWorkspace } from "./workspace-posts.ts";
 
 /**
  * Who approves a rule by changing it: a person who may approve posts,
@@ -144,7 +148,7 @@ const cleanComment = (
 
 /**
  * Rules that act by themselves on the workspace's own posts once they have
- * enough likes (`#publishing/domain/follow-up-rule.ts`), as members keep
+ * enough likes (`#publishing/domain/follow-ups/follow-up-rule.ts`), as members keep
  * them: one post's, or every post a channel publishes after it starts.
  *
  * Reading needs post:read. Starting one needs to be able to ask for posts

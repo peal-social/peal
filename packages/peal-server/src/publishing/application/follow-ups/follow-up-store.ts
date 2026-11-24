@@ -1,13 +1,13 @@
 import { Context } from "effect";
 import type { DateTime, Effect, Option } from "effect";
 
-import type { FollowUpId } from "#publishing/domain/follow-up-id.ts";
-import type { FollowUpRuleId } from "#publishing/domain/follow-up-rule-id.ts";
+import type { FollowUpId } from "#publishing/domain/follow-ups/follow-up-id.ts";
+import type { FollowUpRuleId } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
 import type {
   FollowUpRule,
   FollowUpRuleStatus,
-} from "#publishing/domain/follow-up-rule.ts";
-import type { FollowUp } from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import type { FollowUp } from "#publishing/domain/follow-ups/follow-up.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { ChannelId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
 

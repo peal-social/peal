@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { ChannelFollowUpsSchema } from "#publishing/domain/follow-up-ability.ts";
+import { ChannelFollowUpsSchema } from "#publishing/domain/follow-ups/follow-up-ability.ts";
 
 /**
  * The rule cannot act: it asks nothing (`noAction`), its comment is empty

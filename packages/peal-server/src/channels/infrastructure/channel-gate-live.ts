@@ -9,7 +9,7 @@ import { PrivateReplySender } from "#engagement/application/ports/private-reply-
 import { ReplySender } from "#engagement/application/ports/reply-sender.ts";
 import { ReviewReplySender } from "#engagement/application/ports/review-reply-sender.ts";
 import { ReviewSource } from "#engagement/application/ports/review-source.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import { PlatformPublisher } from "#publishing/application/platform-publisher.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";

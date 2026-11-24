@@ -1,5 +1,7 @@
 import { Option, Schema } from "effect";
 
+import { platformRules } from "#publishing/domain/platform-rules.ts";
+import { measureText } from "#publishing/domain/text-length.ts";
 import {
   createsRecords,
   repostCollection,
@@ -10,8 +12,6 @@ import { PlatformSchema } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 import { FollowUpBlockerSchema, followUpSupport } from "./follow-up-support.ts";
-import { platformRules } from "./platform-rules.ts";
-import { measureText } from "./text-length.ts";
 
 /**
  * Why a channel cannot carry a kind of follow-up: the platform's

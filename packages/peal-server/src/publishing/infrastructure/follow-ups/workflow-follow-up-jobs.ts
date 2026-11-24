@@ -1,7 +1,7 @@
 import { Effect, Layer } from "effect";
 import { WorkflowEngine } from "effect/workflow";
 
-import { FollowUpJobs } from "#publishing/application/follow-up-jobs.ts";
+import { FollowUpJobs } from "#publishing/application/follow-ups/follow-up-jobs.ts";
 
 import { SendFollowUpV1 } from "./workflows/send-follow-up.ts";
 

@@ -25,5 +25,6 @@ export const modules = {
         "src/publishing/infrastructure/crons.ts",
       ],
     },
+    "follow-ups": { seams: [] },
   },
 } satisfies Readonly<Record<string, Readonly<Record<string, Module>>>>;

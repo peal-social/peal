@@ -46,7 +46,7 @@ import {
   ReviewsReadFailureSchema,
   ReviewsRequestSchema,
 } from "#engagement/application/ports/review-source.ts";
-import { FollowUpRequestSchema } from "#publishing/application/follow-up-publisher.ts";
+import { FollowUpRequestSchema } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import {
   EditOutcomeSchema,
   EditRequestSchema,

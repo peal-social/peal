@@ -1,8 +1,8 @@
 import { Effect, Schedule, Schema } from "effect";
 import { Activity, Workflow } from "effect/workflow";
 
-import { SendFollowUp } from "#publishing/application/send-follow-up.ts";
-import { FollowUpIdSchema } from "#publishing/domain/follow-up-id.ts";
+import { SendFollowUp } from "#publishing/application/follow-ups/send-follow-up.ts";
+import { FollowUpIdSchema } from "#publishing/domain/follow-ups/follow-up-id.ts";
 
 // Persisted contract: the tag, the payload, the idempotency key, the
 // activity name `send` and its result schema. Add payload fields with a

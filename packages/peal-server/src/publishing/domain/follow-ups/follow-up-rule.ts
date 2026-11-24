@@ -1,5 +1,9 @@
 import { DateTime, Duration, Option, Result, Schema } from "effect";
 
+import { PostOriginSchema } from "#publishing/domain/post-origin.ts";
+import type { PostOrigin } from "#publishing/domain/post-origin.ts";
+import { isSettled } from "#publishing/domain/post-target.ts";
+import type { PostTarget } from "#publishing/domain/post-target.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
@@ -18,10 +22,6 @@ import type { FollowUpEndReason } from "./follow-up-end-reason.ts";
 import { FollowUpRuleEnded } from "./follow-up-rule-ended.ts";
 import { FollowUpRuleIdSchema } from "./follow-up-rule-id.ts";
 import type { FollowUpRuleId } from "./follow-up-rule-id.ts";
-import { PostOriginSchema } from "./post-origin.ts";
-import type { PostOrigin } from "./post-origin.ts";
-import { isSettled } from "./post-target.ts";
-import type { PostTarget } from "./post-target.ts";
 
 // The limits below are the owner's to change: each is written once here,
 // and the contract's copy is kept equal by a test.

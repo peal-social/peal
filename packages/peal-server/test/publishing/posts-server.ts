@@ -12,10 +12,10 @@ import type { AttachableMedia } from "#publishing/application/attachable-media.t
 import type { FeedNotices } from "#publishing/application/feeds/feed-notices.ts";
 import type { FeedPictures } from "#publishing/application/feeds/feed-pictures.ts";
 import type { FeedSource } from "#publishing/application/feeds/feed-source.ts";
-import type { FollowUpChannels } from "#publishing/application/follow-up-channels.ts";
-import type { FollowUpCounts } from "#publishing/application/follow-up-counts.ts";
-import type { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
+import type { FollowUpChannels } from "#publishing/application/follow-ups/follow-up-channels.ts";
+import type { FollowUpCounts } from "#publishing/application/follow-ups/follow-up-counts.ts";
+import type { FollowUpNotices } from "#publishing/application/follow-ups/follow-up-notices.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import { PostEvents } from "#publishing/application/post-events.ts";
 import type { RecyclingActors } from "#publishing/application/recycling-actors.ts";
 import type { RecyclingNotices } from "#publishing/application/recycling-notices.ts";

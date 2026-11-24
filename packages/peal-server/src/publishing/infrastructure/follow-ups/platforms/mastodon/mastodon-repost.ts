@@ -2,21 +2,20 @@ import { Effect, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClientError } from "effect/http";
 
-import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
 import type {
   OutgoingRepost,
   RepostClient,
-} from "#publishing/application/platform-reposts.ts";
+} from "#publishing/application/follow-ups/platform-reposts.ts";
+import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
 import { invalidPlatformId } from "#publishing/infrastructure/platforms/live-post-remover.ts";
+import type { MastodonHttp } from "#publishing/infrastructure/platforms/mastodon/mastodon-client.ts";
+import { instanceOfAccount } from "#publishing/infrastructure/platforms/mastodon/mastodon-client.ts";
+import { statusRefusal } from "#publishing/infrastructure/platforms/mastodon/mastodon-refusal.ts";
+import type { MastodonRefusal } from "#publishing/infrastructure/platforms/mastodon/mastodon-refusal.ts";
 import { commitUnanswered } from "#publishing/infrastructure/platforms/platform-exchange.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
-
-import type { MastodonHttp } from "./mastodon-client.ts";
-import { instanceOfAccount } from "./mastodon-client.ts";
-import { statusRefusal } from "./mastodon-refusal.ts";
-import type { MastodonRefusal } from "./mastodon-refusal.ts";
 
 // The reblog Mastodon answers: a status of its own, naming the one it
 // reblogs.
