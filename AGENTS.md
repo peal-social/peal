@@ -250,6 +250,15 @@ peal-ui and its theme: a reference is a starting point, not code to paste.
   no post scheduled or job waiting when a test ends, or the dev server runs
   it. Give each run its own database or `PEAL_S3_KEY_PREFIX` when several run
   at once.
+- Suites run at once on one database, and a killed run leaves its rows
+  there. A test that reads or sweeps everything due (a feeds poll, a
+  purge) counts only its own rows, or first deletes what an earlier run
+  left in the years it runs in.
+- The usage-snapshot suite (`test/app/workspace-snapshot.test.ts`) runs
+  the server's daily jobs, which reach every row of their database. It
+  runs them on a second database beside the one `DATABASE_URL` names,
+  named after it with `_snapshot` (`ownDatabase`, which needs `CREATEDB`).
+  Whoever drops the first database drops that one too.
 - A server on a scratch database sets its own `PEAL_S3_KEY_PREFIX`: the
   bucket's media folder belongs to one database, whose media sweeps delete
   what it does not know of (off outside production unless

@@ -22,7 +22,12 @@
   revisions while clients need them; serving only the stateless one
   would make all of this go.
 - Tools are `Tool.make` with Effect Schema inputs and outputs, declare
-  `CurrentMember`, and reach contexts through their use cases.
+  `CurrentMember`, and reach contexts through their use cases. The lint
+  rules hold this folder to it, as they hold an `api` layer: it imports a
+  context's `container.ts`, `domain`, `application` and `api` (the views
+  and inputs the handlers use), never its `infrastructure`, nor Effect's
+  SQL, cluster or workflow modules. The one adapter it reads is
+  `#shared/infrastructure/database-ping.ts`, for the health tool.
   `mcpAuthentication` (`#workspace/api/mcp-authentication.ts`) provides
   the member from the request's OAuth token: 401 with an RFC 9728 challenge
   without a working token, 403 without a workspace scope or membership. It
