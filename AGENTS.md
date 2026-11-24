@@ -449,8 +449,9 @@ The servers' other rules are in
 
 Keep agent instructions in the guides: what applies everywhere here, a
 package's rules in its own `AGENTS.md`, a server context's in
-`src/<context>/AGENTS.md`. Keep setup and development steps in the
-[contributing guide](.github/CONTRIBUTING.md), and what Peal is, how to
+`src/<context>/AGENTS.md`, a module's in
+`src/<context>/application/<module>/AGENTS.md`. Keep setup and development
+steps in the [contributing guide](.github/CONTRIBUTING.md), and what Peal is, how to
 self-host it and its licensing in the [README](README.md). Beside every
 `AGENTS.md`, keep a `CLAUDE.md` holding `@AGENTS.md`, so both clients share
 these instructions. This file is read in every session: keep it short, and put

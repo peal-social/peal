@@ -6,7 +6,7 @@ its layers (`src/publishing/<layer>/feeds/`, the paths below are from
 ([`../../../../AGENTS.md`](../../../../AGENTS.md)) says how lint keeps it
 apart; the rest of publishing's rules are in
 [`../../AGENTS.md`](../../AGENTS.md). Two files of the rest of publishing
-reach into it, as `oxlint.config.ts` names them: `application/channel-sets.ts`
+reach into it, as `test/lint-modules.ts` names them: `application/channel-sets.ts`
 (deleting a channel set clears the feeds that name it, in its transaction,
 through `FeedStore`) and `infrastructure/crons.ts` (the idempotency
 retention's run calls `Feeds.prune`).
