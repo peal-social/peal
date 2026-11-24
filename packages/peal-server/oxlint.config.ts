@@ -4,6 +4,8 @@ import drizzle from "ultracite/oxlint/drizzle";
 import vitest from "ultracite/oxlint/vitest";
 
 import root from "../../oxlint.config.ts";
+import type { Module } from "./test/lint-modules.ts";
+import { modules as moduleMap } from "./test/lint-modules.ts";
 
 // Clean Architecture, enforced. Each bounded context under src/ has four
 // layers, and every import between folders goes through `#<context>/<layer>/…`
@@ -34,38 +36,25 @@ type Kernel = (typeof contexts)[number] | "shared";
 
 type Rules = NonNullable<OxlintOverride["rules"]>;
 
-// A module is a part of a context kept apart inside it: a subfolder of the
-// same name in each layer (`src/<context>/<layer>/<module>/`). Its files keep
-// their layer's rules and may import the rest of the context; the rest of
-// the context may not import it, but its container and the seams named
-// here, each with its reason; and modules never import each other. A new
-// module goes into this map with its seams.
-interface Module {
-  readonly seams: readonly string[];
-}
+// The modules each context keeps apart, by its name.
+const modules: Partial<Record<Kernel, Readonly<Record<string, Module>>>> =
+  moduleMap;
 
-const modules: Partial<Record<Kernel, Record<string, Module>>> = {
-  publishing: {
-    feeds: {
-      seams: [
-        // Deleting a channel set clears the feeds that name it, in its
-        // transaction, through FeedStore.
-        "src/publishing/application/channel-sets.ts",
-        // The daily retention run prunes the feeds' items and reads
-        // (`Feeds.prune`) beside the idempotency keys.
-        "src/publishing/infrastructure/crons.ts",
-      ],
-    },
-    "follow-ups": { seams: [] },
-    recycling: { seams: [] },
-  },
-};
-
-// Every module of the context but those `open` names, by alias or from the
-// layer's folder: each layer rule refuses them last.
+// Every module of the context but those `open` names (the map, with what a
+// module is, is in test/lint-modules.ts), by any alias or relative path
+// through the module's folder (`./feeds/x.ts`, `././feeds/x.ts`,
+// `./sub/../feeds/x.ts`, `#publishing/application/../application/feeds/x.ts`):
+// each layer rule refuses them last.
 const moduleWalls = (context: Kernel, open: readonly string[] = []) =>
   Object.keys(modules[context] ?? {}).flatMap((name) =>
-    open.includes(name) ? [] : [`#${context}/*/${name}/**`, `./${name}/**`]
+    open.includes(name)
+      ? []
+      : [
+          `#${context}/*/${name}/**`,
+          `#${context}/**/${name}/**`,
+          `./${name}/**`,
+          `./**/${name}/**`,
+        ]
   );
 
 // The server image ships src/ only, so production code that imported a test
@@ -101,12 +90,14 @@ const noGateway = [
 
 type AiImports = "seam" | "allowed";
 
+// Added to the layer's own message, which may be the cause instead.
 const wallMessage =
-  "A module's folder is imported by its own files, the container and the seams oxlint.config.ts names, never by another module: move the code into the module, or name the seam there with its reason.";
+  "; and a module's folder is imported only by its own files, the container and the seams test/lint-modules.ts names, never by another module (move the code into the module, or name the seam there with its reason).";
 
 // The walls go last in the layer's own group: a negation in any pattern lets
 // an import through, so a pattern of their own would not refuse what the
-// layer allows.
+// layer allows. Their sentence follows the layer's, so it reads as one more
+// rule of the layer, not as the one broken.
 const restrict = (
   message: string,
   group: readonly string[],
@@ -119,7 +110,10 @@ const restrict = (
     patterns: [
       {
         group: [...group, ...walls],
-        message: walls.length > 0 ? `${message} ${wallMessage}` : message,
+        message:
+          walls.length > 0
+            ? `${message.replace(/\.$/u, "")}${wallMessage}`
+            : message,
       },
       testHelpers,
       ...(ai === "seam" ? [aiSeam] : []),
