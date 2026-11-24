@@ -57,7 +57,7 @@ export const CreatedApiKeySchema = Schema.Struct({
 }).annotate({ identifier: "CreatedApiKey" });
 
 /** A workspace's API keys, for scripts and integrations. */
-export class ApiKeysApi extends HttpApiGroup.make("apiKeys")
+export class ApiKeysApi extends HttpApiGroup.make("workspace.apiKeys")
   .add(
     HttpApiEndpoint.post("create", "/", {
       error: Forbidden,
@@ -99,4 +99,4 @@ export class ApiKeysApi extends HttpApiGroup.make("apiKeys")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/api-keys") {}
+  .prefix("/api/v1/workspace/api-keys") {}

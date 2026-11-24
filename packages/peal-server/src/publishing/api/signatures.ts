@@ -64,7 +64,7 @@ export const signatureDetailsFrom = ({
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const SignaturesHandlers = HttpApiBuilder.group(
   Api,
-  "signatures",
+  "posts.signatures",
   Effect.fn(function* signaturesHandlers(handlers) {
     const signatures = yield* Signatures;
 

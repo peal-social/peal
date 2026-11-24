@@ -206,7 +206,7 @@ const details = `A slot is a weekday and a time of day (\`HH:mm\`) in the queue'
  * A workspace's queues: weekly timetables a post is added to instead of
  * being given a time.
  */
-export class QueuesApi extends HttpApiGroup.make("queues")
+export class QueuesApi extends HttpApiGroup.make("automations.queues")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
@@ -314,4 +314,4 @@ export class QueuesApi extends HttpApiGroup.make("queues")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/queues") {}
+  .prefix("/api/v1/automations/queues") {}

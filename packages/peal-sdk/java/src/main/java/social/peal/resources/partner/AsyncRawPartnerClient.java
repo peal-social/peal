@@ -61,14 +61,14 @@ public class AsyncRawPartnerClient {
     /**
      * The partner account the key belongs to, with what it holds: the workspaces it owns and the channels connected across them and its home workspace, now and at the end of each of the last 35 days (UTC). Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
      */
-    public CompletableFuture<PealClientHttpResponse<PartnerOverview>> account() {
-        return account(null);
+    public CompletableFuture<PealClientHttpResponse<PartnerOverview>> get() {
+        return get(null);
     }
 
     /**
      * The partner account the key belongs to, with what it holds: the workspaces it owns and the channels connected across them and its home workspace, now and at the end of each of the last 35 days (UTC). Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
      */
-    public CompletableFuture<PealClientHttpResponse<PartnerOverview>> account(RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<PartnerOverview>> get(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("api/v1/partner");

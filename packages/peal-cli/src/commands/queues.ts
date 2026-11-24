@@ -171,7 +171,7 @@ const previewOf = (
   queue: Queue,
   count: number
 ) =>
-  session.client.queues
+  session.client["automations.queues"]
     .slots({
       headers: {},
       params: { queueId: queue.id },
@@ -358,7 +358,7 @@ const create = Command.make(
       timeZone: input.zone,
     });
 
-    const made = yield* client.queues
+    const made = yield* client["automations.queues"]
       .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
@@ -502,7 +502,7 @@ const update = Command.make(
       timeZone: Option.getOrElse(input.zone, () => queue.timeZone),
     });
 
-    const changed = yield* client.queues
+    const changed = yield* client["automations.queues"]
       .update({
         headers: {},
         params: { queueId: queue.id },
@@ -557,7 +557,7 @@ const reshuffle = Command.make(
     const { client, url } = session;
     const queue = yield* findQueue(session, given);
 
-    const done = yield* client.queues
+    const done = yield* client["automations.queues"]
       .reshuffle({ headers: {}, params: { queueId: queue.id } })
       .pipe(Effect.mapError(explain(url)));
 
@@ -589,7 +589,7 @@ const remove = Command.make(
     const { client, url, workspace } = session;
     const queue = yield* findQueue(session, given);
 
-    yield* client.queues
+    yield* client["automations.queues"]
       .delete({ headers: {}, params: { queueId: queue.id } })
       .pipe(Effect.mapError(explain(url)));
 

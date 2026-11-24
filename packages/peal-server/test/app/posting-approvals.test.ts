@@ -70,7 +70,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const base = "/api/v1";
           const headers = { cookie: owner.cookies };
 
-          const policy = yield* app.request(`${base}/review/settings`, {
+          const policy = yield* app.request(`${base}/approvals/settings`, {
             body: { approvalPolicy: "always" },
             headers: { ...headers, ...forWorkspace(workspaceId) },
             method: "PUT",
@@ -99,7 +99,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // a person approves it, so the answer is the post as it stands.
           const before = Date.now();
 
-          const sent = yield* app.request(`${base}/posts/send?wait=30`, {
+          const sent = yield* app.request(`${base}/posts?wait=30`, {
             body: post("A synthetic post to hold.", "2031-03-04T09:00:00Z"),
             headers: { ...headers, ...forWorkspace(workspaceId) },
           });
@@ -124,7 +124,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The same content again would wait twice, and go out twice:
           // refused, and no second approval is asked for it.
-          const again = yield* app.request(`${base}/posts/send`, {
+          const again = yield* app.request(`${base}/posts`, {
             body: post("A synthetic post to hold.", "2031-03-04T10:00:00Z"),
             headers: { ...headers, ...forWorkspace(workspaceId) },
           });
@@ -196,7 +196,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const asked = pending.find(({ postId }) => postId === first.id);
 
           const changes = yield* app.request(
-            `${base}/posts/${first.id}/request-changes`,
+            `${base}/approvals/${first.id}/request-changes`,
             {
               body: {
                 approvalId: asked?.id,
@@ -226,7 +226,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const log = yield* bodyOf(
             PageJsonSchema,
-            yield* app.request(`${base}/activity`, {
+            yield* app.request(`${base}/workspace/activity`, {
               headers: { ...headers, ...forWorkspace(workspaceId) },
             })
           );
@@ -236,7 +236,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // Who decided is the member, by id: never what they wrote.
           assert.deepInclude(
             log.items.find(
-              ({ operation }) => operation === "review.requestChanges"
+              ({ operation }) => operation === "approvals.requestChanges"
             ),
             {
               actor: { _tag: "user", userId: owner.id },
@@ -247,14 +247,14 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           );
           assert.notInclude(JSON.stringify(log.items), "synthetic comment");
           assert.includeMembers(operations, [
-            "review.updateSettings",
-            "posts.send",
+            "approvals.updateSettings",
+            "posts.create",
             "posts.bulk",
             "posts.import",
           ]);
           // Neither the check nor the lookup asked to change anything.
           assert.notInclude(operations, "posts.validate");
-          assert.notInclude(operations, "lookups.run");
+          assert.notInclude(operations, "channels.lookups.run");
         })
     );
   }

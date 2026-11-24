@@ -68,7 +68,7 @@
   ends with the request's id (`requestLine`).
 - `peal media generate --prompt … [--aspect …]` has the workspace's own
   image provider, or else the server's image model, make an image into the
-  workspace's media (`assistant.generateImage`, a real parity row); the
+  workspace's media (`media.images.create`, a real parity row); the
   text assistant stays without a command, as an agent writes its own text.
   Its answer says the file is marked as made by AI and that the post's
   options carry the platforms' AI labels.
@@ -98,7 +98,7 @@
   left out (refused for the others before any request). The studio
   answers from `test/studio-slideshows.ts` (`StudioState.slideshows`; the
   first caption stands for the refusals). `peal media slideshow render
-  <edit-file>` follows `slideshows.createFromEdit`: it reads a Shotstack
+  <edit-file>` follows `media.slideshows.createFromEdit`: it reads a Shotstack
   Edit from a JSON file (1 MiB at most, never printed; a file holding no
   JSON object is refused before any request), sends it as it is, and
   answers or waits as `create` does (`followed`); the studio queues one
@@ -232,7 +232,7 @@
 - `peal post --dry-run` checks a post through `posts.validate` and takes
   media ids only, as a file or an address would be stored; `--wait` goes
   with `--now`. `peal posts list`, `posts wait` and `posts import` follow
-  `posts.search`, `posts.outcome` and `posts.import`; an import that left a
+  `posts.list`, `posts.outcome` and `posts.import`; an import that left a
   row refused or unreadable ends as a refusal, after printing every row, and
   never prints the file. No command sends `posts.bulk`: a CSV file is the
   command line's way to several posts.
@@ -249,7 +249,7 @@
   `peal posts tag`, `peal posts list --tag`, `peal drafts save --tag` and
   `peal post --tag` file posts under them. Wherever a command takes a tag
   it takes its id or its name, whatever its case, resolved through
-  `tags.list` (`src/tags.ts`: `tagNamed`, `tagsNamed`); `drafts save
+  `posts.tags.list` (`src/tags.ts`: `tagNamed`, `tagsNamed`); `drafts save
   --post` sends `tagIds` only when `--tag` is given, so a draft keeps its
   tags. The MCP toolkit `tags-tools.ts` has the same (`list_tags`,
   `create_tag`, `update_tag`, `delete_tag`, `tag_post`), by id alone.
@@ -274,7 +274,7 @@
   post's text) or `--default-queue` is one of `--at`, `--now`, `--queue`
   and `--default-queue`; `peal posts queue` and `peal posts list --queue` follow
   `posts.enqueue` and `search?queueId`. `peal queues reshuffle` follows
-  `queues.reshuffle` and says why it stopped (`reshuffleLines`). The
+  `automations.queues.reshuffle` and says why it stopped (`reshuffleLines`). The
   studio's queues are in `test/studio-queues.ts`, built over what
   `studio.ts` hands them.
 - `peal recycling` (list, show, start, update, pause, resume, end) keeps
@@ -295,10 +295,10 @@
 - The command line has `peal links` (create, list, show, revoke) and
   `peal partner` (show, keys, workspaces, usage), which read; `peal
   partner usage` (`--from`, `--to`, `--limit`, `--before`) reads the
-  member's `usage.partner`, and `partnerUsage.get` (a partner key's) is
+  member's `workspace.usage.partner`, and `partner.customerUsage.get` (a partner key's) is
   exempt from parity, as the rest of the partner API is; `peal partner
   overview` (`--limit`, `--cursor`) reads the member's
-  `partnerAccount.overview` (`partner.overview` is exempt the same way),
+  `partner.account.overview` (`partner.overview` is exempt the same way),
   and no MCP tool has it; the MCP toolkit
   `connect-tools.ts` has the same, `create_connect_link` and
   `revoke_connect_link` changing. Neither creates a partner key or a
@@ -321,7 +321,7 @@
   or a report across the person's workspaces, as the API has none and no
   MCP tool gives one (`src/app/mcp/AGENTS.md`). `peal partner overview` reads a partner's
   customers, which is the partner's own list.
-- `peal usage` (`--from`, `--to`: UTC days) reads `usage.get`: the plan
+- `peal usage` (`--from`, `--to`: UTC days) reads `workspace.usage.get`: the plan
   line, the limits against what is used now (`usageLines`, shared with
   `peal billing`), the period's totals, then a row per day that has
   anything. `peal billing` stays as it is.

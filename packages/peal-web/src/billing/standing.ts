@@ -31,7 +31,7 @@ export const standingOfWorkspace = async (
         ),
       });
 
-      return yield* client.billing
+      return yield* client["workspace.billing"]
         .standing({ headers: forWorkspace(workspaceId) })
         .pipe(Effect.map(Option.some), Effect.timeout("5 seconds"));
     }).pipe(

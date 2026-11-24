@@ -33,7 +33,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "120 seconds" })(
 
         const inSession = yield* bodyOf(
           PostJsonSchema,
-          yield* app.request(posts, {
+          yield* app.request(`${posts}/drafts`, {
             body: draft("A synthetic draft written in the web app."),
             headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           })
@@ -56,7 +56,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "120 seconds" })(
 
         const withKey = yield* bodyOf(
           PostJsonSchema,
-          yield* app.request(posts, {
+          yield* app.request(`${posts}/drafts`, {
             body: draft("A synthetic draft written by a script."),
             headers: {
               authorization: `Bearer ${key}`,

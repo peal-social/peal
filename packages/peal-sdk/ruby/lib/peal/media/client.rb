@@ -388,6 +388,31 @@ module Peal
           raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
         end
       end
+
+      # @return [Peal::Images::Client]
+      def images
+        @images ||= Peal::Media::Images::Client.new(client: @client)
+      end
+
+      # @return [Peal::Voiceovers::Client]
+      def voiceovers
+        @voiceovers ||= Peal::Media::Voiceovers::Client.new(client: @client)
+      end
+
+      # @return [Peal::Transcriptions::Client]
+      def transcriptions
+        @transcriptions ||= Peal::Media::Transcriptions::Client.new(client: @client)
+      end
+
+      # @return [Peal::Videos::Client]
+      def videos
+        @videos ||= Peal::Media::Videos::Client.new(client: @client)
+      end
+
+      # @return [Peal::Slideshows::Client]
+      def slideshows
+        @slideshows ||= Peal::Media::Slideshows::Client.new(client: @client)
+      end
     end
   end
 end

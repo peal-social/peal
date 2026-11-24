@@ -29,7 +29,7 @@ func TestSmoke(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	me, err := c.Session.Me(ctx)
+	me, err := c.Me.Get(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func TestSmoke(t *testing.T) {
 		t.Fatalf("unexpected answer: %+v", me)
 	}
 
-	_, err = client.NewClient(option.WithBaseURL(baseURL), option.WithToken("refused")).Session.Me(ctx)
+	_, err = client.NewClient(option.WithBaseURL(baseURL), option.WithToken("refused")).Me.Get(ctx)
 
 	var apiError *core.APIError
 	if !errors.As(err, &apiError) || apiError.StatusCode != 401 {

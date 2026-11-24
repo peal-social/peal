@@ -145,7 +145,7 @@ export const inWorkspace = (choice: Option.Option<string>) =>
       return { client: yield* bound(workspace.id), url, workspace };
     }
 
-    const me = yield* client.session.me().pipe(
+    const me = yield* client.me.get().pipe(
       Effect.mapError((failure) =>
         // The sign-in was revoked, or its user banned.
         failure._tag === "Forbidden"

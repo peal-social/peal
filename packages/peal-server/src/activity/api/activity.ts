@@ -14,7 +14,7 @@ const decodeCursor = Schema.decodeUnknownOption(ActivityEventIdSchema);
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const ActivityHandlers = HttpApiBuilder.group(
   Api,
-  "activity",
+  "workspace.activity",
   Effect.fn(function* activityHandlers(handlers) {
     const log = yield* ActivityLog;
 

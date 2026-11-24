@@ -260,7 +260,7 @@ export const studioQueuesOf = (world: StudioWorld) => {
     });
 
   const groupLive = (studio: Studio) =>
-    HttpApiBuilder.group(Api, "queues", (handlers) =>
+    HttpApiBuilder.group(Api, "automations.queues", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {

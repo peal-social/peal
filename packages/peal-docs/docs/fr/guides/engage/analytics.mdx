@@ -197,12 +197,12 @@ La page de la publication liste ses liens et leurs clics des 30 derniers jours a
 
 Par l’API, les liens courts ont ces requêtes :
 
-| Requête                      | Ce qu’elle fait                                                                                                                                                                                     | Permission            |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `GET /api/v1/short-links`    | Liste les liens de l’espace de travail par curseur, du plus récent au plus ancien, ceux d’un `postId` ou d’un `channelId`, avec leurs clics de `from` à `to` (jours UTC, 30 par défaut, 92 au plus) | `analytics:read`      |
-| `GET …/short-links/{linkId}` | Donne un lien avec ses clics jour par jour                                                                                                                                                          | `analytics:read`      |
-| `GET …/short-links/status`   | Indique si le serveur a des liens courts                                                                                                                                                            | `post:read`           |
-| `PUT …/short-links/settings` | Règle la valeur par défaut de l’espace de travail                                                                                                                                                   | `organization:update` |
+| Requête                | Ce qu’elle fait                                                                                                                                                                                     | Permission            |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `GET /api/v1/links`    | Liste les liens de l’espace de travail par curseur, du plus récent au plus ancien, ceux d’un `postId` ou d’un `channelId`, avec leurs clics de `from` à `to` (jours UTC, 30 par défaut, 92 au plus) | `analytics:read`      |
+| `GET …/links/{linkId}` | Donne un lien avec ses clics jour par jour                                                                                                                                                          | `analytics:read`      |
+| `GET …/links/status`   | Indique si le serveur a des liens courts                                                                                                                                                            | `post:read`           |
+| `PUT …/links/settings` | Règle la valeur par défaut de l’espace de travail                                                                                                                                                   | `organization:update` |
 
 La [ligne de commande](/developers/cli/workspace#short-links) et les [outils MCP](/developers/mcp/tools#tools) lisent les mêmes.
 

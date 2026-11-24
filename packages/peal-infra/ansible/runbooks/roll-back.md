@@ -17,6 +17,20 @@ database does not know the files uploaded after its restore point. A
 roll-back of the release alone leaves them on; a release older than the
 media sweeps has none, and ignores `PEAL_MEDIA_SWEEPS`.
 
+## Past API namespaces
+
+The release that gave the API its namespaces writes new operation names
+(`posts.tags.create` for `tags.create`, `posts.create` for `posts.send`)
+in the workspaces' activity log, staff's audit log and product
+analytics' `api_operation` events, and answers the API at new paths. The
+release before reads the new names as plain text and shows them as
+written, and writes the old ones again. Nothing fails to decode: there is
+nothing to check before rolling back. Clients written against the new
+paths get 404 from the release before; the web app and the command line
+of that release are its own. An `operation` filter of the activity log
+finds one set of names at a time, and a query over product analytics
+across the release needs both.
+
 ## Past per-channel posts
 
 The release that gives a channel media of its own on a post and takes one

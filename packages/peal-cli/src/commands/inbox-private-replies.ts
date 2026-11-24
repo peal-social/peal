@@ -110,7 +110,7 @@ const send = Command.make(
 
     yield* confirmed({ question: "Send it?", yes: flags.yes });
 
-    const sent = yield* client.inboxMessages
+    const sent = yield* client["inbox.messages"]
       .sendPrivateReply({
         headers: Option.match(flags.idempotencyKey, {
           onNone: () => ({}),
@@ -147,7 +147,7 @@ const show = Command.make(
   Effect.fn("inbox.privateReply.show")(function* showing(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const found = yield* client.inboxMessages
+    const found = yield* client["inbox.messages"]
       .getPrivateReply({
         headers: {},
         params: {
@@ -200,7 +200,7 @@ const confirm = Command.make(
 
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const settled = yield* client.inboxMessages
+    const settled = yield* client["inbox.messages"]
       .confirmPrivateReply({
         headers: {},
         params: {

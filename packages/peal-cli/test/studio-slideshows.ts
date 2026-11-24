@@ -122,7 +122,7 @@ export const studioSlideshowsOf = (world: SlideshowsWorld) => {
     });
 
   const groupLive = (studio: Studio) =>
-    HttpApiBuilder.group(Api, "slideshows", (handlers) =>
+    HttpApiBuilder.group(Api, "media.slideshows", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {

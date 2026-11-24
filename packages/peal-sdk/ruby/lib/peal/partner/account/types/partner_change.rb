@@ -1,0 +1,19 @@
+# frozen_string_literal: true
+
+module Peal
+  module Partner
+    module Account
+      module Types
+        class PartnerChange < Internal::Types::Model
+          field :accent_color, -> { String }, optional: true, nullable: true, api_name: "accentColor"
+
+          field :logo_url, -> { String }, optional: true, nullable: true, api_name: "logoUrl"
+
+          field :name, -> { String }, optional: true, nullable: false
+
+          field :return_origins, -> { Internal::Types::Array[String] }, optional: true, nullable: false, api_name: "returnOrigins"
+        end
+      end
+    end
+  end
+end

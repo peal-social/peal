@@ -13,7 +13,7 @@ import { PealApi } from "#api/client.ts";
 export const queuesChanged = (workspaceId: string) => [`queues:${workspaceId}`];
 
 export const workspaceQueues = Atom.family((workspaceId: string) =>
-  PealApi.query("queues", "list", {
+  PealApi.query("automations.queues", "list", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: [...queuesChanged(workspaceId), "channels"],
   })
@@ -28,23 +28,26 @@ export const queueSlots = (
   queueId: string,
   count: number = shownSlots
 ) =>
-  PealApi.query("queues", "slots", {
+  PealApi.query("automations.queues", "slots", {
     headers: forWorkspace(workspaceId),
     params: { queueId },
     query: { count },
     reactivityKeys: [...queuesChanged(workspaceId), "posts"],
   });
 
-export const createQueue = PealApi.mutation("queues", "create");
+export const createQueue = PealApi.mutation("automations.queues", "create");
 
-export const updateQueue = PealApi.mutation("queues", "update");
+export const updateQueue = PealApi.mutation("automations.queues", "update");
 
-export const deleteQueue = PealApi.mutation("queues", "delete");
+export const deleteQueue = PealApi.mutation("automations.queues", "delete");
 
 export const enqueuePost = PealApi.mutation("posts", "enqueue");
 
 /** Moves a queue's waiting posts onto its slots as they now are. */
-export const reshuffleQueue = PealApi.mutation("queues", "reshuffle");
+export const reshuffleQueue = PealApi.mutation(
+  "automations.queues",
+  "reshuffle"
+);
 
 /**
  * The queue's posts with this status, the first page of them: enough to
@@ -55,7 +58,7 @@ export const queuedPosts = (
   queueId: string,
   status: "awaitingApproval" | "scheduled"
 ) =>
-  PealApi.query("posts", "search", {
+  PealApi.query("posts", "list", {
     headers: forWorkspace(workspaceId),
     query: { limit: maxPostPageSize, queueId, status },
     reactivityKeys: [...queuesChanged(workspaceId), "posts"],

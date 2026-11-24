@@ -664,7 +664,7 @@ const fill = Effect.fn("fill")(function* fill(
   yield* sql`INSERT INTO publishing.feed_reads (workspace_id, window_start, reads)
     VALUES (${workspaceId}, date_trunc('hour', now()), 1)`;
 
-  // The key of the request that made it, as `posts.send` keeps it.
+  // The key of the request that made it, as `posts.create` keeps it.
   yield* sql`INSERT INTO publishing.idempotency_keys (workspace_id, key_digest, request_digest, post_id, created_at)
     VALUES (${workspaceId}, ${randomUUID()}, 'synthetic-digest', ${postId}, now())`;
 
@@ -1071,7 +1071,7 @@ const fillPerson = Effect.fn("fillPerson")(function* fillPerson(
   // Changes staff made as the user, in one of their workspaces, and as
   // someone else, removing the user from a workspace.
   yield* sql`INSERT INTO staff.audit_events (id, action, at, staff_id, target_id, workspace_id, operation, object_ids)
-    VALUES (${uuid7()}, 'impersonatedChange', now(), ${randomUUID()}, ${person.id}, ${randomUUID()}, 'posts.create', ${JSON.stringify({ postId: randomUUID() })}::jsonb),
+    VALUES (${uuid7()}, 'impersonatedChange', now(), ${randomUUID()}, ${person.id}, ${randomUUID()}, 'posts.drafts.create', ${JSON.stringify({ postId: randomUUID() })}::jsonb),
       (${uuid7()}, 'impersonatedChange', now(), ${randomUUID()}, ${randomUUID()}, ${randomUUID()}, 'auth:/organization/remove-member', ${JSON.stringify({ memberIdOrEmail: person.id, postId: randomUUID() })}::jsonb)`;
 
   // A subscription made for the user rather than a workspace, as Better
@@ -1226,7 +1226,7 @@ layer(RetainingLive, {
         // log, as a change someone made.
         assert.isAbove(
           yield* count(
-            sql`SELECT count(*)::int AS count FROM activity.events WHERE workspace_id = ${shared} AND operation = 'apiKeys.create' AND actor_kind = 'user' AND user_id IS NULL AND application_id IS NULL`
+            sql`SELECT count(*)::int AS count FROM activity.events WHERE workspace_id = ${shared} AND operation = 'workspace.apiKeys.create' AND actor_kind = 'user' AND user_id IS NULL AND application_id IS NULL`
           ),
           0
         );

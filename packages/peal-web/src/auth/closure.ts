@@ -25,7 +25,7 @@ export const accountClosure = async (): Promise<AccountClosure> => {
         ),
       });
 
-      return yield* client.account.closure();
+      return yield* client["me.account"].closure();
     }).pipe(Effect.timeout("5 seconds"), Effect.provide(FetchHttpClient.layer))
   );
 };

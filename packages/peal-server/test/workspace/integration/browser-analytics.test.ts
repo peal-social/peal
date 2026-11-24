@@ -406,7 +406,7 @@ layer(
           200
         );
 
-        const named = yield* app.request(posts, {
+        const named = yield* app.request(`${posts}/drafts`, {
           body: draft,
           headers: {
             cookie: person.cookies,
@@ -417,7 +417,7 @@ layer(
 
         assert.strictEqual(named.status, 201);
 
-        const malformed = yield* app.request(posts, {
+        const malformed = yield* app.request(`${posts}/drafts`, {
           body: draft,
           headers: {
             cookie: person.cookies,
@@ -432,7 +432,7 @@ layer(
           "post:create",
         ]);
 
-        const keyed = yield* app.request(posts, {
+        const keyed = yield* app.request(`${posts}/drafts`, {
           body: draft,
           headers: {
             authorization: `Bearer ${token}`,
@@ -446,7 +446,7 @@ layer(
         const created = yield* eventsMatching(
           (event) =>
             event.event === "api_operation" &&
-            event.properties["operation"] === "posts.create" &&
+            event.properties["operation"] === "posts.drafts.create" &&
             event.properties["workspace_id"] === workspaceId,
           3
         );
@@ -484,7 +484,7 @@ layer(
         const posts = `/api/v1/posts`;
 
         const write = () =>
-          app.request(posts, {
+          app.request(`${posts}/drafts`, {
             body: draft,
             headers: {
               cookie: person.cookies,
@@ -501,7 +501,7 @@ layer(
         const created = yield* eventsMatching(
           (event) =>
             event.event === "api_operation" &&
-            event.properties["operation"] === "posts.create" &&
+            event.properties["operation"] === "posts.drafts.create" &&
             event.properties["workspace_id"] === workspaceId,
           2
         );

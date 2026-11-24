@@ -111,8 +111,8 @@ const show = Command.make(
   Effect.fn("review.show")(function* show({ json, postId, workspace: choice }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const thread = yield* client.review
-      .thread({ headers: {}, params: { postId } })
+    const thread = yield* client.approvals
+      .get({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -203,7 +203,7 @@ const comment = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const written = yield* client.review
+    const written = yield* client.approvals
       .comment({
         headers: {},
         params: { postId },
@@ -245,8 +245,8 @@ const links = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const made = yield* client.review
-      .links({ headers: {}, params: { postId } })
+    const made = yield* client.approvals
+      .listLinks({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -320,7 +320,7 @@ const link = Command.make(
         )
       : Effect.void;
 
-    const made = yield* client.review
+    const made = yield* client.approvals
       .createLink({
         headers: {},
         params: { postId },
@@ -368,7 +368,7 @@ const revoke = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const revoked = yield* client.review
+    const revoked = yield* client.approvals
       .revokeLink({ headers: {}, params: { linkId } })
       .pipe(Effect.mapError(explain(url)));
 

@@ -38,7 +38,7 @@ export const workspaceFollowUps = Atom.family((workspaceId: string) =>
     PealApi.runtime.atom(
       PealApi.use((client) =>
         everyFollowUpRule((cursor) =>
-          client.followUps.list({
+          client["automations.followUps"].list({
             headers: forWorkspace(workspaceId),
             query:
               cursor === undefined
@@ -51,10 +51,19 @@ export const workspaceFollowUps = Atom.family((workspaceId: string) =>
   )
 );
 
-export const startFollowUp = PealApi.mutation("followUps", "create");
+export const startFollowUp = PealApi.mutation(
+  "automations.followUps",
+  "create"
+);
 
-export const updateFollowUp = PealApi.mutation("followUps", "update");
+export const updateFollowUp = PealApi.mutation(
+  "automations.followUps",
+  "update"
+);
 
-export const approveFollowUp = PealApi.mutation("followUps", "approve");
+export const approveFollowUp = PealApi.mutation(
+  "automations.followUps",
+  "approve"
+);
 
-export const stopFollowUp = PealApi.mutation("followUps", "delete");
+export const stopFollowUp = PealApi.mutation("automations.followUps", "delete");

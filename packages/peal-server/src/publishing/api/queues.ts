@@ -101,7 +101,7 @@ export const queueDetailsFrom = ({
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const QueuesHandlers = HttpApiBuilder.group(
   Api,
-  "queues",
+  "automations.queues",
   Effect.fn(function* queuesHandlers(handlers) {
     const queues = yield* Queues;
     const scheduling = yield* PostScheduling;

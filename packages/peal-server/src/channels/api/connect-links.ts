@@ -36,7 +36,7 @@ const noChannel = () => Effect.fail(new ChannelNotFound());
 
 export const ConnectLinksHandlers = HttpApiBuilder.group(
   Api,
-  "connectLinks",
+  "channels.connectLinks",
   Effect.fn(function* connectLinksHandlers(handlers) {
     const links = yield* ConnectLinks;
 

@@ -4,9 +4,13 @@
 package social.peal.resources.partner;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
+import social.peal.core.Suppliers;
+import social.peal.resources.partner.account.AsyncAccountClient;
+import social.peal.resources.partner.customerusage.AsyncCustomerUsageClient;
 import social.peal.resources.partner.requests.ChannelMove;
 import social.peal.resources.partner.requests.CustomerWorkspaceChange;
 import social.peal.resources.partner.requests.DeleteWorkspacePartnerRequest;
@@ -25,9 +29,15 @@ public class AsyncPartnerClient {
 
     private final AsyncRawPartnerClient rawClient;
 
+    protected final Supplier<AsyncAccountClient> accountClient;
+
+    protected final Supplier<AsyncCustomerUsageClient> customerUsageClient;
+
     public AsyncPartnerClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.rawClient = new AsyncRawPartnerClient(clientOptions);
+        this.accountClient = Suppliers.memoize(() -> new AsyncAccountClient(clientOptions));
+        this.customerUsageClient = Suppliers.memoize(() -> new AsyncCustomerUsageClient(clientOptions));
     }
 
     /**
@@ -40,8 +50,8 @@ public class AsyncPartnerClient {
     /**
      * The partner account the key belongs to, with what it holds: the workspaces it owns and the channels connected across them and its home workspace, now and at the end of each of the last 35 days (UTC). Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
      */
-    public CompletableFuture<PartnerOverview> account() {
-        CompletableFuture<PealClientHttpResponse<PartnerOverview>> rawFuture = this.rawClient.account();
+    public CompletableFuture<PartnerOverview> get() {
+        CompletableFuture<PealClientHttpResponse<PartnerOverview>> rawFuture = this.rawClient.get();
         CompletableFuture<PartnerOverview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -54,8 +64,8 @@ public class AsyncPartnerClient {
     /**
      * The partner account the key belongs to, with what it holds: the workspaces it owns and the channels connected across them and its home workspace, now and at the end of each of the last 35 days (UTC). Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
      */
-    public CompletableFuture<PartnerOverview> account(RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<PartnerOverview>> rawFuture = this.rawClient.account(requestOptions);
+    public CompletableFuture<PartnerOverview> get(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<PartnerOverview>> rawFuture = this.rawClient.get(requestOptions);
         CompletableFuture<PartnerOverview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -424,5 +434,13 @@ public class AsyncPartnerClient {
             }
         });
         return future;
+    }
+
+    public AsyncAccountClient account() {
+        return this.accountClient.get();
+    }
+
+    public AsyncCustomerUsageClient customerUsage() {
+        return this.customerUsageClient.get();
     }
 }

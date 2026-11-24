@@ -30,15 +30,10 @@ class BadRequestErrorBody_InvalidDateRange(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-class BadRequestErrorBody_WorkspaceRequired(UniversalBaseModel):
+class BadRequestErrorBody_BadRequest(UniversalBaseModel):
     type: typing_extensions.Annotated[
-        typing.Literal["WorkspaceRequired"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
-    ] = "WorkspaceRequired"
-    code: typing.Optional[str] = None
-    message: typing.Optional[str] = None
-    request_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="requestId"), pydantic.Field(alias="requestId")
-    ] = None
+        typing.Literal["BadRequest"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "BadRequest"
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
@@ -51,6 +46,6 @@ class BadRequestErrorBody_WorkspaceRequired(UniversalBaseModel):
 
 
 BadRequestErrorBody = typing_extensions.Annotated[
-    typing.Union[BadRequestErrorBody_InvalidDateRange, BadRequestErrorBody_WorkspaceRequired],
+    typing.Union[BadRequestErrorBody_InvalidDateRange, BadRequestErrorBody_BadRequest],
     pydantic.Field(discriminator="type"),
 ]

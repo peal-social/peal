@@ -38,7 +38,7 @@ const channelIdFrom = (raw: string) =>
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const ChannelDefaultsHandlers = HttpApiBuilder.group(
   Api,
-  "channelDefaults",
+  "channels.defaultOptions",
   Effect.fn(function* channelDefaultsHandlers(handlers) {
     const defaults = yield* ChannelDefaults;
 

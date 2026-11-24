@@ -12,14 +12,14 @@ export const signaturesChanged = (workspaceId: string) => [
 ];
 
 export const workspaceSignatures = Atom.family((workspaceId: string) =>
-  PealApi.query("signatures", "list", {
+  PealApi.query("posts.signatures", "list", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: signaturesChanged(workspaceId),
   })
 );
 
-export const createSignature = PealApi.mutation("signatures", "create");
+export const createSignature = PealApi.mutation("posts.signatures", "create");
 
-export const updateSignature = PealApi.mutation("signatures", "update");
+export const updateSignature = PealApi.mutation("posts.signatures", "update");
 
-export const deleteSignature = PealApi.mutation("signatures", "delete");
+export const deleteSignature = PealApi.mutation("posts.signatures", "delete");

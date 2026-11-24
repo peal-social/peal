@@ -2810,7 +2810,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The owner asks that every post waits, then writes two posts and
           // asks for them to go out: in person, and with an API key.
-          yield* app.request(`${base}/review/settings`, {
+          yield* app.request(`${base}/approvals/settings`, {
             body: { approvalPolicy: "always" },
             headers: { ...headers, ...forWorkspace(workspaceId) },
             method: "PUT",
@@ -2828,7 +2828,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           ) {
             const draft = yield* bodyOf(
               PostJsonSchema,
-              yield* app.request(`${base}/posts`, {
+              yield* app.request(`${base}/posts/drafts`, {
                 body: {
                   channelIds: [fixture.channelId],
                   content: content("A synthetic post that waits."),
@@ -2968,7 +2968,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           // Back to never, for the tests that follow.
-          yield* app.request(`${base}/review/settings`, {
+          yield* app.request(`${base}/approvals/settings`, {
             body: { approvalPolicy: "never" },
             headers: { ...headers, ...forWorkspace(workspaceId) },
             method: "PUT",

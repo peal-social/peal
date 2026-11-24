@@ -167,7 +167,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Each workspace's log says the channel left, or came.
           for (const workspaceId of [from.id, to.id]) {
-            const log = yield* app.request(`/api/v1/activity`, {
+            const log = yield* app.request(`/api/v1/workspace/activity`, {
               headers: { ...bearer(key), ...forWorkspace(workspaceId) },
             });
 

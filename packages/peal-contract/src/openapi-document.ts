@@ -169,15 +169,303 @@ const webhooks = (): PealOpenApiDocument["webhooks"] => {
   return Object.fromEntries(entries);
 };
 
+/** How the reference shows a top-level namespace. */
+interface NamespaceTag {
+  readonly description: string;
+  readonly name: string;
+}
+
+/**
+ * How the reference shows each top-level namespace: its name and what it
+ * holds. A group's identifier is its namespace (`inbox.messages`), and its
+ * operations are filed under the first segment (`inbox`).
+ */
+export const namespaceTags = new Map<string, NamespaceTag>([
+  [
+    "ads",
+    {
+      description: "Connect ad accounts, read how ads did, and boost posts.",
+      name: "Ads",
+    },
+  ],
+  [
+    "analytics",
+    {
+      description: "How posts and channels did.",
+      name: "Analytics",
+    },
+  ],
+  [
+    "approvals",
+    {
+      description:
+        "Posts that wait for an approval: comments, approvals, requested changes and review links.",
+      name: "Approvals",
+    },
+  ],
+  [
+    "articles",
+    {
+      description: "Articles published to the websites connected as channels.",
+      name: "Articles",
+    },
+  ],
+  [
+    "assistant",
+    {
+      description:
+        "Suggestions for a post's text, and the AI providers and models a workspace uses.",
+      name: "Assistant",
+    },
+  ],
+  [
+    "automations",
+    {
+      description:
+        "Queues, recycling, follow-ups, comment rules and feeds, which post or answer on their own.",
+      name: "Automations",
+    },
+  ],
+  [
+    "billingAccountsDesk",
+    {
+      description: "Billing accounts, for Peal's staff.",
+      name: "Billing accounts desk",
+    },
+  ],
+  [
+    "captcha",
+    {
+      description: "The challenge a browser solves before signing up.",
+      name: "Captcha",
+    },
+  ],
+  [
+    "channelOAuth",
+    {
+      description: "What platforms read to let a channel sign in.",
+      name: "Channel sign-in",
+    },
+  ],
+  [
+    "channels",
+    {
+      description:
+        "The accounts and websites a workspace posts to, what each takes, and their default options.",
+      name: "Channels",
+    },
+  ],
+  [
+    "clientErrors",
+    {
+      description: "Errors the web app reports.",
+      name: "Client errors",
+    },
+  ],
+  [
+    "contractRequests",
+    {
+      description: "Requests to end or change a contract.",
+      name: "Contract requests",
+    },
+  ],
+  [
+    "contractRequestsDesk",
+    {
+      description: "Contract requests, for Peal's staff.",
+      name: "Contract requests desk",
+    },
+  ],
+  [
+    "credential",
+    {
+      description: "What the credential of a request is, and what it may do.",
+      name: "Credential",
+    },
+  ],
+  [
+    "dataDeletion",
+    {
+      description: "Platforms' requests to delete a person's data.",
+      name: "Data deletion",
+    },
+  ],
+  [
+    "hostedConnect",
+    {
+      description: "The page a connect link opens.",
+      name: "Hosted connect",
+    },
+  ],
+  [
+    "inbox",
+    {
+      description:
+        "Comments, direct messages and reviews, and the answers to them.",
+      name: "Inbox",
+    },
+  ],
+  [
+    "legal",
+    {
+      description: "Requests from authorities, for Peal's staff.",
+      name: "Legal",
+    },
+  ],
+  [
+    "links",
+    {
+      description: "The short links in posts, and how often they were opened.",
+      name: "Links",
+    },
+  ],
+  [
+    "me",
+    {
+      description:
+        "The person signed in: their notices, notification preferences and account.",
+      name: "Me",
+    },
+  ],
+  [
+    "media",
+    {
+      description:
+        "The media library: uploads, and images, voice-overs, transcripts, videos and slideshows made for it.",
+      name: "Media",
+    },
+  ],
+  [
+    "partner",
+    {
+      description:
+        "A partner's customer workspaces, its usage, and the partner account itself.",
+      name: "Partner",
+    },
+  ],
+  [
+    "posts",
+    {
+      description:
+        "Posts, from draft to published, with their tags and signatures.",
+      name: "Posts",
+    },
+  ],
+  [
+    "reviewLink",
+    {
+      description: "The page a review link opens.",
+      name: "Review link",
+    },
+  ],
+  [
+    "staff",
+    {
+      description: "The staff console.",
+      name: "Staff",
+    },
+  ],
+  [
+    "system",
+    {
+      description: "Health checks and the API's changelog.",
+      name: "System",
+    },
+  ],
+  [
+    "webhooks",
+    {
+      description: "The endpoints a workspace's events are sent to.",
+      name: "Webhook endpoints",
+    },
+  ],
+  [
+    "workspace",
+    {
+      description:
+        "The workspace itself: members, invitations, API keys, activity, billing and usage.",
+      name: "Workspace",
+    },
+  ],
+]);
+
+const methodNames: readonly OpenApi.OpenAPISpecMethodName[] = [
+  "get",
+  "put",
+  "post",
+  "delete",
+  "options",
+  "head",
+  "patch",
+  "trace",
+];
+
+// The operation's top-level namespace, or its group's tag for an operation
+// whose id holds none (the health checks).
+const tagOf = (operation: OpenApi.OpenAPISpecOperation): string => {
+  const dot = operation.operationId.indexOf(".");
+
+  return dot === -1 ? operation.tags[0] : operation.operationId.slice(0, dot);
+};
+
+/**
+ * The document with each operation filed under its top-level namespace,
+ * and those tags listed once each, in the order they first come, with the
+ * name and description `namespaceTags` gives them.
+ */
+const byNamespace = (document: OpenApi.OpenAPISpec): OpenApi.OpenAPISpec => {
+  const seen: string[] = [];
+
+  const filed = (
+    item: OpenApi.OpenAPISpecPathItem
+  ): OpenApi.OpenAPISpecPathItem => {
+    const copy = { ...item };
+
+    for (const method of methodNames) {
+      const operation = item[method];
+
+      if (operation !== undefined) {
+        const tag = tagOf(operation);
+
+        if (!seen.includes(tag)) {
+          seen.push(tag);
+        }
+
+        copy[method] = { ...operation, tags: [tag] };
+      }
+    }
+
+    return copy;
+  };
+
+  const paths = Object.fromEntries(
+    Object.entries(document.paths).map(([path, item]) => [path, filed(item)])
+  );
+
+  return {
+    ...document,
+    paths,
+    tags: seen.map((name) => {
+      const shown = namespaceTags.get(name);
+
+      return shown === undefined
+        ? { name }
+        : { description: shown.description, name, "x-displayName": shown.name };
+    }),
+  };
+};
+
 /**
  * The OpenAPI 3.1 document of the API and of the events it sends: what the
  * contract writes to `openapi.json` and the server serves.
  */
 export const openApiDocument = (): PealOpenApiDocument => ({
-  ...OpenApi.fromApi(
-    Api.annotate(
-      HttpApi.AdditionalSchemas,
-      payloads.map(({ schema }) => schema)
+  ...byNamespace(
+    OpenApi.fromApi(
+      Api.annotate(
+        HttpApi.AdditionalSchemas,
+        payloads.map(({ schema }) => schema)
+      )
     )
   ),
   webhooks: webhooks(),

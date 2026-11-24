@@ -9,9 +9,11 @@ module Peal
 
       discriminant :type
 
-      member -> { Peal::Types::FollowUpRuleTakenEncoded }, key: "FOLLOW_UP_RULE_TAKEN"
+      member -> { Peal::Types::ChannelAccountTakenEncoded }, key: "CHANNEL_ACCOUNT_TAKEN"
 
-      member -> { Peal::Types::TooManyFollowUpRulesEncoded }, key: "TOO_MANY_FOLLOW_UP_RULES"
+      member -> { Peal::Types::IdempotencyKeyReusedEncoded }, key: "IDEMPOTENCY_KEY_REUSED"
+
+      member -> { Peal::Types::WorkspaceBusyEncoded }, key: "WORKSPACE_BUSY"
     end
   end
 end

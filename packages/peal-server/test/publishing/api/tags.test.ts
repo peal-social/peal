@@ -15,6 +15,7 @@ import {
 } from "peal-contract";
 import type { Member, PostContent } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { TagsHandlers } from "#publishing/api/tags.ts";
 import { newId } from "#shared/application/ids.ts";
@@ -32,10 +33,10 @@ const timeout = 60_000;
 const start = "2026-06-15T07:00:00Z";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["posts", "tags"]).pipe(
+  HttpApiTest.groups(Api, ["posts", "posts.drafts", "posts.tags"]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        Layer.merge(PostsHandlers, TagsHandlers).pipe(
+        Layer.mergeAll(PostsHandlers, PostDraftsHandlers, TagsHandlers).pipe(
           Layer.provideMerge(securityTest(member))
         ),
         HttpServer.layerServices
@@ -81,17 +82,17 @@ describe("the tags endpoints", () => {
         Effect.gen(function* lists() {
           const { editor, headers, viewer } = yield* studio;
 
-          const launch = yield* editor.tags.create({
+          const launch = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "blue", name: "Launch" },
           });
 
-          const hiring = yield* editor.tags.create({
+          const hiring = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "green", name: "Hiring" },
           });
 
-          const listed = yield* viewer.tags.list({ headers });
+          const listed = yield* viewer["posts.tags"].list({ headers });
 
           assert.deepStrictEqual(
             listed.map(({ colour, id, name }) => ({ colour, id, name })),
@@ -113,23 +114,23 @@ describe("the tags endpoints", () => {
         Effect.gen(function* refusesTwice() {
           const { editor, headers } = yield* studio;
 
-          const launch = yield* editor.tags.create({
+          const launch = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "blue", name: "Launch" },
           });
 
-          const again = yield* editor.tags
+          const again = yield* editor["posts.tags"]
             .create({ headers, payload: { colour: "red", name: "LAUNCH" } })
             .pipe(Effect.flip);
 
           assert.instanceOf(again, TagNameTaken);
 
-          const hiring = yield* editor.tags.create({
+          const hiring = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "green", name: "Hiring" },
           });
 
-          const renamed = yield* editor.tags
+          const renamed = yield* editor["posts.tags"]
             .update({
               headers,
               params: { tagId: hiring.id },
@@ -140,7 +141,7 @@ describe("the tags endpoints", () => {
           assert.instanceOf(renamed, TagNameTaken);
 
           // Its own name, in another case and colour, is no other tag's.
-          const recased = yield* editor.tags.update({
+          const recased = yield* editor["posts.tags"].update({
             headers,
             params: { tagId: launch.id },
             payload: { colour: "pink", name: "LAUNCH" },
@@ -163,25 +164,25 @@ describe("the tags endpoints", () => {
           const { editor, headers, viewer } = yield* studio;
           const other = yield* studio;
 
-          const tag = yield* editor.tags.create({
+          const tag = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "blue", name: "Launch" },
           });
 
-          const made = yield* viewer.tags
+          const made = yield* viewer["posts.tags"]
             .create({ headers, payload: { colour: "red", name: "Mine" } })
             .pipe(Effect.flip);
 
           assert.instanceOf(made, Forbidden);
 
-          const dropped = yield* viewer.tags
+          const dropped = yield* viewer["posts.tags"]
             .delete({ headers, params: { tagId: tag.id } })
             .pipe(Effect.flip);
 
           assert.instanceOf(dropped, Forbidden);
 
           // Another workspace's tag is no tag here.
-          const elsewhere = yield* other.editor.tags
+          const elsewhere = yield* other.editor["posts.tags"]
             .update({
               headers: other.headers,
               params: { tagId: tag.id },
@@ -191,7 +192,7 @@ describe("the tags endpoints", () => {
 
           assert.instanceOf(elsewhere, TagNotFound);
 
-          const malformed = yield* editor.tags
+          const malformed = yield* editor["posts.tags"]
             .delete({ headers, params: { tagId: "not-an-id" } })
             .pipe(Effect.flip);
 
@@ -212,14 +213,14 @@ describe("the tags endpoints", () => {
           yield* Effect.forEach(
             Array.from({ length: maxTagsPerWorkspace }, (_, at) => at),
             (at) =>
-              editor.tags.create({
+              editor["posts.tags"].create({
                 headers,
                 payload: { colour: "gray", name: `Tag ${String(at)}` },
               }),
             { discard: true }
           );
 
-          const over = yield* editor.tags
+          const over = yield* editor["posts.tags"]
             .create({ headers, payload: { colour: "gray", name: "One more" } })
             .pipe(Effect.flip);
 
@@ -240,17 +241,17 @@ describe("a post's tags", () => {
         Effect.gen(function* tags() {
           const { editor, mastodon, headers } = yield* studio;
 
-          const launch = yield* editor.tags.create({
+          const launch = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "blue", name: "Launch" },
           });
 
-          const hiring = yield* editor.tags.create({
+          const hiring = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "green", name: "Hiring" },
           });
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [mastodon],
@@ -282,7 +283,7 @@ describe("a post's tags", () => {
 
           assert.deepStrictEqual(retagged.tagIds, [hiring.id, launch.id]);
 
-          const sent = yield* editor.posts.send({
+          const sent = yield* editor.posts.create({
             headers,
             payload: {
               channelIds: [mastodon],
@@ -300,7 +301,7 @@ describe("a post's tags", () => {
           assert.deepStrictEqual(sent.tagIds, [hiring.id]);
 
           // A scheduled post is tagged as it stands: nothing else changes.
-          const filed = yield* editor.posts.tag({
+          const filed = yield* editor.posts.setTags({
             headers,
             params: { postId: sent.id },
             payload: { tagIds: [launch.id] },
@@ -335,12 +336,12 @@ describe("a post's tags", () => {
           const { editor, mastodon, headers, viewer } = yield* studio;
           const other = yield* studio;
 
-          const theirs = yield* other.editor.tags.create({
+          const theirs = yield* other.editor["posts.tags"].create({
             headers: other.headers,
             payload: { colour: "blue", name: "Theirs" },
           });
 
-          const created = yield* editor.posts
+          const created = yield* editor["posts.drafts"]
             .create({
               headers,
               payload: {
@@ -354,17 +355,20 @@ describe("a post's tags", () => {
           assert.instanceOf(created, UnknownTags);
           assert.deepStrictEqual(created.tagIds, [theirs.id]);
 
-          const drafts = yield* editor.posts.drafts({ headers, query: {} });
+          const drafts = yield* editor["posts.drafts"].list({
+            headers,
+            query: {},
+          });
 
           assert.deepStrictEqual(drafts.items, []);
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers,
             payload: { channelIds: [], content: text("A draft") },
           });
 
           const filed = yield* editor.posts
-            .tag({
+            .setTags({
               headers,
               params: { postId: draft.id },
               payload: { tagIds: ["not-an-id"] },
@@ -374,7 +378,7 @@ describe("a post's tags", () => {
           assert.instanceOf(filed, UnknownTags);
 
           const byViewer = yield* viewer.posts
-            .tag({
+            .setTags({
               headers,
               params: { postId: draft.id },
               payload: { tagIds: [] },
@@ -384,7 +388,7 @@ describe("a post's tags", () => {
           assert.instanceOf(byViewer, Forbidden);
 
           const elsewhere = yield* other.editor.posts
-            .tag({
+            .setTags({
               headers: other.headers,
               params: { postId: draft.id },
               payload: { tagIds: [theirs.id] },
@@ -405,17 +409,17 @@ describe("a post's tags", () => {
         Effect.gen(function* deletes() {
           const { editor, headers } = yield* studio;
 
-          const launch = yield* editor.tags.create({
+          const launch = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "blue", name: "Launch" },
           });
 
-          const hiring = yield* editor.tags.create({
+          const hiring = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "green", name: "Hiring" },
           });
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [],
@@ -424,7 +428,7 @@ describe("a post's tags", () => {
             },
           });
 
-          yield* editor.tags.delete({
+          yield* editor["posts.tags"].delete({
             headers,
             params: { tagId: launch.id },
           });
@@ -436,7 +440,7 @@ describe("a post's tags", () => {
 
           assert.deepStrictEqual(read.tagIds, [hiring.id]);
 
-          const left = yield* editor.tags.list({ headers });
+          const left = yield* editor["posts.tags"].list({ headers });
 
           assert.deepStrictEqual(
             left.map(({ id }) => id),
@@ -455,12 +459,12 @@ describe("a post's tags", () => {
         Effect.gen(function* duplicates() {
           const { editor, mastodon, headers, viewer } = yield* studio;
 
-          const launch = yield* editor.tags.create({
+          const launch = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "blue", name: "Launch" },
           });
 
-          const sent = yield* editor.posts.send({
+          const sent = yield* editor.posts.create({
             headers,
             payload: {
               channelIds: [mastodon],
@@ -513,18 +517,18 @@ describe("a post's tags", () => {
         Effect.gen(function* searches() {
           const { editor, headers } = yield* studio;
 
-          const launch = yield* editor.tags.create({
+          const launch = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "blue", name: "Launch" },
           });
 
-          const hiring = yield* editor.tags.create({
+          const hiring = yield* editor["posts.tags"].create({
             headers,
             payload: { colour: "green", name: "Hiring" },
           });
 
           const draft = (body: string, tagIds: readonly string[]) =>
-            editor.posts.create({
+            editor["posts.drafts"].create({
               headers,
               payload: { channelIds: [], content: text(body), tagIds },
             });
@@ -534,7 +538,7 @@ describe("a post's tags", () => {
 
           yield* draft("Three", []);
 
-          const launched = yield* editor.posts.search({
+          const launched = yield* editor.posts.list({
             headers,
             query: { tagId: launch.id },
           });
@@ -544,7 +548,7 @@ describe("a post's tags", () => {
             [two.id, one.id]
           );
 
-          const hired = yield* editor.posts.search({
+          const hired = yield* editor.posts.list({
             headers,
             query: { status: "draft", tagId: hiring.id },
           });
@@ -555,7 +559,7 @@ describe("a post's tags", () => {
           );
 
           // An id that names no tag is on no post.
-          const none = yield* editor.posts.search({
+          const none = yield* editor.posts.list({
             headers,
             query: { tagId: "not-an-id" },
           });

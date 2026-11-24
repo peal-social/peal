@@ -15,6 +15,8 @@ describe(bodyLimitFor, () => {
     for (const path of [
       "/api/v1/posts/bulk",
       "/api/v1/posts",
+      "/api/v1/posts/drafts",
+      "/api/v1/posts/p1/schedule",
       "/api/v1/articles/x",
       "/api/mcp",
     ]) {
@@ -24,7 +26,12 @@ describe(bodyLimitFor, () => {
 
   it("takes the rest in 1 MiB", () => {
     for (const path of [
-      "/api/v1/tags",
+      "/api/v1/posts/tags",
+      "/api/v1/posts/tags/t1",
+      "/api/v1/posts/signatures",
+      "/api/v1/posts/signatures/s1",
+      "/api/v1/approvals/p1/comments",
+      "/api/v1/approvals/settings",
       "/api/v1/postsearch",
       "/api/auth/sign-in/email",
       "/api/data-deletion/facebook",

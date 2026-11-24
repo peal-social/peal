@@ -144,7 +144,7 @@ const filterOf = <A>(
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const InboxMessagesHandlers = HttpApiBuilder.group(
   Api,
-  "inboxMessages",
+  "inbox.messages",
   Effect.fn(function* inboxMessagesHandlers(handlers) {
     const messages = yield* EngagementMessages;
     const settings = yield* MessageSettings;
@@ -228,7 +228,7 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
               })
             );
         }),
-      confirmMessage: ({ params, payload }) =>
+      confirm: ({ params, payload }) =>
         Effect.gen(function* confirmMessage() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -274,7 +274,7 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
               })
             );
         }),
-      getMessageSettings: () =>
+      getSettings: () =>
         Effect.gen(function* getMessageSettings() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -287,7 +287,7 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
             })
           );
         }),
-      setChannelMessages: ({ params, payload }) =>
+      setChannel: ({ params, payload }) =>
         Effect.gen(function* setChannelMessages() {
           const actor = actorOf(yield* CurrentMember);
           const channelId = decodeChannelId(params.channelId);
@@ -311,7 +311,7 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
               })
             );
         }),
-      setMessageApplication: ({ payload }) =>
+      setApplication: ({ payload }) =>
         Effect.gen(function* setMessageApplication() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -346,7 +346,7 @@ export const InboxMessagesHandlers = HttpApiBuilder.group(
               })
             );
         }),
-      sendMessage: ({ headers, params, payload }) =>
+      send: ({ headers, params, payload }) =>
         Effect.gen(function* sendMessage() {
           const member = yield* CurrentMember;
           const actor = actorOf(member);

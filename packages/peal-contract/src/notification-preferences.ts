@@ -68,7 +68,7 @@ export type NotificationPreferencesChange =
 
 /** The signed-in user's notification preferences. */
 export class NotificationPreferencesApi extends HttpApiGroup.make(
-  "notificationPreferences"
+  "me.notificationPreferences"
 )
   .add(
     HttpApiEndpoint.get("get", "/", {

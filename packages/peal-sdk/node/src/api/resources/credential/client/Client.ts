@@ -16,6 +16,9 @@ export declare namespace CredentialClient {
     }
 }
 
+/**
+ * What the credential of a request is, and what it may do.
+ */
 export class CredentialClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<CredentialClient.Options>;
 

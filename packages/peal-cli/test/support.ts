@@ -220,14 +220,14 @@ const signedInGroupsLive = (
 ) =>
   Layer.mergeAll(
     studioGroupsLive(studio),
-    HttpApiBuilder.group(Api, "apiKeys", (handlers) =>
+    HttpApiBuilder.group(Api, "workspace.apiKeys", (handlers) =>
       handlers.handleAll({
         create: () => refusing,
         list: () => refusing,
         revoke: () => refusing,
       })
     ),
-    HttpApiBuilder.group(Api, "notices", (handlers) =>
+    HttpApiBuilder.group(Api, "me.notices", (handlers) =>
       handlers.handleAll({
         list: () => refusing,
         markAllRead: () => refusing,
@@ -235,13 +235,13 @@ const signedInGroupsLive = (
         unread: () => refusing,
       })
     ),
-    HttpApiBuilder.group(Api, "notificationPreferences", (handlers) =>
+    HttpApiBuilder.group(Api, "me.notificationPreferences", (handlers) =>
       handlers.handleAll({ get: () => refusing, update: () => refusing })
     ),
-    HttpApiBuilder.group(Api, "browserAnalytics", (handlers) =>
+    HttpApiBuilder.group(Api, "me.browserAnalytics", (handlers) =>
       handlers.handleAll({ setConsent: () => refusing })
     ),
-    HttpApiBuilder.group(Api, "workspaces", (handlers) =>
+    HttpApiBuilder.group(Api, "workspace", (handlers) =>
       handlers.handleAll({
         delete: () => refusing,
         secure: () => refusing,
@@ -250,7 +250,7 @@ const signedInGroupsLive = (
     ),
     HttpApiBuilder.group(Api, "partner", (handlers) =>
       handlers.handleAll({
-        account: () => refusing,
+        get: () => refusing,
         createWorkspace: () => refusing,
         deleteWorkspace: () => refusing,
         getWorkspace: () => refusing,
@@ -262,10 +262,10 @@ const signedInGroupsLive = (
     ),
     // The partner API takes a partner key, which the command line never
     // holds.
-    HttpApiBuilder.group(Api, "partnerUsage", (handlers) =>
+    HttpApiBuilder.group(Api, "partner.customerUsage", (handlers) =>
       handlers.handleAll({ get: () => refusing })
     ),
-    HttpApiBuilder.group(Api, "billingActions", (handlers) =>
+    HttpApiBuilder.group(Api, "workspace.billingActions", (handlers) =>
       handlers.handleAll({
         acceptTransfer: () => refusing,
         cancel: () => refusing,

@@ -125,7 +125,7 @@ const clientWith = (
     new Set()
   ).takesParts
 ) =>
-  HttpApiTest.groups(Api, ["capabilities"]).pipe(
+  HttpApiTest.groups(Api, ["channels.capabilities"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         CapabilitiesHandlers.pipe(
@@ -192,7 +192,7 @@ describe("the platforms' capabilities endpoint", () => {
       Effect.gen(function* livePosts() {
         const client = yield* clientWith(viewer);
 
-        const all = yield* client.capabilities.platforms({
+        const all = yield* client["channels.capabilities"].platforms({
           headers: forWorkspace(workspaceId),
         });
 
@@ -225,7 +225,7 @@ describe("the platforms' capabilities endpoint", () => {
     Effect.gen(function* everyPlatform() {
       const client = yield* clientWith(viewer);
 
-      const all = yield* client.capabilities.platforms({
+      const all = yield* client["channels.capabilities"].platforms({
         headers: forWorkspace(workspaceId),
       });
 
@@ -313,7 +313,7 @@ describe("the platforms' capabilities endpoint", () => {
           threadedPlatformsWith(false, new Set()).takesParts
         );
 
-        const all = yield* client.capabilities.platforms({
+        const all = yield* client["channels.capabilities"].platforms({
           headers: forWorkspace(workspaceId),
         });
 
@@ -330,7 +330,7 @@ describe("the platforms' capabilities endpoint", () => {
     Effect.gen(function* polls() {
       const client = yield* clientWith(viewer, ready);
 
-      const all = yield* client.capabilities.platforms({
+      const all = yield* client["channels.capabilities"].platforms({
         headers: forWorkspace(workspaceId),
       });
 
@@ -370,7 +370,7 @@ describe("the platforms' capabilities endpoint", () => {
           ).takesParts
         );
 
-        const all = yield* client.capabilities.platforms({
+        const all = yield* client["channels.capabilities"].platforms({
           headers: forWorkspace(workspaceId),
         });
 
@@ -413,7 +413,7 @@ describe("the platforms' capabilities endpoint", () => {
       Effect.gen(function* kinds() {
         const client = yield* clientWith(viewer);
 
-        const all = yield* client.capabilities.platforms({
+        const all = yield* client["channels.capabilities"].platforms({
           headers: forWorkspace(workspaceId),
         });
 
@@ -433,7 +433,7 @@ describe("the platforms' capabilities endpoint", () => {
     Effect.gen(function* media() {
       const client = yield* clientWith(viewer);
 
-      const all = yield* client.capabilities.platforms({
+      const all = yield* client["channels.capabilities"].platforms({
         headers: forWorkspace(workspaceId),
       });
 
@@ -514,7 +514,7 @@ describe("the platforms' capabilities endpoint", () => {
       Effect.gen(function* options() {
         const client = yield* clientWith(viewer);
 
-        const all = yield* client.capabilities.platforms({
+        const all = yield* client["channels.capabilities"].platforms({
           headers: forWorkspace(workspaceId),
         });
 
@@ -560,7 +560,7 @@ describe("the platforms' capabilities endpoint", () => {
     Effect.gen(function* refused() {
       const client = yield* clientWith(stranger);
 
-      const error = yield* client.capabilities
+      const error = yield* client["channels.capabilities"]
         .platforms({ headers: forWorkspace(workspaceId) })
         .pipe(Effect.flip);
 
@@ -574,7 +574,7 @@ describe("a channel's capabilities endpoint", () => {
     Effect.gen(function* restricted() {
       const client = yield* clientWith(viewer);
 
-      const described = yield* client.capabilities.channel({
+      const described = yield* client["channels.capabilities"].get({
         headers: forWorkspace(workspaceId),
         params: { channelId: onTikTok },
       });
@@ -609,7 +609,7 @@ describe("a channel's capabilities endpoint", () => {
         Effect.succeed({ _tag: "blocked", reason: "postLimit" })
       );
 
-      const described = yield* client.capabilities.channel({
+      const described = yield* client["channels.capabilities"].get({
         headers: forWorkspace(workspaceId),
         params: { channelId: onTikTok },
       });
@@ -642,7 +642,7 @@ describe("a channel's capabilities endpoint", () => {
           (failure) =>
             clientWith(viewer, Effect.fail(failure)).pipe(
               Effect.flatMap((client) =>
-                client.capabilities.channel({
+                client["channels.capabilities"].get({
                   headers: forWorkspace(workspaceId),
                   params: { channelId: onTikTok },
                 })
@@ -676,7 +676,7 @@ describe("a channel's capabilities endpoint", () => {
     Effect.gen(function* unrestricted() {
       const client = yield* clientWith(viewer, Effect.die("not asked"));
 
-      const described = yield* client.capabilities.channel({
+      const described = yield* client["channels.capabilities"].get({
         headers: forWorkspace(workspaceId),
         params: { channelId: onMastodon },
       });
@@ -700,7 +700,7 @@ describe("a channel's capabilities endpoint", () => {
         const [page, profile] = yield* Effect.forEach(
           [onLinkedInPage, onLinkedInProfile],
           (channelId) =>
-            client.capabilities.channel({
+            client["channels.capabilities"].get({
               headers: forWorkspace(workspaceId),
               params: { channelId },
             })
@@ -743,8 +743,8 @@ describe("a channel's capabilities endpoint", () => {
       const errors = yield* Effect.forEach(
         ["01900000-0000-7000-8000-0000000000c9", "not-an-id"],
         (channelId) =>
-          client.capabilities
-            .channel({
+          client["channels.capabilities"]
+            .get({
               headers: forWorkspace(workspaceId),
               params: { channelId },
             })
@@ -760,8 +760,8 @@ describe("a channel's capabilities endpoint", () => {
     Effect.gen(function* refused() {
       const client = yield* clientWith(stranger);
 
-      const error = yield* client.capabilities
-        .channel({
+      const error = yield* client["channels.capabilities"]
+        .get({
           headers: forWorkspace(workspaceId),
           params: { channelId: onTikTok },
         })

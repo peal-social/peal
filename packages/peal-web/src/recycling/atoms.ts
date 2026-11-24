@@ -43,7 +43,7 @@ export const workspaceRules = Atom.family((workspaceId: string) =>
     PealApi.runtime.atom(
       PealApi.use((client) =>
         everyRule((cursor) =>
-          client.recycling.list({
+          client["automations.recycling"].list({
             headers: forWorkspace(workspaceId),
             query:
               cursor === undefined
@@ -56,10 +56,10 @@ export const workspaceRules = Atom.family((workspaceId: string) =>
   )
 );
 
-export const startRule = PealApi.mutation("recycling", "create");
+export const startRule = PealApi.mutation("automations.recycling", "create");
 
-export const updateRule = PealApi.mutation("recycling", "update");
+export const updateRule = PealApi.mutation("automations.recycling", "update");
 
-export const resumeRule = PealApi.mutation("recycling", "resume");
+export const resumeRule = PealApi.mutation("automations.recycling", "resume");
 
-export const stopRule = PealApi.mutation("recycling", "delete");
+export const stopRule = PealApi.mutation("automations.recycling", "delete");

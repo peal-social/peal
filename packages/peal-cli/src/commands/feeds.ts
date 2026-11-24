@@ -153,7 +153,7 @@ const list = Command.make(
   Effect.fn("feeds.list")(function* list(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const page = yield* client.feeds
+    const page = yield* client["automations.feeds"]
       .list({
         headers: {},
         query: {
@@ -207,7 +207,7 @@ const show = Command.make(
   Effect.fn("feeds.show")(function* show(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const feed = yield* client.feeds
+    const feed = yield* client["automations.feeds"]
       .get({ headers: {}, params: { feedId: input.feed } })
       .pipe(Effect.mapError(explain(url)));
 
@@ -248,7 +248,7 @@ const add = Command.make(
     const { client, url } = session;
     const { queueId, setId } = yield* savedIdsOf(session, input);
 
-    const created = yield* client.feeds
+    const created = yield* client["automations.feeds"]
       .create({
         headers: {},
         payload: {
@@ -346,7 +346,7 @@ const update = Command.make(
       (Option.isSome(input.queue) || input.defaultQueue) &&
       !Option.contains(input.mode, "queue")
     ) {
-      const current = yield* client.feeds
+      const current = yield* client["automations.feeds"]
         .get({ headers: {}, params: { feedId: input.feed } })
         .pipe(Effect.mapError(explain(url)));
 
@@ -404,7 +404,7 @@ const update = Command.make(
         )
       : Effect.void;
 
-    const feed = yield* client.feeds
+    const feed = yield* client["automations.feeds"]
       .update({
         headers: {},
         params: { feedId: input.feed },
@@ -431,7 +431,7 @@ const statusCommand = (
     Effect.fn(`feeds.${name}`)(function* changed(input) {
       const { client, url } = yield* inWorkspace(input.workspace);
 
-      const feed = yield* client.feeds
+      const feed = yield* client["automations.feeds"]
         .update({
           headers: {},
           params: { feedId: input.feed },
@@ -476,7 +476,7 @@ const remove = Command.make(
   Effect.fn("feeds.remove")(function* remove(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    yield* client.feeds
+    yield* client["automations.feeds"]
       .delete({ headers: {}, params: { feedId: input.feed } })
       .pipe(Effect.mapError(explain(url)));
 
@@ -504,7 +504,7 @@ const preview = Command.make(
     const template = yield* templateOf(input.template);
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const read = yield* client.feeds
+    const read = yield* client["automations.feeds"]
       .preview({
         headers: {},
         payload: {
@@ -545,7 +545,7 @@ const items = Command.make(
   Effect.fn("feeds.items")(function* items(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const read = yield* client.feeds
+    const read = yield* client["automations.feeds"]
       .items({ headers: {}, params: { feedId: input.feed } })
       .pipe(Effect.mapError(explain(url)));
 

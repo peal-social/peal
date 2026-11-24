@@ -261,7 +261,7 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const fixture = yield* Matrix;
 
-          const reply = yield* app.request("/api/v1/tags", {
+          const reply = yield* app.request("/api/v1/posts/tags", {
             headers: headers(fixture),
           });
 
@@ -280,7 +280,7 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const refused = yield* bodyOf(
           RequiredSchema,
-          yield* app.request("/api/v1/tags", {
+          yield* app.request("/api/v1/posts/tags", {
             headers: { cookie: fixture.ownerCookies },
           })
         );
@@ -296,11 +296,11 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const fixture = yield* Matrix;
 
-          const read = yield* app.request("/api/v1/tags", {
+          const read = yield* app.request("/api/v1/posts/tags", {
             headers: bearer(fixture.key),
           });
 
-          const required = yield* app.request("/api/v1/tags", {
+          const required = yield* app.request("/api/v1/posts/tags", {
             headers: { cookie: fixture.ownerCookies },
           });
 
@@ -332,7 +332,7 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const app = yield* TestApp;
         const fixture = yield* Matrix;
 
-        const made = yield* app.request("/api/v1/tags", {
+        const made = yield* app.request("/api/v1/posts/tags", {
           body: { colour: "blue", name: "Launch" },
           headers: {
             cookie: fixture.ownerCookies,
@@ -346,12 +346,14 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const mine = yield* bodyOf(
           TagsSchema,
-          yield* app.request("/api/v1/tags", { headers: bearer(fixture.key) })
+          yield* app.request("/api/v1/posts/tags", {
+            headers: bearer(fixture.key),
+          })
         );
 
         const theirs = yield* bodyOf(
           TagsSchema,
-          yield* app.request("/api/v1/tags", {
+          yield* app.request("/api/v1/posts/tags", {
             headers: {
               ...bearer(fixture.partnerKey),
               ...naming(fixture.customerId),

@@ -19,6 +19,7 @@ import type { Member, PostContent } from "peal-contract";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ChannelDefaultsHandlers } from "#publishing/api/channel-defaults.ts";
 import { ChannelSetsHandlers } from "#publishing/api/channel-sets.ts";
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { SignaturesHandlers } from "#publishing/api/signatures.ts";
 import { newId } from "#shared/application/ids.ts";
@@ -40,14 +41,16 @@ const start = "2026-06-15T07:00:00Z";
 const clientAs = (member: Member) =>
   HttpApiTest.groups(Api, [
     "posts",
-    "signatures",
-    "channelSets",
-    "channelDefaults",
+    "posts.drafts",
+    "posts.signatures",
+    "channels.sets",
+    "channels.defaultOptions",
   ]).pipe(
     Effect.provide(
       Layer.mergeAll(
         Layer.mergeAll(
           PostsHandlers,
+          PostDraftsHandlers,
           SignaturesHandlers,
           ChannelSetsHandlers,
           ChannelDefaultsHandlers
@@ -129,7 +132,7 @@ describe("signatures", () => {
           const { editor, mastodon, headers, viewer } = yield* studio;
           const other = yield* studio;
 
-          const general = yield* editor.signatures.create({
+          const general = yield* editor["posts.signatures"].create({
             headers,
             payload: { isDefault: true, name: "General", text: "— The studio" },
           });
@@ -138,12 +141,12 @@ describe("signatures", () => {
           assert.isTrue(general.isDefault);
 
           // A new default of the same scope takes its place.
-          const formal = yield* editor.signatures.create({
+          const formal = yield* editor["posts.signatures"].create({
             headers,
             payload: { isDefault: true, name: "Formal", text: "Kind regards" },
           });
 
-          const onMastodon = yield* editor.signatures.create({
+          const onMastodon = yield* editor["posts.signatures"].create({
             headers,
             payload: {
               isDefault: true,
@@ -153,7 +156,7 @@ describe("signatures", () => {
             },
           });
 
-          const listed = yield* viewer.signatures.list({ headers });
+          const listed = yield* viewer["posts.signatures"].list({ headers });
 
           assert.deepStrictEqual(
             listed.map(({ id, isDefault }) => [id, isDefault]),
@@ -164,14 +167,14 @@ describe("signatures", () => {
             ]
           );
 
-          const taken = yield* editor.signatures
+          const taken = yield* editor["posts.signatures"]
             .create({ headers, payload: { name: "GENERAL", text: "Again" } })
             .pipe(Effect.flip);
 
           assert.instanceOf(taken, SignatureNameTaken);
 
           // A channel of another workspace is no channel here.
-          const elsewhere = yield* other.editor.signatures
+          const elsewhere = yield* other.editor["posts.signatures"]
             .create({
               headers: other.headers,
               payload: {
@@ -184,13 +187,13 @@ describe("signatures", () => {
 
           assert.instanceOf(elsewhere, UnknownChannels);
 
-          const byViewer = yield* viewer.signatures
+          const byViewer = yield* viewer["posts.signatures"]
             .create({ headers, payload: { name: "Mine", text: "Mine" } })
             .pipe(Effect.flip);
 
           assert.instanceOf(byViewer, Forbidden);
 
-          const renamed = yield* editor.signatures.update({
+          const renamed = yield* editor["posts.signatures"].update({
             headers,
             params: { signatureId: general.id },
             payload: { name: "Casual", text: "Cheers" },
@@ -199,12 +202,12 @@ describe("signatures", () => {
           assert.strictEqual(renamed.text, "Cheers");
           assert.isFalse(renamed.isDefault);
 
-          yield* editor.signatures.delete({
+          yield* editor["posts.signatures"].delete({
             headers,
             params: { signatureId: general.id },
           });
 
-          const gone = yield* editor.signatures
+          const gone = yield* editor["posts.signatures"]
             .delete({ headers, params: { signatureId: general.id } })
             .pipe(Effect.flip);
 
@@ -222,12 +225,12 @@ describe("signatures", () => {
         Effect.gen(function* signs() {
           const { bluesky, editor, mastodon, headers } = yield* studio;
 
-          yield* editor.signatures.create({
+          yield* editor["posts.signatures"].create({
             headers,
             payload: { isDefault: true, name: "General", text: "— The studio" },
           });
 
-          yield* editor.signatures.create({
+          yield* editor["posts.signatures"].create({
             headers,
             payload: {
               isDefault: true,
@@ -237,13 +240,13 @@ describe("signatures", () => {
             },
           });
 
-          const chosen = yield* editor.signatures.create({
+          const chosen = yield* editor["posts.signatures"].create({
             headers,
             payload: { name: "Chosen", text: "Read more on our site" },
           });
 
           // Nothing asked: the post says what it was given.
-          const plain = yield* editor.posts.create({
+          const plain = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [mastodon, bluesky],
@@ -256,7 +259,7 @@ describe("signatures", () => {
             text: "Hello",
           });
 
-          const signed = yield* editor.posts.create({
+          const signed = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [mastodon, bluesky],
@@ -283,7 +286,7 @@ describe("signatures", () => {
 
           assert.deepStrictEqual(textsOf(again), textsOf(signed));
 
-          const byHand = yield* editor.posts.send({
+          const byHand = yield* editor.posts.create({
             headers,
             payload: {
               channelIds: [bluesky],
@@ -301,7 +304,7 @@ describe("signatures", () => {
 
           // The signature is text of the post: it counts against the limit.
           const long = yield* editor.posts
-            .send({
+            .create({
               headers,
               payload: {
                 allowDuplicate: true,
@@ -331,7 +334,7 @@ describe("signatures", () => {
 
           assert.isFalse(check.valid);
 
-          const unknown = yield* editor.posts
+          const unknown = yield* editor["posts.drafts"]
             .create({
               headers,
               payload: {
@@ -372,18 +375,18 @@ describe("a post of several parts", () => {
         Effect.gen(function* signsLast() {
           const { bluesky, editor, headers } = yield* studio;
 
-          const signOff = yield* editor.signatures.create({
+          const signOff = yield* editor["posts.signatures"].create({
             headers,
             payload: { name: "Sign-off", text: "— The studio" },
           });
 
-          const set = yield* editor.channelSets.create({
+          const set = yield* editor["channels.sets"].create({
             headers,
             payload: { channelIds: [bluesky], name: "Threads" },
           });
 
           // Sent to a set's channels, it keeps its parts.
-          const sent = yield* editor.posts.send({
+          const sent = yield* editor.posts.create({
             headers,
             payload: {
               channelIds: [],
@@ -468,7 +471,7 @@ describe("channel sets", () => {
 
           const other = yield* studio;
 
-          const set = yield* editor.channelSets.create({
+          const set = yield* editor["channels.sets"].create({
             headers,
             payload: {
               channelIds: [mastodon, youtube],
@@ -485,7 +488,7 @@ describe("channel sets", () => {
           assert.deepStrictEqual(set.channelIds, [mastodon, youtube]);
           assert.deepStrictEqual(set.unavailableChannelIds, []);
 
-          const taken = yield* editor.channelSets
+          const taken = yield* editor["channels.sets"]
             .create({
               headers,
               payload: { channelIds: [bluesky], name: "launch" },
@@ -494,7 +497,7 @@ describe("channel sets", () => {
 
           assert.instanceOf(taken, ChannelSetNameTaken);
 
-          const foreign = yield* editor.channelSets
+          const foreign = yield* editor["channels.sets"]
             .create({
               headers,
               payload: { channelIds: [other.mastodon], name: "Theirs" },
@@ -504,7 +507,7 @@ describe("channel sets", () => {
           assert.instanceOf(foreign, UnknownChannels);
 
           // Options are the channel's own platform's.
-          const misplaced = yield* editor.channelSets
+          const misplaced = yield* editor["channels.sets"]
             .create({
               headers,
               payload: {
@@ -522,7 +525,7 @@ describe("channel sets", () => {
 
           assert.instanceOf(misplaced, PostContentInvalid);
 
-          const byViewer = yield* viewer.channelSets
+          const byViewer = yield* viewer["channels.sets"]
             .create({
               headers,
               payload: { channelIds: [bluesky], name: "Mine" },
@@ -531,14 +534,14 @@ describe("channel sets", () => {
 
           assert.instanceOf(byViewer, Forbidden);
 
-          const listed = yield* viewer.channelSets.list({ headers });
+          const listed = yield* viewer["channels.sets"].list({ headers });
 
           assert.deepStrictEqual(
             listed.map(({ id }) => id),
             [set.id]
           );
 
-          const updated = yield* editor.channelSets.update({
+          const updated = yield* editor["channels.sets"].update({
             headers,
             params: { channelSetId: set.id },
             payload: { channelIds: [bluesky], name: "Launch day" },
@@ -547,12 +550,12 @@ describe("channel sets", () => {
           assert.deepStrictEqual(updated.channelIds, [bluesky]);
           assert.deepStrictEqual(updated.options, []);
 
-          yield* editor.channelSets.delete({
+          yield* editor["channels.sets"].delete({
             headers,
             params: { channelSetId: set.id },
           });
 
-          const gone = yield* editor.channelSets
+          const gone = yield* editor["channels.sets"]
             .update({
               headers,
               params: { channelSetId: set.id },
@@ -575,7 +578,7 @@ describe("channel sets", () => {
           const { bluesky, editor, mastodon, headers, workspaceId, youtube } =
             yield* studio;
 
-          const set = yield* editor.channelSets.create({
+          const set = yield* editor["channels.sets"].create({
             headers,
             payload: {
               channelIds: [mastodon, youtube],
@@ -589,7 +592,7 @@ describe("channel sets", () => {
             },
           });
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [bluesky],
@@ -609,7 +612,7 @@ describe("channel sets", () => {
           assert.isUndefined(draft.warnings);
 
           // The post's own options win over the set's.
-          const own = yield* editor.posts.create({
+          const own = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [],
@@ -633,7 +636,7 @@ describe("channel sets", () => {
           const partner = yield* clientAs(partnerKeyOf(workspaceId));
 
           const sent = yield* partner.posts
-            .send({
+            .create({
               headers,
               payload: {
                 channelIds: [],
@@ -656,7 +659,7 @@ describe("channel sets", () => {
           assert.instanceOf(sent, PostContentInvalid);
 
           const unknown = yield* editor.posts
-            .send({
+            .create({
               headers,
               payload: {
                 channelIds: [bluesky],
@@ -683,7 +686,7 @@ describe("channel sets", () => {
           const { bluesky, editor, mastodon, headers, workspaceId } =
             yield* studio;
 
-          const set = yield* editor.channelSets.create({
+          const set = yield* editor["channels.sets"].create({
             headers,
             payload: { channelIds: [mastodon, bluesky], name: "Launch" },
           });
@@ -692,7 +695,7 @@ describe("channel sets", () => {
             channels.remove(workspaceId, mastodon)
           );
 
-          const [listed] = yield* editor.channelSets.list({ headers });
+          const [listed] = yield* editor["channels.sets"].list({ headers });
 
           assert.deepStrictEqual(listed?.channelIds, [mastodon, bluesky]);
           assert.deepStrictEqual(listed?.unavailableChannelIds, [mastodon]);
@@ -723,7 +726,7 @@ describe("channel sets", () => {
             [bluesky]
           );
 
-          const sent = yield* editor.posts.send({
+          const sent = yield* editor.posts.create({
             headers,
             payload: {
               channelIds: [],
@@ -759,7 +762,7 @@ describe("channel sets", () => {
           );
 
           const none = yield* editor.posts
-            .send({
+            .create({
               headers,
               payload: {
                 allowDuplicate: true,
@@ -787,7 +790,7 @@ describe("channel sets", () => {
         Effect.gen(function* imports() {
           const { bluesky, editor, mastodon, headers } = yield* studio;
 
-          const set = yield* editor.channelSets.create({
+          const set = yield* editor["channels.sets"].create({
             headers,
             payload: { channelIds: [mastodon, bluesky], name: "Launch" },
           });
@@ -806,7 +809,7 @@ describe("channel sets", () => {
 
           assert.strictEqual(imported.created, 3);
 
-          const made = yield* editor.posts.search({
+          const made = yield* editor.posts.list({
             headers,
             query: { sort: "scheduledAsc" },
           });
@@ -841,14 +844,14 @@ describe("a channel's default options", () => {
           const other = yield* studio;
           const onYouTube = { channelId: youtube };
 
-          const none = yield* viewer.channelDefaults.get({
+          const none = yield* viewer["channels.defaultOptions"].get({
             headers,
             params: onYouTube,
           });
 
           assert.isNull(none.options);
 
-          const kept = yield* editor.channelDefaults.set({
+          const kept = yield* editor["channels.defaultOptions"].set({
             headers,
             params: onYouTube,
             payload: { options: { platform: "youtube", privacy: "unlisted" } },
@@ -859,7 +862,7 @@ describe("a channel's default options", () => {
             privacy: "unlisted",
           });
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [youtube, mastodon],
@@ -888,7 +891,7 @@ describe("a channel's default options", () => {
           // A default never gets a post past the platform's rules: the
           // title YouTube needs is still missing.
           const sent = yield* editor.posts
-            .send({
+            .create({
               headers,
               payload: {
                 channelIds: [youtube],
@@ -912,7 +915,7 @@ describe("a channel's default options", () => {
             )
           );
 
-          const misplaced = yield* editor.channelDefaults
+          const misplaced = yield* editor["channels.defaultOptions"]
             .set({
               headers,
               params: { channelId: mastodon },
@@ -922,7 +925,7 @@ describe("a channel's default options", () => {
 
           assert.instanceOf(misplaced, PostContentInvalid);
 
-          const byViewer = yield* viewer.channelDefaults
+          const byViewer = yield* viewer["channels.defaultOptions"]
             .set({
               headers,
               params: onYouTube,
@@ -932,15 +935,18 @@ describe("a channel's default options", () => {
 
           assert.instanceOf(byViewer, Forbidden);
 
-          const elsewhere = yield* other.editor.channelDefaults
+          const elsewhere = yield* other.editor["channels.defaultOptions"]
             .get({ headers: other.headers, params: { channelId: youtube } })
             .pipe(Effect.flip);
 
           assert.instanceOf(elsewhere, ChannelNotFound);
 
-          yield* editor.channelDefaults.clear({ headers, params: onYouTube });
+          yield* editor["channels.defaultOptions"].clear({
+            headers,
+            params: onYouTube,
+          });
 
-          const cleared = yield* editor.channelDefaults.get({
+          const cleared = yield* editor["channels.defaultOptions"].get({
             headers,
             params: onYouTube,
           });

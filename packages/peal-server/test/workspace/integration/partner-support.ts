@@ -80,7 +80,7 @@ export const partnerOf = Effect.fn("partnerOf")(function* partnerOf(
   const owner = yield* signedUpUnconfirmed(label);
   const home = yield* workspaceOf(owner, label);
 
-  const opened = yield* app.request(`/api/v1/partner-account`, {
+  const opened = yield* app.request(`/api/v1/partner/account`, {
     body: { name: `${label} Suite` },
     headers: { cookie: owner.cookies, ...forWorkspace(home) },
   });
@@ -104,7 +104,7 @@ export const keyOf = Effect.fn("keyOf")(function* keyOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(`/api/v1/partner-account/keys`, {
+  const reply = yield* app.request(`/api/v1/partner/account/keys`, {
     body: { name: "backend", permissions, scopes },
     headers: { cookie: owner.cookies, ...forWorkspace(home) },
   });

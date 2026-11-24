@@ -125,7 +125,7 @@ export type PostWarning = typeof PostWarningSchema.Type;
 const set = { channelSetId: Schema.String };
 
 /** A workspace's channel sets: selections of channels kept under a name. */
-export class ChannelSetsApi extends HttpApiGroup.make("channelSets")
+export class ChannelSetsApi extends HttpApiGroup.make("channels.sets")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
@@ -191,4 +191,4 @@ export class ChannelSetsApi extends HttpApiGroup.make("channelSets")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/channel-sets") {}
+  .prefix("/api/v1/channels/sets") {}

@@ -3,98 +3,46 @@
 package client
 
 import (
-	activity "github.com/peal-social/peal/packages/peal-sdk/go/activity"
 	ads "github.com/peal-social/peal/packages/peal-sdk/go/ads"
 	analytics "github.com/peal-social/peal/packages/peal-sdk/go/analytics"
-	apikeys "github.com/peal-social/peal/packages/peal-sdk/go/apikeys"
+	approvals "github.com/peal-social/peal/packages/peal-sdk/go/approvals"
 	articles "github.com/peal-social/peal/packages/peal-sdk/go/articles"
 	assistant "github.com/peal-social/peal/packages/peal-sdk/go/assistant"
-	billing "github.com/peal-social/peal/packages/peal-sdk/go/billing"
-	capabilities "github.com/peal-social/peal/packages/peal-sdk/go/capabilities"
-	channeldefaults "github.com/peal-social/peal/packages/peal-sdk/go/channeldefaults"
-	channels "github.com/peal-social/peal/packages/peal-sdk/go/channels"
-	channelsets "github.com/peal-social/peal/packages/peal-sdk/go/channelsets"
-	connectlinks "github.com/peal-social/peal/packages/peal-sdk/go/connectlinks"
+	automationsclient "github.com/peal-social/peal/packages/peal-sdk/go/automations/client"
+	channelsclient "github.com/peal-social/peal/packages/peal-sdk/go/channels/client"
 	core "github.com/peal-social/peal/packages/peal-sdk/go/core"
 	credential "github.com/peal-social/peal/packages/peal-sdk/go/credential"
-	feeds "github.com/peal-social/peal/packages/peal-sdk/go/feeds"
-	followups "github.com/peal-social/peal/packages/peal-sdk/go/followups"
-	inbox "github.com/peal-social/peal/packages/peal-sdk/go/inbox"
-	inboxmessages "github.com/peal-social/peal/packages/peal-sdk/go/inboxmessages"
-	inboxreviews "github.com/peal-social/peal/packages/peal-sdk/go/inboxreviews"
-	inboxrules "github.com/peal-social/peal/packages/peal-sdk/go/inboxrules"
+	inboxclient "github.com/peal-social/peal/packages/peal-sdk/go/inbox/client"
 	internal "github.com/peal-social/peal/packages/peal-sdk/go/internal"
-	invitations "github.com/peal-social/peal/packages/peal-sdk/go/invitations"
-	lookups "github.com/peal-social/peal/packages/peal-sdk/go/lookups"
-	media "github.com/peal-social/peal/packages/peal-sdk/go/media"
-	mediaaudio "github.com/peal-social/peal/packages/peal-sdk/go/mediaaudio"
-	members "github.com/peal-social/peal/packages/peal-sdk/go/members"
-	notices "github.com/peal-social/peal/packages/peal-sdk/go/notices"
-	notificationpreferences "github.com/peal-social/peal/packages/peal-sdk/go/notificationpreferences"
+	links "github.com/peal-social/peal/packages/peal-sdk/go/links"
+	meclient "github.com/peal-social/peal/packages/peal-sdk/go/me/client"
+	mediaclient "github.com/peal-social/peal/packages/peal-sdk/go/media/client"
 	option "github.com/peal-social/peal/packages/peal-sdk/go/option"
-	partner "github.com/peal-social/peal/packages/peal-sdk/go/partner"
-	partneraccount "github.com/peal-social/peal/packages/peal-sdk/go/partneraccount"
-	partnerusage "github.com/peal-social/peal/packages/peal-sdk/go/partnerusage"
-	posts "github.com/peal-social/peal/packages/peal-sdk/go/posts"
-	queues "github.com/peal-social/peal/packages/peal-sdk/go/queues"
-	recycling "github.com/peal-social/peal/packages/peal-sdk/go/recycling"
-	review "github.com/peal-social/peal/packages/peal-sdk/go/review"
-	session "github.com/peal-social/peal/packages/peal-sdk/go/session"
-	shortlinks "github.com/peal-social/peal/packages/peal-sdk/go/shortlinks"
-	signatures "github.com/peal-social/peal/packages/peal-sdk/go/signatures"
-	slideshows "github.com/peal-social/peal/packages/peal-sdk/go/slideshows"
+	partnerclient "github.com/peal-social/peal/packages/peal-sdk/go/partner/client"
+	client "github.com/peal-social/peal/packages/peal-sdk/go/posts/client"
 	system "github.com/peal-social/peal/packages/peal-sdk/go/system"
-	tags "github.com/peal-social/peal/packages/peal-sdk/go/tags"
-	tiktok "github.com/peal-social/peal/packages/peal-sdk/go/tiktok"
-	usage "github.com/peal-social/peal/packages/peal-sdk/go/usage"
-	videogenerations "github.com/peal-social/peal/packages/peal-sdk/go/videogenerations"
 	webhooks "github.com/peal-social/peal/packages/peal-sdk/go/webhooks"
+	workspaceclient "github.com/peal-social/peal/packages/peal-sdk/go/workspace/client"
 )
 
 type Client struct {
-	System                  *system.Client
-	Session                 *session.Client
-	Credential              *credential.Client
-	APIKeys                 *apikeys.Client
-	Channels                *channels.Client
-	Posts                   *posts.Client
-	Articles                *articles.Client
-	Media                   *media.Client
-	MediaAudio              *mediaaudio.Client
-	Notices                 *notices.Client
-	NotificationPreferences *notificationpreferences.Client
-	Assistant               *assistant.Client
-	VideoGenerations        *videogenerations.Client
-	Slideshows              *slideshows.Client
-	Members                 *members.Client
-	Invitations             *invitations.Client
-	Billing                 *billing.Client
-	Usage                   *usage.Client
-	Analytics               *analytics.Client
-	Tiktok                  *tiktok.Client
-	Capabilities            *capabilities.Client
-	Lookups                 *lookups.Client
-	Webhooks                *webhooks.Client
-	Inbox                   *inbox.Client
-	InboxReviews            *inboxreviews.Client
-	InboxMessages           *inboxmessages.Client
-	Ads                     *ads.Client
-	Activity                *activity.Client
-	Partner                 *partner.Client
-	PartnerUsage            *partnerusage.Client
-	PartnerAccount          *partneraccount.Client
-	ConnectLinks            *connectlinks.Client
-	Review                  *review.Client
-	Tags                    *tags.Client
-	Signatures              *signatures.Client
-	ChannelSets             *channelsets.Client
-	Queues                  *queues.Client
-	Recycling               *recycling.Client
-	FollowUps               *followups.Client
-	InboxRules              *inboxrules.Client
-	Feeds                   *feeds.Client
-	ChannelDefaults         *channeldefaults.Client
-	ShortLinks              *shortlinks.Client
+	Posts       *client.Client
+	Approvals   *approvals.Client
+	Channels    *channelsclient.Client
+	Media       *mediaclient.Client
+	Analytics   *analytics.Client
+	Ads         *ads.Client
+	Articles    *articles.Client
+	Links       *links.Client
+	Webhooks    *webhooks.Client
+	Assistant   *assistant.Client
+	Partner     *partnerclient.Client
+	Me          *meclient.Client
+	Credential  *credential.Client
+	System      *system.Client
+	Automations *automationsclient.Client
+	Inbox       *inboxclient.Client
+	Workspace   *workspaceclient.Client
 
 	options *core.RequestOptions
 	baseURL string
@@ -104,51 +52,25 @@ type Client struct {
 func NewClient(opts ...option.RequestOption) *Client {
 	options := core.NewRequestOptions(opts...)
 	return &Client{
-		System:                  system.NewClient(options),
-		Session:                 session.NewClient(options),
-		Credential:              credential.NewClient(options),
-		APIKeys:                 apikeys.NewClient(options),
-		Channels:                channels.NewClient(options),
-		Posts:                   posts.NewClient(options),
-		Articles:                articles.NewClient(options),
-		Media:                   media.NewClient(options),
-		MediaAudio:              mediaaudio.NewClient(options),
-		Notices:                 notices.NewClient(options),
-		NotificationPreferences: notificationpreferences.NewClient(options),
-		Assistant:               assistant.NewClient(options),
-		VideoGenerations:        videogenerations.NewClient(options),
-		Slideshows:              slideshows.NewClient(options),
-		Members:                 members.NewClient(options),
-		Invitations:             invitations.NewClient(options),
-		Billing:                 billing.NewClient(options),
-		Usage:                   usage.NewClient(options),
-		Analytics:               analytics.NewClient(options),
-		Tiktok:                  tiktok.NewClient(options),
-		Capabilities:            capabilities.NewClient(options),
-		Lookups:                 lookups.NewClient(options),
-		Webhooks:                webhooks.NewClient(options),
-		Inbox:                   inbox.NewClient(options),
-		InboxReviews:            inboxreviews.NewClient(options),
-		InboxMessages:           inboxmessages.NewClient(options),
-		Ads:                     ads.NewClient(options),
-		Activity:                activity.NewClient(options),
-		Partner:                 partner.NewClient(options),
-		PartnerUsage:            partnerusage.NewClient(options),
-		PartnerAccount:          partneraccount.NewClient(options),
-		ConnectLinks:            connectlinks.NewClient(options),
-		Review:                  review.NewClient(options),
-		Tags:                    tags.NewClient(options),
-		Signatures:              signatures.NewClient(options),
-		ChannelSets:             channelsets.NewClient(options),
-		Queues:                  queues.NewClient(options),
-		Recycling:               recycling.NewClient(options),
-		FollowUps:               followups.NewClient(options),
-		InboxRules:              inboxrules.NewClient(options),
-		Feeds:                   feeds.NewClient(options),
-		ChannelDefaults:         channeldefaults.NewClient(options),
-		ShortLinks:              shortlinks.NewClient(options),
-		options:                 options,
-		baseURL:                 options.BaseURL,
+		Posts:       client.NewClient(options),
+		Approvals:   approvals.NewClient(options),
+		Channels:    channelsclient.NewClient(options),
+		Media:       mediaclient.NewClient(options),
+		Analytics:   analytics.NewClient(options),
+		Ads:         ads.NewClient(options),
+		Articles:    articles.NewClient(options),
+		Links:       links.NewClient(options),
+		Webhooks:    webhooks.NewClient(options),
+		Assistant:   assistant.NewClient(options),
+		Partner:     partnerclient.NewClient(options),
+		Me:          meclient.NewClient(options),
+		Credential:  credential.NewClient(options),
+		System:      system.NewClient(options),
+		Automations: automationsclient.NewClient(options),
+		Inbox:       inboxclient.NewClient(options),
+		Workspace:   workspaceclient.NewClient(options),
+		options:     options,
+		baseURL:     options.BaseURL,
 		caller: internal.NewCaller(
 			&internal.CallerParams{
 				Client:         options.HTTPClient,

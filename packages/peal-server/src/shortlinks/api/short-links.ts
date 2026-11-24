@@ -67,7 +67,7 @@ const filterAsked = <A>(
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const ShortLinksHandlers = HttpApiBuilder.group(
   Api,
-  "shortLinks",
+  "links",
   Effect.fn(function* shortLinksHandlers(handlers) {
     const reports = yield* ShortLinkReports;
     const settings = yield* ShortLinkSettings;

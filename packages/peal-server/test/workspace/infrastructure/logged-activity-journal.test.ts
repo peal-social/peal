@@ -64,7 +64,7 @@ const member = new UserPrincipal({
 
 const change = (overrides: Partial<AnsweredChange> = {}): AnsweredChange => ({
   named: {},
-  operation: "posts.create",
+  operation: "posts.drafts.create",
   outcome: { _tag: "answered", status: 201 },
   principal: member,
   requestId: Option.none(),
@@ -143,7 +143,7 @@ describe("the activity journal's product analytics", () => {
             ...expected,
           }
         );
-        assert.strictEqual(properties["operation"], "posts.create");
+        assert.strictEqual(properties["operation"], "posts.drafts.create");
         assert.strictEqual(properties["via"], "session");
       })
     );

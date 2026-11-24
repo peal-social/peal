@@ -143,7 +143,7 @@ export interface SchedulePostRequest {
 
 /**
  * A new post to send to some channels, now or at an instant, in one call:
- * what `posts.send`, the MCP tool `create_post` and `peal post` ask for.
+ * what `posts.create`, the MCP tool `create_post` and `peal post` ask for.
  */
 export interface SendPostRequest {
   /**

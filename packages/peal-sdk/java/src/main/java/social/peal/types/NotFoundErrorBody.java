@@ -26,16 +26,16 @@ public final class NotFoundErrorBody {
         return value.visit(visitor);
     }
 
-    public static NotFoundErrorBody shortLinkNotFound(ShortLinkNotFoundEncoded value) {
-        return new NotFoundErrorBody(new ShortLinkNotFoundValue(value));
+    public static NotFoundErrorBody partnerNotFound(PartnerNotFoundEncoded value) {
+        return new NotFoundErrorBody(new PartnerNotFoundValue(value));
     }
 
     public static NotFoundErrorBody workspaceNotFound(WorkspaceNotFoundEncoded value) {
         return new NotFoundErrorBody(new WorkspaceNotFoundValue(value));
     }
 
-    public boolean isShortLinkNotFound() {
-        return value instanceof ShortLinkNotFoundValue;
+    public boolean isPartnerNotFound() {
+        return value instanceof PartnerNotFoundValue;
     }
 
     public boolean isWorkspaceNotFound() {
@@ -46,9 +46,9 @@ public final class NotFoundErrorBody {
         return value instanceof _UnknownValue;
     }
 
-    public Optional<ShortLinkNotFoundEncoded> getShortLinkNotFound() {
-        if (isShortLinkNotFound()) {
-            return Optional.of(((ShortLinkNotFoundValue) value).value);
+    public Optional<PartnerNotFoundEncoded> getPartnerNotFound() {
+        if (isPartnerNotFound()) {
+            return Optional.of(((PartnerNotFoundValue) value).value);
         }
         return Optional.empty();
     }
@@ -89,7 +89,7 @@ public final class NotFoundErrorBody {
     }
 
     public interface Visitor<T> {
-        T visitShortLinkNotFound(ShortLinkNotFoundEncoded shortLinkNotFound);
+        T visitPartnerNotFound(PartnerNotFoundEncoded partnerNotFound);
 
         T visitWorkspaceNotFound(WorkspaceNotFoundEncoded workspaceNotFound);
 
@@ -97,38 +97,38 @@ public final class NotFoundErrorBody {
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_tag", visible = true, defaultImpl = _UnknownValue.class)
-    @JsonSubTypes({@JsonSubTypes.Type(ShortLinkNotFoundValue.class), @JsonSubTypes.Type(WorkspaceNotFoundValue.class)})
+    @JsonSubTypes({@JsonSubTypes.Type(PartnerNotFoundValue.class), @JsonSubTypes.Type(WorkspaceNotFoundValue.class)})
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
         <T> T visit(Visitor<T> visitor);
     }
 
-    @JsonTypeName("ShortLinkNotFound")
+    @JsonTypeName("PartnerNotFound")
     @JsonIgnoreProperties("_tag")
-    private static final class ShortLinkNotFoundValue implements Value {
+    private static final class PartnerNotFoundValue implements Value {
         @JsonUnwrapped
         @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private ShortLinkNotFoundEncoded value;
+        private PartnerNotFoundEncoded value;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private ShortLinkNotFoundValue() {}
+        private PartnerNotFoundValue() {}
 
-        private ShortLinkNotFoundValue(ShortLinkNotFoundEncoded value) {
+        private PartnerNotFoundValue(PartnerNotFoundEncoded value) {
             this.value = value;
         }
 
         @java.lang.Override
         public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitShortLinkNotFound(value);
+            return visitor.visitPartnerNotFound(value);
         }
 
         @java.lang.Override
         public boolean equals(Object other) {
             if (this == other) return true;
-            return other instanceof ShortLinkNotFoundValue && equalTo((ShortLinkNotFoundValue) other);
+            return other instanceof PartnerNotFoundValue && equalTo((PartnerNotFoundValue) other);
         }
 
-        private boolean equalTo(ShortLinkNotFoundValue other) {
+        private boolean equalTo(PartnerNotFoundValue other) {
             return value.equals(other.value);
         }
 

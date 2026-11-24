@@ -35,7 +35,7 @@ peal media generate --prompt "A paper catalogue open on a wooden table, morning 
   Past two images a workspace makes at once, it answers
   `MediaImportBusy`: try again in a moment.
 
-Over HTTP, `POST /api/v1/assistant/images` takes
+Over HTTP, `POST /api/v1/media/images` takes
 `{"prompt": "…", "aspect": "square"}` and answers 201 with the media. The
 MCP tool is `generate_image`. The writing assistant has no command and no
 tool: write the post's text yourself.

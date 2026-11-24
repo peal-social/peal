@@ -5,16 +5,18 @@ package social.peal.resources.posts;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
+import social.peal.core.Suppliers;
+import social.peal.resources.posts.drafts.AsyncDraftsClient;
 import social.peal.resources.posts.requests.AttemptsPostsRequest;
 import social.peal.resources.posts.requests.BulkPosts;
+import social.peal.resources.posts.requests.CalendarPostsRequest;
 import social.peal.resources.posts.requests.CancelPostsRequest;
 import social.peal.resources.posts.requests.ChangesPostsRequest;
 import social.peal.resources.posts.requests.ConfirmPostsRequest;
-import social.peal.resources.posts.requests.DiscardPostsRequest;
-import social.peal.resources.posts.requests.DraftsPostsRequest;
 import social.peal.resources.posts.requests.DuplicatePostsRequest;
 import social.peal.resources.posts.requests.GetPostsRequest;
 import social.peal.resources.posts.requests.LeaveOutRestPostsRequest;
@@ -30,18 +32,17 @@ import social.peal.resources.posts.requests.RemoveTargetPostsRequest;
 import social.peal.resources.posts.requests.RepostPostsRequest;
 import social.peal.resources.posts.requests.ReschedulePostsRequest;
 import social.peal.resources.posts.requests.SchedulePost;
-import social.peal.resources.posts.requests.SearchPostsRequest;
 import social.peal.resources.posts.requests.UnpublishPostsRequest;
 import social.peal.resources.posts.requests.UnpublishTargetPostsRequest;
 import social.peal.resources.posts.requests.UnschedulePostsRequest;
 import social.peal.resources.posts.requests.UpdatePostsRequest;
+import social.peal.resources.posts.signatures.AsyncSignaturesClient;
+import social.peal.resources.posts.tags.AsyncTagsClient;
 import social.peal.types.BulkResult;
-import social.peal.types.DraftPage;
 import social.peal.types.ImportResult;
 import social.peal.types.LivePostChange;
 import social.peal.types.LivePostChanges;
 import social.peal.types.Post;
-import social.peal.types.PostDraft;
 import social.peal.types.PostPage;
 import social.peal.types.PostUnpublish;
 import social.peal.types.PostValidation;
@@ -52,9 +53,18 @@ public class AsyncPostsClient {
 
     private final AsyncRawPostsClient rawClient;
 
+    protected final Supplier<AsyncDraftsClient> draftsClient;
+
+    protected final Supplier<AsyncTagsClient> tagsClient;
+
+    protected final Supplier<AsyncSignaturesClient> signaturesClient;
+
     public AsyncPostsClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.rawClient = new AsyncRawPostsClient(clientOptions);
+        this.draftsClient = Suppliers.memoize(() -> new AsyncDraftsClient(clientOptions));
+        this.tagsClient = Suppliers.memoize(() -> new AsyncTagsClient(clientOptions));
+        this.signaturesClient = Suppliers.memoize(() -> new AsyncSignaturesClient(clientOptions));
     }
 
     /**
@@ -65,66 +75,10 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
-     */
-    public CompletableFuture<DraftPage> drafts() {
-        CompletableFuture<PealClientHttpResponse<DraftPage>> rawFuture = this.rawClient.drafts();
-        CompletableFuture<DraftPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
-     */
-    public CompletableFuture<DraftPage> drafts(RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<DraftPage>> rawFuture = this.rawClient.drafts(requestOptions);
-        CompletableFuture<DraftPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
-     */
-    public CompletableFuture<DraftPage> drafts(DraftsPostsRequest request) {
-        CompletableFuture<PealClientHttpResponse<DraftPage>> rawFuture = this.rawClient.drafts(request);
-        CompletableFuture<DraftPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
-     */
-    public CompletableFuture<DraftPage> drafts(DraftsPostsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<DraftPage>> rawFuture = this.rawClient.drafts(request, requestOptions);
-        CompletableFuture<DraftPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
      * Lists the posts scheduled from <code>from</code> (included) to <code>to</code> (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
      */
-    public CompletableFuture<List<Post>> list(ListPostsRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<Post>>> rawFuture = this.rawClient.list(request);
+    public CompletableFuture<List<Post>> calendar(CalendarPostsRequest request) {
+        CompletableFuture<PealClientHttpResponse<List<Post>>> rawFuture = this.rawClient.calendar(request);
         CompletableFuture<List<Post>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -137,8 +91,9 @@ public class AsyncPostsClient {
     /**
      * Lists the posts scheduled from <code>from</code> (included) to <code>to</code> (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
      */
-    public CompletableFuture<List<Post>> list(ListPostsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Post>>> rawFuture = this.rawClient.list(request, requestOptions);
+    public CompletableFuture<List<Post>> calendar(CalendarPostsRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<Post>>> rawFuture =
+                this.rawClient.calendar(request, requestOptions);
         CompletableFuture<List<Post>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -149,9 +104,65 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform takes them (<code>TargetOptions</code>, of the channel's platform). Its media must be the workspace's, and ready. Its text, media and options are checked against each platform's rules when it is scheduled, not before. It may name channel sets (<code>channelSets</code>, by id or name), whose connected channels it is for as well, with the options each set keeps; a channel of a set that is no longer connected is left out, and the answer says so (<code>warnings</code>). A channel on which it gives no options takes the channel's default options, if it has some. With <code>defaultSignatures</code>, each channel's default signature goes under its text, and <code>signatureId</code> puts one signature under it on every channel: a signature is then text of the post, never added under a text that already ends with it. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>shortLinks.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:create, channel:read, and media:read when it shows media.
+     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
      */
-    public CompletableFuture<Post> create(PostDraft request) {
+    public CompletableFuture<PostPage> list() {
+        CompletableFuture<PealClientHttpResponse<PostPage>> rawFuture = this.rawClient.list();
+        CompletableFuture<PostPage> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
+     */
+    public CompletableFuture<PostPage> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<PostPage>> rawFuture = this.rawClient.list(requestOptions);
+        CompletableFuture<PostPage> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
+     */
+    public CompletableFuture<PostPage> list(ListPostsRequest request) {
+        CompletableFuture<PealClientHttpResponse<PostPage>> rawFuture = this.rawClient.list(request);
+        CompletableFuture<PostPage> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
+     */
+    public CompletableFuture<PostPage> list(ListPostsRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<PostPage>> rawFuture = this.rawClient.list(request, requestOptions);
+        CompletableFuture<PostPage> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Creates a post and sends it to some of the workspace's channels in one call: <code>when</code> is <code>now</code>, which publishes at once, <code>at</code> an instant, kept with its IANA time zone, or <code>queue</code>, which puts it on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts sent together never take the same slot; it is then an ordinary scheduled post, through every rule a time chosen by hand goes through, the plan's room counted in the slot's month (PlanLimitReached, never a later month), and with no channel or channel set named it goes to the queue's (QueueHasNoRoom when the queue has no free slot within 366 days). Instead of listing channels, or beside them, it may name channel sets (<code>channelSets</code>, by id or name): it goes to their connected channels, with the options each set keeps where it gives none, and a channel of a set that is no longer connected is left out and told in the answer's <code>warnings</code>, never silently; a set none of whose channels is left, with no other channel, is refused (UnknownChannels). A channel on which it gives no options takes the channel's default options. <code>defaultSignatures</code> puts each channel's default signature under its text, and <code>signatureId</code> one signature on every channel: signatures are text of the post, counted against each platform's limit, and never added twice. It goes through every rule scheduling a draft does (each platform's limits on text, media and options, the account's own, the plan's), and answers every violation at once (PostContentInvalid): nothing is made then. In a workspace that asks for approvals, a post that needs one is answered with the status <code>awaitingApproval</code>: it keeps its time and goes out only once it is approved. What it publishes reaches the platforms' public, and cannot be taken back from Peal once it is out; until its time, cancel or unschedule it. Send an <code>Idempotency-Key</code> header (any text of your choosing, at most 255 characters, such as a UUID) to make a request safe to send again: within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other; the same key with another body is refused (IdempotencyKeyReused), and answers PostNotFound once that post was deleted. Keys are kept per workspace, as digests. Apart from keys, a post whose content already goes to one of its channels less than 23 hours from its time is refused (DuplicatePost), as a request made twice by mistake would be, unless it says <code>allowDuplicate: true</code>; scheduling a draft is not checked. It answers as soon as the post is made, while it publishes, unless <code>wait</code> says to wait for the outcome: up to that many seconds (60 at most) for a post that goes out now, the answer is then the post once every channel has its result (<code>status</code> <code>finished</code>, with its <code>outcome</code>, each target <code>published</code> with its <code>permalink</code> or <code>failed</code> with its <code>failureReason</code>), or the post as it stands when the time runs out, some targets still <code>pending</code> or <code>publishing</code>: it goes on publishing, and <code>GET …/posts/{postId}/outcome</code> waits for the rest. The answer is 201 either way: the post was made. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>links.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:schedule and channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
+     */
+    public CompletableFuture<Post> create(NewPost request) {
         CompletableFuture<PealClientHttpResponse<Post>> rawFuture = this.rawClient.create(request);
         CompletableFuture<Post> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
@@ -163,9 +174,9 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform takes them (<code>TargetOptions</code>, of the channel's platform). Its media must be the workspace's, and ready. Its text, media and options are checked against each platform's rules when it is scheduled, not before. It may name channel sets (<code>channelSets</code>, by id or name), whose connected channels it is for as well, with the options each set keeps; a channel of a set that is no longer connected is left out, and the answer says so (<code>warnings</code>). A channel on which it gives no options takes the channel's default options, if it has some. With <code>defaultSignatures</code>, each channel's default signature goes under its text, and <code>signatureId</code> puts one signature under it on every channel: a signature is then text of the post, never added under a text that already ends with it. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>shortLinks.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:create, channel:read, and media:read when it shows media.
+     * Creates a post and sends it to some of the workspace's channels in one call: <code>when</code> is <code>now</code>, which publishes at once, <code>at</code> an instant, kept with its IANA time zone, or <code>queue</code>, which puts it on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts sent together never take the same slot; it is then an ordinary scheduled post, through every rule a time chosen by hand goes through, the plan's room counted in the slot's month (PlanLimitReached, never a later month), and with no channel or channel set named it goes to the queue's (QueueHasNoRoom when the queue has no free slot within 366 days). Instead of listing channels, or beside them, it may name channel sets (<code>channelSets</code>, by id or name): it goes to their connected channels, with the options each set keeps where it gives none, and a channel of a set that is no longer connected is left out and told in the answer's <code>warnings</code>, never silently; a set none of whose channels is left, with no other channel, is refused (UnknownChannels). A channel on which it gives no options takes the channel's default options. <code>defaultSignatures</code> puts each channel's default signature under its text, and <code>signatureId</code> one signature on every channel: signatures are text of the post, counted against each platform's limit, and never added twice. It goes through every rule scheduling a draft does (each platform's limits on text, media and options, the account's own, the plan's), and answers every violation at once (PostContentInvalid): nothing is made then. In a workspace that asks for approvals, a post that needs one is answered with the status <code>awaitingApproval</code>: it keeps its time and goes out only once it is approved. What it publishes reaches the platforms' public, and cannot be taken back from Peal once it is out; until its time, cancel or unschedule it. Send an <code>Idempotency-Key</code> header (any text of your choosing, at most 255 characters, such as a UUID) to make a request safe to send again: within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other; the same key with another body is refused (IdempotencyKeyReused), and answers PostNotFound once that post was deleted. Keys are kept per workspace, as digests. Apart from keys, a post whose content already goes to one of its channels less than 23 hours from its time is refused (DuplicatePost), as a request made twice by mistake would be, unless it says <code>allowDuplicate: true</code>; scheduling a draft is not checked. It answers as soon as the post is made, while it publishes, unless <code>wait</code> says to wait for the outcome: up to that many seconds (60 at most) for a post that goes out now, the answer is then the post once every channel has its result (<code>status</code> <code>finished</code>, with its <code>outcome</code>, each target <code>published</code> with its <code>permalink</code> or <code>failed</code> with its <code>failureReason</code>), or the post as it stands when the time runs out, some targets still <code>pending</code> or <code>publishing</code>: it goes on publishing, and <code>GET …/posts/{postId}/outcome</code> waits for the rest. The answer is 201 either way: the post was made. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>links.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:schedule and channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<Post> create(PostDraft request, RequestOptions requestOptions) {
+    public CompletableFuture<Post> create(NewPost request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Post>> rawFuture = this.rawClient.create(request, requestOptions);
         CompletableFuture<Post> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
@@ -177,91 +188,7 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
-     */
-    public CompletableFuture<PostPage> search() {
-        CompletableFuture<PealClientHttpResponse<PostPage>> rawFuture = this.rawClient.search();
-        CompletableFuture<PostPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
-     */
-    public CompletableFuture<PostPage> search(RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<PostPage>> rawFuture = this.rawClient.search(requestOptions);
-        CompletableFuture<PostPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
-     */
-    public CompletableFuture<PostPage> search(SearchPostsRequest request) {
-        CompletableFuture<PealClientHttpResponse<PostPage>> rawFuture = this.rawClient.search(request);
-        CompletableFuture<PostPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
-     */
-    public CompletableFuture<PostPage> search(SearchPostsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<PostPage>> rawFuture = this.rawClient.search(request, requestOptions);
-        CompletableFuture<PostPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Creates a post and sends it to some of the workspace's channels in one call: <code>when</code> is <code>now</code>, which publishes at once, <code>at</code> an instant, kept with its IANA time zone, or <code>queue</code>, which puts it on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts sent together never take the same slot; it is then an ordinary scheduled post, through every rule a time chosen by hand goes through, the plan's room counted in the slot's month (PlanLimitReached, never a later month), and with no channel or channel set named it goes to the queue's (QueueHasNoRoom when the queue has no free slot within 366 days). Instead of listing channels, or beside them, it may name channel sets (<code>channelSets</code>, by id or name): it goes to their connected channels, with the options each set keeps where it gives none, and a channel of a set that is no longer connected is left out and told in the answer's <code>warnings</code>, never silently; a set none of whose channels is left, with no other channel, is refused (UnknownChannels). A channel on which it gives no options takes the channel's default options. <code>defaultSignatures</code> puts each channel's default signature under its text, and <code>signatureId</code> one signature on every channel: signatures are text of the post, counted against each platform's limit, and never added twice. It goes through every rule scheduling a draft does (each platform's limits on text, media and options, the account's own, the plan's), and answers every violation at once (PostContentInvalid): nothing is made then. In a workspace that asks for approvals, a post that needs one is answered with the status <code>awaitingApproval</code>: it keeps its time and goes out only once it is approved. What it publishes reaches the platforms' public, and cannot be taken back from Peal once it is out; until its time, cancel or unschedule it. Send an <code>Idempotency-Key</code> header (any text of your choosing, at most 255 characters, such as a UUID) to make a request safe to send again: within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other; the same key with another body is refused (IdempotencyKeyReused), and answers PostNotFound once that post was deleted. Keys are kept per workspace, as digests. Apart from keys, a post whose content already goes to one of its channels less than 23 hours from its time is refused (DuplicatePost), as a request made twice by mistake would be, unless it says <code>allowDuplicate: true</code>; scheduling a draft is not checked. It answers as soon as the post is made, while it publishes, unless <code>wait</code> says to wait for the outcome: up to that many seconds (60 at most) for a post that goes out now, the answer is then the post once every channel has its result (<code>status</code> <code>finished</code>, with its <code>outcome</code>, each target <code>published</code> with its <code>permalink</code> or <code>failed</code> with its <code>failureReason</code>), or the post as it stands when the time runs out, some targets still <code>pending</code> or <code>publishing</code>: it goes on publishing, and <code>GET …/posts/{postId}/outcome</code> waits for the rest. The answer is 201 either way: the post was made. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>shortLinks.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:schedule and channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
-     */
-    public CompletableFuture<Post> send(NewPost request) {
-        CompletableFuture<PealClientHttpResponse<Post>> rawFuture = this.rawClient.send(request);
-        CompletableFuture<Post> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Creates a post and sends it to some of the workspace's channels in one call: <code>when</code> is <code>now</code>, which publishes at once, <code>at</code> an instant, kept with its IANA time zone, or <code>queue</code>, which puts it on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts sent together never take the same slot; it is then an ordinary scheduled post, through every rule a time chosen by hand goes through, the plan's room counted in the slot's month (PlanLimitReached, never a later month), and with no channel or channel set named it goes to the queue's (QueueHasNoRoom when the queue has no free slot within 366 days). Instead of listing channels, or beside them, it may name channel sets (<code>channelSets</code>, by id or name): it goes to their connected channels, with the options each set keeps where it gives none, and a channel of a set that is no longer connected is left out and told in the answer's <code>warnings</code>, never silently; a set none of whose channels is left, with no other channel, is refused (UnknownChannels). A channel on which it gives no options takes the channel's default options. <code>defaultSignatures</code> puts each channel's default signature under its text, and <code>signatureId</code> one signature on every channel: signatures are text of the post, counted against each platform's limit, and never added twice. It goes through every rule scheduling a draft does (each platform's limits on text, media and options, the account's own, the plan's), and answers every violation at once (PostContentInvalid): nothing is made then. In a workspace that asks for approvals, a post that needs one is answered with the status <code>awaitingApproval</code>: it keeps its time and goes out only once it is approved. What it publishes reaches the platforms' public, and cannot be taken back from Peal once it is out; until its time, cancel or unschedule it. Send an <code>Idempotency-Key</code> header (any text of your choosing, at most 255 characters, such as a UUID) to make a request safe to send again: within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other; the same key with another body is refused (IdempotencyKeyReused), and answers PostNotFound once that post was deleted. Keys are kept per workspace, as digests. Apart from keys, a post whose content already goes to one of its channels less than 23 hours from its time is refused (DuplicatePost), as a request made twice by mistake would be, unless it says <code>allowDuplicate: true</code>; scheduling a draft is not checked. It answers as soon as the post is made, while it publishes, unless <code>wait</code> says to wait for the outcome: up to that many seconds (60 at most) for a post that goes out now, the answer is then the post once every channel has its result (<code>status</code> <code>finished</code>, with its <code>outcome</code>, each target <code>published</code> with its <code>permalink</code> or <code>failed</code> with its <code>failureReason</code>), or the post as it stands when the time runs out, some targets still <code>pending</code> or <code>publishing</code>: it goes on publishing, and <code>GET …/posts/{postId}/outcome</code> waits for the rest. The answer is 201 either way: the post was made. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>shortLinks.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:schedule and channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
-     */
-    public CompletableFuture<Post> send(NewPost request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Post>> rawFuture = this.rawClient.send(request, requestOptions);
-        CompletableFuture<Post> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Creates and sends up to 50 posts in one request, each as <code>send</code> would: one post per item, each with its own channels, content, options and time, so the same content at several times, or at a time of its own on each channel, is several items. Items are taken in order, one at a time, each on its own: one refused keeps none of the others from being made, and nothing is undone. The answer is 200 whenever the request itself was read, even if every item was refused: <code>items</code> says, for each by its place in the request, <code>created</code> with its post, or <code>refused</code> with what <code>send</code> would have answered for it alone (its content's violations, unknown channels or media, a time gone by, the plan's limit, a duplicate). A request that cannot be read at all (malformed, no item, more than 50) is 400, and makes nothing. The plan's limits hold across the request: once the month has no room, the items left are refused. Each item is checked against the posts made before it, the request's earlier items included, for the same content on the same channel (DuplicatePost). An <code>Idempotency-Key</code> header makes the whole request safe to send again within 24 hours: each item is kept under the key and its place, so the same request sent again answers the posts it made (<code>replayed</code>), makes those that were not made the first time if they now can be, and an item that changed under the same key is refused (IdempotencyKeyReused). An item's own <code>idempotencyKey</code> is used instead of the header's for that item. Needs post:schedule and channel:read, and media:read for the items that show media; an OAuth client needs the scope workspace:publish.
+     * Creates and sends up to 50 posts in one request, each as <code>create</code> would: one post per item, each with its own channels, content, options and time, so the same content at several times, or at a time of its own on each channel, is several items. Items are taken in order, one at a time, each on its own: one refused keeps none of the others from being made, and nothing is undone. The answer is 200 whenever the request itself was read, even if every item was refused: <code>items</code> says, for each by its place in the request, <code>created</code> with its post, or <code>refused</code> with what <code>create</code> would have answered for it alone (its content's violations, unknown channels or media, a time gone by, the plan's limit, a duplicate). A request that cannot be read at all (malformed, no item, more than 50) is 400, and makes nothing. The plan's limits hold across the request: once the month has no room, the items left are refused. Each item is checked against the posts made before it, the request's earlier items included, for the same content on the same channel (DuplicatePost). An <code>Idempotency-Key</code> header makes the whole request safe to send again within 24 hours: each item is kept under the key and its place, so the same request sent again answers the posts it made (<code>replayed</code>), makes those that were not made the first time if they now can be, and an item that changed under the same key is refused (IdempotencyKeyReused). An item's own <code>idempotencyKey</code> is used instead of the header's for that item. Needs post:schedule and channel:read, and media:read for the items that show media; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<BulkResult> bulk(BulkPosts request) {
         CompletableFuture<PealClientHttpResponse<BulkResult>> rawFuture = this.rawClient.bulk(request);
@@ -275,7 +202,7 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Creates and sends up to 50 posts in one request, each as <code>send</code> would: one post per item, each with its own channels, content, options and time, so the same content at several times, or at a time of its own on each channel, is several items. Items are taken in order, one at a time, each on its own: one refused keeps none of the others from being made, and nothing is undone. The answer is 200 whenever the request itself was read, even if every item was refused: <code>items</code> says, for each by its place in the request, <code>created</code> with its post, or <code>refused</code> with what <code>send</code> would have answered for it alone (its content's violations, unknown channels or media, a time gone by, the plan's limit, a duplicate). A request that cannot be read at all (malformed, no item, more than 50) is 400, and makes nothing. The plan's limits hold across the request: once the month has no room, the items left are refused. Each item is checked against the posts made before it, the request's earlier items included, for the same content on the same channel (DuplicatePost). An <code>Idempotency-Key</code> header makes the whole request safe to send again within 24 hours: each item is kept under the key and its place, so the same request sent again answers the posts it made (<code>replayed</code>), makes those that were not made the first time if they now can be, and an item that changed under the same key is refused (IdempotencyKeyReused). An item's own <code>idempotencyKey</code> is used instead of the header's for that item. Needs post:schedule and channel:read, and media:read for the items that show media; an OAuth client needs the scope workspace:publish.
+     * Creates and sends up to 50 posts in one request, each as <code>create</code> would: one post per item, each with its own channels, content, options and time, so the same content at several times, or at a time of its own on each channel, is several items. Items are taken in order, one at a time, each on its own: one refused keeps none of the others from being made, and nothing is undone. The answer is 200 whenever the request itself was read, even if every item was refused: <code>items</code> says, for each by its place in the request, <code>created</code> with its post, or <code>refused</code> with what <code>create</code> would have answered for it alone (its content's violations, unknown channels or media, a time gone by, the plan's limit, a duplicate). A request that cannot be read at all (malformed, no item, more than 50) is 400, and makes nothing. The plan's limits hold across the request: once the month has no room, the items left are refused. Each item is checked against the posts made before it, the request's earlier items included, for the same content on the same channel (DuplicatePost). An <code>Idempotency-Key</code> header makes the whole request safe to send again within 24 hours: each item is kept under the key and its place, so the same request sent again answers the posts it made (<code>replayed</code>), makes those that were not made the first time if they now can be, and an item that changed under the same key is refused (IdempotencyKeyReused). An item's own <code>idempotencyKey</code> is used instead of the header's for that item. Needs post:schedule and channel:read, and media:read for the items that show media; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<BulkResult> bulk(BulkPosts request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<BulkResult>> rawFuture = this.rawClient.bulk(request, requestOptions);
@@ -289,7 +216,7 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: <code>text</code> and <code>channels</code> (channel ids separated by spaces, commas or semicolons) are required columns, <code>at</code> too (<code>now</code>, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's <code>time_zone</code>, an IANA zone, UTC if left out); <code>media</code> (ids of ready media of the workspace), <code>allow_duplicate</code> (<code>true</code> or <code>false</code>) and <code>idempotency_key</code> are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (<code>strayQuote</code>). Blank lines are no rows. The file is checked first, every row, as <code>validate</code> checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and <code>rows</code> says which are <code>valid</code>, <code>refused</code> (with what <code>send</code> would have answered) or <code>unreadable</code> (with the cells at fault). <code>dryRun</code> stops there even when every row is valid. Otherwise the rows are then made in order as <code>bulk</code> makes its items, each <code>created</code> or, when something changed since the check or a row repeats an earlier one, <code>refused</code>. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An <code>Idempotency-Key</code> header works as on <code>bulk</code>, by row. A file has no column for short links: each post takes the workspace's default (<code>shortLinks.status</code>'s <code>byDefault</code>). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
+     * Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: <code>text</code> and <code>channels</code> (channel ids separated by spaces, commas or semicolons) are required columns, <code>at</code> too (<code>now</code>, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's <code>time_zone</code>, an IANA zone, UTC if left out); <code>media</code> (ids of ready media of the workspace), <code>allow_duplicate</code> (<code>true</code> or <code>false</code>) and <code>idempotency_key</code> are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (<code>strayQuote</code>). Blank lines are no rows. The file is checked first, every row, as <code>validate</code> checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and <code>rows</code> says which are <code>valid</code>, <code>refused</code> (with what <code>create</code> would have answered) or <code>unreadable</code> (with the cells at fault). <code>dryRun</code> stops there even when every row is valid. Otherwise the rows are then made in order as <code>bulk</code> makes its items, each <code>created</code> or, when something changed since the check or a row repeats an earlier one, <code>refused</code>. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An <code>Idempotency-Key</code> header works as on <code>bulk</code>, by row. A file has no column for short links: each post takes the workspace's default (<code>links.status</code>'s <code>byDefault</code>). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<ImportResult> import_(PostImport request) {
         CompletableFuture<PealClientHttpResponse<ImportResult>> rawFuture = this.rawClient.import_(request);
@@ -303,7 +230,7 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: <code>text</code> and <code>channels</code> (channel ids separated by spaces, commas or semicolons) are required columns, <code>at</code> too (<code>now</code>, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's <code>time_zone</code>, an IANA zone, UTC if left out); <code>media</code> (ids of ready media of the workspace), <code>allow_duplicate</code> (<code>true</code> or <code>false</code>) and <code>idempotency_key</code> are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (<code>strayQuote</code>). Blank lines are no rows. The file is checked first, every row, as <code>validate</code> checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and <code>rows</code> says which are <code>valid</code>, <code>refused</code> (with what <code>send</code> would have answered) or <code>unreadable</code> (with the cells at fault). <code>dryRun</code> stops there even when every row is valid. Otherwise the rows are then made in order as <code>bulk</code> makes its items, each <code>created</code> or, when something changed since the check or a row repeats an earlier one, <code>refused</code>. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An <code>Idempotency-Key</code> header works as on <code>bulk</code>, by row. A file has no column for short links: each post takes the workspace's default (<code>shortLinks.status</code>'s <code>byDefault</code>). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
+     * Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: <code>text</code> and <code>channels</code> (channel ids separated by spaces, commas or semicolons) are required columns, <code>at</code> too (<code>now</code>, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's <code>time_zone</code>, an IANA zone, UTC if left out); <code>media</code> (ids of ready media of the workspace), <code>allow_duplicate</code> (<code>true</code> or <code>false</code>) and <code>idempotency_key</code> are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (<code>strayQuote</code>). Blank lines are no rows. The file is checked first, every row, as <code>validate</code> checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and <code>rows</code> says which are <code>valid</code>, <code>refused</code> (with what <code>create</code> would have answered) or <code>unreadable</code> (with the cells at fault). <code>dryRun</code> stops there even when every row is valid. Otherwise the rows are then made in order as <code>bulk</code> makes its items, each <code>created</code> or, when something changed since the check or a row repeats an earlier one, <code>refused</code>. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An <code>Idempotency-Key</code> header works as on <code>bulk</code>, by row. A file has no column for short links: each post takes the workspace's default (<code>links.status</code>'s <code>byDefault</code>). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<ImportResult> import_(PostImport request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ImportResult>> rawFuture =
@@ -318,7 +245,7 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Checks a post without making it, and changes nothing: send what <code>send</code> takes, or a draft (no <code>when</code>). It answers 200 whether or not the post would go through, with <code>valid</code> and everything that would refuse it, all at once: per channel, the text the channel receives, counted as its platform counts it against each of its limits, its hashtags, mentions, links and media, and every violation of the platform's rules (text, media formats, sizes, counts and durations, options) and of the account's own where its platform tells them; the channels and media that are not the workspace's; and, when <code>when</code> is given, whether the time can be kept (for <code>queue</code>, the slot it would take now, <code>queueSlot</code>, or why there is none, <code>queueNoRoom</code>: QueueNotFound when the queue is not the workspace's), whether the workspace's plan has room, and the channels that already have the same content from another post (<code>duplicates</code>, as DuplicatePost tells them; none with <code>allowDuplicate</code>). A post that is valid now can still be refused later: a channel disconnected, a plan's month filled meanwhile. Needs post:read and channel:read, and media:read when it shows media.
+     * Checks a post without making it, and changes nothing: send what <code>create</code> takes, or a draft (no <code>when</code>). It answers 200 whether or not the post would go through, with <code>valid</code> and everything that would refuse it, all at once: per channel, the text the channel receives, counted as its platform counts it against each of its limits, its hashtags, mentions, links and media, and every violation of the platform's rules (text, media formats, sizes, counts and durations, options) and of the account's own where its platform tells them; the channels and media that are not the workspace's; and, when <code>when</code> is given, whether the time can be kept (for <code>queue</code>, the slot it would take now, <code>queueSlot</code>, or why there is none, <code>queueNoRoom</code>: QueueNotFound when the queue is not the workspace's), whether the workspace's plan has room, and the channels that already have the same content from another post (<code>duplicates</code>, as DuplicatePost tells them; none with <code>allowDuplicate</code>). A post that is valid now can still be refused later: a channel disconnected, a plan's month filled meanwhile. Needs post:read and channel:read, and media:read when it shows media.
      */
     public CompletableFuture<PostValidation> validate(PostToValidate request) {
         CompletableFuture<PealClientHttpResponse<PostValidation>> rawFuture = this.rawClient.validate(request);
@@ -332,7 +259,7 @@ public class AsyncPostsClient {
     }
 
     /**
-     * Checks a post without making it, and changes nothing: send what <code>send</code> takes, or a draft (no <code>when</code>). It answers 200 whether or not the post would go through, with <code>valid</code> and everything that would refuse it, all at once: per channel, the text the channel receives, counted as its platform counts it against each of its limits, its hashtags, mentions, links and media, and every violation of the platform's rules (text, media formats, sizes, counts and durations, options) and of the account's own where its platform tells them; the channels and media that are not the workspace's; and, when <code>when</code> is given, whether the time can be kept (for <code>queue</code>, the slot it would take now, <code>queueSlot</code>, or why there is none, <code>queueNoRoom</code>: QueueNotFound when the queue is not the workspace's), whether the workspace's plan has room, and the channels that already have the same content from another post (<code>duplicates</code>, as DuplicatePost tells them; none with <code>allowDuplicate</code>). A post that is valid now can still be refused later: a channel disconnected, a plan's month filled meanwhile. Needs post:read and channel:read, and media:read when it shows media.
+     * Checks a post without making it, and changes nothing: send what <code>create</code> takes, or a draft (no <code>when</code>). It answers 200 whether or not the post would go through, with <code>valid</code> and everything that would refuse it, all at once: per channel, the text the channel receives, counted as its platform counts it against each of its limits, its hashtags, mentions, links and media, and every violation of the platform's rules (text, media formats, sizes, counts and durations, options) and of the account's own where its platform tells them; the channels and media that are not the workspace's; and, when <code>when</code> is given, whether the time can be kept (for <code>queue</code>, the slot it would take now, <code>queueSlot</code>, or why there is none, <code>queueNoRoom</code>: QueueNotFound when the queue is not the workspace's), whether the workspace's plan has room, and the channels that already have the same content from another post (<code>duplicates</code>, as DuplicatePost tells them; none with <code>allowDuplicate</code>). A post that is valid now can still be refused later: a channel disconnected, a plan's month filled meanwhile. Needs post:read and channel:read, and media:read when it shows media.
      */
     public CompletableFuture<PostValidation> validate(PostToValidate request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<PostValidation>> rawFuture =
@@ -423,63 +350,6 @@ public class AsyncPostsClient {
         CompletableFuture<PealClientHttpResponse<Post>> rawFuture =
                 this.rawClient.update(postId, request, requestOptions);
         CompletableFuture<Post> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-     */
-    public CompletableFuture<Void> discard(String postId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.discard(postId);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-     */
-    public CompletableFuture<Void> discard(String postId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.discard(postId, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-     */
-    public CompletableFuture<Void> discard(String postId, DiscardPostsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.discard(postId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-     */
-    public CompletableFuture<Void> discard(String postId, DiscardPostsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.discard(postId, request, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
                 rawFuture.cancel(true);
@@ -608,8 +478,8 @@ public class AsyncPostsClient {
     /**
      * Files a post under these tags of the workspace, 10 at most, instead of those it had; an empty list takes them all off. Tags say nothing to the platforms, so a post takes them whatever its status, sent or not. Needs post:update.
      */
-    public CompletableFuture<Post> tag(String postId, PostTags request) {
-        CompletableFuture<PealClientHttpResponse<Post>> rawFuture = this.rawClient.tag(postId, request);
+    public CompletableFuture<Post> setTags(String postId, PostTags request) {
+        CompletableFuture<PealClientHttpResponse<Post>> rawFuture = this.rawClient.setTags(postId, request);
         CompletableFuture<Post> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -622,8 +492,9 @@ public class AsyncPostsClient {
     /**
      * Files a post under these tags of the workspace, 10 at most, instead of those it had; an empty list takes them all off. Tags say nothing to the platforms, so a post takes them whatever its status, sent or not. Needs post:update.
      */
-    public CompletableFuture<Post> tag(String postId, PostTags request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Post>> rawFuture = this.rawClient.tag(postId, request, requestOptions);
+    public CompletableFuture<Post> setTags(String postId, PostTags request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Post>> rawFuture =
+                this.rawClient.setTags(postId, request, requestOptions);
         CompletableFuture<Post> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -1341,5 +1212,17 @@ public class AsyncPostsClient {
             }
         });
         return future;
+    }
+
+    public AsyncDraftsClient drafts() {
+        return this.draftsClient.get();
+    }
+
+    public AsyncTagsClient tags() {
+        return this.tagsClient.get();
+    }
+
+    public AsyncSignaturesClient signatures() {
+        return this.signaturesClient.get();
     }
 }

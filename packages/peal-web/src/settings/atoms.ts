@@ -94,30 +94,33 @@ const apiKeysKey = (workspaceId: string) => [`api-keys:${workspaceId}`];
 export const apiKeysChanged = apiKeysKey;
 
 export const workspaceApiKeys = Atom.family((workspaceId: string) =>
-  PealApi.query("apiKeys", "list", {
+  PealApi.query("workspace.apiKeys", "list", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: apiKeysKey(workspaceId),
   })
 );
 
-export const createApiKey = PealApi.mutation("apiKeys", "create");
+export const createApiKey = PealApi.mutation("workspace.apiKeys", "create");
 
-export const revokeApiKey = PealApi.mutation("apiKeys", "revoke");
+export const revokeApiKey = PealApi.mutation("workspace.apiKeys", "revoke");
 
 /** What refreshes the connected applications once one is revoked. */
 export const connectedAppsChanged = ["connected-apps"];
 
-export const connectedApps = PealApi.query("connectedApps", "list", {
+export const connectedApps = PealApi.query("me.connectedApps", "list", {
   reactivityKeys: connectedAppsChanged,
 });
 
-export const revokeConnectedApp = PealApi.mutation("connectedApps", "revoke");
+export const revokeConnectedApp = PealApi.mutation(
+  "me.connectedApps",
+  "revoke"
+);
 
 /** The account's two-step verification, as its settings show it. */
-export const twoStepStatus = PealApi.query("account", "twoStep", {
+export const twoStepStatus = PealApi.query("me.account", "twoStep", {
   reactivityKeys: ["two-step"],
 });
 
-export const deleteWorkspace = PealApi.mutation("workspaces", "delete");
+export const deleteWorkspace = PealApi.mutation("workspace", "delete");
 
-export const deleteAccount = PealApi.mutation("account", "delete");
+export const deleteAccount = PealApi.mutation("me.account", "delete");

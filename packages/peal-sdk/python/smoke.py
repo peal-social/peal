@@ -10,14 +10,14 @@ base_url = os.environ["PEAL_API_URL"]
 peal = Peal(base_url=base_url, token="peal_test")
 
 peal.system.health()
-me = peal.session.me()
+me = peal.me.get()
 
 assert me.user.email == "ada@example.test", me
 assert me.impersonated_by is None and me.user.image is None, me
 assert "post:schedule" in me.workspaces[0].permissions, me
 
 try:
-    Peal(base_url=base_url, token="refused").session.me()
+    Peal(base_url=base_url, token="refused").me.get()
 except ApiError as error:
     assert error.status_code == 401, error
 else:

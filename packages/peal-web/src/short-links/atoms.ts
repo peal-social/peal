@@ -12,7 +12,7 @@ export const shortLinksChanged = (workspaceId: string) => [
 ];
 
 export const shortLinkStatus = Atom.family((workspaceId: string) =>
-  PealApi.query("shortLinks", "status", {
+  PealApi.query("links", "status", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: shortLinksChanged(workspaceId),
   })
@@ -21,11 +21,11 @@ export const shortLinkStatus = Atom.family((workspaceId: string) =>
 /** A post's short links, with their clicks over the last 30 days. */
 export const postShortLinks = Atom.family(
   ({ postId, workspaceId }: { postId: string; workspaceId: string }) =>
-    PealApi.query("shortLinks", "list", {
+    PealApi.query("links", "list", {
       headers: forWorkspace(workspaceId),
       query: { postId },
       reactivityKeys: shortLinksChanged(workspaceId),
     })
 );
 
-export const setShortLinkDefault = PealApi.mutation("shortLinks", "setDefault");
+export const setShortLinkDefault = PealApi.mutation("links", "setDefault");

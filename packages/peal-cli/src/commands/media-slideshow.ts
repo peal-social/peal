@@ -176,7 +176,7 @@ const followed = Effect.fn("media.slideshow.followed")(function* followed({
     );
   }
 
-  const read = client.slideshows
+  const read = client["media.slideshows"]
     .get({ headers: {}, params: { slideshowId: asked.id } })
     .pipe(Effect.mapError(explain(url)));
 
@@ -271,7 +271,7 @@ const render = Command.make(
     const edit = yield* editIn(input.edit);
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const asked = yield* client.slideshows
+    const asked = yield* client["media.slideshows"]
       .createFromEdit({
         headers: {},
         payload: { edit },
@@ -368,7 +368,7 @@ const create = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const asked = yield* client.slideshows
+    const asked = yield* client["media.slideshows"]
       .create({
         headers: {},
         payload: {
@@ -416,7 +416,7 @@ const status = Command.make(
   Effect.fn("media.slideshow.status")(function* status(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const found = yield* client.slideshows
+    const found = yield* client["media.slideshows"]
       .get({
         headers: {},
         params: { slideshowId: input.slideshowId },
@@ -448,7 +448,7 @@ const list = Command.make(
   Effect.fn("media.slideshow.list")(function* list(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const found = yield* client.slideshows
+    const found = yield* client["media.slideshows"]
       .list({
         headers: {},
         query: Option.match(input.status, {

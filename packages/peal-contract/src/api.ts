@@ -36,6 +36,8 @@ import { InvitationsApi } from "./invitations.ts";
 import { LegalApi } from "./legal.ts";
 import { LookupsApi } from "./lookups.ts";
 import { MediaAudioApi } from "./media-audio.ts";
+import { MediaImagesApi } from "./media-images.ts";
+import { MediaTranscriptionsApi } from "./media-transcriptions.ts";
 import { MediaApi } from "./media.ts";
 import { MembersApi } from "./members.ts";
 import { NoticesApi } from "./notices.ts";
@@ -43,6 +45,7 @@ import { NotificationPreferencesApi } from "./notification-preferences.ts";
 import { PartnerAccountApi } from "./partner-account.ts";
 import { PartnerUsageApi } from "./partner-usage.ts";
 import { PartnerApi } from "./partner.ts";
+import { PostDraftsApi } from "./posts-drafts.ts";
 import { PostsApi } from "./posts.ts";
 import { QueuesApi } from "./queues.ts";
 import { RecyclingApi } from "./recycling.ts";
@@ -1522,6 +1525,8 @@ export type {
   VoiceoverRequest,
 } from "./media-audio.ts";
 
+export { MediaTranscriptionsApi } from "./media-transcriptions.ts";
+
 export { AudioAllowanceReached } from "./audio-allowance-reached.ts";
 
 export {
@@ -2686,65 +2691,68 @@ export { WorkspaceNotFound } from "./workspace-not-found.ts";
 // the CLI and the MCP server derive their typed clients from it, and the docs
 // render its OpenAPI document.
 export class Api extends HttpApi.make("peal")
-  .add(SystemApi)
-  .add(SessionApi)
-  .add(CredentialApi)
-  .add(ApiKeysApi)
-  .add(ChannelsApi)
-  .add(ChannelOAuthApi)
-  .add(DataDeletionApi)
   .add(PostsApi)
-  .add(ArticlesApi)
-  .add(MediaApi)
-  .add(MediaAudioApi)
-  .add(NoticesApi)
-  .add(NotificationPreferencesApi)
-  .add(BrowserAnalyticsApi)
-  .add(AssistantApi)
-  .add(VideoGenerationsApi)
-  .add(SlideshowsApi)
-  .add(WorkspacesApi)
-  .add(MembersApi)
-  .add(InvitationsApi)
-  .add(AccountApi)
-  .add(ConnectedAppsApi)
-  .add(BillingApi)
-  .add(BillingActionsApi)
-  .add(UsageApi)
-  .add(CaptchaApi)
-  .add(AnalyticsApi)
-  .add(TikTokApi)
-  .add(CapabilitiesApi)
-  .add(LookupsApi)
-  .add(WebhooksApi)
-  .add(InboxApi)
-  .add(InboxReviewsApi)
-  .add(InboxMessagesApi)
-  .add(AdsApi)
-  .add(ActivityApi)
-  .add(PartnerApi)
-  .add(PartnerUsageApi)
-  .add(PartnerAccountApi)
-  .add(ConnectLinksApi)
-  .add(HostedConnectApi)
-  .add(StaffApi)
-  .add(LegalApi)
-  .add(ClientErrorsApi)
-  .add(ReviewApi)
-  .add(ReviewLinkApi)
-  .add(ContractRequestsApi)
-  .add(ContractRequestsDeskApi)
-  .add(BillingAccountsDeskApi)
+  .add(PostDraftsApi)
   .add(TagsApi)
   .add(SignaturesApi)
+  .add(ReviewApi)
+  .add(ChannelsApi)
+  .add(CapabilitiesApi)
+  .add(ChannelDefaultsApi)
+  .add(LookupsApi)
   .add(ChannelSetsApi)
+  .add(ConnectLinksApi)
+  .add(TikTokApi)
+  .add(MediaApi)
+  .add(MediaImagesApi)
+  .add(MediaAudioApi)
+  .add(MediaTranscriptionsApi)
+  .add(VideoGenerationsApi)
+  .add(SlideshowsApi)
+  .add(InboxApi)
+  .add(InboxMessagesApi)
+  .add(InboxReviewsApi)
+  .add(InboxRulesApi)
   .add(QueuesApi)
   .add(RecyclingApi)
   .add(FollowUpsApi)
-  .add(InboxRulesApi)
   .add(FeedsApi)
-  .add(ChannelDefaultsApi)
+  .add(AnalyticsApi)
+  .add(AdsApi)
+  .add(ArticlesApi)
   .add(ShortLinksApi)
+  .add(WebhooksApi)
+  .add(AssistantApi)
+  .add(WorkspacesApi)
+  .add(ActivityApi)
+  .add(ApiKeysApi)
+  .add(MembersApi)
+  .add(InvitationsApi)
+  .add(BillingApi)
+  .add(BillingActionsApi)
+  .add(UsageApi)
+  .add(PartnerApi)
+  .add(PartnerAccountApi)
+  .add(PartnerUsageApi)
+  .add(SessionApi)
+  .add(NoticesApi)
+  .add(NotificationPreferencesApi)
+  .add(AccountApi)
+  .add(ConnectedAppsApi)
+  .add(BrowserAnalyticsApi)
+  .add(CredentialApi)
+  .add(SystemApi)
+  .add(ChannelOAuthApi)
+  .add(DataDeletionApi)
+  .add(CaptchaApi)
+  .add(HostedConnectApi)
+  .add(ReviewLinkApi)
+  .add(ClientErrorsApi)
+  .add(ContractRequestsApi)
+  .add(StaffApi)
+  .add(LegalApi)
+  .add(ContractRequestsDeskApi)
+  .add(BillingAccountsDeskApi)
   // A query parameter the endpoint does not take is refused
   // (InvalidRequest), never ignored: a misspelt filter (`channelIds` for
   // `channelId`) would otherwise answer every post as if it were applied.

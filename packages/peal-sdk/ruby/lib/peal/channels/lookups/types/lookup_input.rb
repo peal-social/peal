@@ -1,0 +1,27 @@
+# frozen_string_literal: true
+
+module Peal
+  module Channels
+    module Lookups
+      module Types
+        class LookupInput < Internal::Types::Model
+          field :channel_id, -> { String }, optional: false, nullable: false, api_name: "channelId"
+
+          field :name, -> { String }, optional: false, nullable: false
+
+          field :board_id, -> { String }, optional: true, nullable: false, api_name: "boardId"
+
+          field :cursor, -> { String }, optional: true, nullable: false
+
+          field :language, -> { String }, optional: true, nullable: false
+
+          field :limit, -> { Integer }, optional: true, nullable: false
+
+          field :region_code, -> { String }, optional: true, nullable: false, api_name: "regionCode"
+
+          field :vanity_name, -> { String }, optional: true, nullable: false, api_name: "vanityName"
+        end
+      end
+    end
+  end
+end

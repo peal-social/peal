@@ -12,7 +12,7 @@ import { accountShown, billingView, standingView } from "./billing-view.ts";
 
 export const BillingHandlers = HttpApiBuilder.group(
   Api,
-  "billing",
+  "workspace.billing",
   Effect.fn(function* billingHandlers(handlers) {
     const overview = yield* BillingOverview;
     const standings = yield* WorkspaceStanding;

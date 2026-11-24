@@ -127,8 +127,8 @@ const list = Command.make(
   Effect.fn("inbox.reviews.list")(function* listing(flags) {
     const { client, url, workspace } = yield* inWorkspace(flags.workspace);
 
-    const page = yield* client.inboxReviews
-      .listReviewThreads({
+    const page = yield* client["inbox.reviews"]
+      .listThreads({
         headers: {},
         query: {
           ...Option.match(flags.channel, {
@@ -192,8 +192,8 @@ const show = Command.make(
   Effect.fn("inbox.reviews.show")(function* showing(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const detail = yield* client.inboxReviews
-      .getReviewThread({
+    const detail = yield* client["inbox.reviews"]
+      .getThread({
         headers: {},
         params: { threadId: flags.threadId },
       })
@@ -262,8 +262,8 @@ const answered = Command.make(
   Effect.fn("inbox.reviews.answered")(function* marking(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const review = yield* client.inboxReviews
-      .setReviewAnswered({
+    const review = yield* client["inbox.reviews"]
+      .setAnswered({
         headers: {},
         params: { reviewId: flags.reviewId },
         payload: { answered: !flags.undo },

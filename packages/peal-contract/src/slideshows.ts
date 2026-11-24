@@ -223,7 +223,7 @@ export type Slideshows = typeof SlideshowsSchema.Type;
  * `composition` (Shotstack), with its own key: a durable job each, which
  * a request starts and the workspace follows.
  */
-export class SlideshowsApi extends HttpApiGroup.make("slideshows")
+export class SlideshowsApi extends HttpApiGroup.make("media.slideshows")
   .add(
     HttpApiEndpoint.post("create", "/", {
       error: [

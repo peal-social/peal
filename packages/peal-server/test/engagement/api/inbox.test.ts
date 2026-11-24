@@ -36,7 +36,7 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 // Each request acts as a member, as the WorkspaceAccess middleware would.
 
 const clientAs = (world: World, permissions: readonly Permission[]) =>
-  HttpApiTest.groups(Api, ["inbox"]).pipe(
+  HttpApiTest.groups(Api, ["inbox.comments"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         InboxApiLive.pipe(
@@ -83,7 +83,11 @@ describe("the inbox endpoints", () => {
 
     return Effect.gen(function* reads() {
       const client = yield* clientAs(world, permissionsFor("viewer"));
-      const page = yield* client.inbox.listThreads({ headers, query: {} });
+
+      const page = yield* client["inbox.comments"].listThreads({
+        headers,
+        query: {},
+      });
 
       assert.deepStrictEqual(
         page.items.map(({ comments, id, unanswered }) => ({
@@ -95,7 +99,7 @@ describe("the inbox endpoints", () => {
       );
       assert.isNull(page.nextCursor);
 
-      const detail = yield* client.inbox.getThread({
+      const detail = yield* client["inbox.comments"].getThread({
         headers,
         params: { threadId: thread(50).id },
       });
@@ -140,7 +144,7 @@ describe("the inbox endpoints", () => {
       return Effect.gen(function* replies() {
         const client = yield* clientAs(world, editor);
 
-        const reply = yield* client.inbox.reply({
+        const reply = yield* client["inbox.comments"].reply({
           headers,
           params: { commentId: commentId(101) },
           payload: { text: "Thank you!" },
@@ -150,7 +154,7 @@ describe("the inbox endpoints", () => {
         assert.isNull(reply.settledAt);
         assert.strictEqual(reply.text, "@reader101@social.example Thank you!");
 
-        const again = yield* client.inbox
+        const again = yield* client["inbox.comments"]
           .reply({
             headers,
             params: { commentId: commentId(101) },
@@ -170,7 +174,7 @@ describe("the inbox endpoints", () => {
           Effect.provide(world.layer)
         );
 
-        const detail = yield* client.inbox.getThread({
+        const detail = yield* client["inbox.comments"].getThread({
           headers,
           params: { threadId: thread(50).id },
         });
@@ -192,7 +196,7 @@ describe("the inbox endpoints", () => {
         assert.strictEqual(detail.comments[0]?.state, "answered");
         assert.strictEqual(detail.thread.unanswered, 1);
 
-        const confirmed = yield* client.inbox
+        const confirmed = yield* client["inbox.comments"]
           .confirmReply({
             headers,
             params: { replyId: reply.id },
@@ -203,7 +207,7 @@ describe("the inbox endpoints", () => {
         assert.instanceOf(confirmed, ReplyStatusConflict);
         assert.strictEqual(confirmed.status, "sent");
 
-        const withdrawn = yield* client.inbox.withdrawReply({
+        const withdrawn = yield* client["inbox.comments"].withdrawReply({
           headers,
           params: { replyId: reply.id },
         });
@@ -223,7 +227,7 @@ describe("the inbox endpoints", () => {
         const member = yield* clientAs(world, editor);
         const comment101 = { commentId: commentId(101) };
 
-        const forbidden = yield* viewer.inbox
+        const forbidden = yield* viewer["inbox.comments"]
           .reply({
             headers: {},
             params: comment101,
@@ -233,7 +237,7 @@ describe("the inbox endpoints", () => {
 
         assert.instanceOf(forbidden, Forbidden);
 
-        const hidden = yield* member.inbox
+        const hidden = yield* member["inbox.comments"]
           .moderate({
             headers,
             params: comment101,
@@ -247,7 +251,7 @@ describe("the inbox endpoints", () => {
           ["hide", "unsupported"]
         );
 
-        const long = yield* member.inbox
+        const long = yield* member["inbox.comments"]
           .reply({
             headers: {},
             params: comment101,
@@ -261,7 +265,7 @@ describe("the inbox endpoints", () => {
           ["tooLong", 500, "characters"]
         );
 
-        const blank = yield* member.inbox
+        const blank = yield* member["inbox.comments"]
           .reply({ headers: {}, params: comment101, payload: { text: "   " } })
           .pipe(Effect.flip);
 
@@ -278,11 +282,11 @@ describe("the inbox endpoints", () => {
     return Effect.gen(function* misses() {
       const client = yield* clientAs(world, editor);
 
-      const noThread = yield* client.inbox
+      const noThread = yield* client["inbox.comments"]
         .getThread({ headers, params: { threadId: "not-an-id" } })
         .pipe(Effect.flip);
 
-      const noComment = yield* client.inbox
+      const noComment = yield* client["inbox.comments"]
         .setAnswered({
           headers,
           params: { commentId: commentId(999) },
@@ -314,7 +318,7 @@ describe("the inbox endpoints", () => {
       return Effect.gen(function* marks() {
         const client = yield* clientAs(world, editor);
 
-        const first = yield* client.inbox.listThreads({
+        const first = yield* client["inbox.comments"].listThreads({
           headers,
           query: { limit: 1 },
         });
@@ -325,7 +329,7 @@ describe("the inbox endpoints", () => {
         );
         assert.isNotNull(first.nextCursor);
 
-        const second = yield* client.inbox.listThreads({
+        const second = yield* client["inbox.comments"].listThreads({
           headers,
           query: { cursor: first.nextCursor ?? "", limit: 1 },
         });
@@ -335,7 +339,7 @@ describe("the inbox endpoints", () => {
           [thread(50).id]
         );
 
-        const answered = yield* client.inbox.setAnswered({
+        const answered = yield* client["inbox.comments"].setAnswered({
           headers,
           params: { commentId: later.id },
           payload: { answered: true },
@@ -343,7 +347,7 @@ describe("the inbox endpoints", () => {
 
         assert.strictEqual(answered.state, "answered");
 
-        const waiting = yield* client.inbox.listThreads({
+        const waiting = yield* client["inbox.comments"].listThreads({
           headers,
           query: { unanswered: "true" },
         });

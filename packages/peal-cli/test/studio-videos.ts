@@ -97,7 +97,7 @@ export const studioVideosOf = (world: VideosWorld) => {
     });
 
   const groupLive = (studio: Studio) =>
-    HttpApiBuilder.group(Api, "videoGenerations", (handlers) =>
+    HttpApiBuilder.group(Api, "media.videos", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {

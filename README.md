@@ -230,7 +230,7 @@ Here's the Node.js client asking the API who your key belongs to:
 import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
-const me = await peal.session.me();
+const credential = await peal.credential.get();
 ```
 
 AI agents can work in a workspace through the

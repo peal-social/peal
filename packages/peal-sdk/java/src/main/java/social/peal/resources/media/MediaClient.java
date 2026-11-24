@@ -3,8 +3,11 @@
  */
 package social.peal.resources.media;
 
+import java.util.function.Supplier;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
+import social.peal.core.Suppliers;
+import social.peal.resources.media.images.ImagesClient;
 import social.peal.resources.media.requests.CompleteMediaRequest;
 import social.peal.resources.media.requests.DeleteMediaRequest;
 import social.peal.resources.media.requests.GetMediaRequest;
@@ -13,6 +16,10 @@ import social.peal.resources.media.requests.MediaDescription;
 import social.peal.resources.media.requests.MediaImport;
 import social.peal.resources.media.requests.NewUpload;
 import social.peal.resources.media.requests.UsageMediaRequest;
+import social.peal.resources.media.slideshows.SlideshowsClient;
+import social.peal.resources.media.transcriptions.TranscriptionsClient;
+import social.peal.resources.media.videos.VideosClient;
+import social.peal.resources.media.voiceovers.VoiceoversClient;
 import social.peal.types.Media;
 import social.peal.types.MediaPage;
 import social.peal.types.MediaUsage;
@@ -23,9 +30,24 @@ public class MediaClient {
 
     private final RawMediaClient rawClient;
 
+    protected final Supplier<ImagesClient> imagesClient;
+
+    protected final Supplier<VoiceoversClient> voiceoversClient;
+
+    protected final Supplier<TranscriptionsClient> transcriptionsClient;
+
+    protected final Supplier<VideosClient> videosClient;
+
+    protected final Supplier<SlideshowsClient> slideshowsClient;
+
     public MediaClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.rawClient = new RawMediaClient(clientOptions);
+        this.imagesClient = Suppliers.memoize(() -> new ImagesClient(clientOptions));
+        this.voiceoversClient = Suppliers.memoize(() -> new VoiceoversClient(clientOptions));
+        this.transcriptionsClient = Suppliers.memoize(() -> new TranscriptionsClient(clientOptions));
+        this.videosClient = Suppliers.memoize(() -> new VideosClient(clientOptions));
+        this.slideshowsClient = Suppliers.memoize(() -> new SlideshowsClient(clientOptions));
     }
 
     /**
@@ -215,5 +237,25 @@ public class MediaClient {
      */
     public MediaUsage usage(String mediaId, UsageMediaRequest request, RequestOptions requestOptions) {
         return this.rawClient.usage(mediaId, request, requestOptions).body();
+    }
+
+    public ImagesClient images() {
+        return this.imagesClient.get();
+    }
+
+    public VoiceoversClient voiceovers() {
+        return this.voiceoversClient.get();
+    }
+
+    public TranscriptionsClient transcriptions() {
+        return this.transcriptionsClient.get();
+    }
+
+    public VideosClient videos() {
+        return this.videosClient.get();
+    }
+
+    public SlideshowsClient slideshows() {
+        return this.slideshowsClient.get();
     }
 }

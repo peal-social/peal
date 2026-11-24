@@ -34,7 +34,7 @@ export const workspaceChannels = Atom.family((workspaceId: string) =>
  * opens the channel's options, as TikTok's guidelines ask.
  */
 export const tiktokCreator = (workspaceId: string, channelId: string) =>
-  PealApi.query("tiktok", "creator", {
+  PealApi.query("channels.tiktokCreator", "get", {
     headers: forWorkspace(workspaceId),
     params: { channelId },
     reactivityKeys: ["channels"],
@@ -45,7 +45,7 @@ export const tiktokCreator = (workspaceId: string, channelId: string) =>
  * included: the composer reads which Bluesky gates a channel can set.
  */
 export const channelCapabilities = (workspaceId: string, channelId: string) =>
-  PealApi.query("capabilities", "channel", {
+  PealApi.query("channels.capabilities", "get", {
     headers: forWorkspace(workspaceId),
     params: { channelId },
     reactivityKeys: ["channels"],
@@ -97,7 +97,7 @@ const boardLists = Atom.family((key: string) => {
   return PealApi.runtime.atom(
     PealApi.use((client) =>
       everyPage((cursor) =>
-        client.lookups
+        client["channels.lookups"]
           .run({
             headers: forWorkspace(workspaceId),
             params: { channelId, name: "pinterestBoards" },
@@ -135,7 +135,7 @@ const sectionLists = Atom.family((key: string) => {
       everyPage((cursor) =>
         boardId === ""
           ? Effect.succeed(noSections)
-          : client.lookups
+          : client["channels.lookups"]
               .run({
                 headers: forWorkspace(workspaceId),
                 params: {
@@ -180,7 +180,7 @@ export const scheduledPosts = (
   from: DateTime.Utc,
   to: DateTime.Utc
 ) =>
-  PealApi.query("posts", "list", {
+  PealApi.query("posts", "calendar", {
     headers: forWorkspace(workspaceId),
     query: { from, to },
     reactivityKeys: postsKeys,
@@ -214,7 +214,7 @@ const searchPages = Atom.family((key: string) => {
   const [workspaceId = "", rest = ""] = key.split("?");
   const query = new URLSearchParams(rest);
 
-  return PealApi.query("posts", "search", {
+  return PealApi.query("posts", "list", {
     headers: forWorkspace(workspaceId),
     query: searchOf(filtersOf(query), query.get("cursor") ?? undefined),
     reactivityKeys: postsKeys,
@@ -232,7 +232,7 @@ export const postSearchPage = (
   cursor: Option.Option<string>
 ) => searchPages(searchPageKey(workspaceId, filters, cursor));
 
-export const createPost = PealApi.mutation("posts", "create");
+export const createPost = PealApi.mutation("posts.drafts", "create");
 
 export const updatePost = PealApi.mutation("posts", "update");
 
@@ -253,7 +253,7 @@ export const reschedulePost = PealApi.mutation("posts", "reschedule");
  * The posts scheduled in a range, read once when asked rather than kept:
  * what holds a queue's slot at the moment a move is undone.
  */
-export const readScheduledPosts = PealApi.mutation("posts", "list");
+export const readScheduledPosts = PealApi.mutation("posts", "calendar");
 
 export const cancelPost = PealApi.mutation("posts", "cancel");
 
@@ -262,7 +262,7 @@ export const unschedulePost = PealApi.mutation("posts", "unschedule");
 /** Takes one channel off a post that waits for its time. */
 export const removePostTarget = PealApi.mutation("posts", "removeTarget");
 
-export const discardPost = PealApi.mutation("posts", "discard");
+export const discardPost = PealApi.mutation("posts.drafts", "delete");
 
 /** Makes a new draft that says what a post says, whatever its status. */
 export const duplicatePost = PealApi.mutation("posts", "duplicate");

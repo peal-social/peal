@@ -38,7 +38,7 @@ Every endpoint needs a credential, except the health checks and the documents pl
 | OAuth access token | `Authorization: Bearer …`              | The [command line](/developers/cli) and [MCP clients](/developers/mcp), which obtain it when you sign them in | It acts as you, limited to the scopes you agreed to (below).                                                                                                                                                                                                                                                                                             |
 | Session cookie     | The web app's cookie                   | The web app itself                                                                                            | A request that changes something with it must come from the web app's own origin.                                                                                                                                                                                                                                                                        |
 
-Members who may manage keys (owners and admins) create one with `POST /api/v1/api-keys` while signed in. The key appears only in that answer.
+Members who may manage keys (owners and admins) create one with `POST /api/v1/workspace/api-keys` while signed in. The key appears only in that answer.
 
 An OAuth token is limited to its scopes ([What each permission allows](/developers/agents#scopes)):
 
@@ -149,7 +149,7 @@ curl https://api.example.com/api/v1/credential \
 
 ## Workspaces [#workspaces]
 
-A workspace's resources live under `/api/v1/`: `channels`, `posts`, `media`, `assistant`, `analytics`, `billing`, `usage`, `webhooks`, `activity` and `api-keys`. `DELETE /api/v1/workspace` deletes the workspace itself, with everything in it ([Workspaces and your account](/guides/workspace#delete-workspace)). An API key, and an application bound to a workspace, act in their own workspace. Any other credential names the workspace in the `Peal-Workspace` header ([The workspace of a request](/developers/conventions#workspace)). Each endpoint's reference names the permission it needs, such as `post:schedule` or `channel:connect`.
+A workspace's resources live under `/api/v1/`: `posts`, `approvals`, `channels`, `media`, `inbox`, `automations`, `analytics`, `links`, `webhooks`, `assistant` and `workspace`, which holds its members, API keys, billing, usage and activity. `DELETE /api/v1/workspace` deletes the workspace itself, with everything in it ([Workspaces and your account](/guides/workspace#delete-workspace)). An API key, and an application bound to a workspace, act in their own workspace. Any other credential names the workspace in the `Peal-Workspace` header ([The workspace of a request](/developers/conventions#workspace)). Each endpoint's reference names the permission it needs, such as `post:schedule` or `channel:connect`.
 
 When the credential doesn't get through, you'll see one of these:
 
@@ -161,19 +161,19 @@ When the credential doesn't get through, you'll see one of these:
 
 These are the requests a script uses most:
 
-| Request                                        | What it does                                                                                    | Shown in                                           |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `POST /api/v1/posts/send`                      | Creates a post and sends it in one request, now or at an instant                                | [Posting from an AI agent](/developers/agents#api) |
-| `POST /api/v1/media/import`                    | Has the server fetch an image or a video from a public HTTPS address into the workspace's media | [Posting from an AI agent](/developers/agents#api) |
-| `POST …/posts/validate`                        | Checks a post without making it                                                                 | [Posting through the API](/developers/posting)     |
-| `send?wait=30`, `GET …/posts/{postId}/outcome` | Waits for the outcome of a post that goes out now                                               | [Posting through the API](/developers/posting)     |
-| `POST …/posts/bulk`                            | Sends up to 50 posts in one request                                                             | [Posting through the API](/developers/posting)     |
-| `POST …/posts/import`                          | Imports posts from a CSV file                                                                   | [Posting through the API](/developers/posting)     |
-| `GET …/posts/search`                           | Lists posts with filters                                                                        | [Posting through the API](/developers/posting)     |
+| Request                                                | What it does                                                                                    | Shown in                                           |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `POST /api/v1/posts`                                   | Creates a post and sends it in one request, now or at an instant                                | [Posting from an AI agent](/developers/agents#api) |
+| `POST /api/v1/media/import`                            | Has the server fetch an image or a video from a public HTTPS address into the workspace's media | [Posting from an AI agent](/developers/agents#api) |
+| `POST …/posts/validate`                                | Checks a post without making it                                                                 | [Posting through the API](/developers/posting)     |
+| `POST …/posts?wait=30`, `GET …/posts/{postId}/outcome` | Waits for the outcome of a post that goes out now                                               | [Posting through the API](/developers/posting)     |
+| `POST …/posts/bulk`                                    | Sends up to 50 posts in one request                                                             | [Posting through the API](/developers/posting)     |
+| `POST …/posts/import`                                  | Imports posts from a CSV file                                                                   | [Posting through the API](/developers/posting)     |
+| `GET …/posts`                                          | Lists posts with filters                                                                        | [Posting through the API](/developers/posting)     |
 
 ### Sending twice [#send-twice]
 
-With an `Idempotency-Key` header, you can send a `send` request again safely. Within 24 hours, the same key with the same body answers the post the first request made. Another body answers 409 `IdempotencyKeyReused`.
+With an `Idempotency-Key` header, you can send a `create` request again safely. Within 24 hours, the same key with the same body answers the post the first request made. Another body answers 409 `IdempotencyKeyReused`.
 
 A post made in one call is refused with 409 `DuplicatePost` when its content already goes to one of its channels less than 23 hours from its time. Set `allowDuplicate: true` to send it anyway.
 
@@ -195,7 +195,7 @@ Every error answers a JSON body in one format:
 | 502                    | The writing assistant's endpoints, when the provider gave no answer the assistant could use.                                                                                                                                                                                                                                        |
 | 402 `PlanLimitReached` | On an instance that bills, connecting a channel, scheduling a post or starting an upload the workspace's plan has no room for. It names the `limit` (`channels`, `members`, `scheduledPosts`, `assistantRequests` or `mediaStorage`, in bytes) and what the plan `allowed` ([Plans and billing](/guides/workspace/billing#limits)). |
 
-`GET /api/v1/billing` shows the plan, its allowances and the workspace's usage. `GET /api/v1/usage` shows what it used day by day, in UTC days ([Usage](/guides/workspace/billing#usage)).
+`GET /api/v1/workspace/billing` shows the plan, its allowances and the workspace's usage. `GET /api/v1/workspace/usage` shows what it used day by day, in UTC days ([Usage](/guides/workspace/billing#usage)).
 
 ## Partner accounts [#partner]
 
@@ -203,13 +203,13 @@ A partner account owns one workspace for each customer of a product built on Pea
 
 - `/api/v1/partner` answers its partner keys only. `GET /api/v1/partner` reads the account and what it holds, and `/api/v1/partner/workspaces` creates, lists, finds by `externalId`, changes and deletes its workspaces.
 - A partner key then calls `/api/v1/…` for a workspace its account owns, naming it in the `Peal-Workspace` header, and gets 404 for any other.
-- `POST /api/v1/connect-links` answers a hosted, single-use link. The owner of a social account connects it there without a Peal account.
+- `POST /api/v1/channels/connect-links` answers a hosted, single-use link. The owner of a social account connects it there without a Peal account.
 
 ## What a channel takes [#capabilities]
 
 Each platform has its own rules: how long a post may be and how its length is counted, which images and videos it takes, and options of its own, such as a YouTube video's title. Peal answers the rules it checks when a post is scheduled, so you don't have to learn them from each platform's documentation. There are two descriptions:
 
-- `GET /api/v1/platforms/capabilities` describes every platform, whether or not the workspace has a channel there.
+- `GET /api/v1/channels/capabilities` describes every platform, whether or not the workspace has a channel there.
 - `GET /api/v1/channels/{channelId}/capabilities` describes one channel. You get its platform's capabilities, and under `account` what the account itself narrows, read from the platform at that moment.
 
 An account can narrow a lot. A TikTok account offers only some audiences, may have turned comments, Duets or Stitches off, and has a longest video. When the platform can't be asked, `account` is `unread` with the reason, and you get the platform's capabilities alone.
@@ -219,37 +219,37 @@ Both need `channel:read`, so an API key or an application you let read only may 
 <CodeGroup>
 
 ```ts Node.js
-const capabilities = await peal.capabilities.channel({
+const capabilities = await peal.channels.capabilities.get({
   channelId,
 });
 ```
 
 ```python Python
-capabilities = peal.capabilities.channel(channel_id=channel_id)
+capabilities = peal.channels.capabilities.get(channel_id=channel_id)
 ```
 
 ```go Go
-capabilities, err := client.Capabilities.Channel(ctx, &peal.ChannelCapabilitiesRequest{
+capabilities, err := client.Channels.Capabilities.Get(ctx, &channels.GetCapabilitiesRequest{
 	ChannelID: channelID,
 })
 ```
 
 ```ruby Ruby
-capabilities = peal.capabilities.channel(channel_id: channel_id)
+capabilities = peal.channels.capabilities.get(channel_id: channel_id)
 ```
 
 ```java Java
 import social.peal.types.ChannelCapabilities;
 
-ChannelCapabilities capabilities = peal.capabilities().channel(channelId);
+ChannelCapabilities capabilities = peal.channels().capabilities().get(channelId);
 ```
 
 ```php PHP
-$capabilities = $peal->capabilities->channel($channelId);
+$capabilities = $peal->channels->capabilities->get($channelId);
 ```
 
 ```csharp .NET
-var capabilities = await peal.Capabilities.ChannelAsync(new ChannelCapabilitiesRequest
+var capabilities = await peal.Channels.Capabilities.GetAsync(new GetCapabilitiesRequest
 {
     ChannelId = channelId,
 });
@@ -257,8 +257,9 @@ var capabilities = await peal.Capabilities.ChannelAsync(new ChannelCapabilitiesR
 
 ```rust Rust
 let capabilities = peal
+    .channels
     .capabilities
-    .channel(channel_id, None)
+    .get(channel_id, None)
     .await?;
 ```
 
@@ -300,7 +301,7 @@ This one lists YouTube's video categories in France:
 <CodeGroup>
 
 ```ts Node.js
-const categories = await peal.lookups.run({
+const categories = await peal.channels.lookups.run({
   channelId,
   name: "youtubeVideoCategories",
   regionCode: "FR",
@@ -308,7 +309,7 @@ const categories = await peal.lookups.run({
 ```
 
 ```python Python
-categories = peal.lookups.run(
+categories = peal.channels.lookups.run(
     channel_id=channel_id,
     name="youtubeVideoCategories",
     region_code="FR",
@@ -316,7 +317,7 @@ categories = peal.lookups.run(
 ```
 
 ```go Go
-categories, err := client.Lookups.Run(ctx, &peal.LookupInput{
+categories, err := client.Channels.Lookups.Run(ctx, &channels.LookupInput{
 	ChannelID:  channelID,
 	Name:       "youtubeVideoCategories",
 	RegionCode: peal.String("FR"),
@@ -324,7 +325,7 @@ categories, err := client.Lookups.Run(ctx, &peal.LookupInput{
 ```
 
 ```ruby Ruby
-categories = peal.lookups.run(
+categories = peal.channels.lookups.run(
   channel_id: channel_id,
   name: "youtubeVideoCategories",
   region_code: "FR"
@@ -332,23 +333,23 @@ categories = peal.lookups.run(
 ```
 
 ```java Java
-import social.peal.resources.lookups.requests.LookupInput;
+import social.peal.resources.channels.lookups.requests.LookupInput;
 import social.peal.types.LookupResult;
 
-LookupResult categories = peal.lookups().run(channelId, "youtubeVideoCategories",
+LookupResult categories = peal.channels().lookups().run(channelId, "youtubeVideoCategories",
     LookupInput.builder().regionCode("FR").build());
 ```
 
 ```php PHP
-use Peal\Lookups\Requests\LookupInput;
+use Peal\Channels\Lookups\Requests\LookupInput;
 
-$categories = $peal->lookups->run($channelId, 'youtubeVideoCategories', new LookupInput([
+$categories = $peal->channels->lookups->run($channelId, 'youtubeVideoCategories', new LookupInput([
     'regionCode' => 'FR',
 ]));
 ```
 
 ```csharp .NET
-var categories = await peal.Lookups.RunAsync(new LookupInput
+var categories = await peal.Channels.Lookups.RunAsync(new LookupInput
 {
     ChannelId = channelId,
     Name = "youtubeVideoCategories",
@@ -358,6 +359,7 @@ var categories = await peal.Lookups.RunAsync(new LookupInput
 
 ```rust Rust
 let categories = peal
+    .channels
     .lookups
     .run(
         channel_id,
@@ -429,7 +431,7 @@ Members who may manage webhooks (owners and admins), and API keys given that per
 
 ## The activity log [#activity]
 
-`GET /api/v1/activity` lists the requests that asked to change something in the workspace. Each entry says who asked, through which key or application, which operation, and how it was answered. It needs `activity:read`, which owners hold ([The activity log](/guides/workspace#activity)).
+`GET /api/v1/workspace/activity` lists the requests that asked to change something in the workspace. Each entry says who asked, through which key or application, which operation, and how it was answered. It needs `activity:read`, which owners hold ([The activity log](/guides/workspace#activity)).
 
 ## Your account [#me]
 

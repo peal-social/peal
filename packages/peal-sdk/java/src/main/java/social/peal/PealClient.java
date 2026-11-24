@@ -6,356 +6,148 @@ package social.peal;
 import java.util.function.Supplier;
 import social.peal.core.ClientOptions;
 import social.peal.core.Suppliers;
-import social.peal.resources.activity.ActivityClient;
 import social.peal.resources.ads.AdsClient;
 import social.peal.resources.analytics.AnalyticsClient;
-import social.peal.resources.apikeys.ApiKeysClient;
+import social.peal.resources.approvals.ApprovalsClient;
 import social.peal.resources.articles.ArticlesClient;
 import social.peal.resources.assistant.AssistantClient;
-import social.peal.resources.billing.BillingClient;
-import social.peal.resources.capabilities.CapabilitiesClient;
-import social.peal.resources.channeldefaults.ChannelDefaultsClient;
+import social.peal.resources.automations.AutomationsClient;
 import social.peal.resources.channels.ChannelsClient;
-import social.peal.resources.channelsets.ChannelSetsClient;
-import social.peal.resources.connectlinks.ConnectLinksClient;
 import social.peal.resources.credential.CredentialClient;
-import social.peal.resources.feeds.FeedsClient;
-import social.peal.resources.followups.FollowUpsClient;
 import social.peal.resources.inbox.InboxClient;
-import social.peal.resources.inboxmessages.InboxMessagesClient;
-import social.peal.resources.inboxreviews.InboxReviewsClient;
-import social.peal.resources.inboxrules.InboxRulesClient;
-import social.peal.resources.invitations.InvitationsClient;
-import social.peal.resources.lookups.LookupsClient;
+import social.peal.resources.links.LinksClient;
+import social.peal.resources.me.MeClient;
 import social.peal.resources.media.MediaClient;
-import social.peal.resources.mediaaudio.MediaAudioClient;
-import social.peal.resources.members.MembersClient;
-import social.peal.resources.notices.NoticesClient;
-import social.peal.resources.notificationpreferences.NotificationPreferencesClient;
 import social.peal.resources.partner.PartnerClient;
-import social.peal.resources.partneraccount.PartnerAccountClient;
-import social.peal.resources.partnerusage.PartnerUsageClient;
 import social.peal.resources.posts.PostsClient;
-import social.peal.resources.queues.QueuesClient;
-import social.peal.resources.recycling.RecyclingClient;
-import social.peal.resources.review.ReviewClient;
-import social.peal.resources.session.SessionClient;
-import social.peal.resources.shortlinks.ShortLinksClient;
-import social.peal.resources.signatures.SignaturesClient;
-import social.peal.resources.slideshows.SlideshowsClient;
 import social.peal.resources.system.SystemClient;
-import social.peal.resources.tags.TagsClient;
-import social.peal.resources.tiktok.TiktokClient;
-import social.peal.resources.usage.UsageClient;
-import social.peal.resources.videogenerations.VideoGenerationsClient;
 import social.peal.resources.webhooks.WebhooksClient;
+import social.peal.resources.workspace.WorkspaceClient;
 
 public class PealClient implements AutoCloseable {
     protected final ClientOptions clientOptions;
 
-    protected final Supplier<SystemClient> systemClient;
+    protected final Supplier<PostsClient> postsClient;
 
-    protected final Supplier<SessionClient> sessionClient;
-
-    protected final Supplier<CredentialClient> credentialClient;
-
-    protected final Supplier<ApiKeysClient> apiKeysClient;
+    protected final Supplier<ApprovalsClient> approvalsClient;
 
     protected final Supplier<ChannelsClient> channelsClient;
 
-    protected final Supplier<PostsClient> postsClient;
-
-    protected final Supplier<ArticlesClient> articlesClient;
-
     protected final Supplier<MediaClient> mediaClient;
-
-    protected final Supplier<MediaAudioClient> mediaAudioClient;
-
-    protected final Supplier<NoticesClient> noticesClient;
-
-    protected final Supplier<NotificationPreferencesClient> notificationPreferencesClient;
-
-    protected final Supplier<AssistantClient> assistantClient;
-
-    protected final Supplier<VideoGenerationsClient> videoGenerationsClient;
-
-    protected final Supplier<SlideshowsClient> slideshowsClient;
-
-    protected final Supplier<MembersClient> membersClient;
-
-    protected final Supplier<InvitationsClient> invitationsClient;
-
-    protected final Supplier<BillingClient> billingClient;
-
-    protected final Supplier<UsageClient> usageClient;
 
     protected final Supplier<AnalyticsClient> analyticsClient;
 
-    protected final Supplier<TiktokClient> tiktokClient;
+    protected final Supplier<AdsClient> adsClient;
 
-    protected final Supplier<CapabilitiesClient> capabilitiesClient;
+    protected final Supplier<ArticlesClient> articlesClient;
 
-    protected final Supplier<LookupsClient> lookupsClient;
+    protected final Supplier<LinksClient> linksClient;
 
     protected final Supplier<WebhooksClient> webhooksClient;
 
-    protected final Supplier<InboxClient> inboxClient;
-
-    protected final Supplier<InboxReviewsClient> inboxReviewsClient;
-
-    protected final Supplier<InboxMessagesClient> inboxMessagesClient;
-
-    protected final Supplier<AdsClient> adsClient;
-
-    protected final Supplier<ActivityClient> activityClient;
+    protected final Supplier<AssistantClient> assistantClient;
 
     protected final Supplier<PartnerClient> partnerClient;
 
-    protected final Supplier<PartnerUsageClient> partnerUsageClient;
+    protected final Supplier<MeClient> meClient;
 
-    protected final Supplier<PartnerAccountClient> partnerAccountClient;
+    protected final Supplier<CredentialClient> credentialClient;
 
-    protected final Supplier<ConnectLinksClient> connectLinksClient;
+    protected final Supplier<SystemClient> systemClient;
 
-    protected final Supplier<ReviewClient> reviewClient;
+    protected final Supplier<AutomationsClient> automationsClient;
 
-    protected final Supplier<TagsClient> tagsClient;
+    protected final Supplier<InboxClient> inboxClient;
 
-    protected final Supplier<SignaturesClient> signaturesClient;
-
-    protected final Supplier<ChannelSetsClient> channelSetsClient;
-
-    protected final Supplier<QueuesClient> queuesClient;
-
-    protected final Supplier<RecyclingClient> recyclingClient;
-
-    protected final Supplier<FollowUpsClient> followUpsClient;
-
-    protected final Supplier<InboxRulesClient> inboxRulesClient;
-
-    protected final Supplier<FeedsClient> feedsClient;
-
-    protected final Supplier<ChannelDefaultsClient> channelDefaultsClient;
-
-    protected final Supplier<ShortLinksClient> shortLinksClient;
+    protected final Supplier<WorkspaceClient> workspaceClient;
 
     public PealClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
-        this.systemClient = Suppliers.memoize(() -> new SystemClient(clientOptions));
-        this.sessionClient = Suppliers.memoize(() -> new SessionClient(clientOptions));
-        this.credentialClient = Suppliers.memoize(() -> new CredentialClient(clientOptions));
-        this.apiKeysClient = Suppliers.memoize(() -> new ApiKeysClient(clientOptions));
-        this.channelsClient = Suppliers.memoize(() -> new ChannelsClient(clientOptions));
         this.postsClient = Suppliers.memoize(() -> new PostsClient(clientOptions));
-        this.articlesClient = Suppliers.memoize(() -> new ArticlesClient(clientOptions));
+        this.approvalsClient = Suppliers.memoize(() -> new ApprovalsClient(clientOptions));
+        this.channelsClient = Suppliers.memoize(() -> new ChannelsClient(clientOptions));
         this.mediaClient = Suppliers.memoize(() -> new MediaClient(clientOptions));
-        this.mediaAudioClient = Suppliers.memoize(() -> new MediaAudioClient(clientOptions));
-        this.noticesClient = Suppliers.memoize(() -> new NoticesClient(clientOptions));
-        this.notificationPreferencesClient = Suppliers.memoize(() -> new NotificationPreferencesClient(clientOptions));
-        this.assistantClient = Suppliers.memoize(() -> new AssistantClient(clientOptions));
-        this.videoGenerationsClient = Suppliers.memoize(() -> new VideoGenerationsClient(clientOptions));
-        this.slideshowsClient = Suppliers.memoize(() -> new SlideshowsClient(clientOptions));
-        this.membersClient = Suppliers.memoize(() -> new MembersClient(clientOptions));
-        this.invitationsClient = Suppliers.memoize(() -> new InvitationsClient(clientOptions));
-        this.billingClient = Suppliers.memoize(() -> new BillingClient(clientOptions));
-        this.usageClient = Suppliers.memoize(() -> new UsageClient(clientOptions));
         this.analyticsClient = Suppliers.memoize(() -> new AnalyticsClient(clientOptions));
-        this.tiktokClient = Suppliers.memoize(() -> new TiktokClient(clientOptions));
-        this.capabilitiesClient = Suppliers.memoize(() -> new CapabilitiesClient(clientOptions));
-        this.lookupsClient = Suppliers.memoize(() -> new LookupsClient(clientOptions));
-        this.webhooksClient = Suppliers.memoize(() -> new WebhooksClient(clientOptions));
-        this.inboxClient = Suppliers.memoize(() -> new InboxClient(clientOptions));
-        this.inboxReviewsClient = Suppliers.memoize(() -> new InboxReviewsClient(clientOptions));
-        this.inboxMessagesClient = Suppliers.memoize(() -> new InboxMessagesClient(clientOptions));
         this.adsClient = Suppliers.memoize(() -> new AdsClient(clientOptions));
-        this.activityClient = Suppliers.memoize(() -> new ActivityClient(clientOptions));
+        this.articlesClient = Suppliers.memoize(() -> new ArticlesClient(clientOptions));
+        this.linksClient = Suppliers.memoize(() -> new LinksClient(clientOptions));
+        this.webhooksClient = Suppliers.memoize(() -> new WebhooksClient(clientOptions));
+        this.assistantClient = Suppliers.memoize(() -> new AssistantClient(clientOptions));
         this.partnerClient = Suppliers.memoize(() -> new PartnerClient(clientOptions));
-        this.partnerUsageClient = Suppliers.memoize(() -> new PartnerUsageClient(clientOptions));
-        this.partnerAccountClient = Suppliers.memoize(() -> new PartnerAccountClient(clientOptions));
-        this.connectLinksClient = Suppliers.memoize(() -> new ConnectLinksClient(clientOptions));
-        this.reviewClient = Suppliers.memoize(() -> new ReviewClient(clientOptions));
-        this.tagsClient = Suppliers.memoize(() -> new TagsClient(clientOptions));
-        this.signaturesClient = Suppliers.memoize(() -> new SignaturesClient(clientOptions));
-        this.channelSetsClient = Suppliers.memoize(() -> new ChannelSetsClient(clientOptions));
-        this.queuesClient = Suppliers.memoize(() -> new QueuesClient(clientOptions));
-        this.recyclingClient = Suppliers.memoize(() -> new RecyclingClient(clientOptions));
-        this.followUpsClient = Suppliers.memoize(() -> new FollowUpsClient(clientOptions));
-        this.inboxRulesClient = Suppliers.memoize(() -> new InboxRulesClient(clientOptions));
-        this.feedsClient = Suppliers.memoize(() -> new FeedsClient(clientOptions));
-        this.channelDefaultsClient = Suppliers.memoize(() -> new ChannelDefaultsClient(clientOptions));
-        this.shortLinksClient = Suppliers.memoize(() -> new ShortLinksClient(clientOptions));
-    }
-
-    public SystemClient system() {
-        return this.systemClient.get();
-    }
-
-    public SessionClient session() {
-        return this.sessionClient.get();
-    }
-
-    public CredentialClient credential() {
-        return this.credentialClient.get();
-    }
-
-    public ApiKeysClient apiKeys() {
-        return this.apiKeysClient.get();
-    }
-
-    public ChannelsClient channels() {
-        return this.channelsClient.get();
+        this.meClient = Suppliers.memoize(() -> new MeClient(clientOptions));
+        this.credentialClient = Suppliers.memoize(() -> new CredentialClient(clientOptions));
+        this.systemClient = Suppliers.memoize(() -> new SystemClient(clientOptions));
+        this.automationsClient = Suppliers.memoize(() -> new AutomationsClient(clientOptions));
+        this.inboxClient = Suppliers.memoize(() -> new InboxClient(clientOptions));
+        this.workspaceClient = Suppliers.memoize(() -> new WorkspaceClient(clientOptions));
     }
 
     public PostsClient posts() {
         return this.postsClient.get();
     }
 
-    public ArticlesClient articles() {
-        return this.articlesClient.get();
+    public ApprovalsClient approvals() {
+        return this.approvalsClient.get();
+    }
+
+    public ChannelsClient channels() {
+        return this.channelsClient.get();
     }
 
     public MediaClient media() {
         return this.mediaClient.get();
     }
 
-    public MediaAudioClient mediaAudio() {
-        return this.mediaAudioClient.get();
-    }
-
-    public NoticesClient notices() {
-        return this.noticesClient.get();
-    }
-
-    public NotificationPreferencesClient notificationPreferences() {
-        return this.notificationPreferencesClient.get();
-    }
-
-    public AssistantClient assistant() {
-        return this.assistantClient.get();
-    }
-
-    public VideoGenerationsClient videoGenerations() {
-        return this.videoGenerationsClient.get();
-    }
-
-    public SlideshowsClient slideshows() {
-        return this.slideshowsClient.get();
-    }
-
-    public MembersClient members() {
-        return this.membersClient.get();
-    }
-
-    public InvitationsClient invitations() {
-        return this.invitationsClient.get();
-    }
-
-    public BillingClient billing() {
-        return this.billingClient.get();
-    }
-
-    public UsageClient usage() {
-        return this.usageClient.get();
-    }
-
     public AnalyticsClient analytics() {
         return this.analyticsClient.get();
-    }
-
-    public TiktokClient tiktok() {
-        return this.tiktokClient.get();
-    }
-
-    public CapabilitiesClient capabilities() {
-        return this.capabilitiesClient.get();
-    }
-
-    public LookupsClient lookups() {
-        return this.lookupsClient.get();
-    }
-
-    public WebhooksClient webhooks() {
-        return this.webhooksClient.get();
-    }
-
-    public InboxClient inbox() {
-        return this.inboxClient.get();
-    }
-
-    public InboxReviewsClient inboxReviews() {
-        return this.inboxReviewsClient.get();
-    }
-
-    public InboxMessagesClient inboxMessages() {
-        return this.inboxMessagesClient.get();
     }
 
     public AdsClient ads() {
         return this.adsClient.get();
     }
 
-    public ActivityClient activity() {
-        return this.activityClient.get();
+    public ArticlesClient articles() {
+        return this.articlesClient.get();
+    }
+
+    public LinksClient links() {
+        return this.linksClient.get();
+    }
+
+    public WebhooksClient webhooks() {
+        return this.webhooksClient.get();
+    }
+
+    public AssistantClient assistant() {
+        return this.assistantClient.get();
     }
 
     public PartnerClient partner() {
         return this.partnerClient.get();
     }
 
-    public PartnerUsageClient partnerUsage() {
-        return this.partnerUsageClient.get();
+    public MeClient me() {
+        return this.meClient.get();
     }
 
-    public PartnerAccountClient partnerAccount() {
-        return this.partnerAccountClient.get();
+    public CredentialClient credential() {
+        return this.credentialClient.get();
     }
 
-    public ConnectLinksClient connectLinks() {
-        return this.connectLinksClient.get();
+    public SystemClient system() {
+        return this.systemClient.get();
     }
 
-    public ReviewClient review() {
-        return this.reviewClient.get();
+    public AutomationsClient automations() {
+        return this.automationsClient.get();
     }
 
-    public TagsClient tags() {
-        return this.tagsClient.get();
+    public InboxClient inbox() {
+        return this.inboxClient.get();
     }
 
-    public SignaturesClient signatures() {
-        return this.signaturesClient.get();
-    }
-
-    public ChannelSetsClient channelSets() {
-        return this.channelSetsClient.get();
-    }
-
-    public QueuesClient queues() {
-        return this.queuesClient.get();
-    }
-
-    public RecyclingClient recycling() {
-        return this.recyclingClient.get();
-    }
-
-    public FollowUpsClient followUps() {
-        return this.followUpsClient.get();
-    }
-
-    public InboxRulesClient inboxRules() {
-        return this.inboxRulesClient.get();
-    }
-
-    public FeedsClient feeds() {
-        return this.feedsClient.get();
-    }
-
-    public ChannelDefaultsClient channelDefaults() {
-        return this.channelDefaultsClient.get();
-    }
-
-    public ShortLinksClient shortLinks() {
-        return this.shortLinksClient.get();
+    public WorkspaceClient workspace() {
+        return this.workspaceClient.get();
     }
 
     /**

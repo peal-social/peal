@@ -1,0 +1,101 @@
+using NUnit.Framework;
+using Peal.Inbox;
+using Peal.Test.Unit.MockServer;
+using Peal.Test.Utils;
+
+namespace Peal.Test.Unit.MockServer.Inbox.Reviews;
+
+[TestFixture]
+[Parallelizable(ParallelScope.Self)]
+public class ReplyTest : BaseMockServerTest
+{
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_1()
+    {
+        const string requestJson = """
+            {
+              "text": "x"
+            }
+            """;
+
+        const string mockResponse = """
+            {
+              "authorId": "authorId",
+              "createdAt": "createdAt",
+              "id": "id",
+              "reason": "channelUnavailable",
+              "reviewId": "reviewId",
+              "settledAt": "settledAt",
+              "status": "sending",
+              "text": "text",
+              "threadId": "threadId"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/v1/inbox/reviews/reviewId/reply")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPut()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Inbox.Reviews.ReplyAsync(
+            new NewInboxReviewReply { ReviewId = "reviewId", Text = "x" }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_2()
+    {
+        const string requestJson = """
+            {
+              "text": "text"
+            }
+            """;
+
+        const string mockResponse = """
+            {
+              "authorId": "authorId",
+              "createdAt": "createdAt",
+              "id": "id",
+              "reason": "channelUnavailable",
+              "reviewId": "reviewId",
+              "settledAt": "settledAt",
+              "status": "sending",
+              "text": "text",
+              "threadId": "threadId"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/v1/inbox/reviews/reviewId/reply")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPut()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Inbox.Reviews.ReplyAsync(
+            new NewInboxReviewReply { ReviewId = "reviewId", Text = "text" }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+}

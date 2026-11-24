@@ -37,19 +37,38 @@ Instantiate and use the client with the following:
 namespace Example;
 
 use Peal\PealClient;
-use Peal\ApiKeys\Requests\NewApiKey;
-use Peal\Types\Permission;
+use Peal\Posts\Requests\NewPost;
+use Peal\Types\PostContent;
+use Peal\Types\MediaAttachment;
+use Peal\Types\TextOverride;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingNow;
 
 $client = new PealClient(
     pealVersion: '2026-11-09',
     token: '<token>',
 );
-$client->apiKeys->create(
-    new NewApiKey([
-        'name' => 'name',
-        'permissions' => [
-            Permission::ActivityRead->value,
+$client->posts->create(
+    new NewPost([
+        'channelIds' => [
+            'channelIds',
         ],
+        'content' => new PostContent([
+            'media' => [
+                new MediaAttachment([
+                    'altText' => 'altText',
+                    'mediaId' => 'mediaId',
+                ]),
+            ],
+            'overrides' => [
+                new TextOverride([
+                    'channelId' => 'channelId',
+                    'text' => 'text',
+                ]),
+            ],
+            'text' => 'text',
+        ]),
+        'when' => PostTiming::now(new PostTimingNow([])),
     ]),
 );
 
@@ -87,7 +106,7 @@ use Peal\Exceptions\PealApiException;
 use Peal\Exceptions\PealException;
 
 try {
-    $response = $client->apiKeys->create(/* ... */);
+    $response = $client->posts->create(/* ... */);
 } catch (PealApiException $e) {
     echo 'API Exception occurred: ' . $e->getMessage() . "\n";
     echo 'Status Code: ' . $e->getCode() . "\n";
@@ -142,7 +161,7 @@ A request is deemed retryable when any of the following HTTP status codes is ret
 Use the `maxRetries` request option to configure this behavior.
 
 ```php
-$response = $client->apiKeys->create(
+$response = $client->posts->create(
     ...,
     options: [
         'maxRetries' => 0 // Override maxRetries at the request level
@@ -156,7 +175,7 @@ The SDK does not set a default timeout, so the underlying HTTP client's own defa
 `timeout` option to configure this behavior.
 
 ```php
-$response = $client->apiKeys->create(
+$response = $client->posts->create(
     ...,
     options: [
         'timeout' => 3.0 // Override timeout at the request level

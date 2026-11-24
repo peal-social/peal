@@ -128,7 +128,7 @@ The `generate_image` tool, from an [MCP client](/developers/mcp/tools#tools).
 </Tab>
 <Tab title="API">
 
-`POST /api/v1/assistant/images`, with the `prompt` and the `aspect` (`square`, `landscape` or `portrait`).
+`POST /api/v1/media/images`, with the `prompt` and the `aspect` (`square`, `landscape` or `portrait`).
 
 </Tab>
 </Tabs>
@@ -310,7 +310,7 @@ peal media transcribe <media-id> --save-description
 </Tab>
 <Tab title="API">
 
-`POST /api/v1/media/{mediaId}/transcription`, with `saveAsDescription` when the transcript should become the file's description. The answer holds the `text`, the `language` and the `durationSeconds` when the provider gives them, and `descriptionSaved`.
+`POST /api/v1/media/{mediaId}/transcriptions`, with `saveAsDescription` when the transcript should become the file's description. The answer holds the `text`, the `language` and the `durationSeconds` when the provider gives them, and `descriptionSaved`.
 
 </Tab>
 </Tabs>

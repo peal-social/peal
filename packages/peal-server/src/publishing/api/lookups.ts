@@ -32,7 +32,7 @@ export const retryAfterSecondsOf = ({ retryAfter }: RateLimited) =>
 
 export const LookupsHandlers = HttpApiBuilder.group(
   Api,
-  "lookups",
+  "channels.lookups",
   Effect.fn(function* lookupsHandlers(handlers) {
     const lookups = yield* ChannelLookups;
 

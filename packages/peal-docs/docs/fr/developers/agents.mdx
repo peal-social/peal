@@ -278,7 +278,7 @@ Quand une publication n’est pas confirmée, Peal n’a pas pu savoir si la pla
 
 Le [journal d’activité](/guides/workspace#activity) de l’espace de travail garde chaque requête qui a demandé à changer quelque chose, aboutie ou refusée, et chaque appel d’un outil qui change quelque chose. Chaque entrée dit quand, quelle opération, ce qui a été répondu, et la clé ou l’application par laquelle elle est passée, désignée par son nom.
 
-Les propriétaires le lisent avec `GET …/activity`, `peal activity list` ou l’outil `list_activity`, tout comme une clé à qui un propriétaire a donné `activity:read`. Il est gardé {{keep-activity-fr}}, et ne contient le texte d’aucune publication.
+Les propriétaires le lisent avec `GET …/workspace/activity`, `peal activity list` ou l’outil `list_activity`, tout comme une clé à qui un propriétaire a donné `activity:read`. Il est gardé {{keep-activity-fr}}, et ne contient le texte d’aucune publication.
 
 La page de chaque publication indique aussi comment elle a été créée et comment elle a été programmée : dans l’application web, avec une clé d’API, ou par une application, désignée par son nom. L’API répond la même chose dans `createdVia` et `scheduledVia` (`via` : `web`, `apiKey` ou `application`, avec l’identifiant `id` et le nom `name` de la clé ou de l’application), et le membre qui l’a programmée ou déplacée en dernier dans `scheduledBy`.
 
@@ -301,7 +301,7 @@ Un agent qui tourne sans surveillance rencontre des réponses perdues, des publi
 
 ### Ne renvoyer que ce qui peut l’être sans risque [#reliability-retry]
 
-Une réponse qui n’arrive pas ne veut pas dire que la publication n’a pas été créée. `create_post`, `peal post` et `POST …/posts/send` prennent une clé d’idempotence. Sous la même clé et avec la même publication, un second appel dans les 24 heures répond la première publication. Créer un brouillon ou importer un média une seconde fois en fait un second, et republier renvoie la publication ([Idempotence](/developers/conventions/idempotency#idempotency)).
+Une réponse qui n’arrive pas ne veut pas dire que la publication n’a pas été créée. `create_post`, `peal post` et `POST …/posts` prennent une clé d’idempotence. Sous la même clé et avec la même publication, un second appel dans les 24 heures répond la première publication. Créer un brouillon ou importer un média une seconde fois en fait un second, et republier renvoie la publication ([Idempotence](/developers/conventions/idempotency#idempotency)).
 
 ### Ne pas toucher à une publication non confirmée [#reliability-unconfirmed]
 
@@ -387,20 +387,20 @@ Votre propre agent ou script peut appeler les points d’accès sur lesquels rep
 | `rename_channel`                               | `PATCH …/channels/{channelId}`                                                             |
 | `disable_channel`, `enable_channel`            | `POST …/channels/{channelId}/disable`, `…/enable`                                          |
 | `list_media`, `import_media`                   | `GET …/media`, `POST …/media/import`                                                       |
-| `list_drafts`, `list_posts`                    | `GET …/posts/drafts`, `GET …/posts/search`                                                 |
-| `create_draft`, `update_draft`                 | `POST …/posts`, `PUT …/posts/{postId}`                                                     |
+| `list_drafts`, `list_posts`                    | `GET …/posts/drafts`, `GET …/posts`                                                        |
+| `create_draft`, `update_draft`                 | `POST …/posts/drafts`, `PUT …/posts/{postId}`                                              |
 | `duplicate_post`                               | `POST …/posts/{postId}/duplicate`                                                          |
-| `create_post`                                  | `POST …/posts/send`                                                                        |
+| `create_post`                                  | `POST …/posts`                                                                             |
 | `create_posts`                                 | `POST …/posts/bulk`                                                                        |
 | `validate_post`                                | `POST …/posts/validate`                                                                    |
 | `schedule_post`                                | `POST …/posts/{postId}/schedule`                                                           |
 | `reschedule_post`, `publish_post`              | `POST …/posts/{postId}/reschedule`, avec l’instant présent pour publier maintenant         |
 | `unschedule_post`, `cancel_post`               | `POST …/posts/{postId}/unschedule`, `POST …/posts/{postId}/cancel`                         |
 | `get_post`, `list_post_attempts`               | `GET …/posts/{postId}`, `GET …/posts/{postId}/attempts`                                    |
-| `list_tags`, `create_tag`                      | `GET …/tags`, `POST …/tags`                                                                |
+| `list_tags`, `create_tag`                      | `GET …/posts/tags`, `POST …/posts/tags`                                                    |
 | `tag_post`                                     | `PUT …/posts/{postId}/tags`                                                                |
-| `list_signatures`, `create_signature`          | `GET …/signatures`, `POST …/signatures`                                                    |
-| `list_channel_sets`, `create_channel_set`      | `GET …/channel-sets`, `POST …/channel-sets`                                                |
+| `list_signatures`, `create_signature`          | `GET …/posts/signatures`, `POST …/posts/signatures`                                        |
+| `list_channel_sets`, `create_channel_set`      | `GET …/channels/sets`, `POST …/channels/sets`                                              |
 | `get_channel_defaults`, `set_channel_defaults` | `GET …/channels/{channelId}/default-options`, `PUT …/channels/{channelId}/default-options` |
 | `await_post`                                   | `GET …/posts/{postId}/outcome`                                                             |
 | `repost_target`, `confirm_target`              | `POST …/posts/{postId}/targets/{targetId}/repost`, `…/confirm`                             |
@@ -408,7 +408,7 @@ Votre propre agent ou script peut appeler les points d’accès sur lesquels rep
 
 ### Envoyer une publication [#api-send]
 
-`POST …/posts/send` crée une publication et l’envoie en une seule requête. Envoyez un en-tête `Idempotency-Key` pour pouvoir renvoyer la requête sans risque. La clé est un texte de votre choix, de 255 caractères au plus, comme un UUID :
+`POST …/posts` crée une publication et l’envoie en une seule requête. Envoyez un en-tête `Idempotency-Key` pour pouvoir renvoyer la requête sans risque. La clé est un texte de votre choix, de 255 caractères au plus, comme un UUID :
 
 <CodeGroup>
 
@@ -417,7 +417,7 @@ import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
-const post = await peal.posts.send({
+const post = await peal.posts.create({
   "idempotency-key": "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channelIds: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -436,7 +436,7 @@ from peal import Peal, PostContent, PostTiming_At
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
-post = peal.posts.send(
+post = peal.posts.create(
     idempotency_key="7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     channel_ids=["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
     content=PostContent(
@@ -462,7 +462,7 @@ import (
 // requête.
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
-post, err := client.Posts.Send(context.Background(), &peal.NewPost{
+post, err := client.Posts.Create(context.Background(), &peal.NewPost{
 	IdempotencyKey: peal.String("7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44"),
 	ChannelIDs:     []string{"019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"},
 	Content: &peal.PostContent{
@@ -481,7 +481,7 @@ require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
-post = peal.posts.send_(
+post = peal.posts.create(
   idempotency_key: "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channel_ids: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -506,7 +506,7 @@ PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
 
-Post post = peal.posts().send(NewPost.builder()
+Post post = peal.posts().create(NewPost.builder()
     .content(PostContent.builder()
         .text("Notre catalogue de printemps est sorti. À lire sur https://example.com/printemps")
         .build())
@@ -529,7 +529,7 @@ use Peal\Types\PostTimingAt;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
-$post = $peal->posts->send(new NewPost([
+$post = $peal->posts->create(new NewPost([
     'idempotencyKey' => '7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44',
     'channelIds' => ['019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11'],
     'content' => new PostContent([
@@ -549,7 +549,7 @@ using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
-var post = await peal.Posts.SendAsync(new NewPost
+var post = await peal.Posts.CreateAsync(new NewPost
 {
     IdempotencyKey = "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     ChannelIds = new List<string> { "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11" },
@@ -579,7 +579,7 @@ let peal = PealClient::new(ClientConfig {
 // requête.
 let post = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec!["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11".to_string()])
             .content(PostContent {
@@ -601,7 +601,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/v1/posts/send \
+curl -X POST https://api.example.com/api/v1/posts \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44" \

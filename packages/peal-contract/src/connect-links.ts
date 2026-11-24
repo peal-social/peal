@@ -165,7 +165,7 @@ export type CreatedConnectLink = typeof CreatedConnectLinkSchema.Type;
 const link = { linkId: Schema.String };
 
 /** A workspace's connect links. */
-export class ConnectLinksApi extends HttpApiGroup.make("connectLinks")
+export class ConnectLinksApi extends HttpApiGroup.make("channels.connectLinks")
   .add(
     HttpApiEndpoint.post("create", "/", {
       error: [
@@ -223,4 +223,4 @@ export class ConnectLinksApi extends HttpApiGroup.make("connectLinks")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/connect-links") {}
+  .prefix("/api/v1/channels/connect-links") {}

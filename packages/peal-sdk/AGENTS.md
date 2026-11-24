@@ -4,8 +4,10 @@
   `peal-sdk:spec` (`scripts/spec.ts`) writes from the contract's: the
   operations a bearer token can call (an API key or an OAuth access token),
   and the health checks, with the schemas they use. It leaves out the groups
-  that answer only the person in their own session (`ownSession`: `account`,
-  `browserAnalytics`, `connectedApps`, `workspaces`); add a group like those to `ownSessionTags`.
+  that answer only the person in their own session (`ownSession`:
+  `me.account`, `me.browserAnalytics`, `me.connectedApps`, `workspace`,
+  `workspace.billingActions`), matched by the operation's group, whole; add
+  a group like those to `ownSessionGroups`.
   It names Effect's encoding of non-finite numbers `NonFiniteNumber`, and
   stops on any other enum inline in an `anyOf` or `oneOf`: give it a schema
   of its own in the contract. It writes each tagged union (Effect's `anyOf`
@@ -14,12 +16,21 @@
   becoming `<Schema><Tag>` (`ChannelStatusDisabled`); the SDKs that rename
   properties call `_tag` `type`, as Fern refuses a leading underscore. Each
   operation's SDK group and method come from its operationId
-  (`posts.schedule`), and no POST or PATCH is retried
+  (`posts.schedule`; `inbox.messages.send` writes the group as a list,
+  `["inbox", "messages"]`, which every generator nests:
+  `client.inbox.messages.send`), and no POST or PATCH is retried
   (`x-fern-retries`): the first may have created what a retry would create
   again. Every SDK sends `Peal-Version`, the contract's `info.version`,
   on every request (`x-fern-global-headers`, a literal its users may
   override), so a release that records a changelog entry regenerates the
   SDKs; `scripts/test.ts` fails a smoke test whose calls leave it out.
+  The generators name a namespace's client and its inlined request types
+  after its last segment alone (Rust numbers a second `UsageClient`;
+  `SendMessagesRequest`), and a Ruby group named like the gem's module does
+  not load: the script stops when two namespaces end with the same segment,
+  when one is called `peal`, and when a method has the name of a namespace
+  beside it. Go moves a namespace that holds others to
+  `<namespace>/client/client.go`.
   The workspace a client acts in is a client option too (`workspace`,
   `Peal-Workspace`, an optional global header): the script strips the
   header from every operation, so no method takes a workspace, and a
@@ -108,7 +119,7 @@
   of ours in its folder (`test/smoke.mjs`, `smoke.py`, `smoke_test.go`,
   `smoke.rb`, `src/test/java/…/SmokeTest.java`, `smoke.php`, `smoke/`,
   `examples/smoke.rs`), against the stand-in API `scripts/test.ts` serves:
-  the health check, then `GET /api/me` with the bearer token `peal_test`,
+  the health check, then `GET /api/me` (`me.get`) with the bearer token `peal_test`,
   whose answer holds nulls and an enum, then with a refused token, which
   must raise the SDK's 401 error. Keep every test calling both, and checking
   what it decodes; the run fails when the stand-in did not see both calls.

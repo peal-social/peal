@@ -56,7 +56,7 @@ const clientAs = (
   permissions: readonly Permission[],
   member: Member = memberOf(workspaceId, permissions)
 ) =>
-  HttpApiTest.groups(Api, ["inboxMessages"]).pipe(
+  HttpApiTest.groups(Api, ["inbox.messages"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         InboxMessagesApiLive.pipe(
@@ -110,7 +110,7 @@ describe("the direct messages endpoints", () => {
 
         // A viewer reads comments, never direct messages.
         assert.instanceOf(
-          yield* viewer.inboxMessages
+          yield* viewer["inbox.messages"]
             .listConversations({ headers, query: {} })
             .pipe(Effect.flip),
           Forbidden
@@ -118,7 +118,7 @@ describe("the direct messages endpoints", () => {
 
         const client = yield* clientAs(world, permissionsFor("editor"));
 
-        const page = yield* client.inboxMessages.listConversations({
+        const page = yield* client["inbox.messages"].listConversations({
           headers,
           query: {},
         });
@@ -139,7 +139,7 @@ describe("the direct messages endpoints", () => {
         );
         assert.strictEqual(page.nextCursor, null);
 
-        const detail = yield* client.inboxMessages.getConversation({
+        const detail = yield* client["inbox.messages"].getConversation({
           headers,
           params: { conversationId: talk.id },
           query: {},
@@ -177,14 +177,14 @@ describe("the direct messages endpoints", () => {
       Effect.gen(function* pages() {
         const client = yield* clientAs(world, permissionsFor("editor"));
 
-        const first = yield* client.inboxMessages.listConversations({
+        const first = yield* client["inbox.messages"].listConversations({
           headers,
           query: { limit: 1 },
         });
 
         assert.isNotNull(first.nextCursor);
 
-        const second = yield* client.inboxMessages.listConversations({
+        const second = yield* client["inbox.messages"].listConversations({
           headers,
           query: { cursor: first.nextCursor ?? "", limit: 1 },
         });
@@ -194,7 +194,7 @@ describe("the direct messages endpoints", () => {
           [older.id]
         );
 
-        const refused = yield* client.inboxMessages
+        const refused = yield* client["inbox.messages"]
           .listConversations({ headers, query: { cursor: "not-a-cursor" } })
           .pipe(Effect.flip);
 
@@ -215,7 +215,7 @@ describe("the direct messages endpoints", () => {
         Effect.gen(function* marks() {
           const client = yield* clientAs(world, ["engagement:message"]);
 
-          const marked = yield* client.inboxMessages.setConversationRead({
+          const marked = yield* client["inbox.messages"].setConversationRead({
             headers,
             params: { conversationId: talk.id },
             payload: { read: true },
@@ -226,7 +226,7 @@ describe("the direct messages endpoints", () => {
 
           const editor = yield* clientAs(world, permissionsFor("editor"));
 
-          const detail = yield* editor.inboxMessages.getConversation({
+          const detail = yield* editor["inbox.messages"].getConversation({
             headers,
             params: { conversationId: talk.id },
             query: { limit: 1 },
@@ -248,7 +248,7 @@ describe("the direct messages endpoints", () => {
         Effect.gen(function* sends() {
           const client = yield* clientAs(world, permissionsFor("editor"));
 
-          const sent = yield* client.inboxMessages.sendMessage({
+          const sent = yield* client["inbox.messages"].send({
             headers,
             params: { conversationId: talk.id },
             payload: { text: "Thanks!" },
@@ -257,8 +257,8 @@ describe("the direct messages endpoints", () => {
           assert.strictEqual(sent.status, "sending");
           assert.strictEqual(sent.text, "@reader1@social.example Thanks!");
 
-          const second = yield* client.inboxMessages
-            .sendMessage({
+          const second = yield* client["inbox.messages"]
+            .send({
               headers,
               params: { conversationId: talk.id },
               payload: { text: "Again" },
@@ -267,7 +267,7 @@ describe("the direct messages endpoints", () => {
 
           assert.instanceOf(second, MessagePending);
 
-          const read = yield* client.inboxMessages.setConversationRead({
+          const read = yield* client["inbox.messages"].setConversationRead({
             headers,
             params: { conversationId: talk.id },
             payload: { read: false },
@@ -291,8 +291,8 @@ describe("the direct messages endpoints", () => {
           const target = { conversationId: talk.id };
 
           assert.instanceOf(
-            yield* viewer.inboxMessages
-              .sendMessage({
+            yield* viewer["inbox.messages"]
+              .send({
                 headers: {},
                 params: target,
                 payload: { text: "Hi" },
@@ -301,8 +301,8 @@ describe("the direct messages endpoints", () => {
             Forbidden
           );
 
-          const blank = yield* editor.inboxMessages
-            .sendMessage({
+          const blank = yield* editor["inbox.messages"]
+            .send({
               headers: {},
               params: target,
               payload: { text: " " },
@@ -317,8 +317,8 @@ describe("the direct messages endpoints", () => {
           });
 
           assert.instanceOf(
-            yield* editor.inboxMessages
-              .sendMessage({
+            yield* editor["inbox.messages"]
+              .send({
                 headers: {},
                 params: target,
                 payload: { text: "Hi" },
@@ -327,7 +327,7 @@ describe("the direct messages endpoints", () => {
             InboxActionUnavailable
           );
           assert.instanceOf(
-            yield* editor.inboxMessages
+            yield* editor["inbox.messages"]
               .getConversation({
                 headers,
                 params: { conversationId: "not-an-id" },
@@ -361,8 +361,8 @@ describe("the direct messages endpoints", () => {
           const owner = yield* clientAs(world, permissionsFor("owner"));
 
           assert.instanceOf(
-            yield* editor.inboxMessages
-              .setChannelMessages({
+            yield* editor["inbox.messages"]
+              .setChannel({
                 headers,
                 params: { channelId: channelId(1) },
                 payload: { enabled: true },
@@ -371,7 +371,7 @@ describe("the direct messages endpoints", () => {
             Forbidden
           );
 
-          const on = yield* admin.inboxMessages.setChannelMessages({
+          const on = yield* admin["inbox.messages"].setChannel({
             headers,
             params: { channelId: channelId(1) },
             payload: { enabled: true },
@@ -382,8 +382,8 @@ describe("the direct messages endpoints", () => {
             [channelId(1)]
           );
           assert.instanceOf(
-            yield* admin.inboxMessages
-              .setMessageApplication({
+            yield* admin["inbox.messages"]
+              .setApplication({
                 headers,
                 payload: { allowed: true, clientId: "synthetic-client" },
               })
@@ -391,7 +391,7 @@ describe("the direct messages endpoints", () => {
             Forbidden
           );
 
-          const allowed = yield* owner.inboxMessages.setMessageApplication({
+          const allowed = yield* owner["inbox.messages"].setApplication({
             headers,
             payload: { allowed: true, clientId: "synthetic-client" },
           });
@@ -445,7 +445,7 @@ describe("the direct messages endpoints on Messenger", () => {
           const refusedTo = (member: Member) =>
             clientAs(world, member.permissions, member).pipe(
               Effect.flatMap((client) =>
-                client.inboxMessages
+                client["inbox.messages"]
                   .getConversation({ headers, params: target, query: {} })
                   .pipe(Effect.flip)
               )
@@ -492,7 +492,7 @@ describe("the direct messages endpoints on Messenger", () => {
 
           const client = yield* clientAs(world, editor);
 
-          const detail = yield* client.inboxMessages.getConversation({
+          const detail = yield* client["inbox.messages"].getConversation({
             headers,
             params: target,
             query: {},
@@ -516,8 +516,8 @@ describe("the direct messages endpoints on Messenger", () => {
         Effect.gen(function* shut() {
           const client = yield* clientAs(world, permissionsFor("editor"));
 
-          const refused = yield* client.inboxMessages
-            .sendMessage({
+          const refused = yield* client["inbox.messages"]
+            .send({
               headers,
               params: { conversationId: talk.id },
               payload: { text: "Hi" },
@@ -553,7 +553,7 @@ const twoDaysOn = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
 const sendAs = (world: MessageWorld, member: Member, conversationId: string) =>
   clientAs(world, member.permissions, member).pipe(
     Effect.flatMap((client) =>
-      client.inboxMessages.sendMessage({
+      client["inbox.messages"].send({
         headers,
         params: { conversationId },
         payload: { text: "Back on Monday, sorry for the wait" },
@@ -601,7 +601,7 @@ describe("a person's answer on Messenger past the 24 hours (Human Agent)", () =>
       Effect.gen(function* answered() {
         const client = yield* clientAs(world, editor);
 
-        const detail = yield* client.inboxMessages.getConversation({
+        const detail = yield* client["inbox.messages"].getConversation({
           headers,
           params: { conversationId: talk.id },
           query: {},
@@ -670,7 +670,7 @@ describe("a person's answer on Messenger past the 24 hours (Human Agent)", () =>
       Effect.gen(function* off() {
         const client = yield* clientAs(world, editor);
 
-        const detail = yield* client.inboxMessages.getConversation({
+        const detail = yield* client["inbox.messages"].getConversation({
           headers,
           params: { conversationId: talk.id },
           query: {},

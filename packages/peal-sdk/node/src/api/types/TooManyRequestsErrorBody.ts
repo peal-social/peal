@@ -3,12 +3,17 @@
 import * as Peal from "../index.js";
 
 export type TooManyRequestsErrorBody = 
-    | Peal.TooManyRequestsErrorBody.FeedReadsLimited
+    | Peal.TooManyRequestsErrorBody.OwnTextLimitReached
+    | Peal.TooManyRequestsErrorBody.TextProviderBusy
     | Peal.TooManyRequestsErrorBody.TooManyRequests;
 
 export namespace TooManyRequestsErrorBody {
-    export interface FeedReadsLimited extends Peal.FeedReadsLimitedEncoded {
-        _tag: "FeedReadsLimited";
+    export interface OwnTextLimitReached extends Peal.OwnTextLimitReachedEncoded {
+        _tag: "OwnTextLimitReached";
+    }
+
+    export interface TextProviderBusy extends Peal.TextProviderBusyEncoded {
+        _tag: "TextProviderBusy";
     }
 
     export interface TooManyRequests extends Peal.TooManyRequestsEncoded {

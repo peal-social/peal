@@ -91,15 +91,17 @@ const objectIdsOf = (
 // The groups whose writes create, change or delete content, comments and
 // approvals included, the replies sent in public from the inbox (a comment
 // rule's own included) and the direct messages sent from it: the law has Peal keep each such connection
-// a year (ConnectionJournal).
-const contentGroups: ReadonlySet<string> = new Set([
-  "inbox",
-  "inboxMessages",
-  "inboxReviews",
-  "inboxRules",
+// a year (ConnectionJournal). A group is named whole, and matched whole:
+// `posts` holds none of `posts.tags`, nor `media` any of `media.images`.
+export const contentGroups: ReadonlySet<string> = new Set([
+  "approvals",
+  "automations.commentRules",
+  "inbox.comments",
+  "inbox.messages",
+  "inbox.reviews",
   "media",
   "posts",
-  "review",
+  "posts.drafts",
 ]);
 
 // The requests sent as writes that make nothing: checking a post reads it
@@ -110,19 +112,30 @@ const checksOnly: ReadonlySet<string> = new Set([
   // A quote checks a boost as making it would, and reserves nothing.
   "ads.quoteBoost",
   // A lookup reads the platform, and answers: its input comes in a body.
-  "lookups.run",
+  "channels.lookups.run",
   "posts.validate",
 ]);
 
-// Whether the request changes content.
-const changesContent = (
-  request: HttpServerRequest.HttpServerRequest,
+/**
+ * Whether a request, by its method, to this group's endpoint changes
+ * content: the journal keeps its connection a year.
+ */
+export const changesContent = (
+  method: string,
   group: { readonly identifier: string },
   endpoint: { readonly identifier: string }
 ) =>
-  !safeMethods.has(request.method) &&
+  !safeMethods.has(method) &&
   contentGroups.has(group.identifier) &&
   !checksOnly.has(`${group.identifier}.${endpoint.identifier}`);
+
+/**
+ * Whether a request, by its method, to an operation of a workspace
+ * (`group.endpoint`) asks to change something: its workspace's activity
+ * log keeps it.
+ */
+export const asksForChange = (method: string, operation: string) =>
+  !safeMethods.has(method) && !checksOnly.has(operation);
 
 /**
  * The workspace a request names, unchecked, when its endpoint is a
@@ -282,7 +295,7 @@ export const AuthenticationLive = Layer.effect(
             yield* makeChangeMark
           );
 
-          if (!changesContent(request, group, endpoint)) {
+          if (!changesContent(request.method, group, endpoint)) {
             return yield* httpEffect.pipe(as(principal), marked);
           }
 
@@ -374,7 +387,7 @@ export const AuthenticationLive = Layer.effect(
             )
           );
 
-          if (!changesContent(request, group, endpoint)) {
+          if (!changesContent(request.method, group, endpoint)) {
             return yield* httpEffect.pipe(acting, marked);
           }
 
@@ -472,7 +485,7 @@ export const WorkspaceAccessLive = Layer.effect(
 
         const operation = `${group.identifier}.${endpoint.identifier}`;
 
-        if (safeMethods.has(request.method) || checksOnly.has(operation)) {
+        if (!asksForChange(request.method, operation)) {
           return yield* answered;
         }
 

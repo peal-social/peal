@@ -22,7 +22,7 @@ Chaque liste a sa propre taille de page :
 | `GET …/posts/drafts`                     | 20                | 50      |
 | `GET …/media`                            | 30                | 100     |
 | `GET …/webhooks/{endpointId}/deliveries` | 30                | 100     |
-| `GET …/activity`                         | 30                | 100     |
+| `GET …/workspace/activity`               | 30                | 100     |
 | `GET /api/me/notices`                    | 20                | 100     |
 
 Les chemins qui commencent par `…` sont sous `/api/v1`.
@@ -36,7 +36,7 @@ import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
-const page = await peal.activity.list({ limit: "2" });
+const page = await peal.workspace.activity.list({ limit: "2" });
 ```
 
 ```python Python
@@ -46,7 +46,7 @@ from peal import Peal
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
-page = peal.activity.list(limit="2")
+page = peal.workspace.activity.list(limit="2")
 ```
 
 ```go Go
@@ -57,6 +57,7 @@ import (
 	peal "github.com/peal-social/peal/packages/peal-sdk/go"
 	"github.com/peal-social/peal/packages/peal-sdk/go/client"
 	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+	"github.com/peal-social/peal/packages/peal-sdk/go/workspace"
 )
 
 // Le client s’appelle `client`, pour que `peal` reste le paquet des types de
@@ -64,7 +65,7 @@ import (
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 ctx := context.Background()
 
-page, err := client.Activity.List(ctx, &peal.ListActivityRequest{
+page, err := client.Workspace.Activity.List(ctx, &workspace.ListActivityRequest{
 	Limit: peal.String("2"),
 })
 ```
@@ -74,39 +75,40 @@ require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
-page = peal.activity.list(limit: "2")
+page = peal.workspace.activity.list(limit: "2")
 ```
 
 ```java Java
 import social.peal.PealClient;
-import social.peal.resources.activity.requests.ListActivityRequest;
+import social.peal.resources.workspace.activity.requests.ListActivityRequest;
 import social.peal.types.ActivityPage;
 
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
 
-ActivityPage page = peal.activity().list(ListActivityRequest.builder()
+ActivityPage page = peal.workspace().activity().list(ListActivityRequest.builder()
     .limit("2")
     .build());
 ```
 
 ```php PHP
 <?php
-use Peal\Activity\Requests\ListActivityRequest;
+use Peal\Workspace\Activity\Requests\ListActivityRequest;
 use Peal\PealClient;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
-$page = $peal->activity->list(new ListActivityRequest(['limit' => '2']));
+$page = $peal->workspace->activity->list(new ListActivityRequest(['limit' => '2']));
 ```
 
 ```csharp .NET
 using Peal;
+using Peal.Workspace;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
-var page = await peal.Activity.ListAsync(new ListActivityRequest
+var page = await peal.Workspace.Activity.ListAsync(new ListActivityRequest
 {
     Limit = "2",
 });
@@ -121,9 +123,10 @@ let peal = PealClient::new(ClientConfig {
 })?;
 
 let page = peal
+    .workspace
     .activity
     .list(
-        &ActivityListQueryRequest {
+        &WorkspaceActivityListQueryRequest {
             limit: Some("2".to_string()),
             ..Default::default()
         },
@@ -133,7 +136,7 @@ let page = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/v1/activity?limit=2" \
+curl "https://api.example.com/api/v1/workspace/activity?limit=2" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -147,7 +150,7 @@ La réponse contient deux entrées et un curseur :
     {
       "id": "019a7b31-0d4e-7c22-b8a1-3f5e6d7c8b90",
       "occurredAt": "2026-11-16T08:00:02.412Z",
-      "operation": "posts.send",
+      "operation": "posts.create",
       "status": 201,
       "errorCode": null,
       "actor": { "_tag": "apiKey", "apiKeyId": "k7Qp2mXvT9aLw3ZsB4nE" },
@@ -163,7 +166,7 @@ La réponse contient deux entrées et un curseur :
     {
       "id": "019a7b30-6f18-7a95-9d07-1c2b3a4d5e6f",
       "occurredAt": "2026-11-16T07:58:47.036Z",
-      "operation": "posts.discard",
+      "operation": "posts.drafts.delete",
       "status": 404,
       "errorCode": "post_not_found",
       "actor": { "_tag": "apiKey", "apiKeyId": "k7Qp2mXvT9aLw3ZsB4nE" },
@@ -189,7 +192,7 @@ Passez le `nextCursor` ci-dessus pour obtenir la page suivante. Les SDK n’ont 
 let cursor: string | undefined;
 
 do {
-  const page = await peal.activity.list({ limit: "100", cursor });
+  const page = await peal.workspace.activity.list({ limit: "100", cursor });
 
   for (const entry of page.items) {
     console.log(entry.operation, entry.status);
@@ -203,7 +206,7 @@ do {
 cursor = None
 
 while True:
-    page = peal.activity.list(limit="100", cursor=cursor)
+    page = peal.workspace.activity.list(limit="100", cursor=cursor)
 
     for entry in page.items:
         print(entry.operation, entry.status)
@@ -217,7 +220,7 @@ while True:
 var cursor *string
 
 for {
-	page, err := client.Activity.List(ctx, &peal.ListActivityRequest{
+	page, err := client.Workspace.Activity.List(ctx, &workspace.ListActivityRequest{
 		Limit:  peal.String("100"),
 		Cursor: cursor,
 	})
@@ -244,7 +247,7 @@ loop do
   query = { limit: "100" }
   query[:cursor] = cursor if cursor
 
-  page = peal.activity.list(**query)
+  page = peal.workspace.activity.list(**query)
 
   page.items.each { |entry| puts "#{entry.operation} #{entry.status}" }
 
@@ -260,7 +263,7 @@ import social.peal.types.ActivityEvent;
 Optional<String> cursor = Optional.empty();
 
 do {
-    ActivityPage page = peal.activity().list(ListActivityRequest.builder()
+    ActivityPage page = peal.workspace().activity().list(ListActivityRequest.builder()
         .limit("100")
         .cursor(cursor)
         .build());
@@ -277,7 +280,7 @@ do {
 $cursor = null;
 
 do {
-    $page = $peal->activity->list(new ListActivityRequest([
+    $page = $peal->workspace->activity->list(new ListActivityRequest([
         'limit' => '100',
         'cursor' => $cursor,
     ]));
@@ -295,7 +298,7 @@ string? cursor = null;
 
 do
 {
-    var page = await peal.Activity.ListAsync(new ListActivityRequest
+    var page = await peal.Workspace.Activity.ListAsync(new ListActivityRequest
     {
         Limit = "100",
         Cursor = cursor,
@@ -315,9 +318,10 @@ let mut cursor: Option<String> = None;
 
 loop {
     let page = peal
+        .workspace
         .activity
         .list(
-            &ActivityListQueryRequest {
+            &WorkspaceActivityListQueryRequest {
                 limit: Some("100".to_string()),
                 cursor: cursor.clone(),
                 ..Default::default()
@@ -338,7 +342,7 @@ loop {
 ```
 
 ```bash curl
-curl "https://api.example.com/api/v1/activity?limit=2&cursor=MDE5YTdiMzAtNmYxOC03YTk1LTlkMDctMWMyYjNhNGQ1ZTZm" \
+curl "https://api.example.com/api/v1/workspace/activity?limit=2&cursor=MDE5YTdiMzAtNmYxOC03YTk1LTlkMDctMWMyYjNhNGQ1ZTZm" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -350,7 +354,7 @@ Deux listes prennent plutôt une plage, et répondent d’un coup tout ce qu’e
 
 | Liste                                            | Ce qu’elle répond                                                              | Plage                       | Sinon                |
 | ------------------------------------------------ | ------------------------------------------------------------------------------ | --------------------------- | -------------------- |
-| `GET …/posts?from=…&to=…`                        | Les publications programmées entre deux instants, `from` compris et `to` exclu | Séparés de 62 jours au plus | `invalid_time_range` |
+| `GET …/posts/calendar?from=…&to=…`               | Les publications programmées entre deux instants, `from` compris et `to` exclu | Séparés de 62 jours au plus | `invalid_time_range` |
 | `GET …/analytics/summary?from=…&to=…&timeZone=…` | Le résumé des publications parties sur une plage de jours, bornes comprises    | 366 jours au plus           | `invalid_date_range` |
 
 Les listes qu’un espace de travail garde courtes arrivent en entier, sous forme de tableau : ses canaux, ses membres, ses invitations en attente, ses clés d’API et ses points de terminaison de webhook.

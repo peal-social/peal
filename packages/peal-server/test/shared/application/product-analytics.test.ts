@@ -106,7 +106,7 @@ describe("product analytics", () => {
           billing_account_id: "billing-account-1",
           environment: "test",
           error_code: "plan_limit_reached",
-          operation: "posts.create",
+          operation: "posts.drafts.create",
           status: 403,
           succeeded: false,
           via: "apiKey",

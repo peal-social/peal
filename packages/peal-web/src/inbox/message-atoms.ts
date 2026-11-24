@@ -28,7 +28,7 @@ export const conversationsChanged = (
 
 /** The workspace's latest conversations: one page of the most. */
 export const conversationList = Atom.family((workspaceId: string) =>
-  PealApi.query("inboxMessages", "listConversations", {
+  PealApi.query("inbox.messages", "listConversations", {
     headers: forWorkspace(workspaceId),
     query: { limit: maxInboxPageSize },
     reactivityKeys: conversationListChanged(workspaceId),
@@ -38,7 +38,7 @@ export const conversationList = Atom.family((workspaceId: string) =>
 const conversations = Atom.family((key: string) => {
   const [workspaceId = "", conversationId = "", cursor = ""] = key.split("/");
 
-  return PealApi.query("inboxMessages", "getConversation", {
+  return PealApi.query("inbox.messages", "getConversation", {
     headers: forWorkspace(workspaceId),
     params: { conversationId },
     query: cursor === "" ? {} : { cursor },
@@ -64,30 +64,27 @@ export const messageSettingsChanged = (workspaceId: string) => [
 
 /** The channels whose messages are on, and the applications let in. */
 export const messageSettings = Atom.family((workspaceId: string) =>
-  PealApi.query("inboxMessages", "getMessageSettings", {
+  PealApi.query("inbox.messages", "getSettings", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: messageSettingsChanged(workspaceId),
   })
 );
 
 export const setChannelMessages = PealApi.mutation(
-  "inboxMessages",
-  "setChannelMessages"
+  "inbox.messages",
+  "setChannel"
 );
 
 export const setMessageApplication = PealApi.mutation(
-  "inboxMessages",
-  "setMessageApplication"
+  "inbox.messages",
+  "setApplication"
 );
 
-export const sendMessage = PealApi.mutation("inboxMessages", "sendMessage");
+export const sendMessage = PealApi.mutation("inbox.messages", "send");
 
 export const setConversationRead = PealApi.mutation(
-  "inboxMessages",
+  "inbox.messages",
   "setConversationRead"
 );
 
-export const confirmMessage = PealApi.mutation(
-  "inboxMessages",
-  "confirmMessage"
-);
+export const confirmMessage = PealApi.mutation("inbox.messages", "confirm");

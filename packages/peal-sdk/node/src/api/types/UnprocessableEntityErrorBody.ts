@@ -3,25 +3,15 @@
 import * as Peal from "../index.js";
 
 export type UnprocessableEntityErrorBody = 
-    | Peal.UnprocessableEntityErrorBody.FeedAddressRefused
-    | Peal.UnprocessableEntityErrorBody.FeedTemplateInvalid
-    | Peal.UnprocessableEntityErrorBody.FeedUnreadable
-    | Peal.UnprocessableEntityErrorBody.UnknownChannels;
+    | Peal.UnprocessableEntityErrorBody.AiCapabilityNotOffered
+    | Peal.UnprocessableEntityErrorBody.AiModelRequired;
 
 export namespace UnprocessableEntityErrorBody {
-    export interface FeedAddressRefused extends Peal.FeedAddressRefusedEncoded {
-        _tag: "FeedAddressRefused";
+    export interface AiCapabilityNotOffered extends Peal.AiCapabilityNotOfferedEncoded {
+        _tag: "AiCapabilityNotOffered";
     }
 
-    export interface FeedTemplateInvalid extends Peal.FeedTemplateInvalidEncoded {
-        _tag: "FeedTemplateInvalid";
-    }
-
-    export interface FeedUnreadable extends Peal.FeedUnreadableEncoded {
-        _tag: "FeedUnreadable";
-    }
-
-    export interface UnknownChannels extends Peal.UnknownChannelsEncoded {
-        _tag: "UnknownChannels";
+    export interface AiModelRequired extends Peal.AiModelRequiredEncoded {
+        _tag: "AiModelRequired";
     }
 }

@@ -69,7 +69,7 @@ const transferRefused = ({
 
 export const BillingActionsHandlers = HttpApiBuilder.group(
   Api,
-  "billingActions",
+  "workspace.billingActions",
   Effect.fn(function* billingActionsHandlers(handlers) {
     const orders = yield* PlaceOrder;
     const cancellations = yield* CancelSubscription;

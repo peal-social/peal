@@ -19,11 +19,20 @@ public record TooManyRequestsErrorBody
     }
 
     /// <summary>
-    /// Create an instance of TooManyRequestsErrorBody with <see cref="TooManyRequestsErrorBody.FeedReadsLimited"/>.
+    /// Create an instance of TooManyRequestsErrorBody with <see cref="TooManyRequestsErrorBody.OwnTextLimitReached"/>.
     /// </summary>
-    public TooManyRequestsErrorBody(TooManyRequestsErrorBody.FeedReadsLimited value)
+    public TooManyRequestsErrorBody(TooManyRequestsErrorBody.OwnTextLimitReached value)
     {
-        Type = "FeedReadsLimited";
+        Type = "OwnTextLimitReached";
+        Value = value.Value;
+    }
+
+    /// <summary>
+    /// Create an instance of TooManyRequestsErrorBody with <see cref="TooManyRequestsErrorBody.TextProviderBusy"/>.
+    /// </summary>
+    public TooManyRequestsErrorBody(TooManyRequestsErrorBody.TextProviderBusy value)
+    {
+        Type = "TextProviderBusy";
         Value = value.Value;
     }
 
@@ -48,9 +57,14 @@ public record TooManyRequestsErrorBody
     public object? Value { get; internal set; }
 
     /// <summary>
-    /// Returns true if <see cref="Type"/> is "FeedReadsLimited"
+    /// Returns true if <see cref="Type"/> is "OwnTextLimitReached"
     /// </summary>
-    public bool IsFeedReadsLimited => Type == "FeedReadsLimited";
+    public bool IsOwnTextLimitReached => Type == "OwnTextLimitReached";
+
+    /// <summary>
+    /// Returns true if <see cref="Type"/> is "TextProviderBusy"
+    /// </summary>
+    public bool IsTextProviderBusy => Type == "TextProviderBusy";
 
     /// <summary>
     /// Returns true if <see cref="Type"/> is "TooManyRequests"
@@ -58,14 +72,25 @@ public record TooManyRequestsErrorBody
     public bool IsTooManyRequests => Type == "TooManyRequests";
 
     /// <summary>
-    /// Returns the value as a <see cref="Peal.FeedReadsLimitedEncoded"/> if <see cref="Type"/> is 'FeedReadsLimited', otherwise throws an exception.
+    /// Returns the value as a <see cref="Peal.OwnTextLimitReachedEncoded"/> if <see cref="Type"/> is 'OwnTextLimitReached', otherwise throws an exception.
     /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'FeedReadsLimited'.</exception>
-    public Peal.FeedReadsLimitedEncoded AsFeedReadsLimited() =>
-        IsFeedReadsLimited
-            ? (Peal.FeedReadsLimitedEncoded)Value!
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'OwnTextLimitReached'.</exception>
+    public Peal.OwnTextLimitReachedEncoded AsOwnTextLimitReached() =>
+        IsOwnTextLimitReached
+            ? (Peal.OwnTextLimitReachedEncoded)Value!
             : throw new global::System.Exception(
-                "TooManyRequestsErrorBody.Type is not 'FeedReadsLimited'"
+                "TooManyRequestsErrorBody.Type is not 'OwnTextLimitReached'"
+            );
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.TextProviderBusyEncoded"/> if <see cref="Type"/> is 'TextProviderBusy', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'TextProviderBusy'.</exception>
+    public Peal.TextProviderBusyEncoded AsTextProviderBusy() =>
+        IsTextProviderBusy
+            ? (Peal.TextProviderBusyEncoded)Value!
+            : throw new global::System.Exception(
+                "TooManyRequestsErrorBody.Type is not 'TextProviderBusy'"
             );
 
     /// <summary>
@@ -80,29 +105,35 @@ public record TooManyRequestsErrorBody
             );
 
     public T Match<T>(
-        Func<Peal.FeedReadsLimitedEncoded, T> onFeedReadsLimited,
+        Func<Peal.OwnTextLimitReachedEncoded, T> onOwnTextLimitReached,
+        Func<Peal.TextProviderBusyEncoded, T> onTextProviderBusy,
         Func<Peal.TooManyRequestsEncoded, T> onTooManyRequests,
         Func<string, object?, T> onUnknown_
     )
     {
         return Type switch
         {
-            "FeedReadsLimited" => onFeedReadsLimited(AsFeedReadsLimited()),
+            "OwnTextLimitReached" => onOwnTextLimitReached(AsOwnTextLimitReached()),
+            "TextProviderBusy" => onTextProviderBusy(AsTextProviderBusy()),
             "TooManyRequests" => onTooManyRequests(AsTooManyRequests()),
             _ => onUnknown_(Type, Value),
         };
     }
 
     public void Visit(
-        Action<Peal.FeedReadsLimitedEncoded> onFeedReadsLimited,
+        Action<Peal.OwnTextLimitReachedEncoded> onOwnTextLimitReached,
+        Action<Peal.TextProviderBusyEncoded> onTextProviderBusy,
         Action<Peal.TooManyRequestsEncoded> onTooManyRequests,
         Action<string, object?> onUnknown_
     )
     {
         switch (Type)
         {
-            case "FeedReadsLimited":
-                onFeedReadsLimited(AsFeedReadsLimited());
+            case "OwnTextLimitReached":
+                onOwnTextLimitReached(AsOwnTextLimitReached());
+                break;
+            case "TextProviderBusy":
+                onTextProviderBusy(AsTextProviderBusy());
                 break;
             case "TooManyRequests":
                 onTooManyRequests(AsTooManyRequests());
@@ -114,13 +145,27 @@ public record TooManyRequestsErrorBody
     }
 
     /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.FeedReadsLimitedEncoded"/> and returns true if successful.
+    /// Attempts to cast the value to a <see cref="Peal.OwnTextLimitReachedEncoded"/> and returns true if successful.
     /// </summary>
-    public bool TryAsFeedReadsLimited(out Peal.FeedReadsLimitedEncoded? value)
+    public bool TryAsOwnTextLimitReached(out Peal.OwnTextLimitReachedEncoded? value)
     {
-        if (Type == "FeedReadsLimited")
+        if (Type == "OwnTextLimitReached")
         {
-            value = (Peal.FeedReadsLimitedEncoded)Value!;
+            value = (Peal.OwnTextLimitReachedEncoded)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.TextProviderBusyEncoded"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsTextProviderBusy(out Peal.TextProviderBusyEncoded? value)
+    {
+        if (Type == "TextProviderBusy")
+        {
+            value = (Peal.TextProviderBusyEncoded)Value!;
             return true;
         }
         value = null;
@@ -144,7 +189,11 @@ public record TooManyRequestsErrorBody
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator TooManyRequestsErrorBody(
-        TooManyRequestsErrorBody.FeedReadsLimited value
+        TooManyRequestsErrorBody.OwnTextLimitReached value
+    ) => new(value);
+
+    public static implicit operator TooManyRequestsErrorBody(
+        TooManyRequestsErrorBody.TextProviderBusy value
     ) => new(value);
 
     public static implicit operator TooManyRequestsErrorBody(
@@ -192,10 +241,15 @@ public record TooManyRequestsErrorBody
 
             var value = discriminator switch
             {
-                "FeedReadsLimited" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.FeedReadsLimitedEncoded?>(options)
+                "OwnTextLimitReached" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.OwnTextLimitReachedEncoded?>(options)
                         ?? throw new JsonException(
-                            "Failed to deserialize Peal.FeedReadsLimitedEncoded"
+                            "Failed to deserialize Peal.OwnTextLimitReachedEncoded"
+                        ),
+                "TextProviderBusy" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.TextProviderBusyEncoded?>(options)
+                        ?? throw new JsonException(
+                            "Failed to deserialize Peal.TextProviderBusyEncoded"
                         ),
                 "TooManyRequests" => json.Deserialize<Peal.TooManyRequestsEncoded?>(options)
                     ?? throw new JsonException("Failed to deserialize Peal.TooManyRequestsEncoded"),
@@ -213,7 +267,8 @@ public record TooManyRequestsErrorBody
             JsonNode json =
                 value.Type switch
                 {
-                    "FeedReadsLimited" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "OwnTextLimitReached" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "TextProviderBusy" => JsonSerializer.SerializeToNode(value.Value, options),
                     "TooManyRequests" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
@@ -244,22 +299,42 @@ public record TooManyRequestsErrorBody
     }
 
     /// <summary>
-    /// Discriminated union type for FeedReadsLimited
+    /// Discriminated union type for OwnTextLimitReached
     /// </summary>
     [Serializable]
-    public struct FeedReadsLimited
+    public struct OwnTextLimitReached
     {
-        public FeedReadsLimited(Peal.FeedReadsLimitedEncoded value)
+        public OwnTextLimitReached(Peal.OwnTextLimitReachedEncoded value)
         {
             Value = value;
         }
 
-        internal Peal.FeedReadsLimitedEncoded Value { get; set; }
+        internal Peal.OwnTextLimitReachedEncoded Value { get; set; }
 
         public override string ToString() => Value.ToString() ?? "null";
 
-        public static implicit operator TooManyRequestsErrorBody.FeedReadsLimited(
-            Peal.FeedReadsLimitedEncoded value
+        public static implicit operator TooManyRequestsErrorBody.OwnTextLimitReached(
+            Peal.OwnTextLimitReachedEncoded value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for TextProviderBusy
+    /// </summary>
+    [Serializable]
+    public struct TextProviderBusy
+    {
+        public TextProviderBusy(Peal.TextProviderBusyEncoded value)
+        {
+            Value = value;
+        }
+
+        internal Peal.TextProviderBusyEncoded Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TooManyRequestsErrorBody.TextProviderBusy(
+            Peal.TextProviderBusyEncoded value
         ) => new(value);
     }
 

@@ -18,7 +18,7 @@ export const currentUser = Effect.gen(function* currentUser() {
 
 export const ConnectedAppsHandlers = HttpApiBuilder.group(
   Api,
-  "connectedApps",
+  "me.connectedApps",
   Effect.fn(function* connectedAppsHandlers(handlers) {
     const apps = yield* ConnectedApps;
 

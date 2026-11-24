@@ -35,7 +35,7 @@ const notFound = () => Effect.fail(new VideoGenerationNotFound());
 
 export const VideoGenerationsHandlers = HttpApiBuilder.group(
   Api,
-  "videoGenerations",
+  "media.videos",
   Effect.fn(function* videoGenerationsHandlers(handlers) {
     const videos = yield* AssistantVideos;
     const limitReached = yield* limitRefusal;

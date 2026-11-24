@@ -172,11 +172,11 @@ peal posts unpublish <post-id> --channel <channel-id> --wait 30 --yes
 
 Le `status` du changement dit où en est la suppression :
 
-| `status`  | Signification                                                                                                                                                          |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pending` | Il reste des parties (`partsLeft`).                                                                                                                                    |
-| `done`    | Il n’en reste plus. La cible garde `status: published` et reçoit `removedAt`. `GET …/posts/search?removed=true` liste les publications supprimées d’au moins un canal. |
-| `failed`  | Peal a renoncé, avec un `code` (`unavailable`, `rateLimited`, `channelUnavailable`, ou celui de la plateforme). Redemander supprime les parties restantes.             |
+| `status`  | Signification                                                                                                                                                   |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pending` | Il reste des parties (`partsLeft`).                                                                                                                             |
+| `done`    | Il n’en reste plus. La cible garde `status: published` et reçoit `removedAt`. `GET …/posts?removed=true` liste les publications supprimées d’au moins un canal. |
+| `failed`  | Peal a renoncé, avec un `code` (`unavailable`, `rateLimited`, `channelUnavailable`, ou celui de la plateforme). Redemander supprime les parties restantes.      |
 
 `alreadyGone: true` indique que la plateforme n’avait déjà plus une partie.
 
@@ -190,7 +190,7 @@ Avant d’appeler la plateforme, Peal refuse une requête impossible avec 409 `l
 - `channelUnavailable` ou `boostRunning`
 - `deletionWindowPassed`, là où la plateforme ne supprime une publication que pendant un temps après sa mise en ligne (48 heures sur Telegram)
 
-`GET …/platforms/capabilities` vous dit d’avance où Peal supprime des publications. `livePost.unpublish` dit s’il le fait, et `livePost.unpublishBlockedBy` (`noApi`, `permission` ou `unverified`) dit pourquoi il ne le fait pas. Les webhooks reçoivent `post.unpublished` ou `post.unpublish_failed` ([Webhooks](/developers/webhooks/events/posts#post-unpublished)).
+`GET …/channels/capabilities` vous dit d’avance où Peal supprime des publications. `livePost.unpublish` dit s’il le fait, et `livePost.unpublishBlockedBy` (`noApi`, `permission` ou `unverified`) dit pourquoi il ne le fait pas. Les webhooks reçoivent `post.unpublished` ou `post.unpublish_failed` ([Webhooks](/developers/webhooks/events/posts#post-unpublished)).
 
 ## Modifier une publication en ligne [#edit-live]
 
@@ -324,9 +324,9 @@ Les webhooks reçoivent `post.edited` ou `post.edit_failed` ([Webhooks](/develop
 
 ## Liens courts [#short-links]
 
-`shortenLinks` demande que les liens de la publication partent [raccourcis](/guides/posts/published#short-links), sur un serveur qui a des liens courts. `GET …/short-links/status` dit s’il en a, par quoi commence une adresse courte et quelle est sa longueur.
+`shortenLinks` demande que les liens de la publication partent [raccourcis](/guides/posts/published#short-links), sur un serveur qui a des liens courts. `GET …/links/status` dit s’il en a, par quoi commence une adresse courte et quelle est sa longueur.
 
-Le champ fonctionne de la même façon sur `POST …/posts`, `PUT …/posts/{postId}`, `send` et chaque élément de `bulk` :
+Le champ fonctionne de la même façon sur `POST …/posts/drafts`, `PUT …/posts/{postId}`, `POST …/posts` et chaque élément de `bulk` :
 
 | `shortenLinks` | Ce qui se passe                                                                                                                                                                  |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -351,4 +351,4 @@ Ailleurs, les liens courts fonctionnent ainsi :
 
 - `validate` prend le champ, et vérifie le texte tel qu’écrit, puisqu’une adresse courte ne l’allonge jamais.
 - Un import CSV n’a pas de colonne pour lui : chaque ligne prend le choix par défaut de l’espace de travail.
-- `GET …/short-links` lit les liens et leurs clics ([Clics sur les liens courts](/guides/engage/analytics#short-links)). Aucun point d’accès ne raccourcit une adresse hors d’une publication.
+- `GET …/links` lit les liens et leurs clics ([Clics sur les liens courts](/guides/engage/analytics#short-links)). Aucun point d’accès ne raccourcit une adresse hors d’une publication.

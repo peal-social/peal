@@ -10,6 +10,7 @@ import {
 } from "peal-contract";
 import type { PostContent, SchedulePost } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { newId } from "#shared/application/ids.ts";
 import { MediaAssetIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -38,10 +39,10 @@ const later = { at: utc("2026-06-16T07:30:00Z"), timeZone: "Europe/Paris" };
 const freshWorkspace = newId(WorkspaceIdSchema);
 
 const editorIn = (workspaceId: WorkspaceId) =>
-  HttpApiTest.groups(Api, ["posts"]).pipe(
+  HttpApiTest.groups(Api, ["posts", "posts.drafts"]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        PostsHandlers.pipe(
+        Layer.merge(PostsHandlers, PostDraftsHandlers).pipe(
           Layer.provideMerge(
             securityTest(memberOf(workspaceId, permissionsFor("editor")))
           )
@@ -73,7 +74,7 @@ describe("the posts endpoints, with media", () => {
           const photo = yield* storeMedia(workspaceId);
           const second = yield* storeMedia(workspaceId);
 
-          const draft = yield* client.posts.create({
+          const draft = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: {
               channelIds: [mastodon],
@@ -120,7 +121,7 @@ describe("the posts endpoints, with media", () => {
           const unknown = yield* newId(MediaAssetIdSchema);
 
           const refused = (...mediaIds: readonly string[]) =>
-            client.posts
+            client["posts.drafts"]
               .create({
                 headers: forWorkspace(workspaceId),
                 payload: {
@@ -143,7 +144,7 @@ describe("the posts endpoints, with media", () => {
             new UnknownMedia({ mediaIds: [unknown] })
           );
 
-          const response = yield* client.posts.create({
+          const response = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: { channelIds: [mastodon], content: showing(uploading) },
             responseMode: "response-only",
@@ -153,7 +154,7 @@ describe("the posts endpoints, with media", () => {
 
           // A draft's media is looked up again as it is scheduled: media
           // deleted since is unknown.
-          const draft = yield* client.posts.create({
+          const draft = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: { channelIds: [mastodon], content: showing(ready) },
           });
@@ -192,7 +193,7 @@ describe("the posts endpoints, with media", () => {
             storeMedia(workspaceId)
           );
 
-          const album = yield* client.posts.create({
+          const album = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: { channelIds: [], content: showing(...photos) },
           });
@@ -233,7 +234,7 @@ describe("the posts endpoints, with media", () => {
             duration: Duration.seconds(150),
           });
 
-          const mixed = yield* client.posts.create({
+          const mixed = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: { channelIds: [], content: showing(gif, clip) },
           });

@@ -56,7 +56,7 @@ export const productEventSamples: ProductEventSamples = {
       name: "api_operation",
       properties: {
         errorCode: "plan_limit_reached",
-        operation: "posts.create",
+        operation: "posts.drafts.create",
         status: 403,
         succeeded: false,
         via: "apiKey",

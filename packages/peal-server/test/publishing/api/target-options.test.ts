@@ -10,6 +10,7 @@ import {
 } from "peal-contract";
 import type { Member, PostContent } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { newId } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -28,10 +29,12 @@ const timeout = 60_000;
 const start = "2026-06-15T07:00:00Z";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["posts"]).pipe(
+  HttpApiTest.groups(Api, ["posts", "posts.drafts"]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        PostsHandlers.pipe(Layer.provideMerge(securityTest(member))),
+        Layer.merge(PostsHandlers, PostDraftsHandlers).pipe(
+          Layer.provideMerge(securityTest(member))
+        ),
         HttpServer.layerServices
       )
     )
@@ -61,7 +64,7 @@ describe("a post's options through the API", () => {
             memberOf(workspaceId, permissionsFor("editor"))
           );
 
-          const created = yield* client.posts.create({
+          const created = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: {
               channelIds: [youtube, mastodon],
@@ -172,7 +175,7 @@ describe("a post's options through the API", () => {
             memberOf(workspaceId, permissionsFor("editor"))
           );
 
-          const malformed = yield* client.posts
+          const malformed = yield* client["posts.drafts"]
             .create({
               headers: forWorkspace(workspaceId),
               payload: {
@@ -190,7 +193,7 @@ describe("a post's options through the API", () => {
 
           assert(Schema.is(UnknownChannels)(malformed));
 
-          const mismatched = yield* client.posts
+          const mismatched = yield* client["posts.drafts"]
             .create({
               headers: forWorkspace(workspaceId),
               payload: {

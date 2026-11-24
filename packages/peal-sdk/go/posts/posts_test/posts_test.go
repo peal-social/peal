@@ -77,7 +77,7 @@ func VerifyRequestCount(
 	require.Equal(t, expected, len(result.Requests))
 }
 
-func TestPostsDraftsWithWireMock(
+func TestPostsCalendarWithWireMock(
 	t *testing.T,
 ) {
 	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
@@ -88,17 +88,20 @@ func TestPostsDraftsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.DraftsPostsRequest{}
-	_, invocationErr := client.Posts.Drafts(
+	request := &peal.CalendarPostsRequest{
+		From: "from",
+		To:   "to",
+	}
+	_, invocationErr := client.Posts.Calendar(
 		context.TODO(),
 		request,
 		option.WithHTTPHeader(
-			http.Header{"X-Test-Id": []string{"TestPostsDraftsWithWireMock"}},
+			http.Header{"X-Test-Id": []string{"TestPostsCalendarWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsDraftsWithWireMock", "GET", "/api/v1/posts/drafts", nil, 1)
+	VerifyRequestCount(t, "TestPostsCalendarWithWireMock", "GET", "/api/v1/posts/calendar", map[string]interface{}{"from": "from", "to": "to"}, 1)
 }
 
 func TestPostsListWithWireMock(
@@ -112,10 +115,7 @@ func TestPostsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListPostsRequest{
-		From: "from",
-		To:   "to",
-	}
+	request := &peal.ListPostsRequest{}
 	_, invocationErr := client.Posts.List(
 		context.TODO(),
 		request,
@@ -125,77 +125,10 @@ func TestPostsListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsListWithWireMock", "GET", "/api/v1/posts", map[string]interface{}{"from": "from", "to": "to"}, 1)
+	VerifyRequestCount(t, "TestPostsListWithWireMock", "GET", "/api/v1/posts", nil, 1)
 }
 
 func TestPostsCreateWithWireMock(
-	t *testing.T,
-) {
-	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
-	if WireMockBaseURL == "" {
-		WireMockBaseURL = "http://localhost:8080"
-	}
-	client := client.NewClient(
-		option.WithBaseURL(WireMockBaseURL),
-		option.WithToken("test-token"),
-	)
-	request := &peal.PostDraft{
-		ChannelIDs: []string{
-			"channelIds",
-		},
-		Content: &peal.PostContent{
-			Media: []*peal.MediaAttachment{
-				&peal.MediaAttachment{
-					AltText: "altText",
-					MediaID: "mediaId",
-				},
-			},
-			Overrides: []*peal.TextOverride{
-				&peal.TextOverride{
-					ChannelID: "channelId",
-					Text:      "text",
-				},
-			},
-			Text: "text",
-		},
-	}
-	_, invocationErr := client.Posts.Create(
-		context.TODO(),
-		request,
-		option.WithHTTPHeader(
-			http.Header{"X-Test-Id": []string{"TestPostsCreateWithWireMock"}},
-		),
-	)
-
-	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsCreateWithWireMock", "POST", "/api/v1/posts", nil, 1)
-}
-
-func TestPostsSearchWithWireMock(
-	t *testing.T,
-) {
-	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
-	if WireMockBaseURL == "" {
-		WireMockBaseURL = "http://localhost:8080"
-	}
-	client := client.NewClient(
-		option.WithBaseURL(WireMockBaseURL),
-		option.WithToken("test-token"),
-	)
-	request := &peal.SearchPostsRequest{}
-	_, invocationErr := client.Posts.Search(
-		context.TODO(),
-		request,
-		option.WithHTTPHeader(
-			http.Header{"X-Test-Id": []string{"TestPostsSearchWithWireMock"}},
-		),
-	)
-
-	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsSearchWithWireMock", "GET", "/api/v1/posts/search", nil, 1)
-}
-
-func TestPostsSendWithWireMock(
 	t *testing.T,
 ) {
 	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
@@ -229,16 +162,16 @@ func TestPostsSendWithWireMock(
 			Now: &peal.PostTimingNow{},
 		},
 	}
-	_, invocationErr := client.Posts.Send(
+	_, invocationErr := client.Posts.Create(
 		context.TODO(),
 		request,
 		option.WithHTTPHeader(
-			http.Header{"X-Test-Id": []string{"TestPostsSendWithWireMock"}},
+			http.Header{"X-Test-Id": []string{"TestPostsCreateWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsSendWithWireMock", "POST", "/api/v1/posts/send", nil, 1)
+	VerifyRequestCount(t, "TestPostsCreateWithWireMock", "POST", "/api/v1/posts", nil, 1)
 }
 
 func TestPostsBulkWithWireMock(
@@ -432,32 +365,6 @@ func TestPostsUpdateWithWireMock(
 	VerifyRequestCount(t, "TestPostsUpdateWithWireMock", "PUT", "/api/v1/posts/postId", nil, 1)
 }
 
-func TestPostsDiscardWithWireMock(
-	t *testing.T,
-) {
-	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
-	if WireMockBaseURL == "" {
-		WireMockBaseURL = "http://localhost:8080"
-	}
-	client := client.NewClient(
-		option.WithBaseURL(WireMockBaseURL),
-		option.WithToken("test-token"),
-	)
-	request := &peal.DiscardPostsRequest{
-		PostID: "postId",
-	}
-	invocationErr := client.Posts.Discard(
-		context.TODO(),
-		request,
-		option.WithHTTPHeader(
-			http.Header{"X-Test-Id": []string{"TestPostsDiscardWithWireMock"}},
-		),
-	)
-
-	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsDiscardWithWireMock", "DELETE", "/api/v1/posts/postId", nil, 1)
-}
-
 func TestPostsOutcomeWithWireMock(
 	t *testing.T,
 ) {
@@ -510,7 +417,7 @@ func TestPostsAttemptsWithWireMock(
 	VerifyRequestCount(t, "TestPostsAttemptsWithWireMock", "GET", "/api/v1/posts/postId/attempts", nil, 1)
 }
 
-func TestPostsTagWithWireMock(
+func TestPostsSetTagsWithWireMock(
 	t *testing.T,
 ) {
 	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
@@ -527,16 +434,16 @@ func TestPostsTagWithWireMock(
 			"tagIds",
 		},
 	}
-	_, invocationErr := client.Posts.Tag(
+	_, invocationErr := client.Posts.SetTags(
 		context.TODO(),
 		request,
 		option.WithHTTPHeader(
-			http.Header{"X-Test-Id": []string{"TestPostsTagWithWireMock"}},
+			http.Header{"X-Test-Id": []string{"TestPostsSetTagsWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsTagWithWireMock", "PUT", "/api/v1/posts/postId/tags", nil, 1)
+	VerifyRequestCount(t, "TestPostsSetTagsWithWireMock", "PUT", "/api/v1/posts/postId/tags", nil, 1)
 }
 
 func TestPostsDuplicateWithWireMock(

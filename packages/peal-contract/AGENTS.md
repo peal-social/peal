@@ -41,6 +41,22 @@
   it for the docs and the server serves it at `/api/openapi.json` and
   `/openapi.json`: the server's tests check they are equal and list every
   event type. A new event type needs its summary there.
+- A group's identifier is its namespace, a dotted path of camelCase
+  segments (`inbox.messages`), and an endpoint's is one word without a dot
+  (`send`): the operation id is both (`inbox.messages.send`), the SDKs nest
+  it (`client.inbox.messages.send`), and the document files it under its
+  first segment (`inbox`), whose name and description in the reference are
+  `namespaceTags`' (`openapi-document.ts`; a new top-level namespace needs
+  its entry). A workspace group's path starts with `/api/v1/` and the
+  first segment in kebab case, and holds the later ones, in order, among
+  its static segments (`/api/v1/inbox/messages/…`); only
+  `workspace.billingActions` shares the billing reads' paths. No method
+  has the name of a namespace beside it, and no namespace is called
+  `peal`. A namespace that crosses contexts is several groups, one handlers
+  layer each. The server's `test/app/namespaces.test.ts` checks these
+  rules, and `packages/peal-sdk/scripts/spec.ts` stops on an SDK namespace
+  whose last segment another one has. File and class names (`TagsApi`)
+  and schema identifiers stay as they were.
 - `GET /api/v1/credential` (`CredentialApi`, `credential.ts`) answers every
   principal `Authentication` knows, by kind (`user`, `apiKey`,
   `partnerKey`), never a key, a token, or a partner's workspaces: a new

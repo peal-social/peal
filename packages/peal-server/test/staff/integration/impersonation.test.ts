@@ -127,7 +127,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const secretText = `A synthetic draft staff wrote ${randomUUID()}`;
           const posts = `/api/v1/posts`;
 
-          const created = yield* app.request(posts, {
+          const created = yield* app.request(`${posts}/drafts`, {
             body: draftOf(secretText),
             headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
           });
@@ -171,7 +171,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // A change the handler then refuses is recorded all the same:
           // the record says what staff asked for.
-          const refusedKey = yield* app.request(`/api/v1/api-keys`, {
+          const refusedKey = yield* app.request(`/api/v1/workspace/api-keys`, {
             body: { name: "synthetic", permissions: ["post:read"] },
             headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
           });
@@ -203,7 +203,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [
               {
                 objectIds: {},
-                operation: "apiKeys.create",
+                operation: "workspace.apiKeys.create",
                 staffId: staff.id,
                 targetId: member.id,
                 workspaceId,
@@ -224,7 +224,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
               },
               {
                 objectIds: {},
-                operation: "posts.create",
+                operation: "posts.drafts.create",
                 staffId: staff.id,
                 targetId: member.id,
                 workspaceId,
@@ -256,7 +256,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [
               {
                 objectIds: {},
-                operation: "posts.create",
+                operation: "posts.drafts.create",
                 workspace: workspaceId,
               },
               {
@@ -271,7 +271,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
               },
               {
                 objectIds: {},
-                operation: "apiKeys.create",
+                operation: "workspace.apiKeys.create",
                 workspace: workspaceId,
               },
             ]
@@ -339,12 +339,12 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
               })),
             [
               {
-                operation: "account.delete",
+                operation: "me.account.delete",
                 staffId: staff.id,
                 workspace: null,
               },
               {
-                operation: "workspaces.delete",
+                operation: "workspace.delete",
                 staffId: staff.id,
                 workspace: workspaceId,
               },
@@ -383,7 +383,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
                 operation,
                 workspaceId,
               })),
-            [{ operation: "notices.markAllRead", workspaceId: null }]
+            [{ operation: "me.notices.markAllRead", workspaceId: null }]
           );
         })
     );
@@ -449,7 +449,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(read.status, 401);
           assert.strictEqual(yield* openImpersonations(staff.id), 0);
 
-          const write = yield* app.request(`/api/v1/posts`, {
+          const write = yield* app.request(`/api/v1/posts/drafts`, {
             body: draftOf("A synthetic draft"),
             headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
           });

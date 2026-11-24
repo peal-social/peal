@@ -141,7 +141,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const reads = yield* Effect.forEach(
             [
-              `${base}/inbox/threads/${thread.id}`,
+              `${base}/inbox/comments/threads/${thread.id}`,
               `${base}/analytics/export?kind=posts&${days}`,
               `${base}/analytics/export?kind=accounts&format=json&${days}`,
             ],
@@ -154,7 +154,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           const log = yield* app
-            .request(`${base}/activity`, {
+            .request(`${base}/workspace/activity`, {
               headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
             })
             .pipe(Effect.flatMap((reply) => bodyOf(PageJsonSchema, reply)));
@@ -189,7 +189,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 by: actor,
                 errorCode: "inbox_action_unavailable",
                 ids: objectIds,
-                operation: "inbox.moderate",
+                operation: "inbox.comments.moderate",
                 requestId: "inbox-activity-0004",
                 status: 409,
                 via: "apiKey",
@@ -198,7 +198,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 by: actor,
                 errorCode: "invalid_request",
                 ids: objectIds,
-                operation: "inbox.reply",
+                operation: "inbox.comments.reply",
                 requestId: "inbox-activity-0003",
                 status: 400,
                 via: "apiKey",
@@ -207,7 +207,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 by: actor,
                 errorCode: "reply_invalid",
                 ids: objectIds,
-                operation: "inbox.reply",
+                operation: "inbox.comments.reply",
                 requestId: "inbox-activity-0002",
                 status: 422,
                 via: "apiKey",
@@ -216,7 +216,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 by: actor,
                 errorCode: null,
                 ids: objectIds,
-                operation: "inbox.setAnswered",
+                operation: "inbox.comments.setAnswered",
                 requestId: "inbox-activity-0001",
                 status: 200,
                 via: "apiKey",

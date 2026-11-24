@@ -101,7 +101,7 @@ const scopeOf = (payload: {
 
 export const FollowUpsHandlers = HttpApiBuilder.group(
   Api,
-  "followUps",
+  "automations.followUps",
   Effect.fn(function* followUpsHandlers(handlers) {
     const rules = yield* FollowUpRules;
 

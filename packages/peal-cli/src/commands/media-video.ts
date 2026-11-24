@@ -110,7 +110,7 @@ const generate = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const asked = yield* client.videoGenerations
+    const asked = yield* client["media.videos"]
       .create({
         headers: {},
         payload: {
@@ -144,7 +144,7 @@ const generate = Command.make(
       );
     }
 
-    const read = client.videoGenerations
+    const read = client["media.videos"]
       .get({
         headers: {},
         params: { generationId: asked.id },
@@ -198,7 +198,7 @@ const status = Command.make(
   Effect.fn("media.video.status")(function* status(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const found = yield* client.videoGenerations
+    const found = yield* client["media.videos"]
       .get({
         headers: {},
         params: {
@@ -223,7 +223,7 @@ const list = Command.make(
   Effect.fn("media.video.list")(function* list(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const found = yield* client.videoGenerations
+    const found = yield* client["media.videos"]
       .list({ headers: {}, query: {} })
       .pipe(Effect.mapError(explain(url)));
 

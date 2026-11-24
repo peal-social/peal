@@ -116,14 +116,14 @@ const toMe = (
 
 export const SessionHandlers = HttpApiBuilder.group(
   Api,
-  "session",
+  "me",
   Effect.fn(function* sessionHandlers(handlers) {
     const accounts = yield* Accounts;
     const { settings } = yield* BrowserMeasurement;
     const identity = yield* SupportChatIdentity;
 
     return handlers.handleAll({
-      me: () =>
+      get: () =>
         Effect.gen(function* me() {
           const principal = yield* CurrentPrincipal;
 

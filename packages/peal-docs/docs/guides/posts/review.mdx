@@ -182,15 +182,15 @@ Peal keeps the name you gave, with your comments and decisions, for 24 months. A
 
 The [API](/developers) has the same operations, under `/api/v1`:
 
-| Path                                                               | What it is for      |
-| ------------------------------------------------------------------ | ------------------- |
-| `review/settings`                                                  | The policy          |
-| `approvals`                                                        | The posts that wait |
-| `review`, `comments`, `approve`, `request-changes`, `review-links` | A post's review     |
+| Path                                                                                 | What it is for      |
+| ------------------------------------------------------------------------------------ | ------------------- |
+| `approvals/settings`                                                                 | The policy          |
+| `approvals`                                                                          | The posts that wait |
+| `approvals/{postId}`, and `comments`, `approve`, `request-changes`, `links` under it | A post's review     |
 
 A post that waits answers `"status": "awaitingApproval"` wherever posts are listed. Scheduling a post that needs an approval answers with the post, waiting, instead of an error, so check its `status`.
 
-`review` answers with the post as each channel will receive it, and the approval that waits. `approve` and `request-changes` take that approval's `id` (as `approvalId`) and its `subjectHash`, the fingerprint of what the post said then. If the post was asked again or says something else since, they answer `ApprovalChanged` (409) and decide nothing. Read `review` again, then decide.
+`approvals/{postId}` answers with the post as each channel will receive it, and the approval that waits. `approve` and `request-changes` take that approval's `id` (as `approvalId`) and its `subjectHash`, the fingerprint of what the post said then. If the post was asked again or says something else since, they answer `ApprovalChanged` (409) and decide nothing. Read `approvals/{postId}` again, then decide.
 
 The [command line](/developers/cli/posts#review) has `peal approvals` and `peal review`. [AI assistants](/developers/mcp/tools#tools) have `list_approvals`, `get_post_review`, `approve_post` and `request_changes`.
 

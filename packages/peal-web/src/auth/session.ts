@@ -24,7 +24,7 @@ export const currentUserEffect = Effect.fn("currentUser")(function* currentUser(
     ),
   });
 
-  return yield* client.session.me().pipe(
+  return yield* client.me.get().pipe(
     Effect.map(Option.some),
     // A banned user, like a signed-out one, sees the public pages.
     Effect.catchTags({ Forbidden: signedOut, Unauthenticated: signedOut }),

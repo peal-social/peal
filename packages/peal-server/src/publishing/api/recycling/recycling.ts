@@ -87,7 +87,7 @@ const ended = ({ reason }: { readonly reason: string }) =>
 
 export const RecyclingHandlers = HttpApiBuilder.group(
   Api,
-  "recycling",
+  "automations.recycling",
   Effect.fn(function* recyclingHandlers(handlers) {
     const recycling = yield* Recycling;
 

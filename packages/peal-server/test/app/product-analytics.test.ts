@@ -144,7 +144,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const [operation] = yield* eventsMatching(
             (event) =>
               named("api_operation", owner.id)(event) &&
-              event.properties["operation"] === "apiKeys.create"
+              event.properties["operation"] === "workspace.apiKeys.create"
           );
 
           assert.strictEqual(operation?.properties["via"], "session");
@@ -163,7 +163,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           "post:create",
         ]);
 
-        const created = yield* app.request(`/api/v1/posts`, {
+        const created = yield* app.request(`/api/v1/posts/drafts`, {
           body: draft,
           headers: {
             authorization: `Bearer ${token}`,
@@ -176,7 +176,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
         const [operation] = yield* eventsMatching(
           (event) =>
             named("api_operation", `workspace:${workspaceId}`)(event) &&
-            event.properties["operation"] === "posts.create"
+            event.properties["operation"] === "posts.drafts.create"
         );
 
         assert.strictEqual(operation?.properties["actor_kind"], "service");
@@ -218,7 +218,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(marks.length, 1);
 
-          const drafted = yield* app.request(`/api/v1/posts`, {
+          const drafted = yield* app.request(`/api/v1/posts/drafts`, {
             body: draft,
             headers: {
               cookie: cookiesOf(started),
@@ -237,7 +237,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
               ({ event, properties }) =>
                 event === "api_operation" &&
                 properties["workspace_id"] === workspaceId &&
-                properties["operation"] === "posts.create"
+                properties["operation"] === "posts.drafts.create"
             ),
             []
           );

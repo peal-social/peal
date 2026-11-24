@@ -1,0 +1,133 @@
+using NUnit.Framework;
+using Peal.Channels;
+using Peal.Test.Unit.MockServer;
+using Peal.Test.Utils;
+
+namespace Peal.Test.Unit.MockServer.Channels.ConnectLinks;
+
+[TestFixture]
+[Parallelizable(ParallelScope.Self)]
+public class CreateTest : BaseMockServerTest
+{
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_1()
+    {
+        const string requestJson = """
+            {}
+            """;
+
+        const string mockResponse = """
+            {
+              "link": {
+                "channelId": "channelId",
+                "channelIds": [
+                  "channelIds",
+                  "channelIds"
+                ],
+                "connectedPlatforms": [
+                  "x",
+                  "x"
+                ],
+                "completedAt": "completedAt",
+                "createdAt": "createdAt",
+                "expiresAt": "expiresAt",
+                "failedAt": "failedAt",
+                "failure": "platformNotSupported",
+                "id": "id",
+                "platform": "x",
+                "platforms": [
+                  "x",
+                  "x"
+                ],
+                "returnUrl": "returnUrl",
+                "status": "pending"
+              },
+              "url": "url"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/v1/channels/connect-links")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPost()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Channels.ConnectLinks.CreateAsync(
+            new NewConnectLink
+            {
+                ChannelId = null,
+                Connection = null,
+                ExpiresInHours = null,
+                Locale = null,
+                Platform = null,
+                Platforms = null,
+                ReturnUrl = null,
+            }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_2()
+    {
+        const string requestJson = """
+            {}
+            """;
+
+        const string mockResponse = """
+            {
+              "link": {
+                "channelId": "channelId",
+                "channelIds": [
+                  "channelIds"
+                ],
+                "connectedPlatforms": [
+                  "x"
+                ],
+                "completedAt": "completedAt",
+                "createdAt": "createdAt",
+                "expiresAt": "expiresAt",
+                "failedAt": "failedAt",
+                "failure": "platformNotSupported",
+                "id": "id",
+                "platform": "x",
+                "platforms": [
+                  "x"
+                ],
+                "returnUrl": "returnUrl",
+                "status": "pending"
+              },
+              "url": "url"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/v1/channels/connect-links")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPost()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Channels.ConnectLinks.CreateAsync(new NewConnectLink());
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+}

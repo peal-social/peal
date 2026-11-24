@@ -7,6 +7,7 @@ import { openapi } from "blume/reference";
 
 import { platformVariables } from "./platform-variables.ts";
 import { pricingVariables } from "./pricing-variables.ts";
+import { redirects } from "./redirects.ts";
 import { retentionVariables } from "./retention-variables.ts";
 
 // Values that differ per deployment come from the environment, so the same
@@ -74,42 +75,6 @@ const assistant = () => {
     ? settings
     : { ...settings, captcha: turnstile({ siteKey: turnstileSiteKey }) };
 };
-
-// The pages' addresses before the tabs (old, new), so links already out
-// there still land, in both languages; the browser keeps the #anchor.
-const moved: [string, string][] = [
-  ["/channels", "/guides/channels"],
-  ["/scheduling", "/guides/posts"],
-  ["/organise", "/guides/posts/organise"],
-  ["/review", "/guides/posts/review"],
-  ["/media", "/guides/media"],
-  ["/notifications", "/guides/workspace/notifications"],
-  ["/inbox", "/guides/engage/inbox"],
-  ["/analytics", "/guides/engage/analytics"],
-  ["/ads", "/guides/engage/ads"],
-  ["/settings", "/guides/workspace"],
-  ["/billing", "/guides/workspace/billing"],
-  ["/api-overview", "/developers"],
-  ["/api-conventions", "/developers/conventions"],
-  ["/posting-api", "/developers/posting"],
-  ["/sdks", "/developers/sdks"],
-  ["/webhooks", "/developers/webhooks"],
-  ["/cli", "/developers/cli"],
-  ["/mcp", "/developers/mcp"],
-  ["/agents", "/developers/agents"],
-  ["/embedding", "/developers/embedding"],
-  ["/environment-variables", "/self-hosting/environment-variables"],
-  ["/staff", "/self-hosting/staff"],
-  [
-    "/deployment",
-    "https://github.com/peal-social/peal/blob/main/packages/peal-infra/DEPLOYMENT.md",
-  ],
-];
-
-const redirects = moved.flatMap(([from, to]) => [
-  { from, to },
-  { from: `/fr${from}`, to: to.startsWith("/") ? `/fr${to}` : to },
-]);
 
 export default defineConfig({
   agents: {

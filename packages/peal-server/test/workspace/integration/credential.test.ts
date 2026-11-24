@@ -219,7 +219,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(expired.status, 401);
 
           const revoked = yield* app.request(
-            `/api/v1/api-keys/${created.apiKey.id}`,
+            `/api/v1/workspace/api-keys/${created.apiKey.id}`,
             {
               headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
               method: "DELETE",
@@ -278,7 +278,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
           neverHolds(reply, home);
 
           const revoked = yield* app.request(
-            `/api/v1/partner-account/keys/${created.partnerKey.id}`,
+            `/api/v1/partner/account/keys/${created.partnerKey.id}`,
             {
               headers: { cookie: owner.cookies, ...forWorkspace(home) },
               method: "DELETE",

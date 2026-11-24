@@ -75,7 +75,7 @@ describe("the properties that may leave", () => {
     { label: "a URL with a query", value: "https://example.com/?code=abc" },
     { label: "a NUL", value: "posts\u0000create" },
     { label: "null", value: null },
-    { label: "an array", value: ["posts.create"] },
+    { label: "an array", value: ["posts.drafts.create"] },
     { label: "an empty string", value: "" },
     { label: "an infinite number", value: Number.POSITIVE_INFINITY },
     { label: "an object outside PostHog's keys", value: { kind: "user" } },

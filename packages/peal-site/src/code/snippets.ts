@@ -66,7 +66,7 @@ export interface Snippet {
   readonly sdk?: SdkCall | undefined;
 }
 
-const curl = `curl -X POST "https://app.peal.social/api/v1/posts/send?wait=${wait}" \\
+const curl = `curl -X POST "https://app.peal.social/api/v1/posts?wait=${wait}" \\
   -H "Authorization: Bearer $PEAL_API_KEY" \\
   -H "Content-Type: application/json" \\
   -H "Idempotency-Key: ${idempotencyKey}" \\
@@ -96,7 +96,7 @@ const typescript = `import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
-const post = await peal.posts.send({
+const post = await peal.posts.create({
   wait: "${wait}",
   "idempotency-key": "${idempotencyKey}",
   channelIds: [
@@ -117,7 +117,7 @@ from peal import Peal, PostContent, PostTiming_Now
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
-post = peal.posts.send(
+post = peal.posts.create(
     wait="${wait}",
     idempotency_key="${idempotencyKey}",
     channel_ids=[
@@ -143,7 +143,7 @@ const go = `import (
 
 api := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
-post, err := api.Posts.Send(context.TODO(), &peal.NewPost{
+post, err := api.Posts.Create(context.TODO(), &peal.NewPost{
 	Wait:           peal.String("${wait}"),
 	IdempotencyKey: peal.String("${idempotencyKey}"),
 	ChannelIDs: []string{
@@ -162,7 +162,7 @@ const ruby = `require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
-post = peal.posts.send_(
+post = peal.posts.create(
   wait: "${wait}",
   idempotency_key: "${idempotencyKey}",
   channel_ids: [
@@ -190,7 +190,7 @@ PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
 
-Post post = peal.posts().send(
+Post post = peal.posts().create(
     NewPost.builder()
         .content(PostContent.builder()
             .text("${postText}")
@@ -212,7 +212,7 @@ use Peal\\Types\\PostTimingNow;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
-$post = $peal->posts->send(
+$post = $peal->posts->create(
     new NewPost([
         'wait' => '${wait}',
         'idempotencyKey' => '${idempotencyKey}',
@@ -238,7 +238,7 @@ var peal = new PealClient(
     clientOptions: new ClientOptions { Timeout = TimeSpan.FromSeconds(60) }
 );
 
-var post = await peal.Posts.SendAsync(
+var post = await peal.Posts.CreateAsync(
     new NewPost
     {
         Wait = "${wait}",
@@ -264,7 +264,7 @@ let peal = PealClient::new(ClientConfig {
 
 let post = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec![
                 "${first}".to_string(),
@@ -297,8 +297,8 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     grammar: "csharp",
     label: ".NET",
     sdk: {
-      call: "peal.Posts.SendAsync(",
-      declaration: "public WithRawResponseTask<Post> SendAsync(",
+      call: "peal.Posts.CreateAsync(",
+      declaration: "public WithRawResponseTask<Post> CreateAsync(",
       folder: "dotnet",
       names: [
         {
@@ -331,8 +331,8 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     grammar: "go",
     label: "Go",
     sdk: {
-      call: "api.Posts.Send(",
-      declaration: "func (c *Client) Send(",
+      call: "api.Posts.Create(",
+      declaration: "func (c *Client) Create(",
       folder: "go",
       names: [
         {
@@ -347,7 +347,7 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
         { file: "posts.go", name: "IdempotencyKey    *string" },
         { file: "posts.go", name: "Wait              *string" },
       ],
-      source: "posts/client.go",
+      source: "posts/client/client.go",
     },
   },
   java: {
@@ -356,8 +356,8 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     grammar: "java",
     label: "Java",
     sdk: {
-      call: "peal.posts().send(",
-      declaration: "public Post send(NewPost request)",
+      call: "peal.posts().create(",
+      declaration: "public Post create(NewPost request)",
       folder: "java",
       names: [
         {
@@ -386,8 +386,8 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     grammar: "php",
     label: "PHP",
     sdk: {
-      call: "$peal->posts->send(",
-      declaration: "public function send(NewPost $request",
+      call: "$peal->posts->create(",
+      declaration: "public function create(NewPost $request",
       folder: "php",
       names: [
         {
@@ -409,8 +409,8 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     grammar: "python",
     label: "Python",
     sdk: {
-      call: "peal.posts.send(",
-      declaration: "def send(",
+      call: "peal.posts.create(",
+      declaration: "def create(",
       folder: "python",
       names: [
         {
@@ -433,8 +433,8 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     grammar: "ruby",
     label: "Ruby",
     sdk: {
-      call: "peal.posts.send_(",
-      declaration: "def send_(request_options: {}, **params)",
+      call: "peal.posts.create(",
+      declaration: "def create(request_options: {}, **params)",
       folder: "ruby",
       names: [
         {
@@ -453,8 +453,8 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     grammar: "rust",
     label: "Rust",
     sdk: {
-      call: ".send(",
-      declaration: "pub async fn send(",
+      call: ".create(",
+      declaration: "pub async fn create(",
       folder: "rust",
       names: [
         {
@@ -467,7 +467,7 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
         },
         { file: "src/api/types/post_timing.rs", name: "pub fn now() -> Self" },
       ],
-      source: "src/api/resources/posts/posts.rs",
+      source: "src/api/resources/posts/mod.rs",
     },
   },
   typescript: {
@@ -476,8 +476,8 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     grammar: "typescript",
     label: "TypeScript",
     sdk: {
-      call: "peal.posts.send(",
-      declaration: "public send(request: Peal.NewPost",
+      call: "peal.posts.create(",
+      declaration: "public create(request: Peal.NewPost",
       folder: "node",
       names: [
         {

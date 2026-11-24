@@ -11,7 +11,7 @@ Quand une requête dépasse son délai ou que la connexion se coupe, vous ne pou
 
 La clé est un texte de votre choix, de 255 caractères au plus, comme un UUID. Prenez-en une nouvelle pour chaque publication. Les clés sont gardées par espace de travail.
 
-Sur `POST …/posts/send`, qui crée une publication et l’envoie, une clé fonctionne ainsi :
+Sur `POST …/posts`, qui crée une publication et l’envoie, une clé fonctionne ainsi :
 
 - Dans les 24 heures, la même clé avec le même corps répond la publication créée par la première requête, dans son état du moment, sans en faire une autre.
 - La même clé avec un autre corps répond 409 `idempotency_key_reused`, et ne fait rien.
@@ -25,7 +25,7 @@ import { PealClient } from "peal-sdk";
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
 // Gardez la clé avec la publication, et renvoyez la requête sous la même clé.
-const post = await peal.posts.send({
+const post = await peal.posts.create({
   "idempotency-key": "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channelIds: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -45,7 +45,7 @@ from peal import Peal, PostContent, PostTiming_At
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
 # Gardez la clé avec la publication, et renvoyez la requête sous la même clé.
-post = peal.posts.send(
+post = peal.posts.create(
     idempotency_key="7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     channel_ids=["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
     content=PostContent(
@@ -72,7 +72,7 @@ import (
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
 // Gardez la clé avec la publication, et renvoyez la requête sous la même clé.
-post, err := client.Posts.Send(context.Background(), &peal.NewPost{
+post, err := client.Posts.Create(context.Background(), &peal.NewPost{
 	IdempotencyKey: peal.String("7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44"),
 	ChannelIDs:     []string{"019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"},
 	Content: &peal.PostContent{
@@ -92,7 +92,7 @@ require "peal"
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
 # Gardez la clé avec la publication, et renvoyez la requête sous la même clé.
-post = peal.posts.send_(
+post = peal.posts.create(
   idempotency_key: "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channel_ids: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -118,7 +118,7 @@ PealClient peal = PealClient.builder()
     .build();
 
 // Gardez la clé avec la publication, et renvoyez la requête sous la même clé.
-Post post = peal.posts().send(NewPost.builder()
+Post post = peal.posts().create(NewPost.builder()
     .content(PostContent.builder()
         .text("Our spring catalogue is out. Read it at https://example.com/spring")
         .build())
@@ -142,7 +142,7 @@ use Peal\Types\PostTimingAt;
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
 // Gardez la clé avec la publication, et renvoyez la requête sous la même clé.
-$post = $peal->posts->send(new NewPost([
+$post = $peal->posts->create(new NewPost([
     'idempotencyKey' => '7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44',
     'channelIds' => ['019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11'],
     'content' => new PostContent([
@@ -163,7 +163,7 @@ using Peal;
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
 // Gardez la clé avec la publication, et renvoyez la requête sous la même clé.
-var post = await peal.Posts.SendAsync(new NewPost
+var post = await peal.Posts.CreateAsync(new NewPost
 {
     IdempotencyKey = "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     ChannelIds = new List<string> { "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11" },
@@ -194,7 +194,7 @@ let peal = PealClient::new(ClientConfig {
 // même clé.
 let post = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec!["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11".to_string()])
             .content(PostContent {
@@ -216,7 +216,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/v1/posts/send \
+curl -X POST https://api.example.com/api/v1/posts \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44" \
@@ -265,7 +265,7 @@ Ces requêtes prennent une clé :
 
 | Requête                                        | La clé                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST …/posts/send`                            | Facultative, comme ci-dessus.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `POST …/posts`                                 | Facultative, comme ci-dessus.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `POST …/posts/bulk`, `POST …/posts/import`     | Facultative, pour la requête entière, et chacun de leurs éléments ou de leurs lignes peut porter sa propre clé ([Publier par l’API](/developers/posting)).                                                                                                                                                                                                                                                                                                        |
 | La création de l’espace de travail d’un client | Facultative, par l’API partenaire ([Intégrer Peal](/developers/embedding)).                                                                                                                                                                                                                                                                                                                                                                                       |
 | `POST …/inbox/comments/{commentId}/replies`    | Facultative. La requête répond à un commentaire en public. Dans les 24 heures, la même clé avec le même commentaire et le même texte répond la réponse créée par la première requête, dans son état du moment, sans en écrire une autre. Avec un autre commentaire ou un autre texte, elle répond 409 `idempotency_key_reused`. Sans clé, une seconde requête n’est refusée (409 `reply_pending`) que tant que la première réponse est en route ou non confirmée. |

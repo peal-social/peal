@@ -156,7 +156,7 @@ const inPerson = "a signed-in member rather than an API key or an OAuth client";
  * it, what its customers see of it, where hosted pages may send them back,
  * its keys, and the workspaces it owns.
  */
-export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
+export class PartnerAccountApi extends HttpApiGroup.make("partner.account")
   .add(
     HttpApiEndpoint.get("get", "/", {
       error: Forbidden,
@@ -267,4 +267,4 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/partner-account") {}
+  .prefix("/api/v1/partner/account") {}

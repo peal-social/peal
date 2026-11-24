@@ -255,7 +255,7 @@ const rules = `Each post a rule makes is a new post, copied from the source with
  * Rules that make a post repeat: a new post from a source post at an
  * interval, until a count or a date, with text variants taken in turn.
  */
-export class RecyclingApi extends HttpApiGroup.make("recycling")
+export class RecyclingApi extends HttpApiGroup.make("automations.recycling")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
@@ -365,4 +365,4 @@ export class RecyclingApi extends HttpApiGroup.make("recycling")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/recycling") {}
+  .prefix("/api/v1/automations/recycling") {}

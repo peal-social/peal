@@ -110,7 +110,7 @@ export type ActivityPage = typeof ActivityPageSchema.Type;
 /**
  * A workspace's activity log: who changed what, through which application.
  */
-export class ActivityApi extends HttpApiGroup.make("activity")
+export class ActivityApi extends HttpApiGroup.make("workspace.activity")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
@@ -139,4 +139,4 @@ export class ActivityApi extends HttpApiGroup.make("activity")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/activity") {}
+  .prefix("/api/v1/workspace/activity") {}

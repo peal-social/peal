@@ -187,7 +187,7 @@ const list = Command.make(
   Effect.fn("recycling.list")(function* list(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const page = yield* client.recycling
+    const page = yield* client["automations.recycling"]
       .list({
         headers: {},
         query: {
@@ -253,7 +253,7 @@ const show = Command.make(
   Effect.fn("recycling.show")(function* show(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.recycling
+    const rule = yield* client["automations.recycling"]
       .get({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 
@@ -315,7 +315,7 @@ const start = Command.make(
         findQueue(session, given).pipe(Effect.map(({ id }) => Option.some(id))),
     });
 
-    const rule = yield* client.recycling
+    const rule = yield* client["automations.recycling"]
       .create({
         headers: {},
         payload: {
@@ -404,7 +404,7 @@ const update = Command.make(
 
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.recycling
+    const rule = yield* client["automations.recycling"]
       .update({
         headers: {},
         params: { ruleId: input.rule },
@@ -426,7 +426,7 @@ const pause = Command.make(
   Effect.fn("recycling.pause")(function* paused(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.recycling
+    const rule = yield* client["automations.recycling"]
       .update({
         headers: {},
         params: { ruleId: input.rule },
@@ -459,7 +459,7 @@ const resume = Command.make(
 
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.recycling
+    const rule = yield* client["automations.recycling"]
       .resume({
         headers: {},
         params: { ruleId: input.rule },
@@ -484,7 +484,7 @@ const end = Command.make(
   Effect.fn("recycling.end")(function* end(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    yield* client.recycling
+    yield* client["automations.recycling"]
       .delete({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 

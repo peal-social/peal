@@ -6,9 +6,10 @@
 // the person in their own session or Peal's command line (`ownSession`).
 import path from "node:path";
 
-import { Schema } from "effect";
+import { Option, Schema } from "effect";
 
 import { contactEmail, homepage } from "./languages.ts";
+import { namespaceProblems } from "./sdk-names.ts";
 
 const contractDocument = path.join(
   import.meta.dirname,
@@ -29,16 +30,32 @@ const publicTag = "system";
 /**
  * Groups whose every operation refuses API keys and OAuth clients: the
  * account's export and deletion, its connected applications, deleting a
- * workspace, ordering, cancelling or withdrawing from a plan, and the web
- * app's measurement consent.
+ * workspace and its security, ordering, cancelling or withdrawing from a
+ * plan, and the web app's measurement consent. A group is its operations'
+ * namespace (`me.account`), matched whole: `workspace` holds none of
+ * `workspace.members`.
  */
-const ownSessionTags = new Set([
-  "account",
-  "billingActions",
-  "browserAnalytics",
-  "connectedApps",
-  "workspaces",
+const ownSessionGroups = new Set([
+  "me.account",
+  "me.browserAnalytics",
+  "me.connectedApps",
+  "workspace",
+  "workspace.billingActions",
 ]);
+
+const decodeId = Schema.decodeUnknownOption(Schema.String);
+
+/** The group of an operation: its id but the last segment, or none. */
+const groupOf = (operation: JsonObject): string | undefined =>
+  Option.getOrUndefined(
+    decodeId(operation["operationId"]).pipe(
+      Option.flatMap((name) => {
+        const dot = name.lastIndexOf(".");
+
+        return dot === -1 ? Option.none() : Option.some(name.slice(0, dot));
+      })
+    )
+  );
 
 const schemaPrefix = "#/components/schemas/";
 
@@ -105,17 +122,19 @@ const allowsBearer = (security: SecurityRequirements): boolean =>
   security.some((requirement) => "bearer" in requirement);
 
 /**
- * The operation with its SDK method: the contract's operationId is
- * `<group>.<method>` (`posts.schedule`), or the method alone for the health
- * checks, whose group is their tag.
+ * The operation with its SDK group and method: the contract's operationId
+ * is `<namespace>.<method>`, its namespace one segment or several
+ * (`posts.schedule`, `inbox.messages.send`), or the method alone for the
+ * health checks, whose group is their tag. A namespace of several segments
+ * is a list, which the generators nest (`client.inbox.messages.send`).
  */
 const withSdkName = (
   operation: JsonObject,
   tags: readonly string[]
 ): JsonObject => {
-  const id = operation["operationId"];
+  const id = Option.getOrUndefined(decodeId(operation["operationId"]));
 
-  if (!isString(id)) {
+  if (id === undefined) {
     throw new Error(
       `An operation has no operationId: ${JSON.stringify(operation)}`
     );
@@ -128,8 +147,10 @@ const withSdkName = (
     throw new Error(`The operation ${id} has neither a group nor a tag`);
   }
 
+  const segments = group.split(".");
+
   return withEntries(operation, [
-    ["x-fern-sdk-group-name", group],
+    ["x-fern-sdk-group-name", segments.length === 1 ? group : segments],
     ["x-fern-sdk-method-name", id.slice(dot + 1)],
   ]);
 };
@@ -188,7 +209,12 @@ const keepOperation = (operation: JsonObject): JsonObject | undefined => {
     return withSdkName(operation, tags);
   }
 
-  if (!allowsBearer(security) || tags.some((tag) => ownSessionTags.has(tag))) {
+  const group = groupOf(operation);
+
+  if (
+    !allowsBearer(security) ||
+    (group !== undefined && ownSessionGroups.has(group))
+  ) {
     return undefined;
   }
 
@@ -246,6 +272,43 @@ const paths: JsonObject = Object.fromEntries(
     }
   )
 );
+
+const SdkNamesSchema = Schema.Struct({
+  "x-fern-sdk-group-name": Schema.Union([
+    Schema.String,
+    Schema.Array(Schema.String),
+  ]),
+  "x-fern-sdk-method-name": Schema.String,
+});
+
+const decodeSdkNames = Schema.decodeUnknownSync(SdkNamesSchema);
+
+// Each kept operation's namespace (its segments joined) and method.
+const sdkNames = Object.values(paths)
+  .filter(isJsonObject)
+  .flatMap((item) =>
+    Object.entries(item).flatMap(([key, operation]) => {
+      if (!methods.has(key)) {
+        return [];
+      }
+
+      const names = decodeSdkNames(operation);
+      const group = names["x-fern-sdk-group-name"];
+
+      return [
+        {
+          method: names["x-fern-sdk-method-name"],
+          namespace: isString(group) ? group : group.join("."),
+        },
+      ];
+    })
+  );
+
+const [problem] = namespaceProblems(sdkNames);
+
+if (problem !== undefined) {
+  throw new Error(problem);
+}
 
 const isNonFinite = (value: Json): boolean => {
   if (!isJsonObject(value)) {

@@ -18,13 +18,13 @@ async fn main() {
     let peal = client(&base_url, "peal_test");
 
     peal.system.health(None).await.expect("the health check answers");
-    let me = peal.session.me(None).await.expect("GET /api/me answers");
+    let me = peal.me.get(None).await.expect("GET /api/me answers");
 
     assert_eq!(me.user.email, "ada@example.test");
     assert!(me.impersonated_by.is_none() && me.user.image.is_none());
     assert!(me.workspaces[0].permissions.contains(&Permission::PostSchedule));
 
-    let refused = client(&base_url, "refused").session.me(None).await;
+    let refused = client(&base_url, "refused").me.get(None).await;
     assert!(
         matches!(refused, Err(ApiError::UnauthorizedError { .. })),
         "a refused token: {refused:?}"

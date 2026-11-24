@@ -26,7 +26,7 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 const syntheticKey = "synthetic-shotstack-key";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["assistant", "slideshows"]).pipe(
+  HttpApiTest.groups(Api, ["assistant", "media.slideshows"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         Layer.merge(AssistantApiLive, SlideshowsApiLive).pipe(
@@ -81,7 +81,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           const owner = yield* as(workspaceId, "owner");
           const editor = yield* as(workspaceId, "editor");
 
-          const off = yield* editor.slideshows
+          const off = yield* editor["media.slideshows"]
             .create({ headers, payload: { aspect: "portrait", slides } })
             .pipe(Effect.flip);
 
@@ -140,7 +140,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           });
 
           // The test's library holds no image.
-          const missing = yield* editor.slideshows
+          const missing = yield* editor["media.slideshows"]
             .create({ headers, payload: { aspect: "portrait", slides } })
             .pipe(Effect.flip);
 
@@ -149,11 +149,14 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             reason: "imageNotFound",
           });
 
-          const listed = yield* editor.slideshows.list({ headers, query: {} });
+          const listed = yield* editor["media.slideshows"].list({
+            headers,
+            query: {},
+          });
 
           assert.lengthOf(listed.slideshows, 0);
 
-          const none = yield* editor.slideshows
+          const none = yield* editor["media.slideshows"]
             .get({
               headers,
               params: {
@@ -204,7 +207,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           assert.isTrue(status.slideshows.paymentMethodRequired);
 
-          const refused = yield* editor.slideshows
+          const refused = yield* editor["media.slideshows"]
             .create({ headers, payload: { aspect: "portrait", slides } })
             .pipe(Effect.flip);
 
@@ -253,7 +256,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             },
           };
 
-          const off = yield* editor.slideshows
+          const off = yield* editor["media.slideshows"]
             .createFromEdit({ headers, payload: { edit } })
             .pipe(Effect.flip);
 
@@ -288,7 +291,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
               },
               { ...edit, output: { format: "gif", resolution: "sd" } },
             ].map((each) =>
-              editor.slideshows
+              editor["media.slideshows"]
                 .createFromEdit({ headers, payload: { edit: each } })
                 .pipe(Effect.flip)
             )
@@ -305,7 +308,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             ]
           );
 
-          const queued = yield* editor.slideshows.createFromEdit({
+          const queued = yield* editor["media.slideshows"].createFromEdit({
             headers,
             payload: { edit },
           });
@@ -320,7 +323,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           });
 
           // One at a time a workspace.
-          const busy = yield* editor.slideshows
+          const busy = yield* editor["media.slideshows"]
             .createFromEdit({ headers, payload: { edit } })
             .pipe(Effect.flip);
 
@@ -331,7 +334,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           const viewer = yield* as(workspaceId, "viewer");
 
-          const forbidden = yield* viewer.slideshows
+          const forbidden = yield* viewer["media.slideshows"]
             .createFromEdit({ headers, payload: { edit } })
             .pipe(Effect.flip);
 
@@ -346,10 +349,12 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         const viewer = yield* as(workspaceId, "viewer");
 
         const refusals = yield* Effect.all([
-          viewer.slideshows
+          viewer["media.slideshows"]
             .create({ headers, payload: { aspect: "portrait", slides } })
             .pipe(Effect.flip),
-          viewer.slideshows.list({ headers, query: {} }).pipe(Effect.flip),
+          viewer["media.slideshows"]
+            .list({ headers, query: {} })
+            .pipe(Effect.flip),
         ]);
 
         assert.deepStrictEqual(

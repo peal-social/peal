@@ -10,49 +10,23 @@ from .core.logging import LogConfig, Logger
 from .environment import PealEnvironment
 
 if typing.TYPE_CHECKING:
-    from .activity.client import ActivityClient, AsyncActivityClient
     from .ads.client import AdsClient, AsyncAdsClient
     from .analytics.client import AnalyticsClient, AsyncAnalyticsClient
-    from .api_keys.client import ApiKeysClient, AsyncApiKeysClient
+    from .approvals.client import ApprovalsClient, AsyncApprovalsClient
     from .articles.client import ArticlesClient, AsyncArticlesClient
     from .assistant.client import AssistantClient, AsyncAssistantClient
-    from .billing.client import AsyncBillingClient, BillingClient
-    from .capabilities.client import AsyncCapabilitiesClient, CapabilitiesClient
-    from .channel_defaults.client import AsyncChannelDefaultsClient, ChannelDefaultsClient
-    from .channel_sets.client import AsyncChannelSetsClient, ChannelSetsClient
+    from .automations.client import AsyncAutomationsClient, AutomationsClient
     from .channels.client import AsyncChannelsClient, ChannelsClient
-    from .connect_links.client import AsyncConnectLinksClient, ConnectLinksClient
     from .credential.client import AsyncCredentialClient, CredentialClient
-    from .feeds.client import AsyncFeedsClient, FeedsClient
-    from .follow_ups.client import AsyncFollowUpsClient, FollowUpsClient
     from .inbox.client import AsyncInboxClient, InboxClient
-    from .inbox_messages.client import AsyncInboxMessagesClient, InboxMessagesClient
-    from .inbox_reviews.client import AsyncInboxReviewsClient, InboxReviewsClient
-    from .inbox_rules.client import AsyncInboxRulesClient, InboxRulesClient
-    from .invitations.client import AsyncInvitationsClient, InvitationsClient
-    from .lookups.client import AsyncLookupsClient, LookupsClient
+    from .links.client import AsyncLinksClient, LinksClient
+    from .me.client import AsyncMeClient, MeClient
     from .media.client import AsyncMediaClient, MediaClient
-    from .media_audio.client import AsyncMediaAudioClient, MediaAudioClient
-    from .members.client import AsyncMembersClient, MembersClient
-    from .notices.client import AsyncNoticesClient, NoticesClient
-    from .notification_preferences.client import AsyncNotificationPreferencesClient, NotificationPreferencesClient
     from .partner.client import AsyncPartnerClient, PartnerClient
-    from .partner_account.client import AsyncPartnerAccountClient, PartnerAccountClient
-    from .partner_usage.client import AsyncPartnerUsageClient, PartnerUsageClient
     from .posts.client import AsyncPostsClient, PostsClient
-    from .queues.client import AsyncQueuesClient, QueuesClient
-    from .recycling.client import AsyncRecyclingClient, RecyclingClient
-    from .review.client import AsyncReviewClient, ReviewClient
-    from .session.client import AsyncSessionClient, SessionClient
-    from .short_links.client import AsyncShortLinksClient, ShortLinksClient
-    from .signatures.client import AsyncSignaturesClient, SignaturesClient
-    from .slideshows.client import AsyncSlideshowsClient, SlideshowsClient
     from .system.client import AsyncSystemClient, SystemClient
-    from .tags.client import AsyncTagsClient, TagsClient
-    from .tiktok.client import AsyncTiktokClient, TiktokClient
-    from .usage.client import AsyncUsageClient, UsageClient
-    from .video_generations.client import AsyncVideoGenerationsClient, VideoGenerationsClient
     from .webhooks.client import AsyncWebhooksClient, WebhooksClient
+    from .workspace.client import AsyncWorkspaceClient, WorkspaceClient
 
 
 class Peal:
@@ -146,89 +120,23 @@ class Peal:
             logging=logging,
             peal_version=peal_version,
         )
-        self._system: typing.Optional[SystemClient] = None
-        self._session: typing.Optional[SessionClient] = None
-        self._credential: typing.Optional[CredentialClient] = None
-        self._api_keys: typing.Optional[ApiKeysClient] = None
-        self._channels: typing.Optional[ChannelsClient] = None
         self._posts: typing.Optional[PostsClient] = None
-        self._articles: typing.Optional[ArticlesClient] = None
+        self._approvals: typing.Optional[ApprovalsClient] = None
+        self._channels: typing.Optional[ChannelsClient] = None
         self._media: typing.Optional[MediaClient] = None
-        self._media_audio: typing.Optional[MediaAudioClient] = None
-        self._notices: typing.Optional[NoticesClient] = None
-        self._notification_preferences: typing.Optional[NotificationPreferencesClient] = None
-        self._assistant: typing.Optional[AssistantClient] = None
-        self._video_generations: typing.Optional[VideoGenerationsClient] = None
-        self._slideshows: typing.Optional[SlideshowsClient] = None
-        self._members: typing.Optional[MembersClient] = None
-        self._invitations: typing.Optional[InvitationsClient] = None
-        self._billing: typing.Optional[BillingClient] = None
-        self._usage: typing.Optional[UsageClient] = None
         self._analytics: typing.Optional[AnalyticsClient] = None
-        self._tiktok: typing.Optional[TiktokClient] = None
-        self._capabilities: typing.Optional[CapabilitiesClient] = None
-        self._lookups: typing.Optional[LookupsClient] = None
-        self._webhooks: typing.Optional[WebhooksClient] = None
-        self._inbox: typing.Optional[InboxClient] = None
-        self._inbox_reviews: typing.Optional[InboxReviewsClient] = None
-        self._inbox_messages: typing.Optional[InboxMessagesClient] = None
         self._ads: typing.Optional[AdsClient] = None
-        self._activity: typing.Optional[ActivityClient] = None
+        self._articles: typing.Optional[ArticlesClient] = None
+        self._links: typing.Optional[LinksClient] = None
+        self._webhooks: typing.Optional[WebhooksClient] = None
+        self._assistant: typing.Optional[AssistantClient] = None
         self._partner: typing.Optional[PartnerClient] = None
-        self._partner_usage: typing.Optional[PartnerUsageClient] = None
-        self._partner_account: typing.Optional[PartnerAccountClient] = None
-        self._connect_links: typing.Optional[ConnectLinksClient] = None
-        self._review: typing.Optional[ReviewClient] = None
-        self._tags: typing.Optional[TagsClient] = None
-        self._signatures: typing.Optional[SignaturesClient] = None
-        self._channel_sets: typing.Optional[ChannelSetsClient] = None
-        self._queues: typing.Optional[QueuesClient] = None
-        self._recycling: typing.Optional[RecyclingClient] = None
-        self._follow_ups: typing.Optional[FollowUpsClient] = None
-        self._inbox_rules: typing.Optional[InboxRulesClient] = None
-        self._feeds: typing.Optional[FeedsClient] = None
-        self._channel_defaults: typing.Optional[ChannelDefaultsClient] = None
-        self._short_links: typing.Optional[ShortLinksClient] = None
-
-    @property
-    def system(self):
-        if self._system is None:
-            from .system.client import SystemClient  # noqa: E402
-
-            self._system = SystemClient(client_wrapper=self._client_wrapper)
-        return self._system
-
-    @property
-    def session(self):
-        if self._session is None:
-            from .session.client import SessionClient  # noqa: E402
-
-            self._session = SessionClient(client_wrapper=self._client_wrapper)
-        return self._session
-
-    @property
-    def credential(self):
-        if self._credential is None:
-            from .credential.client import CredentialClient  # noqa: E402
-
-            self._credential = CredentialClient(client_wrapper=self._client_wrapper)
-        return self._credential
-
-    @property
-    def api_keys(self):
-        if self._api_keys is None:
-            from .api_keys.client import ApiKeysClient  # noqa: E402
-
-            self._api_keys = ApiKeysClient(client_wrapper=self._client_wrapper)
-        return self._api_keys
-
-    @property
-    def channels(self):
-        if self._channels is None:
-            from .channels.client import ChannelsClient  # noqa: E402
-
-            self._channels = ChannelsClient(client_wrapper=self._client_wrapper)
-        return self._channels
+        self._me: typing.Optional[MeClient] = None
+        self._credential: typing.Optional[CredentialClient] = None
+        self._system: typing.Optional[SystemClient] = None
+        self._automations: typing.Optional[AutomationsClient] = None
+        self._inbox: typing.Optional[InboxClient] = None
+        self._workspace: typing.Optional[WorkspaceClient] = None
 
     @property
     def posts(self):
@@ -239,12 +147,20 @@ class Peal:
         return self._posts
 
     @property
-    def articles(self):
-        if self._articles is None:
-            from .articles.client import ArticlesClient  # noqa: E402
+    def approvals(self):
+        if self._approvals is None:
+            from .approvals.client import ApprovalsClient  # noqa: E402
 
-            self._articles = ArticlesClient(client_wrapper=self._client_wrapper)
-        return self._articles
+            self._approvals = ApprovalsClient(client_wrapper=self._client_wrapper)
+        return self._approvals
+
+    @property
+    def channels(self):
+        if self._channels is None:
+            from .channels.client import ChannelsClient  # noqa: E402
+
+            self._channels = ChannelsClient(client_wrapper=self._client_wrapper)
+        return self._channels
 
     @property
     def media(self):
@@ -255,148 +171,12 @@ class Peal:
         return self._media
 
     @property
-    def media_audio(self):
-        if self._media_audio is None:
-            from .media_audio.client import MediaAudioClient  # noqa: E402
-
-            self._media_audio = MediaAudioClient(client_wrapper=self._client_wrapper)
-        return self._media_audio
-
-    @property
-    def notices(self):
-        if self._notices is None:
-            from .notices.client import NoticesClient  # noqa: E402
-
-            self._notices = NoticesClient(client_wrapper=self._client_wrapper)
-        return self._notices
-
-    @property
-    def notification_preferences(self):
-        if self._notification_preferences is None:
-            from .notification_preferences.client import NotificationPreferencesClient  # noqa: E402
-
-            self._notification_preferences = NotificationPreferencesClient(client_wrapper=self._client_wrapper)
-        return self._notification_preferences
-
-    @property
-    def assistant(self):
-        if self._assistant is None:
-            from .assistant.client import AssistantClient  # noqa: E402
-
-            self._assistant = AssistantClient(client_wrapper=self._client_wrapper)
-        return self._assistant
-
-    @property
-    def video_generations(self):
-        if self._video_generations is None:
-            from .video_generations.client import VideoGenerationsClient  # noqa: E402
-
-            self._video_generations = VideoGenerationsClient(client_wrapper=self._client_wrapper)
-        return self._video_generations
-
-    @property
-    def slideshows(self):
-        if self._slideshows is None:
-            from .slideshows.client import SlideshowsClient  # noqa: E402
-
-            self._slideshows = SlideshowsClient(client_wrapper=self._client_wrapper)
-        return self._slideshows
-
-    @property
-    def members(self):
-        if self._members is None:
-            from .members.client import MembersClient  # noqa: E402
-
-            self._members = MembersClient(client_wrapper=self._client_wrapper)
-        return self._members
-
-    @property
-    def invitations(self):
-        if self._invitations is None:
-            from .invitations.client import InvitationsClient  # noqa: E402
-
-            self._invitations = InvitationsClient(client_wrapper=self._client_wrapper)
-        return self._invitations
-
-    @property
-    def billing(self):
-        if self._billing is None:
-            from .billing.client import BillingClient  # noqa: E402
-
-            self._billing = BillingClient(client_wrapper=self._client_wrapper)
-        return self._billing
-
-    @property
-    def usage(self):
-        if self._usage is None:
-            from .usage.client import UsageClient  # noqa: E402
-
-            self._usage = UsageClient(client_wrapper=self._client_wrapper)
-        return self._usage
-
-    @property
     def analytics(self):
         if self._analytics is None:
             from .analytics.client import AnalyticsClient  # noqa: E402
 
             self._analytics = AnalyticsClient(client_wrapper=self._client_wrapper)
         return self._analytics
-
-    @property
-    def tiktok(self):
-        if self._tiktok is None:
-            from .tiktok.client import TiktokClient  # noqa: E402
-
-            self._tiktok = TiktokClient(client_wrapper=self._client_wrapper)
-        return self._tiktok
-
-    @property
-    def capabilities(self):
-        if self._capabilities is None:
-            from .capabilities.client import CapabilitiesClient  # noqa: E402
-
-            self._capabilities = CapabilitiesClient(client_wrapper=self._client_wrapper)
-        return self._capabilities
-
-    @property
-    def lookups(self):
-        if self._lookups is None:
-            from .lookups.client import LookupsClient  # noqa: E402
-
-            self._lookups = LookupsClient(client_wrapper=self._client_wrapper)
-        return self._lookups
-
-    @property
-    def webhooks(self):
-        if self._webhooks is None:
-            from .webhooks.client import WebhooksClient  # noqa: E402
-
-            self._webhooks = WebhooksClient(client_wrapper=self._client_wrapper)
-        return self._webhooks
-
-    @property
-    def inbox(self):
-        if self._inbox is None:
-            from .inbox.client import InboxClient  # noqa: E402
-
-            self._inbox = InboxClient(client_wrapper=self._client_wrapper)
-        return self._inbox
-
-    @property
-    def inbox_reviews(self):
-        if self._inbox_reviews is None:
-            from .inbox_reviews.client import InboxReviewsClient  # noqa: E402
-
-            self._inbox_reviews = InboxReviewsClient(client_wrapper=self._client_wrapper)
-        return self._inbox_reviews
-
-    @property
-    def inbox_messages(self):
-        if self._inbox_messages is None:
-            from .inbox_messages.client import InboxMessagesClient  # noqa: E402
-
-            self._inbox_messages = InboxMessagesClient(client_wrapper=self._client_wrapper)
-        return self._inbox_messages
 
     @property
     def ads(self):
@@ -407,12 +187,36 @@ class Peal:
         return self._ads
 
     @property
-    def activity(self):
-        if self._activity is None:
-            from .activity.client import ActivityClient  # noqa: E402
+    def articles(self):
+        if self._articles is None:
+            from .articles.client import ArticlesClient  # noqa: E402
 
-            self._activity = ActivityClient(client_wrapper=self._client_wrapper)
-        return self._activity
+            self._articles = ArticlesClient(client_wrapper=self._client_wrapper)
+        return self._articles
+
+    @property
+    def links(self):
+        if self._links is None:
+            from .links.client import LinksClient  # noqa: E402
+
+            self._links = LinksClient(client_wrapper=self._client_wrapper)
+        return self._links
+
+    @property
+    def webhooks(self):
+        if self._webhooks is None:
+            from .webhooks.client import WebhooksClient  # noqa: E402
+
+            self._webhooks = WebhooksClient(client_wrapper=self._client_wrapper)
+        return self._webhooks
+
+    @property
+    def assistant(self):
+        if self._assistant is None:
+            from .assistant.client import AssistantClient  # noqa: E402
+
+            self._assistant = AssistantClient(client_wrapper=self._client_wrapper)
+        return self._assistant
 
     @property
     def partner(self):
@@ -423,116 +227,52 @@ class Peal:
         return self._partner
 
     @property
-    def partner_usage(self):
-        if self._partner_usage is None:
-            from .partner_usage.client import PartnerUsageClient  # noqa: E402
+    def me(self):
+        if self._me is None:
+            from .me.client import MeClient  # noqa: E402
 
-            self._partner_usage = PartnerUsageClient(client_wrapper=self._client_wrapper)
-        return self._partner_usage
-
-    @property
-    def partner_account(self):
-        if self._partner_account is None:
-            from .partner_account.client import PartnerAccountClient  # noqa: E402
-
-            self._partner_account = PartnerAccountClient(client_wrapper=self._client_wrapper)
-        return self._partner_account
+            self._me = MeClient(client_wrapper=self._client_wrapper)
+        return self._me
 
     @property
-    def connect_links(self):
-        if self._connect_links is None:
-            from .connect_links.client import ConnectLinksClient  # noqa: E402
+    def credential(self):
+        if self._credential is None:
+            from .credential.client import CredentialClient  # noqa: E402
 
-            self._connect_links = ConnectLinksClient(client_wrapper=self._client_wrapper)
-        return self._connect_links
-
-    @property
-    def review(self):
-        if self._review is None:
-            from .review.client import ReviewClient  # noqa: E402
-
-            self._review = ReviewClient(client_wrapper=self._client_wrapper)
-        return self._review
+            self._credential = CredentialClient(client_wrapper=self._client_wrapper)
+        return self._credential
 
     @property
-    def tags(self):
-        if self._tags is None:
-            from .tags.client import TagsClient  # noqa: E402
+    def system(self):
+        if self._system is None:
+            from .system.client import SystemClient  # noqa: E402
 
-            self._tags = TagsClient(client_wrapper=self._client_wrapper)
-        return self._tags
-
-    @property
-    def signatures(self):
-        if self._signatures is None:
-            from .signatures.client import SignaturesClient  # noqa: E402
-
-            self._signatures = SignaturesClient(client_wrapper=self._client_wrapper)
-        return self._signatures
+            self._system = SystemClient(client_wrapper=self._client_wrapper)
+        return self._system
 
     @property
-    def channel_sets(self):
-        if self._channel_sets is None:
-            from .channel_sets.client import ChannelSetsClient  # noqa: E402
+    def automations(self):
+        if self._automations is None:
+            from .automations.client import AutomationsClient  # noqa: E402
 
-            self._channel_sets = ChannelSetsClient(client_wrapper=self._client_wrapper)
-        return self._channel_sets
-
-    @property
-    def queues(self):
-        if self._queues is None:
-            from .queues.client import QueuesClient  # noqa: E402
-
-            self._queues = QueuesClient(client_wrapper=self._client_wrapper)
-        return self._queues
+            self._automations = AutomationsClient(client_wrapper=self._client_wrapper)
+        return self._automations
 
     @property
-    def recycling(self):
-        if self._recycling is None:
-            from .recycling.client import RecyclingClient  # noqa: E402
+    def inbox(self):
+        if self._inbox is None:
+            from .inbox.client import InboxClient  # noqa: E402
 
-            self._recycling = RecyclingClient(client_wrapper=self._client_wrapper)
-        return self._recycling
-
-    @property
-    def follow_ups(self):
-        if self._follow_ups is None:
-            from .follow_ups.client import FollowUpsClient  # noqa: E402
-
-            self._follow_ups = FollowUpsClient(client_wrapper=self._client_wrapper)
-        return self._follow_ups
+            self._inbox = InboxClient(client_wrapper=self._client_wrapper)
+        return self._inbox
 
     @property
-    def inbox_rules(self):
-        if self._inbox_rules is None:
-            from .inbox_rules.client import InboxRulesClient  # noqa: E402
+    def workspace(self):
+        if self._workspace is None:
+            from .workspace.client import WorkspaceClient  # noqa: E402
 
-            self._inbox_rules = InboxRulesClient(client_wrapper=self._client_wrapper)
-        return self._inbox_rules
-
-    @property
-    def feeds(self):
-        if self._feeds is None:
-            from .feeds.client import FeedsClient  # noqa: E402
-
-            self._feeds = FeedsClient(client_wrapper=self._client_wrapper)
-        return self._feeds
-
-    @property
-    def channel_defaults(self):
-        if self._channel_defaults is None:
-            from .channel_defaults.client import ChannelDefaultsClient  # noqa: E402
-
-            self._channel_defaults = ChannelDefaultsClient(client_wrapper=self._client_wrapper)
-        return self._channel_defaults
-
-    @property
-    def short_links(self):
-        if self._short_links is None:
-            from .short_links.client import ShortLinksClient  # noqa: E402
-
-            self._short_links = ShortLinksClient(client_wrapper=self._client_wrapper)
-        return self._short_links
+            self._workspace = WorkspaceClient(client_wrapper=self._client_wrapper)
+        return self._workspace
 
 
 def _make_default_async_client(
@@ -647,89 +387,23 @@ class AsyncPeal:
             logging=logging,
             peal_version=peal_version,
         )
-        self._system: typing.Optional[AsyncSystemClient] = None
-        self._session: typing.Optional[AsyncSessionClient] = None
-        self._credential: typing.Optional[AsyncCredentialClient] = None
-        self._api_keys: typing.Optional[AsyncApiKeysClient] = None
-        self._channels: typing.Optional[AsyncChannelsClient] = None
         self._posts: typing.Optional[AsyncPostsClient] = None
-        self._articles: typing.Optional[AsyncArticlesClient] = None
+        self._approvals: typing.Optional[AsyncApprovalsClient] = None
+        self._channels: typing.Optional[AsyncChannelsClient] = None
         self._media: typing.Optional[AsyncMediaClient] = None
-        self._media_audio: typing.Optional[AsyncMediaAudioClient] = None
-        self._notices: typing.Optional[AsyncNoticesClient] = None
-        self._notification_preferences: typing.Optional[AsyncNotificationPreferencesClient] = None
-        self._assistant: typing.Optional[AsyncAssistantClient] = None
-        self._video_generations: typing.Optional[AsyncVideoGenerationsClient] = None
-        self._slideshows: typing.Optional[AsyncSlideshowsClient] = None
-        self._members: typing.Optional[AsyncMembersClient] = None
-        self._invitations: typing.Optional[AsyncInvitationsClient] = None
-        self._billing: typing.Optional[AsyncBillingClient] = None
-        self._usage: typing.Optional[AsyncUsageClient] = None
         self._analytics: typing.Optional[AsyncAnalyticsClient] = None
-        self._tiktok: typing.Optional[AsyncTiktokClient] = None
-        self._capabilities: typing.Optional[AsyncCapabilitiesClient] = None
-        self._lookups: typing.Optional[AsyncLookupsClient] = None
-        self._webhooks: typing.Optional[AsyncWebhooksClient] = None
-        self._inbox: typing.Optional[AsyncInboxClient] = None
-        self._inbox_reviews: typing.Optional[AsyncInboxReviewsClient] = None
-        self._inbox_messages: typing.Optional[AsyncInboxMessagesClient] = None
         self._ads: typing.Optional[AsyncAdsClient] = None
-        self._activity: typing.Optional[AsyncActivityClient] = None
+        self._articles: typing.Optional[AsyncArticlesClient] = None
+        self._links: typing.Optional[AsyncLinksClient] = None
+        self._webhooks: typing.Optional[AsyncWebhooksClient] = None
+        self._assistant: typing.Optional[AsyncAssistantClient] = None
         self._partner: typing.Optional[AsyncPartnerClient] = None
-        self._partner_usage: typing.Optional[AsyncPartnerUsageClient] = None
-        self._partner_account: typing.Optional[AsyncPartnerAccountClient] = None
-        self._connect_links: typing.Optional[AsyncConnectLinksClient] = None
-        self._review: typing.Optional[AsyncReviewClient] = None
-        self._tags: typing.Optional[AsyncTagsClient] = None
-        self._signatures: typing.Optional[AsyncSignaturesClient] = None
-        self._channel_sets: typing.Optional[AsyncChannelSetsClient] = None
-        self._queues: typing.Optional[AsyncQueuesClient] = None
-        self._recycling: typing.Optional[AsyncRecyclingClient] = None
-        self._follow_ups: typing.Optional[AsyncFollowUpsClient] = None
-        self._inbox_rules: typing.Optional[AsyncInboxRulesClient] = None
-        self._feeds: typing.Optional[AsyncFeedsClient] = None
-        self._channel_defaults: typing.Optional[AsyncChannelDefaultsClient] = None
-        self._short_links: typing.Optional[AsyncShortLinksClient] = None
-
-    @property
-    def system(self):
-        if self._system is None:
-            from .system.client import AsyncSystemClient  # noqa: E402
-
-            self._system = AsyncSystemClient(client_wrapper=self._client_wrapper)
-        return self._system
-
-    @property
-    def session(self):
-        if self._session is None:
-            from .session.client import AsyncSessionClient  # noqa: E402
-
-            self._session = AsyncSessionClient(client_wrapper=self._client_wrapper)
-        return self._session
-
-    @property
-    def credential(self):
-        if self._credential is None:
-            from .credential.client import AsyncCredentialClient  # noqa: E402
-
-            self._credential = AsyncCredentialClient(client_wrapper=self._client_wrapper)
-        return self._credential
-
-    @property
-    def api_keys(self):
-        if self._api_keys is None:
-            from .api_keys.client import AsyncApiKeysClient  # noqa: E402
-
-            self._api_keys = AsyncApiKeysClient(client_wrapper=self._client_wrapper)
-        return self._api_keys
-
-    @property
-    def channels(self):
-        if self._channels is None:
-            from .channels.client import AsyncChannelsClient  # noqa: E402
-
-            self._channels = AsyncChannelsClient(client_wrapper=self._client_wrapper)
-        return self._channels
+        self._me: typing.Optional[AsyncMeClient] = None
+        self._credential: typing.Optional[AsyncCredentialClient] = None
+        self._system: typing.Optional[AsyncSystemClient] = None
+        self._automations: typing.Optional[AsyncAutomationsClient] = None
+        self._inbox: typing.Optional[AsyncInboxClient] = None
+        self._workspace: typing.Optional[AsyncWorkspaceClient] = None
 
     @property
     def posts(self):
@@ -740,12 +414,20 @@ class AsyncPeal:
         return self._posts
 
     @property
-    def articles(self):
-        if self._articles is None:
-            from .articles.client import AsyncArticlesClient  # noqa: E402
+    def approvals(self):
+        if self._approvals is None:
+            from .approvals.client import AsyncApprovalsClient  # noqa: E402
 
-            self._articles = AsyncArticlesClient(client_wrapper=self._client_wrapper)
-        return self._articles
+            self._approvals = AsyncApprovalsClient(client_wrapper=self._client_wrapper)
+        return self._approvals
+
+    @property
+    def channels(self):
+        if self._channels is None:
+            from .channels.client import AsyncChannelsClient  # noqa: E402
+
+            self._channels = AsyncChannelsClient(client_wrapper=self._client_wrapper)
+        return self._channels
 
     @property
     def media(self):
@@ -756,148 +438,12 @@ class AsyncPeal:
         return self._media
 
     @property
-    def media_audio(self):
-        if self._media_audio is None:
-            from .media_audio.client import AsyncMediaAudioClient  # noqa: E402
-
-            self._media_audio = AsyncMediaAudioClient(client_wrapper=self._client_wrapper)
-        return self._media_audio
-
-    @property
-    def notices(self):
-        if self._notices is None:
-            from .notices.client import AsyncNoticesClient  # noqa: E402
-
-            self._notices = AsyncNoticesClient(client_wrapper=self._client_wrapper)
-        return self._notices
-
-    @property
-    def notification_preferences(self):
-        if self._notification_preferences is None:
-            from .notification_preferences.client import AsyncNotificationPreferencesClient  # noqa: E402
-
-            self._notification_preferences = AsyncNotificationPreferencesClient(client_wrapper=self._client_wrapper)
-        return self._notification_preferences
-
-    @property
-    def assistant(self):
-        if self._assistant is None:
-            from .assistant.client import AsyncAssistantClient  # noqa: E402
-
-            self._assistant = AsyncAssistantClient(client_wrapper=self._client_wrapper)
-        return self._assistant
-
-    @property
-    def video_generations(self):
-        if self._video_generations is None:
-            from .video_generations.client import AsyncVideoGenerationsClient  # noqa: E402
-
-            self._video_generations = AsyncVideoGenerationsClient(client_wrapper=self._client_wrapper)
-        return self._video_generations
-
-    @property
-    def slideshows(self):
-        if self._slideshows is None:
-            from .slideshows.client import AsyncSlideshowsClient  # noqa: E402
-
-            self._slideshows = AsyncSlideshowsClient(client_wrapper=self._client_wrapper)
-        return self._slideshows
-
-    @property
-    def members(self):
-        if self._members is None:
-            from .members.client import AsyncMembersClient  # noqa: E402
-
-            self._members = AsyncMembersClient(client_wrapper=self._client_wrapper)
-        return self._members
-
-    @property
-    def invitations(self):
-        if self._invitations is None:
-            from .invitations.client import AsyncInvitationsClient  # noqa: E402
-
-            self._invitations = AsyncInvitationsClient(client_wrapper=self._client_wrapper)
-        return self._invitations
-
-    @property
-    def billing(self):
-        if self._billing is None:
-            from .billing.client import AsyncBillingClient  # noqa: E402
-
-            self._billing = AsyncBillingClient(client_wrapper=self._client_wrapper)
-        return self._billing
-
-    @property
-    def usage(self):
-        if self._usage is None:
-            from .usage.client import AsyncUsageClient  # noqa: E402
-
-            self._usage = AsyncUsageClient(client_wrapper=self._client_wrapper)
-        return self._usage
-
-    @property
     def analytics(self):
         if self._analytics is None:
             from .analytics.client import AsyncAnalyticsClient  # noqa: E402
 
             self._analytics = AsyncAnalyticsClient(client_wrapper=self._client_wrapper)
         return self._analytics
-
-    @property
-    def tiktok(self):
-        if self._tiktok is None:
-            from .tiktok.client import AsyncTiktokClient  # noqa: E402
-
-            self._tiktok = AsyncTiktokClient(client_wrapper=self._client_wrapper)
-        return self._tiktok
-
-    @property
-    def capabilities(self):
-        if self._capabilities is None:
-            from .capabilities.client import AsyncCapabilitiesClient  # noqa: E402
-
-            self._capabilities = AsyncCapabilitiesClient(client_wrapper=self._client_wrapper)
-        return self._capabilities
-
-    @property
-    def lookups(self):
-        if self._lookups is None:
-            from .lookups.client import AsyncLookupsClient  # noqa: E402
-
-            self._lookups = AsyncLookupsClient(client_wrapper=self._client_wrapper)
-        return self._lookups
-
-    @property
-    def webhooks(self):
-        if self._webhooks is None:
-            from .webhooks.client import AsyncWebhooksClient  # noqa: E402
-
-            self._webhooks = AsyncWebhooksClient(client_wrapper=self._client_wrapper)
-        return self._webhooks
-
-    @property
-    def inbox(self):
-        if self._inbox is None:
-            from .inbox.client import AsyncInboxClient  # noqa: E402
-
-            self._inbox = AsyncInboxClient(client_wrapper=self._client_wrapper)
-        return self._inbox
-
-    @property
-    def inbox_reviews(self):
-        if self._inbox_reviews is None:
-            from .inbox_reviews.client import AsyncInboxReviewsClient  # noqa: E402
-
-            self._inbox_reviews = AsyncInboxReviewsClient(client_wrapper=self._client_wrapper)
-        return self._inbox_reviews
-
-    @property
-    def inbox_messages(self):
-        if self._inbox_messages is None:
-            from .inbox_messages.client import AsyncInboxMessagesClient  # noqa: E402
-
-            self._inbox_messages = AsyncInboxMessagesClient(client_wrapper=self._client_wrapper)
-        return self._inbox_messages
 
     @property
     def ads(self):
@@ -908,12 +454,36 @@ class AsyncPeal:
         return self._ads
 
     @property
-    def activity(self):
-        if self._activity is None:
-            from .activity.client import AsyncActivityClient  # noqa: E402
+    def articles(self):
+        if self._articles is None:
+            from .articles.client import AsyncArticlesClient  # noqa: E402
 
-            self._activity = AsyncActivityClient(client_wrapper=self._client_wrapper)
-        return self._activity
+            self._articles = AsyncArticlesClient(client_wrapper=self._client_wrapper)
+        return self._articles
+
+    @property
+    def links(self):
+        if self._links is None:
+            from .links.client import AsyncLinksClient  # noqa: E402
+
+            self._links = AsyncLinksClient(client_wrapper=self._client_wrapper)
+        return self._links
+
+    @property
+    def webhooks(self):
+        if self._webhooks is None:
+            from .webhooks.client import AsyncWebhooksClient  # noqa: E402
+
+            self._webhooks = AsyncWebhooksClient(client_wrapper=self._client_wrapper)
+        return self._webhooks
+
+    @property
+    def assistant(self):
+        if self._assistant is None:
+            from .assistant.client import AsyncAssistantClient  # noqa: E402
+
+            self._assistant = AsyncAssistantClient(client_wrapper=self._client_wrapper)
+        return self._assistant
 
     @property
     def partner(self):
@@ -924,116 +494,52 @@ class AsyncPeal:
         return self._partner
 
     @property
-    def partner_usage(self):
-        if self._partner_usage is None:
-            from .partner_usage.client import AsyncPartnerUsageClient  # noqa: E402
+    def me(self):
+        if self._me is None:
+            from .me.client import AsyncMeClient  # noqa: E402
 
-            self._partner_usage = AsyncPartnerUsageClient(client_wrapper=self._client_wrapper)
-        return self._partner_usage
-
-    @property
-    def partner_account(self):
-        if self._partner_account is None:
-            from .partner_account.client import AsyncPartnerAccountClient  # noqa: E402
-
-            self._partner_account = AsyncPartnerAccountClient(client_wrapper=self._client_wrapper)
-        return self._partner_account
+            self._me = AsyncMeClient(client_wrapper=self._client_wrapper)
+        return self._me
 
     @property
-    def connect_links(self):
-        if self._connect_links is None:
-            from .connect_links.client import AsyncConnectLinksClient  # noqa: E402
+    def credential(self):
+        if self._credential is None:
+            from .credential.client import AsyncCredentialClient  # noqa: E402
 
-            self._connect_links = AsyncConnectLinksClient(client_wrapper=self._client_wrapper)
-        return self._connect_links
-
-    @property
-    def review(self):
-        if self._review is None:
-            from .review.client import AsyncReviewClient  # noqa: E402
-
-            self._review = AsyncReviewClient(client_wrapper=self._client_wrapper)
-        return self._review
+            self._credential = AsyncCredentialClient(client_wrapper=self._client_wrapper)
+        return self._credential
 
     @property
-    def tags(self):
-        if self._tags is None:
-            from .tags.client import AsyncTagsClient  # noqa: E402
+    def system(self):
+        if self._system is None:
+            from .system.client import AsyncSystemClient  # noqa: E402
 
-            self._tags = AsyncTagsClient(client_wrapper=self._client_wrapper)
-        return self._tags
-
-    @property
-    def signatures(self):
-        if self._signatures is None:
-            from .signatures.client import AsyncSignaturesClient  # noqa: E402
-
-            self._signatures = AsyncSignaturesClient(client_wrapper=self._client_wrapper)
-        return self._signatures
+            self._system = AsyncSystemClient(client_wrapper=self._client_wrapper)
+        return self._system
 
     @property
-    def channel_sets(self):
-        if self._channel_sets is None:
-            from .channel_sets.client import AsyncChannelSetsClient  # noqa: E402
+    def automations(self):
+        if self._automations is None:
+            from .automations.client import AsyncAutomationsClient  # noqa: E402
 
-            self._channel_sets = AsyncChannelSetsClient(client_wrapper=self._client_wrapper)
-        return self._channel_sets
-
-    @property
-    def queues(self):
-        if self._queues is None:
-            from .queues.client import AsyncQueuesClient  # noqa: E402
-
-            self._queues = AsyncQueuesClient(client_wrapper=self._client_wrapper)
-        return self._queues
+            self._automations = AsyncAutomationsClient(client_wrapper=self._client_wrapper)
+        return self._automations
 
     @property
-    def recycling(self):
-        if self._recycling is None:
-            from .recycling.client import AsyncRecyclingClient  # noqa: E402
+    def inbox(self):
+        if self._inbox is None:
+            from .inbox.client import AsyncInboxClient  # noqa: E402
 
-            self._recycling = AsyncRecyclingClient(client_wrapper=self._client_wrapper)
-        return self._recycling
-
-    @property
-    def follow_ups(self):
-        if self._follow_ups is None:
-            from .follow_ups.client import AsyncFollowUpsClient  # noqa: E402
-
-            self._follow_ups = AsyncFollowUpsClient(client_wrapper=self._client_wrapper)
-        return self._follow_ups
+            self._inbox = AsyncInboxClient(client_wrapper=self._client_wrapper)
+        return self._inbox
 
     @property
-    def inbox_rules(self):
-        if self._inbox_rules is None:
-            from .inbox_rules.client import AsyncInboxRulesClient  # noqa: E402
+    def workspace(self):
+        if self._workspace is None:
+            from .workspace.client import AsyncWorkspaceClient  # noqa: E402
 
-            self._inbox_rules = AsyncInboxRulesClient(client_wrapper=self._client_wrapper)
-        return self._inbox_rules
-
-    @property
-    def feeds(self):
-        if self._feeds is None:
-            from .feeds.client import AsyncFeedsClient  # noqa: E402
-
-            self._feeds = AsyncFeedsClient(client_wrapper=self._client_wrapper)
-        return self._feeds
-
-    @property
-    def channel_defaults(self):
-        if self._channel_defaults is None:
-            from .channel_defaults.client import AsyncChannelDefaultsClient  # noqa: E402
-
-            self._channel_defaults = AsyncChannelDefaultsClient(client_wrapper=self._client_wrapper)
-        return self._channel_defaults
-
-    @property
-    def short_links(self):
-        if self._short_links is None:
-            from .short_links.client import AsyncShortLinksClient  # noqa: E402
-
-            self._short_links = AsyncShortLinksClient(client_wrapper=self._client_wrapper)
-        return self._short_links
+            self._workspace = AsyncWorkspaceClient(client_wrapper=self._client_wrapper)
+        return self._workspace
 
 
 def _get_base_url(*, base_url: typing.Optional[str] = None, environment: PealEnvironment) -> str:

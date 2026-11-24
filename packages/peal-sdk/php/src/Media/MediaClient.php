@@ -2,6 +2,11 @@
 
 namespace Peal\Media;
 
+use Peal\Media\Images\ImagesClient;
+use Peal\Media\Voiceovers\VoiceoversClient;
+use Peal\Media\Transcriptions\TranscriptionsClient;
+use Peal\Media\Videos\VideosClient;
+use Peal\Media\Slideshows\SlideshowsClient;
 use Psr\Http\Client\ClientInterface;
 use Peal\Core\Client\RawClient;
 use Peal\Media\Requests\ListMediaRequest;
@@ -22,6 +27,31 @@ use Peal\Types\MediaUsage;
 
 class MediaClient
 {
+    /**
+     * @var ImagesClient $images
+     */
+    public ImagesClient $images;
+
+    /**
+     * @var VoiceoversClient $voiceovers
+     */
+    public VoiceoversClient $voiceovers;
+
+    /**
+     * @var TranscriptionsClient $transcriptions
+     */
+    public TranscriptionsClient $transcriptions;
+
+    /**
+     * @var VideosClient $videos
+     */
+    public VideosClient $videos;
+
+    /**
+     * @var SlideshowsClient $slideshows
+     */
+    public SlideshowsClient $slideshows;
+
     /**
      * @var array{
      *   baseUrl?: string,
@@ -54,6 +84,11 @@ class MediaClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+        $this->images = new ImagesClient($this->client, $this->options);
+        $this->voiceovers = new VoiceoversClient($this->client, $this->options);
+        $this->transcriptions = new TranscriptionsClient($this->client, $this->options);
+        $this->videos = new VideosClient($this->client, $this->options);
+        $this->slideshows = new SlideshowsClient($this->client, $this->options);
     }
 
     /**

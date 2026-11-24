@@ -12,23 +12,23 @@ export const commentRulesChanged = (workspaceId: string) => [
 
 /** The workspace's comment rules: a workspace keeps 100 going at most. */
 export const workspaceCommentRules = (workspaceId: string) =>
-  PealApi.query("inboxRules", "listCommentRules", {
+  PealApi.query("automations.commentRules", "list", {
     headers: forWorkspace(workspaceId),
     query: { limit: 100 },
     reactivityKeys: commentRulesChanged(workspaceId),
   });
 
 export const startCommentRule = PealApi.mutation(
-  "inboxRules",
-  "createCommentRule"
+  "automations.commentRules",
+  "create"
 );
 
 export const updateCommentRule = PealApi.mutation(
-  "inboxRules",
-  "updateCommentRule"
+  "automations.commentRules",
+  "update"
 );
 
 export const stopCommentRule = PealApi.mutation(
-  "inboxRules",
-  "deleteCommentRule"
+  "automations.commentRules",
+  "delete"
 );

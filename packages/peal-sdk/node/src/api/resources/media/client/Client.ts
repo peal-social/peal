@@ -9,6 +9,11 @@ import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
 import * as Peal from "../../../index.js";
+import { ImagesClient } from "../resources/images/client/Client.js";
+import { SlideshowsClient } from "../resources/slideshows/client/Client.js";
+import { TranscriptionsClient } from "../resources/transcriptions/client/Client.js";
+import { VideosClient } from "../resources/videos/client/Client.js";
+import { VoiceoversClient } from "../resources/voiceovers/client/Client.js";
 
 export declare namespace MediaClient {
     export type Options = BaseClientOptions;
@@ -17,12 +22,40 @@ export declare namespace MediaClient {
     }
 }
 
+/**
+ * The media library: uploads, and images, voice-overs, transcripts, videos and slideshows made for it.
+ */
 export class MediaClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<MediaClient.Options>;
+    protected _images: ImagesClient | undefined;
+    protected _voiceovers: VoiceoversClient | undefined;
+    protected _transcriptions: TranscriptionsClient | undefined;
+    protected _videos: VideosClient | undefined;
+    protected _slideshows: SlideshowsClient | undefined;
 
     constructor(options: MediaClient.Options = {}) {
 
         this._options = normalizeClientOptionsWithAuth(options);
+    }
+
+    public get images(): ImagesClient {
+        return (this._images ??= new ImagesClient(this._options));
+    }
+
+    public get voiceovers(): VoiceoversClient {
+        return (this._voiceovers ??= new VoiceoversClient(this._options));
+    }
+
+    public get transcriptions(): TranscriptionsClient {
+        return (this._transcriptions ??= new TranscriptionsClient(this._options));
+    }
+
+    public get videos(): VideosClient {
+        return (this._videos ??= new VideosClient(this._options));
+    }
+
+    public get slideshows(): SlideshowsClient {
+        return (this._slideshows ??= new SlideshowsClient(this._options));
     }
 
     /**

@@ -417,7 +417,7 @@ export type MarkNoticesRead = typeof MarkNoticesReadSchema.Type;
  * a workspace, not a user, and get 403, as do OAuth clients bound to one
  * workspace. Staff impersonating the user may read them, not mark them read.
  */
-export class NoticesApi extends HttpApiGroup.make("notices")
+export class NoticesApi extends HttpApiGroup.make("me.notices")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],

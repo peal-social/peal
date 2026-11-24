@@ -164,6 +164,38 @@
     "reason": "A partner key outlived the admin who made it, across every customer workspace: an admin about to be removed kept access through it. Partner keys now follow their maker as API keys do, and PartnerKey.createdBy names them."
   },
   {
+    "change": "The workspace's API keys moved from /api/workspaces/{workspaceId}/api-keys to /api/v1/workspace/api-keys, under the workspace's namespace",
+    "dropping": "workspaceId",
+    "from": "/api/workspaces/{workspaceId}/api-keys",
+    "kind": "move",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The SDKs' group is workspace.apiKeys, and its paths say so. The SDKs are 0.x: this ships in their next minor release, whose notes say so.",
+    "to": "/api/v1/workspace/api-keys"
+  },
+  {
+    "change": "The workspace's members moved from /api/workspaces/{workspaceId}/members to /api/v1/workspace/members, under the workspace's namespace",
+    "dropping": "workspaceId",
+    "from": "/api/workspaces/{workspaceId}/members",
+    "kind": "move",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The SDKs' group is workspace.members, and its paths say so. The SDKs are 0.x: this ships in their next minor release, whose notes say so.",
+    "to": "/api/v1/workspace/members"
+  },
+  {
+    "change": "The workspace's invitations moved from /api/workspaces/{workspaceId}/invitations to /api/v1/workspace/invitations, under the workspace's namespace",
+    "dropping": "workspaceId",
+    "from": "/api/workspaces/{workspaceId}/invitations",
+    "kind": "move",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The SDKs' group is workspace.invitations, and its paths say so. The SDKs are 0.x: this ships in their next minor release, whose notes say so.",
+    "to": "/api/v1/workspace/invitations"
+  },
+  {
+    "change": "The workspace's billing moved from /api/workspaces/{workspaceId}/billing to /api/v1/workspace/billing, under the workspace's namespace",
+    "dropping": "workspaceId",
+    "from": "/api/workspaces/{workspaceId}/billing",
+    "kind": "move",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The SDKs' group is workspace.billing, and its paths say so. The SDKs are 0.x: this ships in their next minor release, whose notes say so.",
+    "to": "/api/v1/workspace/billing"
+  },
+  {
     "change": "Every operation under /api/workspaces/{workspaceId} answers under /api/v1 instead, the rest of its path the same, and takes no workspaceId: a request acts in the workspace its Peal-Workspace header names, else in its credential's own",
     "dropping": "workspaceId",
     "from": "/api/workspaces/{workspaceId}",
@@ -180,6 +212,101 @@
     "change": "The SDKs' BadRequestErrorBody (one type for every 400 body with several errors) names InvalidDateRange and WorkspaceRequired, no longer BadRequest and InvalidDateRange; InvalidDateRangeEncoded and InvalidTimeRangeEncoded lost their _tag field, and their tag types (InvalidDateRangeEncodedTag, InvalidTimeRangeEncodedTag) are gone",
     "kind": "sdk",
     "reason": "Every workspace endpoint now answers 400 WorkspaceRequired to a request that names no workspace from a credential that belongs to none, beside the 400s some already had, and the generator names a single body type for each status, after one of the endpoints that has a union there. Nothing changes on the wire: every 400 body still carries its _tag. Code that matched BadRequestErrorBody.BadRequest, or read the date or time range errors' _tag through their types, reads the body's _tag as a string instead. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "session.me is now called me.get: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "apiKeys.list is now called workspace.apiKeys.list: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "apiKeys.create is now called workspace.apiKeys.create: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "apiKeys.revoke is now called workspace.apiKeys.revoke: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "posts.drafts is now called posts.drafts.list: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "posts.list: 200 answer was array, and is a PostPage",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. GET /api/v1/posts is now the paged list of every post (posts.list, which was posts.search at …/posts/search), whatever its state, with filters and a cursor: listing posts no longer needs two dates and no longer leaves out drafts. The time-window read that GET …/posts was, of the posts scheduled between from and to, is posts.calendar at GET /api/v1/posts/calendar, with the same query and answer. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "posts.create: body was a PostDraft, and is a NewPost",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. POST /api/v1/posts now creates a post and sends it (posts.create, which was posts.send at …/posts/send), with the same body and answer posts.send had. A draft is made at POST /api/v1/posts/drafts (posts.drafts.create), with the body posts.create took. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "posts.discard is gone (DELETE /api/workspaces/{workspaceId}/posts/{postId})",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. Deleting a draft is posts.drafts.delete at DELETE /api/v1/posts/drafts/{postId}: it deletes a draft and refuses any other post, as posts.discard did. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notices.list is now called me.notices.list: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notices.unread is now called me.notices.unread: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notices.markRead is now called me.notices.markRead: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notices.markAllRead is now called me.notices.markAllRead: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notificationPreferences.get is now called me.notificationPreferences.get: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notificationPreferences.update is now called me.notificationPreferences.update: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "members.list is now called workspace.members.list: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "invitations.list is now called workspace.invitations.list: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "invitations.create is now called workspace.invitations.create: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "invitations.revoke is now called workspace.invitations.revoke: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "billing.get is now called workspace.billing.get: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "tiktok.creator is now called channels.tiktokCreator.get: the SDKs' method changes name",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "Every operation the released SDKs did not have takes its namespace's name and, where its path did not spell it, a path under that namespace: /api/v1/tags is /api/v1/posts/tags, /api/v1/signatures /api/v1/posts/signatures, /api/v1/channel-sets /api/v1/channels/sets, /api/v1/connect-links /api/v1/channels/connect-links, /api/v1/platforms/capabilities /api/v1/channels/capabilities, /api/v1/queues, /recycling, /follow-ups and /feeds are under /api/v1/automations, /api/v1/inbox/rules is /api/v1/automations/comment-rules, the comments' inbox is under /api/v1/inbox/comments, /api/v1/short-links is /api/v1/links, /api/v1/activity, /usage and /billing are under /api/v1/workspace, /api/v1/partner-account is /api/v1/partner/account, /api/v1/partner/usage is /api/v1/partner/customer-usage, the approvals are under /api/v1/approvals (/review/settings, /review-links/{linkId} and each post's /review, /approve, /comments, /request-changes and /review-links), images are made at POST /api/v1/media/images and transcripts at POST /api/v1/media/{mediaId}/transcriptions",
+    "kind": "behaviour",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. These operations were not in the released SDKs, so the document's check cannot show their move. A client that called them by hand calls the new paths; what each takes and answers is unchanged. The workspace's activity log and staff's audit log keep the new operation names from this release on; rows written before keep the names they were written with."
+  },
+  {
+    "change": "The SDKs' groups are nested by namespace (client.inbox.messages.send, client.posts.tags.list, client.automations.queues.list), where they were flat (client.inboxMessages.sendMessage, client.tags.list, client.queues.list); request types inlined in a method are named after the namespace's last segment (SendMessagesRequest); Go's client of a namespace that holds others moves to <namespace>/client/client.go, package client",
+    "kind": "sdk",
+    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The generators nest a group whose name is a list, and name its inlined types after its last segment, which no two namespaces share. Code that called a flat group calls the nested one; Go code that imported a namespace's client imports its client package. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "The approvals' writes, now under /api/v1/approvals (a comment, an approval, a request for changes, a review link), answer 413 payload_too_large to a body past 1 MiB, where they took 8 MiB under …/posts/{postId}",
+    "kind": "behaviour",
+    "reason": "They took the posts' larger limit only by living under /posts. A comment holds 2000 characters at most, and the other bodies are smaller still: no request a client sends them comes near 1 MiB."
   },
   {
     "change": "The .NET SDK's constructor is PealClient(string token, string? workspace = null, ClientOptions? clientOptions = null): the client's options are its third parameter, so new PealClient(token, options) no longer compiles",

@@ -42,7 +42,7 @@ const clientAs = (
   permissions: readonly Permission[],
   member: Member = memberOf(workspaceId, permissions)
 ) =>
-  HttpApiTest.groups(Api, ["inboxReviews"]).pipe(
+  HttpApiTest.groups(Api, ["inbox.reviews"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         InboxReviewsApiLive.pipe(
@@ -97,7 +97,7 @@ describe("the reviews endpoints", () => {
       const { thread } = yield* collected(world);
       const client = yield* clientAs(world, permissionsFor("viewer"));
 
-      const page = yield* client.inboxReviews.listReviewThreads({
+      const page = yield* client["inbox.reviews"].listThreads({
         headers,
         query: { unanswered: "true" },
       });
@@ -123,7 +123,7 @@ describe("the reviews endpoints", () => {
         ]
       );
 
-      const detail = yield* client.inboxReviews.getReviewThread({
+      const detail = yield* client["inbox.reviews"].getThread({
         headers,
         params: { threadId: thread?.id ?? "" },
       });
@@ -160,7 +160,7 @@ describe("the reviews endpoints", () => {
         const client = yield* clientAs(world, permissionsFor("editor"));
         const reviewId = reviews[0]?.id ?? "";
 
-        const reply = yield* client.inboxReviews.replyToReview({
+        const reply = yield* client["inbox.reviews"].reply({
           headers,
           params: { reviewId },
           payload: { text: "Thank you for coming!" },
@@ -169,8 +169,8 @@ describe("the reviews endpoints", () => {
         assert.strictEqual(reply.status, "sending");
         assert.deepStrictEqual(world.state.jobs, [reply.id]);
 
-        const again = yield* client.inboxReviews
-          .replyToReview({
+        const again = yield* client["inbox.reviews"]
+          .reply({
             headers,
             params: { reviewId },
             payload: { text: "Again" },
@@ -179,8 +179,8 @@ describe("the reviews endpoints", () => {
 
         assert.instanceOf(again, ReplyPending);
 
-        const tooLong = yield* client.inboxReviews
-          .replyToReview({
+        const tooLong = yield* client["inbox.reviews"]
+          .reply({
             headers,
             params: { reviewId: reviews[1]?.id ?? "" },
             payload: { text: "é".repeat(2049) },
@@ -201,7 +201,7 @@ describe("the reviews endpoints", () => {
       const replied = reviews.find((review) => Option.isSome(review.reply));
       const waiting = reviews.find((review) => Option.isNone(review.reply));
 
-      const marked = yield* client.inboxReviews.setReviewAnswered({
+      const marked = yield* client["inbox.reviews"].setAnswered({
         headers,
         params: { reviewId: waiting?.id ?? "" },
         payload: { answered: true },
@@ -210,7 +210,7 @@ describe("the reviews endpoints", () => {
       assert.strictEqual(marked.state, "answered");
       assert.isTrue(marked.markedAnswered);
 
-      const withdrawn = yield* client.inboxReviews.withdrawReviewReply({
+      const withdrawn = yield* client["inbox.reviews"].withdrawReply({
         headers,
         params: { reviewId: replied?.id ?? "" },
       });
@@ -230,8 +230,8 @@ describe("the reviews endpoints", () => {
         const viewer = yield* clientAs(world, permissionsFor("viewer"));
         const reviewId = reviews[0]?.id ?? "";
 
-        const forbidden = yield* viewer.inboxReviews
-          .replyToReview({
+        const forbidden = yield* viewer["inbox.reviews"]
+          .reply({
             headers,
             params: { reviewId },
             payload: { text: "Thanks" },
@@ -242,8 +242,8 @@ describe("the reviews endpoints", () => {
 
         const editor = yield* clientAs(world, permissionsFor("editor"));
 
-        const missing = yield* editor.inboxReviews
-          .replyToReview({
+        const missing = yield* editor["inbox.reviews"]
+          .reply({
             headers,
             params: { reviewId: "not-a-review" },
             payload: { text: "Thanks" },
@@ -252,8 +252,8 @@ describe("the reviews endpoints", () => {
 
         assert.instanceOf(missing, InboxReviewNotFound);
 
-        const nowhere = yield* editor.inboxReviews
-          .getReviewThread({ headers, params: { threadId: "not-a-thread" } })
+        const nowhere = yield* editor["inbox.reviews"]
+          .getThread({ headers, params: { threadId: "not-a-thread" } })
           .pipe(Effect.flip);
 
         assert.instanceOf(nowhere, InboxReviewThreadNotFound);
@@ -263,8 +263,8 @@ describe("the reviews endpoints", () => {
           scopes: [],
         });
 
-        const unable = yield* editor.inboxReviews
-          .replyToReview({
+        const unable = yield* editor["inbox.reviews"]
+          .reply({
             headers,
             params: { reviewId },
             payload: { text: "Thanks" },
@@ -297,16 +297,16 @@ describe("the reviews endpoints", () => {
           workspaceId,
         });
 
-        const replied = yield* key.inboxReviews
-          .replyToReview({
+        const replied = yield* key["inbox.reviews"]
+          .reply({
             headers,
             params: { reviewId },
             payload: { text: "Thanks" },
           })
           .pipe(Effect.flip);
 
-        const withdrawn = yield* key.inboxReviews
-          .withdrawReviewReply({ headers, params: { reviewId } })
+        const withdrawn = yield* key["inbox.reviews"]
+          .withdrawReply({ headers, params: { reviewId } })
           .pipe(Effect.flip);
 
         for (const refused of [replied, withdrawn]) {
@@ -318,7 +318,7 @@ describe("the reviews endpoints", () => {
         }
 
         // Reading stays open to it.
-        const page = yield* key.inboxReviews.listReviewThreads({
+        const page = yield* key["inbox.reviews"].listThreads({
           headers,
           query: {},
         });

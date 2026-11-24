@@ -214,7 +214,7 @@ const watchTags = async (browser: {
     }) => Promise<void>
   ) => Promise<void>;
 }) => {
-  await browser.route(/\/api\/v1\/tags$/u, async (route) => {
+  await browser.route(/\/api\/v1\/posts\/tags$/u, async (route) => {
     if (route.request.method === "POST") {
       tagRequests.push(route.request.headers["x-posthog-session-id"] ?? null);
     }
@@ -389,7 +389,7 @@ describe("the web app's measurement", { serial: true }, () => {
     expect(session).toMatch(uuid);
     expect(
       await browser.evaluate(
-        `(id) => fetch('/api/v1/posts', { body: JSON.stringify({ channelIds: [], content: { media: [], overrides: [], text: 'A synthetic draft.' } }), headers: { 'content-type': 'application/json', 'peal-workspace': id }, method: 'POST' }).then((answer) => answer.status)`,
+        `(id) => fetch('/api/v1/posts/drafts', { body: JSON.stringify({ channelIds: [], content: { media: [], overrides: [], text: 'A synthetic draft.' } }), headers: { 'content-type': 'application/json', 'peal-workspace': id }, method: 'POST' }).then((answer) => answer.status)`,
         workspaceId
       )
     ).toBe(201);
@@ -463,7 +463,7 @@ describe("the web app's measurement", { serial: true }, () => {
             event.path === serverCapture &&
             event.event === "api_operation" &&
             event.distinctId === memberId &&
-            event.properties["operation"] === "tags.create"
+            event.properties["operation"] === "posts.tags.create"
         ),
       "the server's event of the tag the page added"
     );

@@ -481,7 +481,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   atoms in `#queues/atoms.ts`), with each queue's next slots on its own
   clock. A save that changed a queue's slots or zone (`timetableChanged`)
   offers, to members with post:schedule and while posts wait in it,
-  `QueueReshuffle` (`queues.reshuffle`, after a confirmation that says
+  `QueueReshuffle` (`automations.queues.reshuffle`, after a confirmation that says
   posts moved by hand move too; its view `QueueReshuffleView`): saving
   alone moves no post. The composer's schedule section (`SchedulePlacementFields`)
   chooses a time or a queue (`QueueChoice`, its view `QueueChoiceView`,
@@ -532,9 +532,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   takes its texts from the answer), `LinkWarnings` (`#posts/link-check.ts`,
   advice that blocks nothing: never flag a working link) and
   `PostTagsField`, which saves tags with the post while it is written and
-  at once (`posts.tag`, `savedOn`) on a post scheduled or out, as
+  at once (`posts.setTags`, `savedOn`) on a post scheduled or out, as
   `PostDetail` does. `ShortenLinks` with `useShortLinking` shows only on
-  a server with short links (`shortLinks.status`): the member's choice,
+  a server with short links (`links.status`): the member's choice,
   else the post's, else the workspace's `byDefault`, sent as
   `shortenLinks` with every save (the server gives a new post that
   leaves it out the same default, whoever makes it); its line counts with the contract's
@@ -570,7 +570,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   publishes nothing, nor before the workspace's approval policy is
   known. The composer runs one action at a time (`#posts/one-at-a-time.ts`,
   refused synchronously): a dialog's confirm button stays clickable while
-  it closes, and `posts.create` and `posts.schedule` take no idempotency
+  it closes, and `posts.drafts.create` and `posts.schedule` take no idempotency
   key. While a scheduled post is due, for ten minutes after its time
   (`isDue`), `ComposerScreen` reads it again until it is publishing.
   `PlainTextEditor`'s `onPasteFiles` hands files pasted into a text to
@@ -600,7 +600,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The posts list (`…/posts`, `PostList`, views in `post-list-views.tsx`)
   keeps its filters in the query string (`#posts/post-list-filter.ts`:
   `filtersOf`, `queryOf`, `withFilter`), so a link shows the same list,
-  and asks `posts.search` (`postSearchPage`) with them; "Show more"
+  and asks `posts.list` (`postSearchPage`) with them; "Show more"
   passes the page's cursor with the same filters and sort, as the API
   requires. An outcome is a filter on finished posts only. Its tabs
   (`postViews`, `postViewPath`) are All, Drafts, Scheduled and Needs
@@ -610,7 +610,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   post:approve decide there, through the calls the post's review makes
   (`usePostDecisions`, which `PostDecisionsProvider` gives the list):
   a decision names the approval read, so a post changed since is refused,
-  from `review.pending`, or, for a post that list leaves out (it holds
+  from `approvals.list`, or, for a post that list leaves out (it holds
   the 100 oldest), from the post's own review, which its row reads. The
   approve and request-changes mutation atoms are not concurrent (a
   second call interrupts the first and may settle with its result), so
@@ -766,7 +766,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   that say it is the channel's past, never a prediction, and that
   nothing is ranked under the floor (`Analytics.bestTimes`).
 - A post's page (`PostMetrics`) names the platforms this server counts
-  from its capabilities (`GET …/platforms/capabilities`,
+  from its capabilities (`GET …/channels/capabilities`,
   `analytics.perPost`: `countedOn`), never from the contract's
   `countedPlatforms` alone: X is counted only where `X_ANALYTICS` is on.
   It falls back on the list when it may not read the capabilities.
@@ -1068,7 +1068,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `OrderButton`), then checkout (`useCheckout`:
   `payAsYouGo`, monthly, the one plan sold), back to the page the person
   was on. Where another workspace bills the account (`billedElsewhereOf`
-  on the `account` of `GET …/billing/standing`, which every member
+  on the `account` of `GET …/workspace/billing/standing`, which every member
   reads), the dialog names and links it and orders nothing; to a
   member who cannot order, who can; past what any plan holds, how to ask
   for more (`PEAL_CONTACT_URL`). No plan, period or trial is ever
@@ -1106,7 +1106,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Dialogs fit the window (`DialogContent`: at most the viewport's height,
   scrolling): check a new one at 320 and 375 px wide, in English and
   French, as `upgrade-prompt.e2e.ts` does.
-- The billing page shows `GET …/billing` (`BillingView` renders each
+- The billing page shows `GET …/workspace/billing` (`BillingView` renders each
   state, `BillingStep` the cancellation and withdrawal steps): the plan
   (the free tier, per-account pricing with its next invoice, or a legacy
   plan read as it is, with its period's end); the billing
@@ -1150,7 +1150,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   Better Auth's `MEMBER_LIMIT_REACHED`, wherever they surface, from the
   `Billing` catalogue and `Auth.errors`.
 - Below it, on a server that bills or not, `UsageHistoryScreen` reads
-  `GET …/usage` for the last 7, 30 or 90 UTC days (`usageOf`): the
+  `GET …/workspace/usage` for the last 7, 30 or 90 UTC days (`usageOf`): the
   totals, a partner's plan when `sharedWith` says so, and
   `UsageHistoryView`'s chart (posts published as bars, channels as a
   line) with `UsageDaysTable` behind the **Table** tab, a dash for a day
@@ -1158,7 +1158,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `UsageHistoryView` takes days, totals and a table, so the partner
   settings' **Usage per customer** (`UsagePerCustomer`,
   `components/settings/partner-usage.tsx`, strings
-  `WorkspaceSettings.partner.usageReport`) draws `GET …/usage/partner`
+  `WorkspaceSettings.partner.usageReport`) draws `GET …/workspace/usage/partner`
   with it, then a table of workspaces, external id first, with **Load
   more** for the next pages; the billing page wraps it in
   `WorkspaceUsageHistory`.

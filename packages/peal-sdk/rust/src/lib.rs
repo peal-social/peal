@@ -14,7 +14,16 @@
 //!         ..Default::default()
 //!     };
 //!     let client = PealClient::new(config).expect("Failed to build client");
-//!     client.system.health(None).await;
+//!     client
+//!         .posts
+//!         .calendar(
+//!             &CalendarQueryRequest {
+//!                 from: "from".to_string(),
+//!                 to: "to".to_string(),
+//!             },
+//!             None,
+//!         )
+//!         .await;
 //! }
 //! ```
 //!

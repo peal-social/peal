@@ -119,7 +119,7 @@ const keysOf = Effect.fn("keysOf")(function* keysOf(
 
   return yield* bodyOf(
     KeysSchema,
-    yield* app.request(`/api/v1/api-keys`, {
+    yield* app.request(`/api/v1/workspace/api-keys`, {
       headers: { ...asPerson(person), ...forWorkspace(workspaceId) },
     })
   );
@@ -133,9 +133,12 @@ const revocationsIn = Effect.fn("revocationsIn")(function* revocationsIn(
 
   const page = yield* bodyOf(
     PageSchema,
-    yield* app.request(`/api/v1/activity?operation=apiKeys.revoke`, {
-      headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
-    })
+    yield* app.request(
+      `/api/v1/workspace/activity?operation=workspace.apiKeys.revoke`,
+      {
+        headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
+      }
+    )
   );
 
   return page.items.map(({ actor, objectIds }) => ({ actor, objectIds }));
@@ -212,7 +215,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // would revoke: the two keys they made that are recorded.
           const members = yield* bodyOf(
             MembersSchema,
-            yield* app.request(`/api/v1/members`, {
+            yield* app.request(`/api/v1/workspace/members`, {
               headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
             })
           );
@@ -227,7 +230,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // An editor, who may not manage members, reads none of it.
           const byEditor = yield* bodyOf(
             MembersSchema,
-            yield* app.request(`/api/v1/members`, {
+            yield* app.request(`/api/v1/workspace/members`, {
               headers: { ...asPerson(editor), ...forWorkspace(workspaceId) },
             })
           );

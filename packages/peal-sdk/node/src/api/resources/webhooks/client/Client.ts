@@ -17,6 +17,9 @@ export declare namespace WebhooksClient {
     }
 }
 
+/**
+ * The endpoints a workspace's events are sent to.
+ */
 export class WebhooksClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<WebhooksClient.Options>;
 

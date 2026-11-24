@@ -311,7 +311,7 @@ const denied = { InboxAccessDenied: forbidden };
 
 export const NoticesHandlers = HttpApiBuilder.group(
   Api,
-  "notices",
+  "me.notices",
   Effect.fn(function* noticesHandlers(handlers) {
     const inbox = yield* NoticeInbox;
 
@@ -382,7 +382,7 @@ export const NoticesHandlers = HttpApiBuilder.group(
 
 export const NotificationPreferencesHandlers = HttpApiBuilder.group(
   Api,
-  "notificationPreferences",
+  "me.notificationPreferences",
   Effect.fn(function* notificationPreferencesHandlers(handlers) {
     const settings = yield* NotificationSettings;
 

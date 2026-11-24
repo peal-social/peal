@@ -324,7 +324,9 @@ and no socket, for tests.
   unchecked, through `actingIn` (`#workspace/api/request-workspace.ts`), on
   endpoints behind `WorkspaceAccess` only: elsewhere a header names nothing
   they keep.
-- Put workspace groups under `/api/v1/…`, every endpoint taking
+- Put workspace groups under `/api/v1/…`, named and placed by their
+  namespace as the contract's guide says (`posts.tags` under
+  `/api/v1/posts/tags`), every endpoint taking
   `headers: workspaceHeaders` (spread first into headers of its own), with
   `.middleware(WorkspaceAccess).middleware(Authentication)` (Authentication
   runs first), and add them to `WorkspaceGroupsLive` in `src/app/server.ts`.

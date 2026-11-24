@@ -147,11 +147,11 @@ export const recordWorkspaceChange = async (
   const revocations = [
     ...apiKeyIds.map((apiKeyId) => ({
       objectIds: { apiKeyId },
-      operation: "apiKeys.revoke",
+      operation: "workspace.apiKeys.revoke",
     })),
     ...partnerKeyIds.map((partnerKeyId) => ({
       objectIds: { partnerKeyId },
-      operation: "partnerAccount.revokeKey",
+      operation: "partner.account.revokeKey",
     })),
   ];
 

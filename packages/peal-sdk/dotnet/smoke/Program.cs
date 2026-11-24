@@ -7,7 +7,7 @@ string baseUrl = Environment.GetEnvironmentVariable("PEAL_API_URL")!;
 var peal = new PealClient("peal_test", clientOptions: new ClientOptions { BaseUrl = baseUrl });
 
 await peal.System.HealthAsync();
-var me = await peal.Session.MeAsync();
+var me = await peal.Me.GetAsync();
 
 if (me.User.Email != "ada@example.test" || me.ImpersonatedBy is not null || me.User.Image is not null
     || !me.Workspaces.First().Permissions.Contains(Permission.PostSchedule))
@@ -17,7 +17,7 @@ if (me.User.Email != "ada@example.test" || me.ImpersonatedBy is not null || me.U
 
 try
 {
-    await new PealClient("refused", clientOptions: new ClientOptions { BaseUrl = baseUrl }).Session.MeAsync();
+    await new PealClient("refused", clientOptions: new ClientOptions { BaseUrl = baseUrl }).Me.GetAsync();
     throw new InvalidOperationException("A refused token got an answer");
 }
 catch (PealClientApiException error) when (error.StatusCode == 401)

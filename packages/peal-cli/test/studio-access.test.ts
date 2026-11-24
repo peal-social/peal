@@ -19,7 +19,7 @@ const statusWith = (workspace?: string) =>
       const client = yield* HttpClient.HttpClient;
 
       const request = HttpClientRequest.get(
-        "http://localhost:3000/api/v1/tags"
+        "http://localhost:3000/api/v1/posts/tags"
       ).pipe(HttpClientRequest.bearerToken(draftingKey.key));
 
       const response = yield* client.execute(

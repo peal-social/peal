@@ -1249,7 +1249,7 @@ export const TwoStepStatusSchema = Schema.Struct({
 
 export type TwoStepStatus = typeof TwoStepStatusSchema.Type;
 
-export class AccountApi extends HttpApiGroup.make("account")
+export class AccountApi extends HttpApiGroup.make("me.account")
   .add(
     HttpApiEndpoint.get("twoStep", "/two-step", {
       error: [Forbidden],

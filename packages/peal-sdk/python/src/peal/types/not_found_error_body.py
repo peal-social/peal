@@ -10,10 +10,10 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 
 
-class NotFoundErrorBody_ShortLinkNotFound(UniversalBaseModel):
+class NotFoundErrorBody_PartnerNotFound(UniversalBaseModel):
     type: typing_extensions.Annotated[
-        typing.Literal["ShortLinkNotFound"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
-    ] = "ShortLinkNotFound"
+        typing.Literal["PartnerNotFound"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "PartnerNotFound"
     code: typing.Optional[str] = None
     message: typing.Optional[str] = None
     request_id: typing_extensions.Annotated[
@@ -51,6 +51,6 @@ class NotFoundErrorBody_WorkspaceNotFound(UniversalBaseModel):
 
 
 NotFoundErrorBody = typing_extensions.Annotated[
-    typing.Union[NotFoundErrorBody_ShortLinkNotFound, NotFoundErrorBody_WorkspaceNotFound],
+    typing.Union[NotFoundErrorBody_PartnerNotFound, NotFoundErrorBody_WorkspaceNotFound],
     pydantic.Field(discriminator="type"),
 ]

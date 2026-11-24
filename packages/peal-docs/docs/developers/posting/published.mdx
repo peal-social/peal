@@ -172,11 +172,11 @@ peal posts unpublish <post-id> --channel <channel-id> --wait 30 --yes
 
 The change's `status` says where the deletion stands:
 
-| `status`  | Meaning                                                                                                                                                       |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pending` | Some parts are left (`partsLeft`).                                                                                                                            |
-| `done`    | None is left. The target keeps `status: published` and gets `removedAt`. `GET …/posts/search?removed=true` lists the posts removed from at least one channel. |
-| `failed`  | Peal gave up, with a `code` (`unavailable`, `rateLimited`, `channelUnavailable`, or the platform's own). Asking again deletes the parts that are left.        |
+| `status`  | Meaning                                                                                                                                                |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pending` | Some parts are left (`partsLeft`).                                                                                                                     |
+| `done`    | None is left. The target keeps `status: published` and gets `removedAt`. `GET …/posts?removed=true` lists the posts removed from at least one channel. |
+| `failed`  | Peal gave up, with a `code` (`unavailable`, `rateLimited`, `channelUnavailable`, or the platform's own). Asking again deletes the parts that are left. |
 
 `alreadyGone: true` means the platform no longer had a part.
 
@@ -190,7 +190,7 @@ Before calling the platform, Peal refuses a request it can't carry out with 409 
 - `channelUnavailable` or `boostRunning`
 - `deletionWindowPassed`, where the platform deletes a post only for a while after it went out (48 hours on Telegram)
 
-`GET …/platforms/capabilities` tells you beforehand where Peal deletes posts. `livePost.unpublish` says whether it does, and `livePost.unpublishBlockedBy` (`noApi`, `permission` or `unverified`) says why not. Webhooks receive `post.unpublished` or `post.unpublish_failed` ([Webhooks](/developers/webhooks/events/posts#post-unpublished)).
+`GET …/channels/capabilities` tells you beforehand where Peal deletes posts. `livePost.unpublish` says whether it does, and `livePost.unpublishBlockedBy` (`noApi`, `permission` or `unverified`) says why not. Webhooks receive `post.unpublished` or `post.unpublish_failed` ([Webhooks](/developers/webhooks/events/posts#post-unpublished)).
 
 ## Edit a published post [#edit-live]
 
@@ -324,9 +324,9 @@ Webhooks receive `post.edited` or `post.edit_failed` ([Webhooks](/developers/web
 
 ## Short links [#short-links]
 
-`shortenLinks` asks for the post's links to go out [shortened](/guides/posts/published#short-links), on a server that has short links. `GET …/short-links/status` says whether it does, what a short address starts with and how long it is.
+`shortenLinks` asks for the post's links to go out [shortened](/guides/posts/published#short-links), on a server that has short links. `GET …/links/status` says whether it does, what a short address starts with and how long it is.
 
-The field works the same on `POST …/posts`, `PUT …/posts/{postId}`, `send` and each item of `bulk`:
+The field works the same on `POST …/posts/drafts`, `PUT …/posts/{postId}`, `POST …/posts` and each item of `bulk`:
 
 | `shortenLinks` | What happens                                                                                                                                      |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -350,4 +350,4 @@ Elsewhere, short links work like this:
 
 - `validate` takes the field, and checks the text as written, since a short address never makes it longer.
 - A CSV import has no column for it, so each row takes the workspace's default.
-- `GET …/short-links` reads the links and their clicks ([Clicks on short links](/guides/engage/analytics#short-links)). No endpoint shortens an address outside a post.
+- `GET …/links` reads the links and their clicks ([Clicks on short links](/guides/engage/analytics#short-links)). No endpoint shortens an address outside a post.

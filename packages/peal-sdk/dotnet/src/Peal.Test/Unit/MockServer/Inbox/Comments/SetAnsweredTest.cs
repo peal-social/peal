@@ -1,0 +1,137 @@
+using NUnit.Framework;
+using Peal.Inbox;
+using Peal.Test.Unit.MockServer;
+using Peal.Test.Utils;
+
+namespace Peal.Test.Unit.MockServer.Inbox.Comments;
+
+[TestFixture]
+[Parallelizable(ParallelScope.Self)]
+public class SetAnsweredTest : BaseMockServerTest
+{
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_1()
+    {
+        const string requestJson = """
+            {
+              "answered": true
+            }
+            """;
+
+        const string mockResponse = """
+            {
+              "author": {
+                "displayName": "displayName",
+                "handle": "handle",
+                "platformId": "platformId"
+              },
+              "forgotten": "expired",
+              "id": "id",
+              "liked": true,
+              "parentId": "parentId",
+              "permalink": "permalink",
+              "privateReply": {
+                "authorId": "authorId",
+                "commentId": "commentId",
+                "createdAt": "createdAt",
+                "id": "id",
+                "reason": "channelUnavailable",
+                "ruleId": "ruleId",
+                "settledAt": "settledAt",
+                "status": "sending",
+                "text": "text"
+              },
+              "privateReplyUntil": "privateReplyUntil",
+              "receivedAt": "receivedAt",
+              "state": "new",
+              "text": "text",
+              "threadId": "threadId",
+              "writtenAt": "writtenAt"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/v1/inbox/comments/commentId/answered")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPost()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Inbox.Comments.SetAnsweredAsync(
+            new SetAnsweredCommentsRequest { CommentId = "commentId", Answered = true }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_2()
+    {
+        const string requestJson = """
+            {
+              "answered": true
+            }
+            """;
+
+        const string mockResponse = """
+            {
+              "author": {
+                "displayName": "displayName",
+                "handle": "handle",
+                "platformId": "platformId"
+              },
+              "forgotten": "expired",
+              "id": "id",
+              "liked": true,
+              "parentId": "parentId",
+              "permalink": "permalink",
+              "privateReply": {
+                "authorId": "authorId",
+                "commentId": "commentId",
+                "createdAt": "createdAt",
+                "id": "id",
+                "reason": "channelUnavailable",
+                "ruleId": "ruleId",
+                "settledAt": "settledAt",
+                "status": "sending",
+                "text": "text"
+              },
+              "privateReplyUntil": "privateReplyUntil",
+              "receivedAt": "receivedAt",
+              "state": "new",
+              "text": "text",
+              "threadId": "threadId",
+              "writtenAt": "writtenAt"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/v1/inbox/comments/commentId/answered")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPost()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Inbox.Comments.SetAnsweredAsync(
+            new SetAnsweredCommentsRequest { CommentId = "commentId", Answered = true }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+}

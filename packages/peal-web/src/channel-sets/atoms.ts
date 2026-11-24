@@ -14,14 +14,14 @@ export const channelSetsChanged = (workspaceId: string) => [
 ];
 
 export const workspaceChannelSets = Atom.family((workspaceId: string) =>
-  PealApi.query("channelSets", "list", {
+  PealApi.query("channels.sets", "list", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: [...channelSetsChanged(workspaceId), "channels"],
   })
 );
 
-export const createChannelSet = PealApi.mutation("channelSets", "create");
+export const createChannelSet = PealApi.mutation("channels.sets", "create");
 
-export const updateChannelSet = PealApi.mutation("channelSets", "update");
+export const updateChannelSet = PealApi.mutation("channels.sets", "update");
 
-export const deleteChannelSet = PealApi.mutation("channelSets", "delete");
+export const deleteChannelSet = PealApi.mutation("channels.sets", "delete");

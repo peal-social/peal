@@ -72,7 +72,7 @@ Réglez-le ensuite dans l’application web, sous **Paramètres**, puis **Parten
 
 ### Couleur d’accent [#accent]
 
-La couleur d’accent tient en six chiffres hexadécimaux, comme `#415EEE`. Vous pouvez aussi la régler avec `accentColor` dans `PATCH /api/v1/partner-account`, et la retirer avec `null`.
+La couleur d’accent tient en six chiffres hexadécimaux, comme `#415EEE`. Vous pouvez aussi la régler avec `accentColor` dans `PATCH /api/v1/partner/account`, et la retirer avec `null`.
 
 Les pages de Peal sont claires, et la ligne doit se voir. La couleur demande donc un contraste d’au moins 3:1 avec le blanc et avec le fond de la page (`#FAFAF9`), le seuil que fixent les WCAG pour une telle ligne. Une couleur plus claire, ou autre chose que `#RRGGBB`, reçoit 422 `PartnerDetailsInvalid` avec `field` `accentColor`, et rien n’est enregistré.
 
@@ -82,7 +82,7 @@ Les boutons et le texte gardent les couleurs de Peal, et restent lisibles quelle
 
 Une clé partenaire commence par `peal_partner_`, et s’envoie en `Authorization: Bearer peal_partner_…`. Seul un propriétaire ou un administrateur connecté peut en créer une, dans l’application web. Aucune clé ni aucune application ne crée de clés.
 
-Vous pouvez révoquer une clé au même endroit, ou avec `DELETE /api/v1/partner-account/keys/{partnerKeyId}`. Elle cesse de fonctionner aussitôt.
+Vous pouvez révoquer une clé au même endroit, ou avec `DELETE /api/v1/partner/account/keys/{partnerKeyId}`. Elle cesse de fonctionner aussitôt.
 
 La liste montre qui a créé chaque clé (`createdBy`). Une clé suit son créateur : elle cesse de fonctionner dès qu’il quitte votre espace de travail principal, en est retiré ou ferme son compte, et dès que son rôle y est un rôle qui ne gère pas le compte partenaire (tout rôle en dessous d’administrateur). Avant un retrait ou un tel changement de rôle, l’application web dit combien de ses clés cessent de fonctionner. Pour que votre backend continue de tourner quand quelqu’un part, utilisez une clé créée par un propriétaire qui reste.
 
@@ -444,7 +444,7 @@ Il ne saisit jamais de mot de passe dans votre produit. Peal ne voit jamais son 
 <CodeGroup>
 
 ```ts Node.js
-const { link, url } = await customer.connectLinks.create({
+const { link, url } = await customer.channels.connectLinks.create({
   platform: "linkedin",
   returnUrl: "https://app.example.com/settings/social",
   expiresInHours: 24,
@@ -454,7 +454,7 @@ const { link, url } = await customer.connectLinks.create({
 ```
 
 ```python Python
-created = customer.connect_links.create(
+created = customer.channels.connect_links.create(
     platform="linkedin",
     return_url="https://app.example.com/settings/social",
     expires_in_hours=24,
@@ -464,7 +464,7 @@ created = customer.connect_links.create(
 ```
 
 ```go Go
-created, err := customer.ConnectLinks.Create(ctx, &peal.NewConnectLink{
+created, err := customer.Channels.ConnectLinks.Create(ctx, &channels.NewConnectLink{
 	Platform:       peal.PlatformLinkedin.Ptr(),
 	ReturnURL:      peal.String("https://app.example.com/settings/social"),
 	ExpiresInHours: peal.Int(24),
@@ -474,7 +474,7 @@ created, err := customer.ConnectLinks.Create(ctx, &peal.NewConnectLink{
 ```
 
 ```ruby Ruby
-created = customer.connect_links.create(
+created = customer.channels.connect_links.create(
   platform: "linkedin",
   return_url: "https://app.example.com/settings/social",
   expires_in_hours: 24,
@@ -484,12 +484,12 @@ created = customer.connect_links.create(
 ```
 
 ```java Java
-import social.peal.resources.connectlinks.requests.NewConnectLink;
+import social.peal.resources.channels.connectlinks.requests.NewConnectLink;
 import social.peal.types.ConnectLinkLocale;
 import social.peal.types.CreatedConnectLink;
 import social.peal.types.Platform;
 
-CreatedConnectLink created = customer.connectLinks().create(
+CreatedConnectLink created = customer.channels().connectLinks().create(
     NewConnectLink.builder()
         .platform(Platform.LINKEDIN)
         .returnUrl("https://app.example.com/settings/social")
@@ -500,9 +500,9 @@ CreatedConnectLink created = customer.connectLinks().create(
 ```
 
 ```php PHP
-use Peal\ConnectLinks\Requests\NewConnectLink;
+use Peal\Channels\ConnectLinks\Requests\NewConnectLink;
 
-$created = $customer->connectLinks->create(new NewConnectLink([
+$created = $customer->channels->connectLinks->create(new NewConnectLink([
     'platform' => 'linkedin',
     'returnUrl' => 'https://app.example.com/settings/social',
     'expiresInHours' => 24,
@@ -512,7 +512,7 @@ $created = $customer->connectLinks->create(new NewConnectLink([
 ```
 
 ```csharp .NET
-var created = await customer.ConnectLinks.CreateAsync(new NewConnectLink
+var created = await customer.Channels.ConnectLinks.CreateAsync(new NewConnectLink
 {
     Platform = Platform.Linkedin,
     ReturnUrl = "https://app.example.com/settings/social",
@@ -524,6 +524,7 @@ var created = await customer.ConnectLinks.CreateAsync(new NewConnectLink
 
 ```rust Rust
 let created = customer
+    .channels
     .connect_links
     .create(
         &NewConnectLink {
@@ -540,7 +541,7 @@ let created = customer
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/v1/connect-links \
+curl -X POST https://api.example.com/api/v1/channels/connect-links \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
   -H "Peal-Workspace: $WORKSPACE_ID" \
   -H "Content-Type: application/json" \
@@ -570,28 +571,28 @@ Avec `platforms`, votre client peut connecter un compte sur chacune depuis une s
 <CodeGroup>
 
 ```ts Node.js
-const { link, url } = await customer.connectLinks.create({
+const { link, url } = await customer.channels.connectLinks.create({
   platforms: ["instagram", "linkedin", "mastodon"],
   returnUrl: "https://app.example.com/settings/social",
 });
 ```
 
 ```python Python
-created = customer.connect_links.create(
+created = customer.channels.connect_links.create(
     platforms=["instagram", "linkedin", "mastodon"],
     return_url="https://app.example.com/settings/social",
 )
 ```
 
 ```go Go
-created, err := customer.ConnectLinks.Create(ctx, &peal.NewConnectLink{
+created, err := customer.Channels.ConnectLinks.Create(ctx, &channels.NewConnectLink{
 	Platforms: []peal.Platform{peal.PlatformInstagram, peal.PlatformLinkedin, peal.PlatformMastodon},
 	ReturnURL: peal.String("https://app.example.com/settings/social"),
 })
 ```
 
 ```ruby Ruby
-created = customer.connect_links.create(
+created = customer.channels.connect_links.create(
   platforms: %w[instagram linkedin mastodon],
   return_url: "https://app.example.com/settings/social"
 )
@@ -600,7 +601,7 @@ created = customer.connect_links.create(
 ```java Java
 import java.util.List;
 
-CreatedConnectLink created = customer.connectLinks().create(
+CreatedConnectLink created = customer.channels().connectLinks().create(
     NewConnectLink.builder()
         .platforms(List.of(Platform.INSTAGRAM, Platform.LINKEDIN, Platform.MASTODON))
         .returnUrl("https://app.example.com/settings/social")
@@ -608,14 +609,14 @@ CreatedConnectLink created = customer.connectLinks().create(
 ```
 
 ```php PHP
-$created = $customer->connectLinks->create(new NewConnectLink([
+$created = $customer->channels->connectLinks->create(new NewConnectLink([
     'platforms' => ['instagram', 'linkedin', 'mastodon'],
     'returnUrl' => 'https://app.example.com/settings/social',
 ]));
 ```
 
 ```csharp .NET
-var created = await customer.ConnectLinks.CreateAsync(new NewConnectLink
+var created = await customer.Channels.ConnectLinks.CreateAsync(new NewConnectLink
 {
     Platforms = new[] { Platform.Instagram, Platform.Linkedin, Platform.Mastodon },
     ReturnUrl = "https://app.example.com/settings/social",
@@ -624,6 +625,7 @@ var created = await customer.ConnectLinks.CreateAsync(new NewConnectLink
 
 ```rust Rust
 let created = customer
+    .channels
     .connect_links
     .create(
         &NewConnectLink {
@@ -637,7 +639,7 @@ let created = customer
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/v1/connect-links \
+curl -X POST https://api.example.com/api/v1/channels/connect-links \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
   -H "Peal-Workspace: $WORKSPACE_ID" \
   -H "Content-Type: application/json" \
@@ -702,7 +704,7 @@ Lisez le lien avec votre clé pour savoir ce qui s’est vraiment passé :
 <CodeGroup>
 
 ```ts Node.js
-const link = await customer.connectLinks.get({ linkId });
+const link = await customer.channels.connectLinks.get({ linkId });
 
 if (link.status === "completed") {
   // link.channelIds contient les canaux qu’il a connectés.
@@ -710,7 +712,7 @@ if (link.status === "completed") {
 ```
 
 ```python Python
-link = customer.connect_links.get(link_id)
+link = customer.channels.connect_links.get(link_id)
 
 if link.status == "completed":
     # link.channel_ids contient les canaux qu’il a connectés.
@@ -718,7 +720,7 @@ if link.status == "completed":
 ```
 
 ```go Go
-link, err := customer.ConnectLinks.Get(ctx, &peal.GetConnectLinksRequest{
+link, err := customer.Channels.ConnectLinks.Get(ctx, &channels.GetConnectLinksRequest{
 	LinkID: linkID,
 })
 
@@ -728,7 +730,7 @@ if link.Status == peal.ConnectLinkStatusCompleted {
 ```
 
 ```ruby Ruby
-link = customer.connect_links.get(link_id: link_id)
+link = customer.channels.connect_links.get(link_id: link_id)
 
 if link.status == "completed"
   # link.channel_ids contient les canaux qu’il a connectés.
@@ -739,7 +741,7 @@ end
 import social.peal.types.ConnectLink;
 import social.peal.types.ConnectLinkStatus;
 
-ConnectLink link = customer.connectLinks().get(linkId);
+ConnectLink link = customer.channels().connectLinks().get(linkId);
 
 if (link.getStatus().equals(ConnectLinkStatus.COMPLETED)) {
     // link.getChannelIds() contient les canaux qu’il a connectés.
@@ -747,7 +749,7 @@ if (link.getStatus().equals(ConnectLinkStatus.COMPLETED)) {
 ```
 
 ```php PHP
-$link = $customer->connectLinks->get($linkId);
+$link = $customer->channels->connectLinks->get($linkId);
 
 if ($link->status === 'completed') {
     // $link->channelIds contient les canaux qu’il a connectés.
@@ -755,7 +757,7 @@ if ($link->status === 'completed') {
 ```
 
 ```csharp .NET
-var link = await customer.ConnectLinks.GetAsync(new GetConnectLinksRequest
+var link = await customer.Channels.ConnectLinks.GetAsync(new GetConnectLinksRequest
 {
     LinkId = linkId,
 });
@@ -767,7 +769,7 @@ if (link.Status == ConnectLinkStatus.Completed)
 ```
 
 ```rust Rust
-let link = customer.connect_links.get(&link_id, None).await?;
+let link = customer.channels.connect_links.get(&link_id, None).await?;
 
 if link.status == ConnectLinkStatus::Completed {
     // link.channel_ids contient les canaux qu’il a connectés.
@@ -775,7 +777,7 @@ if link.status == ConnectLinkStatus::Completed {
 ```
 
 ```bash curl
-curl https://api.example.com/api/v1/connect-links/$LINK_ID \
+curl https://api.example.com/api/v1/channels/connect-links/$LINK_ID \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
   -H "Peal-Workspace: $WORKSPACE_ID"
 ```
@@ -793,7 +795,7 @@ Le `status` d’un lien est l’un de ceux-ci :
 
 Ne vous fiez pas au seul navigateur, car votre client peut fermer l’onglet avant de revenir. Abonnez-vous aussi à [`channel.connected`](/developers/webhooks/events/channels#channel-connected). Peal l’envoie quand le compte est connecté, avec le `workspaceExternalId` de l’espace de travail.
 
-Pour révoquer un lien, envoyez `DELETE /api/v1/connect-links/{linkId}`. `GET …/connect-links` liste les liens d’un espace de travail : ceux qui attendent, et ceux terminés depuis moins de 30 jours.
+Pour révoquer un lien, envoyez `DELETE /api/v1/channels/connect-links/{linkId}`. `GET …/channels/connect-links` liste les liens d’un espace de travail : ceux qui attendent, et ceux terminés depuis moins de 30 jours.
 
 ### Reconnecter [#reconnect]
 

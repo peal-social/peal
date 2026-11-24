@@ -28,7 +28,7 @@ export const postAnalytics = (workspaceId: string, postId: string) =>
  * reads each post's counts. It changes with the server's settings only.
  */
 export const platformCapabilities = (workspaceId: string) =>
-  PealApi.query("capabilities", "platforms", {
+  PealApi.query("channels.capabilities", "platforms", {
     headers: forWorkspace(workspaceId),
   });
 

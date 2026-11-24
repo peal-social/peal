@@ -9,7 +9,7 @@ import { currentUser } from "./connected-apps.ts";
 
 export const BrowserAnalyticsHandlers = HttpApiBuilder.group(
   Api,
-  "browserAnalytics",
+  "me.browserAnalytics",
   Effect.fn(function* browserAnalyticsHandlers(handlers) {
     const choice = yield* BrowserAnalyticsChoice;
 

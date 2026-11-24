@@ -62,6 +62,8 @@ import {
   AssistantWorkersLive,
   VideoGenerationsApiLive,
   MediaAudioApiLive,
+  MediaImagesApiLive,
+  MediaTranscriptionsApiLive,
   SlideshowsApiLive,
 } from "#assistant/container.ts";
 import {
@@ -132,6 +134,7 @@ import {
   PostAttentionLive,
   PlatformQuotaLive,
   PlatformsLive,
+  PostDraftsApiLive,
   PostsApiLive,
   PublishingLive,
   QueuesApiLive,
@@ -196,6 +199,7 @@ const WorkspaceGroupsLive = Layer.mergeAll(
   ChannelsApiLive,
   ConnectLinksApiLive,
   PostsApiLive,
+  PostDraftsApiLive,
   ArticlesApiLive,
   MediaApiLive,
   NoticesApiLive,
@@ -203,6 +207,8 @@ const WorkspaceGroupsLive = Layer.mergeAll(
   AssistantApiLive,
   VideoGenerationsApiLive,
   MediaAudioApiLive,
+  MediaImagesApiLive,
+  MediaTranscriptionsApiLive,
   SlideshowsApiLive,
   BillingApiLive,
   BillingActionsApiLive,

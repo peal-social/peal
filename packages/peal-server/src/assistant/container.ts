@@ -78,8 +78,12 @@ export { AssistantHandlers as AssistantApiLive } from "#assistant/api/assistant.
 // The video jobs' endpoints, beside the assistant's.
 export { VideoGenerationsHandlers as VideoGenerationsApiLive } from "#assistant/api/video-generations.ts";
 
-// The voice-overs' and transcripts' endpoints, beside the media's.
+// The images', voice-overs' and transcripts' endpoints, beside the media's.
+export { MediaImagesHandlers as MediaImagesApiLive } from "#assistant/api/images.ts";
+
 export { MediaAudioHandlers as MediaAudioApiLive } from "#assistant/api/media-audio.ts";
+
+export { MediaTranscriptionsHandlers as MediaTranscriptionsApiLive } from "#assistant/api/transcriptions.ts";
 
 // The slide videos' endpoints, beside the media's.
 export { SlideshowsHandlers as SlideshowsApiLive } from "#assistant/api/slideshows.ts";

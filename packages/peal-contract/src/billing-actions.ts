@@ -51,7 +51,9 @@ import { workspaceHeaders } from "./workspace-header.ts";
  * `/api/auth/subscription/upgrade`, which needs an order placed here in the
  * last 30 minutes, named in its `metadata.orderId`.
  */
-export class BillingActionsApi extends HttpApiGroup.make("billingActions")
+export class BillingActionsApi extends HttpApiGroup.make(
+  "workspace.billingActions"
+)
   .add(
     HttpApiEndpoint.post("order", "/orders", {
       error: [
@@ -228,4 +230,4 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/billing") {}
+  .prefix("/api/v1/workspace/billing") {}

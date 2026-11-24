@@ -596,9 +596,9 @@ module Peal
       # no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where
       # the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram
       # account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on
-      # needs them (`setChannelMessages` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A
-      # reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With
-      # `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that
+      # needs them (`inbox.messages.setChannel` answers 409 `InboxActionUnavailable`, `reconnect`, until they are
+      # granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable.
+      # With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that
       # reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted
       # it asks it again. Needs channel:connect.
       #
@@ -828,6 +828,36 @@ module Peal
           error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
           raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
         end
+      end
+
+      # @return [Peal::Capabilities::Client]
+      def capabilities
+        @capabilities ||= Peal::Channels::Capabilities::Client.new(client: @client)
+      end
+
+      # @return [Peal::DefaultOptions::Client]
+      def default_options
+        @default_options ||= Peal::Channels::DefaultOptions::Client.new(client: @client)
+      end
+
+      # @return [Peal::Lookups::Client]
+      def lookups
+        @lookups ||= Peal::Channels::Lookups::Client.new(client: @client)
+      end
+
+      # @return [Peal::Sets::Client]
+      def sets
+        @sets ||= Peal::Channels::Sets::Client.new(client: @client)
+      end
+
+      # @return [Peal::ConnectLinks::Client]
+      def connect_links
+        @connect_links ||= Peal::Channels::ConnectLinks::Client.new(client: @client)
+      end
+
+      # @return [Peal::TiktokCreator::Client]
+      def tiktok_creator
+        @tiktok_creator ||= Peal::Channels::TiktokCreator::Client.new(client: @client)
       end
     end
   end

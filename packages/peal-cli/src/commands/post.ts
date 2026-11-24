@@ -501,7 +501,7 @@ export const post = Command.make(
     }
 
     const sent = yield* client.posts
-      .send({
+      .create({
         headers: Option.match(input.idempotencyKey, {
           onNone: () => ({}),
           onSome: (key) => ({ "idempotency-key": key }),

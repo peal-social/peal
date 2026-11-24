@@ -43,7 +43,7 @@ const invite = (
   body: { readonly email: string; readonly role: string }
 ) =>
   TestApp.use((app) =>
-    app.request(`/api/v1/invitations`, {
+    app.request(`/api/v1/workspace/invitations`, {
       body,
       headers: { ...asPerson(person), ...forWorkspace(workspaceId) },
     })
@@ -51,7 +51,7 @@ const invite = (
 
 const invitations = (person: Person, workspaceId: string) =>
   TestApp.use((app) =>
-    app.request(`/api/v1/invitations`, {
+    app.request(`/api/v1/workspace/invitations`, {
       headers: { ...asPerson(person), ...forWorkspace(workspaceId) },
     })
   );
@@ -94,7 +94,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const viewer = yield* joined(owner, workspaceId, "watcher", "viewer");
 
           for (const person of [owner, viewer]) {
-            const reply = yield* app.request(`/api/v1/members`, {
+            const reply = yield* app.request(`/api/v1/workspace/members`, {
               headers: { ...asPerson(person), ...forWorkspace(workspaceId) },
             });
 
@@ -120,7 +120,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "invitation:create",
           ]);
 
-          const byKey = yield* app.request(`/api/v1/members`, {
+          const byKey = yield* app.request(`/api/v1/workspace/members`, {
             headers: {
               authorization: `Bearer ${key}`,
               ...forWorkspace(workspaceId),
@@ -177,7 +177,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           const revoke = (invitationId: string) =>
-            app.request(`/api/v1/invitations/${invitationId}`, {
+            app.request(`/api/v1/workspace/invitations/${invitationId}`, {
               headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
               method: "DELETE",
             });

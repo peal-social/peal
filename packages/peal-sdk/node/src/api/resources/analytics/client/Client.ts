@@ -16,6 +16,9 @@ export declare namespace AnalyticsClient {
     }
 }
 
+/**
+ * How posts and channels did.
+ */
 export class AnalyticsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<AnalyticsClient.Options>;
 

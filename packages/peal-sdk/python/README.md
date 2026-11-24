@@ -34,17 +34,32 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from peal import Peal
+from peal import Peal, PostContent, MediaAttachment, TextOverride, PostTiming_Now
 
 client = Peal(
     token="<token>",
 )
 
-client.api_keys.create(
-    name="name",
-    permissions=[
-        "activity:read"
+client.posts.create(
+    channel_ids=[
+        "channelIds"
     ],
+    content=PostContent(
+        media=[
+            MediaAttachment(
+                alt_text="altText",
+                media_id="mediaId",
+            )
+        ],
+        overrides=[
+            TextOverride(
+                channel_id="channelId",
+                text="text",
+            )
+        ],
+        text="text",
+    ),
+    when=PostTiming_Now(),
 )
 ```
 
@@ -68,7 +83,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from peal import AsyncPeal
+from peal import AsyncPeal, PostContent, MediaAttachment, TextOverride, PostTiming_Now
 
 client = AsyncPeal(
     token="<token>",
@@ -76,11 +91,26 @@ client = AsyncPeal(
 
 
 async def main() -> None:
-    await client.api_keys.create(
-        name="name",
-        permissions=[
-            "activity:read"
+    await client.posts.create(
+        channel_ids=[
+            "channelIds"
         ],
+        content=PostContent(
+            media=[
+                MediaAttachment(
+                    alt_text="altText",
+                    media_id="mediaId",
+                )
+            ],
+            overrides=[
+                TextOverride(
+                    channel_id="channelId",
+                    text="text",
+                )
+            ],
+            text="text",
+        ),
+        when=PostTiming_Now(),
     )
 
 
@@ -96,7 +126,7 @@ will be thrown.
 from peal.core.api_error import ApiError
 
 try:
-    client.api_keys.create(...)
+    client.posts.create(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -113,7 +143,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from peal import Peal
 
 client = Peal(...)
-response = client.api_keys.with_raw_response.create(...)
+response = client.posts.with_raw_response.create(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -134,7 +164,7 @@ A request is deemed retryable when any of the following HTTP status codes is ret
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.api_keys.create(..., request_options={
+client.posts.create(..., request_options={
     "max_retries": 1
 })
 ```
@@ -149,7 +179,7 @@ from peal import Peal
 client = Peal(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.api_keys.create(..., request_options={
+client.posts.create(..., request_options={
     "timeout": 1
 })
 ```

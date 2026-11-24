@@ -10,16 +10,11 @@ import {
   Api,
   AssistantFailed,
   AssistantInputRejected,
-  AssistantQuotaExceeded,
   AssistantSecretsNotConfigured,
   AssistantUnavailable,
   CurrentMember,
   ImageProviderAddressRefused,
   ImageProviderKeyRequired,
-  ImageProviderRefused,
-  MediaImportBusy,
-  MediaStoreUnavailable,
-  OwnImageLimitReached,
   OwnTextLimitReached,
   TextProviderAddressRefused,
   TextProviderBusy,
@@ -31,7 +26,6 @@ import {
 import { AssistantAudio } from "#assistant/application/assistant-audio.ts";
 import { AssistantSlideshows } from "#assistant/application/assistant-slideshows.ts";
 import { AssistantVideos } from "#assistant/application/assistant-videos.ts";
-import type { ImageFailed } from "#assistant/application/image-failed.ts";
 import type { CapabilityModelView } from "#assistant/application/use-cases/capability-model-settings.ts";
 import type { ImageProviderView } from "#assistant/application/use-cases/image-provider-settings.ts";
 import type { ConnectionView } from "#assistant/application/use-cases/provider-connection-settings.ts";
@@ -42,23 +36,11 @@ import {
   maxTranscriptionBytes,
   maxVoiceoverTextLength,
 } from "#assistant/domain/audio-limits.ts";
-import { imageRequestCost } from "#assistant/domain/image-limits.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { allowanceRefusal } from "#shared/api/allowance-reached.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
-import { limitRefusal } from "#shared/api/limit-reached.ts";
-import { UpgradePaths } from "#shared/application/upgrade-paths.ts";
-import type { Actor } from "#shared/domain/access.ts";
 
-// An image's failure as the contract tells it, beside the text's.
-const imageReasons: Readonly<
-  Record<ImageFailed["reason"], AssistantFailed["reason"]>
-> = {
-  refused: "declined",
-  timedOut: "timedOut",
-  unreachable: "unreachable",
-  unusableAnswer: "invalidAnswer",
-};
+import { quotaRefusal } from "./quota-refusal.ts";
 
 // The provider as the contract answers it: never its key.
 const providerOf = (view: ImageProviderView) => ({
@@ -137,39 +119,9 @@ export const AssistantHandlers = HttpApiBuilder.group(
     const videos = yield* AssistantVideos;
     const slideshows = yield* AssistantSlideshows;
     const audio = yield* AssistantAudio;
-    const paths = yield* UpgradePaths;
-    const limitReached = yield* limitRefusal;
     const allowanceReached = yield* allowanceRefusal;
 
-    // The quota's refusal, with the smallest plan whose day holds `needed`
-    // requests, and where to order it.
-    const quotaExceeded = (
-      actor: Actor,
-      {
-        dailyLimit,
-        needed,
-        resetsAt,
-      }: {
-        readonly dailyLimit: number;
-        readonly needed: number;
-        readonly resetsAt: DateTime.Utc;
-      }
-    ) =>
-      paths.from(actor.workspaceId, "assistantRequests", needed).pipe(
-        Effect.flatMap((path) =>
-          Effect.fail(
-            new AssistantQuotaExceeded({
-              // A server that does not bill has no billing page to send
-              // anyone to.
-              billingUrl: Option.isSome(path.plan) ? path.billingUrl : null,
-              dailyLimit,
-              plan: Option.getOrNull(path.plan),
-              planWithRoom: Option.getOrNull(path.planWithRoom),
-              resetsAt,
-            })
-          )
-        )
-      );
+    const quotaExceeded = yield* quotaRefusal;
 
     return handlers.handleAll({
       connectProvider: ({ params, payload }) =>
@@ -201,40 +153,6 @@ export const AssistantHandlers = HttpApiBuilder.group(
           yield* assistant
             .disconnectProvider(actor, params.provider)
             .pipe(Effect.catchTag("MissingPermission", forbidden));
-        }),
-      generateImage: ({ payload }) =>
-        Effect.gen(function* generateImage() {
-          const actor = actorOf(yield* CurrentMember);
-
-          return yield* assistant.generateImage(actor, payload).pipe(
-            Effect.catchTags({
-              AllowanceReached: allowanceReached,
-              AssistantQuotaExceeded: ({ dailyLimit, resetsAt }) =>
-                quotaExceeded(actor, {
-                  dailyLimit,
-                  needed: Math.max(dailyLimit + 1, imageRequestCost),
-                  resetsAt,
-                }),
-              AssistantUnavailable: () =>
-                Effect.fail(new AssistantUnavailable()),
-              DraftRejected: ({ maxLength, reason }) =>
-                Effect.fail(new AssistantInputRejected({ maxLength, reason })),
-              ImageFailed: ({ reason }) =>
-                Effect.fail(
-                  new AssistantFailed({ reason: imageReasons[reason] })
-                ),
-              ImageNotStored: () => Effect.fail(new MediaStoreUnavailable()),
-              // The workspace's own provider: what the adapter logged is
-              // all that is said of it.
-              ImageProviderRefused: ({ reason, status }) =>
-                Effect.fail(new ImageProviderRefused({ reason, status })),
-              ImagesBusy: () => Effect.fail(new MediaImportBusy()),
-              MissingPermission: forbidden,
-              OwnImagesExhausted: ({ dailyLimit, resetsAt }) =>
-                Effect.fail(new OwnImageLimitReached({ dailyLimit, resetsAt })),
-              PlanLimitReached: limitReached,
-            })
-          );
         }),
       imageProvider: () =>
         Effect.gen(function* imageProvider() {

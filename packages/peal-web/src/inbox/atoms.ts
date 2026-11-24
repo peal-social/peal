@@ -56,7 +56,7 @@ const threadPages = Atom.family((key: string) => {
     query.unanswered = "true";
   }
 
-  return PealApi.query("inbox", "listThreads", {
+  return PealApi.query("inbox.comments", "listThreads", {
     headers: forWorkspace(workspaceId),
     query,
     reactivityKeys: threadsChanged(workspaceId),
@@ -79,7 +79,7 @@ export const threadPage = (
 const threads = Atom.family((key: string) => {
   const [workspaceId = "", threadId = ""] = key.split("/");
 
-  return PealApi.query("inbox", "getThread", {
+  return PealApi.query("inbox.comments", "getThread", {
     headers: forWorkspace(workspaceId),
     params: { threadId },
     reactivityKeys: threadChanged(threadId),
@@ -90,26 +90,35 @@ const threads = Atom.family((key: string) => {
 export const inboxThread = (workspaceId: string, threadId: string) =>
   threads(`${workspaceId}/${threadId}`);
 
-export const replyToComment = PealApi.mutation("inbox", "reply");
+export const replyToComment = PealApi.mutation("inbox.comments", "reply");
 
-export const setCommentAnswered = PealApi.mutation("inbox", "setAnswered");
+export const setCommentAnswered = PealApi.mutation(
+  "inbox.comments",
+  "setAnswered"
+);
 
-export const moderateComment = PealApi.mutation("inbox", "moderate");
+export const moderateComment = PealApi.mutation("inbox.comments", "moderate");
 
-export const confirmInboxReply = PealApi.mutation("inbox", "confirmReply");
+export const confirmInboxReply = PealApi.mutation(
+  "inbox.comments",
+  "confirmReply"
+);
 
-export const withdrawInboxReply = PealApi.mutation("inbox", "withdrawReply");
+export const withdrawInboxReply = PealApi.mutation(
+  "inbox.comments",
+  "withdrawReply"
+);
 
 /**
  * The one private reply a comment's author may get. Its reactivity keys
  * are the thread's: the comment shows how it stands.
  */
 export const sendPrivateReply = PealApi.mutation(
-  "inboxMessages",
+  "inbox.messages",
   "sendPrivateReply"
 );
 
 export const confirmPrivateReply = PealApi.mutation(
-  "inboxMessages",
+  "inbox.messages",
   "confirmPrivateReply"
 );

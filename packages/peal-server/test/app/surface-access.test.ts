@@ -289,7 +289,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             // caller may.
             reduce: {
               body: { keepChannelIds: [], keepMemberIds: [] },
-              path: `${base}/billing/reduction`,
+              path: `${base}/workspace/billing/reduction`,
             },
             // For a channel the workspace does not have: refused once the
             // caller may save what posts are written with.
@@ -300,7 +300,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 slots: [{ day: "monday", time: "09:00" }],
                 timeZone: "Europe/Paris",
               },
-              path: `${base}/queues`,
+              path: `${base}/automations/queues`,
             },
             // On a channel the workspace does not have: refused once the
             // caller may publish.
@@ -314,9 +314,9 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 },
                 when: { _tag: "now" },
               },
-              path: `${base}/posts/send`,
+              path: `${base}/posts`,
             },
-            standing: { path: `${base}/billing/standing` },
+            standing: { path: `${base}/workspace/billing/standing` },
           } as const;
 
           const asked = yield* Effect.forEach(
@@ -549,25 +549,25 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             },
             confirmReply: {
               body: { sent: true },
-              path: `${base}/inbox/replies/${unknown}/confirmation`,
+              path: `${base}/inbox/comments/replies/${unknown}/confirmation`,
             },
             dashboard: { path: `${base}/analytics/dashboard?${days}` },
-            draftThread: { body: threadOf, path: `${base}/posts` },
+            draftThread: { body: threadOf, path: `${base}/posts/drafts` },
             exportAccounts: {
               path: `${base}/analytics/export?kind=accounts&${days}`,
             },
             exportPosts: {
               path: `${base}/analytics/export?kind=posts&format=json&${days}`,
             },
-            listThreads: { path: `${base}/inbox/threads` },
+            listThreads: { path: `${base}/inbox/comments/threads` },
             moderateComment: {
               body: { action: "like" },
               path: `${base}/inbox/comments/${unknown}/moderation`,
             },
-            readThread: { path: `${base}/inbox/threads/${unknown}` },
+            readThread: { path: `${base}/inbox/comments/threads/${unknown}` },
             sendThread: {
               body: { ...threadOf, when: { _tag: "now" } },
-              path: `${base}/posts/send`,
+              path: `${base}/posts`,
             },
             settleComment: {
               body: { answered: true },
@@ -575,7 +575,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             },
             withdrawReply: {
               method: "DELETE",
-              path: `${base}/inbox/replies/${unknown}`,
+              path: `${base}/inbox/comments/replies/${unknown}`,
             },
           } satisfies Readonly<Record<string, Asked>>;
 
@@ -752,7 +752,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           headers: Readonly<Record<string, string>>,
           workspace = workspaceId
         ) =>
-          app.request(`/api/v1/posts/send`, {
+          app.request(`/api/v1/posts`, {
             body: {
               channelIds: ["0190f3a0-0000-7000-8000-00000000c0de"],
               content: { media: [], overrides: [], text: "Synthetic." },
@@ -820,7 +820,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
         assert.strictEqual(refusal(foreign.body).reason, "untrustedOrigin");
 
         // What only the person does, asked by a key.
-        const person = yield* app.request(`/api/v1/members`, {
+        const person = yield* app.request(`/api/v1/workspace/members`, {
           headers: {
             authorization: `Bearer ${key}`,
             ...forWorkspace(workspaceId),

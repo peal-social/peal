@@ -90,7 +90,7 @@ const refusals = {
 
 export const FeedsHandlers = HttpApiBuilder.group(
   Api,
-  "feeds",
+  "automations.feeds",
   Effect.fn(function* feedsHandlers(handlers) {
     const feeds = yield* Feeds;
 

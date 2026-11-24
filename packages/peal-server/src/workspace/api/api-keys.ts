@@ -24,7 +24,7 @@ const toView = (
 
 export const ApiKeysHandlers = HttpApiBuilder.group(
   Api,
-  "apiKeys",
+  "workspace.apiKeys",
   Effect.fn(function* apiKeysHandlers(handlers) {
     const apiKeys = yield* ApiKeys;
 

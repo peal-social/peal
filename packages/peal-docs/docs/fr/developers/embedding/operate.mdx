@@ -9,7 +9,7 @@ Une fois qu’un client a un espace de travail et un canal connecté ([Intégrer
 
 ## Publier pour eux [#post]
 
-Dans l’espace de travail d’un client, votre clé appelle les mêmes points d’accès que n’importe quel autre client : [médias](/guides/media), [publications](/guides/posts) et [statistiques](/guides/engage/analytics). Une clé partenaire n’appartient à aucun espace de travail : chaque requête nomme donc celui du client dans l’en-tête `Peal-Workspace`. Dans les SDK, c’est l’option `workspace` du client : créez un client par espace de travail de client. Les appels propres à l’API partenaire, dans les sections suivantes (`partner`, `partnerUsage`), ne nomment aucun espace de travail : ils passent par un client créé sans : `peal` dans ces exemples, `client` en Go.
+Dans l’espace de travail d’un client, votre clé appelle les mêmes points d’accès que n’importe quel autre client : [médias](/guides/media), [publications](/guides/posts) et [statistiques](/guides/engage/analytics). Une clé partenaire n’appartient à aucun espace de travail : chaque requête nomme donc celui du client dans l’en-tête `Peal-Workspace`. Dans les SDK, c’est l’option `workspace` du client : créez un client par espace de travail de client. Les appels propres à l’API partenaire, dans les sections suivantes (`partner`, `partner.customerUsage`), ne nomment aucun espace de travail : ils passent par un client créé sans : `peal` dans ces exemples, `client` en Go.
 
 Cet appel publie une publication en une fois, à un instant donné :
 
@@ -35,7 +35,7 @@ const customer = new PealClient({
   workspace: workspaceId,
 });
 
-const post = await customer.posts.send({
+const post = await customer.posts.create({
   "idempotency-key": "campaign-881-cus_42",
   channelIds: [channelId],
   content: { text: "Fresh bread at 7.", media: [], overrides: [] },
@@ -62,7 +62,7 @@ customer = Peal(
     workspace=workspace_id,
 )
 
-post = customer.posts.send(
+post = customer.posts.create(
     idempotency_key="campaign-881-cus_42",
     channel_ids=[channel_id],
     content=PostContent(text="Fresh bread at 7.", media=[], overrides=[]),
@@ -98,7 +98,7 @@ customer := pealclient.NewClient(
 	option.WithWorkspace(peal.String(workspaceID)),
 )
 
-post, err := customer.Posts.Send(ctx, &peal.NewPost{
+post, err := customer.Posts.Create(ctx, &peal.NewPost{
 	IdempotencyKey: peal.String("campaign-881-cus_42"),
 	ChannelIDs:     []string{channelID},
 	Content: &peal.PostContent{
@@ -129,7 +129,7 @@ customer = Peal::Client.new(
   workspace: workspace_id
 )
 
-post = customer.posts.send_(
+post = customer.posts.create(
   idempotency_key: "campaign-881-cus_42",
   channel_ids: [channel_id],
   content: { text: "Fresh bread at 7.", media: [], overrides: [] },
@@ -163,7 +163,7 @@ PealClient customer = PealClient.builder()
     .workspace(workspaceId)
     .build();
 
-Post post = customer.posts().send(
+Post post = customer.posts().create(
     NewPost.builder()
         .content(PostContent.builder().text("Fresh bread at 7.").build())
         .when(PostTiming.at(PostTimingAt.builder()
@@ -200,7 +200,7 @@ $customer = new PealClient(
     options: ['baseUrl' => 'https://api.example.com'],
 );
 
-$post = $customer->posts->send(new NewPost([
+$post = $customer->posts->create(new NewPost([
     'idempotencyKey' => 'campaign-881-cus_42',
     'channelIds' => [$channelId],
     'content' => new PostContent(['text' => 'Fresh bread at 7.', 'media' => [], 'overrides' => []]),
@@ -228,7 +228,7 @@ var customer = new PealClient(
     clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
 );
 
-var post = await customer.Posts.SendAsync(new NewPost
+var post = await customer.Posts.CreateAsync(new NewPost
 {
     IdempotencyKey = "campaign-881-cus_42",
     ChannelIds = new[] { channelId },
@@ -266,7 +266,7 @@ let customer = PealClient::new(ClientConfig {
 
 let post = customer
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec![channel_id.clone()])
             .content(PostContent {
@@ -285,7 +285,7 @@ let post = customer
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/v1/posts/send \
+curl -X POST https://api.example.com/api/v1/posts \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
   -H "Peal-Workspace: $WORKSPACE_ID" \
   -H "Content-Type: application/json" \
@@ -640,7 +640,7 @@ Rien ne filtre la liste pour ne garder que les espaces qui demandent votre atten
 
 ### En tant que personne dans votre espace principal [#health-home]
 
-Les propriétaires et administrateurs de votre espace de travail principal peuvent lire le même état à `GET /api/v1/partner-account/overview` (`partner:read`), sous **Paramètres**, puis **Partenaire**, et avec `peal partner overview` ([ligne de commande](/developers/cli/workspace#partner)).
+Les propriétaires et administrateurs de votre espace de travail principal peuvent lire le même état à `GET /api/v1/partner/account/overview` (`partner:read`), sous **Paramètres**, puis **Partenaire**, et avec `peal partner overview` ([ligne de commande](/developers/cli/workspace#partner)).
 
 Ils voient chaque section pour laquelle ils détiennent la permission dans l’espace principal. L’équipe d’administration qui agit en leur nom ne lit aucune boîte de réception. `mayApprove` est toujours faux pour eux, car ils ne sont membres d’aucun espace de travail client.
 
@@ -909,7 +909,7 @@ Pour votre propre facturation et vos tableaux de bord, un appel répond ce que v
 <CodeGroup>
 
 ```ts Node.js
-const usage = await peal.partnerUsage.get({
+const usage = await peal.partner.customerUsage.get({
   from: "2026-11-01",
   to: "2026-11-30",
   limit: "50",
@@ -918,12 +918,12 @@ const usage = await peal.partnerUsage.get({
 ```
 
 ```python Python
-usage = peal.partner_usage.get(from_="2026-11-01", to="2026-11-30", limit="50")
+usage = peal.partner.customer_usage.get(from_="2026-11-01", to="2026-11-30", limit="50")
 # usage.workspaces.workspaces : votre espace de travail principal d’abord, puis celui de chaque client.
 ```
 
 ```go Go
-usage, err := client.PartnerUsage.Get(ctx, &peal.GetPartnerUsageRequest{
+usage, err := client.Partner.CustomerUsage.Get(ctx, &partner.GetCustomerUsageRequest{
 	From:  peal.String("2026-11-01"),
 	To:    peal.String("2026-11-30"),
 	Limit: peal.String("50"),
@@ -932,16 +932,16 @@ usage, err := client.PartnerUsage.Get(ctx, &peal.GetPartnerUsageRequest{
 ```
 
 ```ruby Ruby
-usage = peal.partner_usage.get(from: "2026-11-01", to: "2026-11-30", limit: "50")
+usage = peal.partner.customer_usage.get(from: "2026-11-01", to: "2026-11-30", limit: "50")
 # usage.workspaces.workspaces : votre espace de travail principal d’abord, puis celui de chaque client.
 ```
 
 ```java Java
-import social.peal.resources.partnerusage.requests.GetPartnerUsageRequest;
+import social.peal.resources.partner.customerusage.requests.GetCustomerUsageRequest;
 import social.peal.types.PartnerUsageReport;
 
-PartnerUsageReport usage = peal.partnerUsage().get(
-    GetPartnerUsageRequest.builder()
+PartnerUsageReport usage = peal.partner().customerUsage().get(
+    GetCustomerUsageRequest.builder()
         .from("2026-11-01")
         .to("2026-11-30")
         .limit("50")
@@ -950,9 +950,9 @@ PartnerUsageReport usage = peal.partnerUsage().get(
 ```
 
 ```php PHP
-use Peal\PartnerUsage\Requests\GetPartnerUsageRequest;
+use Peal\Partner\CustomerUsage\Requests\GetCustomerUsageRequest;
 
-$usage = $peal->partnerUsage->get(new GetPartnerUsageRequest([
+$usage = $peal->partner->customerUsage->get(new GetCustomerUsageRequest([
     'from' => '2026-11-01',
     'to' => '2026-11-30',
     'limit' => '50',
@@ -961,7 +961,7 @@ $usage = $peal->partnerUsage->get(new GetPartnerUsageRequest([
 ```
 
 ```csharp .NET
-var usage = await peal.PartnerUsage.GetAsync(new GetPartnerUsageRequest
+var usage = await peal.Partner.CustomerUsage.GetAsync(new GetCustomerUsageRequest
 {
     From = "2026-11-01",
     To = "2026-11-30",
@@ -972,9 +972,10 @@ var usage = await peal.PartnerUsage.GetAsync(new GetPartnerUsageRequest
 
 ```rust Rust
 let usage = peal
-    .partner_usage
+    .partner
+    .customer_usage
     .get(
-        &PartnerUsageGetQueryRequest {
+        &PartnerCustomerUsageGetQueryRequest {
             from: Some(CalendarDay("2026-11-01".to_string())),
             to: Some(CalendarDay("2026-11-30".to_string())),
             limit: Some("50".to_string()),
@@ -987,7 +988,7 @@ let usage = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/v1/partner/usage?from=2026-11-01&to=2026-11-30&limit=50" \
+curl "https://api.example.com/api/v1/partner/customer-usage?from=2026-11-01&to=2026-11-30&limit=50" \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY"
 ```
 
@@ -1001,7 +1002,7 @@ peal partner usage --from 2026-11-01 --to 2026-11-30 --limit 50
 
 </CodeGroup>
 
-Une clé partenaire avec la portée `workspaces:read` la lit à `GET /api/v1/partner/usage`. Les propriétaires et administrateurs de votre espace de travail principal (`partner:read`) la lisent à `GET /api/v1/usage/partner`, qui répond la même chose, tout comme la ligne de commande et l’outil MCP. Tout autre espace de travail reçoit 404 `PartnerNotFound`.
+Une clé partenaire avec la portée `workspaces:read` la lit à `GET /api/v1/partner/customer-usage`. Les propriétaires et administrateurs de votre espace de travail principal (`partner:read`) la lisent à `GET /api/v1/workspace/usage/partner`, qui répond la même chose, tout comme la ligne de commande et l’outil MCP. Tout autre espace de travail reçoit 404 `PartnerNotFound`.
 
 `from` et `to` sont des jours UTC, inclus tous les deux, 92 jours au plus. Par défaut, vous obtenez les 30 jours qui se terminent aujourd’hui.
 
@@ -1030,15 +1031,15 @@ Les décomptes quotidiens sont gardés {{keep-partner-usage-fr}}. Ce sont des d�
 
 Chaque tâche a sa place, selon que c’est votre serveur ou une personne qui la fait :
 
-| Pour                                               | Utiliser                                                                                                                                                                                  |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Régler le compte, créer et révoquer des clés       | L’application web : **Paramètres**, puis **Partenaire**                                                                                                                                   |
-| Créer, trouver, modifier et supprimer des espaces  | `/api/v1/partner`, avec une clé partenaire, `partner` dans les SDK                                                                                                                        |
-| Agir dans un espace de travail                     | `/api/v1/…`, avec la même clé, `connectLinks`, `channels`, `media`, `posts`, `analytics` dans les SDK                                                                                     |
-| Lire le compte et ses espaces en tant que personne | `peal partner show`, `peal partner keys`, `peal partner workspaces` ([ligne de commande](/developers/cli/workspace#partner))                                                              |
-| Lire l’utilisation par client                      | `GET /api/v1/partner/usage`, avec la clé, `partnerUsage` dans les SDK, `peal partner usage`, l’outil MCP `get_partner_usage` et **Paramètres**, puis **Partenaire**, en tant que personne |
-| Voir quels clients demandent votre attention       | `GET /api/v1/partner/overview`, avec la clé, `partner.overview` dans les SDK, `peal partner overview` et **Paramètres**, puis **Partenaire**, en tant que personne ([Santé](#health))     |
-| Créer un lien à la main pour l’un de vos espaces   | `peal links create` ([ligne de commande](/developers/cli/workspace#links)), ou l’outil MCP `create_connect_link` ([MCP](/developers/mcp/tools#tools))                                     |
+| Pour                                               | Utiliser                                                                                                                                                                                                    |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Régler le compte, créer et révoquer des clés       | L’application web : **Paramètres**, puis **Partenaire**                                                                                                                                                     |
+| Créer, trouver, modifier et supprimer des espaces  | `/api/v1/partner`, avec une clé partenaire, `partner` dans les SDK                                                                                                                                          |
+| Agir dans un espace de travail                     | `/api/v1/…`, avec la même clé, `channels.connectLinks`, `channels`, `media`, `posts`, `analytics` dans les SDK                                                                                              |
+| Lire le compte et ses espaces en tant que personne | `peal partner show`, `peal partner keys`, `peal partner workspaces` ([ligne de commande](/developers/cli/workspace#partner))                                                                                |
+| Lire l’utilisation par client                      | `GET /api/v1/partner/customer-usage`, avec la clé, `partner.customerUsage` dans les SDK, `peal partner usage`, l’outil MCP `get_partner_usage` et **Paramètres**, puis **Partenaire**, en tant que personne |
+| Voir quels clients demandent votre attention       | `GET /api/v1/partner/overview`, avec la clé, `partner.overview` dans les SDK, `peal partner overview` et **Paramètres**, puis **Partenaire**, en tant que personne ([Santé](#health))                       |
+| Créer un lien à la main pour l’un de vos espaces   | `peal links create` ([ligne de commande](/developers/cli/workspace#links)), ou l’outil MCP `create_connect_link` ([MCP](/developers/mcp/tools#tools))                                                       |
 
 La [référence de l’API](/reference) liste chaque point d’accès avec ses erreurs. Les [SDK](/developers/sdks) sont générés à partir du même contrat, en huit langages. Une clé partenaire peut se vérifier avec `GET /api/v1/credential` (`credential.get`), qui nomme son partenaire, ses portées et ses permissions, et jamais ses espaces de travail.
 

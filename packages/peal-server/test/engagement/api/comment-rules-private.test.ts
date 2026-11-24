@@ -91,7 +91,7 @@ const othersOf = (workspaceId: WorkspaceId) => {
 };
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["inboxRules"]).pipe(
+  HttpApiTest.groups(Api, ["automations.commentRules"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         InboxRulesApiLive.pipe(Layer.provideMerge(securityTest(member))),
@@ -127,7 +127,7 @@ describe("a comment rule's private text through the API", () => {
 
           const editor = yield* clientAs(editorOf(workspaceId));
 
-          const made = yield* editor.inboxRules.createCommentRule({
+          const made = yield* editor["automations.commentRules"].create({
             headers,
             payload: newRule(thread.channelId),
           });
@@ -142,7 +142,7 @@ describe("a comment rule's private text through the API", () => {
           for (const member of [others.replier, others.application]) {
             const refused = yield* clientAs(member).pipe(
               Effect.flatMap((client) =>
-                client.inboxRules.createCommentRule({
+                client["automations.commentRules"].create({
                   headers,
                   payload: newRule(thread.channelId),
                 })
@@ -158,7 +158,7 @@ describe("a comment rule's private text through the API", () => {
           yield* received(thread, [{ author: 1, text: "price?" }]);
           yield* CommentRules.use((rules) => rules.runDue);
 
-          const mine = yield* editor.inboxRules.getCommentRule({
+          const mine = yield* editor["automations.commentRules"].get({
             headers,
             params: { ruleId: made.id },
           });
@@ -177,12 +177,12 @@ describe("a comment rule's private text through the API", () => {
           ]) {
             const client = yield* clientAs(member);
 
-            const shown = yield* client.inboxRules.getCommentRule({
+            const shown = yield* client["automations.commentRules"].get({
               headers,
               params: { ruleId: made.id },
             });
 
-            const listed = yield* client.inboxRules.listCommentRules({
+            const listed = yield* client["automations.commentRules"].list({
               headers,
               query: {},
             });
@@ -209,7 +209,7 @@ describe("a comment rule's private text through the API", () => {
           assert.instanceOf(
             yield* clientAs(others.staff).pipe(
               Effect.flatMap((client) =>
-                client.inboxRules.getCommentRule({
+                client["automations.commentRules"].get({
                   headers,
                   params: { ruleId: made.id },
                 })
@@ -223,7 +223,7 @@ describe("a comment rule's private text through the API", () => {
           for (const member of [others.replier, others.application]) {
             const refused = yield* clientAs(member).pipe(
               Effect.flatMap((client) =>
-                client.inboxRules.updateCommentRule({
+                client["automations.commentRules"].update({
                   headers,
                   params: { ruleId: made.id },
                   payload: { keywords: ["price", "list"] },
@@ -235,7 +235,7 @@ describe("a comment rule's private text through the API", () => {
             assert.instanceOf(refused, Forbidden);
           }
 
-          const off = yield* editor.inboxRules.updateCommentRule({
+          const off = yield* editor["automations.commentRules"].update({
             headers,
             params: { ruleId: made.id },
             payload: { privateReply: null },

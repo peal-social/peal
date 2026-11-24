@@ -36,7 +36,7 @@ export const workspaceFeeds = Atom.family((workspaceId: string) =>
     PealApi.runtime.atom(
       PealApi.use((client) =>
         everyFeed((cursor) =>
-          client.feeds.list({
+          client["automations.feeds"].list({
             headers: forWorkspace(workspaceId),
             query:
               cursor === undefined
@@ -51,16 +51,16 @@ export const workspaceFeeds = Atom.family((workspaceId: string) =>
 
 /** A feed's newest items, never what they said. */
 export const feedItems = (workspaceId: string, feedId: string) =>
-  PealApi.query("feeds", "items", {
+  PealApi.query("automations.feeds", "items", {
     headers: forWorkspace(workspaceId),
     params: { feedId },
     reactivityKeys: feedsChanged(workspaceId),
   });
 
-export const createFeed = PealApi.mutation("feeds", "create");
+export const createFeed = PealApi.mutation("automations.feeds", "create");
 
-export const updateFeed = PealApi.mutation("feeds", "update");
+export const updateFeed = PealApi.mutation("automations.feeds", "update");
 
-export const deleteFeed = PealApi.mutation("feeds", "delete");
+export const deleteFeed = PealApi.mutation("automations.feeds", "delete");
 
-export const previewFeed = PealApi.mutation("feeds", "preview");
+export const previewFeed = PealApi.mutation("automations.feeds", "preview");

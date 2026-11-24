@@ -19,8 +19,16 @@ pub enum PostRefusal {
 
     #[non_exhaustive]
     UnknownChannels {
-        #[serde(flatten)]
-        data: UnknownChannelsEncoded,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        code: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        message: Option<String>,
+        #[serde(rename = "requestId")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        request_id: Option<String>,
+        #[serde(rename = "channelIds")]
+        #[serde(default)]
+        channel_ids: Vec<String>,
     },
 
     #[non_exhaustive]
@@ -70,13 +78,8 @@ pub enum PostRefusal {
 
     #[non_exhaustive]
     IdempotencyKeyReused {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        code: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        message: Option<String>,
-        #[serde(rename = "requestId")]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        request_id: Option<String>,
+        #[serde(flatten)]
+        data: IdempotencyKeyReusedEncoded,
     },
 
     #[non_exhaustive]
@@ -188,8 +191,13 @@ impl PostRefusal {
         }
     }
 
-    pub fn unknown_channels(data: UnknownChannelsEncoded) -> Self {
-        Self::UnknownChannels { data }
+    pub fn unknown_channels(channel_ids: Vec<String>) -> Self {
+        Self::UnknownChannels {
+            code: None,
+            message: None,
+            request_id: None,
+            channel_ids,
+        }
     }
 
     pub fn unknown_media(media_ids: Vec<String>) -> Self {
@@ -222,12 +230,8 @@ impl PostRefusal {
         Self::PlanLimitReached { data }
     }
 
-    pub fn idempotency_key_reused() -> Self {
-        Self::IdempotencyKeyReused {
-            code: None,
-            message: None,
-            request_id: None,
-        }
+    pub fn idempotency_key_reused(data: IdempotencyKeyReusedEncoded) -> Self {
+        Self::IdempotencyKeyReused { data }
     }
 
     pub fn post_not_found() -> Self {
@@ -333,6 +337,48 @@ impl PostRefusal {
             message,
             request_id: Some(request_id),
             violations,
+        }
+    }
+
+    pub fn unknown_channels_with_code(
+        code: String,
+        message: Option<String>,
+        request_id: Option<String>,
+        channel_ids: Vec<String>,
+    ) -> Self {
+        Self::UnknownChannels {
+            code: Some(code),
+            message,
+            request_id,
+            channel_ids,
+        }
+    }
+
+    pub fn unknown_channels_with_message(
+        code: Option<String>,
+        message: String,
+        request_id: Option<String>,
+        channel_ids: Vec<String>,
+    ) -> Self {
+        Self::UnknownChannels {
+            code,
+            message: Some(message),
+            request_id,
+            channel_ids,
+        }
+    }
+
+    pub fn unknown_channels_with_request_id(
+        code: Option<String>,
+        message: Option<String>,
+        request_id: String,
+        channel_ids: Vec<String>,
+    ) -> Self {
+        Self::UnknownChannels {
+            code,
+            message,
+            request_id: Some(request_id),
+            channel_ids,
         }
     }
 
@@ -453,42 +499,6 @@ impl PostRefusal {
             message,
             request_id: Some(request_id),
             time_zone,
-        }
-    }
-
-    pub fn idempotency_key_reused_with_code(
-        code: String,
-        message: Option<String>,
-        request_id: Option<String>,
-    ) -> Self {
-        Self::IdempotencyKeyReused {
-            code: Some(code),
-            message,
-            request_id,
-        }
-    }
-
-    pub fn idempotency_key_reused_with_message(
-        code: Option<String>,
-        message: String,
-        request_id: Option<String>,
-    ) -> Self {
-        Self::IdempotencyKeyReused {
-            code,
-            message: Some(message),
-            request_id,
-        }
-    }
-
-    pub fn idempotency_key_reused_with_request_id(
-        code: Option<String>,
-        message: Option<String>,
-        request_id: String,
-    ) -> Self {
-        Self::IdempotencyKeyReused {
-            code,
-            message,
-            request_id: Some(request_id),
         }
     }
 

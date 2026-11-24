@@ -110,7 +110,7 @@ export const signedText = (text: string, signature: string): string => {
 const signature = { signatureId: Schema.String };
 
 /** A workspace's signatures: the text it ends its posts with. */
-export class SignaturesApi extends HttpApiGroup.make("signatures")
+export class SignaturesApi extends HttpApiGroup.make("posts.signatures")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
@@ -174,4 +174,4 @@ export class SignaturesApi extends HttpApiGroup.make("signatures")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/signatures") {}
+  .prefix("/api/v1/posts/signatures") {}

@@ -5,9 +5,15 @@ package social.peal.resources.channels;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
+import social.peal.core.Suppliers;
+import social.peal.resources.channels.capabilities.AsyncCapabilitiesClient;
+import social.peal.resources.channels.connectlinks.AsyncConnectLinksClient;
+import social.peal.resources.channels.defaultoptions.AsyncDefaultOptionsClient;
+import social.peal.resources.channels.lookups.AsyncLookupsClient;
 import social.peal.resources.channels.requests.ChannelUpdate;
 import social.peal.resources.channels.requests.ChooseAccounts;
 import social.peal.resources.channels.requests.ConnectCallback;
@@ -21,6 +27,8 @@ import social.peal.resources.channels.requests.FindChannelsRequest;
 import social.peal.resources.channels.requests.ReconnectChannelsRequest;
 import social.peal.resources.channels.requests.SiteSignInCallback;
 import social.peal.resources.channels.requests.StartSiteSignIn;
+import social.peal.resources.channels.sets.AsyncSetsClient;
+import social.peal.resources.channels.tiktokcreator.AsyncTiktokCreatorClient;
 import social.peal.types.Authorization;
 import social.peal.types.Channel;
 import social.peal.types.ChannelPage;
@@ -35,9 +43,27 @@ public class AsyncChannelsClient {
 
     private final AsyncRawChannelsClient rawClient;
 
+    protected final Supplier<AsyncCapabilitiesClient> capabilitiesClient;
+
+    protected final Supplier<AsyncDefaultOptionsClient> defaultOptionsClient;
+
+    protected final Supplier<AsyncLookupsClient> lookupsClient;
+
+    protected final Supplier<AsyncSetsClient> setsClient;
+
+    protected final Supplier<AsyncConnectLinksClient> connectLinksClient;
+
+    protected final Supplier<AsyncTiktokCreatorClient> tiktokCreatorClient;
+
     public AsyncChannelsClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.rawClient = new AsyncRawChannelsClient(clientOptions);
+        this.capabilitiesClient = Suppliers.memoize(() -> new AsyncCapabilitiesClient(clientOptions));
+        this.defaultOptionsClient = Suppliers.memoize(() -> new AsyncDefaultOptionsClient(clientOptions));
+        this.lookupsClient = Suppliers.memoize(() -> new AsyncLookupsClient(clientOptions));
+        this.setsClient = Suppliers.memoize(() -> new AsyncSetsClient(clientOptions));
+        this.connectLinksClient = Suppliers.memoize(() -> new AsyncConnectLinksClient(clientOptions));
+        this.tiktokCreatorClient = Suppliers.memoize(() -> new AsyncTiktokCreatorClient(clientOptions));
     }
 
     /**
@@ -460,7 +486,7 @@ public class AsyncChannelsClient {
     }
 
     /**
-     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>inbox.messages.setChannel</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
     public CompletableFuture<Authorization> reconnect(String channelId) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture = this.rawClient.reconnect(channelId);
@@ -474,7 +500,7 @@ public class AsyncChannelsClient {
     }
 
     /**
-     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>inbox.messages.setChannel</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
     public CompletableFuture<Authorization> reconnect(String channelId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
@@ -489,7 +515,7 @@ public class AsyncChannelsClient {
     }
 
     /**
-     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>inbox.messages.setChannel</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
     public CompletableFuture<Authorization> reconnect(String channelId, ReconnectChannelsRequest request) {
         CompletableFuture<PealClientHttpResponse<Authorization>> rawFuture =
@@ -504,7 +530,7 @@ public class AsyncChannelsClient {
     }
 
     /**
-     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>setChannelMessages</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With <code>messages=true</code>, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (<code>inbox.messages.setChannel</code> answers 409 <code>InboxActionUnavailable</code>, <code>reconnect</code>, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With <code>reposts=true</code>, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows <code>reconnect</code> until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      */
     public CompletableFuture<Authorization> reconnect(
             String channelId, ReconnectChannelsRequest request, RequestOptions requestOptions) {
@@ -722,5 +748,29 @@ public class AsyncChannelsClient {
             }
         });
         return future;
+    }
+
+    public AsyncCapabilitiesClient capabilities() {
+        return this.capabilitiesClient.get();
+    }
+
+    public AsyncDefaultOptionsClient defaultOptions() {
+        return this.defaultOptionsClient.get();
+    }
+
+    public AsyncLookupsClient lookups() {
+        return this.lookupsClient.get();
+    }
+
+    public AsyncSetsClient sets() {
+        return this.setsClient.get();
+    }
+
+    public AsyncConnectLinksClient connectLinks() {
+        return this.connectLinksClient.get();
+    }
+
+    public AsyncTiktokCreatorClient tiktokCreator() {
+        return this.tiktokCreatorClient.get();
     }
 }

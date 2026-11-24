@@ -3,8 +3,12 @@
  */
 package social.peal.resources.partner;
 
+import java.util.function.Supplier;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
+import social.peal.core.Suppliers;
+import social.peal.resources.partner.account.AccountClient;
+import social.peal.resources.partner.customerusage.CustomerUsageClient;
 import social.peal.resources.partner.requests.ChannelMove;
 import social.peal.resources.partner.requests.CustomerWorkspaceChange;
 import social.peal.resources.partner.requests.DeleteWorkspacePartnerRequest;
@@ -23,9 +27,15 @@ public class PartnerClient {
 
     private final RawPartnerClient rawClient;
 
+    protected final Supplier<AccountClient> accountClient;
+
+    protected final Supplier<CustomerUsageClient> customerUsageClient;
+
     public PartnerClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.rawClient = new RawPartnerClient(clientOptions);
+        this.accountClient = Suppliers.memoize(() -> new AccountClient(clientOptions));
+        this.customerUsageClient = Suppliers.memoize(() -> new CustomerUsageClient(clientOptions));
     }
 
     /**
@@ -38,15 +48,15 @@ public class PartnerClient {
     /**
      * The partner account the key belongs to, with what it holds: the workspaces it owns and the channels connected across them and its home workspace, now and at the end of each of the last 35 days (UTC). Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
      */
-    public PartnerOverview account() {
-        return this.rawClient.account().body();
+    public PartnerOverview get() {
+        return this.rawClient.get().body();
     }
 
     /**
      * The partner account the key belongs to, with what it holds: the workspaces it owns and the channels connected across them and its home workspace, now and at the end of each of the last 35 days (UTC). Takes a partner key (<code>Authorization: Bearer peal_partner_…</code>): any other credential answers 403.
      */
-    public PartnerOverview account(RequestOptions requestOptions) {
-        return this.rawClient.account(requestOptions).body();
+    public PartnerOverview get(RequestOptions requestOptions) {
+        return this.rawClient.get(requestOptions).body();
     }
 
     /**
@@ -223,5 +233,13 @@ public class PartnerClient {
         return this.rawClient
                 .moveChannel(workspaceId, channelId, request, requestOptions)
                 .body();
+    }
+
+    public AccountClient account() {
+        return this.accountClient.get();
+    }
+
+    public CustomerUsageClient customerUsage() {
+        return this.customerUsageClient.get();
     }
 }

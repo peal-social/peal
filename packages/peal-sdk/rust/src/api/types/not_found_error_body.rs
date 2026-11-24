@@ -5,7 +5,7 @@ pub use crate::prelude::*;
 #[non_exhaustive]
 pub enum NotFoundErrorBody {
     #[non_exhaustive]
-    ShortLinkNotFound {
+    PartnerNotFound {
         #[serde(skip_serializing_if = "Option::is_none")]
         code: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -34,8 +34,8 @@ pub enum NotFoundErrorBody {
 }
 
 impl NotFoundErrorBody {
-    pub fn short_link_not_found() -> Self {
-        Self::ShortLinkNotFound {
+    pub fn partner_not_found() -> Self {
+        Self::PartnerNotFound {
             code: None,
             message: None,
             request_id: None,
@@ -50,36 +50,36 @@ impl NotFoundErrorBody {
         }
     }
 
-    pub fn short_link_not_found_with_code(
+    pub fn partner_not_found_with_code(
         code: String,
         message: Option<String>,
         request_id: Option<String>,
     ) -> Self {
-        Self::ShortLinkNotFound {
+        Self::PartnerNotFound {
             code: Some(code),
             message,
             request_id,
         }
     }
 
-    pub fn short_link_not_found_with_message(
+    pub fn partner_not_found_with_message(
         code: Option<String>,
         message: String,
         request_id: Option<String>,
     ) -> Self {
-        Self::ShortLinkNotFound {
+        Self::PartnerNotFound {
             code,
             message: Some(message),
             request_id,
         }
     }
 
-    pub fn short_link_not_found_with_request_id(
+    pub fn partner_not_found_with_request_id(
         code: Option<String>,
         message: Option<String>,
         request_id: String,
     ) -> Self {
-        Self::ShortLinkNotFound {
+        Self::PartnerNotFound {
             code,
             message,
             request_id: Some(request_id),

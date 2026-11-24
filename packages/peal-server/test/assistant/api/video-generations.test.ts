@@ -27,7 +27,7 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 const syntheticKey = "sk_test_synthetic_video_key";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["assistant", "videoGenerations"]).pipe(
+  HttpApiTest.groups(Api, ["assistant", "media.videos"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         Layer.merge(AssistantApiLive, VideoGenerationsApiLive).pipe(
@@ -54,7 +54,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
         const editor = yield* as(workspaceId, "editor");
 
         // Off until a provider is chosen.
-        const off = yield* editor.videoGenerations
+        const off = yield* editor["media.videos"]
           .create({ headers, payload: { aspect: "landscape", prompt } })
           .pipe(Effect.flip);
 
@@ -103,7 +103,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
           remaining: 20,
         });
 
-        const job = yield* editor.videoGenerations.create({
+        const job = yield* editor["media.videos"].create({
           headers,
           payload: { aspect: "square", durationSeconds: 5, prompt },
         });
@@ -118,12 +118,12 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
         // Never the prompt.
         assert.notInclude(JSON.stringify(job), prompt);
 
-        const read = yield* editor.videoGenerations.get({
+        const read = yield* editor["media.videos"].get({
           headers,
           params: { generationId: job.id },
         });
 
-        const listed = yield* editor.videoGenerations.list({
+        const listed = yield* editor["media.videos"].list({
           headers,
           query: { status: "queued" },
         });
@@ -134,13 +134,13 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
           [job.id]
         );
 
-        const busy = yield* editor.videoGenerations
+        const busy = yield* editor["media.videos"]
           .create({ headers, payload: { aspect: "landscape", prompt } })
           .pipe(Effect.flip);
 
         assert.deepInclude(busy, { _tag: "VideoBusy", generationId: job.id });
 
-        const tooLong = yield* editor.videoGenerations
+        const tooLong = yield* editor["media.videos"]
           .create({
             headers,
             payload: { aspect: "landscape", durationSeconds: 30, prompt },
@@ -152,7 +152,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
           reason: "durationNotOffered",
         });
 
-        const missing = yield* editor.videoGenerations
+        const missing = yield* editor["media.videos"]
           .get({
             headers,
             params: {
@@ -172,10 +172,10 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
       const viewer = yield* as(workspaceId, "viewer");
 
       const refusals = yield* Effect.all([
-        viewer.videoGenerations
+        viewer["media.videos"]
           .create({ headers, payload: { aspect: "landscape", prompt } })
           .pipe(Effect.flip),
-        viewer.videoGenerations.list({ headers, query: {} }).pipe(Effect.flip),
+        viewer["media.videos"].list({ headers, query: {} }).pipe(Effect.flip),
       ]);
 
       assert.deepStrictEqual(

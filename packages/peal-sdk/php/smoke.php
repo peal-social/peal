@@ -13,7 +13,7 @@ $baseUrl = getenv('PEAL_API_URL');
 $peal = new PealClient(token: 'peal_test', options: ['baseUrl' => $baseUrl]);
 
 $peal->system->health();
-$me = $peal->session->me();
+$me = $peal->me->get();
 
 if (
     $me->user->email !== 'ada@example.test'
@@ -25,7 +25,7 @@ if (
 }
 
 try {
-    (new PealClient(token: 'refused', options: ['baseUrl' => $baseUrl]))->session->me();
+    (new PealClient(token: 'refused', options: ['baseUrl' => $baseUrl]))->me->get();
     throw new RuntimeException('A refused token got an answer');
 } catch (PealApiException $error) {
     if ($error->getCode() !== 401) {

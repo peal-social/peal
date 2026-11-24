@@ -36,7 +36,6 @@ import social.peal.resources.assistant.requests.AiProviderConnectionChange;
 import social.peal.resources.assistant.requests.AiProviderTest;
 import social.peal.resources.assistant.requests.DisconnectProviderAssistantRequest;
 import social.peal.resources.assistant.requests.ImageProviderChange;
-import social.peal.resources.assistant.requests.ImageRequest;
 import social.peal.resources.assistant.requests.SuggestionRequest;
 import social.peal.resources.assistant.requests.TextProviderChange;
 import social.peal.resources.assistant.requests.UnsetModelAssistantRequest;
@@ -49,7 +48,6 @@ import social.peal.types.AiProviderConnections;
 import social.peal.types.AssistantStatus;
 import social.peal.types.ImageProvider;
 import social.peal.types.ImageProviderSetting;
-import social.peal.types.Media;
 import social.peal.types.Suggestion;
 import social.peal.types.TextProvider;
 import social.peal.types.TextProviderSetting;
@@ -188,100 +186,6 @@ public class RawAssistantClient {
             if (response.isSuccessful()) {
                 return new PealClientHttpResponse<>(
                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Suggestion.class), response);
-            }
-            try {
-                switch (response.code()) {
-                    case 400:
-                        throw new BadRequestError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
-                    case 401:
-                        throw new UnauthorizedError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
-                                response);
-                    case 402:
-                        throw new PaymentRequiredError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
-                    case 403:
-                        throw new ForbiddenError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
-                    case 404:
-                        throw new NotFoundError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
-                    case 422:
-                        throw new UnprocessableEntityError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
-                    case 429:
-                        throw new TooManyRequestsError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
-                    case 502:
-                        throw new BadGatewayError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
-                    case 503:
-                        throw new ServiceUnavailableError(
-                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
-                }
-            } catch (JsonProcessingException ignored) {
-                // unable to map error response, throwing generic error
-            }
-            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
-            throw new PealClientApiException(
-                    "Error with status code " + response.code(), response.code(), errorBody, response);
-        } catch (JsonProcessingException e) {
-            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new PealClientException("Network error executing HTTP request", e);
-        }
-    }
-
-    /**
-     * Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked <code>aiGenerated</code> and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's <code>images.requestCost</code> of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked) and counts one of the month's images (<code>images.month</code>), billed past the allowance up to the account's ceiling (UsageAllowanceReached <code>ceilingReached</code>); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube <code>containsSyntheticMedia</code>, TikTok <code>aiGenerated</code>, X <code>madeWithAi</code>). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (<code>images.source</code>).
-     */
-    public PealClientHttpResponse<Media> generateImage(ImageRequest request) {
-        return generateImage(request, null);
-    }
-
-    /**
-     * Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked <code>aiGenerated</code> and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's <code>images.requestCost</code> of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked) and counts one of the month's images (<code>images.month</code>), billed past the allowance up to the account's ceiling (UsageAllowanceReached <code>ceilingReached</code>); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube <code>containsSyntheticMedia</code>, TikTok <code>aiGenerated</code>, X <code>madeWithAi</code>). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (<code>images.source</code>).
-     */
-    public PealClientHttpResponse<Media> generateImage(ImageRequest request, RequestOptions requestOptions) {
-        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
-                .newBuilder()
-                .addPathSegments("api/v1/assistant/images");
-        if (requestOptions != null) {
-            requestOptions.getQueryParameters().forEach((_key, _value) -> {
-                httpUrl.addQueryParameter(_key, _value);
-            });
-        }
-        RequestBody body;
-        try {
-            body = RequestBody.create(
-                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
-                    MediaTypes.APPLICATION_JSON);
-        } catch (JsonProcessingException e) {
-            throw new PealClientException("Failed to serialize request", e);
-        }
-        Request okhttpRequest = new Request.Builder()
-                .url(httpUrl.build())
-                .method("POST", body)
-                .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json")
-                .build();
-        OkHttpClient client = clientOptions.httpClient();
-        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
-            client = clientOptions.httpClientWithTimeout(requestOptions);
-        }
-        okhttpRequest = okhttpRequest
-                .newBuilder()
-                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
-                .build();
-        try (Response response = client.newCall(okhttpRequest).execute()) {
-            ResponseBody responseBody = response.body();
-            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
-            if (response.isSuccessful()) {
-                return new PealClientHttpResponse<>(
-                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Media.class), response);
             }
             try {
                 switch (response.code()) {

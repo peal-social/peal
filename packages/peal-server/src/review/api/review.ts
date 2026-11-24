@@ -52,7 +52,7 @@ const postIdFrom = (raw: string) =>
 
 export const ReviewHandlers = HttpApiBuilder.group(
   Api,
-  "review",
+  "approvals",
   Effect.fn(function* reviewHandlers(handlers) {
     const links = yield* ReviewLinks;
     const review = yield* PostReview;
@@ -158,7 +158,7 @@ export const ReviewHandlers = HttpApiBuilder.group(
 
           return { link: linkView(link, yield* DateTime.now), token, url };
         }),
-      links: ({ params }) =>
+      listLinks: ({ params }) =>
         Effect.gen(function* listLinks() {
           const actor = actorOf(yield* CurrentMember);
           const postId = yield* postIdFrom(params.postId);
@@ -175,7 +175,7 @@ export const ReviewHandlers = HttpApiBuilder.group(
 
           return made.map((link) => linkView(link, now));
         }),
-      pending: () =>
+      list: () =>
         Effect.gen(function* pending() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -282,7 +282,7 @@ export const ReviewHandlers = HttpApiBuilder.group(
 
           return { approvalPolicy };
         }),
-      thread: ({ params }) =>
+      get: ({ params }) =>
         Effect.gen(function* thread() {
           const actor = actorOf(yield* CurrentMember);
 

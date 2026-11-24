@@ -15,17 +15,17 @@ export const tagsChanged = (workspaceId: string) => [
 ];
 
 export const workspaceTags = Atom.family((workspaceId: string) =>
-  PealApi.query("tags", "list", {
+  PealApi.query("posts.tags", "list", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: [`tags:${workspaceId}`],
   })
 );
 
-export const createTag = PealApi.mutation("tags", "create");
+export const createTag = PealApi.mutation("posts.tags", "create");
 
-export const updateTag = PealApi.mutation("tags", "update");
+export const updateTag = PealApi.mutation("posts.tags", "update");
 
-export const deleteTag = PealApi.mutation("tags", "delete");
+export const deleteTag = PealApi.mutation("posts.tags", "delete");
 
 /** Files a post under other tags, whatever its status. */
-export const tagPost = PealApi.mutation("posts", "tag");
+export const tagPost = PealApi.mutation("posts", "setTags");

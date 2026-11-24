@@ -104,7 +104,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const listed = yield* bodyOf(
             KeysSchema,
-            yield* app.request(`/api/v1/partner-account/keys`, {
+            yield* app.request(`/api/v1/partner/account/keys`, {
               headers: { ...asPerson(owner), ...forWorkspace(home) },
             })
           );
@@ -119,7 +119,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const members = yield* bodyOf(
             MembersSchema,
-            yield* app.request(`/api/v1/members`, {
+            yield* app.request(`/api/v1/workspace/members`, {
               headers: { ...asPerson(owner), ...forWorkspace(home) },
             })
           );
@@ -153,7 +153,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const page = yield* bodyOf(
             PageSchema,
             yield* app.request(
-              `/api/v1/activity?operation=partnerAccount.revokeKey`,
+              `/api/v1/workspace/activity?operation=partner.account.revokeKey`,
               { headers: { ...asPerson(owner), ...forWorkspace(home) } }
             )
           );

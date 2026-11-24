@@ -324,7 +324,7 @@
   `GOOGLE_BUSINESS_CLIENT_ID` and its secret; `readsReviewsOn`); off,
   `CollectReviews` follows and calls nothing, and the sign-in is as before
   (it asks `business.manage` already, `googleBusinessReviewScope`). The
-  API is its own group (`inboxReviews`, `/inbox/reviews`, in the
+  API is its own group (`inbox.reviews`, `/inbox/reviews`, in the
   ConnectionJournal's content groups), the MCP tools `*_location_review*`,
   the command line `peal inbox reviews` (read and mark only); never `EngagementReplies` or
   `SendReplyV1`, and a reply to a review claims no outbound message (the

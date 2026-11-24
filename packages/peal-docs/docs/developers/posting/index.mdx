@@ -20,23 +20,23 @@ Each request needs these permissions:
 | Request                        | What it does                              | Needs                                        |
 | ------------------------------ | ----------------------------------------- | -------------------------------------------- |
 | `POST …/posts/validate`        | Checks a post, and makes nothing          | `post:read`, `channel:read`                  |
-| `POST …/posts/send`            | Creates a post and sends it, now or later | `post:schedule`, `channel:read`              |
+| `POST …/posts`                 | Creates a post and sends it, now or later | `post:schedule`, `channel:read`              |
 | `GET …/posts/{postId}/outcome` | Waits until a post has gone out           | `post:read`                                  |
 | `POST …/posts/bulk`            | Creates and sends up to 50 posts          | `post:schedule`, `channel:read`              |
 | `POST …/posts/import`          | Creates and sends the posts of a CSV file | `post:schedule`, `post:read`, `channel:read` |
-| `GET …/posts/search`           | Lists the workspace's posts, with filters | `post:read`, `channel:read`                  |
+| `GET …/posts`                  | Lists the workspace's posts, with filters | `post:read`, `channel:read`                  |
 
-A post that shows media also needs `media:read`. An OAuth access token needs the scope `workspace:publish` for `send`, `bulk` and `import` ([What each permission allows](/developers/agents#scopes)).
+A post that shows media also needs `media:read`. An OAuth access token needs the scope `workspace:publish` for `create`, `bulk` and `import` ([What each permission allows](/developers/agents#scopes)).
 
 <Callout type="warning" title="Peal can't take back a post once it's out">
-  What `send`, `bulk` and `import` publish reaches the platforms' public, and
+  What `create`, `bulk` and `import` publish reaches the platforms' public, and
   you can't take it back from Peal once it's out. Until its time, you can still
   cancel or unschedule a post.
 </Callout>
 
 ## Check a post without making it [#validate]
 
-`POST …/posts/validate` takes the same body as `send`, or a draft's, which has no `when`. It writes nothing. The answer is 200 whether or not the post would go through, with `valid` and every reason it would be refused, all at once.
+`POST …/posts/validate` takes the same body as `create`, or a draft's, which has no `when`. It writes nothing. The answer is 200 whether or not the post would go through, with `valid` and every reason it would be refused, all at once.
 
 <CodeGroup>
 
@@ -348,12 +348,12 @@ Without `when`, the request is checked as a draft, so the time, the plan's room 
 
 ## Publish now and wait for the outcome [#wait]
 
-`POST …/posts/send` answers as soon as the post is made, while it's still publishing. Add `wait`, a number of seconds from 0 to 60, and a post that goes out now is answered once every channel has its result. The `Idempotency-Key` header lets you send the request again safely if the answer is lost ([Idempotency](/developers/conventions/idempotency#idempotency)).
+`POST …/posts` answers as soon as the post is made, while it's still publishing. Add `wait`, a number of seconds from 0 to 60, and a post that goes out now is answered once every channel has its result. The `Idempotency-Key` header lets you send the request again safely if the answer is lost ([Idempotency](/developers/conventions/idempotency#idempotency)).
 
 <CodeGroup>
 
 ```ts Node.js
-const post = await peal.posts.send({
+const post = await peal.posts.create({
   wait: "30",
   "idempotency-key": "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
   channelIds: [
@@ -372,7 +372,7 @@ const post = await peal.posts.send({
 ```python Python
 from peal import PostTiming_Now
 
-post = peal.posts.send(
+post = peal.posts.create(
     wait="30",
     idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
     channel_ids=[
@@ -389,7 +389,7 @@ post = peal.posts.send(
 ```
 
 ```go Go
-post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
+post, err := client.Posts.Create(context.TODO(), &peal.NewPost{
 	Wait:           peal.String("30"),
 	IdempotencyKey: peal.String("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90"),
 	ChannelIDs: []string{
@@ -406,7 +406,7 @@ post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
 ```
 
 ```ruby Ruby
-post = peal.posts.send_(
+post = peal.posts.create(
   wait: "30",
   idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
   channel_ids: [
@@ -423,7 +423,7 @@ post = peal.posts.send_(
 ```
 
 ```java Java
-Post post = peal.posts().send(
+Post post = peal.posts().create(
     NewPost.builder()
         .content(PostContent.builder()
             .text("Our spring catalogue is out. Read it at https://example.com/spring")
@@ -441,7 +441,7 @@ Post post = peal.posts().send(
 use Peal\Posts\Requests\NewPost;
 use Peal\Types\PostTimingNow;
 
-$post = $peal->posts->send(new NewPost([
+$post = $peal->posts->create(new NewPost([
     'wait' => '30',
     'idempotencyKey' => '5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90',
     'channelIds' => [
@@ -458,7 +458,7 @@ $post = $peal->posts->send(new NewPost([
 ```
 
 ```csharp .NET
-var post = await peal.Posts.SendAsync(new NewPost
+var post = await peal.Posts.CreateAsync(new NewPost
 {
     Wait = "30",
     IdempotencyKey = "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
@@ -479,7 +479,7 @@ var post = await peal.Posts.SendAsync(new NewPost
 // NewPost has no field for the key: it goes in the request's headers.
 let post = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec![
                 "0190f3a0-0000-7000-8000-00000000c001".to_string(),
@@ -504,7 +504,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST "https://api.example.com/api/v1/posts/send?wait=30" \
+curl -X POST "https://api.example.com/api/v1/posts?wait=30" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90" \
@@ -689,13 +689,13 @@ Peal refuses a post when another post of the workspace already sends the same co
 
 `duplicates` names each channel that already gets the content, with the earliest post that sends it there in that window. The check follows these rules:
 
-| Rule             | Detail                                                                                                                                                                                                           |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The same content | The text the channel receives, and the same media in the same order.                                                                                                                                             |
-| 23 hours         | The shortest day any time zone has, so a post that repeats every day at the same local time is never refused.                                                                                                    |
-| What counts      | Posts that will go out or went out, including those waiting for an approval, since they go out once approved. Drafts, cancelled posts and a channel where the post failed don't count.                           |
-| What is checked  | `send`, each item of `bulk`, each row of `import`, the MCP tools `create_post` and `create_posts`, and `peal post`. Scheduling an existing draft, moving a post and reposting where it failed are never refused. |
-| When it's meant  | Send the request again with `allowDuplicate: true` on the post or the bulk item, or with `allow_duplicate` set to `true` on the CSV row.                                                                         |
+| Rule             | Detail                                                                                                                                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The same content | The text the channel receives, and the same media in the same order.                                                                                                                                               |
+| 23 hours         | The shortest day any time zone has, so a post that repeats every day at the same local time is never refused.                                                                                                      |
+| What counts      | Posts that will go out or went out, including those waiting for an approval, since they go out once approved. Drafts, cancelled posts and a channel where the post failed don't count.                             |
+| What is checked  | `create`, each item of `bulk`, each row of `import`, the MCP tools `create_post` and `create_posts`, and `peal post`. Scheduling an existing draft, moving a post and reposting where it failed are never refused. |
+| When it's meant  | Send the request again with `allowDuplicate: true` on the post or the bulk item, or with `allow_duplicate` set to `true` on the CSV row.                                                                           |
 
 `validate` reports the same thing beforehand, in `duplicates`.
 
@@ -860,20 +860,20 @@ A comment can fail after the post went live. The post is then `partiallyPublishe
 
 Each request has an MCP tool or a command, or both:
 
-| Request                                      | MCP tool                          | Command                                          |
-| -------------------------------------------- | --------------------------------- | ------------------------------------------------ |
-| `POST …/posts/validate`                      | `validate_post`                   | `peal post … --dry-run`                          |
-| `POST …/posts/send?wait=…`                   | `create_post`, with `waitSeconds` | `peal post … --now --wait <seconds>`             |
-| `GET …/posts/{postId}/outcome`               | `await_post`                      | `peal posts wait <post-id>`                      |
-| `POST …/posts/bulk`                          | `create_posts`                    |                                                  |
-| `POST …/posts/import`                        |                                   | `peal posts import <file.csv>`                   |
-| `GET …/posts/search`                         | `list_posts`                      | `peal posts list`                                |
-| `POST …/posts/{postId}/queue`                | `queue_post`                      | `peal posts queue <post-id>`                     |
-| `POST …/posts/{postId}/unpublish`            | `unpublish_post`                  | `peal posts unpublish <post-id>`                 |
-| `POST …/targets/{targetId}/edit`             | `edit_published_post`             | `peal posts edit <post-id>`                      |
-| `GET …/posts/{postId}/changes`               | `list_post_changes`               | `peal posts changes <post-id>`                   |
-| `DELETE …/posts/{postId}/targets/{targetId}` | `remove_post_target`              | `peal posts remove-target <post-id> <target-id>` |
-| `GET …/queues/{queueId}/slots`               | `preview_queue`                   | `peal queues preview <queue>`                    |
-| `POST …/queues/{queueId}/reshuffle`          | `reshuffle_queue`                 | `peal queues reshuffle <queue>`                  |
+| Request                                         | MCP tool                          | Command                                          |
+| ----------------------------------------------- | --------------------------------- | ------------------------------------------------ |
+| `POST …/posts/validate`                         | `validate_post`                   | `peal post … --dry-run`                          |
+| `POST …/posts?wait=…`                           | `create_post`, with `waitSeconds` | `peal post … --now --wait <seconds>`             |
+| `GET …/posts/{postId}/outcome`                  | `await_post`                      | `peal posts wait <post-id>`                      |
+| `POST …/posts/bulk`                             | `create_posts`                    |                                                  |
+| `POST …/posts/import`                           |                                   | `peal posts import <file.csv>`                   |
+| `GET …/posts`                                   | `list_posts`                      | `peal posts list`                                |
+| `POST …/posts/{postId}/queue`                   | `queue_post`                      | `peal posts queue <post-id>`                     |
+| `POST …/posts/{postId}/unpublish`               | `unpublish_post`                  | `peal posts unpublish <post-id>`                 |
+| `POST …/targets/{targetId}/edit`                | `edit_published_post`             | `peal posts edit <post-id>`                      |
+| `GET …/posts/{postId}/changes`                  | `list_post_changes`               | `peal posts changes <post-id>`                   |
+| `DELETE …/posts/{postId}/targets/{targetId}`    | `remove_post_target`              | `peal posts remove-target <post-id> <target-id>` |
+| `GET …/automations/queues/{queueId}/slots`      | `preview_queue`                   | `peal queues preview <queue>`                    |
+| `POST …/automations/queues/{queueId}/reshuffle` | `reshuffle_queue`                 | `peal queues reshuffle <queue>`                  |
 
 [Connect an MCP client](/developers/mcp/tools#tools) describes the tools, and [Command line](/developers/cli/posts#post) the commands.

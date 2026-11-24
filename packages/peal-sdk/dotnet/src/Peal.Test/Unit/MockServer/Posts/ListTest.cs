@@ -13,539 +13,545 @@ public class ListTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string mockResponse = """
-            [
-              {
-                "authorId": "authorId",
-                "content": {
-                  "followUps": [
-                    {
-                      "delaySeconds": 86400,
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        },
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "overrides": [
-                        {
-                          "channelId": "channelId",
-                          "media": [],
-                          "text": "x"
-                        },
-                        {
-                          "channelId": "channelId",
-                          "media": [],
-                          "text": "x"
-                        }
-                      ],
-                      "text": "text"
-                    },
-                    {
-                      "delaySeconds": 86400,
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        },
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "overrides": [
-                        {
-                          "channelId": "channelId",
-                          "media": [],
-                          "text": "x"
-                        },
-                        {
-                          "channelId": "channelId",
-                          "media": [],
-                          "text": "x"
-                        }
-                      ],
-                      "text": "text"
-                    }
-                  ],
-                  "media": [
-                    {
-                      "altText": "altText",
-                      "mediaId": "mediaId"
-                    },
-                    {
-                      "altText": "altText",
-                      "mediaId": "mediaId"
-                    }
-                  ],
-                  "overrides": [
-                    {
-                      "channelId": "channelId",
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        },
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "text": "x"
-                    },
-                    {
-                      "channelId": "channelId",
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        },
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "text": "x"
-                    }
-                  ],
-                  "poll": {
-                    "choices": [
-                      "choices",
-                      "choices"
+            {
+              "channels": [
+                {
+                  "channelId": "channelId",
+                  "platform": "x"
+                },
+                {
+                  "channelId": "channelId",
+                  "platform": "x"
+                }
+              ],
+              "items": [
+                {
+                  "authorId": "authorId",
+                  "content": {
+                    "followUps": [
+                      {
+                        "delaySeconds": 86400,
+                        "media": [
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          },
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          }
+                        ],
+                        "overrides": [
+                          {
+                            "channelId": "channelId",
+                            "media": [],
+                            "text": "x"
+                          },
+                          {
+                            "channelId": "channelId",
+                            "media": [],
+                            "text": "x"
+                          }
+                        ],
+                        "text": "text"
+                      },
+                      {
+                        "delaySeconds": 86400,
+                        "media": [
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          },
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          }
+                        ],
+                        "overrides": [
+                          {
+                            "channelId": "channelId",
+                            "media": [],
+                            "text": "x"
+                          },
+                          {
+                            "channelId": "channelId",
+                            "media": [],
+                            "text": "x"
+                          }
+                        ],
+                        "text": "text"
+                      }
                     ],
-                    "durationMinutes": 43829,
-                    "multipleChoice": true
+                    "media": [
+                      {
+                        "altText": "altText",
+                        "mediaId": "mediaId"
+                      },
+                      {
+                        "altText": "altText",
+                        "mediaId": "mediaId"
+                      }
+                    ],
+                    "overrides": [
+                      {
+                        "channelId": "channelId",
+                        "media": [
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          },
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          }
+                        ],
+                        "text": "x"
+                      },
+                      {
+                        "channelId": "channelId",
+                        "media": [
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          },
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          }
+                        ],
+                        "text": "x"
+                      }
+                    ],
+                    "poll": {
+                      "choices": [
+                        "choices",
+                        "choices"
+                      ],
+                      "durationMinutes": 43829,
+                      "multipleChoice": true
+                    },
+                    "text": "text"
                   },
-                  "text": "text"
-                },
-                "createdVia": {
-                  "id": "id",
-                  "name": "name",
-                  "via": "web"
-                },
-                "id": "id",
-                "occurrence": 1,
-                "outcome": "published",
-                "queueId": "queueId",
-                "recyclingId": "recyclingId",
-                "schedule": {
-                  "at": "at",
-                  "timeZone": "timeZone"
-                },
-                "scheduledBy": "scheduledBy",
-                "scheduledVia": {
-                  "id": "id",
-                  "name": "name",
-                  "via": "web"
-                },
-                "shortenLinks": true,
-                "status": "draft",
-                "tagIds": [
-                  "tagIds",
-                  "tagIds"
-                ],
-                "targets": [
-                  {
-                    "channelId": "channelId",
-                    "dropped": true,
-                    "editedAt": "editedAt",
-                    "failureReason": "contentRejected",
+                  "createdVia": {
                     "id": "id",
-                    "keptPrivate": true,
-                    "options": {
-                      "platform": "youtube",
-                      "categoryId": "categoryId",
-                      "containsSyntheticMedia": true,
-                      "defaultLanguage": "defaultLanguage",
-                      "embeddable": true,
-                      "license": "youtube",
-                      "madeForKids": true,
-                      "notifySubscribers": true,
-                      "privacy": "public",
-                      "publicStatsViewable": true,
-                      "recordingDate": "recordingDate",
-                      "tags": [
-                        "tags",
-                        "tags"
-                      ],
-                      "thumbnailMediaId": "thumbnailMediaId",
-                      "title": "title"
-                    },
-                    "parts": {
-                      "count": 1,
-                      "live": [
-                        {
-                          "index": 1,
-                          "permalink": "permalink",
-                          "platformPostId": "platformPostId",
-                          "publishedAt": "publishedAt"
-                        },
-                        {
-                          "index": 1,
-                          "permalink": "permalink",
-                          "platformPostId": "platformPostId",
-                          "publishedAt": "publishedAt"
-                        }
-                      ]
-                    },
-                    "permalink": "permalink",
-                    "publishedAt": "publishedAt",
-                    "removedAt": "removedAt",
-                    "partsLeftOut": true,
-                    "round": 1,
-                    "status": "pending",
-                    "thumbnailNotSet": true,
-                    "unconfirmedReason": "noResponse"
+                    "name": "name",
+                    "via": "web"
                   },
-                  {
-                    "channelId": "channelId",
-                    "dropped": true,
-                    "editedAt": "editedAt",
-                    "failureReason": "contentRejected",
+                  "id": "id",
+                  "occurrence": 1,
+                  "outcome": "published",
+                  "queueId": "queueId",
+                  "recyclingId": "recyclingId",
+                  "schedule": {
+                    "at": "at",
+                    "timeZone": "timeZone"
+                  },
+                  "scheduledBy": "scheduledBy",
+                  "scheduledVia": {
                     "id": "id",
-                    "keptPrivate": true,
-                    "options": {
-                      "platform": "youtube",
-                      "categoryId": "categoryId",
-                      "containsSyntheticMedia": true,
-                      "defaultLanguage": "defaultLanguage",
-                      "embeddable": true,
-                      "license": "youtube",
-                      "madeForKids": true,
-                      "notifySubscribers": true,
-                      "privacy": "public",
-                      "publicStatsViewable": true,
-                      "recordingDate": "recordingDate",
-                      "tags": [
-                        "tags",
-                        "tags"
-                      ],
-                      "thumbnailMediaId": "thumbnailMediaId",
-                      "title": "title"
-                    },
-                    "parts": {
-                      "count": 1,
-                      "live": [
-                        {
-                          "index": 1,
-                          "permalink": "permalink",
-                          "platformPostId": "platformPostId",
-                          "publishedAt": "publishedAt"
-                        },
-                        {
-                          "index": 1,
-                          "permalink": "permalink",
-                          "platformPostId": "platformPostId",
-                          "publishedAt": "publishedAt"
-                        }
-                      ]
-                    },
-                    "permalink": "permalink",
-                    "publishedAt": "publishedAt",
-                    "removedAt": "removedAt",
-                    "partsLeftOut": true,
-                    "round": 1,
-                    "status": "pending",
-                    "thumbnailNotSet": true,
-                    "unconfirmedReason": "noResponse"
-                  }
-                ],
-                "warnings": [
-                  {
-                    "_tag": "channelsDropped",
-                    "channelIds": [
-                      "channelIds",
-                      "channelIds"
-                    ],
-                    "channelSetId": "channelSetId",
-                    "channelSetName": "channelSetName"
+                    "name": "name",
+                    "via": "web"
                   },
-                  {
-                    "_tag": "channelsDropped",
-                    "channelIds": [
-                      "channelIds",
-                      "channelIds"
-                    ],
-                    "channelSetId": "channelSetId",
-                    "channelSetName": "channelSetName"
-                  }
-                ]
-              },
-              {
-                "authorId": "authorId",
-                "content": {
-                  "followUps": [
-                    {
-                      "delaySeconds": 86400,
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        },
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "overrides": [
-                        {
-                          "channelId": "channelId",
-                          "media": [],
-                          "text": "x"
-                        },
-                        {
-                          "channelId": "channelId",
-                          "media": [],
-                          "text": "x"
-                        }
-                      ],
-                      "text": "text"
-                    },
-                    {
-                      "delaySeconds": 86400,
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        },
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "overrides": [
-                        {
-                          "channelId": "channelId",
-                          "media": [],
-                          "text": "x"
-                        },
-                        {
-                          "channelId": "channelId",
-                          "media": [],
-                          "text": "x"
-                        }
-                      ],
-                      "text": "text"
-                    }
+                  "shortenLinks": true,
+                  "status": "draft",
+                  "tagIds": [
+                    "tagIds",
+                    "tagIds"
                   ],
-                  "media": [
-                    {
-                      "altText": "altText",
-                      "mediaId": "mediaId"
-                    },
-                    {
-                      "altText": "altText",
-                      "mediaId": "mediaId"
-                    }
-                  ],
-                  "overrides": [
+                  "targets": [
                     {
                       "channelId": "channelId",
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        },
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "text": "x"
+                      "dropped": true,
+                      "editedAt": "editedAt",
+                      "failureReason": "contentRejected",
+                      "id": "id",
+                      "keptPrivate": true,
+                      "options": {
+                        "platform": "youtube",
+                        "categoryId": "categoryId",
+                        "containsSyntheticMedia": true,
+                        "defaultLanguage": "defaultLanguage",
+                        "embeddable": true,
+                        "license": "youtube",
+                        "madeForKids": true,
+                        "notifySubscribers": true,
+                        "privacy": "public",
+                        "publicStatsViewable": true,
+                        "recordingDate": "recordingDate",
+                        "tags": [
+                          "tags",
+                          "tags"
+                        ],
+                        "thumbnailMediaId": "thumbnailMediaId",
+                        "title": "title"
+                      },
+                      "parts": {
+                        "count": 1,
+                        "live": [
+                          {
+                            "index": 1,
+                            "permalink": "permalink",
+                            "platformPostId": "platformPostId",
+                            "publishedAt": "publishedAt"
+                          },
+                          {
+                            "index": 1,
+                            "permalink": "permalink",
+                            "platformPostId": "platformPostId",
+                            "publishedAt": "publishedAt"
+                          }
+                        ]
+                      },
+                      "permalink": "permalink",
+                      "publishedAt": "publishedAt",
+                      "removedAt": "removedAt",
+                      "partsLeftOut": true,
+                      "round": 1,
+                      "status": "pending",
+                      "thumbnailNotSet": true,
+                      "unconfirmedReason": "noResponse"
                     },
                     {
                       "channelId": "channelId",
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        },
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "text": "x"
+                      "dropped": true,
+                      "editedAt": "editedAt",
+                      "failureReason": "contentRejected",
+                      "id": "id",
+                      "keptPrivate": true,
+                      "options": {
+                        "platform": "youtube",
+                        "categoryId": "categoryId",
+                        "containsSyntheticMedia": true,
+                        "defaultLanguage": "defaultLanguage",
+                        "embeddable": true,
+                        "license": "youtube",
+                        "madeForKids": true,
+                        "notifySubscribers": true,
+                        "privacy": "public",
+                        "publicStatsViewable": true,
+                        "recordingDate": "recordingDate",
+                        "tags": [
+                          "tags",
+                          "tags"
+                        ],
+                        "thumbnailMediaId": "thumbnailMediaId",
+                        "title": "title"
+                      },
+                      "parts": {
+                        "count": 1,
+                        "live": [
+                          {
+                            "index": 1,
+                            "permalink": "permalink",
+                            "platformPostId": "platformPostId",
+                            "publishedAt": "publishedAt"
+                          },
+                          {
+                            "index": 1,
+                            "permalink": "permalink",
+                            "platformPostId": "platformPostId",
+                            "publishedAt": "publishedAt"
+                          }
+                        ]
+                      },
+                      "permalink": "permalink",
+                      "publishedAt": "publishedAt",
+                      "removedAt": "removedAt",
+                      "partsLeftOut": true,
+                      "round": 1,
+                      "status": "pending",
+                      "thumbnailNotSet": true,
+                      "unconfirmedReason": "noResponse"
                     }
                   ],
-                  "poll": {
-                    "choices": [
-                      "choices",
-                      "choices"
-                    ],
-                    "durationMinutes": 43829,
-                    "multipleChoice": true
-                  },
-                  "text": "text"
-                },
-                "createdVia": {
-                  "id": "id",
-                  "name": "name",
-                  "via": "web"
-                },
-                "id": "id",
-                "occurrence": 1,
-                "outcome": "published",
-                "queueId": "queueId",
-                "recyclingId": "recyclingId",
-                "schedule": {
-                  "at": "at",
-                  "timeZone": "timeZone"
-                },
-                "scheduledBy": "scheduledBy",
-                "scheduledVia": {
-                  "id": "id",
-                  "name": "name",
-                  "via": "web"
-                },
-                "shortenLinks": true,
-                "status": "draft",
-                "tagIds": [
-                  "tagIds",
-                  "tagIds"
-                ],
-                "targets": [
-                  {
-                    "channelId": "channelId",
-                    "dropped": true,
-                    "editedAt": "editedAt",
-                    "failureReason": "contentRejected",
-                    "id": "id",
-                    "keptPrivate": true,
-                    "options": {
-                      "platform": "youtube",
-                      "categoryId": "categoryId",
-                      "containsSyntheticMedia": true,
-                      "defaultLanguage": "defaultLanguage",
-                      "embeddable": true,
-                      "license": "youtube",
-                      "madeForKids": true,
-                      "notifySubscribers": true,
-                      "privacy": "public",
-                      "publicStatsViewable": true,
-                      "recordingDate": "recordingDate",
-                      "tags": [
-                        "tags",
-                        "tags"
+                  "warnings": [
+                    {
+                      "_tag": "channelsDropped",
+                      "channelIds": [
+                        "channelIds",
+                        "channelIds"
                       ],
-                      "thumbnailMediaId": "thumbnailMediaId",
-                      "title": "title"
+                      "channelSetId": "channelSetId",
+                      "channelSetName": "channelSetName"
                     },
-                    "parts": {
-                      "count": 1,
-                      "live": [
-                        {
-                          "index": 1,
-                          "permalink": "permalink",
-                          "platformPostId": "platformPostId",
-                          "publishedAt": "publishedAt"
-                        },
-                        {
-                          "index": 1,
-                          "permalink": "permalink",
-                          "platformPostId": "platformPostId",
-                          "publishedAt": "publishedAt"
-                        }
-                      ]
-                    },
-                    "permalink": "permalink",
-                    "publishedAt": "publishedAt",
-                    "removedAt": "removedAt",
-                    "partsLeftOut": true,
-                    "round": 1,
-                    "status": "pending",
-                    "thumbnailNotSet": true,
-                    "unconfirmedReason": "noResponse"
-                  },
-                  {
-                    "channelId": "channelId",
-                    "dropped": true,
-                    "editedAt": "editedAt",
-                    "failureReason": "contentRejected",
-                    "id": "id",
-                    "keptPrivate": true,
-                    "options": {
-                      "platform": "youtube",
-                      "categoryId": "categoryId",
-                      "containsSyntheticMedia": true,
-                      "defaultLanguage": "defaultLanguage",
-                      "embeddable": true,
-                      "license": "youtube",
-                      "madeForKids": true,
-                      "notifySubscribers": true,
-                      "privacy": "public",
-                      "publicStatsViewable": true,
-                      "recordingDate": "recordingDate",
-                      "tags": [
-                        "tags",
-                        "tags"
+                    {
+                      "_tag": "channelsDropped",
+                      "channelIds": [
+                        "channelIds",
+                        "channelIds"
                       ],
-                      "thumbnailMediaId": "thumbnailMediaId",
-                      "title": "title"
-                    },
-                    "parts": {
-                      "count": 1,
-                      "live": [
-                        {
-                          "index": 1,
-                          "permalink": "permalink",
-                          "platformPostId": "platformPostId",
-                          "publishedAt": "publishedAt"
-                        },
-                        {
-                          "index": 1,
-                          "permalink": "permalink",
-                          "platformPostId": "platformPostId",
-                          "publishedAt": "publishedAt"
-                        }
-                      ]
-                    },
-                    "permalink": "permalink",
-                    "publishedAt": "publishedAt",
-                    "removedAt": "removedAt",
-                    "partsLeftOut": true,
-                    "round": 1,
-                    "status": "pending",
-                    "thumbnailNotSet": true,
-                    "unconfirmedReason": "noResponse"
-                  }
-                ],
-                "warnings": [
-                  {
-                    "_tag": "channelsDropped",
-                    "channelIds": [
-                      "channelIds",
-                      "channelIds"
+                      "channelSetId": "channelSetId",
+                      "channelSetName": "channelSetName"
+                    }
+                  ]
+                },
+                {
+                  "authorId": "authorId",
+                  "content": {
+                    "followUps": [
+                      {
+                        "delaySeconds": 86400,
+                        "media": [
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          },
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          }
+                        ],
+                        "overrides": [
+                          {
+                            "channelId": "channelId",
+                            "media": [],
+                            "text": "x"
+                          },
+                          {
+                            "channelId": "channelId",
+                            "media": [],
+                            "text": "x"
+                          }
+                        ],
+                        "text": "text"
+                      },
+                      {
+                        "delaySeconds": 86400,
+                        "media": [
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          },
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          }
+                        ],
+                        "overrides": [
+                          {
+                            "channelId": "channelId",
+                            "media": [],
+                            "text": "x"
+                          },
+                          {
+                            "channelId": "channelId",
+                            "media": [],
+                            "text": "x"
+                          }
+                        ],
+                        "text": "text"
+                      }
                     ],
-                    "channelSetId": "channelSetId",
-                    "channelSetName": "channelSetName"
+                    "media": [
+                      {
+                        "altText": "altText",
+                        "mediaId": "mediaId"
+                      },
+                      {
+                        "altText": "altText",
+                        "mediaId": "mediaId"
+                      }
+                    ],
+                    "overrides": [
+                      {
+                        "channelId": "channelId",
+                        "media": [
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          },
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          }
+                        ],
+                        "text": "x"
+                      },
+                      {
+                        "channelId": "channelId",
+                        "media": [
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          },
+                          {
+                            "altText": "altText",
+                            "mediaId": "mediaId"
+                          }
+                        ],
+                        "text": "x"
+                      }
+                    ],
+                    "poll": {
+                      "choices": [
+                        "choices",
+                        "choices"
+                      ],
+                      "durationMinutes": 43829,
+                      "multipleChoice": true
+                    },
+                    "text": "text"
                   },
-                  {
-                    "_tag": "channelsDropped",
-                    "channelIds": [
-                      "channelIds",
-                      "channelIds"
-                    ],
-                    "channelSetId": "channelSetId",
-                    "channelSetName": "channelSetName"
-                  }
-                ]
-              }
-            ]
+                  "createdVia": {
+                    "id": "id",
+                    "name": "name",
+                    "via": "web"
+                  },
+                  "id": "id",
+                  "occurrence": 1,
+                  "outcome": "published",
+                  "queueId": "queueId",
+                  "recyclingId": "recyclingId",
+                  "schedule": {
+                    "at": "at",
+                    "timeZone": "timeZone"
+                  },
+                  "scheduledBy": "scheduledBy",
+                  "scheduledVia": {
+                    "id": "id",
+                    "name": "name",
+                    "via": "web"
+                  },
+                  "shortenLinks": true,
+                  "status": "draft",
+                  "tagIds": [
+                    "tagIds",
+                    "tagIds"
+                  ],
+                  "targets": [
+                    {
+                      "channelId": "channelId",
+                      "dropped": true,
+                      "editedAt": "editedAt",
+                      "failureReason": "contentRejected",
+                      "id": "id",
+                      "keptPrivate": true,
+                      "options": {
+                        "platform": "youtube",
+                        "categoryId": "categoryId",
+                        "containsSyntheticMedia": true,
+                        "defaultLanguage": "defaultLanguage",
+                        "embeddable": true,
+                        "license": "youtube",
+                        "madeForKids": true,
+                        "notifySubscribers": true,
+                        "privacy": "public",
+                        "publicStatsViewable": true,
+                        "recordingDate": "recordingDate",
+                        "tags": [
+                          "tags",
+                          "tags"
+                        ],
+                        "thumbnailMediaId": "thumbnailMediaId",
+                        "title": "title"
+                      },
+                      "parts": {
+                        "count": 1,
+                        "live": [
+                          {
+                            "index": 1,
+                            "permalink": "permalink",
+                            "platformPostId": "platformPostId",
+                            "publishedAt": "publishedAt"
+                          },
+                          {
+                            "index": 1,
+                            "permalink": "permalink",
+                            "platformPostId": "platformPostId",
+                            "publishedAt": "publishedAt"
+                          }
+                        ]
+                      },
+                      "permalink": "permalink",
+                      "publishedAt": "publishedAt",
+                      "removedAt": "removedAt",
+                      "partsLeftOut": true,
+                      "round": 1,
+                      "status": "pending",
+                      "thumbnailNotSet": true,
+                      "unconfirmedReason": "noResponse"
+                    },
+                    {
+                      "channelId": "channelId",
+                      "dropped": true,
+                      "editedAt": "editedAt",
+                      "failureReason": "contentRejected",
+                      "id": "id",
+                      "keptPrivate": true,
+                      "options": {
+                        "platform": "youtube",
+                        "categoryId": "categoryId",
+                        "containsSyntheticMedia": true,
+                        "defaultLanguage": "defaultLanguage",
+                        "embeddable": true,
+                        "license": "youtube",
+                        "madeForKids": true,
+                        "notifySubscribers": true,
+                        "privacy": "public",
+                        "publicStatsViewable": true,
+                        "recordingDate": "recordingDate",
+                        "tags": [
+                          "tags",
+                          "tags"
+                        ],
+                        "thumbnailMediaId": "thumbnailMediaId",
+                        "title": "title"
+                      },
+                      "parts": {
+                        "count": 1,
+                        "live": [
+                          {
+                            "index": 1,
+                            "permalink": "permalink",
+                            "platformPostId": "platformPostId",
+                            "publishedAt": "publishedAt"
+                          },
+                          {
+                            "index": 1,
+                            "permalink": "permalink",
+                            "platformPostId": "platformPostId",
+                            "publishedAt": "publishedAt"
+                          }
+                        ]
+                      },
+                      "permalink": "permalink",
+                      "publishedAt": "publishedAt",
+                      "removedAt": "removedAt",
+                      "partsLeftOut": true,
+                      "round": 1,
+                      "status": "pending",
+                      "thumbnailNotSet": true,
+                      "unconfirmedReason": "noResponse"
+                    }
+                  ],
+                  "warnings": [
+                    {
+                      "_tag": "channelsDropped",
+                      "channelIds": [
+                        "channelIds",
+                        "channelIds"
+                      ],
+                      "channelSetId": "channelSetId",
+                      "channelSetName": "channelSetName"
+                    },
+                    {
+                      "_tag": "channelsDropped",
+                      "channelIds": [
+                        "channelIds",
+                        "channelIds"
+                      ],
+                      "channelSetId": "channelSetId",
+                      "channelSetName": "channelSetName"
+                    }
+                  ]
+                }
+              ],
+              "nextCursor": "nextCursor"
+            }
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/v1/posts")
-                    .WithParam("from", "from")
-                    .WithParam("to", "to")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/posts").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -553,9 +559,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.ListAsync(
-            new ListPostsRequest { From = "from", To = "to" }
-        );
+        var response = await Client.Posts.ListAsync(new ListPostsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -563,113 +567,87 @@ public class ListTest : BaseMockServerTest
     public async Task MockServerTest_2()
     {
         const string mockResponse = """
-            [
-              {
-                "authorId": "authorId",
-                "content": {
-                  "followUps": [
-                    {
-                      "delaySeconds": 1,
-                      "media": [
-                        {
-                          "altText": "altText",
-                          "mediaId": "mediaId"
-                        }
-                      ],
-                      "overrides": [
-                        {
-                          "channelId": "channelId",
-                          "text": "text"
-                        }
-                      ],
-                      "text": "text"
-                    }
+            {
+              "channels": [
+                {
+                  "channelId": "channelId",
+                  "platform": "x"
+                }
+              ],
+              "items": [
+                {
+                  "authorId": "authorId",
+                  "content": {
+                    "media": [
+                      {
+                        "altText": "altText",
+                        "mediaId": "mediaId"
+                      }
+                    ],
+                    "overrides": [
+                      {
+                        "channelId": "channelId",
+                        "text": "text"
+                      }
+                    ],
+                    "text": "text"
+                  },
+                  "createdVia": {
+                    "via": "web"
+                  },
+                  "id": "id",
+                  "occurrence": 1,
+                  "outcome": "published",
+                  "queueId": "queueId",
+                  "recyclingId": "recyclingId",
+                  "schedule": {
+                    "at": "at",
+                    "timeZone": "timeZone"
+                  },
+                  "scheduledBy": "scheduledBy",
+                  "scheduledVia": {
+                    "via": "web"
+                  },
+                  "shortenLinks": true,
+                  "status": "draft",
+                  "tagIds": [
+                    "tagIds"
                   ],
-                  "media": [
-                    {
-                      "altText": "altText",
-                      "mediaId": "mediaId"
-                    }
-                  ],
-                  "overrides": [
+                  "targets": [
                     {
                       "channelId": "channelId",
-                      "text": "text"
+                      "id": "id",
+                      "parts": {
+                        "count": 1,
+                        "live": [
+                          {
+                            "index": 1,
+                            "publishedAt": "publishedAt"
+                          }
+                        ]
+                      },
+                      "round": 1,
+                      "status": "pending"
                     }
                   ],
-                  "poll": {
-                    "choices": [
-                      "choices"
-                    ],
-                    "durationMinutes": 1
-                  },
-                  "text": "text"
-                },
-                "createdVia": {
-                  "id": "id",
-                  "name": "name",
-                  "via": "web"
-                },
-                "id": "id",
-                "occurrence": 1,
-                "outcome": "published",
-                "queueId": "queueId",
-                "recyclingId": "recyclingId",
-                "schedule": {
-                  "at": "at",
-                  "timeZone": "timeZone"
-                },
-                "scheduledBy": "scheduledBy",
-                "scheduledVia": {
-                  "id": "id",
-                  "name": "name",
-                  "via": "web"
-                },
-                "shortenLinks": true,
-                "status": "draft",
-                "tagIds": [
-                  "tagIds"
-                ],
-                "targets": [
-                  {
-                    "channelId": "channelId",
-                    "id": "id",
-                    "parts": {
-                      "count": 1,
-                      "live": [
-                        {
-                          "index": 1,
-                          "publishedAt": "publishedAt"
-                        }
-                      ]
-                    },
-                    "round": 1,
-                    "status": "pending"
-                  }
-                ],
-                "warnings": [
-                  {
-                    "_tag": "channelsDropped",
-                    "channelIds": [
-                      "channelIds"
-                    ],
-                    "channelSetId": "channelSetId",
-                    "channelSetName": "channelSetName"
-                  }
-                ]
-              }
-            ]
+                  "warnings": [
+                    {
+                      "_tag": "channelsDropped",
+                      "channelIds": [
+                        "channelIds"
+                      ],
+                      "channelSetId": "channelSetId",
+                      "channelSetName": "channelSetName"
+                    }
+                  ]
+                }
+              ],
+              "nextCursor": "nextCursor"
+            }
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/v1/posts")
-                    .WithParam("from", "from")
-                    .WithParam("to", "to")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/posts").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -677,9 +655,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.ListAsync(
-            new ListPostsRequest { From = "from", To = "to" }
-        );
+        var response = await Client.Posts.ListAsync(new ListPostsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

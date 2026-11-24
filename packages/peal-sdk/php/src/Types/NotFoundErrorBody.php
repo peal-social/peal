@@ -9,7 +9,7 @@ class NotFoundErrorBody extends JsonSerializableType
 {
     /**
      * @var (
-     *    'ShortLinkNotFound'
+     *    'PartnerNotFound'
      *   |'WorkspaceNotFound'
      *   |'_unknown'
      * ) $type
@@ -18,7 +18,7 @@ class NotFoundErrorBody extends JsonSerializableType
 
     /**
      * @var (
-     *    ShortLinkNotFoundEncoded
+     *    PartnerNotFoundEncoded
      *   |WorkspaceNotFoundEncoded
      *   |mixed
      * ) $value
@@ -28,12 +28,12 @@ class NotFoundErrorBody extends JsonSerializableType
     /**
      * @param array{
      *   type: (
-     *    'ShortLinkNotFound'
+     *    'PartnerNotFound'
      *   |'WorkspaceNotFound'
      *   |'_unknown'
      * ),
      *   value: (
-     *    ShortLinkNotFoundEncoded
+     *    PartnerNotFoundEncoded
      *   |WorkspaceNotFoundEncoded
      *   |mixed
      * ),
@@ -47,14 +47,14 @@ class NotFoundErrorBody extends JsonSerializableType
     }
 
     /**
-     * @param ShortLinkNotFoundEncoded $shortLinkNotFound
+     * @param PartnerNotFoundEncoded $partnerNotFound
      * @return NotFoundErrorBody
      */
-    public static function shortLinkNotFound(ShortLinkNotFoundEncoded $shortLinkNotFound): NotFoundErrorBody
+    public static function partnerNotFound(PartnerNotFoundEncoded $partnerNotFound): NotFoundErrorBody
     {
         return new NotFoundErrorBody([
-            'type' => 'ShortLinkNotFound',
-            'value' => $shortLinkNotFound,
+            'type' => 'PartnerNotFound',
+            'value' => $partnerNotFound,
         ]);
     }
 
@@ -73,19 +73,19 @@ class NotFoundErrorBody extends JsonSerializableType
     /**
      * @return bool
      */
-    public function isShortLinkNotFound(): bool
+    public function isPartnerNotFound(): bool
     {
-        return $this->value instanceof ShortLinkNotFoundEncoded && $this->type === 'ShortLinkNotFound';
+        return $this->value instanceof PartnerNotFoundEncoded && $this->type === 'PartnerNotFound';
     }
 
     /**
-     * @return ShortLinkNotFoundEncoded
+     * @return PartnerNotFoundEncoded
      */
-    public function asShortLinkNotFound(): ShortLinkNotFoundEncoded
+    public function asPartnerNotFound(): PartnerNotFoundEncoded
     {
-        if (!($this->value instanceof ShortLinkNotFoundEncoded && $this->type === 'ShortLinkNotFound')) {
+        if (!($this->value instanceof PartnerNotFoundEncoded && $this->type === 'PartnerNotFound')) {
             throw new Exception(
-                "Expected ShortLinkNotFound; got " . $this->type . " with value of type " . get_debug_type($this->value),
+                "Expected PartnerNotFound; got " . $this->type . " with value of type " . get_debug_type($this->value),
             );
         }
 
@@ -134,8 +134,8 @@ class NotFoundErrorBody extends JsonSerializableType
         $result = array_merge($base, $result);
 
         switch ($this->type) {
-            case 'ShortLinkNotFound':
-                $value = $this->asShortLinkNotFound()->jsonSerialize();
+            case 'PartnerNotFound':
+                $value = $this->asPartnerNotFound()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case 'WorkspaceNotFound':
@@ -178,8 +178,8 @@ class NotFoundErrorBody extends JsonSerializableType
 
         $args['type'] = $type;
         switch ($type) {
-            case 'ShortLinkNotFound':
-                $args['value'] = ShortLinkNotFoundEncoded::jsonDeserialize($data);
+            case 'PartnerNotFound':
+                $args['value'] = PartnerNotFoundEncoded::jsonDeserialize($data);
                 break;
             case 'WorkspaceNotFound':
                 $args['value'] = WorkspaceNotFoundEncoded::jsonDeserialize($data);

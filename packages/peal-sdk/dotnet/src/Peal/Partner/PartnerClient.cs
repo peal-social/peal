@@ -1,5 +1,6 @@
 using global::System.Text.Json;
 using Peal.Core;
+using Peal.Partner_;
 
 namespace Peal;
 
@@ -10,9 +11,15 @@ public partial class PartnerClient : IPartnerClient
     internal PartnerClient(RawClient client)
     {
         _client = client;
+        Account = new AccountClient(_client);
+        CustomerUsage = new CustomerUsageClient(_client);
     }
 
-    private async Task<WithRawResponse<PartnerOverview>> AccountAsyncCore(
+    public IAccountClient Account { get; }
+
+    public ICustomerUsageClient CustomerUsage { get; }
+
+    private async Task<WithRawResponse<PartnerOverview>> GetAsyncCore(
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1215,16 +1222,14 @@ public partial class PartnerClient : IPartnerClient
     /// The partner account the key belongs to, with what it holds: the workspaces it owns and the channels connected across them and its home workspace, now and at the end of each of the last 35 days (UTC). Takes a partner key (`Authorization: Bearer peal_partner_…`): any other credential answers 403.
     /// </summary>
     /// <example><code>
-    /// await client.Partner.AccountAsync();
+    /// await client.Partner.GetAsync();
     /// </code></example>
-    public WithRawResponseTask<PartnerOverview> AccountAsync(
+    public WithRawResponseTask<PartnerOverview> GetAsync(
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask<PartnerOverview>(
-            AccountAsyncCore(options, cancellationToken)
-        );
+        return new WithRawResponseTask<PartnerOverview>(GetAsyncCore(options, cancellationToken));
     }
 
     /// <summary>

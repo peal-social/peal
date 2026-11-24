@@ -313,7 +313,7 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
         assert.deepStrictEqual(yield* rowsIn(workspaceId), nothing);
         assert.isTrue(Option.isNone(yield* store.head(file)));
 
-        const withKey = yield* app.request("/api/v1/api-keys", {
+        const withKey = yield* app.request("/api/v1/workspace/api-keys", {
           headers: {
             authorization: `Bearer ${key}`,
             ...forWorkspace(workspaceId),

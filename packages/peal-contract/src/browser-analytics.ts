@@ -56,7 +56,9 @@ export const BrowserAnalyticsConsentSchema = Schema.Struct({
 export type BrowserAnalyticsConsent = typeof BrowserAnalyticsConsentSchema.Type;
 
 /** The signed-in person's choice about how the web app measures its use. */
-export class BrowserAnalyticsApi extends HttpApiGroup.make("browserAnalytics")
+export class BrowserAnalyticsApi extends HttpApiGroup.make(
+  "me.browserAnalytics"
+)
   .add(
     HttpApiEndpoint.put("setConsent", "/consent", {
       error: [Forbidden],

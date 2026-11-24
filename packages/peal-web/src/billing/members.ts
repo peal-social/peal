@@ -5,7 +5,7 @@ import { PealApi } from "#api/client.ts";
 
 /** The workspace's members, as every member in person may list them. */
 export const membersOf = Atom.family((workspaceId: string) =>
-  PealApi.query("members", "list", {
+  PealApi.query("workspace.members", "list", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: [`members:${workspaceId}`],
   })
@@ -17,14 +17,17 @@ export const membersOf = Atom.family((workspaceId: string) =>
  * names the workspace that bills from it.
  */
 export const standingOf = Atom.family((workspaceId: string) =>
-  PealApi.query("billing", "standing", {
+  PealApi.query("workspace.billing", "standing", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: [`billing:${workspaceId}`],
   })
 );
 
 /** Keeps what a member chose in a workspace over its plan. */
-export const reduceWorkspace = PealApi.mutation("billingActions", "reduce");
+export const reduceWorkspace = PealApi.mutation(
+  "workspace.billingActions",
+  "reduce"
+);
 
 // The roles whose members order a plan (billing:manage).
 const managing: ReadonlySet<string> = new Set(["admin", "owner"]);

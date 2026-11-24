@@ -23,10 +23,10 @@ module Peal
       # @option request_options [Integer] :timeout_in_seconds
       #
       # @example
-      #   client.partner.account
+      #   client.partner.get
       #
       # @return [Peal::Types::PartnerOverview]
-      def account(request_options: {}, **_params)
+      def get(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
@@ -441,6 +441,16 @@ module Peal
           error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
           raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
         end
+      end
+
+      # @return [Peal::Account::Client]
+      def account
+        @account ||= Peal::Partner::Account::Client.new(client: @client)
+      end
+
+      # @return [Peal::CustomerUsage::Client]
+      def customer_usage
+        @customer_usage ||= Peal::Partner::CustomerUsage::Client.new(client: @client)
       end
     end
   end

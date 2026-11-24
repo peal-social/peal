@@ -49,7 +49,7 @@ const partnerAsked = (query: {
 
 export const UsageHandlers = HttpApiBuilder.group(
   Api,
-  "usage",
+  "workspace.usage",
   Effect.fn(function* usageHandlers(handlers) {
     const reports = yield* UsageReports;
 
@@ -102,7 +102,7 @@ export const UsageHandlers = HttpApiBuilder.group(
  */
 export const PartnerUsageHandlers = HttpApiBuilder.group(
   Api,
-  "partnerUsage",
+  "partner.customerUsage",
   Effect.fn(function* partnerUsageHandlers(handlers) {
     const reports = yield* UsageReports;
 

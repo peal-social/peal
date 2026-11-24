@@ -193,7 +193,7 @@ export const list = Command.make(
     });
 
     const page = yield* client.posts
-      .search({
+      .list({
         headers: {},
         query: {
           ...given(input.author, (authorId) => ({ authorId })),

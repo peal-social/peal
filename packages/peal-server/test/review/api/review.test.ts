@@ -16,6 +16,7 @@ import {
 } from "peal-contract";
 import type { Member, Permission, PostContent } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { ReviewLinkHandlers } from "#review/api/review-link.ts";
 import { ReviewHandlers } from "#review/api/review.ts";
@@ -50,12 +51,20 @@ const clientAs = (userId: string, workspaceId: WorkspaceId, role: Role) => {
     workspaceId,
   };
 
-  return HttpApiTest.groups(Api, ["posts", "review", "reviewLink"]).pipe(
+  return HttpApiTest.groups(Api, [
+    "posts",
+    "posts.drafts",
+    "approvals",
+    "reviewLink",
+  ]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        Layer.mergeAll(PostsHandlers, ReviewHandlers, ReviewLinkHandlers).pipe(
-          Layer.provideMerge(securityTest(member))
-        ),
+        Layer.mergeAll(
+          PostsHandlers,
+          PostDraftsHandlers,
+          ReviewHandlers,
+          ReviewLinkHandlers
+        ).pipe(Layer.provideMerge(securityTest(member))),
         HttpServer.layerServices
       )
     )
@@ -104,12 +113,15 @@ describe("the review endpoints", () => {
           const headers = forWorkspace(workspaceId);
 
           // Only those who may change the workspace choose its policy.
-          assert.deepStrictEqual(yield* editor.review.settings({ headers }), {
-            approvalPolicy: "never",
-          });
+          assert.deepStrictEqual(
+            yield* editor.approvals.settings({ headers }),
+            {
+              approvalPolicy: "never",
+            }
+          );
           assert.deepStrictEqual(
             yield* refusalOf(
-              editor.review.updateSettings({
+              editor.approvals.updateSettings({
                 headers,
                 payload: { approvalPolicy: "always" },
               })
@@ -117,12 +129,12 @@ describe("the review endpoints", () => {
             missing("organization:update")
           );
 
-          yield* owner.review.updateSettings({
+          yield* owner.approvals.updateSettings({
             headers,
             payload: { approvalPolicy: "contributorsAndApplications" },
           });
 
-          const draft = yield* contributor.posts.create({
+          const draft = yield* contributor["posts.drafts"].create({
             headers,
             payload: { channelIds: [channelId], content },
           });
@@ -146,7 +158,7 @@ describe("the review endpoints", () => {
             timeZone: "Europe/Paris",
           });
 
-          const [waiting] = yield* editor.review.pending({ headers });
+          const [waiting] = yield* editor.approvals.list({ headers });
 
           assert.deepStrictEqual(
             {
@@ -167,7 +179,7 @@ describe("the review endpoints", () => {
           // lets the client approve.
           assert.deepStrictEqual(
             yield* refusalOf(
-              contributor.review.createLink({
+              contributor.approvals.createLink({
                 headers,
                 params: post,
                 payload: { access: "approve" },
@@ -176,7 +188,7 @@ describe("the review endpoints", () => {
             missing("post:approve")
           );
 
-          const made = yield* editor.review.createLink({
+          const made = yield* editor.approvals.createLink({
             headers,
             params: post,
             payload: { access: "approve", expiresInHours: 48 },
@@ -279,7 +291,7 @@ describe("the review endpoints", () => {
             params: post,
           });
 
-          const thread = yield* contributor.review.thread({
+          const thread = yield* contributor.approvals.get({
             headers: forWorkspace(workspaceId),
             params: post,
           });
@@ -334,14 +346,14 @@ describe("the review endpoints", () => {
           const editor = yield* clientAs(yield* freshId, workspaceId, "editor");
           const channelId = yield* connect(workspaceId, "mastodon");
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: { channelIds: [channelId], content },
           });
 
           const post = { postId: draft.id };
 
-          const view = yield* editor.review.createLink({
+          const view = yield* editor.approvals.createLink({
             headers: forWorkspace(workspaceId),
             params: post,
             payload: { access: "view" },
@@ -365,7 +377,7 @@ describe("the review endpoints", () => {
             new ReviewLinkNotFound()
           );
 
-          const revoked = yield* editor.review.revokeLink({
+          const revoked = yield* editor.approvals.revokeLink({
             headers: forWorkspace(workspaceId),
             params: { linkId: view.link.id },
           });
@@ -376,7 +388,7 @@ describe("the review endpoints", () => {
             new ReviewLinkClosed({ reason: "revoked" })
           );
           assert.deepStrictEqual(
-            (yield* editor.review.links({
+            (yield* editor.approvals.listLinks({
               headers: forWorkspace(workspaceId),
               params: post,
             })).map(({ status }) => status),
@@ -405,20 +417,20 @@ describe("the review endpoints", () => {
 
           const channelId = yield* connect(workspaceId, "mastodon");
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: { channelIds: [channelId], content },
           });
 
           const post = { postId: draft.id };
 
-          const note = yield* editor.review.comment({
+          const note = yield* editor.approvals.comment({
             headers: forWorkspace(workspaceId),
             params: post,
             payload: { text: "A note for the team." },
           });
 
-          const answer = yield* editor.review.comment({
+          const answer = yield* editor.approvals.comment({
             headers: forWorkspace(workspaceId),
             params: post,
             payload: { parentId: note.id, text: "An answer." },
@@ -429,7 +441,7 @@ describe("the review endpoints", () => {
           // An answer is not resolved; its thread is.
           assert.deepStrictEqual(
             yield* Effect.flip(
-              editor.review.resolve({
+              editor.approvals.resolve({
                 headers: forWorkspace(workspaceId),
                 params: { ...post, commentId: answer.id },
                 payload: { resolved: true },
@@ -438,7 +450,7 @@ describe("the review endpoints", () => {
             new CommentInvalid({ problem: "parent" })
           );
 
-          const resolved = yield* editor.review.resolve({
+          const resolved = yield* editor.approvals.resolve({
             headers: forWorkspace(workspaceId),
             params: { ...post, commentId: note.id },
             payload: { resolved: true },
@@ -447,7 +459,7 @@ describe("the review endpoints", () => {
           assert.strictEqual(resolved.resolved?.by.kind, "member");
 
           assert.lengthOf(
-            (yield* viewer.review.thread({
+            (yield* viewer.approvals.get({
               headers: forWorkspace(workspaceId),
               params: post,
             })).comments,
@@ -455,7 +467,7 @@ describe("the review endpoints", () => {
           );
           assert.deepStrictEqual(
             yield* refusalOf(
-              viewer.review.comment({
+              viewer.approvals.comment({
                 headers: forWorkspace(workspaceId),
                 params: post,
                 payload: { text: "May I?" },
@@ -467,7 +479,7 @@ describe("the review endpoints", () => {
           // Another workspace's owner, naming the post in their own.
           assert.deepStrictEqual(
             yield* Effect.flip(
-              outsider.review.thread({
+              outsider.approvals.get({
                 headers: forWorkspace(yield* freshId),
                 params: { ...post },
               })
@@ -476,7 +488,7 @@ describe("the review endpoints", () => {
           );
           assert.deepStrictEqual(
             yield* Effect.flip(
-              editor.review.approve({
+              editor.approvals.approve({
                 headers: forWorkspace(workspaceId),
                 params: post,
                 payload: { approvalId: "none", subjectHash: "none" },

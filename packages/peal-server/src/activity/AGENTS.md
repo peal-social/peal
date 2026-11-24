@@ -40,6 +40,13 @@
   who), the ids the path named (id-shaped values only) and the request id.
   Never a body, a text, a URL's query, an address or a user agent.
   `actor_kind`, `via` and operations are persisted names: add, never rename.
+  The one decided break: on 2026-11-24 the API took its namespaces
+  (`tags.create` became `posts.tags.create`, `posts.send` `posts.create`,
+  the old draft's `posts.create` `posts.drafts.create`), and the new names
+  are written from that release on. Rows written before keep the names
+  they had, here until they expire and in `staff.audit_events` for good:
+  no migration renames them, and the `operation` filter finds one
+  vocabulary at a time.
 - A partner key acting in a workspace its partner owns is an `apiKey`
   actor by its own id, through `partnerKey`, and a connect link that
   connected accounts the key it stands as (`connect-link:<id>`,
@@ -51,7 +58,7 @@
   `updateWorkspace` are kept in that workspace's log by their handlers
   (`recordMade`), as its path is not under the workspace. Its refusals say
   why, like any other: `missingScope` with the partner scope a key lacks.
-- A check leaves no event: `posts.validate`, `lookups.run` and
+- A check leaves no event: `posts.validate`, `channels.lookups.run` and
   `ads.quoteBoost`, which read
   though they are sent as POST (`checksOnly` in
   `#workspace/api/security.ts`), and a request whose handler says first
@@ -66,7 +73,7 @@
   instead) nor for a session staff act in.
 - `ActivityLog.list` needs `activity:read`, which owners alone hold (an
   admin holds everything else but deleting the workspace); `GET
-  …/activity` pages newest first by `cursor`, as the other lists do, and
+  …/workspace/activity` pages newest first by `cursor`, as the other lists do, and
   `peal activity list` and the MCP tool `list_activity` read the same.
 - Events are kept 90 days (`activity/domain/activity-retention.ts`, the
   daily `activity.retention` cron, the `activityLog` period of the
@@ -74,6 +81,6 @@
   together). `ActivityRecords` erases a workspace's, clears a closed
   account's id and application from the events its user made and from
   other events' object ids, and exports a user's own. A successful
-  `workspaces.delete` records nothing: its log went with it.
+  `workspace.delete` records nothing: its log went with it.
 - Tests set the clock before 1970 when Postgres is in the layer (the pool's
   periodic sleeps run for every second the test clock moves forward).

@@ -204,7 +204,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 },
                 path: "/posts/import",
               },
-              { body: undefined, path: "/posts/search?status=scheduled" },
+              { body: undefined, path: "/posts?status=scheduled" },
             ].map(({ body, path }) => ({
               body,
               path: `/api/v1${path}`,
@@ -305,10 +305,13 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.include(scope.message, "workspaces:write");
 
           // A permission inside a workspace its partner owns.
-          const unpermitted = yield* app.request(`/api/v1/connect-links`, {
-            body: { platform: "mastodon" },
-            headers: { ...bearer(reading.key), ...forWorkspace(customer.id) },
-          });
+          const unpermitted = yield* app.request(
+            `/api/v1/channels/connect-links`,
+            {
+              body: { platform: "mastodon" },
+              headers: { ...bearer(reading.key), ...forWorkspace(customer.id) },
+            }
+          );
 
           assert.strictEqual(unpermitted.status, 403);
 
@@ -372,7 +375,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(renamed.status, 200);
 
           // A draft, a check, a dry run and several posts at once.
-          const drafted = yield* app.request(`${base}/posts`, {
+          const drafted = yield* app.request(`${base}/posts/drafts`, {
             body: { channelIds: [], content: content("A synthetic draft.") },
             headers: { ...headers, ...forWorkspace(customer.id) },
           });
@@ -407,7 +410,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             headers: { ...headers, ...forWorkspace(customer.id) },
           });
 
-          const log = yield* app.request(`${base}/activity`, {
+          const log = yield* app.request(`${base}/workspace/activity`, {
             headers: { ...headers, ...forWorkspace(customer.id) },
           });
 
@@ -429,7 +432,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             (
               [
                 ["posts.bulk", 200],
-                ["posts.create", 201],
+                ["posts.drafts.create", 201],
                 // The workspace's own making and renaming, by the partner.
                 ["partner.updateWorkspace", 200],
                 ["partner.createWorkspace", 201],
@@ -446,7 +449,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // A key without the permission does not read the log.
           const plain = yield* keyOf(owner, home);
 
-          const denied = yield* app.request(`${base}/activity`, {
+          const denied = yield* app.request(`${base}/workspace/activity`, {
             headers: { ...bearer(plain.key), ...forWorkspace(customer.id) },
           });
 
@@ -599,7 +602,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Kept in the workspace's log as the tool's call, by the key.
           const log = yield* app.request(
-            `/api/v1/activity?operation=mcp.create_draft`,
+            `/api/v1/workspace/activity?operation=mcp.create_draft`,
             { headers: { ...bearer(key), ...forWorkspace(customer.id) } }
           );
 

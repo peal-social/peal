@@ -53,7 +53,7 @@ const clientWith = (
   member: Member,
   read: Effect.Effect<TikTokPosting, CreatorFailure>
 ) =>
-  HttpApiTest.groups(Api, ["tiktok"]).pipe(
+  HttpApiTest.groups(Api, ["channels.tiktokCreator"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         TikTokHandlers.pipe(
@@ -103,7 +103,7 @@ describe("a TikTok channel's creator endpoint", () => {
     Effect.gen(function* reads() {
       const client = yield* clientWith(contributor, ready);
 
-      const account = yield* client.tiktok.creator({
+      const account = yield* client["channels.tiktokCreator"].get({
         headers: forWorkspace(workspaceId),
         params: { channelId: onTikTok },
       });
@@ -134,7 +134,7 @@ describe("a TikTok channel's creator endpoint", () => {
         Effect.succeed({ _tag: "blocked", reason: "postLimit" })
       );
 
-      const account = yield* client.tiktok.creator({
+      const account = yield* client["channels.tiktokCreator"].get({
         headers: forWorkspace(workspaceId),
         params: { channelId: onTikTok },
       });
@@ -151,8 +151,8 @@ describe("a TikTok channel's creator endpoint", () => {
       const client = yield* clientWith(contributor, ready);
 
       for (const channelId of [onMastodon, "not-a-channel"]) {
-        const refused = yield* client.tiktok
-          .creator({
+        const refused = yield* client["channels.tiktokCreator"]
+          .get({
             headers: forWorkspace(workspaceId),
             params: { channelId },
           })
@@ -177,8 +177,8 @@ describe("a TikTok channel's creator endpoint", () => {
       for (const [failure, answer] of cases) {
         const client = yield* clientWith(contributor, Effect.fail(failure));
 
-        const refused = yield* client.tiktok
-          .creator({
+        const refused = yield* client["channels.tiktokCreator"]
+          .get({
             headers: forWorkspace(workspaceId),
             params: { channelId: onTikTok },
           })
@@ -196,8 +196,8 @@ describe("a TikTok channel's creator endpoint", () => {
         ready
       );
 
-      const refused = yield* client.tiktok
-        .creator({
+      const refused = yield* client["channels.tiktokCreator"]
+        .get({
           headers: forWorkspace(workspaceId),
           params: { channelId: onTikTok },
         })

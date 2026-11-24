@@ -12,14 +12,9 @@ pub mod resources;
 pub mod types;
 
 pub use resources::{
-    ActivityClient, AdsClient, AnalyticsClient, ApiKeysClient, ArticlesClient, AssistantClient,
-    BillingClient, CapabilitiesClient, ChannelDefaultsClient, ChannelSetsClient, ChannelsClient,
-    ConnectLinksClient, CredentialClient, FeedsClient, FollowUpsClient, InboxClient,
-    InboxMessagesClient, InboxReviewsClient, InboxRulesClient, InvitationsClient, LookupsClient,
-    MediaAudioClient, MediaClient, MembersClient, NoticesClient, NotificationPreferencesClient,
-    PartnerAccountClient, PartnerClient, PartnerUsageClient, PealClient, PostsClient, QueuesClient,
-    RecyclingClient, ReviewClient, SessionClient, ShortLinksClient, SignaturesClient,
-    SlideshowsClient, SystemClient, TagsClient, TiktokClient, UsageClient, VideoGenerationsClient,
-    WebhooksClient,
+    AdsClient, AnalyticsClient, ApprovalsClient, ArticlesClient, AssistantClient,
+    AutomationsClient, ChannelsClient, CredentialClient, InboxClient, LinksClient, MeClient,
+    MediaClient, PartnerClient, PealClient, PostsClient, SystemClient, WebhooksClient,
+    WorkspaceClient,
 };
 pub use types::*;

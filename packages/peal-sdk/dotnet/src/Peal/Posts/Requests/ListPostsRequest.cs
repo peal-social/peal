@@ -7,10 +7,49 @@ namespace Peal;
 public record ListPostsRequest
 {
     [JsonIgnore]
-    public required string From { get; set; }
+    public string? AuthorId { get; set; }
 
     [JsonIgnore]
-    public required string To { get; set; }
+    public string? ChannelId { get; set; }
+
+    [JsonIgnore]
+    public PostOriginVia? CreatedVia { get; set; }
+
+    [JsonIgnore]
+    public string? Cursor { get; set; }
+
+    [JsonIgnore]
+    public string? From { get; set; }
+
+    [JsonIgnore]
+    public string? Limit { get; set; }
+
+    [JsonIgnore]
+    public PostOutcome? Outcome { get; set; }
+
+    [JsonIgnore]
+    public Platform? Platform { get; set; }
+
+    [JsonIgnore]
+    public string? QueueId { get; set; }
+
+    [JsonIgnore]
+    public string? RecyclingId { get; set; }
+
+    [JsonIgnore]
+    public ListPostsRequestRemoved? Removed { get; set; }
+
+    [JsonIgnore]
+    public PostSort? Sort { get; set; }
+
+    [JsonIgnore]
+    public PostStatus? Status { get; set; }
+
+    [JsonIgnore]
+    public string? TagId { get; set; }
+
+    [JsonIgnore]
+    public string? To { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

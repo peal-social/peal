@@ -156,7 +156,7 @@ const list = Command.make(
       }),
     };
 
-    const page = yield* client.followUps
+    const page = yield* client["automations.followUps"]
       .list({ headers: {}, query })
       .pipe(Effect.mapError(explain(url)));
 
@@ -204,7 +204,7 @@ const show = Command.make(
   Effect.fn("followUps.show")(function* show(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.followUps
+    const rule = yield* client["automations.followUps"]
       .get({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 
@@ -272,7 +272,7 @@ const start = Command.make(
       }),
     };
 
-    const rule = yield* client.followUps
+    const rule = yield* client["automations.followUps"]
       .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
@@ -335,7 +335,7 @@ const update = Command.make(
 
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.followUps
+    const rule = yield* client["automations.followUps"]
       .update({
         headers: {},
         params: { ruleId: input.rule },
@@ -359,7 +359,7 @@ const pausing = (paused: boolean) =>
   }) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.followUps
+    const rule = yield* client["automations.followUps"]
       .update({
         headers: {},
         params: { ruleId: input.rule },
@@ -396,7 +396,7 @@ const approve = Command.make(
   Effect.fn("followUps.approve")(function* approve(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.followUps
+    const rule = yield* client["automations.followUps"]
       .approve({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 
@@ -414,7 +414,7 @@ const stop = Command.make(
   Effect.fn("followUps.stop")(function* stop(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    yield* client.followUps
+    yield* client["automations.followUps"]
       .delete({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 

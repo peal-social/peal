@@ -36,9 +36,19 @@ require "peal"
 
 client = Peal::Client.new(token: "<token>")
 
-client.api_keys.create(
-  name: "name",
-  permissions: ["activity:read"]
+client.posts.create(
+  channel_ids: ["channelIds"],
+  content: {
+    media: [{
+      altText: "altText",
+      mediaId: "mediaId"
+    }],
+    overrides: [{
+      channelId: "channelId",
+      text: "text"
+    }],
+    text: "text"
+  }
 )
 ```
 
@@ -75,7 +85,7 @@ client = Peal::Client.new(
 )
 
 begin
-    result = client.api_keys.create
+    result = client.posts.create
 rescue Peal::Errors::TimeoutError
     puts "API didn't respond before our timeout elapsed"
 rescue Peal::Errors::ConnectionError => e
@@ -134,7 +144,7 @@ client = Peal::Client.new(
 )
 
 # Override the timeout for an individual request.
-response = client.api_keys.create(
+response = client.posts.create(
     ...,
     request_options: { timeout_in_seconds: 10 }
 )
@@ -147,7 +157,7 @@ If you would like to send additional headers as part of the request, use the `ad
 ```ruby
 require "peal"
 
-response = client.api_keys.create(
+response = client.posts.create(
     ...,
     request_options: {
         additional_headers: {
@@ -164,7 +174,7 @@ If you would like to send additional query parameters as part of the request, us
 ```ruby
 require "peal"
 
-response = client.api_keys.create(
+response = client.posts.create(
     ...,
     request_options: {
         additional_query_parameters: {
@@ -183,7 +193,7 @@ This applies to JSON and form-urlencoded requests; it is not applied to multipar
 ```ruby
 require "peal"
 
-response = client.api_keys.create(
+response = client.posts.create(
     ...,
     request_options: {
         additional_body_parameters: {

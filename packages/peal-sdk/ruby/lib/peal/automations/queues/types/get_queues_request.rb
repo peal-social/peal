@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+module Peal
+  module Automations
+    module Queues
+      module Types
+        class GetQueuesRequest < Internal::Types::Model
+          field :queue_id, -> { String }, optional: false, nullable: false, api_name: "queueId"
+        end
+      end
+    end
+  end
+end

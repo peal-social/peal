@@ -170,7 +170,7 @@ const create = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const made = yield* client.signatures
+    const made = yield* client["posts.signatures"]
       .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
@@ -300,7 +300,7 @@ const update = Command.make(
       }),
     });
 
-    const changed = yield* client.signatures
+    const changed = yield* client["posts.signatures"]
       .update({
         headers: {},
         params: { signatureId: signature.id },
@@ -336,7 +336,7 @@ const remove = Command.make(
     const { client, url, workspace } = session;
     const signature = yield* findSignature(session, given);
 
-    yield* client.signatures
+    yield* client["posts.signatures"]
       .delete({
         headers: {},
         params: { signatureId: signature.id },

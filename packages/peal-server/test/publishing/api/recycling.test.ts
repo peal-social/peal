@@ -16,6 +16,7 @@ import {
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { RecyclingHandlers } from "#publishing/api/recycling/recycling.ts";
 import { newId } from "#shared/application/ids.ts";
@@ -40,12 +41,18 @@ const timeout = 60_000;
 const start = "2026-06-15T07:00:00Z";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["posts", "recycling"]).pipe(
+  HttpApiTest.groups(Api, [
+    "posts",
+    "posts.drafts",
+    "automations.recycling",
+  ]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        Layer.merge(PostsHandlers, RecyclingHandlers).pipe(
-          Layer.provideMerge(securityTest(member))
-        ),
+        Layer.mergeAll(
+          PostsHandlers,
+          PostDraftsHandlers,
+          RecyclingHandlers
+        ).pipe(Layer.provideMerge(securityTest(member))),
         HttpServer.layerServices
       )
     )
@@ -84,7 +91,7 @@ const studio = Effect.gen(function* studio() {
   const headers = forWorkspace(workspaceId);
 
   const sent = (text: string) =>
-    editor.posts.send({
+    editor.posts.create({
       headers,
       payload: {
         channelIds: [mastodon],
@@ -109,7 +116,7 @@ describe("a recycling variant on a source with a channel's own media", () => {
         Effect.gen(function* refusesEmpty() {
           const { editor, mastodon, headers } = yield* studio;
 
-          const source = yield* editor.posts.send({
+          const source = yield* editor.posts.create({
             headers,
             payload: {
               channelIds: [mastodon],
@@ -138,7 +145,7 @@ describe("a recycling variant on a source with a channel's own media", () => {
             query: {},
           });
 
-          const refused = yield* editor.recycling
+          const refused = yield* editor["automations.recycling"]
             .create({
               headers,
               payload: {
@@ -169,7 +176,7 @@ describe("a recycling variant on a source with a channel's own media", () => {
           );
 
           // The second variant alone keeps the channel's picture.
-          const rule = yield* editor.recycling.create({
+          const rule = yield* editor["automations.recycling"].create({
             headers,
             payload: {
               count: 3,
@@ -200,7 +207,7 @@ describe("recycling rules", () => {
           const { editor, headers, sent, viewer } = yield* studio;
           const source = yield* sent("Our opening hours, all summer.");
 
-          const rule = yield* editor.recycling.create({
+          const rule = yield* editor["automations.recycling"].create({
             headers,
             payload: {
               count: 4,
@@ -232,12 +239,15 @@ describe("recycling rules", () => {
             via: "web",
           });
 
-          const read = yield* viewer.recycling.get({
+          const read = yield* viewer["automations.recycling"].get({
             headers,
             params: { ruleId: rule.id },
           });
 
-          const listed = yield* viewer.recycling.list({ headers, query: {} });
+          const listed = yield* viewer["automations.recycling"].list({
+            headers,
+            query: {},
+          });
 
           assert.strictEqual(read.id, rule.id);
           assert.deepStrictEqual(
@@ -259,7 +269,7 @@ describe("recycling rules", () => {
           const source = yield* sent("A post to repeat.");
           const every = { count: 1, unit: "weeks" } as const;
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [mastodon],
@@ -267,11 +277,11 @@ describe("recycling rules", () => {
             },
           });
 
-          const fromDraft = yield* editor.recycling
+          const fromDraft = yield* editor["automations.recycling"]
             .create({ headers, payload: { every, postId: draft.id } })
             .pipe(Effect.flip);
 
-          const tooLong = yield* editor.recycling
+          const tooLong = yield* editor["automations.recycling"]
             .create({
               headers,
               payload: {
@@ -282,23 +292,23 @@ describe("recycling rules", () => {
             })
             .pipe(Effect.flip);
 
-          const tooSoon = yield* editor.recycling
+          const tooSoon = yield* editor["automations.recycling"]
             .create({
               headers,
               payload: { every, postId: source.id, until: "2026-06-16" },
             })
             .pipe(Effect.flip);
 
-          const byViewer = yield* viewer.recycling
+          const byViewer = yield* viewer["automations.recycling"]
             .create({ headers, payload: { every, postId: source.id } })
             .pipe(Effect.flip);
 
-          yield* editor.recycling.create({
+          yield* editor["automations.recycling"].create({
             headers,
             payload: { every, postId: source.id },
           });
 
-          const second = yield* editor.recycling
+          const second = yield* editor["automations.recycling"]
             .create({ headers, payload: { every, postId: source.id } })
             .pipe(Effect.flip);
 
@@ -323,36 +333,36 @@ describe("recycling rules", () => {
           const { editor, headers, sent, viewer } = yield* studio;
           const source = yield* sent("A post to pause.");
 
-          const rule = yield* editor.recycling.create({
+          const rule = yield* editor["automations.recycling"].create({
             headers,
             payload: { every: { count: 1, unit: "days" }, postId: source.id },
           });
 
           const path = { headers, params: { ruleId: rule.id } };
 
-          const paused = yield* editor.recycling.update({
+          const paused = yield* editor["automations.recycling"].update({
             ...path,
             payload: { paused: true, variants: [{ text: "Another way" }] },
           });
 
-          const resumed = yield* editor.recycling.resume({
+          const resumed = yield* editor["automations.recycling"].resume({
             ...path,
             payload: {},
           });
 
-          const byViewer = yield* viewer.recycling
+          const byViewer = yield* viewer["automations.recycling"]
             .delete(path)
             .pipe(Effect.flip);
 
-          yield* editor.recycling.delete(path);
+          yield* editor["automations.recycling"].delete(path);
 
-          const stopped = yield* editor.recycling.get(path);
+          const stopped = yield* editor["automations.recycling"].get(path);
 
-          const changed = yield* editor.recycling
+          const changed = yield* editor["automations.recycling"]
             .update({ ...path, payload: { count: 5 } })
             .pipe(Effect.flip);
 
-          const missing = yield* editor.recycling
+          const missing = yield* editor["automations.recycling"]
             .get({
               headers,
               params: {
@@ -385,17 +395,17 @@ describe("recycling rules", () => {
           const { editor, headers, sent } = yield* studio;
           const source = yield* sent("A post to find.");
 
-          const rule = yield* editor.recycling.create({
+          const rule = yield* editor["automations.recycling"].create({
             headers,
             payload: { every: { count: 1, unit: "weeks" }, postId: source.id },
           });
 
-          const page = yield* editor.posts.search({
+          const page = yield* editor.posts.list({
             headers,
             query: { recyclingId: rule.id },
           });
 
-          const other = yield* editor.posts.search({
+          const other = yield* editor.posts.list({
             headers,
             query: { recyclingId: "not-a-rule" },
           });

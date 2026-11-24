@@ -16,7 +16,7 @@ const list = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const pending = yield* client.invitations
+    const pending = yield* client["workspace.invitations"]
       .list({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
@@ -80,7 +80,7 @@ const send = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const sent = yield* client.invitations
+    const sent = yield* client["workspace.invitations"]
       .create({
         headers: {},
         payload: { email, role },
@@ -123,7 +123,7 @@ const revoke = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    yield* client.invitations
+    yield* client["workspace.invitations"]
       .revoke({ headers: {}, params: { invitationId } })
       .pipe(Effect.mapError(explain(url)));
 

@@ -94,6 +94,42 @@ func (b *BulkPosts) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	calendarPostsRequestFieldFrom = big.NewInt(1 << 0)
+	calendarPostsRequestFieldTo   = big.NewInt(1 << 1)
+)
+
+type CalendarPostsRequest struct {
+	From string `json:"-" url:"from"`
+	To   string `json:"-" url:"to"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (c *CalendarPostsRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetFrom sets the From field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CalendarPostsRequest) SetFrom(from string) {
+	c.From = from
+	c.require(calendarPostsRequestFieldFrom)
+}
+
+// SetTo sets the To field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CalendarPostsRequest) SetTo(to string) {
+	c.To = to
+	c.require(calendarPostsRequestFieldTo)
+}
+
+var (
 	cancelPostsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
@@ -198,66 +234,150 @@ func (c *ConfirmPostsRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	discardPostsRequestFieldPostID = big.NewInt(1 << 0)
+	newPostFieldIdempotencyKey    = big.NewInt(1 << 0)
+	newPostFieldWait              = big.NewInt(1 << 1)
+	newPostFieldAllowDuplicate    = big.NewInt(1 << 2)
+	newPostFieldChannelIDs        = big.NewInt(1 << 3)
+	newPostFieldChannelSets       = big.NewInt(1 << 4)
+	newPostFieldContent           = big.NewInt(1 << 5)
+	newPostFieldDefaultSignatures = big.NewInt(1 << 6)
+	newPostFieldOptions           = big.NewInt(1 << 7)
+	newPostFieldShortenLinks      = big.NewInt(1 << 8)
+	newPostFieldSignatureID       = big.NewInt(1 << 9)
+	newPostFieldTagIDs            = big.NewInt(1 << 10)
+	newPostFieldWhen              = big.NewInt(1 << 11)
 )
 
-type DiscardPostsRequest struct {
-	PostID string `json:"-" url:"-"`
+type NewPost struct {
+	IdempotencyKey    *string           `json:"-" url:"-"`
+	Wait              *string           `json:"-" url:"wait,omitempty"`
+	AllowDuplicate    *bool             `json:"allowDuplicate,omitempty" url:"-"`
+	ChannelIDs        []string          `json:"channelIds" url:"-"`
+	ChannelSets       []string          `json:"channelSets,omitempty" url:"-"`
+	Content           *PostContent      `json:"content" url:"-"`
+	DefaultSignatures *bool             `json:"defaultSignatures,omitempty" url:"-"`
+	Options           []*ChannelOptions `json:"options,omitempty" url:"-"`
+	ShortenLinks      *bool             `json:"shortenLinks,omitempty" url:"-"`
+	SignatureID       *string           `json:"signatureId,omitempty" url:"-"`
+	TagIDs            []string          `json:"tagIds,omitempty" url:"-"`
+	When              *PostTiming       `json:"when" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
 }
 
-func (d *DiscardPostsRequest) require(field *big.Int) {
+func (n *NewPost) require(field *big.Int) {
 	next := new(big.Int)
-	if d.explicitFields != nil {
-		next.Set(d.explicitFields)
+	if n.explicitFields != nil {
+		next.Set(n.explicitFields)
 	}
 	next.Or(next, field)
-	d.explicitFields = next
+	n.explicitFields = next
 }
 
-// SetPostID sets the PostID field and marks it as non-optional;
+// SetIdempotencyKey sets the IdempotencyKey field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DiscardPostsRequest) SetPostID(postID string) {
-	d.PostID = postID
-	d.require(discardPostsRequestFieldPostID)
+func (n *NewPost) SetIdempotencyKey(idempotencyKey *string) {
+	n.IdempotencyKey = idempotencyKey
+	n.require(newPostFieldIdempotencyKey)
 }
 
-var (
-	draftsPostsRequestFieldCursor = big.NewInt(1 << 0)
-	draftsPostsRequestFieldLimit  = big.NewInt(1 << 1)
-)
-
-type DraftsPostsRequest struct {
-	Cursor *string `json:"-" url:"cursor,omitempty"`
-	Limit  *string `json:"-" url:"limit,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
+// SetWait sets the Wait field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetWait(wait *string) {
+	n.Wait = wait
+	n.require(newPostFieldWait)
 }
 
-func (d *DraftsPostsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if d.explicitFields != nil {
-		next.Set(d.explicitFields)
+// SetAllowDuplicate sets the AllowDuplicate field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetAllowDuplicate(allowDuplicate *bool) {
+	n.AllowDuplicate = allowDuplicate
+	n.require(newPostFieldAllowDuplicate)
+}
+
+// SetChannelIDs sets the ChannelIDs field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetChannelIDs(channelIDs []string) {
+	n.ChannelIDs = channelIDs
+	n.require(newPostFieldChannelIDs)
+}
+
+// SetChannelSets sets the ChannelSets field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetChannelSets(channelSets []string) {
+	n.ChannelSets = channelSets
+	n.require(newPostFieldChannelSets)
+}
+
+// SetContent sets the Content field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetContent(content *PostContent) {
+	n.Content = content
+	n.require(newPostFieldContent)
+}
+
+// SetDefaultSignatures sets the DefaultSignatures field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetDefaultSignatures(defaultSignatures *bool) {
+	n.DefaultSignatures = defaultSignatures
+	n.require(newPostFieldDefaultSignatures)
+}
+
+// SetOptions sets the Options field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetOptions(options []*ChannelOptions) {
+	n.Options = options
+	n.require(newPostFieldOptions)
+}
+
+// SetShortenLinks sets the ShortenLinks field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetShortenLinks(shortenLinks *bool) {
+	n.ShortenLinks = shortenLinks
+	n.require(newPostFieldShortenLinks)
+}
+
+// SetSignatureID sets the SignatureID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetSignatureID(signatureID *string) {
+	n.SignatureID = signatureID
+	n.require(newPostFieldSignatureID)
+}
+
+// SetTagIDs sets the TagIDs field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetTagIDs(tagIDs []string) {
+	n.TagIDs = tagIDs
+	n.require(newPostFieldTagIDs)
+}
+
+// SetWhen sets the When field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetWhen(when *PostTiming) {
+	n.When = when
+	n.require(newPostFieldWhen)
+}
+
+func (n *NewPost) UnmarshalJSON(data []byte) error {
+	type unmarshaler NewPost
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
 	}
-	next.Or(next, field)
-	d.explicitFields = next
+	*n = NewPost(body)
+	return nil
 }
 
-// SetCursor sets the Cursor field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DraftsPostsRequest) SetCursor(cursor *string) {
-	d.Cursor = cursor
-	d.require(draftsPostsRequestFieldCursor)
-}
-
-// SetLimit sets the Limit field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DraftsPostsRequest) SetLimit(limit *string) {
-	d.Limit = limit
-	d.require(draftsPostsRequestFieldLimit)
+func (n *NewPost) MarshalJSON() ([]byte, error) {
+	type embed NewPost
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*n),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, n.explicitFields)
+	return json.Marshal(explicitMarshaler)
 }
 
 var (
@@ -567,13 +687,39 @@ func (l *LeaveOutRestPostsRequest) SetTargetID(targetID string) {
 }
 
 var (
-	listPostsRequestFieldFrom = big.NewInt(1 << 0)
-	listPostsRequestFieldTo   = big.NewInt(1 << 1)
+	listPostsRequestFieldAuthorID    = big.NewInt(1 << 0)
+	listPostsRequestFieldChannelID   = big.NewInt(1 << 1)
+	listPostsRequestFieldCreatedVia  = big.NewInt(1 << 2)
+	listPostsRequestFieldCursor      = big.NewInt(1 << 3)
+	listPostsRequestFieldFrom        = big.NewInt(1 << 4)
+	listPostsRequestFieldLimit       = big.NewInt(1 << 5)
+	listPostsRequestFieldOutcome     = big.NewInt(1 << 6)
+	listPostsRequestFieldPlatform    = big.NewInt(1 << 7)
+	listPostsRequestFieldQueueID     = big.NewInt(1 << 8)
+	listPostsRequestFieldRecyclingID = big.NewInt(1 << 9)
+	listPostsRequestFieldRemoved     = big.NewInt(1 << 10)
+	listPostsRequestFieldSort        = big.NewInt(1 << 11)
+	listPostsRequestFieldStatus      = big.NewInt(1 << 12)
+	listPostsRequestFieldTagID       = big.NewInt(1 << 13)
+	listPostsRequestFieldTo          = big.NewInt(1 << 14)
 )
 
 type ListPostsRequest struct {
-	From string `json:"-" url:"from"`
-	To   string `json:"-" url:"to"`
+	AuthorID    *string                  `json:"-" url:"authorId,omitempty"`
+	ChannelID   *string                  `json:"-" url:"channelId,omitempty"`
+	CreatedVia  *PostOriginVia           `json:"-" url:"createdVia,omitempty"`
+	Cursor      *string                  `json:"-" url:"cursor,omitempty"`
+	From        *string                  `json:"-" url:"from,omitempty"`
+	Limit       *string                  `json:"-" url:"limit,omitempty"`
+	Outcome     *PostOutcome             `json:"-" url:"outcome,omitempty"`
+	Platform    *Platform                `json:"-" url:"platform,omitempty"`
+	QueueID     *string                  `json:"-" url:"queueId,omitempty"`
+	RecyclingID *string                  `json:"-" url:"recyclingId,omitempty"`
+	Removed     *ListPostsRequestRemoved `json:"-" url:"removed,omitempty"`
+	Sort        *PostSort                `json:"-" url:"sort,omitempty"`
+	Status      *PostStatus              `json:"-" url:"status,omitempty"`
+	TagID       *string                  `json:"-" url:"tagId,omitempty"`
+	To          *string                  `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -588,16 +734,107 @@ func (l *ListPostsRequest) require(field *big.Int) {
 	l.explicitFields = next
 }
 
+// SetAuthorID sets the AuthorID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetAuthorID(authorID *string) {
+	l.AuthorID = authorID
+	l.require(listPostsRequestFieldAuthorID)
+}
+
+// SetChannelID sets the ChannelID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetChannelID(channelID *string) {
+	l.ChannelID = channelID
+	l.require(listPostsRequestFieldChannelID)
+}
+
+// SetCreatedVia sets the CreatedVia field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetCreatedVia(createdVia *PostOriginVia) {
+	l.CreatedVia = createdVia
+	l.require(listPostsRequestFieldCreatedVia)
+}
+
+// SetCursor sets the Cursor field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetCursor(cursor *string) {
+	l.Cursor = cursor
+	l.require(listPostsRequestFieldCursor)
+}
+
 // SetFrom sets the From field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListPostsRequest) SetFrom(from string) {
+func (l *ListPostsRequest) SetFrom(from *string) {
 	l.From = from
 	l.require(listPostsRequestFieldFrom)
 }
 
+// SetLimit sets the Limit field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetLimit(limit *string) {
+	l.Limit = limit
+	l.require(listPostsRequestFieldLimit)
+}
+
+// SetOutcome sets the Outcome field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetOutcome(outcome *PostOutcome) {
+	l.Outcome = outcome
+	l.require(listPostsRequestFieldOutcome)
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetPlatform(platform *Platform) {
+	l.Platform = platform
+	l.require(listPostsRequestFieldPlatform)
+}
+
+// SetQueueID sets the QueueID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetQueueID(queueID *string) {
+	l.QueueID = queueID
+	l.require(listPostsRequestFieldQueueID)
+}
+
+// SetRecyclingID sets the RecyclingID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetRecyclingID(recyclingID *string) {
+	l.RecyclingID = recyclingID
+	l.require(listPostsRequestFieldRecyclingID)
+}
+
+// SetRemoved sets the Removed field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetRemoved(removed *ListPostsRequestRemoved) {
+	l.Removed = removed
+	l.require(listPostsRequestFieldRemoved)
+}
+
+// SetSort sets the Sort field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetSort(sort *PostSort) {
+	l.Sort = sort
+	l.require(listPostsRequestFieldSort)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetStatus(status *PostStatus) {
+	l.Status = status
+	l.require(listPostsRequestFieldStatus)
+}
+
+// SetTagID sets the TagID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetTagID(tagID *string) {
+	l.TagID = tagID
+	l.require(listPostsRequestFieldTagID)
+}
+
 // SetTo sets the To field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListPostsRequest) SetTo(to string) {
+func (l *ListPostsRequest) SetTo(to *string) {
 	l.To = to
 	l.require(listPostsRequestFieldTo)
 }
@@ -827,306 +1064,6 @@ func (s *SchedulePost) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	searchPostsRequestFieldAuthorID    = big.NewInt(1 << 0)
-	searchPostsRequestFieldChannelID   = big.NewInt(1 << 1)
-	searchPostsRequestFieldCreatedVia  = big.NewInt(1 << 2)
-	searchPostsRequestFieldCursor      = big.NewInt(1 << 3)
-	searchPostsRequestFieldFrom        = big.NewInt(1 << 4)
-	searchPostsRequestFieldLimit       = big.NewInt(1 << 5)
-	searchPostsRequestFieldOutcome     = big.NewInt(1 << 6)
-	searchPostsRequestFieldPlatform    = big.NewInt(1 << 7)
-	searchPostsRequestFieldQueueID     = big.NewInt(1 << 8)
-	searchPostsRequestFieldRecyclingID = big.NewInt(1 << 9)
-	searchPostsRequestFieldRemoved     = big.NewInt(1 << 10)
-	searchPostsRequestFieldSort        = big.NewInt(1 << 11)
-	searchPostsRequestFieldStatus      = big.NewInt(1 << 12)
-	searchPostsRequestFieldTagID       = big.NewInt(1 << 13)
-	searchPostsRequestFieldTo          = big.NewInt(1 << 14)
-)
-
-type SearchPostsRequest struct {
-	AuthorID    *string                    `json:"-" url:"authorId,omitempty"`
-	ChannelID   *string                    `json:"-" url:"channelId,omitempty"`
-	CreatedVia  *PostOriginVia             `json:"-" url:"createdVia,omitempty"`
-	Cursor      *string                    `json:"-" url:"cursor,omitempty"`
-	From        *string                    `json:"-" url:"from,omitempty"`
-	Limit       *string                    `json:"-" url:"limit,omitempty"`
-	Outcome     *PostOutcome               `json:"-" url:"outcome,omitempty"`
-	Platform    *Platform                  `json:"-" url:"platform,omitempty"`
-	QueueID     *string                    `json:"-" url:"queueId,omitempty"`
-	RecyclingID *string                    `json:"-" url:"recyclingId,omitempty"`
-	Removed     *SearchPostsRequestRemoved `json:"-" url:"removed,omitempty"`
-	Sort        *PostSort                  `json:"-" url:"sort,omitempty"`
-	Status      *PostStatus                `json:"-" url:"status,omitempty"`
-	TagID       *string                    `json:"-" url:"tagId,omitempty"`
-	To          *string                    `json:"-" url:"to,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (s *SearchPostsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if s.explicitFields != nil {
-		next.Set(s.explicitFields)
-	}
-	next.Or(next, field)
-	s.explicitFields = next
-}
-
-// SetAuthorID sets the AuthorID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetAuthorID(authorID *string) {
-	s.AuthorID = authorID
-	s.require(searchPostsRequestFieldAuthorID)
-}
-
-// SetChannelID sets the ChannelID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetChannelID(channelID *string) {
-	s.ChannelID = channelID
-	s.require(searchPostsRequestFieldChannelID)
-}
-
-// SetCreatedVia sets the CreatedVia field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetCreatedVia(createdVia *PostOriginVia) {
-	s.CreatedVia = createdVia
-	s.require(searchPostsRequestFieldCreatedVia)
-}
-
-// SetCursor sets the Cursor field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetCursor(cursor *string) {
-	s.Cursor = cursor
-	s.require(searchPostsRequestFieldCursor)
-}
-
-// SetFrom sets the From field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetFrom(from *string) {
-	s.From = from
-	s.require(searchPostsRequestFieldFrom)
-}
-
-// SetLimit sets the Limit field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetLimit(limit *string) {
-	s.Limit = limit
-	s.require(searchPostsRequestFieldLimit)
-}
-
-// SetOutcome sets the Outcome field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetOutcome(outcome *PostOutcome) {
-	s.Outcome = outcome
-	s.require(searchPostsRequestFieldOutcome)
-}
-
-// SetPlatform sets the Platform field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetPlatform(platform *Platform) {
-	s.Platform = platform
-	s.require(searchPostsRequestFieldPlatform)
-}
-
-// SetQueueID sets the QueueID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetQueueID(queueID *string) {
-	s.QueueID = queueID
-	s.require(searchPostsRequestFieldQueueID)
-}
-
-// SetRecyclingID sets the RecyclingID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetRecyclingID(recyclingID *string) {
-	s.RecyclingID = recyclingID
-	s.require(searchPostsRequestFieldRecyclingID)
-}
-
-// SetRemoved sets the Removed field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetRemoved(removed *SearchPostsRequestRemoved) {
-	s.Removed = removed
-	s.require(searchPostsRequestFieldRemoved)
-}
-
-// SetSort sets the Sort field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetSort(sort *PostSort) {
-	s.Sort = sort
-	s.require(searchPostsRequestFieldSort)
-}
-
-// SetStatus sets the Status field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetStatus(status *PostStatus) {
-	s.Status = status
-	s.require(searchPostsRequestFieldStatus)
-}
-
-// SetTagID sets the TagID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetTagID(tagID *string) {
-	s.TagID = tagID
-	s.require(searchPostsRequestFieldTagID)
-}
-
-// SetTo sets the To field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchPostsRequest) SetTo(to *string) {
-	s.To = to
-	s.require(searchPostsRequestFieldTo)
-}
-
-var (
-	newPostFieldIdempotencyKey    = big.NewInt(1 << 0)
-	newPostFieldWait              = big.NewInt(1 << 1)
-	newPostFieldAllowDuplicate    = big.NewInt(1 << 2)
-	newPostFieldChannelIDs        = big.NewInt(1 << 3)
-	newPostFieldChannelSets       = big.NewInt(1 << 4)
-	newPostFieldContent           = big.NewInt(1 << 5)
-	newPostFieldDefaultSignatures = big.NewInt(1 << 6)
-	newPostFieldOptions           = big.NewInt(1 << 7)
-	newPostFieldShortenLinks      = big.NewInt(1 << 8)
-	newPostFieldSignatureID       = big.NewInt(1 << 9)
-	newPostFieldTagIDs            = big.NewInt(1 << 10)
-	newPostFieldWhen              = big.NewInt(1 << 11)
-)
-
-type NewPost struct {
-	IdempotencyKey    *string           `json:"-" url:"-"`
-	Wait              *string           `json:"-" url:"wait,omitempty"`
-	AllowDuplicate    *bool             `json:"allowDuplicate,omitempty" url:"-"`
-	ChannelIDs        []string          `json:"channelIds" url:"-"`
-	ChannelSets       []string          `json:"channelSets,omitempty" url:"-"`
-	Content           *PostContent      `json:"content" url:"-"`
-	DefaultSignatures *bool             `json:"defaultSignatures,omitempty" url:"-"`
-	Options           []*ChannelOptions `json:"options,omitempty" url:"-"`
-	ShortenLinks      *bool             `json:"shortenLinks,omitempty" url:"-"`
-	SignatureID       *string           `json:"signatureId,omitempty" url:"-"`
-	TagIDs            []string          `json:"tagIds,omitempty" url:"-"`
-	When              *PostTiming       `json:"when" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (n *NewPost) require(field *big.Int) {
-	next := new(big.Int)
-	if n.explicitFields != nil {
-		next.Set(n.explicitFields)
-	}
-	next.Or(next, field)
-	n.explicitFields = next
-}
-
-// SetIdempotencyKey sets the IdempotencyKey field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetIdempotencyKey(idempotencyKey *string) {
-	n.IdempotencyKey = idempotencyKey
-	n.require(newPostFieldIdempotencyKey)
-}
-
-// SetWait sets the Wait field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetWait(wait *string) {
-	n.Wait = wait
-	n.require(newPostFieldWait)
-}
-
-// SetAllowDuplicate sets the AllowDuplicate field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetAllowDuplicate(allowDuplicate *bool) {
-	n.AllowDuplicate = allowDuplicate
-	n.require(newPostFieldAllowDuplicate)
-}
-
-// SetChannelIDs sets the ChannelIDs field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetChannelIDs(channelIDs []string) {
-	n.ChannelIDs = channelIDs
-	n.require(newPostFieldChannelIDs)
-}
-
-// SetChannelSets sets the ChannelSets field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetChannelSets(channelSets []string) {
-	n.ChannelSets = channelSets
-	n.require(newPostFieldChannelSets)
-}
-
-// SetContent sets the Content field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetContent(content *PostContent) {
-	n.Content = content
-	n.require(newPostFieldContent)
-}
-
-// SetDefaultSignatures sets the DefaultSignatures field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetDefaultSignatures(defaultSignatures *bool) {
-	n.DefaultSignatures = defaultSignatures
-	n.require(newPostFieldDefaultSignatures)
-}
-
-// SetOptions sets the Options field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetOptions(options []*ChannelOptions) {
-	n.Options = options
-	n.require(newPostFieldOptions)
-}
-
-// SetShortenLinks sets the ShortenLinks field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetShortenLinks(shortenLinks *bool) {
-	n.ShortenLinks = shortenLinks
-	n.require(newPostFieldShortenLinks)
-}
-
-// SetSignatureID sets the SignatureID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetSignatureID(signatureID *string) {
-	n.SignatureID = signatureID
-	n.require(newPostFieldSignatureID)
-}
-
-// SetTagIDs sets the TagIDs field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetTagIDs(tagIDs []string) {
-	n.TagIDs = tagIDs
-	n.require(newPostFieldTagIDs)
-}
-
-// SetWhen sets the When field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPost) SetWhen(when *PostTiming) {
-	n.When = when
-	n.require(newPostFieldWhen)
-}
-
-func (n *NewPost) UnmarshalJSON(data []byte) error {
-	type unmarshaler NewPost
-	var body unmarshaler
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	*n = NewPost(body)
-	return nil
-}
-
-func (n *NewPost) MarshalJSON() ([]byte, error) {
-	type embed NewPost
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*n),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, n.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-var (
 	postTagsFieldPostID = big.NewInt(1 << 0)
 	postTagsFieldTagIDs = big.NewInt(1 << 1)
 )
@@ -1181,40 +1118,6 @@ func (p *PostTags) MarshalJSON() ([]byte, error) {
 	}
 	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
 	return json.Marshal(explicitMarshaler)
-}
-
-type AllowanceReason string
-
-const (
-	AllowanceReasonPaymentMethodRequired AllowanceReason = "paymentMethodRequired"
-	AllowanceReasonCeilingReached        AllowanceReason = "ceilingReached"
-	AllowanceReasonNotEnabled            AllowanceReason = "notEnabled"
-	AllowanceReasonPlanAllowance         AllowanceReason = "planAllowance"
-	AllowanceReasonPaymentFailed         AllowanceReason = "paymentFailed"
-	AllowanceReasonSpendCapReached       AllowanceReason = "spendCapReached"
-)
-
-func NewAllowanceReasonFromString(s string) (AllowanceReason, error) {
-	switch s {
-	case "paymentMethodRequired":
-		return AllowanceReasonPaymentMethodRequired, nil
-	case "ceilingReached":
-		return AllowanceReasonCeilingReached, nil
-	case "notEnabled":
-		return AllowanceReasonNotEnabled, nil
-	case "planAllowance":
-		return AllowanceReasonPlanAllowance, nil
-	case "paymentFailed":
-		return AllowanceReasonPaymentFailed, nil
-	case "spendCapReached":
-		return AllowanceReasonSpendCapReached, nil
-	}
-	var t AllowanceReason
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (a AllowanceReason) Ptr() *AllowanceReason {
-	return &a
 }
 
 type AttemptResult string
@@ -8999,120 +8902,6 @@ func (c *ContentViolationVideoTooShort) String() string {
 }
 
 var (
-	draftPageFieldItems      = big.NewInt(1 << 0)
-	draftPageFieldNextCursor = big.NewInt(1 << 1)
-)
-
-// draftPageNullableFields maps the wire names of DraftPage's nullable fields (required or optional) to their field bits.
-var draftPageNullableFields = map[string]*big.Int{
-	"nextCursor": draftPageFieldNextCursor,
-}
-
-type DraftPage struct {
-	Items      []*Post `json:"items" url:"items"`
-	NextCursor *string `json:"nextCursor,omitempty" url:"nextCursor,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DraftPage) GetItems() []*Post {
-	if d == nil {
-		return nil
-	}
-	return d.Items
-}
-
-func (d *DraftPage) GetNextCursor() *string {
-	if d == nil {
-		return nil
-	}
-	return d.NextCursor
-}
-
-func (d *DraftPage) GetExtraProperties() map[string]interface{} {
-	if d == nil {
-		return nil
-	}
-	return d.extraProperties
-}
-
-func (d *DraftPage) require(field *big.Int) {
-	next := new(big.Int)
-	if d.explicitFields != nil {
-		next.Set(d.explicitFields)
-	}
-	next.Or(next, field)
-	d.explicitFields = next
-}
-
-// SetItems sets the Items field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DraftPage) SetItems(items []*Post) {
-	d.Items = items
-	d.require(draftPageFieldItems)
-}
-
-// SetNextCursor sets the NextCursor field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DraftPage) SetNextCursor(nextCursor *string) {
-	d.NextCursor = nextCursor
-	d.require(draftPageFieldNextCursor)
-}
-
-func (d *DraftPage) UnmarshalJSON(data []byte) error {
-	type unmarshaler DraftPage
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DraftPage(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, draftPageNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		d.require(presentFields)
-	}
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DraftPage) MarshalJSON() ([]byte, error) {
-	type embed DraftPage
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*d),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (d *DraftPage) String() string {
-	if d == nil {
-		return "<nil>"
-	}
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-var (
 	duplicateOnChannelFieldChannelID = big.NewInt(1 << 0)
 	duplicateOnChannelFieldPostID    = big.NewInt(1 << 1)
 )
@@ -10967,153 +10756,6 @@ func (l *LimitedCount) String() string {
 }
 
 var (
-	livePartFieldIndex          = big.NewInt(1 << 0)
-	livePartFieldPermalink      = big.NewInt(1 << 1)
-	livePartFieldPlatformPostID = big.NewInt(1 << 2)
-	livePartFieldPublishedAt    = big.NewInt(1 << 3)
-)
-
-// livePartNullableFields maps the wire names of LivePart's nullable fields (required or optional) to their field bits.
-var livePartNullableFields = map[string]*big.Int{
-	"permalink":      livePartFieldPermalink,
-	"platformPostId": livePartFieldPlatformPostID,
-}
-
-type LivePart struct {
-	Index          int     `json:"index" url:"index"`
-	Permalink      *string `json:"permalink,omitempty" url:"permalink,omitempty"`
-	PlatformPostID *string `json:"platformPostId,omitempty" url:"platformPostId,omitempty"`
-	PublishedAt    string  `json:"publishedAt" url:"publishedAt"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (l *LivePart) GetIndex() int {
-	if l == nil {
-		return 0
-	}
-	return l.Index
-}
-
-func (l *LivePart) GetPermalink() *string {
-	if l == nil {
-		return nil
-	}
-	return l.Permalink
-}
-
-func (l *LivePart) GetPlatformPostID() *string {
-	if l == nil {
-		return nil
-	}
-	return l.PlatformPostID
-}
-
-func (l *LivePart) GetPublishedAt() string {
-	if l == nil {
-		return ""
-	}
-	return l.PublishedAt
-}
-
-func (l *LivePart) GetExtraProperties() map[string]interface{} {
-	if l == nil {
-		return nil
-	}
-	return l.extraProperties
-}
-
-func (l *LivePart) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetIndex sets the Index field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LivePart) SetIndex(index int) {
-	l.Index = index
-	l.require(livePartFieldIndex)
-}
-
-// SetPermalink sets the Permalink field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LivePart) SetPermalink(permalink *string) {
-	l.Permalink = permalink
-	l.require(livePartFieldPermalink)
-}
-
-// SetPlatformPostID sets the PlatformPostID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LivePart) SetPlatformPostID(platformPostID *string) {
-	l.PlatformPostID = platformPostID
-	l.require(livePartFieldPlatformPostID)
-}
-
-// SetPublishedAt sets the PublishedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LivePart) SetPublishedAt(publishedAt string) {
-	l.PublishedAt = publishedAt
-	l.require(livePartFieldPublishedAt)
-}
-
-func (l *LivePart) UnmarshalJSON(data []byte) error {
-	type unmarshaler LivePart
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*l = LivePart(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *l)
-	if err != nil {
-		return err
-	}
-	l.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, livePartNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		l.require(presentFields)
-	}
-	l.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (l *LivePart) MarshalJSON() ([]byte, error) {
-	type embed LivePart
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*l),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, l.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (l *LivePart) String() string {
-	if l == nil {
-		return "<nil>"
-	}
-	if len(l.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(l.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(l); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", l)
-}
-
-var (
 	livePostChangeFieldAlreadyGone = big.NewInt(1 << 0)
 	livePostChangeFieldCode        = big.NewInt(1 << 1)
 	livePostChangeFieldFinishedAt  = big.NewInt(1 << 2)
@@ -12287,352 +11929,6 @@ func (p *PlanShortfall) String() string {
 }
 
 var (
-	postFieldAuthorID     = big.NewInt(1 << 0)
-	postFieldContent      = big.NewInt(1 << 1)
-	postFieldCreatedVia   = big.NewInt(1 << 2)
-	postFieldID           = big.NewInt(1 << 3)
-	postFieldOccurrence   = big.NewInt(1 << 4)
-	postFieldOutcome      = big.NewInt(1 << 5)
-	postFieldQueueID      = big.NewInt(1 << 6)
-	postFieldRecyclingID  = big.NewInt(1 << 7)
-	postFieldSchedule     = big.NewInt(1 << 8)
-	postFieldScheduledBy  = big.NewInt(1 << 9)
-	postFieldScheduledVia = big.NewInt(1 << 10)
-	postFieldShortenLinks = big.NewInt(1 << 11)
-	postFieldStatus       = big.NewInt(1 << 12)
-	postFieldTagIDs       = big.NewInt(1 << 13)
-	postFieldTargets      = big.NewInt(1 << 14)
-	postFieldWarnings     = big.NewInt(1 << 15)
-)
-
-// postNullableFields maps the wire names of Post's nullable fields (required or optional) to their field bits.
-var postNullableFields = map[string]*big.Int{
-	"authorId":     postFieldAuthorID,
-	"createdVia":   postFieldCreatedVia,
-	"occurrence":   postFieldOccurrence,
-	"outcome":      postFieldOutcome,
-	"queueId":      postFieldQueueID,
-	"recyclingId":  postFieldRecyclingID,
-	"schedule":     postFieldSchedule,
-	"scheduledBy":  postFieldScheduledBy,
-	"scheduledVia": postFieldScheduledVia,
-}
-
-type Post struct {
-	AuthorID     *string        `json:"authorId,omitempty" url:"authorId,omitempty"`
-	Content      *PostContent   `json:"content" url:"content"`
-	CreatedVia   *PostOrigin    `json:"createdVia,omitempty" url:"createdVia,omitempty"`
-	ID           string         `json:"id" url:"id"`
-	Occurrence   *int           `json:"occurrence,omitempty" url:"occurrence,omitempty"`
-	Outcome      *PostOutcome   `json:"outcome,omitempty" url:"outcome,omitempty"`
-	QueueID      *string        `json:"queueId,omitempty" url:"queueId,omitempty"`
-	RecyclingID  *string        `json:"recyclingId,omitempty" url:"recyclingId,omitempty"`
-	Schedule     *PostSchedule  `json:"schedule,omitempty" url:"schedule,omitempty"`
-	ScheduledBy  *string        `json:"scheduledBy,omitempty" url:"scheduledBy,omitempty"`
-	ScheduledVia *PostOrigin    `json:"scheduledVia,omitempty" url:"scheduledVia,omitempty"`
-	ShortenLinks bool           `json:"shortenLinks" url:"shortenLinks"`
-	Status       PostStatus     `json:"status" url:"status"`
-	TagIDs       []string       `json:"tagIds" url:"tagIds"`
-	Targets      []*PostTarget  `json:"targets" url:"targets"`
-	Warnings     []*PostWarning `json:"warnings,omitempty" url:"warnings,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (p *Post) GetAuthorID() *string {
-	if p == nil {
-		return nil
-	}
-	return p.AuthorID
-}
-
-func (p *Post) GetContent() *PostContent {
-	if p == nil {
-		return nil
-	}
-	return p.Content
-}
-
-func (p *Post) GetCreatedVia() *PostOrigin {
-	if p == nil {
-		return nil
-	}
-	return p.CreatedVia
-}
-
-func (p *Post) GetID() string {
-	if p == nil {
-		return ""
-	}
-	return p.ID
-}
-
-func (p *Post) GetOccurrence() *int {
-	if p == nil {
-		return nil
-	}
-	return p.Occurrence
-}
-
-func (p *Post) GetOutcome() *PostOutcome {
-	if p == nil {
-		return nil
-	}
-	return p.Outcome
-}
-
-func (p *Post) GetQueueID() *string {
-	if p == nil {
-		return nil
-	}
-	return p.QueueID
-}
-
-func (p *Post) GetRecyclingID() *string {
-	if p == nil {
-		return nil
-	}
-	return p.RecyclingID
-}
-
-func (p *Post) GetSchedule() *PostSchedule {
-	if p == nil {
-		return nil
-	}
-	return p.Schedule
-}
-
-func (p *Post) GetScheduledBy() *string {
-	if p == nil {
-		return nil
-	}
-	return p.ScheduledBy
-}
-
-func (p *Post) GetScheduledVia() *PostOrigin {
-	if p == nil {
-		return nil
-	}
-	return p.ScheduledVia
-}
-
-func (p *Post) GetShortenLinks() bool {
-	if p == nil {
-		return false
-	}
-	return p.ShortenLinks
-}
-
-func (p *Post) GetStatus() PostStatus {
-	if p == nil {
-		return ""
-	}
-	return p.Status
-}
-
-func (p *Post) GetTagIDs() []string {
-	if p == nil {
-		return nil
-	}
-	return p.TagIDs
-}
-
-func (p *Post) GetTargets() []*PostTarget {
-	if p == nil {
-		return nil
-	}
-	return p.Targets
-}
-
-func (p *Post) GetWarnings() []*PostWarning {
-	if p == nil {
-		return nil
-	}
-	return p.Warnings
-}
-
-func (p *Post) GetExtraProperties() map[string]interface{} {
-	if p == nil {
-		return nil
-	}
-	return p.extraProperties
-}
-
-func (p *Post) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetAuthorID sets the AuthorID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetAuthorID(authorID *string) {
-	p.AuthorID = authorID
-	p.require(postFieldAuthorID)
-}
-
-// SetContent sets the Content field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetContent(content *PostContent) {
-	p.Content = content
-	p.require(postFieldContent)
-}
-
-// SetCreatedVia sets the CreatedVia field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetCreatedVia(createdVia *PostOrigin) {
-	p.CreatedVia = createdVia
-	p.require(postFieldCreatedVia)
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetID(id string) {
-	p.ID = id
-	p.require(postFieldID)
-}
-
-// SetOccurrence sets the Occurrence field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetOccurrence(occurrence *int) {
-	p.Occurrence = occurrence
-	p.require(postFieldOccurrence)
-}
-
-// SetOutcome sets the Outcome field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetOutcome(outcome *PostOutcome) {
-	p.Outcome = outcome
-	p.require(postFieldOutcome)
-}
-
-// SetQueueID sets the QueueID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetQueueID(queueID *string) {
-	p.QueueID = queueID
-	p.require(postFieldQueueID)
-}
-
-// SetRecyclingID sets the RecyclingID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetRecyclingID(recyclingID *string) {
-	p.RecyclingID = recyclingID
-	p.require(postFieldRecyclingID)
-}
-
-// SetSchedule sets the Schedule field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetSchedule(schedule *PostSchedule) {
-	p.Schedule = schedule
-	p.require(postFieldSchedule)
-}
-
-// SetScheduledBy sets the ScheduledBy field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetScheduledBy(scheduledBy *string) {
-	p.ScheduledBy = scheduledBy
-	p.require(postFieldScheduledBy)
-}
-
-// SetScheduledVia sets the ScheduledVia field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetScheduledVia(scheduledVia *PostOrigin) {
-	p.ScheduledVia = scheduledVia
-	p.require(postFieldScheduledVia)
-}
-
-// SetShortenLinks sets the ShortenLinks field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetShortenLinks(shortenLinks bool) {
-	p.ShortenLinks = shortenLinks
-	p.require(postFieldShortenLinks)
-}
-
-// SetStatus sets the Status field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetStatus(status PostStatus) {
-	p.Status = status
-	p.require(postFieldStatus)
-}
-
-// SetTagIDs sets the TagIDs field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetTagIDs(tagIDs []string) {
-	p.TagIDs = tagIDs
-	p.require(postFieldTagIDs)
-}
-
-// SetTargets sets the Targets field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetTargets(targets []*PostTarget) {
-	p.Targets = targets
-	p.require(postFieldTargets)
-}
-
-// SetWarnings sets the Warnings field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *Post) SetWarnings(warnings []*PostWarning) {
-	p.Warnings = warnings
-	p.require(postFieldWarnings)
-}
-
-func (p *Post) UnmarshalJSON(data []byte) error {
-	type unmarshaler Post
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*p = Post(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *p)
-	if err != nil {
-		return err
-	}
-	p.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, postNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		p.require(presentFields)
-	}
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p *Post) MarshalJSON() ([]byte, error) {
-	type embed Post
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*p),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (p *Post) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	if len(p.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(p); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", p)
-}
-
-var (
 	postChannelFieldChannelID = big.NewInt(1 << 0)
 	postChannelFieldPlatform  = big.NewInt(1 << 1)
 )
@@ -12720,168 +12016,6 @@ func (p *PostChannel) MarshalJSON() ([]byte, error) {
 }
 
 func (p *PostChannel) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	if len(p.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(p); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", p)
-}
-
-var (
-	postContentFieldFollowUps = big.NewInt(1 << 0)
-	postContentFieldMedia     = big.NewInt(1 << 1)
-	postContentFieldOverrides = big.NewInt(1 << 2)
-	postContentFieldPoll      = big.NewInt(1 << 3)
-	postContentFieldText      = big.NewInt(1 << 4)
-)
-
-// postContentNullableFields maps the wire names of PostContent's nullable fields (required or optional) to their field bits.
-var postContentNullableFields = map[string]*big.Int{
-	"poll": postContentFieldPoll,
-}
-
-type PostContent struct {
-	FollowUps []*PostPart        `json:"followUps,omitempty" url:"followUps,omitempty"`
-	Media     []*MediaAttachment `json:"media" url:"media"`
-	Overrides []*TextOverride    `json:"overrides" url:"overrides"`
-	Poll      *Poll              `json:"poll,omitempty" url:"poll,omitempty"`
-	Text      string             `json:"text" url:"text"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (p *PostContent) GetFollowUps() []*PostPart {
-	if p == nil {
-		return nil
-	}
-	return p.FollowUps
-}
-
-func (p *PostContent) GetMedia() []*MediaAttachment {
-	if p == nil {
-		return nil
-	}
-	return p.Media
-}
-
-func (p *PostContent) GetOverrides() []*TextOverride {
-	if p == nil {
-		return nil
-	}
-	return p.Overrides
-}
-
-func (p *PostContent) GetPoll() *Poll {
-	if p == nil {
-		return nil
-	}
-	return p.Poll
-}
-
-func (p *PostContent) GetText() string {
-	if p == nil {
-		return ""
-	}
-	return p.Text
-}
-
-func (p *PostContent) GetExtraProperties() map[string]interface{} {
-	if p == nil {
-		return nil
-	}
-	return p.extraProperties
-}
-
-func (p *PostContent) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetFollowUps sets the FollowUps field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostContent) SetFollowUps(followUps []*PostPart) {
-	p.FollowUps = followUps
-	p.require(postContentFieldFollowUps)
-}
-
-// SetMedia sets the Media field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostContent) SetMedia(media []*MediaAttachment) {
-	p.Media = media
-	p.require(postContentFieldMedia)
-}
-
-// SetOverrides sets the Overrides field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostContent) SetOverrides(overrides []*TextOverride) {
-	p.Overrides = overrides
-	p.require(postContentFieldOverrides)
-}
-
-// SetPoll sets the Poll field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostContent) SetPoll(poll *Poll) {
-	p.Poll = poll
-	p.require(postContentFieldPoll)
-}
-
-// SetText sets the Text field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostContent) SetText(text string) {
-	p.Text = text
-	p.require(postContentFieldText)
-}
-
-func (p *PostContent) UnmarshalJSON(data []byte) error {
-	type unmarshaler PostContent
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*p = PostContent(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *p)
-	if err != nil {
-		return err
-	}
-	p.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, postContentNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		p.require(presentFields)
-	}
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p *PostContent) MarshalJSON() ([]byte, error) {
-	type embed PostContent
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*p),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (p *PostContent) String() string {
 	if p == nil {
 		return "<nil>"
 	}
@@ -13066,204 +12200,6 @@ func (p PostContentInvalidEncodedTag) Ptr() *PostContentInvalidEncodedTag {
 }
 
 var (
-	postDraftFieldChannelIDs        = big.NewInt(1 << 0)
-	postDraftFieldChannelSets       = big.NewInt(1 << 1)
-	postDraftFieldContent           = big.NewInt(1 << 2)
-	postDraftFieldDefaultSignatures = big.NewInt(1 << 3)
-	postDraftFieldOptions           = big.NewInt(1 << 4)
-	postDraftFieldShortenLinks      = big.NewInt(1 << 5)
-	postDraftFieldSignatureID       = big.NewInt(1 << 6)
-	postDraftFieldTagIDs            = big.NewInt(1 << 7)
-)
-
-type PostDraft struct {
-	ChannelIDs        []string          `json:"channelIds" url:"channelIds"`
-	ChannelSets       []string          `json:"channelSets,omitempty" url:"channelSets,omitempty"`
-	Content           *PostContent      `json:"content" url:"content"`
-	DefaultSignatures *bool             `json:"defaultSignatures,omitempty" url:"defaultSignatures,omitempty"`
-	Options           []*ChannelOptions `json:"options,omitempty" url:"options,omitempty"`
-	ShortenLinks      *bool             `json:"shortenLinks,omitempty" url:"shortenLinks,omitempty"`
-	SignatureID       *string           `json:"signatureId,omitempty" url:"signatureId,omitempty"`
-	TagIDs            []string          `json:"tagIds,omitempty" url:"tagIds,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (p *PostDraft) GetChannelIDs() []string {
-	if p == nil {
-		return nil
-	}
-	return p.ChannelIDs
-}
-
-func (p *PostDraft) GetChannelSets() []string {
-	if p == nil {
-		return nil
-	}
-	return p.ChannelSets
-}
-
-func (p *PostDraft) GetContent() *PostContent {
-	if p == nil {
-		return nil
-	}
-	return p.Content
-}
-
-func (p *PostDraft) GetDefaultSignatures() *bool {
-	if p == nil {
-		return nil
-	}
-	return p.DefaultSignatures
-}
-
-func (p *PostDraft) GetOptions() []*ChannelOptions {
-	if p == nil {
-		return nil
-	}
-	return p.Options
-}
-
-func (p *PostDraft) GetShortenLinks() *bool {
-	if p == nil {
-		return nil
-	}
-	return p.ShortenLinks
-}
-
-func (p *PostDraft) GetSignatureID() *string {
-	if p == nil {
-		return nil
-	}
-	return p.SignatureID
-}
-
-func (p *PostDraft) GetTagIDs() []string {
-	if p == nil {
-		return nil
-	}
-	return p.TagIDs
-}
-
-func (p *PostDraft) GetExtraProperties() map[string]interface{} {
-	if p == nil {
-		return nil
-	}
-	return p.extraProperties
-}
-
-func (p *PostDraft) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetChannelIDs sets the ChannelIDs field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostDraft) SetChannelIDs(channelIDs []string) {
-	p.ChannelIDs = channelIDs
-	p.require(postDraftFieldChannelIDs)
-}
-
-// SetChannelSets sets the ChannelSets field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostDraft) SetChannelSets(channelSets []string) {
-	p.ChannelSets = channelSets
-	p.require(postDraftFieldChannelSets)
-}
-
-// SetContent sets the Content field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostDraft) SetContent(content *PostContent) {
-	p.Content = content
-	p.require(postDraftFieldContent)
-}
-
-// SetDefaultSignatures sets the DefaultSignatures field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostDraft) SetDefaultSignatures(defaultSignatures *bool) {
-	p.DefaultSignatures = defaultSignatures
-	p.require(postDraftFieldDefaultSignatures)
-}
-
-// SetOptions sets the Options field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostDraft) SetOptions(options []*ChannelOptions) {
-	p.Options = options
-	p.require(postDraftFieldOptions)
-}
-
-// SetShortenLinks sets the ShortenLinks field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostDraft) SetShortenLinks(shortenLinks *bool) {
-	p.ShortenLinks = shortenLinks
-	p.require(postDraftFieldShortenLinks)
-}
-
-// SetSignatureID sets the SignatureID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostDraft) SetSignatureID(signatureID *string) {
-	p.SignatureID = signatureID
-	p.require(postDraftFieldSignatureID)
-}
-
-// SetTagIDs sets the TagIDs field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostDraft) SetTagIDs(tagIDs []string) {
-	p.TagIDs = tagIDs
-	p.require(postDraftFieldTagIDs)
-}
-
-func (p *PostDraft) UnmarshalJSON(data []byte) error {
-	type unmarshaler PostDraft
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*p = PostDraft(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *p)
-	if err != nil {
-		return err
-	}
-	p.extraProperties = extraProperties
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p *PostDraft) MarshalJSON() ([]byte, error) {
-	type embed PostDraft
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*p),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (p *PostDraft) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	if len(p.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(p); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", p)
-}
-
-var (
 	postNotFoundEncodedFieldCode      = big.NewInt(1 << 0)
 	postNotFoundEncodedFieldMessage   = big.NewInt(1 << 1)
 	postNotFoundEncodedFieldRequestID = big.NewInt(1 << 2)
@@ -13379,37 +12315,6 @@ func (p *PostNotFoundEncoded) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", p)
-}
-
-type PostOutcome string
-
-const (
-	PostOutcomePublished          PostOutcome = "published"
-	PostOutcomePartiallyPublished PostOutcome = "partiallyPublished"
-	PostOutcomeUnconfirmed        PostOutcome = "unconfirmed"
-	PostOutcomeFailed             PostOutcome = "failed"
-	PostOutcomeCancelled          PostOutcome = "cancelled"
-)
-
-func NewPostOutcomeFromString(s string) (PostOutcome, error) {
-	switch s {
-	case "published":
-		return PostOutcomePublished, nil
-	case "partiallyPublished":
-		return PostOutcomePartiallyPublished, nil
-	case "unconfirmed":
-		return PostOutcomeUnconfirmed, nil
-	case "failed":
-		return PostOutcomeFailed, nil
-	case "cancelled":
-		return PostOutcomeCancelled, nil
-	}
-	var t PostOutcome
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (p PostOutcome) Ptr() *PostOutcome {
-	return &p
 }
 
 var (
@@ -13528,140 +12433,6 @@ func (p *PostPage) MarshalJSON() ([]byte, error) {
 }
 
 func (p *PostPage) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	if len(p.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(p); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", p)
-}
-
-var (
-	postPartFieldDelaySeconds = big.NewInt(1 << 0)
-	postPartFieldMedia        = big.NewInt(1 << 1)
-	postPartFieldOverrides    = big.NewInt(1 << 2)
-	postPartFieldText         = big.NewInt(1 << 3)
-)
-
-type PostPart struct {
-	DelaySeconds int                `json:"delaySeconds" url:"delaySeconds"`
-	Media        []*MediaAttachment `json:"media" url:"media"`
-	Overrides    []*TextOverride    `json:"overrides" url:"overrides"`
-	Text         string             `json:"text" url:"text"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (p *PostPart) GetDelaySeconds() int {
-	if p == nil {
-		return 0
-	}
-	return p.DelaySeconds
-}
-
-func (p *PostPart) GetMedia() []*MediaAttachment {
-	if p == nil {
-		return nil
-	}
-	return p.Media
-}
-
-func (p *PostPart) GetOverrides() []*TextOverride {
-	if p == nil {
-		return nil
-	}
-	return p.Overrides
-}
-
-func (p *PostPart) GetText() string {
-	if p == nil {
-		return ""
-	}
-	return p.Text
-}
-
-func (p *PostPart) GetExtraProperties() map[string]interface{} {
-	if p == nil {
-		return nil
-	}
-	return p.extraProperties
-}
-
-func (p *PostPart) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetDelaySeconds sets the DelaySeconds field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostPart) SetDelaySeconds(delaySeconds int) {
-	p.DelaySeconds = delaySeconds
-	p.require(postPartFieldDelaySeconds)
-}
-
-// SetMedia sets the Media field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostPart) SetMedia(media []*MediaAttachment) {
-	p.Media = media
-	p.require(postPartFieldMedia)
-}
-
-// SetOverrides sets the Overrides field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostPart) SetOverrides(overrides []*TextOverride) {
-	p.Overrides = overrides
-	p.require(postPartFieldOverrides)
-}
-
-// SetText sets the Text field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostPart) SetText(text string) {
-	p.Text = text
-	p.require(postPartFieldText)
-}
-
-func (p *PostPart) UnmarshalJSON(data []byte) error {
-	type unmarshaler PostPart
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*p = PostPart(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *p)
-	if err != nil {
-		return err
-	}
-	p.extraProperties = extraProperties
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p *PostPart) MarshalJSON() ([]byte, error) {
-	type embed PostPart
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*p),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (p *PostPart) String() string {
 	if p == nil {
 		return "<nil>"
 	}
@@ -14139,418 +12910,6 @@ func NewPostSortFromString(s string) (PostSort, error) {
 }
 
 func (p PostSort) Ptr() *PostSort {
-	return &p
-}
-
-type PostStatus string
-
-const (
-	PostStatusDraft            PostStatus = "draft"
-	PostStatusAwaitingApproval PostStatus = "awaitingApproval"
-	PostStatusScheduled        PostStatus = "scheduled"
-	PostStatusPublishing       PostStatus = "publishing"
-	PostStatusFinished         PostStatus = "finished"
-	PostStatusCancelled        PostStatus = "cancelled"
-)
-
-func NewPostStatusFromString(s string) (PostStatus, error) {
-	switch s {
-	case "draft":
-		return PostStatusDraft, nil
-	case "awaitingApproval":
-		return PostStatusAwaitingApproval, nil
-	case "scheduled":
-		return PostStatusScheduled, nil
-	case "publishing":
-		return PostStatusPublishing, nil
-	case "finished":
-		return PostStatusFinished, nil
-	case "cancelled":
-		return PostStatusCancelled, nil
-	}
-	var t PostStatus
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (p PostStatus) Ptr() *PostStatus {
-	return &p
-}
-
-var (
-	postTargetFieldChannelID         = big.NewInt(1 << 0)
-	postTargetFieldDropped           = big.NewInt(1 << 1)
-	postTargetFieldEditedAt          = big.NewInt(1 << 2)
-	postTargetFieldFailureReason     = big.NewInt(1 << 3)
-	postTargetFieldID                = big.NewInt(1 << 4)
-	postTargetFieldKeptPrivate       = big.NewInt(1 << 5)
-	postTargetFieldOptions           = big.NewInt(1 << 6)
-	postTargetFieldParts             = big.NewInt(1 << 7)
-	postTargetFieldPermalink         = big.NewInt(1 << 8)
-	postTargetFieldPublishedAt       = big.NewInt(1 << 9)
-	postTargetFieldRemovedAt         = big.NewInt(1 << 10)
-	postTargetFieldPartsLeftOut      = big.NewInt(1 << 11)
-	postTargetFieldRound             = big.NewInt(1 << 12)
-	postTargetFieldStatus            = big.NewInt(1 << 13)
-	postTargetFieldThumbnailNotSet   = big.NewInt(1 << 14)
-	postTargetFieldUnconfirmedReason = big.NewInt(1 << 15)
-)
-
-// postTargetNullableFields maps the wire names of PostTarget's nullable fields (required or optional) to their field bits.
-var postTargetNullableFields = map[string]*big.Int{
-	"editedAt":          postTargetFieldEditedAt,
-	"failureReason":     postTargetFieldFailureReason,
-	"options":           postTargetFieldOptions,
-	"permalink":         postTargetFieldPermalink,
-	"publishedAt":       postTargetFieldPublishedAt,
-	"removedAt":         postTargetFieldRemovedAt,
-	"unconfirmedReason": postTargetFieldUnconfirmedReason,
-}
-
-type PostTarget struct {
-	ChannelID         string             `json:"channelId" url:"channelId"`
-	Dropped           *bool              `json:"dropped,omitempty" url:"dropped,omitempty"`
-	EditedAt          *string            `json:"editedAt,omitempty" url:"editedAt,omitempty"`
-	FailureReason     *FailureReason     `json:"failureReason,omitempty" url:"failureReason,omitempty"`
-	ID                string             `json:"id" url:"id"`
-	KeptPrivate       *bool              `json:"keptPrivate,omitempty" url:"keptPrivate,omitempty"`
-	Options           *TargetOptions     `json:"options,omitempty" url:"options,omitempty"`
-	Parts             *TargetParts       `json:"parts" url:"parts"`
-	Permalink         *string            `json:"permalink,omitempty" url:"permalink,omitempty"`
-	PublishedAt       *string            `json:"publishedAt,omitempty" url:"publishedAt,omitempty"`
-	RemovedAt         *string            `json:"removedAt,omitempty" url:"removedAt,omitempty"`
-	PartsLeftOut      *bool              `json:"partsLeftOut,omitempty" url:"partsLeftOut,omitempty"`
-	Round             int                `json:"round" url:"round"`
-	Status            PostTargetStatus   `json:"status" url:"status"`
-	ThumbnailNotSet   *bool              `json:"thumbnailNotSet,omitempty" url:"thumbnailNotSet,omitempty"`
-	UnconfirmedReason *UnconfirmedReason `json:"unconfirmedReason,omitempty" url:"unconfirmedReason,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (p *PostTarget) GetChannelID() string {
-	if p == nil {
-		return ""
-	}
-	return p.ChannelID
-}
-
-func (p *PostTarget) GetDropped() *bool {
-	if p == nil {
-		return nil
-	}
-	return p.Dropped
-}
-
-func (p *PostTarget) GetEditedAt() *string {
-	if p == nil {
-		return nil
-	}
-	return p.EditedAt
-}
-
-func (p *PostTarget) GetFailureReason() *FailureReason {
-	if p == nil {
-		return nil
-	}
-	return p.FailureReason
-}
-
-func (p *PostTarget) GetID() string {
-	if p == nil {
-		return ""
-	}
-	return p.ID
-}
-
-func (p *PostTarget) GetKeptPrivate() *bool {
-	if p == nil {
-		return nil
-	}
-	return p.KeptPrivate
-}
-
-func (p *PostTarget) GetOptions() *TargetOptions {
-	if p == nil {
-		return nil
-	}
-	return p.Options
-}
-
-func (p *PostTarget) GetParts() *TargetParts {
-	if p == nil {
-		return nil
-	}
-	return p.Parts
-}
-
-func (p *PostTarget) GetPermalink() *string {
-	if p == nil {
-		return nil
-	}
-	return p.Permalink
-}
-
-func (p *PostTarget) GetPublishedAt() *string {
-	if p == nil {
-		return nil
-	}
-	return p.PublishedAt
-}
-
-func (p *PostTarget) GetRemovedAt() *string {
-	if p == nil {
-		return nil
-	}
-	return p.RemovedAt
-}
-
-func (p *PostTarget) GetPartsLeftOut() *bool {
-	if p == nil {
-		return nil
-	}
-	return p.PartsLeftOut
-}
-
-func (p *PostTarget) GetRound() int {
-	if p == nil {
-		return 0
-	}
-	return p.Round
-}
-
-func (p *PostTarget) GetStatus() PostTargetStatus {
-	if p == nil {
-		return ""
-	}
-	return p.Status
-}
-
-func (p *PostTarget) GetThumbnailNotSet() *bool {
-	if p == nil {
-		return nil
-	}
-	return p.ThumbnailNotSet
-}
-
-func (p *PostTarget) GetUnconfirmedReason() *UnconfirmedReason {
-	if p == nil {
-		return nil
-	}
-	return p.UnconfirmedReason
-}
-
-func (p *PostTarget) GetExtraProperties() map[string]interface{} {
-	if p == nil {
-		return nil
-	}
-	return p.extraProperties
-}
-
-func (p *PostTarget) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetChannelID sets the ChannelID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetChannelID(channelID string) {
-	p.ChannelID = channelID
-	p.require(postTargetFieldChannelID)
-}
-
-// SetDropped sets the Dropped field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetDropped(dropped *bool) {
-	p.Dropped = dropped
-	p.require(postTargetFieldDropped)
-}
-
-// SetEditedAt sets the EditedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetEditedAt(editedAt *string) {
-	p.EditedAt = editedAt
-	p.require(postTargetFieldEditedAt)
-}
-
-// SetFailureReason sets the FailureReason field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetFailureReason(failureReason *FailureReason) {
-	p.FailureReason = failureReason
-	p.require(postTargetFieldFailureReason)
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetID(id string) {
-	p.ID = id
-	p.require(postTargetFieldID)
-}
-
-// SetKeptPrivate sets the KeptPrivate field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetKeptPrivate(keptPrivate *bool) {
-	p.KeptPrivate = keptPrivate
-	p.require(postTargetFieldKeptPrivate)
-}
-
-// SetOptions sets the Options field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetOptions(options *TargetOptions) {
-	p.Options = options
-	p.require(postTargetFieldOptions)
-}
-
-// SetParts sets the Parts field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetParts(parts *TargetParts) {
-	p.Parts = parts
-	p.require(postTargetFieldParts)
-}
-
-// SetPermalink sets the Permalink field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetPermalink(permalink *string) {
-	p.Permalink = permalink
-	p.require(postTargetFieldPermalink)
-}
-
-// SetPublishedAt sets the PublishedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetPublishedAt(publishedAt *string) {
-	p.PublishedAt = publishedAt
-	p.require(postTargetFieldPublishedAt)
-}
-
-// SetRemovedAt sets the RemovedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetRemovedAt(removedAt *string) {
-	p.RemovedAt = removedAt
-	p.require(postTargetFieldRemovedAt)
-}
-
-// SetPartsLeftOut sets the PartsLeftOut field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetPartsLeftOut(partsLeftOut *bool) {
-	p.PartsLeftOut = partsLeftOut
-	p.require(postTargetFieldPartsLeftOut)
-}
-
-// SetRound sets the Round field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetRound(round int) {
-	p.Round = round
-	p.require(postTargetFieldRound)
-}
-
-// SetStatus sets the Status field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetStatus(status PostTargetStatus) {
-	p.Status = status
-	p.require(postTargetFieldStatus)
-}
-
-// SetThumbnailNotSet sets the ThumbnailNotSet field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetThumbnailNotSet(thumbnailNotSet *bool) {
-	p.ThumbnailNotSet = thumbnailNotSet
-	p.require(postTargetFieldThumbnailNotSet)
-}
-
-// SetUnconfirmedReason sets the UnconfirmedReason field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostTarget) SetUnconfirmedReason(unconfirmedReason *UnconfirmedReason) {
-	p.UnconfirmedReason = unconfirmedReason
-	p.require(postTargetFieldUnconfirmedReason)
-}
-
-func (p *PostTarget) UnmarshalJSON(data []byte) error {
-	type unmarshaler PostTarget
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*p = PostTarget(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *p)
-	if err != nil {
-		return err
-	}
-	p.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, postTargetNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		p.require(presentFields)
-	}
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p *PostTarget) MarshalJSON() ([]byte, error) {
-	type embed PostTarget
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*p),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (p *PostTarget) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	if len(p.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(p); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", p)
-}
-
-type PostTargetStatus string
-
-const (
-	PostTargetStatusPending     PostTargetStatus = "pending"
-	PostTargetStatusPublishing  PostTargetStatus = "publishing"
-	PostTargetStatusPublished   PostTargetStatus = "published"
-	PostTargetStatusFailed      PostTargetStatus = "failed"
-	PostTargetStatusUnconfirmed PostTargetStatus = "unconfirmed"
-	PostTargetStatusCancelled   PostTargetStatus = "cancelled"
-)
-
-func NewPostTargetStatusFromString(s string) (PostTargetStatus, error) {
-	switch s {
-	case "pending":
-		return PostTargetStatusPending, nil
-	case "publishing":
-		return PostTargetStatusPublishing, nil
-	case "published":
-		return PostTargetStatusPublished, nil
-	case "failed":
-		return PostTargetStatusFailed, nil
-	case "unconfirmed":
-		return PostTargetStatusUnconfirmed, nil
-	case "cancelled":
-		return PostTargetStatusCancelled, nil
-	}
-	var t PostTargetStatus
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (p PostTargetStatus) Ptr() *PostTargetStatus {
 	return &p
 }
 
@@ -15341,494 +13700,6 @@ func (p *PostValidation) MarshalJSON() ([]byte, error) {
 }
 
 func (p *PostValidation) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	if len(p.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(p); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", p)
-}
-
-type PostWarning struct {
-	Type                 string
-	ChannelsDropped      *PostWarningChannelsDropped
-	QueueChannelsDropped *PostWarningQueueChannelsDropped
-	XNotBilled           *PostWarningXNotBilled
-
-	rawJSON json.RawMessage
-}
-
-func (p *PostWarning) GetType() string {
-	if p == nil {
-		return ""
-	}
-	return p.Type
-}
-
-func (p *PostWarning) GetChannelsDropped() *PostWarningChannelsDropped {
-	if p == nil {
-		return nil
-	}
-	return p.ChannelsDropped
-}
-
-func (p *PostWarning) GetQueueChannelsDropped() *PostWarningQueueChannelsDropped {
-	if p == nil {
-		return nil
-	}
-	return p.QueueChannelsDropped
-}
-
-func (p *PostWarning) GetXNotBilled() *PostWarningXNotBilled {
-	if p == nil {
-		return nil
-	}
-	return p.XNotBilled
-}
-
-func (p *PostWarning) UnmarshalJSON(data []byte) error {
-	var unmarshaler struct {
-		Type string `json:"_tag"`
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	p.Type = unmarshaler.Type
-	if unmarshaler.Type == "" {
-		return fmt.Errorf("%T did not include discriminant _tag", p)
-	}
-	switch unmarshaler.Type {
-	case "channelsDropped":
-		value := new(PostWarningChannelsDropped)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		p.ChannelsDropped = value
-	case "queueChannelsDropped":
-		value := new(PostWarningQueueChannelsDropped)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		p.QueueChannelsDropped = value
-	case "xNotBilled":
-		value := new(PostWarningXNotBilled)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		p.XNotBilled = value
-	}
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p PostWarning) MarshalJSON() ([]byte, error) {
-	if err := p.validate(); err != nil {
-		return nil, err
-	}
-	if p.ChannelsDropped != nil {
-		return internal.MarshalJSONWithExtraProperty(p.ChannelsDropped, "_tag", "channelsDropped")
-	}
-	if p.QueueChannelsDropped != nil {
-		return internal.MarshalJSONWithExtraProperty(p.QueueChannelsDropped, "_tag", "queueChannelsDropped")
-	}
-	if p.XNotBilled != nil {
-		return internal.MarshalJSONWithExtraProperty(p.XNotBilled, "_tag", "xNotBilled")
-	}
-	if len(p.rawJSON) > 0 {
-		return p.rawJSON, nil
-	}
-	return nil, fmt.Errorf("type %T does not define a non-empty union type", p)
-}
-
-type PostWarningVisitor interface {
-	VisitChannelsDropped(*PostWarningChannelsDropped) error
-	VisitQueueChannelsDropped(*PostWarningQueueChannelsDropped) error
-	VisitXNotBilled(*PostWarningXNotBilled) error
-}
-
-func (p *PostWarning) Accept(visitor PostWarningVisitor) error {
-	if p.ChannelsDropped != nil {
-		return visitor.VisitChannelsDropped(p.ChannelsDropped)
-	}
-	if p.QueueChannelsDropped != nil {
-		return visitor.VisitQueueChannelsDropped(p.QueueChannelsDropped)
-	}
-	if p.XNotBilled != nil {
-		return visitor.VisitXNotBilled(p.XNotBilled)
-	}
-	return fmt.Errorf("type %T does not define a non-empty union type", p)
-}
-
-func (p *PostWarning) validate() error {
-	if p == nil {
-		return fmt.Errorf("type %T is nil", p)
-	}
-	var fields []string
-	if p.ChannelsDropped != nil {
-		fields = append(fields, "channelsDropped")
-	}
-	if p.QueueChannelsDropped != nil {
-		fields = append(fields, "queueChannelsDropped")
-	}
-	if p.XNotBilled != nil {
-		fields = append(fields, "xNotBilled")
-	}
-	if len(fields) == 0 {
-		if p.Type != "" {
-			if len(p.rawJSON) > 0 {
-				return nil
-			}
-			return fmt.Errorf("type %T defines a discriminant set to %q but the field is not set", p, p.Type)
-		}
-		return fmt.Errorf("type %T is empty", p)
-	}
-	if len(fields) > 1 {
-		return fmt.Errorf("type %T defines values for %s, but only one value is allowed", p, fields)
-	}
-	if p.Type != "" {
-		field := fields[0]
-		if p.Type != field {
-			return fmt.Errorf(
-				"type %T defines a discriminant set to %q, but it does not match the %T field; either remove or update the discriminant to match",
-				p,
-				p.Type,
-				p,
-			)
-		}
-	}
-	return nil
-}
-
-var (
-	postWarningChannelsDroppedFieldChannelIDs     = big.NewInt(1 << 0)
-	postWarningChannelsDroppedFieldChannelSetID   = big.NewInt(1 << 1)
-	postWarningChannelsDroppedFieldChannelSetName = big.NewInt(1 << 2)
-)
-
-type PostWarningChannelsDropped struct {
-	ChannelIDs     []string `json:"channelIds" url:"channelIds"`
-	ChannelSetID   string   `json:"channelSetId" url:"channelSetId"`
-	ChannelSetName string   `json:"channelSetName" url:"channelSetName"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (p *PostWarningChannelsDropped) GetChannelIDs() []string {
-	if p == nil {
-		return nil
-	}
-	return p.ChannelIDs
-}
-
-func (p *PostWarningChannelsDropped) GetChannelSetID() string {
-	if p == nil {
-		return ""
-	}
-	return p.ChannelSetID
-}
-
-func (p *PostWarningChannelsDropped) GetChannelSetName() string {
-	if p == nil {
-		return ""
-	}
-	return p.ChannelSetName
-}
-
-func (p *PostWarningChannelsDropped) GetExtraProperties() map[string]interface{} {
-	if p == nil {
-		return nil
-	}
-	return p.extraProperties
-}
-
-func (p *PostWarningChannelsDropped) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetChannelIDs sets the ChannelIDs field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostWarningChannelsDropped) SetChannelIDs(channelIDs []string) {
-	p.ChannelIDs = channelIDs
-	p.require(postWarningChannelsDroppedFieldChannelIDs)
-}
-
-// SetChannelSetID sets the ChannelSetID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostWarningChannelsDropped) SetChannelSetID(channelSetID string) {
-	p.ChannelSetID = channelSetID
-	p.require(postWarningChannelsDroppedFieldChannelSetID)
-}
-
-// SetChannelSetName sets the ChannelSetName field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostWarningChannelsDropped) SetChannelSetName(channelSetName string) {
-	p.ChannelSetName = channelSetName
-	p.require(postWarningChannelsDroppedFieldChannelSetName)
-}
-
-func (p *PostWarningChannelsDropped) UnmarshalJSON(data []byte) error {
-	type unmarshaler PostWarningChannelsDropped
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*p = PostWarningChannelsDropped(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *p)
-	if err != nil {
-		return err
-	}
-	p.extraProperties = extraProperties
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p *PostWarningChannelsDropped) MarshalJSON() ([]byte, error) {
-	type embed PostWarningChannelsDropped
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*p),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (p *PostWarningChannelsDropped) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	if len(p.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(p); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", p)
-}
-
-var (
-	postWarningQueueChannelsDroppedFieldChannelIDs = big.NewInt(1 << 0)
-	postWarningQueueChannelsDroppedFieldQueueID    = big.NewInt(1 << 1)
-	postWarningQueueChannelsDroppedFieldQueueName  = big.NewInt(1 << 2)
-)
-
-type PostWarningQueueChannelsDropped struct {
-	ChannelIDs []string `json:"channelIds" url:"channelIds"`
-	QueueID    string   `json:"queueId" url:"queueId"`
-	QueueName  string   `json:"queueName" url:"queueName"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (p *PostWarningQueueChannelsDropped) GetChannelIDs() []string {
-	if p == nil {
-		return nil
-	}
-	return p.ChannelIDs
-}
-
-func (p *PostWarningQueueChannelsDropped) GetQueueID() string {
-	if p == nil {
-		return ""
-	}
-	return p.QueueID
-}
-
-func (p *PostWarningQueueChannelsDropped) GetQueueName() string {
-	if p == nil {
-		return ""
-	}
-	return p.QueueName
-}
-
-func (p *PostWarningQueueChannelsDropped) GetExtraProperties() map[string]interface{} {
-	if p == nil {
-		return nil
-	}
-	return p.extraProperties
-}
-
-func (p *PostWarningQueueChannelsDropped) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetChannelIDs sets the ChannelIDs field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostWarningQueueChannelsDropped) SetChannelIDs(channelIDs []string) {
-	p.ChannelIDs = channelIDs
-	p.require(postWarningQueueChannelsDroppedFieldChannelIDs)
-}
-
-// SetQueueID sets the QueueID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostWarningQueueChannelsDropped) SetQueueID(queueID string) {
-	p.QueueID = queueID
-	p.require(postWarningQueueChannelsDroppedFieldQueueID)
-}
-
-// SetQueueName sets the QueueName field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostWarningQueueChannelsDropped) SetQueueName(queueName string) {
-	p.QueueName = queueName
-	p.require(postWarningQueueChannelsDroppedFieldQueueName)
-}
-
-func (p *PostWarningQueueChannelsDropped) UnmarshalJSON(data []byte) error {
-	type unmarshaler PostWarningQueueChannelsDropped
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*p = PostWarningQueueChannelsDropped(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *p)
-	if err != nil {
-		return err
-	}
-	p.extraProperties = extraProperties
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p *PostWarningQueueChannelsDropped) MarshalJSON() ([]byte, error) {
-	type embed PostWarningQueueChannelsDropped
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*p),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (p *PostWarningQueueChannelsDropped) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	if len(p.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(p); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", p)
-}
-
-var (
-	postWarningXNotBilledFieldChannelIDs = big.NewInt(1 << 0)
-	postWarningXNotBilledFieldReason     = big.NewInt(1 << 1)
-)
-
-type PostWarningXNotBilled struct {
-	ChannelIDs []string        `json:"channelIds" url:"channelIds"`
-	Reason     AllowanceReason `json:"reason" url:"reason"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (p *PostWarningXNotBilled) GetChannelIDs() []string {
-	if p == nil {
-		return nil
-	}
-	return p.ChannelIDs
-}
-
-func (p *PostWarningXNotBilled) GetReason() AllowanceReason {
-	if p == nil {
-		return ""
-	}
-	return p.Reason
-}
-
-func (p *PostWarningXNotBilled) GetExtraProperties() map[string]interface{} {
-	if p == nil {
-		return nil
-	}
-	return p.extraProperties
-}
-
-func (p *PostWarningXNotBilled) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetChannelIDs sets the ChannelIDs field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostWarningXNotBilled) SetChannelIDs(channelIDs []string) {
-	p.ChannelIDs = channelIDs
-	p.require(postWarningXNotBilledFieldChannelIDs)
-}
-
-// SetReason sets the Reason field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostWarningXNotBilled) SetReason(reason AllowanceReason) {
-	p.Reason = reason
-	p.require(postWarningXNotBilledFieldReason)
-}
-
-func (p *PostWarningXNotBilled) UnmarshalJSON(data []byte) error {
-	type unmarshaler PostWarningXNotBilled
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*p = PostWarningXNotBilled(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *p)
-	if err != nil {
-		return err
-	}
-	p.extraProperties = extraProperties
-	p.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (p *PostWarningXNotBilled) MarshalJSON() ([]byte, error) {
-	type embed PostWarningXNotBilled
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*p),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (p *PostWarningXNotBilled) String() string {
 	if p == nil {
 		return "<nil>"
 	}
@@ -16926,108 +14797,6 @@ func (t *TargetConfirmationPublished) String() string {
 }
 
 var (
-	targetPartsFieldCount = big.NewInt(1 << 0)
-	targetPartsFieldLive  = big.NewInt(1 << 1)
-)
-
-type TargetParts struct {
-	Count int         `json:"count" url:"count"`
-	Live  []*LivePart `json:"live" url:"live"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TargetParts) GetCount() int {
-	if t == nil {
-		return 0
-	}
-	return t.Count
-}
-
-func (t *TargetParts) GetLive() []*LivePart {
-	if t == nil {
-		return nil
-	}
-	return t.Live
-}
-
-func (t *TargetParts) GetExtraProperties() map[string]interface{} {
-	if t == nil {
-		return nil
-	}
-	return t.extraProperties
-}
-
-func (t *TargetParts) require(field *big.Int) {
-	next := new(big.Int)
-	if t.explicitFields != nil {
-		next.Set(t.explicitFields)
-	}
-	next.Or(next, field)
-	t.explicitFields = next
-}
-
-// SetCount sets the Count field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TargetParts) SetCount(count int) {
-	t.Count = count
-	t.require(targetPartsFieldCount)
-}
-
-// SetLive sets the Live field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TargetParts) SetLive(live []*LivePart) {
-	t.Live = live
-	t.require(targetPartsFieldLive)
-}
-
-func (t *TargetParts) UnmarshalJSON(data []byte) error {
-	type unmarshaler TargetParts
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TargetParts(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TargetParts) MarshalJSON() ([]byte, error) {
-	type embed TargetParts
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*t),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, t.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (t *TargetParts) String() string {
-	if t == nil {
-		return "<nil>"
-	}
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-var (
 	textCountFieldLength  = big.NewInt(1 << 0)
 	textCountFieldMaximum = big.NewInt(1 << 1)
 	textCountFieldUnit    = big.NewInt(1 << 2)
@@ -17617,26 +15386,26 @@ func (u UnknownTagsEncodedTag) Ptr() *UnknownTagsEncodedTag {
 	return &u
 }
 
-type SearchPostsRequestRemoved string
+type ListPostsRequestRemoved string
 
 const (
-	SearchPostsRequestRemovedTrue  SearchPostsRequestRemoved = "true"
-	SearchPostsRequestRemovedFalse SearchPostsRequestRemoved = "false"
+	ListPostsRequestRemovedTrue  ListPostsRequestRemoved = "true"
+	ListPostsRequestRemovedFalse ListPostsRequestRemoved = "false"
 )
 
-func NewSearchPostsRequestRemovedFromString(s string) (SearchPostsRequestRemoved, error) {
+func NewListPostsRequestRemovedFromString(s string) (ListPostsRequestRemoved, error) {
 	switch s {
 	case "true":
-		return SearchPostsRequestRemovedTrue, nil
+		return ListPostsRequestRemovedTrue, nil
 	case "false":
-		return SearchPostsRequestRemovedFalse, nil
+		return ListPostsRequestRemovedFalse, nil
 	}
-	var t SearchPostsRequestRemoved
+	var t ListPostsRequestRemoved
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
 }
 
-func (s SearchPostsRequestRemoved) Ptr() *SearchPostsRequestRemoved {
-	return &s
+func (l ListPostsRequestRemoved) Ptr() *ListPostsRequestRemoved {
+	return &l
 }
 
 var (

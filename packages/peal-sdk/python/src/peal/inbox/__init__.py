@@ -6,8 +6,18 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import ListThreadsInboxRequestUnanswered
-_dynamic_imports: typing.Dict[str, str] = {"ListThreadsInboxRequestUnanswered": ".types"}
+    from . import comments, messages, reviews
+    from .comments import ListThreadsCommentsRequestUnanswered
+    from .messages import ListConversationsMessagesRequestUnread
+    from .reviews import ListThreadsReviewsRequestUnanswered
+_dynamic_imports: typing.Dict[str, str] = {
+    "ListConversationsMessagesRequestUnread": ".messages",
+    "ListThreadsCommentsRequestUnanswered": ".comments",
+    "ListThreadsReviewsRequestUnanswered": ".reviews",
+    "comments": ".comments",
+    "messages": ".messages",
+    "reviews": ".reviews",
+}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +41,11 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ListThreadsInboxRequestUnanswered"]
+__all__ = [
+    "ListConversationsMessagesRequestUnread",
+    "ListThreadsCommentsRequestUnanswered",
+    "ListThreadsReviewsRequestUnanswered",
+    "comments",
+    "messages",
+    "reviews",
+]

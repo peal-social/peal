@@ -368,7 +368,7 @@ layer(BillingLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const sent = yield* bodyOf(
             Schema.Struct({ id: Schema.String }),
-            yield* app.request(`/api/v1/invitations`, {
+            yield* app.request(`/api/v1/workspace/invitations`, {
               body: { email: person.email, role: "viewer" },
               headers: { cookie: cookies, ...forWorkspace(strict) },
             })

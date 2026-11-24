@@ -93,7 +93,7 @@ const list = Command.make(
   Effect.fn("inbox.messages.list")(function* listing(flags) {
     const { client, url, workspace } = yield* inWorkspace(flags.workspace);
 
-    const page = yield* client.inboxMessages
+    const page = yield* client["inbox.messages"]
       .listConversations({
         headers: {},
         query: {
@@ -167,7 +167,7 @@ const show = Command.make(
   Effect.fn("inbox.messages.show")(function* showing(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const detail = yield* client.inboxMessages
+    const detail = yield* client["inbox.messages"]
       .getConversation({
         headers: {},
         params: {
@@ -278,8 +278,8 @@ const send = Command.make(
 
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const sent = yield* client.inboxMessages
-      .sendMessage({
+    const sent = yield* client["inbox.messages"]
+      .send({
         headers: Option.match(flags.idempotencyKey, {
           onNone: () => ({}),
           onSome: (key) => ({ "idempotency-key": key }),
@@ -322,7 +322,7 @@ const read = Command.make(
   Effect.fn("inbox.messages.read")(function* marking(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const marked = yield* client.inboxMessages
+    const marked = yield* client["inbox.messages"]
       .setConversationRead({
         headers: {},
         params: {
@@ -379,8 +379,8 @@ const confirm = Command.make(
 
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const settled = yield* client.inboxMessages
-      .confirmMessage({
+    const settled = yield* client["inbox.messages"]
+      .confirm({
         headers: {},
         params: { messageId: flags.messageId },
         payload: { sent: flags.sent },

@@ -2,6 +2,12 @@
 
 namespace Peal\Channels;
 
+use Peal\Channels\Capabilities\CapabilitiesClient;
+use Peal\Channels\DefaultOptions\DefaultOptionsClient;
+use Peal\Channels\Lookups\LookupsClient;
+use Peal\Channels\Sets\SetsClient;
+use Peal\Channels\ConnectLinks\ConnectLinksClient;
+use Peal\Channels\TiktokCreator\TiktokCreatorClient;
 use Psr\Http\Client\ClientInterface;
 use Peal\Core\Client\RawClient;
 use Peal\Types\Channel;
@@ -34,6 +40,36 @@ use Peal\Channels\Requests\ChannelUpdate;
 class ChannelsClient
 {
     /**
+     * @var CapabilitiesClient $capabilities
+     */
+    public CapabilitiesClient $capabilities;
+
+    /**
+     * @var DefaultOptionsClient $defaultOptions
+     */
+    public DefaultOptionsClient $defaultOptions;
+
+    /**
+     * @var LookupsClient $lookups
+     */
+    public LookupsClient $lookups;
+
+    /**
+     * @var SetsClient $sets
+     */
+    public SetsClient $sets;
+
+    /**
+     * @var ConnectLinksClient $connectLinks
+     */
+    public ConnectLinksClient $connectLinks;
+
+    /**
+     * @var TiktokCreatorClient $tiktokCreator
+     */
+    public TiktokCreatorClient $tiktokCreator;
+
+    /**
      * @var array{
      *   baseUrl?: string,
      *   client?: ClientInterface,
@@ -65,6 +101,12 @@ class ChannelsClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+        $this->capabilities = new CapabilitiesClient($this->client, $this->options);
+        $this->defaultOptions = new DefaultOptionsClient($this->client, $this->options);
+        $this->lookups = new LookupsClient($this->client, $this->options);
+        $this->sets = new SetsClient($this->client, $this->options);
+        $this->connectLinks = new ConnectLinksClient($this->client, $this->options);
+        $this->tiktokCreator = new TiktokCreatorClient($this->client, $this->options);
     }
 
     /**
@@ -729,7 +771,7 @@ class ChannelsClient
     }
 
     /**
-     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (`setChannelMessages` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (`inbox.messages.setChannel` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      *
      * Example:
      * ```php

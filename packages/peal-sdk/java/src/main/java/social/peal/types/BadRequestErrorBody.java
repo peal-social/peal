@@ -30,16 +30,16 @@ public final class BadRequestErrorBody {
         return new BadRequestErrorBody(new InvalidDateRangeValue(value));
     }
 
-    public static BadRequestErrorBody workspaceRequired(WorkspaceRequiredEncoded value) {
-        return new BadRequestErrorBody(new WorkspaceRequiredValue(value));
+    public static BadRequestErrorBody badRequest(EffectHttpApiErrorBadRequestEncoded value) {
+        return new BadRequestErrorBody(new BadRequestValue(value));
     }
 
     public boolean isInvalidDateRange() {
         return value instanceof InvalidDateRangeValue;
     }
 
-    public boolean isWorkspaceRequired() {
-        return value instanceof WorkspaceRequiredValue;
+    public boolean isBadRequest() {
+        return value instanceof BadRequestValue;
     }
 
     public boolean _isUnknown() {
@@ -53,9 +53,9 @@ public final class BadRequestErrorBody {
         return Optional.empty();
     }
 
-    public Optional<WorkspaceRequiredEncoded> getWorkspaceRequired() {
-        if (isWorkspaceRequired()) {
-            return Optional.of(((WorkspaceRequiredValue) value).value);
+    public Optional<EffectHttpApiErrorBadRequestEncoded> getBadRequest() {
+        if (isBadRequest()) {
+            return Optional.of(((BadRequestValue) value).value);
         }
         return Optional.empty();
     }
@@ -91,13 +91,13 @@ public final class BadRequestErrorBody {
     public interface Visitor<T> {
         T visitInvalidDateRange(InvalidDateRangeEncoded invalidDateRange);
 
-        T visitWorkspaceRequired(WorkspaceRequiredEncoded workspaceRequired);
+        T visitBadRequest(EffectHttpApiErrorBadRequestEncoded badRequest);
 
         T _visitUnknown(Object unknownType);
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_tag", visible = true, defaultImpl = _UnknownValue.class)
-    @JsonSubTypes({@JsonSubTypes.Type(InvalidDateRangeValue.class), @JsonSubTypes.Type(WorkspaceRequiredValue.class)})
+    @JsonSubTypes({@JsonSubTypes.Type(InvalidDateRangeValue.class), @JsonSubTypes.Type(BadRequestValue.class)})
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
         <T> T visit(Visitor<T> visitor);
@@ -143,32 +143,32 @@ public final class BadRequestErrorBody {
         }
     }
 
-    @JsonTypeName("WorkspaceRequired")
+    @JsonTypeName("BadRequest")
     @JsonIgnoreProperties("_tag")
-    private static final class WorkspaceRequiredValue implements Value {
+    private static final class BadRequestValue implements Value {
         @JsonUnwrapped
         @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private WorkspaceRequiredEncoded value;
+        private EffectHttpApiErrorBadRequestEncoded value;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private WorkspaceRequiredValue() {}
+        private BadRequestValue() {}
 
-        private WorkspaceRequiredValue(WorkspaceRequiredEncoded value) {
+        private BadRequestValue(EffectHttpApiErrorBadRequestEncoded value) {
             this.value = value;
         }
 
         @java.lang.Override
         public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitWorkspaceRequired(value);
+            return visitor.visitBadRequest(value);
         }
 
         @java.lang.Override
         public boolean equals(Object other) {
             if (this == other) return true;
-            return other instanceof WorkspaceRequiredValue && equalTo((WorkspaceRequiredValue) other);
+            return other instanceof BadRequestValue && equalTo((BadRequestValue) other);
         }
 
-        private boolean equalTo(WorkspaceRequiredValue other) {
+        private boolean equalTo(BadRequestValue other) {
             return value.equals(other.value);
         }
 

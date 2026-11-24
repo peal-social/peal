@@ -9,7 +9,9 @@ module Peal
 
       discriminant :type
 
-      member -> { Peal::Types::FeedReadsLimitedEncoded }, key: "FEED_READS_LIMITED"
+      member -> { Peal::Types::OwnTextLimitReachedEncoded }, key: "OWN_TEXT_LIMIT_REACHED"
+
+      member -> { Peal::Types::TextProviderBusyEncoded }, key: "TEXT_PROVIDER_BUSY"
 
       member -> { Peal::Types::TooManyRequestsEncoded }, key: "TOO_MANY_REQUESTS"
     end

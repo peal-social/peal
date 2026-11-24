@@ -272,7 +272,7 @@ When a post is unconfirmed, Peal couldn't tell whether the platform published it
 
 The workspace's [activity log](/guides/workspace#activity) keeps every request that asked to change something, done or refused, and every call of a tool that changes something. Each entry has when, which operation, how it was answered, and the key or the application it came through, by name.
 
-Owners read it with `GET …/activity`, `peal activity list` or the tool `list_activity`, and so does a key an owner gave `activity:read`. It's kept {{keep-activity-en}}, and holds no text of any post.
+Owners read it with `GET …/workspace/activity`, `peal activity list` or the tool `list_activity`, and so does a key an owner gave `activity:read`. It's kept {{keep-activity-en}}, and holds no text of any post.
 
 Each post's page also shows how it was created and how it was scheduled: in the web app, with an API key, or by an application, by name. The API answers the same in `createdVia` and `scheduledVia` (`via`: `web`, `apiKey` or `application`, with the key's or the application's `id` and `name`), with the member who last scheduled or moved it in `scheduledBy`.
 
@@ -295,7 +295,7 @@ An agent that runs unattended meets lost answers, unconfirmed posts and rate lim
 
 ### Send again only what's safe to send again [#reliability-retry]
 
-A missing answer doesn't mean the post wasn't made. `create_post`, `peal post` and `POST …/posts/send` take an idempotency key. Under the same key and the same post, a second call within 24 hours answers the first post. Creating a draft or importing media a second time makes a second one, and reposting sends the post again ([Idempotency](/developers/conventions/idempotency#idempotency)).
+A missing answer doesn't mean the post wasn't made. `create_post`, `peal post` and `POST …/posts` take an idempotency key. Under the same key and the same post, a second call within 24 hours answers the first post. Creating a draft or importing media a second time makes a second one, and reposting sends the post again ([Idempotency](/developers/conventions/idempotency#idempotency)).
 
 ### Leave an unconfirmed post alone [#reliability-unconfirmed]
 
@@ -381,20 +381,20 @@ Your own agent or script can call the endpoints the tools are built on, under `/
 | `rename_channel`                               | `PATCH …/channels/{channelId}`                                                             |
 | `disable_channel`, `enable_channel`            | `POST …/channels/{channelId}/disable`, `…/enable`                                          |
 | `list_media`, `import_media`                   | `GET …/media`, `POST …/media/import`                                                       |
-| `list_drafts`, `list_posts`                    | `GET …/posts/drafts`, `GET …/posts/search`                                                 |
-| `create_draft`, `update_draft`                 | `POST …/posts`, `PUT …/posts/{postId}`                                                     |
+| `list_drafts`, `list_posts`                    | `GET …/posts/drafts`, `GET …/posts`                                                        |
+| `create_draft`, `update_draft`                 | `POST …/posts/drafts`, `PUT …/posts/{postId}`                                              |
 | `duplicate_post`                               | `POST …/posts/{postId}/duplicate`                                                          |
-| `create_post`                                  | `POST …/posts/send`                                                                        |
+| `create_post`                                  | `POST …/posts`                                                                             |
 | `create_posts`                                 | `POST …/posts/bulk`                                                                        |
 | `validate_post`                                | `POST …/posts/validate`                                                                    |
 | `schedule_post`                                | `POST …/posts/{postId}/schedule`                                                           |
 | `reschedule_post`, `publish_post`              | `POST …/posts/{postId}/reschedule`, with the present instant for now                       |
 | `unschedule_post`, `cancel_post`               | `POST …/posts/{postId}/unschedule`, `POST …/posts/{postId}/cancel`                         |
 | `get_post`, `list_post_attempts`               | `GET …/posts/{postId}`, `GET …/posts/{postId}/attempts`                                    |
-| `list_tags`, `create_tag`                      | `GET …/tags`, `POST …/tags`                                                                |
+| `list_tags`, `create_tag`                      | `GET …/posts/tags`, `POST …/posts/tags`                                                    |
 | `tag_post`                                     | `PUT …/posts/{postId}/tags`                                                                |
-| `list_signatures`, `create_signature`          | `GET …/signatures`, `POST …/signatures`                                                    |
-| `list_channel_sets`, `create_channel_set`      | `GET …/channel-sets`, `POST …/channel-sets`                                                |
+| `list_signatures`, `create_signature`          | `GET …/posts/signatures`, `POST …/posts/signatures`                                        |
+| `list_channel_sets`, `create_channel_set`      | `GET …/channels/sets`, `POST …/channels/sets`                                              |
 | `get_channel_defaults`, `set_channel_defaults` | `GET …/channels/{channelId}/default-options`, `PUT …/channels/{channelId}/default-options` |
 | `await_post`                                   | `GET …/posts/{postId}/outcome`                                                             |
 | `repost_target`, `confirm_target`              | `POST …/posts/{postId}/targets/{targetId}/repost`, `…/confirm`                             |
@@ -402,7 +402,7 @@ Your own agent or script can call the endpoints the tools are built on, under `/
 
 ### Send a post [#api-send]
 
-`POST …/posts/send` creates a post and sends it in one request. Send an `Idempotency-Key` header so that you can send the request again safely. The key is any text you pick, 255 characters at most, such as a UUID:
+`POST …/posts` creates a post and sends it in one request. Send an `Idempotency-Key` header so that you can send the request again safely. The key is any text you pick, 255 characters at most, such as a UUID:
 
 <CodeGroup>
 
@@ -411,7 +411,7 @@ import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
-const post = await peal.posts.send({
+const post = await peal.posts.create({
   "idempotency-key": "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channelIds: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -430,7 +430,7 @@ from peal import Peal, PostContent, PostTiming_At
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
-post = peal.posts.send(
+post = peal.posts.create(
     idempotency_key="7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     channel_ids=["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
     content=PostContent(
@@ -456,7 +456,7 @@ import (
 // request types.
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
-post, err := client.Posts.Send(context.Background(), &peal.NewPost{
+post, err := client.Posts.Create(context.Background(), &peal.NewPost{
 	IdempotencyKey: peal.String("7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44"),
 	ChannelIDs:     []string{"019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"},
 	Content: &peal.PostContent{
@@ -475,7 +475,7 @@ require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
-post = peal.posts.send_(
+post = peal.posts.create(
   idempotency_key: "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channel_ids: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -500,7 +500,7 @@ PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
 
-Post post = peal.posts().send(NewPost.builder()
+Post post = peal.posts().create(NewPost.builder()
     .content(PostContent.builder()
         .text("Our spring catalogue is out. Read it at https://example.com/spring")
         .build())
@@ -523,7 +523,7 @@ use Peal\Types\PostTimingAt;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
-$post = $peal->posts->send(new NewPost([
+$post = $peal->posts->create(new NewPost([
     'idempotencyKey' => '7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44',
     'channelIds' => ['019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11'],
     'content' => new PostContent([
@@ -543,7 +543,7 @@ using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
-var post = await peal.Posts.SendAsync(new NewPost
+var post = await peal.Posts.CreateAsync(new NewPost
 {
     IdempotencyKey = "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     ChannelIds = new List<string> { "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11" },
@@ -572,7 +572,7 @@ let peal = PealClient::new(ClientConfig {
 // NewPost has no field for the key: it goes in the request's headers.
 let post = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec!["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11".to_string()])
             .content(PostContent {
@@ -594,7 +594,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/v1/posts/send \
+curl -X POST https://api.example.com/api/v1/posts \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44" \

@@ -3280,9 +3280,9 @@ export const studioGroupsLive = (studio: Studio) =>
     // Voice-overs and transcripts: a text with "unavailable" stands for a
     // workspace without a speech model; the studio's ready file is a
     // recording whose transcript is fixed.
-    HttpApiBuilder.group(Api, "mediaAudio", (handlers) =>
+    HttpApiBuilder.group(Api, "media.voiceovers", (handlers) =>
       handlers.handleAll({
-        createVoiceover: ({ payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* createVoiceover() {
             yield* allowed("assistant:use");
             yield* allowed("media:upload");
@@ -3316,7 +3316,11 @@ export const studioGroupsLive = (studio: Studio) =>
               })
             );
           }),
-        transcribe: ({ params, payload }) =>
+      })
+    ),
+    HttpApiBuilder.group(Api, "media.transcriptions", (handlers) =>
+      handlers.handleAll({
+        create: ({ params, payload }) =>
           Effect.gen(function* transcribe() {
             yield* allowed("assistant:use");
             yield* allowed("media:read");
@@ -3345,9 +3349,9 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "session", (handlers) =>
+    HttpApiBuilder.group(Api, "me", (handlers) =>
       handlers.handleAll({
-        me: () => inPerson.pipe(Effect.as(studio.me)),
+        get: () => inPerson.pipe(Effect.as(studio.me)),
       })
     ),
     // A key names itself and its workspace; a person, their id and the
@@ -3699,98 +3703,6 @@ export const studioGroupsLive = (studio: Studio) =>
               record(studio, `confirm:${params.targetId}:${payload._tag}`)
             )
           ),
-        create: ({ payload }) =>
-          Effect.gen(function* create() {
-            yield* allowed("post:create");
-
-            if ((yield* CurrentMember).workspaceId !== studioId) {
-              return yield* new Forbidden();
-            }
-
-            yield* checkTags(studio, payload.tagIds ?? []);
-
-            const { post: written, warnings } = yield* filled(
-              studio,
-              payload,
-              true
-            );
-
-            const { posts: all, shortLinksByDefault } = yield* Ref.get(
-              studio.state
-            );
-
-            const id = `0190f3a0-0000-7000-8000-${String(all.length + 1).padStart(12, "0")}`;
-
-            yield* record(studio, `create:${id}`);
-
-            const saved = yield* savePost(studio, {
-              authorId: userId,
-              content: written.content,
-              createdVia: null,
-              id,
-              occurrence: null,
-              outcome: null,
-              queueId: null,
-              recyclingId: null,
-              schedule: null,
-              scheduledBy: null,
-              scheduledVia: null,
-              shortenLinks: payload.shortenLinks ?? shortLinksByDefault,
-              status: "draft",
-              tagIds: payload.tagIds ?? [],
-              targets: targetsOf(id, written),
-            });
-
-            return told(saved, warnings);
-          }),
-        discard: ({ params }) =>
-          Effect.gen(function* discard() {
-            yield* allowed("post:delete");
-
-            const post = yield* findPost(
-              studio,
-              (yield* CurrentMember).workspaceId,
-              params.postId
-            );
-
-            yield* post.status === "draft"
-              ? Effect.void
-              : Effect.fail(new PostStatusConflict({ status: post.status }));
-
-            yield* Ref.update(studio.state, (current) => ({
-              ...current,
-              posts: current.posts.filter(({ id }) => id !== post.id),
-            }));
-            yield* record(studio, `discard:${post.id}`);
-          }),
-        drafts: ({ query }) =>
-          Effect.gen(function* drafts() {
-            yield* allowed("post:read");
-
-            const { posts: all } = yield* Ref.get(studio.state);
-
-            const listed =
-              (yield* CurrentMember).workspaceId === studioId
-                ? all.filter(({ status }) => status === "draft")
-                : [];
-
-            const start =
-              query.cursor === undefined
-                ? 0
-                : listed.findIndex(({ id }) => id === query.cursor) + 1;
-
-            const limit = query.limit ?? 20;
-            const items = listed.slice(start, start + limit);
-            const last = items.at(-1);
-
-            return {
-              items,
-              nextCursor:
-                last !== undefined && start + limit < listed.length
-                  ? last.id
-                  : null,
-            };
-          }),
         duplicate: ({ params }) =>
           Effect.gen(function* duplicate() {
             yield* allowed("post:read");
@@ -4005,7 +3917,7 @@ export const studioGroupsLive = (studio: Studio) =>
               rows,
             };
           }),
-        list: ({ query }) =>
+        calendar: ({ query }) =>
           Effect.gen(function* list() {
             yield* allowed("post:read");
 
@@ -4196,7 +4108,7 @@ export const studioGroupsLive = (studio: Studio) =>
               }),
             });
           }),
-        search: ({ query }) =>
+        list: ({ query }) =>
           Effect.gen(function* search() {
             yield* allowed("post:read");
             yield* allowed("channel:read");
@@ -4253,7 +4165,7 @@ export const studioGroupsLive = (studio: Studio) =>
                 last !== undefined && limit < listed.length ? last.id : null,
             };
           }),
-        send: ({ headers, payload, query }) =>
+        create: ({ headers, payload, query }) =>
           Effect.gen(function* send() {
             yield* publishing;
 
@@ -4272,7 +4184,7 @@ export const studioGroupsLive = (studio: Studio) =>
               warnings
             );
           }),
-        tag: ({ params, payload }) =>
+        setTags: ({ params, payload }) =>
           Effect.gen(function* tag() {
             yield* allowed("post:update");
 
@@ -4532,52 +4444,107 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    // The assistant makes images only: the command line writes no text
-    // with it. A prompt that says "unavailable" stands for a server without
-    // an image model.
-    HttpApiBuilder.group(Api, "assistant", (handlers) =>
+    HttpApiBuilder.group(Api, "posts.drafts", (handlers) =>
       handlers.handleAll({
-        generateImage: ({ payload }) =>
-          Effect.gen(function* generateImage() {
-            yield* allowed("assistant:use");
-            yield* allowed("media:upload");
+        create: ({ payload }) =>
+          Effect.gen(function* create() {
+            yield* allowed("post:create");
 
             if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
-            if (payload.prompt.includes("unavailable")) {
-              return yield* new AssistantUnavailable();
-            }
+            yield* checkTags(studio, payload.tagIds ?? []);
 
-            // A plan whose day holds fewer requests than an image costs.
-            if (payload.prompt.includes("quota")) {
-              return yield* new AssistantQuotaExceeded({
-                billingUrl: null,
-                dailyLimit: 3,
-                plan: "free",
-                planWithRoom: "starter",
-                resetsAt: studioNow,
-              });
-            }
-
-            const { media: all } = yield* Ref.get(studio.state);
-            const id = nextId("a", all.length);
-
-            yield* record(studio, `generate:${payload.aspect}:${id}`);
-
-            return yield* saveMedia(
+            const { post: written, warnings } = yield* filled(
               studio,
-              image(id, {
-                aiGenerated: true,
-                createdAt: studioNow,
-                updatedAt: studioNow,
-              })
+              payload,
+              true
             );
+
+            const { posts: all, shortLinksByDefault } = yield* Ref.get(
+              studio.state
+            );
+
+            const id = `0190f3a0-0000-7000-8000-${String(all.length + 1).padStart(12, "0")}`;
+
+            yield* record(studio, `create:${id}`);
+
+            const saved = yield* savePost(studio, {
+              authorId: userId,
+              content: written.content,
+              createdVia: null,
+              id,
+              occurrence: null,
+              outcome: null,
+              queueId: null,
+              recyclingId: null,
+              schedule: null,
+              scheduledBy: null,
+              scheduledVia: null,
+              shortenLinks: payload.shortenLinks ?? shortLinksByDefault,
+              status: "draft",
+              tagIds: payload.tagIds ?? [],
+              targets: targetsOf(id, written),
+            });
+
+            return told(saved, warnings);
           }),
-        // The studio's connected providers and its model for each use. An
-        // address on a host named `internal` stands for one that is not
-        // public; a key with "refused" in it, one the provider refuses.
+        delete: ({ params }) =>
+          Effect.gen(function* discard() {
+            yield* allowed("post:delete");
+
+            const post = yield* findPost(
+              studio,
+              (yield* CurrentMember).workspaceId,
+              params.postId
+            );
+
+            yield* post.status === "draft"
+              ? Effect.void
+              : Effect.fail(new PostStatusConflict({ status: post.status }));
+
+            yield* Ref.update(studio.state, (current) => ({
+              ...current,
+              posts: current.posts.filter(({ id }) => id !== post.id),
+            }));
+            yield* record(studio, `discard:${post.id}`);
+          }),
+        list: ({ query }) =>
+          Effect.gen(function* drafts() {
+            yield* allowed("post:read");
+
+            const { posts: all } = yield* Ref.get(studio.state);
+
+            const listed =
+              (yield* CurrentMember).workspaceId === studioId
+                ? all.filter(({ status }) => status === "draft")
+                : [];
+
+            const start =
+              query.cursor === undefined
+                ? 0
+                : listed.findIndex(({ id }) => id === query.cursor) + 1;
+
+            const limit = query.limit ?? 20;
+            const items = listed.slice(start, start + limit);
+            const last = items.at(-1);
+
+            return {
+              items,
+              nextCursor:
+                last !== undefined && start + limit < listed.length
+                  ? last.id
+                  : null,
+            };
+          }),
+      })
+    ),
+    // The assistant makes images only: the command line writes no text
+    // with it. A prompt that says "unavailable" stands for a server without
+    // an image model.
+    HttpApiBuilder.group(Api, "assistant", (handlers) =>
+      handlers.handleAll({
         connectProvider: ({ params, payload }) =>
           Effect.gen(function* connectProvider() {
             yield* allowed("assistant:configure");
@@ -5022,6 +4989,51 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return { provider: brought?.provider ?? null };
           }),
+      })
+    ),
+    HttpApiBuilder.group(Api, "media.images", (handlers) =>
+      handlers.handleAll({
+        create: ({ payload }) =>
+          Effect.gen(function* generateImage() {
+            yield* allowed("assistant:use");
+            yield* allowed("media:upload");
+
+            if ((yield* CurrentMember).workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            if (payload.prompt.includes("unavailable")) {
+              return yield* new AssistantUnavailable();
+            }
+
+            // A plan whose day holds fewer requests than an image costs.
+            if (payload.prompt.includes("quota")) {
+              return yield* new AssistantQuotaExceeded({
+                billingUrl: null,
+                dailyLimit: 3,
+                plan: "free",
+                planWithRoom: "starter",
+                resetsAt: studioNow,
+              });
+            }
+
+            const { media: all } = yield* Ref.get(studio.state);
+            const id = nextId("a", all.length);
+
+            yield* record(studio, `generate:${payload.aspect}:${id}`);
+
+            return yield* saveMedia(
+              studio,
+              image(id, {
+                aiGenerated: true,
+                createdAt: studioNow,
+                updatedAt: studioNow,
+              })
+            );
+          }),
+        // The studio's connected providers and its model for each use. An
+        // address on a host named `internal` stands for one that is not
+        // public; a key with "refused" in it, one the provider refuses.
       })
     ),
     HttpApiBuilder.group(Api, "media", (handlers) =>
@@ -5490,7 +5502,7 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "billing", (handlers) =>
+    HttpApiBuilder.group(Api, "workspace.billing", (handlers) =>
       handlers.handleAll({
         get: () =>
           allowed("billing:read").pipe(
@@ -5505,7 +5517,7 @@ export const studioGroupsLive = (studio: Studio) =>
           ),
       })
     ),
-    HttpApiBuilder.group(Api, "shortLinks", (handlers) =>
+    HttpApiBuilder.group(Api, "links", (handlers) =>
       handlers.handleAll({
         get: ({ params }) =>
           allowed("analytics:read").pipe(
@@ -5564,7 +5576,7 @@ export const studioGroupsLive = (studio: Studio) =>
           ),
       })
     ),
-    HttpApiBuilder.group(Api, "usage", (handlers) =>
+    HttpApiBuilder.group(Api, "workspace.usage", (handlers) =>
       handlers.handleAll({
         get: ({ query }) =>
           allowed("billing:read").pipe(
@@ -5597,7 +5609,7 @@ export const studioGroupsLive = (studio: Studio) =>
           ),
       })
     ),
-    HttpApiBuilder.group(Api, "members", (handlers) =>
+    HttpApiBuilder.group(Api, "workspace.members", (handlers) =>
       handlers.handleAll({
         list: () =>
           inPerson.pipe(
@@ -5620,7 +5632,7 @@ export const studioGroupsLive = (studio: Studio) =>
           ),
       })
     ),
-    HttpApiBuilder.group(Api, "invitations", (handlers) =>
+    HttpApiBuilder.group(Api, "workspace.invitations", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {
@@ -5675,7 +5687,7 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "account", (handlers) =>
+    HttpApiBuilder.group(Api, "me.account", (handlers) =>
       handlers.handleAll({
         closure: () => refusing,
         delete: () => refusing,
@@ -5696,13 +5708,13 @@ export const studioGroupsLive = (studio: Studio) =>
         twoStep: () => refusing,
       })
     ),
-    HttpApiBuilder.group(Api, "connectedApps", (handlers) =>
+    HttpApiBuilder.group(Api, "me.connectedApps", (handlers) =>
       handlers.handleAll({
         list: () => Effect.succeed([cli]),
         revoke: () => refusing,
       })
     ),
-    HttpApiBuilder.group(Api, "connectLinks", (handlers) =>
+    HttpApiBuilder.group(Api, "channels.connectLinks", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {
@@ -5814,7 +5826,7 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "partnerAccount", (handlers) =>
+    HttpApiBuilder.group(Api, "partner.account", (handlers) =>
       handlers.handleAll({
         close: () => refusing,
         createKey: () => refusing,
@@ -5896,9 +5908,9 @@ export const studioGroupsLive = (studio: Studio) =>
         update: () => refusing,
       })
     ),
-    HttpApiBuilder.group(Api, "capabilities", (handlers) =>
+    HttpApiBuilder.group(Api, "channels.capabilities", (handlers) =>
       handlers.handleAll({
-        channel: ({ params }) =>
+        get: ({ params }) =>
           allowed("channel:read").pipe(
             Effect.andThen(channelIn(params)),
             Effect.map((channel) => ({
@@ -5940,7 +5952,7 @@ export const studioGroupsLive = (studio: Studio) =>
           ),
       })
     ),
-    HttpApiBuilder.group(Api, "lookups", (handlers) =>
+    HttpApiBuilder.group(Api, "channels.lookups", (handlers) =>
       handlers.handleAll({
         list: ({ params }) =>
           allowed("channel:read").pipe(
@@ -5991,7 +6003,7 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "review", (handlers) =>
+    HttpApiBuilder.group(Api, "approvals", (handlers) =>
       handlers.handleAll({
         approve: ({ params, payload }) =>
           Effect.gen(function* approve() {
@@ -6125,7 +6137,7 @@ export const studioGroupsLive = (studio: Studio) =>
               url: "https://peal.example.test/review#synthetic-token",
             };
           }),
-        links: ({ params }) =>
+        listLinks: ({ params }) =>
           Effect.gen(function* listLinks() {
             yield* allowed("post:read");
             yield* findPost(
@@ -6138,7 +6150,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return links.filter(({ postId }) => postId === params.postId);
           }),
-        pending: () =>
+        list: () =>
           Effect.gen(function* pending() {
             yield* allowed("post:read");
 
@@ -6241,7 +6253,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return { approvalPolicy: (yield* Ref.get(studio.state)).policy };
           }),
-        thread: ({ params }) =>
+        get: ({ params }) =>
           Effect.gen(function* thread() {
             yield* allowed("post:read");
 
@@ -6620,7 +6632,7 @@ export const studioGroupsLive = (studio: Studio) =>
     studioReviewsLive(studio.reviews),
     studioArticlesLive(studio.articles),
     studioMessagesLive(studio.messages),
-    HttpApiBuilder.group(Api, "tags", (handlers) =>
+    HttpApiBuilder.group(Api, "posts.tags", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {
@@ -6713,7 +6725,7 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "signatures", (handlers) =>
+    HttpApiBuilder.group(Api, "posts.signatures", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {
@@ -6810,7 +6822,7 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "channelSets", (handlers) =>
+    HttpApiBuilder.group(Api, "channels.sets", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {
@@ -6912,7 +6924,7 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "channelDefaults", (handlers) =>
+    HttpApiBuilder.group(Api, "channels.defaultOptions", (handlers) =>
       handlers.handleAll({
         clear: ({ params }) =>
           Effect.gen(function* clear() {
@@ -6958,7 +6970,7 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "activity", (handlers) =>
+    HttpApiBuilder.group(Api, "workspace.activity", (handlers) =>
       handlers.handleAll({
         list: ({ query }) =>
           Effect.gen(function* list() {
@@ -7002,9 +7014,9 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
       })
     ),
-    HttpApiBuilder.group(Api, "tiktok", (handlers) =>
+    HttpApiBuilder.group(Api, "channels.tiktokCreator", (handlers) =>
       handlers.handleAll({
-        creator: ({ params }) =>
+        get: ({ params }) =>
           CurrentMember.pipe(
             Effect.flatMap(({ workspaceId }) =>
               allowed("post:create").pipe(

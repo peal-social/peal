@@ -126,7 +126,7 @@ const as = (
   permissions: readonly Permission[],
   of: WorkspaceId = workspaceId
 ) =>
-  HttpApiTest.groups(Api, ["usage"]).pipe(
+  HttpApiTest.groups(Api, ["workspace.usage"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         UsageApiLive.pipe(
@@ -196,7 +196,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
 
           const client = yield* as(permissionsFor("admin"));
 
-          const report = yield* client.usage.get({
+          const report = yield* client["workspace.usage"].get({
             headers,
             query: { from: "2026-10-31", to: "2026-11-02" },
           });
@@ -284,7 +284,11 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
         yield* TestClock.setTime(DateTime.toEpochMillis(now));
 
         const client = yield* as(permissionsFor("admin"));
-        const report = yield* client.usage.get({ headers, query: {} });
+
+        const report = yield* client["workspace.usage"].get({
+          headers,
+          query: {},
+        });
 
         assert.deepStrictEqual(report.period, {
           from: "2026-10-13",
@@ -292,8 +296,10 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
         });
         assert.lengthOf(report.days, 30);
         assert.deepStrictEqual(
-          (yield* client.usage.get({ headers, query: { to: "2026-10-31" } }))
-            .period,
+          (yield* client["workspace.usage"].get({
+            headers,
+            query: { to: "2026-10-31" },
+          })).period,
           { from: "2026-10-02", to: "2026-10-31" }
         );
       })
@@ -312,7 +318,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
             { from: "2026-07-31", to: "2026-10-31" },
             { from: "2026-11-12" },
           ]) {
-            const refused = yield* client.usage
+            const refused = yield* client["workspace.usage"]
               .get({ headers, query })
               .pipe(Effect.flip);
 
@@ -320,7 +326,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
           }
 
           // 92 days, both ends included, are taken.
-          const longest = yield* client.usage.get({
+          const longest = yield* client["workspace.usage"].get({
             headers,
             query: { from: "2026-08-01", to: "2026-10-31" },
           });
@@ -333,7 +339,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
       Effect.gen(function* forbids() {
         const client = yield* as(permissionsFor("viewer"));
 
-        const refused = yield* client.usage
+        const refused = yield* client["workspace.usage"]
           .get({ headers, query: {} })
           .pipe(Effect.flip);
 
@@ -352,7 +358,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
 
           const client = yield* as(permissionsFor("admin"), tenantId);
 
-          const report = yield* client.usage.get({
+          const report = yield* client["workspace.usage"].get({
             headers: forWorkspace(tenantId),
             query: {},
           });
@@ -377,7 +383,7 @@ layer(reportsOn(UnmeteredTest))(
 
         const client = yield* as(permissionsFor("admin"));
 
-        const report = yield* client.usage.get({
+        const report = yield* client["workspace.usage"].get({
           headers,
           query: { from: "2026-11-01", to: "2026-11-01" },
         });

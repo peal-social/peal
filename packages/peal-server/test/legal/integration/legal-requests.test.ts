@@ -132,7 +132,7 @@ layer(RetainingLive, { excludeTestServices: true, timeout: "120 seconds" })(
           const ana = yield* signedUp("legal-ana");
           const workspaceId = yield* workspaceOf(ana, "Legal");
 
-          const created = yield* app.request(`/api/v1/posts`, {
+          const created = yield* app.request(`/api/v1/posts/drafts`, {
             body: draftOf("A synthetic draft of the legal test."),
             headers: {
               cookie: ana.cookies,
@@ -473,7 +473,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "120 seconds" })(
           const ben = yield* signedUp("legal-off");
           const workspaceId = yield* workspaceOf(ben, "Elsewhere");
 
-          const created = yield* app.request(`/api/v1/posts`, {
+          const created = yield* app.request(`/api/v1/posts/drafts`, {
             body: draftOf("A synthetic draft kept for nobody."),
             headers: {
               cookie: ben.cookies,
@@ -545,7 +545,7 @@ layer(
         yield* sql`INSERT INTO legal.connections (id, access, at, protocol, ip_address, user_id, workspace_id)
           VALUES (${uuid7()}, 'session', ${new Date()}, 'https', ${clientAddress}, ${cleo.id}, ${workspaceId})`;
 
-        const created = yield* app.request(`/api/v1/posts`, {
+        const created = yield* app.request(`/api/v1/posts/drafts`, {
           body: draftOf("A synthetic draft written once it was off."),
           headers: {
             cookie: cleo.cookies,

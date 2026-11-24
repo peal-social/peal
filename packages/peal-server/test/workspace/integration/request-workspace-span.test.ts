@@ -78,7 +78,7 @@ layer(SpanLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const { key } = yield* apiKeyOf(owner, workspaceId, ["post:read"]);
 
           const read = (headers: Readonly<Record<string, string>>) =>
-            app.request("/api/v1/tags", { headers });
+            app.request("/api/v1/posts/tags", { headers });
 
           assert.deepStrictEqual(yield* namedBy(read(bearer(key))), [
             workspaceId,

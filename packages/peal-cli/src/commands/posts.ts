@@ -987,7 +987,7 @@ const tag = Command.make(
     const chosen = yield* tagsNamed(session, given);
 
     const post = yield* client.posts
-      .tag({
+      .setTags({
         headers: {},
         params: { postId },
         payload: { tagIds: chosen.map(({ id }) => id) },

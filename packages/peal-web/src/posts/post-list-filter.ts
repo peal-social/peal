@@ -93,7 +93,7 @@ export const queryOf = (filters: PostListFilters): string =>
   ]).toString();
 
 /**
- * What `posts.search` is asked for one page: the filters, and the cursor
+ * What `posts.list` is asked for one page: the filters, and the cursor
  * the page before gave, which holds only with the same filters and sort.
  */
 export const searchOf = (

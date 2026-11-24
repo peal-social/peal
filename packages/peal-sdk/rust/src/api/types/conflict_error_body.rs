@@ -5,7 +5,7 @@ pub use crate::prelude::*;
 #[non_exhaustive]
 pub enum ConflictErrorBody {
     #[non_exhaustive]
-    FollowUpRuleTaken {
+    ChannelAccountTaken {
         #[serde(skip_serializing_if = "Option::is_none")]
         code: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -13,13 +13,19 @@ pub enum ConflictErrorBody {
         #[serde(rename = "requestId")]
         #[serde(skip_serializing_if = "Option::is_none")]
         request_id: Option<String>,
-        #[serde(rename = "ruleId")]
+        #[serde(rename = "channelId")]
         #[serde(default)]
-        rule_id: String,
+        channel_id: String,
     },
 
     #[non_exhaustive]
-    TooManyFollowUpRules {
+    IdempotencyKeyReused {
+        #[serde(flatten)]
+        data: IdempotencyKeyReusedEncoded,
+    },
+
+    #[non_exhaustive]
+    WorkspaceBusy {
         #[serde(skip_serializing_if = "Option::is_none")]
         code: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -27,8 +33,9 @@ pub enum ConflictErrorBody {
         #[serde(rename = "requestId")]
         #[serde(skip_serializing_if = "Option::is_none")]
         request_id: Option<String>,
+        #[serde(rename = "workspaceId")]
         #[serde(default)]
-        allowed: i64,
+        workspace_id: String,
     },
 
     /// Catch-all variant for unrecognized discriminant values.
@@ -39,105 +46,109 @@ pub enum ConflictErrorBody {
 }
 
 impl ConflictErrorBody {
-    pub fn follow_up_rule_taken(rule_id: String) -> Self {
-        Self::FollowUpRuleTaken {
+    pub fn channel_account_taken(channel_id: String) -> Self {
+        Self::ChannelAccountTaken {
             code: None,
             message: None,
             request_id: None,
-            rule_id,
+            channel_id,
         }
     }
 
-    pub fn too_many_follow_up_rules(allowed: i64) -> Self {
-        Self::TooManyFollowUpRules {
+    pub fn idempotency_key_reused(data: IdempotencyKeyReusedEncoded) -> Self {
+        Self::IdempotencyKeyReused { data }
+    }
+
+    pub fn workspace_busy(workspace_id: String) -> Self {
+        Self::WorkspaceBusy {
             code: None,
             message: None,
             request_id: None,
-            allowed,
+            workspace_id,
         }
     }
 
-    pub fn follow_up_rule_taken_with_code(
+    pub fn channel_account_taken_with_code(
         code: String,
         message: Option<String>,
         request_id: Option<String>,
-        rule_id: String,
+        channel_id: String,
     ) -> Self {
-        Self::FollowUpRuleTaken {
+        Self::ChannelAccountTaken {
             code: Some(code),
             message,
             request_id,
-            rule_id,
+            channel_id,
         }
     }
 
-    pub fn follow_up_rule_taken_with_message(
+    pub fn channel_account_taken_with_message(
         code: Option<String>,
         message: String,
         request_id: Option<String>,
-        rule_id: String,
+        channel_id: String,
     ) -> Self {
-        Self::FollowUpRuleTaken {
+        Self::ChannelAccountTaken {
             code,
             message: Some(message),
             request_id,
-            rule_id,
+            channel_id,
         }
     }
 
-    pub fn follow_up_rule_taken_with_request_id(
+    pub fn channel_account_taken_with_request_id(
         code: Option<String>,
         message: Option<String>,
         request_id: String,
-        rule_id: String,
+        channel_id: String,
     ) -> Self {
-        Self::FollowUpRuleTaken {
+        Self::ChannelAccountTaken {
             code,
             message,
             request_id: Some(request_id),
-            rule_id,
+            channel_id,
         }
     }
 
-    pub fn too_many_follow_up_rules_with_code(
+    pub fn workspace_busy_with_code(
         code: String,
         message: Option<String>,
         request_id: Option<String>,
-        allowed: i64,
+        workspace_id: String,
     ) -> Self {
-        Self::TooManyFollowUpRules {
+        Self::WorkspaceBusy {
             code: Some(code),
             message,
             request_id,
-            allowed,
+            workspace_id,
         }
     }
 
-    pub fn too_many_follow_up_rules_with_message(
+    pub fn workspace_busy_with_message(
         code: Option<String>,
         message: String,
         request_id: Option<String>,
-        allowed: i64,
+        workspace_id: String,
     ) -> Self {
-        Self::TooManyFollowUpRules {
+        Self::WorkspaceBusy {
             code,
             message: Some(message),
             request_id,
-            allowed,
+            workspace_id,
         }
     }
 
-    pub fn too_many_follow_up_rules_with_request_id(
+    pub fn workspace_busy_with_request_id(
         code: Option<String>,
         message: Option<String>,
         request_id: String,
-        allowed: i64,
+        workspace_id: String,
     ) -> Self {
-        Self::TooManyFollowUpRules {
+        Self::WorkspaceBusy {
             code,
             message,
             request_id: Some(request_id),
-            allowed,
+            workspace_id,
         }
     }
 

@@ -103,63 +103,6 @@ func (d *DisconnectProviderAssistantRequest) SetProvider(provider AiProvider) {
 }
 
 var (
-	imageRequestFieldAspect = big.NewInt(1 << 0)
-	imageRequestFieldPrompt = big.NewInt(1 << 1)
-)
-
-type ImageRequest struct {
-	Aspect ImageAspect `json:"aspect" url:"-"`
-	Prompt string      `json:"prompt" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (i *ImageRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if i.explicitFields != nil {
-		next.Set(i.explicitFields)
-	}
-	next.Or(next, field)
-	i.explicitFields = next
-}
-
-// SetAspect sets the Aspect field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (i *ImageRequest) SetAspect(aspect ImageAspect) {
-	i.Aspect = aspect
-	i.require(imageRequestFieldAspect)
-}
-
-// SetPrompt sets the Prompt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (i *ImageRequest) SetPrompt(prompt string) {
-	i.Prompt = prompt
-	i.require(imageRequestFieldPrompt)
-}
-
-func (i *ImageRequest) UnmarshalJSON(data []byte) error {
-	type unmarshaler ImageRequest
-	var body unmarshaler
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	*i = ImageRequest(body)
-	return nil
-}
-
-func (i *ImageRequest) MarshalJSON() ([]byte, error) {
-	type embed ImageRequest
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*i),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-var (
 	imageProviderChangeFieldAPIKey   = big.NewInt(1 << 0)
 	imageProviderChangeFieldBaseURL  = big.NewInt(1 << 1)
 	imageProviderChangeFieldModel    = big.NewInt(1 << 2)

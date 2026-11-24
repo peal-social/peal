@@ -332,7 +332,7 @@ const where = `Peal reads a channel's direct messages, on Mastodon, Bluesky, Fac
  * A workspace's direct messages: the private conversations of its
  * channels' accounts, and what members do about them.
  */
-export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
+export class InboxMessagesApi extends HttpApiGroup.make("inbox.messages")
   .add(
     HttpApiEndpoint.get("listConversations", "/conversations", {
       error: [Forbidden, HttpApiError.BadRequest],
@@ -375,33 +375,29 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
         summary: "Get a conversation",
       })
     ),
-    HttpApiEndpoint.post(
-      "sendMessage",
-      "/conversations/:conversationId/messages",
-      {
-        error: [
-          Forbidden,
-          InboxConversationNotFound,
-          InboxActionUnavailable,
-          ReplyInvalid,
-          MessageMentionsOutside,
-          MessagePending,
-          IdempotencyKeyReused,
-          UsageAllowanceReached,
-        ],
-        headers: {
-          ...workspaceHeaders,
-          "idempotency-key": Schema.optionalKey(
-            Schema.String.check(
-              Schema.isBetweenLength(1, maxIdempotencyKeyLength)
-            )
-          ),
-        },
-        params: conversation,
-        payload: NewInboxMessageSchema,
-        success: InboxOutgoingMessageSchema.pipe(HttpApiSchema.status(202)),
-      }
-    ).annotateMerge(
+    HttpApiEndpoint.post("send", "/conversations/:conversationId/messages", {
+      error: [
+        Forbidden,
+        InboxConversationNotFound,
+        InboxActionUnavailable,
+        ReplyInvalid,
+        MessageMentionsOutside,
+        MessagePending,
+        IdempotencyKeyReused,
+        UsageAllowanceReached,
+      ],
+      headers: {
+        ...workspaceHeaders,
+        "idempotency-key": Schema.optionalKey(
+          Schema.String.check(
+            Schema.isBetweenLength(1, maxIdempotencyKeyLength)
+          )
+        ),
+      },
+      params: conversation,
+      payload: NewInboxMessageSchema,
+      success: InboxOutgoingMessageSchema.pipe(HttpApiSchema.status(202)),
+    }).annotateMerge(
       OpenApi.annotations({
         description: `Answers a conversation privately, as the channel's account: the message goes to a real person, and cannot be taken back from Peal. On Mastodon it is a status of \`direct\` visibility, which mentions every participant first, and a text that mentions any other account is refused (422 \`MessageMentionsOutside\`), as it would reach them too; on Bluesky a chat message, which accepts a conversation the account had yet to accept; on Messenger and Instagram a message sent only within 24 hours of the person's last one (\`window\`): past it, the message is refused before anything is journalled (409 \`InboxActionUnavailable\`, \`reason\` \`windowClosed\`, with \`closedAt\`), unless an \`Idempotency-Key\` names a message already made. Where the server's Meta app holds Meta's Human Agent feature, a member signed in to Peal's web app in person may answer until ${humanAgentWindowDays} days after the person's last message (\`window.personClosesAt\`), with Meta's \`HUMAN_AGENT\` tag; an API key, an application (MCP, the command line) or staff acting as a member never may, and are refused past the 24 hours. The message is checked against the platform's length, journalled, and sent by a job: the answer is the message \`sending\`, and the conversation shows how it ended. A message whose outcome is unknown is \`unconfirmed\` and never sent again: check the platform, then confirm it. While a message to a conversation is on its way or unconfirmed, another is refused (409 \`MessagePending\`). With an \`Idempotency-Key\` header (${maxIdempotencyKeyLength} characters at most, new for each message), the request is safe to send again: within ${idempotencyKeyLifetimeHours} hours the same key with the same conversation and text answers the message the first request made, and sends no other; with another conversation or text it is refused (409 \`IdempotencyKeyReused\`). Sending marks the conversation read. On a server that bills, each message counts one of the billing account's inbox messages this calendar month (UTC), as a reply to a comment does: without a payment method, the message past the month's allowance is refused before anything is journalled (402 \`UsageAllowanceReached\`); with one, it is billed past the allowance. A message that never went out is not counted. ${acting}`,
         summary: "Send a direct message",
@@ -478,7 +474,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
         summary: "Mark a conversation read",
       })
     ),
-    HttpApiEndpoint.get("getMessageSettings", "/settings", {
+    HttpApiEndpoint.get("getSettings", "/settings", {
       error: [Forbidden],
       headers: workspaceHeaders,
 
@@ -490,7 +486,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
         summary: "Get the direct messages' settings",
       })
     ),
-    HttpApiEndpoint.put("setChannelMessages", "/channels/:channelId", {
+    HttpApiEndpoint.put("setChannel", "/channels/:channelId", {
       error: [Forbidden, InboxActionUnavailable],
       headers: workspaceHeaders,
       params: { channelId: Schema.String },
@@ -502,7 +498,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
         summary: "Turn a channel's direct messages on or off",
       })
     ),
-    HttpApiEndpoint.put("setMessageApplication", "/applications", {
+    HttpApiEndpoint.put("setApplication", "/applications", {
       error: [Forbidden],
       headers: workspaceHeaders,
 
@@ -517,17 +513,13 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
         summary: "Let an application read the direct messages",
       })
     ),
-    HttpApiEndpoint.post(
-      "confirmMessage",
-      "/outgoing/:messageId/confirmation",
-      {
-        error: [Forbidden, InboxMessageNotFound, ReplyStatusConflict],
-        headers: workspaceHeaders,
-        params: message,
-        payload: Schema.Struct({ sent: Schema.Boolean }),
-        success: InboxOutgoingMessageSchema,
-      }
-    ).annotateMerge(
+    HttpApiEndpoint.post("confirm", "/outgoing/:messageId/confirmation", {
+      error: [Forbidden, InboxMessageNotFound, ReplyStatusConflict],
+      headers: workspaceHeaders,
+      params: message,
+      payload: Schema.Struct({ sent: Schema.Boolean }),
+      success: InboxOutgoingMessageSchema,
+    }).annotateMerge(
       OpenApi.annotations({
         description: `Records what someone found on the platform for an unconfirmed message: it is there (\`sent: true\`), or it never went out (\`false\`). ${acting}`,
         summary: "Confirm an unconfirmed message",

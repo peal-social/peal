@@ -49,13 +49,30 @@ func do() error {
             "<token>",
         ),
     )
-    request := &peal.NewAPIKey{
-        Name: "name",
-        Permissions: []peal.Permission{
-            peal.PermissionActivityRead,
+    request := &peal.NewPost{
+        ChannelIDs: []string{
+            "channelIds",
+        },
+        Content: &peal.PostContent{
+            Media: []*peal.MediaAttachment{
+                &peal.MediaAttachment{
+                    AltText: "altText",
+                    MediaID: "mediaId",
+                },
+            },
+            Overrides: []*peal.TextOverride{
+                &peal.TextOverride{
+                    ChannelID: "channelId",
+                    Text: "text",
+                },
+            },
+            Text: "text",
+        },
+        When: &peal.PostTiming{
+            Now: &peal.PostTimingNow{},
         },
     }
-    _, err := client.APIKeys.Create(
+    _, err := client.Posts.Create(
         context.TODO(),
         request,
     )
@@ -83,7 +100,7 @@ Structured error types are returned from API calls that return non-success statu
 with the `errors.Is` and `errors.As` APIs, so you can access the error like so:
 
 ```go
-response, err := client.APIKeys.Create(...)
+response, err := client.Posts.Create(...)
 if err != nil {
     var apiError *core.APIError
     if errors.As(err, &apiError) {
@@ -117,7 +134,7 @@ client := client.NewClient(
 )
 
 // Specify options for an individual request.
-response, err := client.APIKeys.Create(
+response, err := client.Posts.Create(
     ...,
     option.WithToken("<YOUR_API_KEY>"),
 )
@@ -134,7 +151,7 @@ endpoint has no request body, a JSON body is created from the given properties. 
 JSON and form URL encoded request bodies; they are not applied to multipart file upload or raw byte requests.
 
 ```go
-response, err := client.APIKeys.Create(
+response, err := client.Posts.Create(
     ...,
     option.WithBodyProperties(map[string]interface{}{
         "custom_field": "custom-value",
@@ -148,7 +165,7 @@ You can access the raw HTTP response data by using the `WithRawResponse` field o
 when you need to examine the response headers received from the API call.
 
 ```go
-response, err := client.APIKeys.WithRawResponse.Create(...)
+response, err := client.Posts.WithRawResponse.Create(...)
 if err != nil {
     return err
 }
@@ -177,7 +194,7 @@ client := client.NewClient(
     option.WithMaxAttempts(1),
 )
 
-response, err := client.APIKeys.Create(
+response, err := client.Posts.Create(
     ...,
     option.WithMaxAttempts(1),
 )
@@ -191,7 +208,7 @@ Setting a timeout for each individual request is as simple as using the standard
 ctx, cancel := context.WithTimeout(ctx, time.Second)
 defer cancel()
 
-response, err := client.APIKeys.Create(ctx, ...)
+response, err := client.Posts.Create(ctx, ...)
 ```
 
 ### Explicit Null
@@ -213,7 +230,7 @@ type ExampleRequest struct {
 request := &ExampleRequest{}
 request.SetName(nil)
 
-response, err := client.APIKeys.Create(ctx, request, ...)
+response, err := client.Posts.Create(ctx, request, ...)
 ```
 
 ## Contributing

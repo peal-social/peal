@@ -1,4 +1,5 @@
 using global::System.Text.Json;
+using Peal.Channels;
 using Peal.Core;
 
 namespace Peal;
@@ -10,7 +11,25 @@ public partial class ChannelsClient : IChannelsClient
     internal ChannelsClient(RawClient client)
     {
         _client = client;
+        Capabilities = new CapabilitiesClient(_client);
+        DefaultOptions = new DefaultOptionsClient(_client);
+        Lookups = new LookupsClient(_client);
+        Sets = new SetsClient(_client);
+        ConnectLinks = new ConnectLinksClient(_client);
+        TiktokCreator = new TiktokCreatorClient(_client);
     }
+
+    public ICapabilitiesClient Capabilities { get; }
+
+    public IDefaultOptionsClient DefaultOptions { get; }
+
+    public ILookupsClient Lookups { get; }
+
+    public ISetsClient Sets { get; }
+
+    public IConnectLinksClient ConnectLinks { get; }
+
+    public ITiktokCreatorClient TiktokCreator { get; }
 
     private async Task<WithRawResponse<IEnumerable<Channel>>> ListAsyncCore(
         RequestOptions? options = null,
@@ -2989,7 +3008,7 @@ public partial class ChannelsClient : IChannelsClient
     }
 
     /// <summary>
-    /// Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (`setChannelMessages` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+    /// Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (`inbox.messages.setChannel` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
     /// </summary>
     /// <example><code>
     /// await client.Channels.ReconnectAsync(new ReconnectChannelsRequest { ChannelId = "channelId" });

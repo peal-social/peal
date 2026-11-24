@@ -81,17 +81,25 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const post = "01a1fb36-df6b-75e0-a3b4-1de09779ec94";
           const channel = "01a1fb36-df6b-75e0-a3b4-1de09779ec95";
 
-          const neither = yield* refused("follow-up-neither", "/follow-ups", {
-            comment: "Thanks!",
-            likes: 10,
-          });
+          const neither = yield* refused(
+            "follow-up-neither",
+            "/automations/follow-ups",
+            {
+              comment: "Thanks!",
+              likes: 10,
+            }
+          );
 
-          const both = yield* refused("comment-rule-both", "/inbox/rules", {
-            channelId: channel,
-            keywords: ["price"],
-            postId: post,
-            reply: "Sent you the prices.",
-          });
+          const both = yield* refused(
+            "comment-rule-both",
+            "/automations/comment-rules",
+            {
+              channelId: channel,
+              keywords: ["price"],
+              postId: post,
+              reply: "Sent you the prices.",
+            }
+          );
 
           assert.strictEqual(neither.status, 400);
           assert.deepStrictEqual(neither.fields, ["body.postId"]);

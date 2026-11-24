@@ -9,6 +9,12 @@ import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
 import * as Peal from "../../../index.js";
+import { CapabilitiesClient } from "../resources/capabilities/client/Client.js";
+import { ConnectLinksClient } from "../resources/connectLinks/client/Client.js";
+import { DefaultOptionsClient } from "../resources/defaultOptions/client/Client.js";
+import { LookupsClient } from "../resources/lookups/client/Client.js";
+import { SetsClient } from "../resources/sets/client/Client.js";
+import { TiktokCreatorClient } from "../resources/tiktokCreator/client/Client.js";
 
 export declare namespace ChannelsClient {
     export type Options = BaseClientOptions;
@@ -17,12 +23,45 @@ export declare namespace ChannelsClient {
     }
 }
 
+/**
+ * The accounts and websites a workspace posts to, what each takes, and their default options.
+ */
 export class ChannelsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<ChannelsClient.Options>;
+    protected _capabilities: CapabilitiesClient | undefined;
+    protected _defaultOptions: DefaultOptionsClient | undefined;
+    protected _lookups: LookupsClient | undefined;
+    protected _sets: SetsClient | undefined;
+    protected _connectLinks: ConnectLinksClient | undefined;
+    protected _tiktokCreator: TiktokCreatorClient | undefined;
 
     constructor(options: ChannelsClient.Options = {}) {
 
         this._options = normalizeClientOptionsWithAuth(options);
+    }
+
+    public get capabilities(): CapabilitiesClient {
+        return (this._capabilities ??= new CapabilitiesClient(this._options));
+    }
+
+    public get defaultOptions(): DefaultOptionsClient {
+        return (this._defaultOptions ??= new DefaultOptionsClient(this._options));
+    }
+
+    public get lookups(): LookupsClient {
+        return (this._lookups ??= new LookupsClient(this._options));
+    }
+
+    public get sets(): SetsClient {
+        return (this._sets ??= new SetsClient(this._options));
+    }
+
+    public get connectLinks(): ConnectLinksClient {
+        return (this._connectLinks ??= new ConnectLinksClient(this._options));
+    }
+
+    public get tiktokCreator(): TiktokCreatorClient {
+        return (this._tiktokCreator ??= new TiktokCreatorClient(this._options));
     }
 
     /**
@@ -761,7 +800,7 @@ export class ChannelsClient {
     }
 
     /**
-     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (`setChannelMessages` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
+     * Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (`inbox.messages.setChannel` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
      *
      * @param {Peal.ReconnectChannelsRequest} request
      * @param {ChannelsClient.RequestOptions} requestOptions - Request-specific configuration.

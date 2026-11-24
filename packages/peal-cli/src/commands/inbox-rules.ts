@@ -111,8 +111,8 @@ const list = Command.make(
   Effect.fn("inboxRules.list")(function* list(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const page = yield* client.inboxRules
-      .listCommentRules({
+    const page = yield* client["automations.commentRules"]
+      .list({
         headers: {},
         query: Option.match(input.status, {
           onNone: () => ({}),
@@ -152,8 +152,8 @@ const show = Command.make(
   Effect.fn("inboxRules.show")(function* show(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.inboxRules
-      .getCommentRule({
+    const rule = yield* client["automations.commentRules"]
+      .get({
         headers: {},
         params: { ruleId: input.rule },
       })
@@ -206,8 +206,8 @@ const start = Command.make(
 
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.inboxRules
-      .createCommentRule({
+    const rule = yield* client["automations.commentRules"]
+      .create({
         headers: {},
         payload: {
           keywords: input.keywords,
@@ -291,8 +291,8 @@ const update = Command.make(
 
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.inboxRules
-      .updateCommentRule({
+    const rule = yield* client["automations.commentRules"]
+      .update({
         headers: {},
         params: { ruleId: input.rule },
         payload,
@@ -315,8 +315,8 @@ const pausing = (paused: boolean) =>
   }) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    const rule = yield* client.inboxRules
-      .updateCommentRule({
+    const rule = yield* client["automations.commentRules"]
+      .update({
         headers: {},
         params: { ruleId: input.rule },
         payload: { paused },
@@ -352,8 +352,8 @@ const stop = Command.make(
   Effect.fn("inboxRules.stop")(function* stop(input) {
     const { client, url } = yield* inWorkspace(input.workspace);
 
-    yield* client.inboxRules
-      .deleteCommentRule({
+    yield* client["automations.commentRules"]
+      .delete({
         headers: {},
         params: { ruleId: input.rule },
       })

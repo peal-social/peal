@@ -32,9 +32,9 @@ const rule = { ruleId: Schema.String };
 const answers = `A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its \`reply\`, once a comment and once a person, ${String(maxRuleRepliesPerDay)} replies a day at most, and ${String(maxChannelRepliesPerDay)} a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and \`channels\` says so. It never likes or follows anyone. With a \`privateReply\`, it also sends the author of each comment it answered that one private message, once its public reply is out: only on Instagram and Facebook Pages, whose platforms let an account send a commenter one message within 7 days of the comment, only where the channel's messages are on (a channel that cannot carry it answers in public only, and the match's \`privateCode\` says why), never twice to a comment, whoever sent the first, and never to anyone who did not comment. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected.`;
 
 /** Rules that answer comments holding a keyword, by themselves. */
-export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
+export class InboxRulesApi extends HttpApiGroup.make("automations.commentRules")
   .add(
-    HttpApiEndpoint.get("listCommentRules", "/", {
+    HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
       headers: workspaceHeaders,
 
@@ -52,7 +52,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
         summary: "List comment rules",
       })
     ),
-    HttpApiEndpoint.post("createCommentRule", "/", {
+    HttpApiEndpoint.post("create", "/", {
       error: [
         Forbidden,
         CommentRuleNotPossible,
@@ -69,7 +69,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
         summary: "Start a comment rule",
       })
     ),
-    HttpApiEndpoint.get("getCommentRule", "/:ruleId", {
+    HttpApiEndpoint.get("get", "/:ruleId", {
       error: [Forbidden, CommentRuleNotFound],
       headers: workspaceHeaders,
       params: rule,
@@ -81,7 +81,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
         summary: "Get a comment rule",
       })
     ),
-    HttpApiEndpoint.patch("updateCommentRule", "/:ruleId", {
+    HttpApiEndpoint.patch("update", "/:ruleId", {
       error: [
         Forbidden,
         CommentRuleEnded,
@@ -99,7 +99,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
         summary: "Update a comment rule",
       })
     ),
-    HttpApiEndpoint.delete("deleteCommentRule", "/:ruleId", {
+    HttpApiEndpoint.delete("delete", "/:ruleId", {
       error: [Forbidden, CommentRuleNotFound],
       headers: workspaceHeaders,
       params: rule,
@@ -114,4 +114,4 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/inbox/rules") {}
+  .prefix("/api/v1/automations/comment-rules") {}

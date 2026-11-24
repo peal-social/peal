@@ -39,7 +39,9 @@ const savedNamed = <A extends Saved>(
 
 /** The workspace's signatures, oldest first. */
 export const signaturesOf = ({ client, url }: InWorkspace) =>
-  client.signatures.list({ headers: {} }).pipe(Effect.mapError(explain(url)));
+  client["posts.signatures"]
+    .list({ headers: {} })
+    .pipe(Effect.mapError(explain(url)));
 
 /**
  * The signature a command names: by its id, or by its exact name, whatever
@@ -67,7 +69,9 @@ export const findSignature = (session: InWorkspace, given: string) =>
 
 /** The workspace's channel sets, oldest first. */
 export const setsOf = ({ client, url }: InWorkspace) =>
-  client.channelSets.list({ headers: {} }).pipe(Effect.mapError(explain(url)));
+  client["channels.sets"]
+    .list({ headers: {} })
+    .pipe(Effect.mapError(explain(url)));
 
 /**
  * The channel set a command names: by its id, or by its exact name,
@@ -93,7 +97,9 @@ export const findSet = (session: InWorkspace, given: string) =>
 
 /** The workspace's queues, the default first, then by name. */
 export const queuesOf = ({ client, url }: InWorkspace) =>
-  client.queues.list({ headers: {} }).pipe(Effect.mapError(explain(url)));
+  client["automations.queues"]
+    .list({ headers: {} })
+    .pipe(Effect.mapError(explain(url)));
 
 /**
  * The queue a command names: by its id, or by its exact name, whatever its

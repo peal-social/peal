@@ -102,12 +102,12 @@ const scopeOf = (payload: {
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const InboxRulesHandlers = HttpApiBuilder.group(
   Api,
-  "inboxRules",
+  "automations.commentRules",
   Effect.fn(function* inboxRulesHandlers(handlers) {
     const rules = yield* CommentRules;
 
     return handlers.handleAll({
-      createCommentRule: ({ payload }) =>
+      create: ({ payload }) =>
         Effect.gen(function* create() {
           const actor = actorOf(yield* CurrentMember);
           const scope = yield* scopeOf(payload);
@@ -134,7 +134,7 @@ export const InboxRulesHandlers = HttpApiBuilder.group(
             })
           );
         }),
-      deleteCommentRule: ({ params }) =>
+      delete: ({ params }) =>
         Effect.gen(function* stop() {
           const actor = actorOf(yield* CurrentMember);
           const ruleId = yield* ruleIdFrom(params.ruleId);
@@ -147,7 +147,7 @@ export const InboxRulesHandlers = HttpApiBuilder.group(
             })
           );
         }),
-      getCommentRule: ({ params }) =>
+      get: ({ params }) =>
         Effect.gen(function* get() {
           const actor = actorOf(yield* CurrentMember);
           const ruleId = yield* ruleIdFrom(params.ruleId);
@@ -161,7 +161,7 @@ export const InboxRulesHandlers = HttpApiBuilder.group(
             })
           );
         }),
-      listCommentRules: ({ query }) =>
+      list: ({ query }) =>
         Effect.gen(function* list() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -198,7 +198,7 @@ export const InboxRulesHandlers = HttpApiBuilder.group(
               found.length > limit ? (page.at(-1)?.rule.id ?? null) : null,
           };
         }),
-      updateCommentRule: ({ params, payload }) =>
+      update: ({ params, payload }) =>
         Effect.gen(function* update() {
           const actor = actorOf(yield* CurrentMember);
           const ruleId = yield* ruleIdFrom(params.ruleId);

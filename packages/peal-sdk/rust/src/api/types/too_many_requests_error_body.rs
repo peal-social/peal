@@ -5,7 +5,7 @@ pub use crate::prelude::*;
 #[non_exhaustive]
 pub enum TooManyRequestsErrorBody {
     #[non_exhaustive]
-    FeedReadsLimited {
+    OwnTextLimitReached {
         #[serde(skip_serializing_if = "Option::is_none")]
         code: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -13,9 +13,23 @@ pub enum TooManyRequestsErrorBody {
         #[serde(rename = "requestId")]
         #[serde(skip_serializing_if = "Option::is_none")]
         request_id: Option<String>,
-        #[serde(rename = "retryAfterSeconds")]
+        #[serde(rename = "dailyLimit")]
         #[serde(default)]
-        retry_after_seconds: i64,
+        daily_limit: i64,
+        #[serde(rename = "resetsAt")]
+        #[serde(default)]
+        resets_at: String,
+    },
+
+    #[non_exhaustive]
+    TextProviderBusy {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        code: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        message: Option<String>,
+        #[serde(rename = "requestId")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        request_id: Option<String>,
     },
 
     #[non_exhaustive]
@@ -50,12 +64,21 @@ pub enum TooManyRequestsErrorBody {
 }
 
 impl TooManyRequestsErrorBody {
-    pub fn feed_reads_limited(retry_after_seconds: i64) -> Self {
-        Self::FeedReadsLimited {
+    pub fn own_text_limit_reached(daily_limit: i64, resets_at: String) -> Self {
+        Self::OwnTextLimitReached {
             code: None,
             message: None,
             request_id: None,
-            retry_after_seconds,
+            daily_limit,
+            resets_at,
+        }
+    }
+
+    pub fn text_provider_busy() -> Self {
+        Self::TextProviderBusy {
+            code: None,
+            message: None,
+            request_id: None,
         }
     }
 
@@ -72,45 +95,87 @@ impl TooManyRequestsErrorBody {
         }
     }
 
-    pub fn feed_reads_limited_with_code(
+    pub fn own_text_limit_reached_with_code(
         code: String,
         message: Option<String>,
         request_id: Option<String>,
-        retry_after_seconds: i64,
+        daily_limit: i64,
+        resets_at: String,
     ) -> Self {
-        Self::FeedReadsLimited {
+        Self::OwnTextLimitReached {
             code: Some(code),
             message,
             request_id,
-            retry_after_seconds,
+            daily_limit,
+            resets_at,
         }
     }
 
-    pub fn feed_reads_limited_with_message(
+    pub fn own_text_limit_reached_with_message(
         code: Option<String>,
         message: String,
         request_id: Option<String>,
-        retry_after_seconds: i64,
+        daily_limit: i64,
+        resets_at: String,
     ) -> Self {
-        Self::FeedReadsLimited {
+        Self::OwnTextLimitReached {
             code,
             message: Some(message),
             request_id,
-            retry_after_seconds,
+            daily_limit,
+            resets_at,
         }
     }
 
-    pub fn feed_reads_limited_with_request_id(
+    pub fn own_text_limit_reached_with_request_id(
         code: Option<String>,
         message: Option<String>,
         request_id: String,
-        retry_after_seconds: i64,
+        daily_limit: i64,
+        resets_at: String,
     ) -> Self {
-        Self::FeedReadsLimited {
+        Self::OwnTextLimitReached {
             code,
             message,
             request_id: Some(request_id),
-            retry_after_seconds,
+            daily_limit,
+            resets_at,
+        }
+    }
+
+    pub fn text_provider_busy_with_code(
+        code: String,
+        message: Option<String>,
+        request_id: Option<String>,
+    ) -> Self {
+        Self::TextProviderBusy {
+            code: Some(code),
+            message,
+            request_id,
+        }
+    }
+
+    pub fn text_provider_busy_with_message(
+        code: Option<String>,
+        message: String,
+        request_id: Option<String>,
+    ) -> Self {
+        Self::TextProviderBusy {
+            code,
+            message: Some(message),
+            request_id,
+        }
+    }
+
+    pub fn text_provider_busy_with_request_id(
+        code: Option<String>,
+        message: Option<String>,
+        request_id: String,
+    ) -> Self {
+        Self::TextProviderBusy {
+            code,
+            message,
+            request_id: Some(request_id),
         }
     }
 

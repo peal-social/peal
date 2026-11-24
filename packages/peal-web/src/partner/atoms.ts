@@ -22,14 +22,14 @@ export const partnerKeysChanged = (workspaceId: string) => [
 ];
 
 export const partnerOf = Atom.family((workspaceId: string) =>
-  PealApi.query("partnerAccount", "get", {
+  PealApi.query("partner.account", "get", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: partnerChanged(workspaceId),
   })
 );
 
 export const partnerKeysOf = Atom.family((workspaceId: string) =>
-  PealApi.query("partnerAccount", "listKeys", {
+  PealApi.query("partner.account", "listKeys", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: partnerKeysChanged(workspaceId),
   })
@@ -37,7 +37,7 @@ export const partnerKeysOf = Atom.family((workspaceId: string) =>
 
 /** The workspaces the account owns, the newest of them. */
 export const partnerWorkspacesOf = Atom.family((workspaceId: string) =>
-  PealApi.query("partnerAccount", "listWorkspaces", {
+  PealApi.query("partner.account", "listWorkspaces", {
     headers: forWorkspace(workspaceId),
     query: {},
   })
@@ -48,7 +48,7 @@ export const partnerWorkspacesOf = Atom.family((workspaceId: string) =>
  * `partnerWorkspacesOf` lists them: the same page, in the same order.
  */
 export const partnerHealthOf = Atom.family((workspaceId: string) =>
-  PealApi.query("partnerAccount", "overview", {
+  PealApi.query("partner.account", "overview", {
     headers: forWorkspace(workspaceId),
     query: {},
   })
@@ -66,18 +66,24 @@ export const partnerUsageOf = (
     readonly to: CalendarDay;
   }
 ) =>
-  PealApi.query("usage", "partner", {
+  PealApi.query("workspace.usage", "partner", {
     headers: forWorkspace(workspaceId),
     query,
     reactivityKeys: [`billing:${workspaceId}`],
   });
 
-export const openPartner = PealApi.mutation("partnerAccount", "open");
+export const openPartner = PealApi.mutation("partner.account", "open");
 
-export const updatePartner = PealApi.mutation("partnerAccount", "update");
+export const updatePartner = PealApi.mutation("partner.account", "update");
 
-export const closePartner = PealApi.mutation("partnerAccount", "close");
+export const closePartner = PealApi.mutation("partner.account", "close");
 
-export const createPartnerKey = PealApi.mutation("partnerAccount", "createKey");
+export const createPartnerKey = PealApi.mutation(
+  "partner.account",
+  "createKey"
+);
 
-export const revokePartnerKey = PealApi.mutation("partnerAccount", "revokeKey");
+export const revokePartnerKey = PealApi.mutation(
+  "partner.account",
+  "revokeKey"
+);

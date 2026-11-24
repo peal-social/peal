@@ -38,7 +38,7 @@ func (b *BadGatewayError) GetBody() any {
 	return b.Body
 }
 
-// The request names no workspace, and its credential belongs to none: send the workspace's id in the `Peal-Workspace` header. Nothing was done.
+// The range ends before it starts, or spans more than the list takes: 62 days for the posts scheduled in a range. | The request names no workspace, and its credential belongs to none: send the workspace's id in the `Peal-Workspace` header. Nothing was done.
 type BadRequestError struct {
 	*core.APIError
 	Body any
@@ -193,7 +193,7 @@ func (n *NotFoundError) GetBody() any {
 	return n.Body
 }
 
-// The workspace's plan (`plan`) allows `allowed` of `limit`, across every workspace of its billing account, and holds `used`: nothing was changed. `planWithRoom` is `payAsYouGo` when a payment method gives room (as for a third connected account on the free tier), which an owner or an admin adds by ordering on the billing page (`billingUrl`); it is null when no plan holds that much. Removing some makes room too. A workspace holding more than its plan allows, as after a subscription ended, adds nothing until it is back within it. | The workspace's billing account used the `allowed` units of `meter` it may use this calendar month (UTC), and used `used`: nothing was counted, nor done. `reason` says the way out: `paymentMethodRequired`, an owner or an admin adds a payment method on the billing page (`billingUrl`), after which what passes the allowance is billed at the rate card's price (the writing assistant on the server's models needs one from the first request); `ceilingReached`, they raise the account's monthly ceiling there; `spendCapReached`, no invoice of the account was paid yet, and what its meters billed since its subscription began would pass the cap until one is, whatever the ceilings: it lifts once the first invoice is paid; `planAllowance`, the workspace's legacy plan includes no more, and moving to per-account pricing there bills what passes it; `paymentFailed`, the subscription's last payment failed: once it goes through (the payment method is updated in the billing page's portal), what passes the allowance is billed again; `notEnabled`, the meter is off for the account. Otherwise it waits for `resetsAt`, the first of next month. Reading, analytics and publishing go on.
+// The workspace's plan (`plan`) allows `allowed` of `limit`, across every workspace of its billing account, and holds `used`: nothing was changed. `planWithRoom` is `payAsYouGo` when a payment method gives room (as for a third connected account on the free tier), which an owner or an admin adds by ordering on the billing page (`billingUrl`); it is null when no plan holds that much. Removing some makes room too. A workspace holding more than its plan allows, as after a subscription ended, adds nothing until it is back within it.
 type PaymentRequiredError struct {
 	*core.APIError
 	Body any
@@ -224,7 +224,7 @@ func (p *PaymentRequiredError) GetBody() any {
 	return p.Body
 }
 
-// The server cannot reach its database.
+// The server cannot reach its media store right now. Try again later.
 type ServiceUnavailableError struct {
 	*core.APIError
 	Body any
@@ -317,7 +317,7 @@ func (u *UnauthorizedError) GetBody() *UnauthenticatedEncoded {
 	return u.Body
 }
 
-// The account was not connected; `reason` says why. Nothing was saved. | The website was not connected; `reason` says why. Nothing was saved.
+// The time asked for has passed. A time up to a minute ago publishes now. | The time zone is not an IANA time zone such as Europe/Paris. Offsets such as +01:00 are refused. | The post's content breaks the rules of its channels' platforms: `violations` says how, channel by channel, for its images and videos, media by media, and for its options on a channel, option by option (`field`). | Some channels asked for are not connected to the workspace: `channelIds` lists them. | Some media attached are not the workspace's, or not ready to show: `mediaIds` lists them. | Some tags asked for are not the workspace's: `tagIds` lists them.
 type UnprocessableEntityError struct {
 	*core.APIError
 	Body any

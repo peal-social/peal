@@ -86,7 +86,7 @@ export const PostTagIdsSchema = Schema.Array(Schema.String).check(
 const tag = { tagId: Schema.String };
 
 /** A workspace's tags: the labels it files its posts under. */
-export class TagsApi extends HttpApiGroup.make("tags")
+export class TagsApi extends HttpApiGroup.make("posts.tags")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
@@ -140,4 +140,4 @@ export class TagsApi extends HttpApiGroup.make("tags")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/tags") {}
+  .prefix("/api/v1/posts/tags") {}

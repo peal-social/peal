@@ -9,17 +9,17 @@ Vous pouvez laisser Peal choisir l’heure d’une publication sur le prochain c
 
 ## Ajouter une publication à une file d’attente [#queues]
 
-Une file d’attente est un emploi du temps hebdomadaire de créneaux dans un fuseau horaire ([Files d’attente](/guides/posts/queues#queues)). Vous gérez les files avec `GET` et `POST …/queues`, et `GET`, `PUT` et `DELETE …/queues/{queueId}`. Lire demande post:read, et modifier post:update.
+Une file d’attente est un emploi du temps hebdomadaire de créneaux dans un fuseau horaire ([Files d’attente](/guides/posts/queues#queues)). Vous gérez les files avec `GET` et `POST …/automations/queues`, et `GET`, `PUT` et `DELETE …/automations/queues/{queueId}`. Lire demande post:read, et modifier post:update.
 
 Ces requêtes placent des publications sur une file :
 
-| Requête                                                                                                | Ce qu’elle fait                                                                                                                                                           |
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `when: { "_tag": "queue", "queueId": "…" }` sur `send`, sur chaque élément de `bulk` et sur `validate` | Place une publication sur le prochain créneau libre de la file au lieu d’une heure. Sans `queueId`, sur la file par défaut de l’espace de travail.                        |
-| `POST …/posts/{postId}/queue`, avec `{ "queueId"?, "channelIds"? }`                                    | Place un brouillon sur le prochain créneau libre, ou y déplace une publication programmée ou en attente d’approbation.                                                    |
-| `GET …/queues/{queueId}/slots?count=…`                                                                 | Montre les prochains créneaux, chacun avec la publication qui le prend, et `nextFree`, où irait une publication ajoutée maintenant. C’est un conseil : rien n’est retenu. |
-| `POST …/queues/{queueId}/reshuffle`                                                                    | Place les publications en attente de la file sur ses créneaux tels qu’ils sont maintenant ([plus bas](#reshuffle)).                                                       |
-| `GET …/posts/search?queueId=…`                                                                         | Liste les publications qu’une file a placées. Chaque publication porte la file qui l’a placée (`queueId`, null une fois cette file supprimée).                            |
+| Requête                                                                                                  | Ce qu’elle fait                                                                                                                                                           |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `when: { "_tag": "queue", "queueId": "…" }` sur `create`, sur chaque élément de `bulk` et sur `validate` | Place une publication sur le prochain créneau libre de la file au lieu d’une heure. Sans `queueId`, sur la file par défaut de l’espace de travail.                        |
+| `POST …/posts/{postId}/queue`, avec `{ "queueId"?, "channelIds"? }`                                      | Place un brouillon sur le prochain créneau libre, ou y déplace une publication programmée ou en attente d’approbation.                                                    |
+| `GET …/automations/queues/{queueId}/slots?count=…`                                                       | Montre les prochains créneaux, chacun avec la publication qui le prend, et `nextFree`, où irait une publication ajoutée maintenant. C’est un conseil : rien n’est retenu. |
+| `POST …/automations/queues/{queueId}/reshuffle`                                                          | Place les publications en attente de la file sur ses créneaux tels qu’ils sont maintenant ([plus bas](#reshuffle)).                                                       |
+| `GET …/posts?queueId=…`                                                                                  | Liste les publications qu’une file a placées. Chaque publication porte la file qui l’a placée (`queueId`, null une fois cette file supprimée).                            |
 
 ### Envoyer une publication sur une file [#queue-send]
 
@@ -32,7 +32,7 @@ import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
-const post = await peal.posts.send({
+const post = await peal.posts.create({
   channelIds: [],
   content: { text: "An evergreen tip.", media: [], overrides: [] },
   when: { _tag: "queue" },
@@ -46,7 +46,7 @@ from peal import Peal, PostContent, PostTiming_Queue
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
-post = peal.posts.send(
+post = peal.posts.create(
     channel_ids=[],
     content=PostContent(text="An evergreen tip.", media=[], overrides=[]),
     when=PostTiming_Queue(),
@@ -65,7 +65,7 @@ import (
 
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
-post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
+post, err := client.Posts.Create(context.TODO(), &peal.NewPost{
 	ChannelIDs: []string{},
 	Content: &peal.PostContent{
 		Text:      "An evergreen tip.",
@@ -81,7 +81,7 @@ require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
-post = peal.posts.send_(
+post = peal.posts.create(
   channel_ids: [],
   content: { text: "An evergreen tip.", media: [], overrides: [] },
   when_: { _tag: "queue" }
@@ -98,7 +98,7 @@ PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
 
-Post post = peal.posts().send(
+Post post = peal.posts().create(
     NewPost.builder()
         .content(PostContent.builder().text("An evergreen tip.").build())
         .when(PostTiming.queue(PostTimingQueue.builder().build()))
@@ -116,7 +116,7 @@ use Peal\Types\PostTimingQueue;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
-$post = $peal->posts->send(new NewPost([
+$post = $peal->posts->create(new NewPost([
     'channelIds' => [],
     'content' => new PostContent([
         'text' => 'An evergreen tip.',
@@ -132,7 +132,7 @@ using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
-var post = await peal.Posts.SendAsync(new NewPost
+var post = await peal.Posts.CreateAsync(new NewPost
 {
     ChannelIds = new List<string>(),
     Content = new PostContent { Text = "An evergreen tip." },
@@ -150,7 +150,7 @@ let peal = PealClient::new(ClientConfig {
 
 let post = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec![])
             .content(
@@ -168,7 +168,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/v1/posts/send" \
+curl -X POST "https://peal.example/api/v1/posts" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"channelIds": [], "content": {"text": "An evergreen tip.", "media": [], "overrides": []}, "when": {"_tag": "queue"}}'
@@ -285,47 +285,47 @@ La requête peut être refusée avec ces erreurs :
 
 ### Replacer les publications en attente [#reshuffle]
 
-Enregistrer les créneaux d’une file ne déplace aucune publication. `POST …/queues/{queueId}/reshuffle`, sans corps, place les publications en attente de la file sur ses créneaux tels qu’ils sont maintenant ([Replacer les publications en attente](/guides/posts/queues#reshuffle)). Les publications en attente sont celles programmées ou en attente d’approbation, après maintenant, y compris celles déplacées à la main, et elles gardent l’ordre de leurs heures. Il faut post:schedule, ou post:create là où les publications attendent une approbation.
+Enregistrer les créneaux d’une file ne déplace aucune publication. `POST …/automations/queues/{queueId}/reshuffle`, sans corps, place les publications en attente de la file sur ses créneaux tels qu’ils sont maintenant ([Replacer les publications en attente](/guides/posts/queues#reshuffle)). Les publications en attente sont celles programmées ou en attente d’approbation, après maintenant, y compris celles déplacées à la main, et elles gardent l’ordre de leurs heures. Il faut post:schedule, ou post:create là où les publications attendent une approbation.
 
 <CodeGroup>
 
 ```ts Node.js
-const result = await peal.queues.reshuffle({
+const result = await peal.automations.queues.reshuffle({
   queueId: "0190f3a0-0000-7000-8000-00000000e001",
 });
 ```
 
 ```python Python
-result = peal.queues.reshuffle(
+result = peal.automations.queues.reshuffle(
     queue_id="0190f3a0-0000-7000-8000-00000000e001",
 )
 ```
 
 ```go Go
-result, err := client.Queues.Reshuffle(context.TODO(), &peal.ReshuffleQueuesRequest{
+result, err := client.Automations.Queues.Reshuffle(context.TODO(), &automations.ReshuffleQueuesRequest{
 	QueueID: "0190f3a0-0000-7000-8000-00000000e001",
 })
 ```
 
 ```ruby Ruby
-result = peal.queues.reshuffle(
+result = peal.automations.queues.reshuffle(
   queue_id: "0190f3a0-0000-7000-8000-00000000e001"
 )
 ```
 
 ```java Java
-QueueReshuffle result = peal.queues().reshuffle(
+QueueReshuffle result = peal.automations().queues().reshuffle(
     "0190f3a0-0000-7000-8000-00000000e001");
 ```
 
 ```php PHP
-$result = $peal->queues->reshuffle(
+$result = $peal->automations->queues->reshuffle(
     '0190f3a0-0000-7000-8000-00000000e001',
 );
 ```
 
 ```csharp .NET
-var result = await peal.Queues.ReshuffleAsync(new ReshuffleQueuesRequest
+var result = await peal.Automations.Queues.ReshuffleAsync(new ReshuffleQueuesRequest
 {
     QueueId = "0190f3a0-0000-7000-8000-00000000e001",
 });
@@ -333,13 +333,14 @@ var result = await peal.Queues.ReshuffleAsync(new ReshuffleQueuesRequest
 
 ```rust Rust
 let result = peal
+    .automations
     .queues
     .reshuffle("0190f3a0-0000-7000-8000-00000000e001", None)
     .await?;
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/v1/queues/0190f3a0-0000-7000-8000-00000000e001/reshuffle" \
+curl -X POST "https://peal.example/api/v1/automations/queues/0190f3a0-0000-7000-8000-00000000e001/reshuffle" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -371,7 +372,7 @@ Rappelez-la pour continuer. Un second appel juste après le premier ne déplace 
 
 ## Répéter une publication [#recycling]
 
-`POST …/recycling` répète une publication programmée, en cours d’envoi ou en ligne ([comment ça marche](/guides/posts/queues#recycling)). Il répond 201 avec la règle, dont `coming` liste les trois prochaines publications et la variante de chacune.
+`POST …/automations/recycling` répète une publication programmée, en cours d’envoi ou en ligne ([comment ça marche](/guides/posts/queues#recycling)). Il répond 201 avec la règle, dont `coming` liste les trois prochaines publications et la variante de chacune.
 
 Le corps prend ces champs :
 
@@ -389,7 +390,7 @@ Cette règle publie six fois en tout, toutes les deux semaines, avec une variant
 <CodeGroup>
 
 ```ts Node.js
-const rule = await peal.recycling.create({
+const rule = await peal.automations.recycling.create({
   postId: "0190f3a0-0000-7000-8000-00000000b001",
   every: { count: 2, unit: "weeks" },
   count: 6,
@@ -400,7 +401,7 @@ const rule = await peal.recycling.create({
 ```python Python
 from peal import RecyclingInterval, RecyclingVariant
 
-rule = peal.recycling.create(
+rule = peal.automations.recycling.create(
     post_id="0190f3a0-0000-7000-8000-00000000b001",
     every=RecyclingInterval(count=2, unit="weeks"),
     count=6,
@@ -409,7 +410,7 @@ rule = peal.recycling.create(
 ```
 
 ```go Go
-rule, err := client.Recycling.Create(context.TODO(), &peal.NewRecyclingRule{
+rule, err := client.Automations.Recycling.Create(context.TODO(), &automations.NewRecyclingRule{
 	PostID:   "0190f3a0-0000-7000-8000-00000000b001",
 	Every:    &peal.RecyclingInterval{Count: 2, Unit: peal.RecyclingUnitWeeks},
 	Count:    peal.Int(6),
@@ -418,7 +419,7 @@ rule, err := client.Recycling.Create(context.TODO(), &peal.NewRecyclingRule{
 ```
 
 ```ruby Ruby
-rule = peal.recycling.create(
+rule = peal.automations.recycling.create(
   post_id: "0190f3a0-0000-7000-8000-00000000b001",
   every: { count: 2, unit: "weeks" },
   count: 6,
@@ -427,9 +428,9 @@ rule = peal.recycling.create(
 ```
 
 ```java Java
-import social.peal.resources.recycling.requests.NewRecyclingRule;
+import social.peal.resources.automations.recycling.requests.NewRecyclingRule;
 
-RecyclingRule rule = peal.recycling().create(
+RecyclingRule rule = peal.automations().recycling().create(
     NewRecyclingRule.builder()
         .every(RecyclingInterval.builder()
             .count(2)
@@ -444,12 +445,12 @@ RecyclingRule rule = peal.recycling().create(
 ```
 
 ```php PHP
-use Peal\Recycling\Requests\NewRecyclingRule;
+use Peal\Automations\Recycling\Requests\NewRecyclingRule;
 use Peal\Types\RecyclingInterval;
 use Peal\Types\RecyclingUnit;
 use Peal\Types\RecyclingVariant;
 
-$rule = $peal->recycling->create(new NewRecyclingRule([
+$rule = $peal->automations->recycling->create(new NewRecyclingRule([
     'postId' => '0190f3a0-0000-7000-8000-00000000b001',
     'every' => new RecyclingInterval([
         'count' => 2,
@@ -463,7 +464,7 @@ $rule = $peal->recycling->create(new NewRecyclingRule([
 ```
 
 ```csharp .NET
-var rule = await peal.Recycling.CreateAsync(new NewRecyclingRule
+var rule = await peal.Automations.Recycling.CreateAsync(new NewRecyclingRule
 {
     PostId = "0190f3a0-0000-7000-8000-00000000b001",
     Every = new RecyclingInterval { Count = 2, Unit = RecyclingUnit.Weeks },
@@ -477,6 +478,7 @@ var rule = await peal.Recycling.CreateAsync(new NewRecyclingRule
 
 ```rust Rust
 let rule = peal
+    .automations
     .recycling
     .create(
         &NewRecyclingRule::builder()
@@ -498,7 +500,7 @@ let rule = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/v1/recycling" \
+curl -X POST "https://peal.example/api/v1/automations/recycling" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"postId": "0190f3a0-0000-7000-8000-00000000b001", "every": {"count": 2, "unit": "weeks"}, "count": 6, "variants": [{"text": "Open all summer, as before."}]}'
@@ -514,14 +516,14 @@ peal recycling start <post-id> --every 2w --count 6 --variant "Open all summer, 
 
 Une fois la règle créée, ces requêtes la lisent et la modifient :
 
-| Requête                                                    | Ce qu’elle fait                                                                                                                        |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET …/recycling`                                          | Liste les règles, de la plus ancienne à la plus récente (`status`, `limit`, `cursor`)                                                  |
-| `GET …/recycling/{ruleId}`                                 | En lit une                                                                                                                             |
-| `PATCH …/recycling/{ruleId}`                               | Change son `count` ou son `until` (null le retire) ou ses `variants` (un tableau vide les retire), ou la met en pause (`paused`)       |
-| `POST …/recycling/{ruleId}/resume`, avec `{ "variants"? }` | Relance une règle en pause, ou terminée pour `planLimit`, `contentRejected`, `noChannels`, `queueFull` ou `sourceWithdrawn` (plus bas) |
-| `DELETE …/recycling/{ruleId}`                              | L’arrête. Les publications créées restent.                                                                                             |
-| `GET …/posts/search?recyclingId=…`                         | Liste les publications créées par une règle. Chacune porte `recyclingId` et `occurrence` (sa place, la source étant 1).                |
+| Requête                                                                | Ce qu’elle fait                                                                                                                        |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET …/automations/recycling`                                          | Liste les règles, de la plus ancienne à la plus récente (`status`, `limit`, `cursor`)                                                  |
+| `GET …/automations/recycling/{ruleId}`                                 | En lit une                                                                                                                             |
+| `PATCH …/automations/recycling/{ruleId}`                               | Change son `count` ou son `until` (null le retire) ou ses `variants` (un tableau vide les retire), ou la met en pause (`paused`)       |
+| `POST …/automations/recycling/{ruleId}/resume`, avec `{ "variants"? }` | Relance une règle en pause, ou terminée pour `planLimit`, `contentRejected`, `noChannels`, `queueFull` ou `sourceWithdrawn` (plus bas) |
+| `DELETE …/automations/recycling/{ruleId}`                              | L’arrête. Les publications créées restent.                                                                                             |
+| `GET …/posts?recyclingId=…`                                            | Liste les publications créées par une règle. Chacune porte `recyclingId` et `occurrence` (sa place, la source étant 1).                |
 
 Une règle se termine avec `sourceWithdrawn` quand sa publication a été annulée ou remise en brouillon. Vous pouvez la reprendre une fois la publication programmée de nouveau. D’ici là, la reprise répond 409 `post_not_recyclable`, et de même tant qu’une autre règle répète la publication. Au-delà de 100 règles en cours, elle répond 409 `too_many_recycling_rules`.
 
@@ -545,12 +547,12 @@ Les requêtes peuvent être refusées avec ces erreurs :
 
 ## Relancer une publication [#follow-ups]
 
-`POST /api/v1/follow-ups` lance une [règle de relance](/guides/posts/queues#follow-ups) sur une publication ou sur un canal, exactement l’un des deux. Cette règle commente et repartage une fois que la publication atteint 50 mentions J’aime :
+`POST /api/v1/automations/follow-ups` lance une [règle de relance](/guides/posts/queues#follow-ups) sur une publication ou sur un canal, exactement l’un des deux. Cette règle commente et repartage une fois que la publication atteint 50 mentions J’aime :
 
 <CodeGroup>
 
 ```ts Node.js
-const rule = await peal.followUps.create({
+const rule = await peal.automations.followUps.create({
   postId: "0190f3a0-0000-7000-8000-00000000b001",
   likes: 50,
   comment: "Thank you all for reading!",
@@ -559,7 +561,7 @@ const rule = await peal.followUps.create({
 ```
 
 ```python Python
-rule = peal.follow_ups.create(
+rule = peal.automations.follow_ups.create(
     post_id="0190f3a0-0000-7000-8000-00000000b001",
     likes=50,
     comment="Thank you all for reading!",
@@ -568,7 +570,7 @@ rule = peal.follow_ups.create(
 ```
 
 ```go Go
-rule, err := client.FollowUps.Create(context.TODO(), &peal.NewFollowUpRule{
+rule, err := client.Automations.FollowUps.Create(context.TODO(), &automations.NewFollowUpRule{
 	PostID:  peal.String("0190f3a0-0000-7000-8000-00000000b001"),
 	Likes:   50,
 	Comment: peal.String("Thank you all for reading!"),
@@ -577,7 +579,7 @@ rule, err := client.FollowUps.Create(context.TODO(), &peal.NewFollowUpRule{
 ```
 
 ```ruby Ruby
-rule = peal.follow_ups.create(
+rule = peal.automations.follow_ups.create(
   post_id: "0190f3a0-0000-7000-8000-00000000b001",
   likes: 50,
   comment: "Thank you all for reading!",
@@ -586,9 +588,9 @@ rule = peal.follow_ups.create(
 ```
 
 ```java Java
-import social.peal.resources.followups.requests.NewFollowUpRule;
+import social.peal.resources.automations.followups.requests.NewFollowUpRule;
 
-FollowUpRule rule = peal.followUps().create(
+FollowUpRule rule = peal.automations().followUps().create(
     NewFollowUpRule.builder()
         .likes(50)
         .postId("0190f3a0-0000-7000-8000-00000000b001")
@@ -598,9 +600,9 @@ FollowUpRule rule = peal.followUps().create(
 ```
 
 ```php PHP
-use Peal\FollowUps\Requests\NewFollowUpRule;
+use Peal\Automations\FollowUps\Requests\NewFollowUpRule;
 
-$rule = $peal->followUps->create(new NewFollowUpRule([
+$rule = $peal->automations->followUps->create(new NewFollowUpRule([
     'postId' => '0190f3a0-0000-7000-8000-00000000b001',
     'likes' => 50,
     'comment' => 'Thank you all for reading!',
@@ -609,7 +611,7 @@ $rule = $peal->followUps->create(new NewFollowUpRule([
 ```
 
 ```csharp .NET
-var rule = await peal.FollowUps.CreateAsync(new NewFollowUpRule
+var rule = await peal.Automations.FollowUps.CreateAsync(new NewFollowUpRule
 {
     PostId = "0190f3a0-0000-7000-8000-00000000b001",
     Likes = 50,
@@ -620,6 +622,7 @@ var rule = await peal.FollowUps.CreateAsync(new NewFollowUpRule
 
 ```rust Rust
 let rule = peal
+    .automations
     .follow_ups
     .create(
         &NewFollowUpRule::builder()
@@ -634,7 +637,7 @@ let rule = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/v1/follow-ups" \
+curl -X POST "https://peal.example/api/v1/automations/follow-ups" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"postId": "0190f3a0-0000-7000-8000-00000000b001", "likes": 50, "comment": "Thank you all for reading!", "repost": true}'
@@ -654,16 +657,16 @@ Le `status` d’une relance vaut `armed` jusqu’à `until`, `waiting` jusqu’�
 
 Ces requêtes gèrent une règle :
 
-| Requête                              | Ce qu’elle fait                                                                             |
-| ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `PATCH …/follow-ups/{ruleId}`        | Change `likes`, `comment` (null le retire) et `repost`, ou met la règle en pause (`paused`) |
-| `POST …/follow-ups/{ruleId}/approve` | L’approuve. Un membre doit le faire en personne.                                            |
-| `DELETE …/follow-ups/{ruleId}`       | L’arrête                                                                                    |
-| `GET …/follow-ups?postId=…`          | Liste les règles d’une publication                                                          |
+| Requête                                          | Ce qu’elle fait                                                                             |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `PATCH …/automations/follow-ups/{ruleId}`        | Change `likes`, `comment` (null le retire) et `repost`, ou met la règle en pause (`paused`) |
+| `POST …/automations/follow-ups/{ruleId}/approve` | L’approuve. Un membre doit le faire en personne.                                            |
+| `DELETE …/automations/follow-ups/{ruleId}`       | L’arrête                                                                                    |
+| `GET …/automations/follow-ups?postId=…`          | Liste les règles d’une publication                                                          |
 
 ## Publier depuis un flux [#feeds]
 
-`POST …/feeds` suit un flux web ([comment ça marche](/guides/posts/queues#feeds)). Peal le lit une fois, note comme vu chaque élément qu’il contient à ce moment-là, et n’en crée jamais de publication. Il répond 201 avec le flux et `seen`, le nombre d’éléments notés.
+`POST …/automations/feeds` suit un flux web ([comment ça marche](/guides/posts/queues#feeds)). Peal le lit une fois, note comme vu chaque élément qu’il contient à ce moment-là, et n’en crée jamais de publication. Il répond 201 avec le flux et `seen`, le nombre d’éléments notés.
 
 Le corps prend ces champs :
 
@@ -679,7 +682,7 @@ Le corps prend ces champs :
 <CodeGroup>
 
 ```ts Node.js
-const feed = await peal.feeds.create({
+const feed = await peal.automations.feeds.create({
   url: "https://blog.example/feed.xml",
   channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
   template: "New on the blog: {title}\n\n{link}",
@@ -687,7 +690,7 @@ const feed = await peal.feeds.create({
 ```
 
 ```python Python
-feed = peal.feeds.create(
+feed = peal.automations.feeds.create(
     url="https://blog.example/feed.xml",
     channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
     template="New on the blog: {title}\n\n{link}",
@@ -695,7 +698,7 @@ feed = peal.feeds.create(
 ```
 
 ```go Go
-feed, err := client.Feeds.Create(context.TODO(), &peal.NewFeed{
+feed, err := client.Automations.Feeds.Create(context.TODO(), &automations.NewFeed{
 	URL:        "https://blog.example/feed.xml",
 	ChannelIDs: []string{"0190f3a0-0000-7000-8000-00000000c001"},
 	Template:   peal.String("New on the blog: {title}\n\n{link}"),
@@ -703,7 +706,7 @@ feed, err := client.Feeds.Create(context.TODO(), &peal.NewFeed{
 ```
 
 ```ruby Ruby
-feed = peal.feeds.create(
+feed = peal.automations.feeds.create(
   url: "https://blog.example/feed.xml",
   channel_ids: ["0190f3a0-0000-7000-8000-00000000c001"],
   template: "New on the blog: {title}\n\n{link}"
@@ -711,9 +714,9 @@ feed = peal.feeds.create(
 ```
 
 ```java Java
-import social.peal.resources.feeds.requests.NewFeed;
+import social.peal.resources.automations.feeds.requests.NewFeed;
 
-CreatedFeed feed = peal.feeds().create(
+CreatedFeed feed = peal.automations().feeds().create(
     NewFeed.builder()
         .url("https://blog.example/feed.xml")
         .channelIds(List.of("0190f3a0-0000-7000-8000-00000000c001"))
@@ -722,9 +725,9 @@ CreatedFeed feed = peal.feeds().create(
 ```
 
 ```php PHP
-use Peal\Feeds\Requests\NewFeed;
+use Peal\Automations\Feeds\Requests\NewFeed;
 
-$feed = $peal->feeds->create(new NewFeed([
+$feed = $peal->automations->feeds->create(new NewFeed([
     'url' => 'https://blog.example/feed.xml',
     'channelIds' => ['0190f3a0-0000-7000-8000-00000000c001'],
     'template' => "New on the blog: {title}\n\n{link}",
@@ -732,7 +735,7 @@ $feed = $peal->feeds->create(new NewFeed([
 ```
 
 ```csharp .NET
-var feed = await peal.Feeds.CreateAsync(new NewFeed
+var feed = await peal.Automations.Feeds.CreateAsync(new NewFeed
 {
     Url = "https://blog.example/feed.xml",
     ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c001" },
@@ -742,6 +745,7 @@ var feed = await peal.Feeds.CreateAsync(new NewFeed
 
 ```rust Rust
 let feed = peal
+    .automations
     .feeds
     .create(
         &NewFeed::builder()
@@ -755,7 +759,7 @@ let feed = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/v1/feeds" \
+curl -X POST "https://peal.example/api/v1/automations/feeds" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://blog.example/feed.xml", "channelIds": ["0190f3a0-0000-7000-8000-00000000c001"], "template": "New on the blog: {title}\n\n{link}"}'
@@ -767,7 +771,7 @@ peal feeds add https://blog.example/feed.xml --channel <channel-id> --template $
 
 </CodeGroup>
 
-Pour essayer une adresse d’abord, envoyez `{ "url", "template"? }` à `POST …/feeds/preview`. Il lit l’adresse et répond son titre et ses trois éléments les plus récents, chacun avec le `text` qu’écrit le modèle. Il ne garde rien.
+Pour essayer une adresse d’abord, envoyez `{ "url", "template"? }` à `POST …/automations/feeds/preview`. Il lit l’adresse et répond son titre et ses trois éléments les plus récents, chacun avec le `text` qu’écrit le modèle. Il ne garde rien.
 
 <Callout type="warning" title="Le texte d’un flux se traite comme une donnée">
   Traitez ce que contient un flux comme des données, jamais comme des
@@ -778,13 +782,13 @@ Pour essayer une adresse d’abord, envoyez `{ "url", "template"? }` à `POST �
 
 Ces requêtes lisent et modifient un flux :
 
-| Requête                      | Ce qu’elle fait                                                                                                                                                                                                     |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET …/feeds`                | Liste les flux, du plus ancien au plus récent (`limit`, `cursor`)                                                                                                                                                   |
-| `GET …/feeds/{feedId}`       | En lit un : son `status`, `lastCheckedAt`, `nextCheckAt`, `failingSince` et `lastFailure`                                                                                                                           |
-| `PATCH …/feeds/{feedId}`     | Change ce qu’il nomme (une nouvelle `url` est lue aussitôt, comme à l’ajout), le met en pause (`"status": "paused"`) ou le relance (`"active"`, lu aussitôt, sans jamais créer de publication de ce qu’il contient) |
-| `DELETE …/feeds/{feedId}`    | Cesse de le suivre. Ses brouillons et publications restent.                                                                                                                                                         |
-| `GET …/feeds/{feedId}/items` | Liste ses 50 éléments les plus récents avec ce que chacun est devenu (`made`, `heldBack` avec sa `reason`, `skipped`, `claimed`, `abandoned`) et la publication créée, jamais leur texte                            |
+| Requête                                  | Ce qu’elle fait                                                                                                                                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET …/automations/feeds`                | Liste les flux, du plus ancien au plus récent (`limit`, `cursor`)                                                                                                                                                   |
+| `GET …/automations/feeds/{feedId}`       | En lit un : son `status`, `lastCheckedAt`, `nextCheckAt`, `failingSince` et `lastFailure`                                                                                                                           |
+| `PATCH …/automations/feeds/{feedId}`     | Change ce qu’il nomme (une nouvelle `url` est lue aussitôt, comme à l’ajout), le met en pause (`"status": "paused"`) ou le relance (`"active"`, lu aussitôt, sans jamais créer de publication de ce qu’il contient) |
+| `DELETE …/automations/feeds/{feedId}`    | Cesse de le suivre. Ses brouillons et publications restent.                                                                                                                                                         |
+| `GET …/automations/feeds/{feedId}/items` | Liste ses 50 éléments les plus récents avec ce que chacun est devenu (`made`, `heldBack` avec sa `reason`, `skipped`, `claimed`, `abandoned`) et la publication créée, jamais leur texte                            |
 
 Lire demande post:read. Tout le reste demande post:create, plus post:schedule pour un flux qui est ou devient `queue` : une application autorisée aux seuls brouillons ne peut donc pas en créer un. Sans post:schedule, vous ne pouvez modifier qu’un flux que vous avez ajouté, en agissant de la même façon.
 

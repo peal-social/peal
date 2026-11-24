@@ -123,7 +123,7 @@ export const studioFollowUpsOf = (world: FollowUpsWorld) => {
     ).pipe(Effect.andThen(world.record(studio, change)), Effect.as(rule));
 
   const groupLive = (studio: Studio) =>
-    HttpApiBuilder.group(Api, "followUps", (handlers) =>
+    HttpApiBuilder.group(Api, "automations.followUps", (handlers) =>
       handlers.handleAll({
         approve: ({ params }) =>
           Effect.gen(function* approve() {
