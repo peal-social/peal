@@ -64,7 +64,23 @@ Ces outils lisent, et ne changent rien :
 
 ### Trouver un outil [#find-tools]
 
-`find_tools` prend un domaine (`area`), une recherche (`query`), les deux ou aucun. Les domaines sont `account`, `posts`, `tags`, `saved`, `media`, `reports`, `people`, `webhooks`, `connect`, `channels`, `review`, `inbox`, `ads` et `feeds`. Pour chaque outil, il répond :
+`find_tools` prend un domaine (`area`), une recherche (`query`), les deux ou aucun. Les domaines sont :
+
+| Domaine       | Ses outils                                                                                                                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workspace`   | Qui est la connexion et ce qu’elle peut faire, l’espace de travail, le serveur, les membres, la formule et ce qui en est utilisé, le journal d’activité, le compte partenaire            |
+| `posts`       | Les brouillons, la programmation, la publication, les résultats, les étiquettes et les signatures                                                                                        |
+| `review`      | Les publications qui attendent une approbation, et les liens de relecture                                                                                                                |
+| `channels`    | Les comptes connectés, leur nom, en désactiver ou en réactiver un, ce que prend chaque plateforme, les recherches, les groupes de canaux, les options par défaut, les liens de connexion |
+| `media`       | Les images et les vidéos, celles qui sont générées comprises                                                                                                                             |
+| `inbox`       | Les commentaires, les messages privés et les avis, et y répondre                                                                                                                         |
+| `automations` | Ce qui agit tout seul : les files d’attente, les publications répétées, les relances, les flux et les règles de commentaires                                                             |
+| `analytics`   | Les chiffres des publications et des canaux, et les meilleurs moments pour publier                                                                                                       |
+| `links`       | Les liens courts et leurs clics                                                                                                                                                          |
+| `ads`         | Les comptes publicitaires, les campagnes et les mises en avant                                                                                                                           |
+| `webhooks`    | Les points de terminaison et leurs livraisons                                                                                                                                            |
+
+Pour chaque outil, il répond :
 
 | Champ            | Ce qu’il dit                                                                                                            |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
