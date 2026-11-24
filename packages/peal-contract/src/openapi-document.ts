@@ -1,6 +1,6 @@
 import { HttpApi, OpenApi } from "effect/http-api";
 
-import { Api } from "./api.ts";
+import { PublicApi } from "./api.ts";
 import { WebhookPayloadSchema } from "./webhook-events.ts";
 import type { WebhookEventType } from "./webhook-events.ts";
 
@@ -456,13 +456,15 @@ const byNamespace = (document: OpenApi.OpenAPISpec): OpenApi.OpenAPISpec => {
 };
 
 /**
- * The OpenAPI 3.1 document of the API and of the events it sends: what the
- * contract writes to `openapi.json` and the server serves.
+ * The OpenAPI 3.1 document of the public API (`PublicApi`) and of the
+ * events it sends: what the contract writes to `openapi.json` and the
+ * server serves. Peal's own clients' groups and the staff console's
+ * (`appGroups`, `staffGroups`) are not in it.
  */
 export const openApiDocument = (): PealOpenApiDocument => ({
   ...byNamespace(
     OpenApi.fromApi(
-      Api.annotate(
+      PublicApi.annotate(
         HttpApi.AdditionalSchemas,
         payloads.map(({ schema }) => schema)
       )

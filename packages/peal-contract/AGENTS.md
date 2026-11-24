@@ -32,8 +32,28 @@
   the one the SDKs and the command line send. The server counts what
   clients send and answers them alike; it translates nothing between
   versions.
-- `openApiDocument()` (`peal-contract/openapi-document`) is the API's
-  OpenAPI 3.1 document with a `webhooks` section: one entry per event type
+- Every group is in one of three lists in `src/api.ts`, by who may call
+  it, and a group in none is not in the API. `staffGroups`: those behind
+  `StaffAccess`. `appGroups`, Peal's own clients' (the web app, the hosted
+  pages, the command line, the platforms' callbacks): those that need no
+  credential, and those whose every operation answers the person in their
+  own session and refuses an API key and an application's token, with
+  `/api/me`'s (a key or a token asks `credential.get` who it is).
+  `publicGroups`: the rest, and `system`. `PublicApi` is the public list
+  alone, and `Api` all three, with the same annotations (`annotated`) and
+  identifier: the server, the web app and the command line use `Api`, and
+  the document, the reference and the SDKs `PublicApi`. Build `Api` with
+  `.add(...)`, never `addHttpApi`, which tags every group with the added
+  API's title. The rule is per group: a group whose operations would fall
+  in two lists becomes two groups. The server's
+  `test/app/audiences.test.ts` checks the lists: each group in exactly one,
+  a bearer credential on every public operation but `system`'s, nothing
+  public under `/api/admin` or `/api/me`, `StaffAccess` on the staff
+  groups and on no other. Moving a group out of `publicGroups` removes its
+  operations from the SDKs: record it in `released/accepted-changes.json`
+  like any break.
+- `openApiDocument()` (`peal-contract/openapi-document`) is the public
+  API's OpenAPI 3.1 document (`PublicApi`) with a `webhooks` section: one entry per event type
   and `webhook.test`, each a `post` with its `operationId`
   (`on<PascalType>`), the three `webhook-` headers, and its payload, a
   component (`Webhook<PascalType>Payload`, registered through

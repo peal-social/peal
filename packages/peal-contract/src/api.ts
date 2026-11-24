@@ -1,4 +1,5 @@
 import { HttpApi, OpenApi } from "effect/http-api";
+import type { HttpApiGroup } from "effect/http-api";
 
 import { AccountApi } from "./account.ts";
 import { ActivityApi } from "./activity.ts";
@@ -2687,97 +2688,140 @@ export type { ArticleViolation } from "./article-violation.ts";
 
 export { WorkspaceNotFound } from "./workspace-not-found.ts";
 
-// The one definition of the HTTP API. The server implements it; the web app,
-// the CLI and the MCP server derive their typed clients from it, and the docs
-// render its OpenAPI document.
-export class Api extends HttpApi.make("peal")
-  .add(PostsApi)
-  .add(PostDraftsApi)
-  .add(TagsApi)
-  .add(SignaturesApi)
-  .add(ReviewApi)
-  .add(ChannelsApi)
-  .add(CapabilitiesApi)
-  .add(ChannelDefaultsApi)
-  .add(LookupsApi)
-  .add(ChannelSetsApi)
-  .add(ConnectLinksApi)
-  .add(TikTokApi)
-  .add(MediaApi)
-  .add(MediaImagesApi)
-  .add(MediaAudioApi)
-  .add(MediaTranscriptionsApi)
-  .add(VideoGenerationsApi)
-  .add(SlideshowsApi)
-  .add(InboxApi)
-  .add(InboxMessagesApi)
-  .add(InboxReviewsApi)
-  .add(InboxRulesApi)
-  .add(QueuesApi)
-  .add(RecyclingApi)
-  .add(FollowUpsApi)
-  .add(FeedsApi)
-  .add(AnalyticsApi)
-  .add(AdsApi)
-  .add(ArticlesApi)
-  .add(ShortLinksApi)
-  .add(WebhooksApi)
-  .add(AssistantApi)
-  .add(WorkspacesApi)
-  .add(ActivityApi)
-  .add(ApiKeysApi)
-  .add(MembersApi)
-  .add(InvitationsApi)
-  .add(BillingApi)
-  .add(BillingActionsApi)
-  .add(UsageApi)
-  .add(PartnerApi)
-  .add(PartnerAccountApi)
-  .add(PartnerUsageApi)
-  .add(SessionApi)
-  .add(NoticesApi)
-  .add(NotificationPreferencesApi)
-  .add(AccountApi)
-  .add(ConnectedAppsApi)
-  .add(BrowserAnalyticsApi)
-  .add(CredentialApi)
-  .add(SystemApi)
-  .add(ChannelOAuthApi)
-  .add(DataDeletionApi)
-  .add(CaptchaApi)
-  .add(HostedConnectApi)
-  .add(ReviewLinkApi)
-  .add(ClientErrorsApi)
-  .add(ContractRequestsApi)
-  .add(StaffApi)
-  .add(LegalApi)
-  .add(ContractRequestsDeskApi)
-  .add(BillingAccountsDeskApi)
-  // A query parameter the endpoint does not take is refused
-  // (InvalidRequest), never ignored: a misspelt filter (`channelIds` for
-  // `channelId`) would otherwise answer every post as if it were applied.
-  // Bodies keep Schema's default, as a client may post a platform's whole
-  // callback query.
-  //
-  // Every issue is reported, not the first alone, so a client learns in
-  // one answer each field a request lacks (`issues`, at most
-  // `maxRequestIssues` of them).
-  .annotate(HttpApi.QueryParseOptions, {
-    errors: "all",
-    onExcessProperty: "error",
-  })
-  .annotate(HttpApi.ParamsParseOptions, { errors: "all" })
-  .annotate(HttpApi.PayloadParseOptions, { errors: "all" })
-  // The contract is Apache-2.0, unlike the rest of Peal, so the clients
-  // generated from this document may be too. Its version is the API's
-  // (`Peal-Version`): the day of its latest release.
-  .annotateMerge(
-    OpenApi.annotations({
-      license: { identifier: "Apache-2.0", name: "Apache-2.0" },
-      title: "Peal API",
-      version: apiVersion,
+// Every group of the API is in one of three lists, by who may call it. A
+// group in none is not in the API, so a new group is public only once it
+// is listed here. `test/app/audiences.test.ts` in the server checks the
+// lists against the middlewares their groups declare.
+
+/**
+ * The public API: the groups a workspace's API key, a partner key or an
+ * OAuth application's token may call, and the health checks (`system`).
+ * The OpenAPI document, the docs' reference and the SDKs hold these alone.
+ */
+export const publicGroups = [
+  PostsApi,
+  PostDraftsApi,
+  TagsApi,
+  SignaturesApi,
+  ReviewApi,
+  ChannelsApi,
+  CapabilitiesApi,
+  ChannelDefaultsApi,
+  LookupsApi,
+  ChannelSetsApi,
+  ConnectLinksApi,
+  TikTokApi,
+  MediaApi,
+  MediaImagesApi,
+  MediaAudioApi,
+  MediaTranscriptionsApi,
+  VideoGenerationsApi,
+  SlideshowsApi,
+  InboxApi,
+  InboxMessagesApi,
+  InboxReviewsApi,
+  InboxRulesApi,
+  QueuesApi,
+  RecyclingApi,
+  FollowUpsApi,
+  FeedsApi,
+  AnalyticsApi,
+  AdsApi,
+  ArticlesApi,
+  ShortLinksApi,
+  WebhooksApi,
+  AssistantApi,
+  ActivityApi,
+  ApiKeysApi,
+  MembersApi,
+  InvitationsApi,
+  BillingApi,
+  UsageApi,
+  PartnerApi,
+  PartnerAccountApi,
+  PartnerUsageApi,
+  CredentialApi,
+  SystemApi,
+] as const;
+
+/**
+ * Peal's own clients' groups (the web app, the hosted pages, the command
+ * line, the platforms' callbacks): those that need no credential, and those
+ * whose every operation answers the person in their own session and
+ * refuses an API key and an application's token. `/api/me` is here: a key
+ * or a token asks `credential.get` who it is.
+ */
+export const appGroups = [
+  WorkspacesApi,
+  BillingActionsApi,
+  SessionApi,
+  NoticesApi,
+  NotificationPreferencesApi,
+  AccountApi,
+  ConnectedAppsApi,
+  BrowserAnalyticsApi,
+  ChannelOAuthApi,
+  DataDeletionApi,
+  CaptchaApi,
+  HostedConnectApi,
+  ReviewLinkApi,
+  ClientErrorsApi,
+  ContractRequestsApi,
+] as const;
+
+/** The staff console's groups, each behind `StaffAccess`. */
+export const staffGroups = [
+  StaffApi,
+  LegalApi,
+  ContractRequestsDeskApi,
+  BillingAccountsDeskApi,
+] as const;
+
+/** What `PublicApi` and `Api` share, so that the two cannot differ. */
+const annotated = <Groups extends HttpApiGroup.Constraint>(
+  api: HttpApi.HttpApi<"peal", Groups>
+): HttpApi.HttpApi<"peal", Groups> =>
+  api
+    // A query parameter the endpoint does not take is refused
+    // (InvalidRequest), never ignored: a misspelt filter (`channelIds` for
+    // `channelId`) would otherwise answer every post as if it were applied.
+    // Bodies keep Schema's default, as a client may post a platform's whole
+    // callback query.
+    //
+    // Every issue is reported, not the first alone, so a client learns in
+    // one answer each field a request lacks (`issues`, at most
+    // `maxRequestIssues` of them).
+    .annotate(HttpApi.QueryParseOptions, {
+      errors: "all",
+      onExcessProperty: "error",
     })
-  ) {}
+    .annotate(HttpApi.ParamsParseOptions, { errors: "all" })
+    .annotate(HttpApi.PayloadParseOptions, { errors: "all" })
+    // The contract is Apache-2.0, unlike the rest of Peal, so the clients
+    // generated from this document may be too. Its version is the API's
+    // (`Peal-Version`): the day of its latest release.
+    .annotateMerge(
+      OpenApi.annotations({
+        license: { identifier: "Apache-2.0", name: "Apache-2.0" },
+        title: "Peal API",
+        version: apiVersion,
+      })
+    );
+
+/**
+ * The public API alone: what the OpenAPI document describes
+ * (`openApiDocument()`), the server serves at `/api/openapi.json` and the
+ * SDKs are generated from.
+ */
+export const PublicApi = annotated(HttpApi.make("peal").add(...publicGroups));
+
+// The one definition of the HTTP API, every audience's groups. The server
+// implements it; the web app, the CLI and the MCP server derive their typed
+// clients from it. Its identifier is `PublicApi`'s, so a handler written
+// for one group is the same for both.
+export class Api extends annotated(
+  HttpApi.make("peal").add(...publicGroups, ...appGroups, ...staffGroups)
+) {}
 
 export {
   complaintRight,

@@ -111,20 +111,10 @@ const moved: [string, string][] = [
 // page there moved to the one with the same ending: /reference/tags/tags-list
 // is /reference/posts/posts-tags-list.
 const movedReferenceSections: [string, string][] = [
-  ["account/account", "me/me-account"],
-  ["notices/notices", "me/me-notices"],
-  [
-    "notification-preferences/notification-preferences",
-    "me/me-notification-preferences",
-  ],
-  ["browser-analytics/browser-analytics", "me/me-browser-analytics"],
-  ["connected-apps/connected-apps", "me/me-connected-apps"],
   ["api-keys/api-keys", "workspace/workspace-api-keys"],
-  ["workspaces/workspaces", "workspace/workspace"],
   ["members/members", "workspace/workspace-members"],
   ["invitations/invitations", "workspace/workspace-invitations"],
   ["billing/billing", "workspace/workspace-billing"],
-  ["billing-actions/billing-actions", "workspace/workspace-billing-actions"],
   ["usage/usage", "workspace/workspace-usage"],
   ["activity/activity", "workspace/workspace-activity"],
   ["video-generations/video-generations", "media/media-videos"],
@@ -149,7 +139,6 @@ const movedReferenceSections: [string, string][] = [
 // The reference's pages whose ending changed too, in those sections or in
 // sections of one page. An exact redirect wins over a section's pattern.
 const movedReferencePages: [string, string][] = [
-  ["session/session-me", "me/me-get"],
   ["tiktok/tiktok-creator", "channels/channels-tiktok-creator-get"],
   ["partner-usage/partner-usage-get", "partner/partner-customer-usage-get"],
   ["capabilities/capabilities-channel", "channels/channels-capabilities-get"],
@@ -175,8 +164,29 @@ const movedReferencePages: [string, string][] = [
   ],
 ];
 
+// The reference's sections of groups that are not part of the public API
+// (the contract's `appGroups`), which the reference no longer shows: each
+// leads to the guide that describes its endpoints.
+const leftReference: [string, string][] = [
+  ["/reference/session/session-me", "/developers#me"],
+  ["/reference/account/account-*", "/developers#me"],
+  ["/reference/connected-apps/connected-apps-*", "/developers#me"],
+  ["/reference/browser-analytics/browser-analytics-*", "/developers#me"],
+  ["/reference/notices/notices-*", "/guides/workspace/notifications#api"],
+  [
+    "/reference/notification-preferences/notification-preferences-*",
+    "/guides/workspace/notifications#api",
+  ],
+  ["/reference/workspaces/workspaces-*", "/guides/workspace#api"],
+  [
+    "/reference/billing-actions/billing-actions-*",
+    "/guides/workspace/billing#ordering",
+  ],
+];
+
 const redirects = [
   ...moved,
+  ...leftReference,
   ...movedReferencePages.map(([from, to]): [string, string] => [
     `/reference/${from}`,
     `/reference/${to}`,
