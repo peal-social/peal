@@ -20,6 +20,25 @@ const voiced: ReadonlySet<StudioClip["asset"]["type"]> = new Set([
   "video",
 ]);
 
+const aliasPrefix = "alias://";
+
+/**
+ * Whether captions name a clip the edit no longer has: Shotstack would
+ * refuse the render.
+ */
+export const captionsLackSource = (edit: StudioEdit): boolean => {
+  const clips = edit.timeline.tracks.flatMap((track) => track.clips);
+  const aliases = new Set(clips.map(({ alias }) => alias));
+
+  return clips.some(
+    ({ asset }) =>
+      asset.type === "rich-caption" &&
+      asset.src !== undefined &&
+      asset.src.startsWith(aliasPrefix) &&
+      !aliases.has(asset.src.slice(aliasPrefix.length))
+  );
+};
+
 /**
  * Captions over the sound or film the SDK links them to, for as long as it
  * plays: white words on a dark band at the foot, the one spoken in
