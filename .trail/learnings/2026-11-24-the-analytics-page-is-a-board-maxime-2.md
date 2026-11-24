@@ -3,7 +3,7 @@ title: "The analytics page is a board of widgets kept in the person's browser, m
 author: Maxime
 date: 2026-11-24
 branch: worktree-silly-imagining-snowglobe
-cost: { minutes: 18, tokens: 208505 }
+cost: { minutes: 24, tokens: 262577 }
 id: l-35173635
 scope: repo
 status: active
@@ -27,9 +27,13 @@ The owner asked for a dashboard of widgets on the analytics page (2026-11-24): c
 
 The owner then had "Move earlier" and "Move later" taken out of the menu: dragging is the only way to move a widget. Keyboard users cannot reorder the board; offer a key on the handle if that is ever asked for, not the menu items back.
 The owner (2026-11-24) wants each analytics widget to show one chart, the one that fits it, and no Chart/Table tabs: the figures stay for screen readers as an sr-only table. Lines on a faint area (followers, engagement, reach), columns (views), a ring (posts by platform), one bar cut into shares (platforms), stacked one-blue columns with the 7-day average (engagement over time), quiet rows with the platform's mark (top posts, channels). Top posts stay minimal: mark, start of the text, day, engagement. Widgets resize from a corner, by whole columns (1 to 4) and rows (1 to 2), blurring while they move, and their charts fill the card.
+The owner wants moving a widget to be smooth and to work in any direction, and a short default board (2026-11-24). Widgets move with `@dnd-kit/react`'s sortable, already a dependency of the calendar: the others glide aside as one is carried, and the handle takes the keyboard. A new board starts with Followers, Top posts, Engagement, and Engagement over time two rows high.
 
 ## Tried and ruled out
 Keeping the board on the server. It would need a contract endpoint, regenerating the eight SDKs, a table and migration, an entry in the data-processing registry with the privacy policy's table in both languages, and erasure on account and workspace deletion. That is too much for a layout. Move it to the server only once people ask for the same board across devices.
+Native HTML5 drag and drop with a drop line beside the target: it only reads left or right (or above or below a full-width widget), animates nothing, and cannot be driven from the keyboard.
+
+In the code: packages/peal-web/src/components/analytics/widgets/analytics-board.tsx (SortableWidget, handleDragEnd), src/analytics/widgets.ts (defaultBoard, kinds' height).
 
 ## Watch out
 - Lilo's synthetic mouse drag does not start native HTML5 drag and drop in WebKit: it selects text. Check dropping by dispatching DragEvents with a DataTransfer from the page.
