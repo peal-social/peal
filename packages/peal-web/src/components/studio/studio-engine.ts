@@ -39,6 +39,12 @@ export interface Generation {
   readonly type: string;
 }
 
+/** What was generated: its address, and how long it plays, when it plays. */
+export interface Generated {
+  readonly seconds: number | null;
+  readonly url: string;
+}
+
 const decodeGeneration = Schema.decodeUnknownPromise(
   Schema.Struct({ prompt: Schema.String, type: Schema.String })
 );
@@ -127,7 +133,7 @@ export const startStudio = async ({
   readonly generate: (
     studio: Studio,
     generation: Generation
-  ) => Promise<string>;
+  ) => Promise<Generated>;
   readonly initial: StudioEdit;
   readonly timelineBox: HTMLElement;
   /** The buttons beside the preview, in order. */
@@ -176,9 +182,31 @@ export const startStudio = async ({
       time: () => edit.playbackTime,
     };
 
-    edit.registerAssetGenerator(async ({ asset }) => ({
-      url: await generate(studio, await decodeGeneration(asset)),
-    }));
+    // A clip lasts as long as what was generated for it plays, once the
+    // SDK has put it there.
+    const lengths = new Map<string, number>();
+
+    edit.registerAssetGenerator(async ({ asset, clipId }) => {
+      const { seconds, url } = await generate(
+        studio,
+        await decodeGeneration(asset)
+      );
+
+      if (seconds !== null) {
+        lengths.set(clipId, seconds);
+      }
+
+      return { url };
+    });
+
+    edit.events.on("clip:generationCompleted", ({ clipId }) => {
+      const length = lengths.get(clipId);
+
+      if (length !== undefined) {
+        lengths.delete(clipId);
+        void edit.updateClipById(clipId, { length });
+      }
+    });
 
     for (const { icon, id, label, onPress } of tools) {
       ui.registerButton({ icon, id, tooltip: label });
