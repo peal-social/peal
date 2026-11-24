@@ -35,7 +35,7 @@
     "js-cookie": "3.0.8",
     "lucide-react": "1.77.0",
     "peal-contract": "workspace:*",
-    "posthog-js": "1.453.0",
+    "posthog-js": "1.453.1",
     "react-day-picker": "10.0.2",
     "react-is": "19.3.1",
     "recharts": "3.11.0",
