@@ -12,21 +12,31 @@ import { MediaStorageFailed } from "#media/application/media-storage-failed.ts";
 import type { S3StorageSettings } from "./s3-media-storage.ts";
 
 // Browsers send files straight to the bucket (see s3-media-storage.ts), so
-// the bucket must answer their CORS preflight. Platforms and pages read
-// media with plain GETs (<img>, <video>, server fetches), which need none.
+// the bucket must answer their CORS preflight. Pages read media with plain
+// GETs (<img>, <video>), which need none, but the Studio editor's preview
+// draws files on a WebGL canvas, which reads only what CORS allows.
 
-/** The id of the rule Peal manages, so other rules are left alone. */
+/**
+ * The id of the rule Peal manages, so other rules are left alone. Its name
+ * stayed when the rule grew reads: a new id would leave the old rule on
+ * every bucket.
+ */
 export const uploadRuleId = "peal-browser-uploads";
 
 /**
  * What a browser upload sends: a PUT with the signed Content-Type and
- * If-None-Match of a single upload, or a bare PUT for a part. A preflight
- * is cached for an hour.
+ * If-None-Match of a single upload, or a bare PUT for a part; and what the
+ * editor's preview reads: a GET, a video's with a Range, its length and
+ * range read back. HEAD is left out on purpose: a link is signed for GET,
+ * so the store answers a HEAD 403, and the editor's SDK refuses a file whose
+ * HEAD answers a 4xx it can read, but not one CORS hides. A preflight is
+ * cached for an hour.
  */
 export const uploadRule = (origins: readonly string[]): CORSRule => ({
-  AllowedHeaders: ["content-type", "if-none-match"],
-  AllowedMethods: ["PUT"],
+  AllowedHeaders: ["content-type", "if-none-match", "range"],
+  AllowedMethods: ["GET", "PUT"],
   AllowedOrigins: [...new Set(origins)].toSorted(),
+  ExposeHeaders: ["accept-ranges", "content-length", "content-range"],
   ID: uploadRuleId,
   MaxAgeSeconds: 3600,
 });
@@ -78,6 +88,7 @@ export const r2Policy = (rule: CORSRule) => [
     AllowedHeaders: rule.AllowedHeaders,
     AllowedMethods: rule.AllowedMethods,
     AllowedOrigins: rule.AllowedOrigins,
+    ExposeHeaders: rule.ExposeHeaders,
     MaxAgeSeconds: rule.MaxAgeSeconds,
   },
 ];

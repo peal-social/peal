@@ -3,7 +3,7 @@ import { Duration, Effect, Fiber, Redacted, Result, Schema } from "effect";
 import { TestClock } from "effect/testing";
 
 import type {
-  CompositionRequest,
+  SlideComposition,
   OwnComposerEndpoint,
 } from "#assistant/application/ports/own-composer.ts";
 import { ProviderAddressSchema } from "#assistant/domain/image-provider.ts";
@@ -20,8 +20,8 @@ import { slideTimelineOf } from "#assistant/infrastructure/shotstack/timeline.ts
 // request. Nothing here reaches Shotstack.
 
 const request = (
-  overrides: Partial<CompositionRequest> = {}
-): CompositionRequest => ({
+  overrides: Partial<SlideComposition> = {}
+): SlideComposition => ({
   aspect: "portrait",
   secondsPerSlide: 4,
   slides: [
@@ -358,6 +358,84 @@ describe("Shotstack's Edit API", () => {
             headers.get("x-api-key"),
           ]),
           [[videoUrl, null]]
+        );
+      })
+  );
+
+  it.effect(
+    "posts an edit asked for whole with Peal's output forced: an MP4, no hosted copy, no cache, no callback",
+    () =>
+      Effect.gen(function* edits() {
+        const api = fakeFetch((sent, index) => {
+          if (sent.method === "POST") {
+            return queued();
+          }
+
+          return index < 2 ? statusOf("rendering") : statusOf("done", videoUrl);
+        });
+
+        const download = fakeFetch(() => new Response(videoBytes));
+
+        const tracks = [
+          {
+            clips: [
+              {
+                asset: {
+                  src: "https://media.example.com/signed/one",
+                  type: "image",
+                },
+                length: 3,
+                start: 0,
+              },
+            ],
+          },
+        ];
+
+        const fiber = yield* composeWith(
+          { api: api.fetch, download: download.fetch },
+          endpoint,
+          {
+            edit: {
+              callback: "https://hooks.example.com/synthetic",
+              disk: "mount",
+              output: {
+                aspectRatio: "9:16",
+                destinations: [{ provider: "mux" }],
+                format: "mp4",
+                quality: "high",
+                resolution: "hd",
+              },
+              timeline: { background: "#101010", cache: true, tracks },
+            },
+          },
+          { pollInterval: Duration.seconds(5) }
+        ).pipe(Effect.result, Effect.forkChild);
+
+        for (let poll = 0; poll < 5; poll += 1) {
+          yield* TestClock.adjust(Duration.seconds(5));
+        }
+
+        const result = yield* Fiber.join(fiber);
+
+        assert.isTrue(Result.isSuccess(result));
+        assert.deepStrictEqual(
+          Schema.decodeUnknownSync(Schema.fromJsonString(Schema.Json))(
+            api.sent[0]?.body ?? ""
+          ),
+          {
+            output: {
+              aspectRatio: "9:16",
+              destinations: [{ exclude: true, provider: "shotstack" }],
+              format: "mp4",
+              quality: "high",
+              resolution: "hd",
+            },
+            timeline: { background: "#101010", cache: false, tracks },
+          }
+        );
+        assert.lengthOf(
+          api.sent.filter(({ method }) => method === "POST"),
+          1
         );
       })
   );

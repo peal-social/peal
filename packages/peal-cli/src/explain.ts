@@ -5,6 +5,9 @@ import type { HttpApiError } from "effect/http-api";
 import {
   duplicateWindowHours,
   imageRequestCost,
+  maxEditClips,
+  maxEditSeconds,
+  maxEditTracks,
   maxImportRows,
   maxSecondsPerSlide,
   maxSlideshowSeconds,
@@ -1029,6 +1032,16 @@ const reasonOf =
                 "--voiceover names no ready audio file of the workspace's media whose length is known.",
               voiceoverTooLong: `Shared between the slides, the voice-over gives each more than ${String(maxSecondsPerSlide)} seconds, or lasts more than ${String(maxSlideshowSeconds)}: add images, or give --seconds to cut it at the last slide.`,
               voiceoverTooShort: `Shared between the slides, the voice-over gives each less than ${String(minSecondsPerSlide)} seconds: give fewer images, or --seconds.`,
+              editInvalid:
+                "The edit is not one Shotstack renders, merges fields, or names a file outside the workspace's media (peal:media/<mediaId>) or, for a font, Google's font files.",
+              mediaNotFound:
+                "A peal:media/ file of the edit is not a ready file of the workspace's media: peal media list shows them.",
+              mediaNotSupported:
+                "A file of the edit is of a kind its asset cannot take, such as audio as an image.",
+              editTooLong: `A clip of the edit ends past ${String(maxEditSeconds)} seconds.`,
+              editTooLarge: `The edit has more than ${String(maxEditTracks)} tracks or ${String(maxEditClips)} clips.`,
+              outputNotSupported:
+                "The edit asks for an output Peal does not render: an MP4 up to 1080p, in 16:9, 9:16 or 1:1, at 30 frames a second at most, without size, range, scaleTo, repeat, poster or thumbnail.",
             }[reason]
           } Nothing was asked or counted.`
         ),

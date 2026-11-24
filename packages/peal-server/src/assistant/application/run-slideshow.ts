@@ -1,9 +1,12 @@
-import { Context, DateTime, Effect, Layer, Option } from "effect";
+import { Context, DateTime, Effect, Layer, Option, Schema } from "effect";
 
 import { openCompositionUse } from "#assistant/application/composition-uses.ts";
 import type { CapabilityModels } from "#assistant/application/ports/capability-models.ts";
 import { OwnComposer } from "#assistant/application/ports/own-composer.ts";
-import type { ComposedSlide } from "#assistant/application/ports/own-composer.ts";
+import type {
+  ComposedSlide,
+  CompositionRequest,
+} from "#assistant/application/ports/own-composer.ts";
 import type { ProviderConnections } from "#assistant/application/ports/provider-connections.ts";
 import { SlideshowMedia } from "#assistant/application/ports/slideshow-media.ts";
 import { SlideshowNotices } from "#assistant/application/ports/slideshow-notices.ts";
@@ -14,9 +17,19 @@ import type {
   SlideshowOutcome,
 } from "#assistant/application/ports/slideshow-store.ts";
 import { SlideshowFailed } from "#assistant/application/slideshow-failed.ts";
+import {
+  editGenerates,
+  editMediaIdsOf,
+  editWithLinks,
+} from "#assistant/domain/edit-render.ts";
 import { sourceLinkLifetime } from "#assistant/domain/slideshow-limits.ts";
-import type { SlideshowId } from "#assistant/domain/slideshow.ts";
+import type {
+  EditPlan,
+  SlidePlan,
+  SlideshowId,
+} from "#assistant/domain/slideshow.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
+import { MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 
 /**
@@ -28,6 +41,8 @@ export type SlideshowRunResult = "failed" | "succeeded" | "superseded";
 
 const failed = (reason: SlideshowFailed["reason"]) =>
   new SlideshowFailed({ reason });
+
+const decodeAssetId = Schema.decodeUnknownOption(MediaAssetIdSchema);
 
 /**
  * Runs one slide video's job, for the workflow its request started. The
@@ -91,12 +106,104 @@ export class RunSlideshow extends Context.Service<
           )
         );
 
-      // The video, from the service chosen now: the choice may have
-      // changed since the request.
-      const make = Effect.fn("RunSlideshow.make")(function* make({
+      // Links only for this request's files, each working for an hour.
+      const slideRequestOf = Effect.fn("RunSlideshow.slideRequestOf")(
+        function* slideRequestOf(
+          slideshow: ClaimedSlideshow["slideshow"],
+          plan: SlidePlan
+        ) {
+          const { workspaceId } = slideshow;
+
+          const slides = yield* Effect.all(
+            plan.slides.map((slide) =>
+              linkTo(workspaceId, slide.mediaId).pipe(
+                Effect.map((imageUrl): ComposedSlide => ({
+                  caption: slide.caption,
+                  imageUrl,
+                  motion: slide.motion,
+                }))
+              )
+            )
+          );
+
+          const voiceoverUrl = Option.isSome(slideshow.voiceoverMediaId)
+            ? yield* linkTo(workspaceId, slideshow.voiceoverMediaId.value)
+            : null;
+
+          const request: CompositionRequest = {
+            aspect: slideshow.aspect,
+            secondsPerSlide: plan.secondsPerSlide,
+            slides,
+            transition: plan.transition,
+            voiceoverUrl,
+          };
+
+          return request;
+        }
+      );
+
+      // The edit with a link for each file it names, once each: a file
+      // gone since the request fails the job before anything is sent.
+      const editRequestOf = Effect.fn("RunSlideshow.editRequestOf")(
+        function* editRequestOf(
+          workspaceId: ClaimedSlideshow["slideshow"]["workspaceId"],
+          plan: EditPlan
+        ) {
+          const links = yield* Effect.all(
+            editMediaIdsOf(plan.edit).map((named) =>
+              Option.match(decodeAssetId(named), {
+                onNone: () => Effect.fail(failed("mediaUnavailable")),
+                onSome: (assetId) =>
+                  linkTo(workspaceId, assetId).pipe(
+                    Effect.map((link) => [named, link] as const)
+                  ),
+              })
+            )
+          );
+
+          const request: CompositionRequest = {
+            edit: editWithLinks(plan.edit, new Map(links)),
+          };
+
+          return request;
+        }
+      );
+
+      // Whether the video holds something made by AI: a file it is made of
+      // that was, or what its edit has the service generate.
+      const holdsAi = Effect.fn("RunSlideshow.holdsAi")(function* holdsAi({
         plan,
         slideshow,
       }: ClaimedSlideshow) {
+        if ("edit" in plan && editGenerates(plan.edit)) {
+          return true;
+        }
+
+        const named =
+          "edit" in plan
+            ? editMediaIdsOf(plan.edit).flatMap((id) =>
+                Option.toArray(decodeAssetId(id))
+              )
+            : [
+                ...plan.slides.map(({ mediaId }) => mediaId),
+                ...Option.toArray(slideshow.voiceoverMediaId),
+              ];
+
+        const described = yield* Effect.all(
+          named.map((id) => media.describe(slideshow.workspaceId, id))
+        );
+
+        return described.some((file) =>
+          Option.exists(file, ({ aiGenerated }) => aiGenerated)
+        );
+      });
+
+      // The video, from the service chosen now: the choice may have
+      // changed since the request.
+      const make = Effect.fn("RunSlideshow.make")(function* make(
+        claimed: ClaimedSlideshow
+      ) {
+        const { plan, slideshow } = claimed;
         const { workspaceId } = slideshow;
 
         const use = yield* openCompositionUse(workspaceId).pipe(
@@ -119,32 +226,16 @@ export class RunSlideshow extends Context.Service<
             )
           );
 
-        // Links only for this request's files, each working for an hour.
-        const slides = yield* Effect.all(
-          plan.slides.map((slide) =>
-            linkTo(workspaceId, slide.mediaId).pipe(
-              Effect.map((imageUrl): ComposedSlide => ({
-                caption: slide.caption,
-                imageUrl,
-                motion: slide.motion,
-              }))
-            )
-          )
-        );
+        const request =
+          "edit" in plan
+            ? yield* editRequestOf(workspaceId, plan)
+            : yield* slideRequestOf(slideshow, plan);
 
-        const voiceoverUrl = Option.isSome(slideshow.voiceoverMediaId)
-          ? yield* linkTo(workspaceId, slideshow.voiceoverMediaId.value)
-          : null;
+        // Read before the render, as a file may be deleted during it.
+        const aiGenerated = yield* holdsAi(claimed);
+        const bytes = yield* composer.compose(use.endpoint, request);
 
-        const bytes = yield* composer.compose(use.endpoint, {
-          aspect: slideshow.aspect,
-          secondsPerSlide: plan.secondsPerSlide,
-          slides,
-          transition: plan.transition,
-          voiceoverUrl,
-        });
-
-        return yield* media.store(workspaceId, bytes);
+        return yield* media.store(workspaceId, bytes, { aiGenerated });
       });
 
       // A run that breaks (a bug, never the service's error, which the

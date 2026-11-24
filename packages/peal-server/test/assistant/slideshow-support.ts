@@ -9,6 +9,7 @@ import { SlideshowNotices } from "#assistant/application/ports/slideshow-notices
 import { SlideshowFailed } from "#assistant/application/slideshow-failed.ts";
 import type { Slideshow, SlideshowId } from "#assistant/domain/slideshow.ts";
 import { DrizzleSlideshowsLive } from "#assistant/infrastructure/drizzle-slideshows.ts";
+import { ShotstackEditCheckerLive } from "#assistant/infrastructure/shotstack/edit-checker.ts";
 import { MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
@@ -21,6 +22,8 @@ export class SlideshowRecords extends Context.Service<
     readonly started: Ref.Ref<readonly SlideshowId[]>;
     readonly told: Ref.Ref<readonly Slideshow[]>;
     readonly stored: Ref.Ref<readonly Uint8Array[]>;
+    /** Whether each video kept was marked as made by AI. */
+    readonly marked: Ref.Ref<readonly boolean[]>;
     /** Every link handed out, with how long it works, in seconds. */
     readonly linked: Ref.Ref<readonly (readonly [string, number])[]>;
   }
@@ -30,6 +33,7 @@ export class SlideshowRecords extends Context.Service<
     Effect.gen(function* SlideshowRecordsLive() {
       return SlideshowRecords.of({
         linked: yield* Ref.make<readonly (readonly [string, number])[]>([]),
+        marked: yield* Ref.make<readonly boolean[]>([]),
         started: yield* Ref.make<readonly SlideshowId[]>([]),
         stored: yield* Ref.make<readonly Uint8Array[]>([]),
         told: yield* Ref.make<readonly Slideshow[]>([]),
@@ -56,14 +60,22 @@ export const storedSlideshowId = MediaAssetIdSchema.make(
 );
 
 /** A ready image of the library, of a media type. */
-export const imageFile = (contentType = "image/png"): SlideshowSource => ({
+export const imageFile = (
+  contentType = "image/png",
+  aiGenerated = false
+): SlideshowSource => ({
+  aiGenerated,
   contentType,
   durationSeconds: Option.none(),
   kind: "image",
 });
 
 /** A ready audio file of the library, of a length. */
-export const audioFile = (seconds: number): SlideshowSource => ({
+export const audioFile = (
+  seconds: number,
+  aiGenerated = false
+): SlideshowSource => ({
+  aiGenerated,
   contentType: "audio/mpeg",
   durationSeconds: Option.some(seconds),
   kind: "audio",
@@ -103,9 +115,12 @@ export const scriptedSlideshowMedia = ({
             : Effect.succeed(Option.none());
         },
         roomFor: () => (room ? Effect.void : Effect.fail(fullPlan())),
-        store: (_, bytes) =>
+        store: (_, bytes, { aiGenerated }) =>
           store === "kept"
             ? Ref.update(records.stored, (all) => [...all, bytes]).pipe(
+                Effect.andThen(
+                  Ref.update(records.marked, (all) => [...all, aiGenerated])
+                ),
                 Effect.as(storedSlideshowId)
               )
             : Effect.fail(new SlideshowFailed({ reason: store })),
@@ -147,6 +162,7 @@ export const slideshowPortsTest = (library: SlideshowLibraryScript = {}) =>
     DrizzleSlideshowsLive,
     TransactionsTest,
     RecordedSlideshowJobs,
+    ShotstackEditCheckerLive,
     scriptedSlideshowMedia(library)
   ).pipe(Layer.provideMerge(SlideshowRecords.layer));
 

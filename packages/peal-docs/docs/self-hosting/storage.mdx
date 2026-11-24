@@ -34,7 +34,7 @@ Then put the `.eu.` endpoint in `PEAL_S3_ENDPOINT`: `https://<account>.eu.r2.clo
 
 ## Add the upload rule [#cors]
 
-Browsers send media straight to the bucket, with requests the server signs. The bucket must let the web app's origin send them, with a CORS rule that allows `PUT` from that origin with the `Content-Type` and `If-None-Match` headers.
+Browsers send media straight to the bucket, with requests the server signs. The bucket must let the web app's origin send them, with a CORS rule that allows `PUT` from that origin with the `Content-Type` and `If-None-Match` headers. The same rule allows `GET` with a `Range` header, because the video editor's preview draws library files on a canvas, which only reads files that CORS allows. If you set the rule up before the editor existed, run the command again.
 
 Set the server's variables, and make sure `PUBLIC_URL` and `TRUSTED_ORIGINS` name the web app's origins. Then this command puts the rule on the bucket and keeps the bucket's other rules:
 

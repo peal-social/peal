@@ -9,6 +9,12 @@ pub enum SlideshowRejection {
     TooLong,
     VoiceoverTooLong,
     VoiceoverTooShort,
+    EditInvalid,
+    MediaNotFound,
+    MediaNotSupported,
+    EditTooLong,
+    EditTooLarge,
+    OutputNotSupported,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -23,6 +29,12 @@ impl Serialize for SlideshowRejection {
             Self::TooLong => serializer.serialize_str("tooLong"),
             Self::VoiceoverTooLong => serializer.serialize_str("voiceoverTooLong"),
             Self::VoiceoverTooShort => serializer.serialize_str("voiceoverTooShort"),
+            Self::EditInvalid => serializer.serialize_str("editInvalid"),
+            Self::MediaNotFound => serializer.serialize_str("mediaNotFound"),
+            Self::MediaNotSupported => serializer.serialize_str("mediaNotSupported"),
+            Self::EditTooLong => serializer.serialize_str("editTooLong"),
+            Self::EditTooLarge => serializer.serialize_str("editTooLarge"),
+            Self::OutputNotSupported => serializer.serialize_str("outputNotSupported"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -38,6 +50,12 @@ impl<'de> Deserialize<'de> for SlideshowRejection {
             "tooLong" => Ok(Self::TooLong),
             "voiceoverTooLong" => Ok(Self::VoiceoverTooLong),
             "voiceoverTooShort" => Ok(Self::VoiceoverTooShort),
+            "editInvalid" => Ok(Self::EditInvalid),
+            "mediaNotFound" => Ok(Self::MediaNotFound),
+            "mediaNotSupported" => Ok(Self::MediaNotSupported),
+            "editTooLong" => Ok(Self::EditTooLong),
+            "editTooLarge" => Ok(Self::EditTooLarge),
+            "outputNotSupported" => Ok(Self::OutputNotSupported),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -52,6 +70,12 @@ impl fmt::Display for SlideshowRejection {
             Self::TooLong => write!(f, "tooLong"),
             Self::VoiceoverTooLong => write!(f, "voiceoverTooLong"),
             Self::VoiceoverTooShort => write!(f, "voiceoverTooShort"),
+            Self::EditInvalid => write!(f, "editInvalid"),
+            Self::MediaNotFound => write!(f, "mediaNotFound"),
+            Self::MediaNotSupported => write!(f, "mediaNotSupported"),
+            Self::EditTooLong => write!(f, "editTooLong"),
+            Self::EditTooLarge => write!(f, "editTooLarge"),
+            Self::OutputNotSupported => write!(f, "outputNotSupported"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

@@ -12,8 +12,8 @@ const failed = (reason: SlideshowFailed["reason"]) =>
 /**
  * SlideshowMedia in the media context's library (`GeneratedMedia`): a
  * ready file described, a presigned GET of it for the service, the room
- * for the largest video, and the video kept as it came, not marked as made
- * by AI. The composition root provides it.
+ * for the largest video, and the video kept as it came, marked as made by
+ * AI or not. The composition root provides it.
  */
 export const LibrarySlideshowMediaLive = Layer.effect(
   SlideshowMedia,
@@ -25,6 +25,7 @@ export const LibrarySlideshowMediaLive = Layer.effect(
         generated.describeSource(workspaceId, assetId).pipe(
           Effect.map(
             Option.map((file): SlideshowSource => ({
+              aiGenerated: file.aiGenerated,
               contentType: file.contentType,
               durationSeconds: file.durationSeconds,
               kind: file.kind,
@@ -43,8 +44,8 @@ export const LibrarySlideshowMediaLive = Layer.effect(
         ),
       roomFor: (workspaceId) =>
         generated.roomForVideo(workspaceId, maxSlideshowBytes),
-      store: (workspaceId, bytes) =>
-        generated.storeVideo(workspaceId, bytes, { aiGenerated: false }).pipe(
+      store: (workspaceId, bytes, options) =>
+        generated.storeVideo(workspaceId, bytes, options).pipe(
           Effect.map((item) => item.asset.id),
           Effect.catchTags({
             GeneratedVideoUnusable: () => failed("unusableAnswer"),

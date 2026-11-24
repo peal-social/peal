@@ -23,6 +23,7 @@ const notPages: ReadonlySet<string> = new Set([
   "api",
   "emoji-data",
   "pulse",
+  "studio-assets",
 ]);
 
 const locales: ReadonlySet<string> = new Set(routing.locales);

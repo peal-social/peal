@@ -35,6 +35,17 @@ export const defaultSecondsPerSlide = 4;
 export const maxSlideshowSeconds = 90;
 
 /**
+ * What an edit rendered as a whole may hold: every clip whose start and
+ * length are numbers ends by `maxEditSeconds`, in at most `maxEditTracks`
+ * tracks and `maxEditClips` clips in all. The contract repeats them.
+ */
+export const maxEditSeconds = 300;
+
+export const maxEditTracks = 20;
+
+export const maxEditClips = 200;
+
+/**
  * The largest video Peal keeps from the service: 90 seconds of 1080p are
  * far less. Larger is `unusableAnswer`; the plan's storage must have room
  * for it before anything is asked.

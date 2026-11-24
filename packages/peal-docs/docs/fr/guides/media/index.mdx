@@ -335,7 +335,7 @@ Une vidéo de diapositives enchaîne 2 à 10 images de la médiathèque, chacune
 
 Cliquez sur **Créer une vidéo de diapositives** dans la page **Médias**. Choisissez les images dans l’ordre où elles passent, et montez-les ou descendez-les. Donnez à chacune une légende et un mouvement si vous le voulez, puis choisissez une voix off de la médiathèque, le format, la durée de chaque diapositive et la transition. La vidéo apparaît dans la médiathèque sous forme d’emplacement avec son état, jusqu’à ce qu’elle soit prête.
 
-Pour la voir avant de l’exporter, ouvrez plutôt **Studio** > **Éditeur** dans la barre latérale. Les images que vous ajoutez s’alignent sur un montage, leurs légendes au-dessus et la voix off en dessous. Choisissez une image pour lui donner une légende et un mouvement, ou pour la placer avant ou après, et lancez la lecture pour voir la vidéo avec ses mouvements et ses fondus. **Exporter la vidéo** demande la même vidéo de diapositives, qui arrive dans **Médias**.
+Pour monter une vidéo vous-même, ouvrez plutôt **Studio** > **Montage** dans la barre latérale. Choisissez **Ajouter des fichiers** pour des images, des vidéos et des sons de la médiathèque, ou ajoutez du texte, des formes ou des sous-titres avec les boutons à côté de l’aperçu, puis placez-les sur des pistes : faites glisser un élément pour le déplacer, ses bords pour le raccourcir ; la première piste passe au-dessus. Choisissez un élément pour le modifier avec la barre au-dessus de l’aperçu. Les sous-titres viennent de la voix d’une vidéo ou d’un son : l’aperçu montre des mots d’exemple, et Shotstack écrit les vrais au rendu. L’outil est Shotstack Studio, et ses commandes sont en anglais. Votre travail est gardé dans ce navigateur jusqu’à ce que vous recommenciez. Si votre espace de travail crée des images par IA, **Générer une image** en ajoute une d’après une description : écrivez-la dans la barre, puis choisissez **Generate**. Elle compte comme toute image IA et arrive dans **Médias**. **Générer une vidéo** fonctionne de la même façon et prend quelques minutes : si vous quittez le montage, la vidéo arrive quand même dans **Médias**. **Générer une voix off** fait de même avec les mots à dire, avec la voix par défaut de votre fournisseur, si votre espace de travail crée des voix off. **Enregistrer l’image** garde dans **Médias** l’image affichée par la tête de lecture, pour une couverture ou un post. **Exporter la vidéo** l’envoie au compte Shotstack de votre espace de travail, et la vidéo arrive dans **Médias**.
 
 </Tab>
 <Tab title="CLI">
@@ -412,7 +412,73 @@ Une vidéo de diapositives est une tâche qui tourne sur le serveur, vous pouvez
 </AccordionItem>
 </Accordion>
 
-La vidéo est un fichier MP4 de la médiathèque, sans description. Elle n’est pas marquée comme créée par IA, puisque Shotstack ne fait qu’assembler vos propres fichiers. Peal n’écrit jamais les légendes ni la vidéo dans ses journaux, et ne garde les légendes que le temps de créer la vidéo. Aucun outil MCP ne crée de vidéo de diapositives, car chacune est payée par le compte Shotstack de l’espace de travail.
+La vidéo est un fichier MP4 de la médiathèque, sans description. Elle est marquée **Créé par IA** quand l’un de ses fichiers l’est, ou quand un montage demande à Shotstack de générer quelque chose. Peal n’écrit jamais les légendes ni la vidéo dans ses journaux, et ne garde les légendes que le temps de créer la vidéo. Aucun outil MCP ne crée de vidéo de diapositives, car chacune est payée par le compte Shotstack de l’espace de travail.
+
+### Rendre un montage par l’API [#render-an-edit]
+
+Un programme, ou un éditeur vidéo qui écrit le format de Shotstack, peut envoyer un [montage Shotstack](https://shotstack.io/docs/api/#tocs_edit) entier plutôt qu’une liste d’images. Peal le vérifie et le fait rendre par la connexion Shotstack de l’espace de travail, comme la même tâche qu’une vidéo de diapositives, avec les mêmes droits.
+
+Envoyez `POST /api/workspaces/{workspaceId}/media/slideshows/edits` avec le montage dans `edit`. La réponse est `202` avec la tâche, que vous suivez comme plus haut. Le `durationSeconds` de la tâche est la fin la plus tardive d’un clip dont le début et la durée sont des nombres, et son `imageMediaIds` liste chaque fichier de la médiathèque que le montage nomme, images ou non.
+
+```json
+{
+  "edit": {
+    "timeline": {
+      "tracks": [
+        {
+          "clips": [
+            {
+              "asset": { "type": "rich-text", "text": "En ligne vendredi" },
+              "start": 0,
+              "length": 3
+            }
+          ]
+        },
+        {
+          "clips": [
+            {
+              "asset": { "type": "image", "src": "peal:media/<media-id>" },
+              "start": 0,
+              "length": 4
+            },
+            {
+              "asset": { "type": "video", "src": "peal:media/<media-id>" },
+              "start": 4,
+              "length": 6
+            }
+          ]
+        }
+      ]
+    },
+    "output": { "aspectRatio": "9:16" }
+  }
+}
+```
+
+Nommez chaque fichier de la médiathèque `peal:media/<media-id>`. Ce doit être un fichier prêt d’un type que son élément prend : une image pour un élément image, une vidéo pour un élément vidéo, un fichier audio pour un élément audio ou la bande son, un fichier audio ou vidéo pour des sous-titres, et une image ou une vidéo pour un masque de luminance. Les polices peuvent aussi venir de `https://fonts.gstatic.com/`. Un élément que Shotstack génère à partir d’un `prompt` n’a besoin d’aucun fichier. Toute autre adresse est refusée, tout comme les champs de fusion.
+
+| Réglage              | Valeurs                                                                         | Par défaut         |
+| -------------------- | ------------------------------------------------------------------------------- | ------------------ |
+| `output.format`      | `mp4`                                                                           | `mp4`              |
+| `output.resolution`  | `preview`, `mobile`, `sd`, `hd` ou `1080`                                       | `1080`             |
+| `output.aspectRatio` | `16:9`, `9:16` ou `1:1`, le `landscape`, `portrait` ou `square` de la tâche     | `16:9`             |
+| `output.fps`         | jusqu’à 30                                                                      | celui de Shotstack |
+| Pistes               | jusqu’à 20                                                                      |                    |
+| Clips                | jusqu’à 200 en tout                                                             |                    |
+| Durée                | chaque clip dont le début et la durée sont des nombres finit avant 300 secondes |                    |
+
+La sortie ne prend ni `size`, ni `range`, ni `scaleTo`, ni `repeat`, ni `poster`, ni `thumbnail`. Peal remplace les destinations pour que Shotstack n’héberge aucune copie, désactive le cache du montage, et retire `callback` et `disk`. Un montage refusé est `SlideshowRequestRejected` (422), et rien n’est demandé ni compté :
+
+| Raison               | Ce qui s’est passé                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| `editInvalid`        | Le schéma de Shotstack refuse le montage, il fusionne des champs, ou il nomme un fichier ailleurs |
+| `mediaNotFound`      | Un fichier `peal:media/` n’est pas un fichier prêt de la médiathèque de l’espace de travail       |
+| `mediaNotSupported`  | Un fichier de la médiathèque est d’un type que son élément ne prend pas, comme un son en image    |
+| `outputNotSupported` | La sortie n’est pas une sortie que Peal rend                                                      |
+| `editTooLarge`       | Le montage a plus de 20 pistes ou de 200 clips                                                    |
+| `editTooLong`        | Un clip finit après 300 secondes                                                                  |
+
+Peal n’écrit jamais le montage dans ses journaux, et ne le garde que le temps de rendre la vidéo.
 
 ## Ajouter des médias à une publication [#attach]
 

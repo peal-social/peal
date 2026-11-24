@@ -11,7 +11,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Web front
 
 - Build screens from `peal-ui` components and Tailwind classes; add no other
-  stylesheet.
+  stylesheet, but for the Studio SDK's look (`studio.css`).
 - peal-ui's components are shadcn/ui's look on ui-sdk (`@ui-sdk/react`, on
   `@ui-sdk/core`), which gives their unstyled behaviour (keyboard, focus,
   selection, popups, ARIA), as it does for what peal-ui does not cover:
@@ -953,17 +953,41 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   payment method's open the upgrade dialog. `SlideshowJobs` shows the
   jobs on their way (`SlideshowJobsView`, beside `VideoJobsView`) as
   `VideoJobs` does. The Studio's **Editor** (`…/editor`, DESIGN.md "The
-  editor", `components/studio/`) is the same slide video on a timeline:
-  `EditorScreen` reads the status once hydrated, shows an empty state
-  without Shotstack or a payment method, and sends `slideshowRequestOf`
-  through `createSlideshow`, its refusals worded from
-  `Assistant.slideshows`. Its pure model is `#studio/timeline.ts`
-  (tested: clips end to end, the clip at an instant, the motion and the
-  fade as Shotstack draws them); its parts (`editor-parts.tsx`) are
-  ui-sdk's `Toolbar`, `Slider` (the playhead) and a horizontal `Listbox`
-  (the images), styled with peal-ui's tokens: never Shotstack's own
-  editor or its look. A change to what the timeline sends is a change to
-  the slideshows contract first. `GenerateVoiceover`'s dialog takes the text, and the
+  editor", `components/studio/`) runs Shotstack's Studio SDK
+  (`@shotstack/shotstack-studio`, pinned, PolyForm Shield: README,
+  "Licensing") with its own interface: `studio-engine.ts` loads its
+  `Edit`, `Canvas`, `UIController`, `Timeline` and `Controls` in the
+  browser only (a dynamic import), never its `VideoExporter` (a render is
+  always the workspace's Shotstack account, through `POST
+  …/media/slideshows/edits`) nor its `./internal` entry. Peal restyles it
+  in `studio.css` alone (colours, type, radius, and hiding what the server
+  does not render) and builds no control of its own over it, so leaving
+  Shotstack removes one folder. Its buttons beside the
+  preview are `studio-tools.ts` (text; shapes, which are SVG clips, as the
+  SDK's toolbar edits those and not Shotstack's shape asset; captions,
+  which the SDK links to a sound or a film by itself). The SDK listens to the whole
+  page's keys: `isNotForSdk` takes back those of fields, open dialogs and
+  menus, and buttons. The SDK's Generate button
+  asks `useStudioGenerator`, which makes the file with the workspace's own
+  providers into the library; the export sends what was made by its file
+  alone (`renderedOf`) and refuses a clip not made yet
+  (`waitsToBeGenerated`), as Shotstack would generate a prompt again, on
+  the workspace's credits. It opens over the whole window
+  (`useFullWindow`, which `FrameView` answers by hiding the sidebar and
+  the bottom bar, never remounting the page). The document is Shotstack's Edit
+  (`#studio/edit-document.ts`, tested), library files named
+  `peal:media/<id>` wherever it is kept or sent, swapped for their
+  hour-long addresses only in the preview (`previewOf`, `storedOf`, which
+  also writes the SDK's size as the server's aspect and resolution); the
+  draft lives in `localStorage` (`#studio/draft.ts`). The SDK loads an
+  edit only with a clip on every track, so a new one starts with a text.
+  The SDK fetches fonts, WebAssembly and emoji: the committed patch
+  (`patches/`, made by `scripts/relay-studio-assets.ts`, which a
+  version bump runs again inside `bun patch`) points them at
+  `/studio-assets/<host>/…`, a route handler that fetches a fixed list
+  of paths (`#studio/asset-relay.ts`, tested), so no visitor's address
+  reaches those hosts; the bucket's CORS rule (`media-cors`) takes the
+  canvas's GETs. `GenerateVoiceover`'s dialog takes the text, and the
   voice as the provider's `speech` offer takes it (`voiceFieldOf`: a
   select of its voices, a field for a voice's id, or nothing), sent by
   `voiceoverRequestOf`; the new file lands in the library. A card of an

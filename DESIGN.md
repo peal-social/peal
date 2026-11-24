@@ -860,41 +860,38 @@ drafts and the posts that need an approval are tabs of Posts. Home keeps "Write 
 
 ### The editor
 
-Studio's **Editor** makes a video from the library's images, in Peal's
-own look: no third party's editor, canvas or theme is embedded. It is
-built from peal-ui and ui-sdk's behaviours (a toolbar, a slider, a
-listbox), and its export is the workspace's own Shotstack account, as
-slide videos are. It shows only to members who may compose one
-(assistant:use and media:upload).
+Studio's **Editor** makes a video of the library's pictures, videos and
+sounds and of texts, on tracks. It is Shotstack's Studio SDK, its own
+interface included: Peal changes how it looks through CSS alone
+(`studio.css`), never its layout, its controls or its behaviour, so it
+keeps costing little and can be taken out whole. It is the one part of the
+app not built from peal-ui, and the SDK's words are in English in every
+language. Its export is the workspace's own Shotstack account, as slide
+videos are. It shows only to members who may compose one (assistant:use
+and media:upload).
 
-- The panel's header holds **Export video** (a small ghost button, its
-  icon first), disabled until the video can be made.
-- The **stage**, on `muted` with a hairline, `{rounded.lg}`: the frame
-  in the video's shape (portrait, landscape or square), on ink, drawing
-  the clip at the playhead with its motion, its fade and its caption as
-  the export does (white on a translucent ink band at the foot); paused,
-  the clip shows whole, without its fade. Before any image, the frame
-  says to add some.
-- The **transport** under it: back a clip, play or pause, on a clip (a
-  toolbar of ghost icon buttons), then the playhead as a slider along
-  the whole width (a 4 px rail, the played part in `primary`, a round
-  thumb with a `primary` edge), then the time in mono figures, "0:04.3 /
-  0:12.0".
-- The **inspector** beside the stage, 18 rem, a bordered column of
-  sections under small headings: the chosen image (its caption with its
-  count, its motion, Earlier, Later and Remove as small ghost buttons),
-  the video (shape, each image's length or fit to the voice-over, the
-  transition), and the export (the length in all, what is left today,
-  why it cannot be made yet, the refusal, and where the video lands). On
-  a phone it goes under the stage.
-- The **timeline**, a bordered card under them, its header naming it
-  with **Add images**, **Add a voice-over** and **Remove**: three
-  tracks, each named in a muted column, the clips as wide as their
-  length. Captions on `brand-tint` (a dashed outline where there is
-  none); the images as thumbnails, one tab stop with arrow keys between
-  them, the chosen one ringed in `primary`; the voice-over on a lavender
-  tint, or "No voice-over" in a dashed outline. The playhead is a 2 px
-  `primary` line across the three.
+- The page opens over the whole window: the sidebar and the bottom bar
+  are hidden, the panel's header and the contract functions stay, and the
+  stage takes the height the timeline leaves. **Exit full screen**, first
+  in the header, brings the frame back, and **Full screen** hides it
+  again.
+- The panel's header then holds **Add files** (the library's picker), **Save
+  frame** (the frame under the playhead, to the library), **Start over**
+  and **Export video**.
+- The **stage**, on `muted` with a hairline, `{rounded.lg}`, 48 % of the
+  window's height in the frame: the SDK's preview, its toolbars beside it on `popover`
+  with a hairline, the chosen clip's over it on `primary`. A new video
+  starts with one text.
+- The **timeline** under it, in a bordered box on `card`: the playhead and
+  the play button in `primary`, texts tinted lavender, sounds sun, the rest
+  `brand-tint`.
+- Sizes and frame rates the server does not render are hidden from the
+  SDK's menus.
+- Under the timeline, in small muted text, where an export goes and how
+  many are left today, with a refusal above it, then what generating
+  costs and how much is left, where the workspace makes something.
+- Under 1280 px the header's actions are their icons alone, named for
+  screen readers; under 1024 px the chosen clip's toolbar wraps.
 - Exports on their way show under the timeline as the library's
   placeholders do, and a toast says when one lands in Media or why it
   failed.

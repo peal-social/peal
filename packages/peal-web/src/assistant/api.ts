@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import { Atom } from "effect/reactivity";
 
 import { PealApi } from "#api/client.ts";
@@ -45,6 +46,29 @@ export const videoGenerations = Atom.family((workspaceId: string) =>
  */
 export const generateVideo = PealApi.mutation("videoGenerations", "create");
 
+/** Reads where one video stands, with its file once made. */
+export const readVideo = PealApi.runtime.fn<{
+  readonly generationId: string;
+  readonly workspaceId: string;
+}>()(({ generationId, workspaceId }) =>
+  Effect.gen(function* read() {
+    const client = yield* PealApi;
+
+    const job = yield* client.videoGenerations.get({
+      params: { generationId, workspaceId },
+    });
+
+    const media =
+      job.mediaId === null
+        ? null
+        : yield* client.media.get({
+            params: { mediaId: job.mediaId, workspaceId },
+          });
+
+    return { job, media };
+  })
+);
+
 /** What lists a workspace's slide videos, which asking for one refreshes. */
 export const slideshowsKey = (workspaceId: string): string =>
   `slideshows:${workspaceId}`;
@@ -63,6 +87,12 @@ export const slideshows = Atom.family((workspaceId: string) =>
  * in a durable job; send it with the slide videos' reactivity key.
  */
 export const createSlideshow = PealApi.mutation("slideshows", "create");
+
+/**
+ * Renders the editor's document through the same job as a slide video;
+ * send it with the slide videos' reactivity key.
+ */
+export const renderEdit = PealApi.mutation("slideshows", "createFromEdit");
 
 /**
  * Makes a voice-over into the workspace's media library; send it with the

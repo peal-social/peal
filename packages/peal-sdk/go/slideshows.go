@@ -103,6 +103,63 @@ func (s *SlideshowRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	editRenderRequestFieldWorkspaceID = big.NewInt(1 << 0)
+	editRenderRequestFieldEdit        = big.NewInt(1 << 1)
+)
+
+type EditRenderRequest struct {
+	WorkspaceID string         `json:"-" url:"-"`
+	Edit        map[string]any `json:"edit" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (e *EditRenderRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if e.explicitFields != nil {
+		next.Set(e.explicitFields)
+	}
+	next.Or(next, field)
+	e.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EditRenderRequest) SetWorkspaceID(workspaceID string) {
+	e.WorkspaceID = workspaceID
+	e.require(editRenderRequestFieldWorkspaceID)
+}
+
+// SetEdit sets the Edit field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EditRenderRequest) SetEdit(edit map[string]any) {
+	e.Edit = edit
+	e.require(editRenderRequestFieldEdit)
+}
+
+func (e *EditRenderRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler EditRenderRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*e = EditRenderRequest(body)
+	return nil
+}
+
+func (e *EditRenderRequest) MarshalJSON() ([]byte, error) {
+	type embed EditRenderRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*e),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	getSlideshowsRequestFieldWorkspaceID = big.NewInt(1 << 0)
 	getSlideshowsRequestFieldSlideshowID = big.NewInt(1 << 1)
 )

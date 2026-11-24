@@ -42,6 +42,7 @@ import { OwnVideoModelLive } from "#assistant/infrastructure/own-video-model.ts"
 import { OwnWritingModelLive } from "#assistant/infrastructure/own-writing-model.ts";
 import { PlanAssistantAllowanceLive } from "#assistant/infrastructure/plan-assistant-allowance.ts";
 import { PublishingPlatformLimitsLive } from "#assistant/infrastructure/publishing-platform-limits.ts";
+import { ShotstackEditCheckerLive } from "#assistant/infrastructure/shotstack/edit-checker.ts";
 import {
   ComposeSlideshowV1Live,
   WorkflowSlideshowJobs,
@@ -154,6 +155,7 @@ export const AssistantLive = Layer.mergeAll(
         NotifiedSlideshowNoticesLive,
         LibrarySlideshowMediaLive,
         OwnComposerLive,
+        ShotstackEditCheckerLive,
         SlideshowSlots.layer
       )
     )

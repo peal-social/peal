@@ -1453,6 +1453,10 @@ export { VideoUnavailable } from "./video-unavailable.ts";
 
 export {
   defaultSecondsPerSlide,
+  EditRenderRequestSchema,
+  maxEditClips,
+  maxEditSeconds,
+  maxEditTracks,
   maxSecondsPerSlide,
   maxSlideCaptionLength,
   maxSlides,
@@ -1473,6 +1477,7 @@ export {
 } from "./slideshows.ts";
 
 export type {
+  EditRenderRequest,
   Slide,
   SlideMotion,
   Slideshow,

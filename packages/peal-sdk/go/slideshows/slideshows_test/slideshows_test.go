@@ -135,6 +135,35 @@ func TestSlideshowsCreateWithWireMock(
 	VerifyRequestCount(t, "TestSlideshowsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/media/slideshows", nil, 1)
 }
 
+func TestSlideshowsCreateFromEditWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.EditRenderRequest{
+		WorkspaceID: "workspaceId",
+		Edit: map[string]any{
+			"key": "value",
+		},
+	}
+	_, invocationErr := client.Slideshows.CreateFromEdit(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestSlideshowsCreateFromEditWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestSlideshowsCreateFromEditWithWireMock", "POST", "/api/workspaces/workspaceId/media/slideshows/edits", nil, 1)
+}
+
 func TestSlideshowsGetWithWireMock(
 	t *testing.T,
 ) {

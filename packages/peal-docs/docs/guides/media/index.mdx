@@ -334,7 +334,7 @@ A slide video puts 2 to 10 images of the library one after the other, each with 
 
 Click **Make a slide video** on the **Media** page. Pick the images in the order they show, and move them up or down. Give each a caption and a motion if you want them, then choose a voice-over from the library, the aspect, how long each slide shows and the transition. The video shows in the library as a placeholder with its state until it's ready.
 
-To see it before you export it, open **Studio** > **Editor** in the sidebar instead. Add images, and they line up on a timeline, with their captions above them and the voice-over below. Choose an image to give it a caption and a motion or move it earlier or later, and press play to watch the video with its motions and fades. **Export video** asks for the same slide video, and it lands in **Media**.
+To build a video yourself, open **Studio** > **Editor** in the sidebar instead. Choose **Add files** for pictures, videos and sounds from the library, or add text, shapes or captions with the buttons beside the preview, then arrange them on tracks: drag a clip to move it, drag its edges to trim it, and the first track shows on top. Choose a clip to change it with the toolbar over the preview. Captions come from the voice of a video or a sound: the preview shows sample words, and Shotstack writes the real ones when it renders. The editor is Shotstack Studio, and its controls are in English. Your work is kept in this browser until you start over. Where your workspace makes AI images, **Generate an image** adds one from a description: write it in the toolbar, then choose **Generate**. It counts as any AI image does, and lands in **Media**. **Generate a video** works the same way and takes a few minutes: if you leave the editor, the video still lands in **Media**. **Generate a voice-over** does the same from the words to say, with your provider's default voice, where your workspace makes voice-overs. **Save frame** saves the picture under the playhead to **Media**, to use as a cover or a post. **Export video** sends it to your workspace's Shotstack account, and the video lands in **Media**.
 
 </Tab>
 <Tab title="CLI">
@@ -410,7 +410,73 @@ A slide video is a job that runs on the server, so you can leave the page. It's 
 </AccordionItem>
 </Accordion>
 
-The video is an MP4 file in the library, with no description. It isn't marked as made by AI, since Shotstack only puts your own files together. Peal never writes the captions or the video to its logs, and keeps the captions only while the video is made. No MCP tool makes slide videos, because each one is paid by the workspace's Shotstack account.
+The video is an MP4 file in the library, with no description. It's marked **Made by AI** when one of the files it's made of is, or when an edit asks Shotstack to generate something. Peal never writes the captions or the video to its logs, and keeps the captions only while the video is made. No MCP tool makes slide videos, because each one is paid by the workspace's Shotstack account.
+
+### Render an edit through the API [#render-an-edit]
+
+A program, or a video editor that writes Shotstack's format, can send a whole [Shotstack Edit](https://shotstack.io/docs/api/#tocs_edit) instead of a list of images. Peal checks it and renders it with the workspace's Shotstack connection, as the same job as a slide video, with the same rights.
+
+Send `POST /api/workspaces/{workspaceId}/media/slideshows/edits` with the edit in `edit`. The answer is `202` with the job, which you follow as above. The job's `durationSeconds` is the latest end of a clip whose start and length are numbers, and its `imageMediaIds` lists every library file the edit names, images or not.
+
+```json
+{
+  "edit": {
+    "timeline": {
+      "tracks": [
+        {
+          "clips": [
+            {
+              "asset": { "type": "rich-text", "text": "Out on Friday" },
+              "start": 0,
+              "length": 3
+            }
+          ]
+        },
+        {
+          "clips": [
+            {
+              "asset": { "type": "image", "src": "peal:media/<media-id>" },
+              "start": 0,
+              "length": 4
+            },
+            {
+              "asset": { "type": "video", "src": "peal:media/<media-id>" },
+              "start": 4,
+              "length": 6
+            }
+          ]
+        }
+      ]
+    },
+    "output": { "aspectRatio": "9:16" }
+  }
+}
+```
+
+Name each file of the library `peal:media/<media-id>`. It must be a ready file of a kind its asset takes: an image for an image asset, a video for a video asset, an audio file for an audio asset or the soundtrack, an audio or video file for captions, and an image or a video for a luma matte. Fonts may also come from `https://fonts.gstatic.com/`. An asset Shotstack generates from a `prompt` needs no file. Any other address is refused, and so are merge fields.
+
+| Setting              | Values                                                                 | Default             |
+| -------------------- | ---------------------------------------------------------------------- | ------------------- |
+| `output.format`      | `mp4`                                                                  | `mp4`               |
+| `output.resolution`  | `preview`, `mobile`, `sd`, `hd` or `1080`                              | `1080`              |
+| `output.aspectRatio` | `16:9`, `9:16` or `1:1`, the job's `landscape`, `portrait` or `square` | `16:9`              |
+| `output.fps`         | up to 30                                                               | Shotstack's default |
+| Tracks               | up to 20                                                               |                     |
+| Clips                | up to 200 in all                                                       |                     |
+| Length               | every clip whose start and length are numbers ends by 300 seconds      |                     |
+
+The output takes no `size`, `range`, `scaleTo`, `repeat`, `poster` or `thumbnail`. Peal replaces the destinations so that Shotstack hosts no copy, turns the timeline's cache off, and drops `callback` and `disk`. A refused edit is `SlideshowRequestRejected` (422), and nothing is asked or counted:
+
+| Reason               | What happened                                                                                |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `editInvalid`        | Shotstack's schema refuses the edit, it merges fields, or it names a file at another address |
+| `mediaNotFound`      | A `peal:media/` file isn't a ready file of the workspace's library                           |
+| `mediaNotSupported`  | A library file is of a kind its asset can't take, such as an audio file as an image          |
+| `outputNotSupported` | The output isn't one Peal renders                                                            |
+| `editTooLarge`       | The edit has more than 20 tracks or 200 clips                                                |
+| `editTooLong`        | A clip ends past 300 seconds                                                                 |
+
+Peal never writes the edit to its logs, and keeps it only while the video is rendered.
 
 ## Attach media to a post [#attach]
 

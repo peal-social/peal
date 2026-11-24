@@ -305,6 +305,17 @@ Peal is fair source, not open source. You can use, change and self-host it
 for anything except offering it to others as a competing service. Each
 release becomes Apache-2.0 two years after it ships.
 
+The web app's video editor runs on Shotstack's Studio SDK
+(`@shotstack/shotstack-studio`), which is not Peal's and comes under its
+own licence, the
+[PolyForm Shield License 1.0.0](https://polyformproject.org/licenses/shield/1.0.0).
+Required Notice: Copyright Shotstack Pty Ltd (https://shotstack.io). Peal
+changes it through `patches/` so it fetches its fonts and WebAssembly from
+the page's own origin. Its terms allow any use but providing a product that
+competes with Shotstack's, and a self-hoster who runs the editor takes them
+on too. The editor renders every video through the workspace's own Shotstack
+account, never in the browser.
+
 The SDKs are generated from the contract's OpenAPI document, so the contract
 is Apache-2.0 too. What an SDK user installs, and the API description it
 comes from, carry no FSL terms. Each `package.json` names its licence, and

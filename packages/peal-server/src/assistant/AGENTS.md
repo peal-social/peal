@@ -462,6 +462,34 @@
   index `slideshows_one_at_a_time`; `staleSlideshowAfter` 40 minutes;
   `slideshowsPerDay` 20, `SlideshowsExhausted`). Nothing of Peal's is
   metered or billed. The plan is erased when the job ends.
+- `AssistantSlideshows.requestEdit` (`POST …/media/slideshows/edits`, the
+  web app editor's document) starts the same job from a whole Shotstack
+  Edit, after the same checks in the same order (permissions, staff, the
+  choice, the payment method; the room last): the edit, its output
+  defaulted first (`withOutputDefaults`: MP4, 1080p, 16:9), is one
+  Shotstack's own schema accepts (`EditChecker`, whose adapter
+  `shotstack/edit-checker.ts` is the one file that imports zod, through
+  `@shotstack/schemas` 1.27.0, the version the editor's engine pins; it
+  answers the edit as the schema reads it, its coercions and defaults
+  applied, its errors never kept), then the pure rules of
+  `domain/edit-render.ts`, whose comment lists every place an Edit names
+  a file: each `src` (and every text of a generation's `options`) is
+  `peal:media/<mediaId>`, a ready file of the workspace whose kind its
+  asset takes (`SlideshowMedia.describe`; `mediaNotFound`,
+  `mediaNotSupported`), a font on `https://fonts.gstatic.com/`, a
+  caption's `alias://` or, in `options`, no address at all; anything else,
+  and merge fields (whose placeholders could name any address), are
+  `editInvalid`. The output is an MP4 at `preview` to `1080`, in 16:9, 9:16
+  or 1:1 (the job's aspect), 30 fps at most, without `size`, `range`,
+  `scaleTo`, `repeat`, `poster` or `thumbnail` (`outputNotSupported`);
+  `maxEditTracks` 20 and `maxEditClips` 200 (`editTooLarge`); every clip
+  whose start and length are numbers ends by `maxEditSeconds` 300
+  (`editTooLong`, the latest such end the job's `durationSeconds`; `auto`,
+  `end` and aliases Shotstack's render bounds). `imageMediaIds` lists every
+  file it names, once each in order, of any kind. The stored plan is a
+  union (`SlideshowPlanSchema`): the slide plan as before, untagged and
+  decoded first, or `{ edit }`, the checked edit with its `peal:media/`
+  names kept.
 - `ComposeSlideshowV1` (`infrastructure/workflows/compose-slideshow.ts`,
   persisted contract: its tag, payload `slideshowId`, activity `compose`,
   result `succeeded | failed | superseded`) runs `RunSlideshow.run` in one
@@ -472,9 +500,11 @@
   GETs of this request's files alone (`SlideshowMedia.linkTo`, on the media
   context's `GeneratedMedia.sourceLink`: `MediaStorage.downloadUrl` for
   `sourceLinkLifetime`, an hour, whether or not the bucket is public;
-  `mediaUnavailable` when one is gone), asks `OwnComposer`, and keeps the
-  video through `GeneratedMedia.storeVideo` with `aiGenerated: false` (the
-  workspace's own files, put together), probed. Its notice is
+  `mediaUnavailable` when one is gone; for an edit, one link a file it
+  names, swapped in by `editWithLinks`), asks `OwnComposer`, and keeps the
+  video through `GeneratedMedia.storeVideo`, probed, marked `aiGenerated`
+  when a file it is made of was, or its edit has the service generate
+  something (`editGenerates`). Its notice is
   `SlideshowEnded`, keyed `slideshow:<id>`, to the member who asked alone,
   in the app.
 - `OwnComposer` (`own-composer.ts`, on `shotstack/client.ts`, outside
@@ -487,7 +517,11 @@
   bottom, on the top track; the voice-over an `audio` clip from 0 to the
   end; MP4, `resolution` `1080`, the aspect's `aspectRatio`, 25 fps;
   `timeline.cache` false and the `shotstack` destination excluded, so
-  Shotstack hosts no copy and keeps no cached file), the key in
+  Shotstack hosts no copy and keeps no cached file), or, for an edit
+  (`CompositionRequest` is a slide request or `{ edit }`), the edit with
+  its links as `editRenderOf` forces it (`output.destinations` the
+  excluded `shotstack` one alone, `timeline.cache` false, `output.format`
+  `mp4`, no `callback` or `disk`), the key in
   `x-api-key`, sent once; then `GET {base}/render/{id}` every
   `slideshowPollInterval` (5 s; 3 polls in a row failing for now are
   borne) until `done` (its temporary `url`, downloaded without the key
@@ -498,7 +532,7 @@
   trace context). Statuses read as videos' (`reasonOfComposerStatus`: 401
   to 404 `settingsRefused`, a 402 being an account without credits).
   Logs and span say `workspace`, the service and the kind of failure,
-  never an address, a caption or the key. Tested on fake fetches only:
+  never an address, a caption, an edit or the key. Tested on fake fetches only:
   nothing has called Shotstack. Exports give the jobs without plans
   (`exportSlideshows`); erasing a workspace deletes them. No MCP tool
   composes one.

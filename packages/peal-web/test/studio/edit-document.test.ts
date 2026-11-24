@@ -1,0 +1,265 @@
+import { describe, expect, it } from "@effect/vitest";
+import { Option } from "effect";
+
+import { draftOf, storedDraftOf } from "#studio/draft.ts";
+import {
+  clipOfMedia,
+  emptyEdit,
+  hasClips,
+  imageAspectOf,
+  laidEnd,
+  mediaIdOfRef,
+  mediaIdAt,
+  mediaIdsOf,
+  mediaRefOf,
+  previewOf,
+  promptedImageOf,
+  promptedVoiceOf,
+  renderedOf,
+  storedOf,
+  textClipOf,
+  waitsToBeGenerated,
+} from "#studio/edit-document.ts";
+import type { StudioClip, StudioEdit } from "#studio/edit-document.ts";
+
+const origin = "https://app.example.com";
+const picture = "0190a000-0000-7000-8000-000000000001";
+const sound = "0190a000-0000-7000-8000-000000000002";
+const font = "https://fonts.gstatic.com/s/inter/v20/abc.ttf";
+
+// The clip a library file makes, with the id the SDK would give it.
+const clipWithId = (
+  file: Parameters<typeof clipOfMedia>[0],
+  id: string
+): StudioClip => {
+  const clip = clipOfMedia(file, 0);
+
+  if (clip === null) {
+    throw new Error("no clip of this file");
+  }
+
+  return { ...clip, id };
+};
+
+const edit: StudioEdit = {
+  output: { aspectRatio: "9:16", format: "mp4" },
+  timeline: {
+    fonts: [{ src: font }],
+    tracks: [
+      {
+        clips: [{ ...textClipOf("Hello", 1), id: "t1" }],
+      },
+      {
+        clips: [
+          clipWithId({ durationMs: null, id: picture, kind: "image" }, "p1"),
+          {
+            asset: { src: mediaRefOf(picture), type: "image" },
+            id: "p2",
+            length: "auto",
+            start: "auto",
+          },
+        ],
+      },
+      {
+        clips: [
+          clipWithId({ durationMs: 12_340, id: sound, kind: "audio" }, "s1"),
+        ],
+      },
+    ],
+  },
+};
+
+const pictureAddress =
+  "https://bucket.example.com/picture.png?signature=synthetic";
+
+const addresses = new Map([
+  [picture, pictureAddress],
+  [sound, "https://bucket.example.com/sound.mp3?signature=synthetic"],
+]);
+
+const sized = (width: number, height: number) =>
+  storedOf(
+    { ...edit, output: { format: "mp4", size: { height, width } } },
+    () => null,
+    origin
+  ).output;
+
+describe("the editor's document", () => {
+  it("names library files, and reads the name back", () => {
+    expect([
+      mediaRefOf(picture),
+      mediaIdOfRef(`peal:media/${picture}`),
+      mediaIdOfRef("peal:media/"),
+      mediaIdOfRef("https://example.com/a.png"),
+    ]).toStrictEqual([`peal:media/${picture}`, picture, null, null]);
+  });
+
+  it("previews files by address and fonts through the relay, and stores them back by name", () => {
+    const shown = previewOf(edit, (id) => addresses.get(id) ?? null, origin);
+
+    const stored = storedOf(
+      shown,
+      (address) =>
+        [...addresses].find(([, each]) => each === address)?.[0] ?? null,
+      origin
+    );
+
+    expect([
+      JSON.stringify(shown).includes(pictureAddress),
+      JSON.stringify(shown).includes(
+        `${origin}/studio-assets/fonts.gstatic.com/`
+      ),
+      JSON.stringify(shown).includes("peal:media/"),
+      stored,
+    ]).toStrictEqual([true, true, false, edit]);
+  });
+
+  it("stores a font once, added by its relayed address and its own", () => {
+    const relayed = `${origin}/studio-assets/${font.slice("https://".length)}`;
+
+    expect(
+      storedOf(
+        {
+          ...edit,
+          timeline: {
+            ...edit.timeline,
+            fonts: [{ src: relayed }, { src: font }],
+          },
+        },
+        () => null,
+        origin
+      ).timeline.fonts
+    ).toStrictEqual([{ src: font }]);
+  });
+
+  it("knows a file by any of its links", () => {
+    const files = [
+      { id: sound, url: null },
+      { id: picture, url: `${pictureAddress}2` },
+    ];
+
+    expect([
+      mediaIdAt(files, pictureAddress),
+      mediaIdAt(files, "https://bucket.example.com/other.png"),
+    ]).toStrictEqual([picture, null]);
+  });
+
+  it("leaves a file the library no longer has by its name", () => {
+    const shown = previewOf(edit, () => null, origin);
+
+    expect(mediaIdsOf(shown)).toStrictEqual([picture, sound]);
+  });
+
+  it("lays files one after the other, documents left out", () => {
+    expect(
+      laidEnd(
+        [
+          { durationMs: null, id: picture, kind: "image" },
+          { durationMs: null, id: picture, kind: "document" },
+          { durationMs: 12_340, id: sound, kind: "audio" },
+        ],
+        1
+      ).map(({ length, start }) => [start, length])
+    ).toStrictEqual([
+      [1, 4],
+      [5, 12.3],
+    ]);
+  });
+
+  it("stores the size the SDK's menu wrote as the server names it, and any other as it is", () => {
+    expect([
+      sized(1080, 1920),
+      sized(1280, 720),
+      sized(1080, 1350),
+    ]).toStrictEqual([
+      { aspectRatio: "9:16", format: "mp4", resolution: "1080" },
+      { aspectRatio: "16:9", format: "mp4", resolution: "hd" },
+      { format: "mp4", size: { height: 1350, width: 1080 } },
+    ]);
+  });
+
+  it("knows an edit without a clip", () => {
+    expect([hasClips(edit), hasClips(emptyEdit([]))]).toStrictEqual([
+      true,
+      false,
+    ]);
+  });
+
+  it("renders what was generated by its file alone, and knows what waits", () => {
+    const waiting = emptyEdit([promptedImageOf("A sea", 0)]);
+
+    const made = emptyEdit([
+      {
+        ...promptedImageOf("A sea", 0),
+        asset: { prompt: "A sea", src: mediaRefOf(picture), type: "image" },
+      },
+    ]);
+
+    expect([
+      waitsToBeGenerated(waiting),
+      waitsToBeGenerated(made),
+      renderedOf(made).timeline.tracks[0]?.clips[0]?.asset,
+      renderedOf(edit),
+    ]).toStrictEqual([
+      true,
+      false,
+      { src: mediaRefOf(picture), type: "image" },
+      edit,
+    ]);
+  });
+
+  it("waits for a voice-over, then renders it by its file", () => {
+    const waiting = promptedVoiceOf("Hello", 2);
+
+    const made = emptyEdit([
+      {
+        ...waiting,
+        asset: {
+          prompt: "Hello",
+          src: mediaRefOf(sound),
+          type: "audio",
+          volume: 1,
+        },
+      },
+    ]);
+
+    expect([
+      waitsToBeGenerated(emptyEdit([waiting])),
+      renderedOf(made).timeline.tracks[0]?.clips[0]?.asset,
+    ]).toStrictEqual([
+      true,
+      { src: mediaRefOf(sound), type: "audio", volume: 1 },
+    ]);
+  });
+
+  it("asks for images in the video's shape", () => {
+    const of = (size: { readonly height: number; readonly width: number }) =>
+      imageAspectOf({ ...edit, output: { format: "mp4", size } });
+
+    expect([
+      imageAspectOf(edit),
+      of({ height: 1080, width: 1920 }),
+      of({ height: 1080, width: 1080 }),
+    ]).toStrictEqual(["portrait", "landscape", "square"]);
+  });
+
+  it("makes no clip of a document", () => {
+    expect(
+      clipOfMedia({ durationMs: null, id: picture, kind: "document" }, 0)
+    ).toBeNull();
+  });
+
+  it("keeps a draft as text and reads it back, and reads nothing else", () => {
+    expect([
+      draftOf(storedDraftOf(emptyEdit([textClipOf("Hello", 0)]))),
+      draftOf("not json"),
+      draftOf(JSON.stringify({ edit: emptyEdit([]), version: 2 })),
+      draftOf(null),
+    ]).toStrictEqual([
+      Option.some(emptyEdit([textClipOf("Hello", 0)])),
+      Option.none(),
+      Option.none(),
+      Option.none(),
+    ]);
+  });
+});

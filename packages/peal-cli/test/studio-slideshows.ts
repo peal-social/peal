@@ -1,4 +1,4 @@
-import { Effect, Option, Ref } from "effect";
+import { Effect, Option, Ref, Schema } from "effect";
 import type { DateTime } from "effect";
 import { HttpApiBuilder } from "effect/http-api";
 import {
@@ -23,7 +23,27 @@ import type { Studio } from "./studio.ts";
 // "allowance" for one whose day is spent, "refused" for one the service
 // refuses. A slide video is `running` the first time it is read, then
 // ends. The studio's ready file serves as every image and the voice-over,
-// which lasts 12 seconds.
+// which lasts 12 seconds. An edit asked for whole is queued as it is, in
+// the aspect its output names (16:9 when none), refused `editInvalid`
+// without a timeline.
+
+// The aspect of an edit's output, as the server reads it.
+const EditOutputSchema = Schema.Struct({
+  output: Schema.optionalKey(
+    Schema.Struct({
+      aspectRatio: Schema.optionalKey(Schema.Literals(["16:9", "9:16", "1:1"])),
+    })
+  ),
+  timeline: Schema.Json,
+});
+
+const decodeEditOutput = Schema.decodeUnknownOption(EditOutputSchema);
+
+const aspectOfRatio = {
+  "16:9": "landscape",
+  "1:1": "square",
+  "9:16": "portrait",
+} as const;
 
 /** A slide video the studio asked for, and how many times it was read. */
 export interface StudioSlideshow {
@@ -194,6 +214,49 @@ export const studioSlideshowsOf = (world: SlideshowsWorld) => {
               studio,
               `slideshow:${payload.aspect}:${String(payload.secondsPerSlide ?? "-")}:${payload.transition ?? "-"}:${payload.voiceoverMediaId ?? "-"}:${slides}:${slideshow.id}`
             );
+
+            return slideshow;
+          }),
+        createFromEdit: ({ params, payload }) =>
+          Effect.gen(function* createFromEdit() {
+            yield* world.allowed("assistant:use");
+            yield* world.allowed("media:upload");
+            yield* inWorkspace(params.workspaceId);
+
+            const given = decodeEditOutput(payload.edit);
+
+            if (Option.isNone(given)) {
+              return yield* new SlideshowRequestRejected({
+                reason: "editInvalid",
+              });
+            }
+
+            const { slideshows } = yield* Ref.get(studio.state);
+
+            const slideshow: Slideshow = {
+              aspect: aspectOfRatio[given.value.output?.aspectRatio ?? "16:9"],
+              createdAt: world.now,
+              durationSeconds: 0,
+              finishedAt: null,
+              id: slideshowId(slideshows.length),
+              imageMediaIds: [],
+              mediaId: null,
+              reason: null,
+              sandbox: false,
+              startedAt: null,
+              status: "queued",
+              voiceoverMediaId: null,
+            };
+
+            yield* Ref.update(studio.state, (current) => ({
+              ...current,
+              slideshows: [
+                ...current.slideshows,
+                { fails: false, reads: 0, slideshow },
+              ],
+            }));
+
+            yield* world.record(studio, `slideshow-edit:${slideshow.id}`);
 
             return slideshow;
           }),

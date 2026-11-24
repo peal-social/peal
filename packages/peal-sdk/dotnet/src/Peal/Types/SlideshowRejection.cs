@@ -20,6 +20,18 @@ public readonly record struct SlideshowRejection : IStringEnum
 
     public static readonly SlideshowRejection VoiceoverTooShort = new(Values.VoiceoverTooShort);
 
+    public static readonly SlideshowRejection EditInvalid = new(Values.EditInvalid);
+
+    public static readonly SlideshowRejection MediaNotFound = new(Values.MediaNotFound);
+
+    public static readonly SlideshowRejection MediaNotSupported = new(Values.MediaNotSupported);
+
+    public static readonly SlideshowRejection EditTooLong = new(Values.EditTooLong);
+
+    public static readonly SlideshowRejection EditTooLarge = new(Values.EditTooLarge);
+
+    public static readonly SlideshowRejection OutputNotSupported = new(Values.OutputNotSupported);
+
     public SlideshowRejection(string value)
     {
         Value = value;
@@ -127,5 +139,17 @@ public readonly record struct SlideshowRejection : IStringEnum
         public const string VoiceoverTooLong = "voiceoverTooLong";
 
         public const string VoiceoverTooShort = "voiceoverTooShort";
+
+        public const string EditInvalid = "editInvalid";
+
+        public const string MediaNotFound = "mediaNotFound";
+
+        public const string MediaNotSupported = "mediaNotSupported";
+
+        public const string EditTooLong = "editTooLong";
+
+        public const string EditTooLarge = "editTooLarge";
+
+        public const string OutputNotSupported = "outputNotSupported";
     }
 }
