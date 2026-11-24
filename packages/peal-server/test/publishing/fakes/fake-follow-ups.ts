@@ -1,11 +1,11 @@
 import { DateTime, Effect, Layer, Ref } from "effect";
 
-import { FollowUpCounts } from "#publishing/application/follow-up-counts.ts";
-import { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
-import type { FollowUpRequest } from "#publishing/application/follow-up-publisher.ts";
-import { notSentReasonsOf } from "#publishing/domain/follow-up.ts";
-import type { FollowUpNotSentReason } from "#publishing/domain/follow-up.ts";
+import { FollowUpCounts } from "#publishing/application/follow-ups/follow-up-counts.ts";
+import { FollowUpNotices } from "#publishing/application/follow-ups/follow-up-notices.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
+import type { FollowUpRequest } from "#publishing/application/follow-ups/follow-up-publisher.ts";
+import { notSentReasonsOf } from "#publishing/domain/follow-ups/follow-up.ts";
+import type { FollowUpNotSentReason } from "#publishing/domain/follow-ups/follow-up.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";

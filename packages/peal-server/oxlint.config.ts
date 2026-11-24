@@ -56,6 +56,7 @@ const modules: Partial<Record<Kernel, Record<string, Module>>> = {
         "src/publishing/infrastructure/crons.ts",
       ],
     },
+    "follow-ups": { seams: [] },
   },
 };
 

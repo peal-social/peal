@@ -9,10 +9,14 @@ import {
   Result,
 } from "effect";
 
-import type { FollowUpAsk } from "#publishing/domain/follow-up-ability.ts";
-import { FollowUpIdSchema } from "#publishing/domain/follow-up-id.ts";
-import type { FollowUpId } from "#publishing/domain/follow-up-id.ts";
-import type { FollowUpRuleId } from "#publishing/domain/follow-up-rule-id.ts";
+import { ApprovalGate } from "#publishing/application/approval-gate.ts";
+import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
+import { PostRepository } from "#publishing/application/post-repository.ts";
+import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
+import type { FollowUpAsk } from "#publishing/domain/follow-ups/follow-up-ability.ts";
+import { FollowUpIdSchema } from "#publishing/domain/follow-ups/follow-up-id.ts";
+import type { FollowUpId } from "#publishing/domain/follow-ups/follow-up-id.ts";
+import type { FollowUpRuleId } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
 import {
   actsUntil,
   endFollowUpRule,
@@ -20,8 +24,8 @@ import {
   isDoneFor,
   mayAct,
   maxFollowUpsPerChannelDay,
-} from "#publishing/domain/follow-up-rule.ts";
-import type { FollowUpRule } from "#publishing/domain/follow-up-rule.ts";
+} from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import type { FollowUpRule } from "#publishing/domain/follow-ups/follow-up-rule.ts";
 import {
   armFollowUp,
   grantFollowUp,
@@ -33,14 +37,14 @@ import {
   triggerFollowUp,
   waitFollowUp,
   wasAttempted,
-} from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up.ts";
 import type {
   FollowUp,
   FollowUpCallOutcome,
   FollowUpCancelReason,
   FollowUpExpiryReason,
   FollowUpKind,
-} from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up.ts";
 import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import { livePartsOf } from "#publishing/domain/post-target.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
@@ -52,16 +56,12 @@ import type { Actor } from "#shared/domain/access.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 
-import { ApprovalGate } from "./approval-gate.ts";
 import { FollowUpChannels } from "./follow-up-channels.ts";
 import { FollowUpCounts } from "./follow-up-counts.ts";
 import { FollowUpJobs } from "./follow-up-jobs.ts";
 import { FollowUpNotices } from "./follow-up-notices.ts";
 import { FollowUpStore } from "./follow-up-store.ts";
 import type { ArmedFollowUp } from "./follow-up-store.ts";
-import { PlatformCredentials } from "./platform-credentials.ts";
-import { PostRepository } from "./post-repository.ts";
-import { RecyclingActors } from "./recycling-actors.ts";
 
 /** Follow-ups that set out, ended or waited, by what became of them. */
 export const followUpsRun = Metric.counter("peal.publishing.follow_ups", {

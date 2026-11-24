@@ -1,17 +1,16 @@
 import { Context, Effect, Layer, Option } from "effect";
 
-import { followUpsOn } from "#publishing/domain/follow-up-ability.ts";
+import { ChannelGrants } from "#publishing/application/channel-grants.ts";
+import { CountedPlatforms } from "#publishing/application/counted-platforms.ts";
+import { CurrentThreadedPlatforms } from "#publishing/application/threaded-platforms.ts";
+import { followUpsOn } from "#publishing/domain/follow-ups/follow-up-ability.ts";
 import type {
   ChannelFollowUps,
   FollowUpAsk,
-} from "#publishing/domain/follow-up-ability.ts";
+} from "#publishing/domain/follow-ups/follow-up-ability.ts";
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
-
-import { ChannelGrants } from "./channel-grants.ts";
-import { CountedPlatforms } from "./counted-platforms.ts";
-import { CurrentThreadedPlatforms } from "./threaded-platforms.ts";
 
 /** A channel as its follow-ups are judged: its platform and way in. */
 export interface FollowUpTarget {

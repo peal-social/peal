@@ -47,7 +47,7 @@ import type {
   ReviewsReadFailure,
   ReviewsRequestSchema,
 } from "#engagement/application/ports/review-source.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import type {
   EditOutcome,

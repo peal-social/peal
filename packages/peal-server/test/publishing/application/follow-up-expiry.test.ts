@@ -1,16 +1,16 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Option, Result } from "effect";
 
-import { expiryOf } from "#publishing/application/follow-ups.ts";
-import { FollowUpIdSchema } from "#publishing/domain/follow-up-id.ts";
-import { FollowUpRuleIdSchema } from "#publishing/domain/follow-up-rule-id.ts";
-import { startFollowUpRule } from "#publishing/domain/follow-up-rule.ts";
+import { expiryOf } from "#publishing/application/follow-ups/follow-ups.ts";
+import { FollowUpIdSchema } from "#publishing/domain/follow-ups/follow-up-id.ts";
+import { FollowUpRuleIdSchema } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
+import { startFollowUpRule } from "#publishing/domain/follow-ups/follow-up-rule.ts";
 import {
   armFollowUp,
   settleFollowUp,
   triggerFollowUp,
-} from "#publishing/domain/follow-up.ts";
-import type { FollowUpCallOutcome } from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up.ts";
+import type { FollowUpCallOutcome } from "#publishing/domain/follow-ups/follow-up.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import {
   ChannelIdSchema,

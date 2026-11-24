@@ -1,9 +1,9 @@
 import { Context, Effect, Layer } from "effect";
 import type { DateTime } from "effect";
 
-import type { FollowUpEndReason } from "#publishing/domain/follow-up-end-reason.ts";
-import type { FollowUpRule } from "#publishing/domain/follow-up-rule.ts";
-import type { FollowUp } from "#publishing/domain/follow-up.ts";
+import type { FollowUpEndReason } from "#publishing/domain/follow-ups/follow-up-end-reason.ts";
+import type { FollowUpRule } from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import type { FollowUp } from "#publishing/domain/follow-ups/follow-up.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 
 /**

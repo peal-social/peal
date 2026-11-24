@@ -4,10 +4,9 @@ import type {
   FollowUpRule as FollowUpRuleView,
 } from "peal-contract";
 
-import type { ListedFollowUpRule } from "#publishing/application/follow-up-rules.ts";
-import type { FollowUp } from "#publishing/domain/follow-up.ts";
-
-import { originView } from "./origin-view.ts";
+import { originView } from "#publishing/api/origin-view.ts";
+import type { ListedFollowUpRule } from "#publishing/application/follow-ups/follow-up-rules.ts";
+import type { FollowUp } from "#publishing/domain/follow-ups/follow-up.ts";
 
 // What a follow-up's state says, field by field: null where it says none.
 const stateOf = (followUp: FollowUp) =>

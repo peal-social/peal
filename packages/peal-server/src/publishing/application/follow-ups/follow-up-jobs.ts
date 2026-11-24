@@ -1,6 +1,6 @@
 import { Context, Effect, Layer } from "effect";
 
-import type { FollowUpId } from "#publishing/domain/follow-up-id.ts";
+import type { FollowUpId } from "#publishing/domain/follow-ups/follow-up-id.ts";
 
 /**
  * Starts the durable job that carries out a follow-up. Inside a

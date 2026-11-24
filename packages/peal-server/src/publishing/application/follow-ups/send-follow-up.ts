@@ -8,24 +8,24 @@ import {
   Result,
 } from "effect";
 
-import type { FollowUpId } from "#publishing/domain/follow-up-id.ts";
+import { ApprovalGate } from "#publishing/application/approval-gate.ts";
+import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
+import type { FollowUpId } from "#publishing/domain/follow-ups/follow-up-id.ts";
 import {
   beginFollowUpCall,
   settleFollowUp,
   wasAttempted,
-} from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up.ts";
 import type {
   FollowUp,
   FollowUpCallOutcome,
-} from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 
-import { ApprovalGate } from "./approval-gate.ts";
 import { actsNow } from "./follow-up-acts-now.ts";
 import { FollowUpPublisher } from "./follow-up-publisher.ts";
 import { FollowUpStore } from "./follow-up-store.ts";
-import { RecyclingActors } from "./recycling-actors.ts";
 
 /** Follow-ups whose call ended, by how. */
 export const followUpsSent = Metric.counter("peal.publishing.follow_ups.sent", {

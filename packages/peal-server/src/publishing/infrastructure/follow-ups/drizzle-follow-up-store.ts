@@ -16,26 +16,29 @@ import {
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
-import { FollowUpStore } from "#publishing/application/follow-up-store.ts";
-import type { ArmedFollowUp } from "#publishing/application/follow-up-store.ts";
-import { FollowUpRuleIdSchema } from "#publishing/domain/follow-up-rule-id.ts";
+import { FollowUpStore } from "#publishing/application/follow-ups/follow-up-store.ts";
+import type { ArmedFollowUp } from "#publishing/application/follow-ups/follow-up-store.ts";
+import { FollowUpRuleIdSchema } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
 import {
   FollowUpApprovalSchema,
   FollowUpRule,
-} from "#publishing/domain/follow-up-rule.ts";
-import type { FollowUpRuleStatus } from "#publishing/domain/follow-up-rule.ts";
+} from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import type { FollowUpRuleStatus } from "#publishing/domain/follow-ups/follow-up-rule.ts";
 import {
   FollowUp,
   FollowUpStatusSchema,
   notSentReasonOf,
-} from "#publishing/domain/follow-up.ts";
-import type { FollowUpStatus } from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up.ts";
+import type { FollowUpStatus } from "#publishing/domain/follow-ups/follow-up.ts";
 import { PostOriginSchema } from "#publishing/domain/post-origin.ts";
+import {
+  followUpRules,
+  followUps,
+  postTargets,
+} from "#publishing/infrastructure/schema.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
-
-import { followUpRules, followUps, postTargets } from "./schema.ts";
 
 type RuleRow = typeof followUpRules.$inferSelect;
 

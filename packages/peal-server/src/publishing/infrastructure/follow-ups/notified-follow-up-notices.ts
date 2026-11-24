@@ -2,9 +2,9 @@ import { DateTime, Effect, Layer, Option } from "effect";
 
 import { Notify } from "#notifications/application/notify.ts";
 import type { NoticeRequest } from "#notifications/application/notify.ts";
-import { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
-import type { FollowUpRule } from "#publishing/domain/follow-up-rule.ts";
-import { notSentReasonsOf } from "#publishing/domain/follow-up.ts";
+import { FollowUpNotices } from "#publishing/application/follow-ups/follow-up-notices.ts";
+import type { FollowUpRule } from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import { notSentReasonsOf } from "#publishing/domain/follow-ups/follow-up.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 
 // The UTC day of an instant, as `2026-11-10`.

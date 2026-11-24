@@ -2,8 +2,8 @@ import { Effect, Layer, Option } from "effect";
 import { Digest, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
-import { PlatformReposts } from "#publishing/application/platform-reposts.ts";
-import type { RepostClient } from "#publishing/application/platform-reposts.ts";
+import { PlatformReposts } from "#publishing/application/follow-ups/platform-reposts.ts";
+import type { RepostClient } from "#publishing/application/follow-ups/platform-reposts.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";

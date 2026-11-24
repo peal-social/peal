@@ -1,7 +1,16 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
-import type { FollowUpRule } from "#publishing/domain/follow-up-rule.ts";
-import type { FollowUp } from "#publishing/domain/follow-up.ts";
+import { ApprovalGate } from "#publishing/application/approval-gate.ts";
+import { PlatformClients } from "#publishing/application/platform-client.ts";
+import type { OutgoingPost } from "#publishing/application/platform-client.ts";
+import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
+import { PostMeter } from "#publishing/application/post-meter.ts";
+import { PostRepository } from "#publishing/application/post-repository.ts";
+import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
+import { meterCodes } from "#publishing/application/routed-platform-publisher.ts";
+import { CurrentThreadedPlatforms } from "#publishing/application/threaded-platforms.ts";
+import type { FollowUpRule } from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import type { FollowUp } from "#publishing/domain/follow-ups/follow-up.ts";
 import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import { livePartsOf } from "#publishing/domain/post-target.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
@@ -20,20 +29,11 @@ import type {
   PublishResult,
 } from "#shared/domain/publish-result.ts";
 
-import { ApprovalGate } from "./approval-gate.ts";
 import { actsNow } from "./follow-up-acts-now.ts";
 import { FollowUpPublisher } from "./follow-up-publisher.ts";
 import type { FollowUpRequest } from "./follow-up-publisher.ts";
 import { FollowUpStore } from "./follow-up-store.ts";
-import { PlatformClients } from "./platform-client.ts";
-import type { OutgoingPost } from "./platform-client.ts";
-import { PlatformCredentials } from "./platform-credentials.ts";
 import { PlatformReposts } from "./platform-reposts.ts";
-import { PostMeter } from "./post-meter.ts";
-import { PostRepository } from "./post-repository.ts";
-import { RecyclingActors } from "./recycling-actors.ts";
-import { meterCodes } from "./routed-platform-publisher.ts";
-import { CurrentThreadedPlatforms } from "./threaded-platforms.ts";
 
 // Nothing was sent yet: the database not answering is worth trying again.
 const databaseDown = (failure: DatabaseError) =>

@@ -12,20 +12,20 @@ import {
   defaultFollowUpPageSize,
 } from "peal-contract";
 
-import type { FollowUpNotPossible as NotPossible } from "#publishing/application/follow-up-not-possible.ts";
+import { postIdFrom, postIdOption } from "#publishing/api/post-input.ts";
+import type { FollowUpNotPossible as NotPossible } from "#publishing/application/follow-ups/follow-up-not-possible.ts";
 import type {
   ChangeFollowUpRequest,
   ListedFollowUpRule,
-} from "#publishing/application/follow-up-rules.ts";
-import { FollowUpRules } from "#publishing/application/follow-up-rules.ts";
-import { FollowUpRuleIdSchema } from "#publishing/domain/follow-up-rule-id.ts";
-import type { FollowUpScope } from "#publishing/domain/follow-up-rule.ts";
+} from "#publishing/application/follow-ups/follow-up-rules.ts";
+import { FollowUpRules } from "#publishing/application/follow-ups/follow-up-rules.ts";
+import { FollowUpRuleIdSchema } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
+import type { FollowUpScope } from "#publishing/domain/follow-ups/follow-up-rule.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 
 import { followUpRuleView } from "./follow-up-view.ts";
-import { postIdFrom, postIdOption } from "./post-input.ts";
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 

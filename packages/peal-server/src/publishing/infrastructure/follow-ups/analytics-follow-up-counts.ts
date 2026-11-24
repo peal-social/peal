@@ -1,7 +1,7 @@
 import { Effect, Layer } from "effect";
 
 import { PostLikes } from "#analytics/application/post-likes.ts";
-import { FollowUpCounts } from "#publishing/application/follow-up-counts.ts";
+import { FollowUpCounts } from "#publishing/application/follow-ups/follow-up-counts.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 
 /**

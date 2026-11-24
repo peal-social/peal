@@ -8,7 +8,7 @@ import {
   UnreadComments,
   UnreadMetrics,
 } from "#channels/container.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import type { PlatformPublisher } from "#publishing/application/platform-publisher.ts";
 import { PublishingWorkersLive } from "#publishing/container.ts";

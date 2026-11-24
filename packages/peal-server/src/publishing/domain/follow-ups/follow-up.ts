@@ -1,5 +1,9 @@
 import { DateTime, Duration, Option, Result, Schema } from "effect";
 
+import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
+import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
+import { FailureReasonSchema } from "#publishing/domain/post-target-status.ts";
+import { failureReasonOf } from "#publishing/domain/publication-policy.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
@@ -17,10 +21,6 @@ import type { FollowUpId } from "./follow-up-id.ts";
 import { FollowUpRuleIdSchema } from "./follow-up-rule-id.ts";
 import type { FollowUpRuleId } from "./follow-up-rule-id.ts";
 import { InvalidFollowUpTransition } from "./invalid-follow-up-transition.ts";
-import { PostTargetIdSchema } from "./post-target-id.ts";
-import type { PostTargetId } from "./post-target-id.ts";
-import { FailureReasonSchema } from "./post-target-status.ts";
-import { failureReasonOf } from "./publication-policy.ts";
 
 /**
  * What a follow-up does: publish the rule's comment under the post, as the

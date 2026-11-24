@@ -15,11 +15,13 @@ import { FeedNotices } from "#publishing/application/feeds/feed-notices.ts";
 import { FeedPictures } from "#publishing/application/feeds/feed-pictures.ts";
 import { FeedSource } from "#publishing/application/feeds/feed-source.ts";
 import { Feeds } from "#publishing/application/feeds/feeds.ts";
-import { FollowUpChannels } from "#publishing/application/follow-up-channels.ts";
-import { FollowUpCounts } from "#publishing/application/follow-up-counts.ts";
-import { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
-import { FollowUpRules } from "#publishing/application/follow-up-rules.ts";
-import { FollowUps } from "#publishing/application/follow-ups.ts";
+import { FollowUpChannels } from "#publishing/application/follow-ups/follow-up-channels.ts";
+import { FollowUpCounts } from "#publishing/application/follow-ups/follow-up-counts.ts";
+import { FollowUpNotices } from "#publishing/application/follow-ups/follow-up-notices.ts";
+import { FollowUpRules } from "#publishing/application/follow-ups/follow-up-rules.ts";
+import { FollowUps } from "#publishing/application/follow-ups/follow-ups.ts";
+import { RoutedFollowUpPublisher } from "#publishing/application/follow-ups/routed-follow-up-publisher.ts";
+import { SendFollowUp } from "#publishing/application/follow-ups/send-follow-up.ts";
 import { HeldPosts } from "#publishing/application/held-posts.ts";
 import { LivePostChanges } from "#publishing/application/live-post-changes.ts";
 import { LivePostEdits } from "#publishing/application/live-post-edits.ts";
@@ -51,23 +53,19 @@ import { Queues } from "#publishing/application/queues.ts";
 import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
 import { RecyclingNotices } from "#publishing/application/recycling-notices.ts";
 import { Recycling } from "#publishing/application/recycling.ts";
-import { RoutedFollowUpPublisher } from "#publishing/application/routed-follow-up-publisher.ts";
 import { RoutedPlatformPublisher } from "#publishing/application/routed-platform-publisher.ts";
-import { SendFollowUp } from "#publishing/application/send-follow-up.ts";
 import type { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import { Signatures } from "#publishing/application/signatures.ts";
 import { TikTokCreatorInfo } from "#publishing/application/tiktok-creator-info.ts";
 import type { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
 import { AdsLivePostHolds } from "#publishing/infrastructure/ads-live-post-holds.ts";
 import { AnalyticsCountedPlatforms } from "#publishing/infrastructure/analytics-counted-platforms.ts";
-import { AnalyticsFollowUpCounts } from "#publishing/infrastructure/analytics-follow-up-counts.ts";
 import {
   ChannelAccessCredentials,
   ChannelAccessSiteCredentials,
 } from "#publishing/infrastructure/channel-access-credentials.ts";
 import { ChannelAccessGrants } from "#publishing/infrastructure/channel-access-grants.ts";
 import {
-  FollowUpsCron,
   IdempotencyRetentionCron,
   QuotaRetentionCron,
   RecyclingCron,
@@ -79,7 +77,6 @@ import {
 import { DrizzleChannelDefaultsStore } from "#publishing/infrastructure/drizzle-channel-defaults-store.ts";
 import { DrizzleChannelSetStore } from "#publishing/infrastructure/drizzle-channel-set-store.ts";
 import { DrizzleContentFingerprints } from "#publishing/infrastructure/drizzle-content-fingerprints.ts";
-import { DrizzleFollowUpStore } from "#publishing/infrastructure/drizzle-follow-up-store.ts";
 import { DrizzleIdempotencyKeys } from "#publishing/infrastructure/drizzle-idempotency-keys.ts";
 import { DrizzleLivePostChangeStore } from "#publishing/infrastructure/drizzle-live-post-change-store.ts";
 import { DrizzlePlatformQuota } from "#publishing/infrastructure/drizzle-platform-quota.ts";
@@ -101,7 +98,14 @@ import { FeedsCron } from "#publishing/infrastructure/feeds/feeds-cron.ts";
 import { HttpFeedSource } from "#publishing/infrastructure/feeds/http-feed-source.ts";
 import { LibraryFeedPictures } from "#publishing/infrastructure/feeds/library-feed-pictures.ts";
 import { NotifiedFeedNotices } from "#publishing/infrastructure/feeds/notified-feed-notices.ts";
-import { armedOutcomes } from "#publishing/infrastructure/follow-up-outcomes.ts";
+import { AnalyticsFollowUpCounts } from "#publishing/infrastructure/follow-ups/analytics-follow-up-counts.ts";
+import { DrizzleFollowUpStore } from "#publishing/infrastructure/follow-ups/drizzle-follow-up-store.ts";
+import { armedOutcomes } from "#publishing/infrastructure/follow-ups/follow-up-outcomes.ts";
+import { FollowUpsCron } from "#publishing/infrastructure/follow-ups/follow-ups-cron.ts";
+import { NotifiedFollowUpNotices } from "#publishing/infrastructure/follow-ups/notified-follow-up-notices.ts";
+import { PlatformRepostsLive } from "#publishing/infrastructure/follow-ups/platforms/platform-reposts-live.ts";
+import { WorkflowFollowUpJobs } from "#publishing/infrastructure/follow-ups/workflow-follow-up-jobs.ts";
+import { SendFollowUpV1Live } from "#publishing/infrastructure/follow-ups/workflows/send-follow-up.ts";
 import { LibraryAttachableMedia } from "#publishing/infrastructure/library-attachable-media.ts";
 import { LibraryMediaForPublishing } from "#publishing/infrastructure/library-media-for-publishing.ts";
 import { ListedChannelConnections } from "#publishing/infrastructure/listed-channel-connections.ts";
@@ -112,7 +116,6 @@ import { LoggedOperatorAlerts } from "#publishing/infrastructure/logged-operator
 import { meteredOutcomes } from "#publishing/infrastructure/metered-publication-outcomes.ts";
 import { MeteredXPostsLive } from "#publishing/infrastructure/metered-x-posts.ts";
 import { NamedPostOrigins } from "#publishing/infrastructure/named-post-origins.ts";
-import { NotifiedFollowUpNotices } from "#publishing/infrastructure/notified-follow-up-notices.ts";
 import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified-publication-outcomes.ts";
 import { NotifiedRecyclingNotices } from "#publishing/infrastructure/notified-recycling-notices.ts";
 import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allowance.ts";
@@ -121,7 +124,6 @@ import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashno
 import { LivePostClientsLive } from "#publishing/infrastructure/platforms/live-post-clients-live.ts";
 import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platform-clients-live.ts";
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
-import { PlatformRepostsLive } from "#publishing/infrastructure/platforms/platform-reposts-live.ts";
 import { TikTokCreatorsLive } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
 import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
 import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
@@ -137,7 +139,6 @@ import {
   WebhookPostEvents,
 } from "#publishing/infrastructure/webhook-post-events.ts";
 import { WorkflowArticleJobs } from "#publishing/infrastructure/workflow-article-jobs.ts";
-import { WorkflowFollowUpJobs } from "#publishing/infrastructure/workflow-follow-up-jobs.ts";
 import { WorkflowLivePostJobs } from "#publishing/infrastructure/workflow-live-post-jobs.ts";
 import { WorkflowPublicationScheduler } from "#publishing/infrastructure/workflow-publication-scheduler.ts";
 import { ChangeLivePostV1Live } from "#publishing/infrastructure/workflows/change-live-post.ts";
@@ -145,7 +146,6 @@ import { PublishArticleV1Live } from "#publishing/infrastructure/workflows/publi
 import { PublishTargetV2Live } from "#publishing/infrastructure/workflows/publish-parts.ts";
 import { PublishPostV1Live } from "#publishing/infrastructure/workflows/publish-post.ts";
 import { PublishTargetV1Live } from "#publishing/infrastructure/workflows/publish-target.ts";
-import { SendFollowUpV1Live } from "#publishing/infrastructure/workflows/send-follow-up.ts";
 import { WorkspaceRecyclingActors } from "#publishing/infrastructure/workspace-recycling-actors.ts";
 import { XThreadsLive } from "#publishing/infrastructure/x-threads.ts";
 import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
@@ -555,7 +555,7 @@ export { QueuesHandlers as QueuesApiLive } from "#publishing/api/queues.ts";
 
 export { RecyclingHandlers as RecyclingApiLive } from "#publishing/api/recycling.ts";
 
-export { FollowUpsHandlers as FollowUpsApiLive } from "#publishing/api/follow-ups.ts";
+export { FollowUpsHandlers as FollowUpsApiLive } from "#publishing/api/follow-ups/follow-ups.ts";
 
 export { FeedsHandlers as FeedsApiLive } from "#publishing/api/feeds/feeds.ts";
 
