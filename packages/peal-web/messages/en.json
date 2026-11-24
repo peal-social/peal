@@ -4668,6 +4668,9 @@
     }
   },
   "Studio": {
+    "saveFrame": "Save frame",
+    "frameSaved": "Frame saved to Media.",
+    "frameFailed": "The frame could not be saved. Try again.",
     "addCircle": "Add a circle",
     "addRectangle": "Add a rectangle",
     "addCaptions": "Add captions",

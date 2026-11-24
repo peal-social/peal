@@ -875,8 +875,9 @@ and media:upload).
   stage takes the height the timeline leaves. **Exit full screen**, first
   in the header, brings the frame back, and **Full screen** hides it
   again.
-- The panel's header then holds **Add files** (the library's picker), **Start
-  over** and **Export video**.
+- The panel's header then holds **Add files** (the library's picker), **Save
+  frame** (the frame under the playhead, to the library), **Start over**
+  and **Export video**.
 - The **stage**, on `muted` with a hairline, `{rounded.lg}`, 48 % of the
   window's height in the frame: the SDK's preview, its toolbars beside it on `popover`
   with a hairline, the chosen clip's over it on `primary`. A new video

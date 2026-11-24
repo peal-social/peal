@@ -22,6 +22,8 @@ export interface Studio {
     clips: readonly StudioClip[]
   ) => Promise<void>;
   readonly dispose: () => void;
+  /** The frame under the playhead, whole, as a JPEG. */
+  readonly frame: () => Promise<File>;
   /** The document as it stands, without the SDK's ids. */
   readonly getEdit: () => StudioEdit;
   /** Calls `listener` after each change to the document. */
@@ -139,6 +141,17 @@ export const startStudio = async ({
         );
       },
       dispose,
+      frame: async () => {
+        edit.pause();
+
+        const image = await fetch(
+          await canvas.captureFrame({ format: "jpeg" })
+        );
+
+        return new File([await image.blob()], "frame.jpg", {
+          type: "image/jpeg",
+        });
+      },
       getEdit: () => edit.getEdit(),
       onChange: (listener) => edit.events.on("edit:changed", listener),
       pause: () => {

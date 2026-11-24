@@ -2,6 +2,7 @@
 
 import { Option } from "effect";
 import {
+  CameraIcon,
   DownloadIcon,
   FilePlusIcon,
   MaximizeIcon,
@@ -41,6 +42,7 @@ import type { Studio } from "./studio-engine.ts";
 import { captionsTool, figureTool, textTool } from "./studio-tools.ts";
 import { useStudioExport } from "./use-studio-export.ts";
 import type { StudioExport } from "./use-studio-export.ts";
+import { useStudioFrame } from "./use-studio-frame.ts";
 
 import "./studio.css";
 
@@ -156,6 +158,7 @@ const LoadedStudio = ({
   const [broken, setBroken] = useState(false);
   const [full, setFull] = useState(true);
   const exporting = useStudioExport(workspaceId);
+  const frame = useStudioFrame(workspaceId);
   useFullWindow(full);
 
   const addCaptions = t("addCaptions");
@@ -316,6 +319,19 @@ const LoadedStudio = ({
             void addFiles(picked);
           }}
         />
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={studio === null || frame.saving}
+          onClick={() => {
+            if (studio !== null) {
+              frame.saveFrame(studio);
+            }
+          }}
+        >
+          <CameraIcon aria-hidden />
+          {t("saveFrame")}
+        </Button>
         <Button
           size="sm"
           variant="ghost"
