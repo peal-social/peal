@@ -45,7 +45,9 @@
   the document, the reference and the SDKs `PublicApi`. Build `Api` with
   `.add(...)`, never `addHttpApi`, which tags every group with the added
   API's title. The rule is per group: a group whose operations would fall
-  in two lists becomes two groups. The server's
+  in two lists becomes two groups (any credential reads
+  `workspace.security.get`, a public group, while only an owner in their
+  own session calls `workspace.secure`, in the app group `workspace`). The server's
   `test/app/audiences.test.ts` checks the lists: each group in exactly one,
   a bearer credential on every public operation but `system`'s, nothing
   public under `/api/admin` or `/api/me`, `StaffAccess` on the staff
@@ -66,8 +68,8 @@
   (`send`): the operation id is both (`inbox.messages.send`), the SDKs nest
   it (`client.inbox.messages.send`), and the document files it under its
   first segment (`inbox`), whose name and description in the reference are
-  `namespaceTags`' (`openapi-document.ts`; a new top-level namespace needs
-  its entry). A workspace group's path starts with `/api/v1/` and the
+  `namespaceTags`' (`openapi-document.ts`; a new top-level namespace of
+  the public API needs its entry, and the app's and staff's have none). A workspace group's path starts with `/api/v1/` and the
   first segment in kebab case, and holds the later ones, in order, among
   its static segments (`/api/v1/inbox/messages/…`); only
   `workspace.billingActions` shares the billing reads' paths. No method
