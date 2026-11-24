@@ -1,13 +1,13 @@
-import { randomUUID } from "node:crypto";
-
-import { assert, layer } from "@effect/vitest";
-import { ConfigProvider, DateTime, Effect, Layer, Schema } from "effect";
-import { SqlClient } from "effect/sql";
 // A restore of the database brings back what was erased since its backup.
 // Here a workspace is deleted and an account closed through the app, the
 // rows a restore would bring back are put back, and the ledger kept in the
 // object store (the development stack's SeaweedFS) is replayed: both are
 // erased again, and nothing else is touched.
+import { randomUUID } from "node:crypto";
+
+import { assert, layer } from "@effect/vitest";
+import { ConfigProvider, DateTime, Effect, Layer, Schema } from "effect";
+import { SqlClient } from "effect/sql";
 import { forWorkspace } from "peal-contract";
 
 import { ErasureReplayServicesLive } from "#app/server.ts";

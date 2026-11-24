@@ -135,7 +135,7 @@ A workspace's endpoints are under `/api/v1`, and their paths don't name the work
 | A partner key                       | 400 `workspace_required` | Any workspace its partner account owns                                    |
 | The web app's session               | 400 `workspace_required` | Any workspace its user belongs to                                         |
 
-The header is optional for an API key, so its first call is `POST /api/v1/posts` with the key and nothing else. A workspace the caller doesn't belong to answers 404 `workspace_not_found`, and so does a value that isn't a workspace's id.
+The header is optional for an API key, so its first call is `POST /api/v1/posts` with the key and nothing else. A workspace the caller doesn't belong to answers 404 `workspace_not_found`, and so does a value that isn't a workspace's id. A blank header names no workspace, as if it weren't sent.
 
 A partner key names the customer's workspace on every request inside it:
 

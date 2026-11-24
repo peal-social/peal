@@ -1,12 +1,12 @@
+// Moving a channel between two of a partner's customers, through the
+// partner API, on Postgres: who may, between which workspaces, what goes
+// with the channel and what stays, a post in flight, and the erasure of
+// the workspace it went to.
 import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Option, Redacted, Schema } from "effect";
 import { SqlClient } from "effect/sql";
-// Moving a channel between two of a partner's customers, through the
-// partner API, on Postgres: who may, between which workspaces, what goes
-// with the channel and what stays, a post in flight, and the erasure of
-// the workspace it went to.
 import { forWorkspace } from "peal-contract";
 
 import { encryptTokens } from "#channels/application/channel-tokens.ts";

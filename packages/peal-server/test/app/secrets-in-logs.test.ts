@@ -1,3 +1,15 @@
+// What the server writes about a request never holds a credential: a
+// platform's events' verify token and signature (nor what an event says of
+// a message), a connect link's token, a review link's, a partner key, a website's
+// application password, the token of a
+// link that applies a request to cancel, the value of a header a webhook
+// endpoint's deliveries carry, two-step verification's key, codes and
+// recovery codes, the image provider's key, the key of a provider a
+// workspace brought (nor the prompt sent to either), a chat's secret,
+// which its platform carries in the path of every address, or a Unified
+// login system user token and the Meta app's own token. The app runs here as production
+// runs it, logging each request and tracing it, and everything a log line
+// or a span would export is searched for each secret.
 import { once } from "node:events";
 import { createServer } from "node:http";
 
@@ -21,18 +33,6 @@ import { Mac, SecureRandom } from "effect/crypto";
 import { Hex } from "effect/encoding";
 import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
-// What the server writes about a request never holds a credential: a
-// platform's events' verify token and signature (nor what an event says of
-// a message), a connect link's token, a review link's, a partner key, a website's
-// application password, the token of a
-// link that applies a request to cancel, the value of a header a webhook
-// endpoint's deliveries carry, two-step verification's key, codes and
-// recovery codes, the image provider's key, the key of a provider a
-// workspace brought (nor the prompt sent to either), a chat's secret,
-// which its platform carries in the path of every address, or a Unified
-// login system user token and the Meta app's own token. The app runs here as production
-// runs it, logging each request and tracing it, and everything a log line
-// or a span would export is searched for each secret.
 import { forWorkspace } from "peal-contract";
 import sharp from "sharp";
 

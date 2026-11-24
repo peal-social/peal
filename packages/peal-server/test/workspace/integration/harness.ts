@@ -1,3 +1,7 @@
+// The whole server, without a socket, for tests that sign people up: the
+// HTTP API and Better Auth on the database DATABASE_URL names, sending email
+// to the development stack's Mailpit (SMTP_URL and MAILPIT_URL override it)
+// and storing media in its SeaweedFS, under tests/media/.
 import { randomUUID } from "node:crypto";
 
 import {
@@ -13,10 +17,6 @@ import {
 } from "effect";
 import { FetchHttpClient, HttpRouter, HttpServer } from "effect/http";
 import { SqlClient } from "effect/sql";
-// The whole server, without a socket, for tests that sign people up: the
-// HTTP API and Better Auth on the database DATABASE_URL names, sending email
-// to the development stack's Mailpit (SMTP_URL and MAILPIT_URL override it)
-// and storing media in its SeaweedFS, under tests/media/.
 import { forWorkspace } from "peal-contract";
 import { workspaceSlugOf } from "peal-contract/workspace-slug";
 

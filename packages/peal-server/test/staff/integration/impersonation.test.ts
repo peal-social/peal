@@ -354,6 +354,40 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         })
     );
 
+    it.effect(
+      "records no workspace for a change outside one, whatever header it sent",
+      () =>
+        Effect.gen(function* outside() {
+          const app = yield* TestApp;
+
+          const { actingAs, member, staffCookies } =
+            yield* impersonation("outside");
+
+          const elsewhere = randomUUID();
+
+          const read = yield* app.request("/api/me/notices/read-all", {
+            headers: { cookie: actingAs, ...forWorkspace(elsewhere) },
+            method: "POST",
+          });
+
+          // Refused to staff, and recorded all the same, as every change
+          // they ask for is.
+          assert.strictEqual(read.status, 403, JSON.stringify(read.body));
+
+          const { page } = yield* auditOf(member.id, staffCookies);
+
+          assert.deepStrictEqual(
+            page.items
+              .filter(ofAction("impersonatedChange"))
+              .map(({ operation, workspaceId }) => ({
+                operation,
+                workspaceId,
+              })),
+            [{ operation: "notices.markAllRead", workspaceId: null }]
+          );
+        })
+    );
+
     it.effect("records the end of an impersonation staff stop", () =>
       Effect.gen(function* stops() {
         const app = yield* TestApp;

@@ -1,6 +1,6 @@
 import { Effect, Option, Redacted, Result, Schema } from "effect";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
-import { CurrentMember } from "peal-contract";
+import { CurrentMember, workspaceHeader } from "peal-contract";
 
 import { Authenticate } from "#workspace/application/authenticate.ts";
 import { ConnectionJournal } from "#workspace/application/connection-journal.ts";
@@ -14,13 +14,9 @@ import { actingAs, memberOf } from "./principal.ts";
 import { limitHeaders, pastLimit, refusalMessage } from "./rate-limit.ts";
 import { contentChangeOf, journalled } from "./security.ts";
 
-/**
- * The header a partner key's client names its workspace in, on the MCP
- * endpoint: the id of a workspace the key's partner owns.
- */
-export const workspaceHeaderName = "Peal-Workspace";
-
-const workspaceHeader = workspaceHeaderName.toLowerCase();
+// A partner key's client names its workspace on the MCP endpoint in the
+// API's header (the contract's `workspaceHeader`): the id of a workspace
+// the key's partner owns.
 
 // A JSON-RPC call of a tool, alone or in a batch.
 const ToolCallSchema = Schema.Struct({
@@ -78,7 +74,7 @@ const refusalOf = (principal: Principal, denied: AccessDenied) =>
       principal._tag === "PartnerKeyPrincipal"
         ? jsonRpcError(
             404,
-            `No such workspace: the ${workspaceHeaderName} header names none this partner key acts in.`
+            `No such workspace: the Peal-Workspace header names none this partner key acts in.`
           )
         : closed(),
     TwoStepRequired: () =>
@@ -229,7 +225,7 @@ export const mcpAuthentication = ({
               Effect.succeed(
                 jsonRpcError(
                   400,
-                  `A partner key acts in one workspace at a time here: send the id of a workspace its partner owns in the ${workspaceHeaderName} header.`
+                  `A partner key acts in one workspace at a time here: send the id of a workspace its partner owns in the Peal-Workspace header.`
                 )
               ),
           })

@@ -21,6 +21,7 @@ import {
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
+import { setAnswerHeaderUnlessAnswered } from "#shared/api/answer-headers.ts";
 import {
   changedNothing,
   ChangeMark,
@@ -122,6 +123,21 @@ const changesContent = (
   !safeMethods.has(request.method) &&
   contentGroups.has(group.identifier) &&
   !checksOnly.has(`${group.identifier}.${endpoint.identifier}`);
+
+/**
+ * The workspace a request names, unchecked, when its endpoint is a
+ * workspace's (behind WorkspaceAccess): what the rate limit, the
+ * connection journal and the impersonation guard keep. Elsewhere (`/api/me`,
+ * the partner API) a header names nothing they should record.
+ */
+const namedIfWorkspaceEndpoint = (
+  principal: Principal,
+  request: HttpServerRequest.HttpServerRequest,
+  endpoint: { readonly middlewares: ReadonlySet<unknown> }
+): Option.Option<WorkspaceId> =>
+  endpoint.middlewares.has(WorkspaceAccess)
+    ? actingIn(principal, request.headers)
+    : Option.none();
 
 /** Who made a change to content, and how, as the journal keeps it. */
 export const contentChangeOf = (
@@ -246,7 +262,11 @@ export const AuthenticationLive = Layer.effect(
 
           // The workspace the request names, unchecked: WorkspaceAccess
           // decides whether it may act there.
-          const workspaceId = actingIn(principal, request.headers);
+          const workspaceId = namedIfWorkspaceEndpoint(
+            principal,
+            request,
+            endpoint
+          );
 
           // A key or an application past its limit is told so before
           // anything is handled.
@@ -322,7 +342,12 @@ export const AuthenticationLive = Layer.effect(
           );
 
           const params = yield* HttpRouter.params;
-          const workspaceId = actingIn(principal, request.headers);
+
+          const workspaceId = namedIfWorkspaceEndpoint(
+            principal,
+            request,
+            endpoint
+          );
 
           if (write) {
             yield* guard
@@ -393,6 +418,13 @@ export const WorkspaceAccessLive = Layer.effect(
       Effect.gen(function* member() {
         const request = yield* HttpServerRequest.HttpServerRequest;
         const principal = principalOf(yield* CurrentPrincipal);
+
+        // Every workspace shares each endpoint's address: no cache in
+        // between may keep an answer, refusals included, for another.
+        yield* setAnswerHeaderUnlessAnswered(
+          "cache-control",
+          "private, no-store"
+        );
         const params = yield* HttpRouter.params;
         const named = namedWorkspace(principal, request.headers);
 
@@ -409,11 +441,6 @@ export const WorkspaceAccessLive = Layer.effect(
           return yield* new WorkspaceNotFound();
         }
 
-        yield* Effect.annotateCurrentSpan(
-          workspaceIdAttribute,
-          workspaceId.value
-        );
-
         // A member whose account lacks the two-step verification the
         // workspace requires is told so, and what to do; keys never are.
         const actor = yield* members.resolve(principal, workspaceId.value).pipe(
@@ -429,6 +456,12 @@ export const WorkspaceAccessLive = Layer.effect(
         );
 
         const current = memberOf(actor, principal);
+
+        // Only a workspace the caller was let into names the span.
+        yield* Effect.annotateCurrentSpan(
+          workspaceIdAttribute,
+          workspaceId.value
+        );
 
         // A refusal for a missing permission says whose it is: the
         // application's scope, the key's or the role's.

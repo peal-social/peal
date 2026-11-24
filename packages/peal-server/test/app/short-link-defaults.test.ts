@@ -1,9 +1,9 @@
-import { assert, layer } from "@effect/vitest";
-import { Effect, Schema } from "effect";
 // The workspace's short links default through the whole server: a new
 // post that does not say takes it when it is made, one that says keeps its
 // own choice, and a server without short links shortens nothing whatever
 // the default.
+import { assert, layer } from "@effect/vitest";
+import { Effect, Schema } from "effect";
 import { forWorkspace } from "peal-contract";
 
 import {
