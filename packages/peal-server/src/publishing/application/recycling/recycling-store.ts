@@ -5,7 +5,7 @@ import type { RecyclingRuleId } from "#publishing/domain/recycling-rule-id.ts";
 import type {
   RecyclingRule,
   RecyclingStatus,
-} from "#publishing/domain/recycling-rule.ts";
+} from "#publishing/domain/recycling/recycling-rule.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { PostId, WorkspaceId } from "#shared/domain/ids.ts";
 

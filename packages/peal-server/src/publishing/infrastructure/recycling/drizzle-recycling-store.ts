@@ -2,18 +2,17 @@ import { and, asc, count, eq, gt, lt, lte, ne, or } from "drizzle-orm";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
-import { RecyclingStore } from "#publishing/application/recycling-store.ts";
+import { RecyclingStore } from "#publishing/application/recycling/recycling-store.ts";
 import { PostOriginSchema } from "#publishing/domain/post-origin.ts";
-import { RecyclingIntervalSchema } from "#publishing/domain/recycling-interval.ts";
+import { RecyclingIntervalSchema } from "#publishing/domain/recycling/recycling-interval.ts";
 import {
   RecyclingRule,
   RecyclingVariantsSchema,
-} from "#publishing/domain/recycling-rule.ts";
-import type { RecyclingStatus } from "#publishing/domain/recycling-rule.ts";
+} from "#publishing/domain/recycling/recycling-rule.ts";
+import type { RecyclingStatus } from "#publishing/domain/recycling/recycling-rule.ts";
+import { recyclingRules } from "#publishing/infrastructure/schema.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
-
-import { recyclingRules } from "./schema.ts";
 
 type Row = typeof recyclingRules.$inferSelect;
 

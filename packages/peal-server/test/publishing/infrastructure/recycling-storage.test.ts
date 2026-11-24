@@ -6,15 +6,18 @@ import { DateTime, Effect, Exit, Layer, Option, Result, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
 import { PostRepository } from "#publishing/application/post-repository.ts";
-import { RecyclingStore } from "#publishing/application/recycling-store.ts";
+import { RecyclingStore } from "#publishing/application/recycling/recycling-store.ts";
 import { emptyContent } from "#publishing/domain/post-content.ts";
 import { PostOriginSchema } from "#publishing/domain/post-origin.ts";
 import { createDraft, madeBy } from "#publishing/domain/post.ts";
 import { RecyclingRuleIdSchema } from "#publishing/domain/recycling-rule-id.ts";
-import { endRule, startRule } from "#publishing/domain/recycling-rule.ts";
-import { RecyclingVariant } from "#publishing/domain/recycling-variant.ts";
+import {
+  endRule,
+  startRule,
+} from "#publishing/domain/recycling/recycling-rule.ts";
+import { RecyclingVariant } from "#publishing/domain/recycling/recycling-variant.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
-import { DrizzleRecyclingStore } from "#publishing/infrastructure/drizzle-recycling-store.ts";
+import { DrizzleRecyclingStore } from "#publishing/infrastructure/recycling/drizzle-recycling-store.ts";
 import { newId } from "#shared/application/ids.ts";
 import { PostIdSchema } from "#shared/domain/ids.ts";
 import type { PostId, WorkspaceId } from "#shared/domain/ids.ts";

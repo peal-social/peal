@@ -51,8 +51,8 @@ import { PostUsage } from "#publishing/application/post-usage.ts";
 import { PostingCapabilities } from "#publishing/application/posting-capabilities.ts";
 import { Queues } from "#publishing/application/queues.ts";
 import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
-import { RecyclingNotices } from "#publishing/application/recycling-notices.ts";
-import { Recycling } from "#publishing/application/recycling.ts";
+import { RecyclingNotices } from "#publishing/application/recycling/recycling-notices.ts";
+import { Recycling } from "#publishing/application/recycling/recycling.ts";
 import { RoutedPlatformPublisher } from "#publishing/application/routed-platform-publisher.ts";
 import type { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import { Signatures } from "#publishing/application/signatures.ts";
@@ -68,7 +68,6 @@ import { ChannelAccessGrants } from "#publishing/infrastructure/channel-access-g
 import {
   IdempotencyRetentionCron,
   QuotaRetentionCron,
-  RecyclingCron,
 } from "#publishing/infrastructure/crons.ts";
 import {
   DrizzleArticleJournal,
@@ -87,7 +86,6 @@ import { DrizzlePublicationProgress } from "#publishing/infrastructure/drizzle-p
 import { DrizzlePublishedTargets } from "#publishing/infrastructure/drizzle-published-targets.ts";
 import { DrizzleQueueStore } from "#publishing/infrastructure/drizzle-queue-store.ts";
 import { DrizzleRecordedPosts } from "#publishing/infrastructure/drizzle-recorded-posts.ts";
-import { DrizzleRecyclingStore } from "#publishing/infrastructure/drizzle-recycling-store.ts";
 import { DrizzleSignatureStore } from "#publishing/infrastructure/drizzle-signature-store.ts";
 import { DrizzleTagStore } from "#publishing/infrastructure/drizzle-tag-store.ts";
 import { DrizzleUploadSessions } from "#publishing/infrastructure/drizzle-upload-sessions.ts";
@@ -117,7 +115,6 @@ import { meteredOutcomes } from "#publishing/infrastructure/metered-publication-
 import { MeteredXPostsLive } from "#publishing/infrastructure/metered-x-posts.ts";
 import { NamedPostOrigins } from "#publishing/infrastructure/named-post-origins.ts";
 import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified-publication-outcomes.ts";
-import { NotifiedRecyclingNotices } from "#publishing/infrastructure/notified-recycling-notices.ts";
 import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allowance.ts";
 import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
 import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashnode/hashnode-articles.ts";
@@ -126,6 +123,9 @@ import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platfo
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
 import { TikTokCreatorsLive } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
 import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { DrizzleRecyclingStore } from "#publishing/infrastructure/recycling/drizzle-recycling-store.ts";
+import { NotifiedRecyclingNotices } from "#publishing/infrastructure/recycling/notified-recycling-notices.ts";
+import { RecyclingCron } from "#publishing/infrastructure/recycling/recycling-cron.ts";
 import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
 import { ShortLinksLinkShortener } from "#publishing/infrastructure/shortlinks-link-shortener.ts";
 import { ShortLinksShortLinkDefaults } from "#publishing/infrastructure/shortlinks-short-link-defaults.ts";
@@ -553,7 +553,7 @@ export { ChannelSetsHandlers as ChannelSetsApiLive } from "#publishing/api/chann
 
 export { QueuesHandlers as QueuesApiLive } from "#publishing/api/queues.ts";
 
-export { RecyclingHandlers as RecyclingApiLive } from "#publishing/api/recycling.ts";
+export { RecyclingHandlers as RecyclingApiLive } from "#publishing/api/recycling/recycling.ts";
 
 export { FollowUpsHandlers as FollowUpsApiLive } from "#publishing/api/follow-ups/follow-ups.ts";
 

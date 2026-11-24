@@ -3,7 +3,7 @@ import type { RecyclingVariant as VariantInput } from "peal-contract";
 
 import { notAllowed, refuse } from "#app/mcp/refusals.ts";
 import { RecyclingRuleIdSchema } from "#publishing/domain/recycling-rule-id.ts";
-import { RecyclingVariantsSchema } from "#publishing/domain/recycling-rule.ts";
+import { RecyclingVariantsSchema } from "#publishing/domain/recycling/recycling-rule.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 

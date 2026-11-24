@@ -18,7 +18,7 @@ import type { FollowUpNotices } from "#publishing/application/follow-ups/follow-
 import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import { PostEvents } from "#publishing/application/post-events.ts";
 import type { RecyclingActors } from "#publishing/application/recycling-actors.ts";
-import type { RecyclingNotices } from "#publishing/application/recycling-notices.ts";
+import type { RecyclingNotices } from "#publishing/application/recycling/recycling-notices.ts";
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import {
   FeedsUnused,

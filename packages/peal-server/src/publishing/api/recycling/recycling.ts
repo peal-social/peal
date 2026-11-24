@@ -15,19 +15,19 @@ import {
 } from "peal-contract";
 import type { RecyclingVariant as VariantInput } from "peal-contract";
 
-import { Recycling } from "#publishing/application/recycling.ts";
+import { postIdFrom, queueIdOf } from "#publishing/api/post-input.ts";
+import { Recycling } from "#publishing/application/recycling/recycling.ts";
 import type {
   ChangeRequest,
   ListedRule,
-} from "#publishing/application/recycling.ts";
+} from "#publishing/application/recycling/recycling.ts";
 import { RecyclingRuleIdSchema } from "#publishing/domain/recycling-rule-id.ts";
-import { RecyclingVariantsSchema } from "#publishing/domain/recycling-rule.ts";
+import { RecyclingVariantsSchema } from "#publishing/domain/recycling/recycling-rule.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 
-import { postIdFrom, queueIdOf } from "./post-input.ts";
 import { ruleView } from "./recycling-view.ts";
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };

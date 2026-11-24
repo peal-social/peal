@@ -62,7 +62,7 @@ import { FollowUps } from "#publishing/application/follow-ups/follow-ups.ts";
 import { PostRepository } from "#publishing/application/post-repository.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { PublicationScheduler } from "#publishing/application/publication-scheduler.ts";
-import { Recycling } from "#publishing/application/recycling.ts";
+import { Recycling } from "#publishing/application/recycling/recycling.ts";
 import { publishingWith } from "#publishing/container.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import { createTarget } from "#publishing/domain/post-target.ts";

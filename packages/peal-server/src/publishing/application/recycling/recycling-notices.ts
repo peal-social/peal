@@ -1,7 +1,7 @@
 import { Context, Effect, Layer } from "effect";
 
-import type { RecyclingEndReason } from "#publishing/domain/recycling-end-reason.ts";
-import type { RecyclingRule } from "#publishing/domain/recycling-rule.ts";
+import type { RecyclingEndReason } from "#publishing/domain/recycling/recycling-end-reason.ts";
+import type { RecyclingRule } from "#publishing/domain/recycling/recycling-rule.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 
 /**

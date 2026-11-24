@@ -57,6 +57,7 @@ const modules: Partial<Record<Kernel, Record<string, Module>>> = {
       ],
     },
     "follow-ups": { seams: [] },
+    recycling: { seams: [] },
   },
 };
 

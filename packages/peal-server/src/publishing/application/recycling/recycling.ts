@@ -8,16 +8,41 @@ import {
   Schema,
 } from "effect";
 
+import type { AccountRules } from "#publishing/application/account-rules.ts";
+import type { AttachableMedia } from "#publishing/application/attachable-media.ts";
+import { queueNamed } from "#publishing/application/placement.ts";
+import { copyOf } from "#publishing/application/post-copies.ts";
+import type { PostCopy } from "#publishing/application/post-copies.ts";
+import type { PostNotFound } from "#publishing/application/post-not-found.ts";
+import { PostOrigins } from "#publishing/application/post-origins.ts";
+import {
+  channelsFor,
+  mediaFor,
+} from "#publishing/application/post-references.ts";
+import { PostRepository } from "#publishing/application/post-repository.ts";
+import { PostScheduling } from "#publishing/application/post-scheduling.ts";
+import { violationsOf } from "#publishing/application/publishability.ts";
+import type { QueueNotFound } from "#publishing/application/queue-not-found.ts";
+import type { QueueStore } from "#publishing/application/queue-store.ts";
+import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
+import {
+  mayChangeStarted,
+  notImpersonating,
+  starterOf,
+} from "#publishing/application/started-by.ts";
+import type { TagStore } from "#publishing/application/tag-store.ts";
+import type { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
+import { findInWorkspace } from "#publishing/application/workspace-posts.ts";
 import type { ContentViolation } from "#publishing/domain/content-violation.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
 import type { Post } from "#publishing/domain/post.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
-import type { RecyclingEndReason } from "#publishing/domain/recycling-end-reason.ts";
-import type { RecyclingEndsTooSoon } from "#publishing/domain/recycling-ends-too-soon.ts";
-import type { RecyclingInterval } from "#publishing/domain/recycling-interval.ts";
-import type { RecyclingRuleEnded } from "#publishing/domain/recycling-rule-ended.ts";
 import { RecyclingRuleIdSchema } from "#publishing/domain/recycling-rule-id.ts";
 import type { RecyclingRuleId } from "#publishing/domain/recycling-rule-id.ts";
+import type { RecyclingEndReason } from "#publishing/domain/recycling/recycling-end-reason.ts";
+import type { RecyclingEndsTooSoon } from "#publishing/domain/recycling/recycling-ends-too-soon.ts";
+import type { RecyclingInterval } from "#publishing/domain/recycling/recycling-interval.ts";
+import type { RecyclingRuleEnded } from "#publishing/domain/recycling/recycling-rule-ended.ts";
 import {
   comingDue,
   editRule,
@@ -32,16 +57,16 @@ import {
   resumeRule,
   startRule,
   variantFor,
-} from "#publishing/domain/recycling-rule.ts";
+} from "#publishing/domain/recycling/recycling-rule.ts";
 import type {
   RecyclingChange,
   RecyclingStatus,
-} from "#publishing/domain/recycling-rule.ts";
+} from "#publishing/domain/recycling/recycling-rule.ts";
 import {
   mediaWithoutTextOf,
   sayingVariant,
-} from "#publishing/domain/recycling-variant.ts";
-import type { RecyclingVariant } from "#publishing/domain/recycling-variant.ts";
+} from "#publishing/domain/recycling/recycling-variant.ts";
+import type { RecyclingVariant } from "#publishing/domain/recycling/recycling-variant.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { newId } from "#shared/application/ids.ts";
 import type { Ids } from "#shared/application/ids.ts";
@@ -52,32 +77,14 @@ import type { PostId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 
-import type { AccountRules } from "./account-rules.ts";
-import type { AttachableMedia } from "./attachable-media.ts";
 import { LeftForNextRun } from "./left-for-next-run.ts";
-import { queueNamed } from "./placement.ts";
-import { copyOf } from "./post-copies.ts";
-import type { PostCopy } from "./post-copies.ts";
-import type { PostNotFound } from "./post-not-found.ts";
 import { PostNotRecyclable } from "./post-not-recyclable.ts";
-import { PostOrigins } from "./post-origins.ts";
-import { channelsFor, mediaFor } from "./post-references.ts";
-import { PostRepository } from "./post-repository.ts";
-import { PostScheduling } from "./post-scheduling.ts";
-import { violationsOf } from "./publishability.ts";
-import type { QueueNotFound } from "./queue-not-found.ts";
-import type { QueueStore } from "./queue-store.ts";
-import { RecyclingActors } from "./recycling-actors.ts";
 import { RecyclingEndingPassed } from "./recycling-ending-passed.ts";
 import { RecyclingNotices } from "./recycling-notices.ts";
 import { RecyclingRuleNotFound } from "./recycling-rule-not-found.ts";
 import { RecyclingStore } from "./recycling-store.ts";
 import { RecyclingVariantsRejected } from "./recycling-variants-rejected.ts";
-import { mayChangeStarted, notImpersonating, starterOf } from "./started-by.ts";
-import type { TagStore } from "./tag-store.ts";
 import { TooManyRecyclingRules } from "./too-many-recycling-rules.ts";
-import type { WorkspaceChannels } from "./workspace-channels.ts";
-import { findInWorkspace } from "./workspace-posts.ts";
 
 /** How many due instants a rule's page shows. */
 export const comingShown = 3;

@@ -1,10 +1,9 @@
 import { Option } from "effect";
 import type { RecyclingRule as RuleView } from "peal-contract";
 
-import type { ListedRule } from "#publishing/application/recycling.ts";
+import { originView } from "#publishing/api/origin-view.ts";
+import type { ListedRule } from "#publishing/application/recycling/recycling.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
-
-import { originView } from "./origin-view.ts";
 
 const pad = (value: number, length: number) =>
   String(value).padStart(length, "0");
