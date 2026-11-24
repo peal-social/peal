@@ -373,6 +373,13 @@ and no socket, for tests.
   durable sleep (a retry's delay of minutes) is reached by moving the clock
   to the wake-up it stored (`untilWokenLater`,
   `test/publishing/article-support.ts`), not a second a round.
+- A test that starts jobs on the cluster's shared tables forgets them
+  when it ends, however it ends (`forgettingJobs`,
+  `test/app/cluster.test.ts`). A run killed part way still leaves its jobs
+  due, and the next run's servers run them, so a test counts what its own
+  post or channel did, never every call a fake platform took.
+- A test that counts a cron's runs on the real clock stops the cron first:
+  the cluster suite's ticks pass a gate it shuts before it counts.
 
 ### Test shards
 
@@ -385,6 +392,15 @@ and no socket, for tests.
   `nx run peal-server:test-durations -- <run id>`, when a shard runs
   far longer than the others. A shard's own `--sequence.shuffle.files`
   shuffles its files.
+
+### Fake servers
+
+- A fake server answers through `fakeHandler`
+  (`#test/shared/fake-handler.ts`), which answers 500 when the fake's own
+  code fails, and reads a body with `receivedBody` or `receivedText`
+  (`#test/shared/received-body.ts`), which forget a request whose client
+  left before its body. Node never awaits a request listener, so either
+  failure would otherwise reject after the test that caused it.
 
 ### Database
 
