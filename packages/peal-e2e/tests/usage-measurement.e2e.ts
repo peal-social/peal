@@ -214,7 +214,7 @@ const watchTags = async (browser: {
     }) => Promise<void>
   ) => Promise<void>;
 }) => {
-  await browser.route(/\/api\/workspaces\/[^/]+\/tags$/u, async (route) => {
+  await browser.route(/\/api\/v1\/tags$/u, async (route) => {
     if (route.request.method === "POST") {
       tagRequests.push(route.request.headers["x-posthog-session-id"] ?? null);
     }
