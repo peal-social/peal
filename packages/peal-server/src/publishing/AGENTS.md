@@ -512,7 +512,10 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   may change; publishing's infrastructure never imports it, and
   `PublishingWorkersLive` takes the gated `PlatformPublisher`,
   `LivePostClients` and `FollowUpPublisher` from the composition root
-  (`src/app/publishing-workers.ts`). The gates run `RoutedPlatformPublisher`
+  (`src/app/publishing-workers.ts`). The workflows take the gated ports,
+  never the direct adapters, which would publish without the channel's
+  order, and `src/app/publishing-workers.ts` is the one place that
+  provides them. The gates run `RoutedPlatformPublisher`
   (`PlatformsLive`), which reads the post, takes its text on the channel
   and hands it to the platform's `PlatformClient`; tests use
   `FakePlatformPublisher`. A whole publish runs inside the gate: uploads,
