@@ -577,8 +577,12 @@ export { LookupsHandlers as LookupsApiLive } from "#publishing/api/lookups.ts";
  * Registers the publishing workflows, which call the platforms through the
  * PlatformPublisher, LivePostClients and FollowUpPublisher they are given:
  * on the server, the channels context's, which send each call through its
- * channel's gate. Needs the cluster and what PublishingLive provides,
- * PublicationOutcomes included.
+ * channel's gate. They take the gated PlatformPublisher, LivePostClients
+ * and FollowUpPublisher, never the direct adapters (PlatformsLive and the
+ * others), which would publish without the channel's order, and
+ * `src/app/publishing-workers.ts` is the one place that provides them.
+ * Needs the cluster and what PublishingLive provides, PublicationOutcomes
+ * included.
  */
 export const PublishingWorkersLive = Layer.mergeAll(
   PublishPostV1Live,

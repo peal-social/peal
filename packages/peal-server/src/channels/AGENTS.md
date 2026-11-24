@@ -599,8 +599,10 @@
   replay the call in flight; an entity idle ten minutes stops.
   `UnreadMetrics`, `UnreadComments`, `UnreadReviews` and `UnreadMessages`
   stand for the adapters of a gate that does not read or answer them, as
-  in tests and in `AppLive`: every read is `PlatformUnavailable`, and
-  nothing is sent.
+  in tests: every read is `PlatformUnavailable`, and nothing is sent.
+  `AppLive` runs no gate: there `UnreadComments` stands in for
+  engagement's gated clients, handed to `engagementOver`
+  (`src/app/server.ts`).
 - The other contexts reach the gate through their own ports only, which
   `infrastructure/gated-clients.ts` implements by sending each call to the
   channel's gate: `GatedPlatformPublisher`, `GatedLivePostClients` and
