@@ -16,7 +16,6 @@ export * as credential from "./credential/index.js";
 export * as inbox from "./inbox/index.js";
 export * as links from "./links/index.js";
 export * from "./links/client/requests/index.js";
-export * as me from "./me/index.js";
 export * as media from "./media/index.js";
 export * from "./media/client/requests/index.js";
 export * as partner from "./partner/index.js";

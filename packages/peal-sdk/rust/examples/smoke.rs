@@ -1,5 +1,5 @@
 //! The smoke test, which scripts/test.ts runs against a stand-in API: the
-//! health check, the signed-in user with a bearer token, and the error a
+//! health check, the credential check with a bearer token, and the error a
 //! refused token raises.
 use peal_sdk::prelude::*;
 
@@ -18,13 +18,28 @@ async fn main() {
     let peal = client(&base_url, "peal_test");
 
     peal.system.health(None).await.expect("the health check answers");
-    let me = peal.me.get(None).await.expect("GET /api/me answers");
+    let credential = peal
+        .credential
+        .get(None)
+        .await
+        .expect("GET /api/v1/credential answers");
 
-    assert_eq!(me.user.email, "ada@example.test");
-    assert!(me.impersonated_by.is_none() && me.user.image.is_none());
-    assert!(me.workspaces[0].permissions.contains(&Permission::PostSchedule));
+    match &credential {
+        Credential::ApiKey {
+            expires_at,
+            permissions,
+            start,
+            workspace,
+            ..
+        } => {
+            assert_eq!(workspace.name, "Studio");
+            assert!(expires_at.is_none() && start.is_none());
+            assert!(permissions.contains(&Permission::PostSchedule));
+        }
+        other => panic!("unexpected answer: {other:?}"),
+    }
 
-    let refused = client(&base_url, "refused").me.get(None).await;
+    let refused = client(&base_url, "refused").credential.get(None).await;
     assert!(
         matches!(refused, Err(ApiError::UnauthorizedError { .. })),
         "a refused token: {refused:?}"

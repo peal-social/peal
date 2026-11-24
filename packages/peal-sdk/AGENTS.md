@@ -1,13 +1,13 @@
 # SDKs
 
 - Every SDK is generated from `packages/peal-sdk/openapi.json`, which
-  `peal-sdk:spec` (`scripts/spec.ts`) writes from the contract's: the
-  operations a bearer token can call (an API key or an OAuth access token),
-  and the health checks, with the schemas they use. It leaves out the groups
-  that answer only the person in their own session (`ownSession`:
-  `me.account`, `me.browserAnalytics`, `me.connectedApps`, `workspace`,
-  `workspace.billingActions`), matched by the operation's group, whole; add
-  a group like those to `ownSessionGroups`.
+  `peal-sdk:spec` (`scripts/spec.ts`) writes from the contract's, which
+  holds the public API alone (the contract's `publicGroups`): which groups
+  the SDKs have is the contract's to say, never this script's. It stops on
+  an operation that takes no bearer token (an API key, a partner key or an
+  OAuth access token) and is not a health check (`system`), as its group
+  belongs in `appGroups`, and keeps only the bearer scheme in each
+  operation's `security`, with the schemas the operations use.
   It names Effect's encoding of non-finite numbers `NonFiniteNumber`, and
   stops on any other enum inline in an `anyOf` or `oneOf`: give it a schema
   of its own in the contract. It writes each tagged union (Effect's `anyOf`
@@ -119,10 +119,14 @@
   of ours in its folder (`test/smoke.mjs`, `smoke.py`, `smoke_test.go`,
   `smoke.rb`, `src/test/java/…/SmokeTest.java`, `smoke.php`, `smoke/`,
   `examples/smoke.rs`), against the stand-in API `scripts/test.ts` serves:
-  the health check, then `GET /api/me` (`me.get`) with the bearer token `peal_test`,
-  whose answer holds nulls and an enum, then with a refused token, which
-  must raise the SDK's 401 error. Keep every test calling both, and checking
-  what it decodes; the run fails when the stand-in did not see both calls.
+  the health check, then `GET /api/v1/credential` (`credential.get`) with
+  the bearer token `peal_test`, whose answer (an API key's: a tagged union)
+  holds nulls and an enum, then with a refused token, which must raise the
+  SDK's 401 error. Keep every test calling both, and checking what it
+  decodes; the run fails when the stand-in did not see both calls. Ruby's
+  generator looks for a union's tag under `type`, where the API sends
+  `_tag`, so its tagged unions come back as the parsed JSON: its test reads
+  that.
   Containers reach it as `host.docker.internal`; Ruby's client sends plain
   HTTP to localhost alone, so its test forwards from its container's
   loopback. Fern's own tests (Go's call WireMock) do not run.

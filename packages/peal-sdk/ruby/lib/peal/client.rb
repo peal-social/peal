@@ -80,11 +80,6 @@ module Peal
       @partner ||= Peal::Partner::Client.new(client: @raw_client)
     end
 
-    # @return [Peal::Me::Client]
-    def me
-      @me ||= Peal::Me::Client.new(client: @raw_client)
-    end
-
     # @return [Peal::Credential::Client]
     def credential
       @credential ||= Peal::Credential::Client.new(client: @raw_client)

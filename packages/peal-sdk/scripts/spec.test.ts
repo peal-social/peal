@@ -136,22 +136,46 @@ describe("the SDKs' namespaces", () => {
     ).toEqual([]);
   });
 
-  it("leaves out the groups only a person's own session calls", async () => {
+  it("holds the public API, which the contract's document is, whole", async () => {
+    const contract = await read(
+      path.join(root, "peal-contract", "openapi.json")
+    );
+
     const sdks = await read(path.join(root, "peal-sdk", "openapi.json"));
     const ids = namesOf(sdks).map(({ id }) => id);
 
+    const contractIds = Object.values(
+      Schema.decodeUnknownSync(
+        Schema.Record(Schema.String, Schema.Record(Schema.String, Schema.Json))
+      )(contract["paths"])
+    ).flatMap((item) =>
+      Object.values(item).flatMap((operation) => {
+        const id = Schema.decodeUnknownOption(
+          Schema.Struct({ operationId: Schema.String })
+        )(operation);
+
+        return id._tag === "Some" ? [id.value.operationId] : [];
+      })
+    );
+
+    expect(ids.toSorted()).toEqual(contractIds.toSorted());
+
+    // Peal's own clients' groups and the staff console's are not in it.
     for (const id of [
+      "me.get",
+      "me.notices.list",
       "me.account.export",
       "me.connectedApps.list",
       "me.browserAnalytics.setConsent",
       "workspace.delete",
       "workspace.billingActions.order",
+      "staff.users",
     ]) {
       expect(ids).not.toContain(id);
     }
 
     expect(ids).toContain("workspace.members.list");
-    expect(ids).toContain("me.get");
+    expect(ids).toContain("credential.get");
   });
 });
 

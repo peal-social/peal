@@ -16,7 +16,6 @@ import social.peal.resources.channels.ChannelsClient;
 import social.peal.resources.credential.CredentialClient;
 import social.peal.resources.inbox.InboxClient;
 import social.peal.resources.links.LinksClient;
-import social.peal.resources.me.MeClient;
 import social.peal.resources.media.MediaClient;
 import social.peal.resources.partner.PartnerClient;
 import social.peal.resources.posts.PostsClient;
@@ -49,8 +48,6 @@ public class PealClient implements AutoCloseable {
 
     protected final Supplier<PartnerClient> partnerClient;
 
-    protected final Supplier<MeClient> meClient;
-
     protected final Supplier<CredentialClient> credentialClient;
 
     protected final Supplier<SystemClient> systemClient;
@@ -74,7 +71,6 @@ public class PealClient implements AutoCloseable {
         this.webhooksClient = Suppliers.memoize(() -> new WebhooksClient(clientOptions));
         this.assistantClient = Suppliers.memoize(() -> new AssistantClient(clientOptions));
         this.partnerClient = Suppliers.memoize(() -> new PartnerClient(clientOptions));
-        this.meClient = Suppliers.memoize(() -> new MeClient(clientOptions));
         this.credentialClient = Suppliers.memoize(() -> new CredentialClient(clientOptions));
         this.systemClient = Suppliers.memoize(() -> new SystemClient(clientOptions));
         this.automationsClient = Suppliers.memoize(() -> new AutomationsClient(clientOptions));
@@ -124,10 +120,6 @@ public class PealClient implements AutoCloseable {
 
     public PartnerClient partner() {
         return this.partnerClient.get();
-    }
-
-    public MeClient me() {
-        return this.meClient.get();
     }
 
     public CredentialClient credential() {

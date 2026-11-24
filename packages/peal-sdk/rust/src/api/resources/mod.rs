@@ -13,7 +13,6 @@
 //! - **webhooks**
 //! - **assistant**
 //! - **partner**
-//! - **me**
 //! - **credential**
 //! - **system**
 //! - **Automations**
@@ -32,7 +31,6 @@ pub mod channels;
 pub mod credential;
 pub mod inbox;
 pub mod links;
-pub mod me;
 pub mod media;
 pub mod partner;
 pub mod posts;
@@ -52,7 +50,6 @@ pub struct PealClient {
     pub webhooks: WebhooksClient,
     pub assistant: AssistantClient,
     pub partner: PartnerClient,
-    pub me: MeClient,
     pub credential: CredentialClient,
     pub system: SystemClient,
     pub automations: AutomationsClient,
@@ -75,7 +72,6 @@ impl PealClient {
             webhooks: WebhooksClient::new(config.clone())?,
             assistant: AssistantClient::new(config.clone())?,
             partner: PartnerClient::new(config.clone())?,
-            me: MeClient::new(config.clone())?,
             credential: CredentialClient::new(config.clone())?,
             system: SystemClient::new(config.clone())?,
             automations: AutomationsClient::new(config.clone())?,
@@ -95,7 +91,6 @@ pub use channels::ChannelsClient;
 pub use credential::CredentialClient;
 pub use inbox::InboxClient;
 pub use links::LinksClient;
-pub use me::MeClient;
 pub use media::MediaClient;
 pub use partner::PartnerClient;
 pub use posts::PostsClient;

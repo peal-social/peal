@@ -10,7 +10,6 @@ import { ChannelsClient } from "./api/resources/channels/client/Client.js";
 import { CredentialClient } from "./api/resources/credential/client/Client.js";
 import { InboxClient } from "./api/resources/inbox/client/Client.js";
 import { LinksClient } from "./api/resources/links/client/Client.js";
-import { MeClient } from "./api/resources/me/client/Client.js";
 import { MediaClient } from "./api/resources/media/client/Client.js";
 import { PartnerClient } from "./api/resources/partner/client/Client.js";
 import { PostsClient } from "./api/resources/posts/client/Client.js";
@@ -42,7 +41,6 @@ export class PealClient {
     protected _webhooks: WebhooksClient | undefined;
     protected _assistant: AssistantClient | undefined;
     protected _partner: PartnerClient | undefined;
-    protected _me: MeClient | undefined;
     protected _credential: CredentialClient | undefined;
     protected _system: SystemClient | undefined;
     protected _automations: AutomationsClient | undefined;
@@ -96,10 +94,6 @@ export class PealClient {
 
     public get partner(): PartnerClient {
         return (this._partner ??= new PartnerClient(this._options));
-    }
-
-    public get me(): MeClient {
-        return (this._me ??= new MeClient(this._options));
     }
 
     public get credential(): CredentialClient {

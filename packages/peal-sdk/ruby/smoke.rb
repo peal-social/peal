@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # The smoke test, which scripts/test.ts runs against a stand-in API: the
-# health check, the signed-in user with a bearer token, and the error a
+# health check, the credential check with a bearer token, and the error a
 # refused token raises.
 require "peal"
 require "socket"
@@ -33,15 +33,19 @@ base_url = "http://127.0.0.1:#{forwarder.addr[1]}"
 peal = Peal::Client.new(base_url: base_url, token: "peal_test")
 
 peal.system.health
-me = peal.me.get
+credential = peal.credential.get
 
-unless me.user.email == "ada@example.test" && me.impersonated_by.nil? && me.user.image.nil? &&
-       me.workspaces[0].permissions.include?("post:schedule")
-  abort "Unexpected answer: #{me.inspect}"
+# The generator's tagged unions look for their tag under `type`, where the
+# API sends `_tag`, so a union comes back as the parsed JSON, with symbols
+# for keys, rather than as one of its member types.
+unless credential[:_tag] == "apiKey" && credential.dig(:workspace, :name) == "Studio" &&
+       credential[:expiresAt].nil? && credential[:start].nil? &&
+       credential[:permissions].include?("post:schedule")
+  abort "Unexpected answer: #{credential.inspect}"
 end
 
 begin
-  Peal::Client.new(base_url: base_url, token: "refused").me.get
+  Peal::Client.new(base_url: base_url, token: "refused").credential.get
   abort "A refused token got an answer"
 rescue Peal::Errors::UnauthorizedError
   # The 401 the stand-in answers a refused token.

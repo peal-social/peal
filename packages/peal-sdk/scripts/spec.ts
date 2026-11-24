@@ -1,9 +1,9 @@
 // Writes openapi.json, the document every SDK is generated from: the
-// contract's operations that a bearer token (a workspace API key or an OAuth
-// access token) can call, plus the health checks, with only the schemas they
-// reference. Session-only routes, the platforms' callbacks and the browser's
-// own endpoints stay out of the SDKs, and so do the groups that answer only
-// the person in their own session or Peal's command line (`ownSession`).
+// contract's, which holds the public API alone (`publicGroups`), with only
+// the schemas its operations reference. Which groups are public is the
+// contract's to say: an operation here that a bearer token (a workspace API
+// key, a partner key or an OAuth access token) cannot call, and that is not
+// a health check, stops the script.
 import path from "node:path";
 
 import { Option, Schema } from "effect";
@@ -26,35 +26,7 @@ const defaultServer = "https://app.peal.social";
 /** Operations under this tag need no token and stay in every SDK. */
 const publicTag = "system";
 
-/**
- * Groups whose every operation refuses API keys and OAuth clients: the
- * account's export and deletion, its connected applications, deleting a
- * workspace and its security, ordering, cancelling or withdrawing from a
- * plan, and the web app's measurement consent. A group is its operations'
- * namespace (`me.account`), matched whole: `workspace` holds none of
- * `workspace.members`.
- */
-const ownSessionGroups = new Set([
-  "me.account",
-  "me.browserAnalytics",
-  "me.connectedApps",
-  "workspace",
-  "workspace.billingActions",
-]);
-
 const decodeId = Schema.decodeUnknownOption(Schema.String);
-
-/** The group of an operation: its id but the last segment, or none. */
-const groupOf = (operation: JsonObject): string | undefined =>
-  Option.getOrUndefined(
-    decodeId(operation["operationId"]).pipe(
-      Option.flatMap((name) => {
-        const dot = name.lastIndexOf(".");
-
-        return dot === -1 ? Option.none() : Option.some(name.slice(0, dot));
-      })
-    )
-  );
 
 const schemaPrefix = "#/components/schemas/";
 
@@ -200,21 +172,22 @@ const withoutWorkspaceHeader = (operation: JsonObject): JsonObject => {
     : withEntries(operation, [["parameters", kept]]);
 };
 
-/** The operation as the SDKs see it, or undefined when a token cannot call it. */
-const keepOperation = (operation: JsonObject): JsonObject | undefined => {
+/**
+ * The operation as the SDKs see it: with its bearer credential alone, as a
+ * session cannot reach the SDKs. The contract's document holds the public
+ * API alone, so an operation no token can call is a group in the wrong list.
+ */
+const sdkOperation = (operation: JsonObject): JsonObject => {
   const { security = globalSecurity, tags = [] } = decodeOperation(operation);
 
   if (tags.includes(publicTag)) {
     return withSdkName(operation, tags);
   }
 
-  const group = groupOf(operation);
-
-  if (
-    !allowsBearer(security) ||
-    (group !== undefined && ownSessionGroups.has(group))
-  ) {
-    return undefined;
+  if (!allowsBearer(security)) {
+    throw new Error(
+      `${JSON.stringify(operation["operationId"])} takes no bearer token, so no SDK user could call it: its group belongs in the contract's appGroups or staffGroups, not publicGroups.`
+    );
   }
 
   return withSdkName(
@@ -232,43 +205,28 @@ const keepOperation = (operation: JsonObject): JsonObject | undefined => {
  */
 const repeatable = new Set(["get", "head", "options", "put", "delete"]);
 
-/** The path's operations a token can call, or undefined when it has none. */
-const keepPath = (item: JsonObject): JsonObject | undefined => {
-  const kept = Object.entries(item).flatMap(
-    ([key, value]): [string, Json][] => {
+/** The path with each of its operations as the SDKs see it. */
+const sdkPath = (item: JsonObject): JsonObject =>
+  Object.fromEntries(
+    Object.entries(item).map(([key, value]): [string, Json] => {
       if (!methods.has(key)) {
-        return [[key, value]];
+        return [key, value];
       }
 
-      const operation = keepOperation(decodeObject(value));
-
-      if (operation === undefined) {
-        return [];
-      }
+      const operation = sdkOperation(decodeObject(value));
 
       return [
-        [
-          key,
-          repeatable.has(key)
-            ? operation
-            : withEntries(operation, [["x-fern-retries", { disabled: true }]]),
-        ],
+        key,
+        repeatable.has(key)
+          ? operation
+          : withEntries(operation, [["x-fern-retries", { disabled: true }]]),
       ];
-    }
+    })
   );
 
-  return kept.some(([key]) => methods.has(key))
-    ? Object.fromEntries(kept)
-    : undefined;
-};
-
 const paths: JsonObject = Object.fromEntries(
-  Object.entries(objectAt(document, "paths")).flatMap(
-    ([route, item]): [string, Json][] => {
-      const kept = keepPath(decodeObject(item));
-
-      return kept === undefined ? [] : [[route, kept]];
-    }
+  Object.entries(objectAt(document, "paths")).map(
+    ([route, item]): [string, Json] => [route, sdkPath(decodeObject(item))]
   )
 );
 

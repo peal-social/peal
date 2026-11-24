@@ -59,7 +59,6 @@ public partial class PealClient : IPealClient
         Webhooks = new WebhooksClient(_client);
         Assistant = new AssistantClient(_client);
         Partner = new PartnerClient(_client);
-        Me = new MeClient(_client);
         Credential = new CredentialClient(_client);
         System = new SystemClient(_client);
         Automations = new AutomationsClient(_client);
@@ -88,8 +87,6 @@ public partial class PealClient : IPealClient
     public IAssistantClient Assistant { get; }
 
     public IPartnerClient Partner { get; }
-
-    public IMeClient Me { get; }
 
     public ICredentialClient Credential { get; }
 

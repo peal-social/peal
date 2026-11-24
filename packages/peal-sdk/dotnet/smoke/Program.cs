@@ -1,5 +1,5 @@
 // The smoke test, which scripts/test.ts runs against a stand-in API: the
-// health check, the signed-in user with a bearer token, and the error a
+// health check, the credential check with a bearer token, and the error a
 // refused token raises.
 using Peal;
 
@@ -7,17 +7,18 @@ string baseUrl = Environment.GetEnvironmentVariable("PEAL_API_URL")!;
 var peal = new PealClient("peal_test", clientOptions: new ClientOptions { BaseUrl = baseUrl });
 
 await peal.System.HealthAsync();
-var me = await peal.Me.GetAsync();
+var credential = await peal.Credential.GetAsync();
 
-if (me.User.Email != "ada@example.test" || me.ImpersonatedBy is not null || me.User.Image is not null
-    || !me.Workspaces.First().Permissions.Contains(Permission.PostSchedule))
+if (!credential.TryAsApiKey(out var key) || key is null || key.Workspace.Name != "Studio"
+    || key.ExpiresAt is not null || key.Start is not null
+    || !key.Permissions.Contains(Permission.PostSchedule))
 {
-    throw new InvalidOperationException($"Unexpected answer: {me}");
+    throw new InvalidOperationException($"Unexpected answer: {credential}");
 }
 
 try
 {
-    await new PealClient("refused", clientOptions: new ClientOptions { BaseUrl = baseUrl }).Me.GetAsync();
+    await new PealClient("refused", clientOptions: new ClientOptions { BaseUrl = baseUrl }).Credential.GetAsync();
     throw new InvalidOperationException("A refused token got an answer");
 }
 catch (PealClientApiException error) when (error.StatusCode == 401)

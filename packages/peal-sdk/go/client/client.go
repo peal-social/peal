@@ -15,7 +15,6 @@ import (
 	inboxclient "github.com/peal-social/peal/packages/peal-sdk/go/inbox/client"
 	internal "github.com/peal-social/peal/packages/peal-sdk/go/internal"
 	links "github.com/peal-social/peal/packages/peal-sdk/go/links"
-	meclient "github.com/peal-social/peal/packages/peal-sdk/go/me/client"
 	mediaclient "github.com/peal-social/peal/packages/peal-sdk/go/media/client"
 	option "github.com/peal-social/peal/packages/peal-sdk/go/option"
 	partnerclient "github.com/peal-social/peal/packages/peal-sdk/go/partner/client"
@@ -37,7 +36,6 @@ type Client struct {
 	Webhooks    *webhooks.Client
 	Assistant   *assistant.Client
 	Partner     *partnerclient.Client
-	Me          *meclient.Client
 	Credential  *credential.Client
 	System      *system.Client
 	Automations *automationsclient.Client
@@ -63,7 +61,6 @@ func NewClient(opts ...option.RequestOption) *Client {
 		Webhooks:    webhooks.NewClient(options),
 		Assistant:   assistant.NewClient(options),
 		Partner:     partnerclient.NewClient(options),
-		Me:          meclient.NewClient(options),
 		Credential:  credential.NewClient(options),
 		System:      system.NewClient(options),
 		Automations: automationsclient.NewClient(options),

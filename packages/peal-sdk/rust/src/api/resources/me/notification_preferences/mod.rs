@@ -1,2 +1,0 @@
-pub mod me_notification_preferences;
-pub use me_notification_preferences::NotificationPreferencesClient;

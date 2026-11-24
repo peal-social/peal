@@ -20,7 +20,6 @@ if typing.TYPE_CHECKING:
     from .credential.client import AsyncCredentialClient, CredentialClient
     from .inbox.client import AsyncInboxClient, InboxClient
     from .links.client import AsyncLinksClient, LinksClient
-    from .me.client import AsyncMeClient, MeClient
     from .media.client import AsyncMediaClient, MediaClient
     from .partner.client import AsyncPartnerClient, PartnerClient
     from .posts.client import AsyncPostsClient, PostsClient
@@ -131,7 +130,6 @@ class Peal:
         self._webhooks: typing.Optional[WebhooksClient] = None
         self._assistant: typing.Optional[AssistantClient] = None
         self._partner: typing.Optional[PartnerClient] = None
-        self._me: typing.Optional[MeClient] = None
         self._credential: typing.Optional[CredentialClient] = None
         self._system: typing.Optional[SystemClient] = None
         self._automations: typing.Optional[AutomationsClient] = None
@@ -225,14 +223,6 @@ class Peal:
 
             self._partner = PartnerClient(client_wrapper=self._client_wrapper)
         return self._partner
-
-    @property
-    def me(self):
-        if self._me is None:
-            from .me.client import MeClient  # noqa: E402
-
-            self._me = MeClient(client_wrapper=self._client_wrapper)
-        return self._me
 
     @property
     def credential(self):
@@ -398,7 +388,6 @@ class AsyncPeal:
         self._webhooks: typing.Optional[AsyncWebhooksClient] = None
         self._assistant: typing.Optional[AsyncAssistantClient] = None
         self._partner: typing.Optional[AsyncPartnerClient] = None
-        self._me: typing.Optional[AsyncMeClient] = None
         self._credential: typing.Optional[AsyncCredentialClient] = None
         self._system: typing.Optional[AsyncSystemClient] = None
         self._automations: typing.Optional[AsyncAutomationsClient] = None
@@ -492,14 +481,6 @@ class AsyncPeal:
 
             self._partner = AsyncPartnerClient(client_wrapper=self._client_wrapper)
         return self._partner
-
-    @property
-    def me(self):
-        if self._me is None:
-            from .me.client import AsyncMeClient  # noqa: E402
-
-            self._me = AsyncMeClient(client_wrapper=self._client_wrapper)
-        return self._me
 
     @property
     def credential(self):

@@ -13,8 +13,7 @@ pub mod types;
 
 pub use resources::{
     AdsClient, AnalyticsClient, ApprovalsClient, ArticlesClient, AssistantClient,
-    AutomationsClient, ChannelsClient, CredentialClient, InboxClient, LinksClient, MeClient,
-    MediaClient, PartnerClient, PealClient, PostsClient, SystemClient, WebhooksClient,
-    WorkspaceClient,
+    AutomationsClient, ChannelsClient, CredentialClient, InboxClient, LinksClient, MediaClient,
+    PartnerClient, PealClient, PostsClient, SystemClient, WebhooksClient, WorkspaceClient,
 };
 pub use types::*;

@@ -166,7 +166,6 @@ require_relative "peal/partner/types/get_workspace_partner_request"
 require_relative "peal/partner/types/delete_workspace_partner_request"
 require_relative "peal/partner/types/customer_workspace_change"
 require_relative "peal/partner/types/channel_move"
-require_relative "peal/me/client"
 require_relative "peal/credential/client"
 require_relative "peal/system/client"
 require_relative "peal/automations/client"
@@ -249,11 +248,6 @@ require_relative "peal/inbox/reviews/types/get_thread_reviews_request"
 require_relative "peal/inbox/reviews/types/new_inbox_review_reply"
 require_relative "peal/inbox/reviews/types/withdraw_reply_reviews_request"
 require_relative "peal/inbox/reviews/types/set_answered_reviews_request"
-require_relative "peal/me/notices/client"
-require_relative "peal/me/notices/types/list_notices_request"
-require_relative "peal/me/notices/types/mark_notices_read"
-require_relative "peal/me/notification_preferences/client"
-require_relative "peal/me/notification_preferences/types/notification_preferences_change"
 require_relative "peal/media/images/client"
 require_relative "peal/media/images/types/image_request"
 require_relative "peal/media/voiceovers/client"
@@ -348,14 +342,6 @@ module Peal
     module Reviews
       module Types
         autoload :ListThreadsReviewsRequestUnanswered, ::File.join(__dir__, "peal/inbox/reviews/types/list_threads_reviews_request_unanswered")
-      end
-    end
-  end
-
-  module Me
-    module NotificationPreferences
-      module Types
-        autoload :NotificationPreferencesChangeEmail, ::File.join(__dir__, "peal/me/notification_preferences/types/notification_preferences_change_email")
       end
     end
   end
@@ -601,7 +587,6 @@ module Peal
     autoload :AudioUnavailableEncodedReason, ::File.join(__dir__, "peal/types/audio_unavailable_encoded_reason")
     autoload :AudioUnavailableEncoded, ::File.join(__dir__, "peal/types/audio_unavailable_encoded")
     autoload :Authorization, ::File.join(__dir__, "peal/types/authorization")
-    autoload :AutomationStopReason, ::File.join(__dir__, "peal/types/automation_stop_reason")
     autoload :NonFiniteNumber, ::File.join(__dir__, "peal/types/non_finite_number")
     autoload :BestTimesHourMedian, ::File.join(__dir__, "peal/types/best_times_hour_median")
     autoload :Weekday, ::File.join(__dir__, "peal/types/weekday")
@@ -658,8 +643,6 @@ module Peal
     autoload :BoostPage, ::File.join(__dir__, "peal/types/boost_page")
     autoload :BoostQuote, ::File.join(__dir__, "peal/types/boost_quote")
     autoload :BoostStateConflictEncoded, ::File.join(__dir__, "peal/types/boost_state_conflict_encoded")
-    autoload :BrowserAnalyticsConsent, ::File.join(__dir__, "peal/types/browser_analytics_consent")
-    autoload :BrowserAnalytics, ::File.join(__dir__, "peal/types/browser_analytics")
     autoload :DiscordOptions, ::File.join(__dir__, "peal/types/discord_options")
     autoload :FacebookFormat, ::File.join(__dir__, "peal/types/facebook_format")
     autoload :FacebookOptions, ::File.join(__dir__, "peal/types/facebook_options")
@@ -945,7 +928,6 @@ module Peal
     autoload :FeedPreviewItem, ::File.join(__dir__, "peal/types/feed_preview_item")
     autoload :FeedPreview, ::File.join(__dir__, "peal/types/feed_preview")
     autoload :FeedReadsLimitedEncoded, ::File.join(__dir__, "peal/types/feed_reads_limited_encoded")
-    autoload :FeedStopReason, ::File.join(__dir__, "peal/types/feed_stop_reason")
     autoload :FeedTemplateInvalidEncodedReason, ::File.join(__dir__, "peal/types/feed_template_invalid_encoded_reason")
     autoload :FeedTemplateInvalidEncoded, ::File.join(__dir__, "peal/types/feed_template_invalid_encoded")
     autoload :FeedUnreadableEncodedReason, ::File.join(__dir__, "peal/types/feed_unreadable_encoded_reason")
@@ -958,7 +940,6 @@ module Peal
     autoload :FollowUpNotPossibleEncodedTag, ::File.join(__dir__, "peal/types/follow_up_not_possible_encoded_tag")
     autoload :FollowUpRefusal, ::File.join(__dir__, "peal/types/follow_up_refusal")
     autoload :FollowUpNotPossibleEncoded, ::File.join(__dir__, "peal/types/follow_up_not_possible_encoded")
-    autoload :FollowUpNotSentReason, ::File.join(__dir__, "peal/types/follow_up_not_sent_reason")
     autoload :FollowUpRuleStatus, ::File.join(__dir__, "peal/types/follow_up_rule_status")
     autoload :FollowUpRule, ::File.join(__dir__, "peal/types/follow_up_rule")
     autoload :FollowUpRuleEndedEncodedTag, ::File.join(__dir__, "peal/types/follow_up_rule_ended_encoded_tag")
@@ -1076,11 +1057,6 @@ module Peal
     autoload :YouTubeVideoCategory, ::File.join(__dir__, "peal/types/you_tube_video_category")
     autoload :LookupResultYoutubeVideoCategories, ::File.join(__dir__, "peal/types/lookup_result_youtube_video_categories")
     autoload :LookupResult, ::File.join(__dir__, "peal/types/lookup_result")
-    autoload :MeSupportChat, ::File.join(__dir__, "peal/types/me_support_chat")
-    autoload :MeUserLocale, ::File.join(__dir__, "peal/types/me_user_locale")
-    autoload :MeUser, ::File.join(__dir__, "peal/types/me_user")
-    autoload :Membership, ::File.join(__dir__, "peal/types/membership")
-    autoload :Me, ::File.join(__dir__, "peal/types/me")
     autoload :MediaDimensions, ::File.join(__dir__, "peal/types/media_dimensions")
     autoload :MediaStatusPending, ::File.join(__dir__, "peal/types/media_status_pending")
     autoload :MediaStatusReady, ::File.join(__dir__, "peal/types/media_status_ready")
@@ -1110,53 +1086,6 @@ module Peal
     autoload :SpecialAdCategory, ::File.join(__dir__, "peal/types/special_ad_category")
     autoload :NewBoost, ::File.join(__dir__, "peal/types/new_boost")
     autoload :NotRecyclableReason, ::File.join(__dir__, "peal/types/not_recyclable_reason")
-    autoload :NoticeChannel, ::File.join(__dir__, "peal/types/notice_channel")
-    autoload :NoticeEventAdBoostChangedChange, ::File.join(__dir__, "peal/types/notice_event_ad_boost_changed_change")
-    autoload :NoticeEventAdBoostChanged, ::File.join(__dir__, "peal/types/notice_event_ad_boost_changed")
-    autoload :NoticeEventAdConnectionReconnectRequired, ::File.join(__dir__, "peal/types/notice_event_ad_connection_reconnect_required")
-    autoload :NoticeEventAllowanceReached, ::File.join(__dir__, "peal/types/notice_event_allowance_reached")
-    autoload :NoticeEventChannelReconnectRequired, ::File.join(__dir__, "peal/types/notice_event_channel_reconnect_required")
-    autoload :NoticeEventChannelReconnectSoon, ::File.join(__dir__, "peal/types/notice_event_channel_reconnect_soon")
-    autoload :NoticeEventCommentRuleStopped, ::File.join(__dir__, "peal/types/notice_event_comment_rule_stopped")
-    autoload :NoticeEventCommentsReceived, ::File.join(__dir__, "peal/types/notice_event_comments_received")
-    autoload :NoticeEventFeedStopped, ::File.join(__dir__, "peal/types/notice_event_feed_stopped")
-    autoload :NoticeEventFollowUpRuleStopped, ::File.join(__dir__, "peal/types/notice_event_follow_up_rule_stopped")
-    autoload :NoticeEventFollowUpsNotSent, ::File.join(__dir__, "peal/types/notice_event_follow_ups_not_sent")
-    autoload :NoticeEventMessagesReceived, ::File.join(__dir__, "peal/types/notice_event_messages_received")
-    autoload :NoticeEventMessagesTurnedOff, ::File.join(__dir__, "peal/types/notice_event_messages_turned_off")
-    autoload :NoticeEventPaymentMethodNeeded, ::File.join(__dir__, "peal/types/notice_event_payment_method_needed")
-    autoload :NoticeEventPlansRetiring, ::File.join(__dir__, "peal/types/notice_event_plans_retiring")
-    autoload :NoticeEventPostApprovalRequested, ::File.join(__dir__, "peal/types/notice_event_post_approval_requested")
-    autoload :ReviewParty, ::File.join(__dir__, "peal/types/review_party")
-    autoload :NoticeEventPostApproved, ::File.join(__dir__, "peal/types/notice_event_post_approved")
-    autoload :NoticeEventPostChangesRequested, ::File.join(__dir__, "peal/types/notice_event_post_changes_requested")
-    autoload :NoticeEventPostCommented, ::File.join(__dir__, "peal/types/notice_event_post_commented")
-    autoload :PostPartsNotSent, ::File.join(__dir__, "peal/types/post_parts_not_sent")
-    autoload :NoticeEventPostFailed, ::File.join(__dir__, "peal/types/notice_event_post_failed")
-    autoload :NoticeEventPostPublished, ::File.join(__dir__, "peal/types/notice_event_post_published")
-    autoload :NoticeEventPostUnconfirmed, ::File.join(__dir__, "peal/types/notice_event_post_unconfirmed")
-    autoload :RecyclingNoticeReason, ::File.join(__dir__, "peal/types/recycling_notice_reason")
-    autoload :NoticeEventRecyclingEnded, ::File.join(__dir__, "peal/types/notice_event_recycling_ended")
-    autoload :NoticeEventSlideshowEndedOutcome, ::File.join(__dir__, "peal/types/notice_event_slideshow_ended_outcome")
-    autoload :SlideshowFailureReason, ::File.join(__dir__, "peal/types/slideshow_failure_reason")
-    autoload :NoticeEventSlideshowEnded, ::File.join(__dir__, "peal/types/notice_event_slideshow_ended")
-    autoload :NoticeEventSubscriptionCancelled, ::File.join(__dir__, "peal/types/notice_event_subscription_cancelled")
-    autoload :NoticeEventSubscriptionRenewing, ::File.join(__dir__, "peal/types/notice_event_subscription_renewing")
-    autoload :NoticeEventSubscriptionStarted, ::File.join(__dir__, "peal/types/notice_event_subscription_started")
-    autoload :NoticeEventSubscriptionWithdrawn, ::File.join(__dir__, "peal/types/notice_event_subscription_withdrawn")
-    autoload :NoticeEventTrialEnding, ::File.join(__dir__, "peal/types/notice_event_trial_ending")
-    autoload :NoticeEventVideoGenerationEndedOutcome, ::File.join(__dir__, "peal/types/notice_event_video_generation_ended_outcome")
-    autoload :VideoFailureReason, ::File.join(__dir__, "peal/types/video_failure_reason")
-    autoload :NoticeEventVideoGenerationEnded, ::File.join(__dir__, "peal/types/notice_event_video_generation_ended")
-    autoload :NoticeEventWebhookDeliveriesFailing, ::File.join(__dir__, "peal/types/notice_event_webhook_deliveries_failing")
-    autoload :WebhookTurnOffReason, ::File.join(__dir__, "peal/types/webhook_turn_off_reason")
-    autoload :NoticeEventWebhookEndpointDisabled, ::File.join(__dir__, "peal/types/notice_event_webhook_endpoint_disabled")
-    autoload :NoticeEventXSpendCeiling, ::File.join(__dir__, "peal/types/notice_event_x_spend_ceiling")
-    autoload :NoticeEvent, ::File.join(__dir__, "peal/types/notice_event")
-    autoload :Notice, ::File.join(__dir__, "peal/types/notice")
-    autoload :NoticePage, ::File.join(__dir__, "peal/types/notice_page")
-    autoload :NotificationPreferencesEmail, ::File.join(__dir__, "peal/types/notification_preferences_email")
-    autoload :NotificationPreferences, ::File.join(__dir__, "peal/types/notification_preferences")
     autoload :OAuthSitePlatform, ::File.join(__dir__, "peal/types/o_auth_site_platform")
     autoload :OrganicCounts, ::File.join(__dir__, "peal/types/organic_counts")
     autoload :OwnImageLimitReachedEncoded, ::File.join(__dir__, "peal/types/own_image_limit_reached_encoded")
@@ -1275,6 +1204,7 @@ module Peal
     autoload :Slide, ::File.join(__dir__, "peal/types/slide")
     autoload :SlideTransition, ::File.join(__dir__, "peal/types/slide_transition")
     autoload :SlideshowDurationSeconds, ::File.join(__dir__, "peal/types/slideshow_duration_seconds")
+    autoload :SlideshowFailureReason, ::File.join(__dir__, "peal/types/slideshow_failure_reason")
     autoload :SlideshowStatus, ::File.join(__dir__, "peal/types/slideshow_status")
     autoload :Slideshow, ::File.join(__dir__, "peal/types/slideshow")
     autoload :SlideshowNotFoundEncoded, ::File.join(__dir__, "peal/types/slideshow_not_found_encoded")
@@ -1327,7 +1257,6 @@ module Peal
     autoload :TranscriptionRejectedEncoded, ::File.join(__dir__, "peal/types/transcription_rejected_encoded")
     autoload :UnauthenticatedEncodedTag, ::File.join(__dir__, "peal/types/unauthenticated_encoded_tag")
     autoload :UnauthenticatedEncoded, ::File.join(__dir__, "peal/types/unauthenticated_encoded")
-    autoload :UnreadNotices, ::File.join(__dir__, "peal/types/unread_notices")
     autoload :UnsupportedMediaTypeEncoded, ::File.join(__dir__, "peal/types/unsupported_media_type_encoded")
     autoload :UploadIncompleteEncodedTag, ::File.join(__dir__, "peal/types/upload_incomplete_encoded_tag")
     autoload :UploadIncompleteEncoded, ::File.join(__dir__, "peal/types/upload_incomplete_encoded")
@@ -1339,6 +1268,7 @@ module Peal
     autoload :UsageSharing, ::File.join(__dir__, "peal/types/usage_sharing")
     autoload :VideoAllowanceReachedEncoded, ::File.join(__dir__, "peal/types/video_allowance_reached_encoded")
     autoload :VideoBusyEncoded, ::File.join(__dir__, "peal/types/video_busy_encoded")
+    autoload :VideoFailureReason, ::File.join(__dir__, "peal/types/video_failure_reason")
     autoload :VideoGenerationStatus, ::File.join(__dir__, "peal/types/video_generation_status")
     autoload :VideoGeneration, ::File.join(__dir__, "peal/types/video_generation")
     autoload :VideoGenerationNotFoundEncoded, ::File.join(__dir__, "peal/types/video_generation_not_found_encoded")

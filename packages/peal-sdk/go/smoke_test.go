@@ -1,5 +1,5 @@
 // The smoke test, which scripts/test.ts runs against a stand-in API: the
-// health check, the signed-in user with a bearer token, and the error a
+// health check, the credential check with a bearer token, and the error a
 // refused token raises.
 package peal_test
 
@@ -29,17 +29,18 @@ func TestSmoke(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	me, err := c.Me.Get(ctx)
+	credential, err := c.Credential.Get(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if me.User.Email != "ada@example.test" || me.ImpersonatedBy != nil || me.User.Image != nil ||
-		!slices.Contains(me.Workspaces[0].Permissions, peal.PermissionPostSchedule) {
-		t.Fatalf("unexpected answer: %+v", me)
+	key := credential.APIKey
+	if key == nil || key.Workspace == nil || key.Workspace.Name != "Studio" || key.ExpiresAt != nil ||
+		key.Start != nil || !slices.Contains(key.Permissions, peal.PermissionPostSchedule) {
+		t.Fatalf("unexpected answer: %+v", credential)
 	}
 
-	_, err = client.NewClient(option.WithBaseURL(baseURL), option.WithToken("refused")).Me.Get(ctx)
+	_, err = client.NewClient(option.WithBaseURL(baseURL), option.WithToken("refused")).Credential.Get(ctx)
 
 	var apiError *core.APIError
 	if !errors.As(err, &apiError) || apiError.StatusCode != 401 {
