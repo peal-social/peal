@@ -142,7 +142,7 @@ Le récapitulatif part une fois par semaine. Quand le serveur de messagerie le r
 
 ## Depuis l’API [#api]
 
-Vos notifications et vos préférences vous appartiennent, et non à un espace de travail. Elles se trouvent donc sous `/api/me` :
+Vos notifications et vos préférences vous appartiennent, et non à un espace de travail. Elles se trouvent donc sous `/api/me`. L’application web de Peal appelle ces points d’accès. Ils ne font pas partie de l’API publique : la [référence de l’API](/reference) et les SDK les laissent donc de côté :
 
 | Point d’accès                                     | Ce qu’il fait                                                                                                                                                                       |
 | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -154,4 +154,4 @@ Vos notifications et vos préférences vous appartiennent, et non à un espace d
 
 Chaque notification est une donnée, comme l’identifiant d’une publication, un canal et une raison, que le client écrit dans la langue de son lecteur.
 
-Ces points d’accès acceptent une session, ou un jeton OAuth qui n’est pas lié à un seul espace de travail, comme celui de la ligne de commande. Les clés d’API, qui appartiennent à un espace de travail, reçoivent 403, tout comme les clients MCP, qui agissent dans un seul espace de travail. La [référence de l’API](/reference) liste leurs paramètres.
+Ces points d’accès acceptent une session, ou un jeton OAuth qui n’est pas lié à un seul espace de travail, comme celui de la ligne de commande. Les clés d’API, qui appartiennent à un espace de travail, reçoivent 403, tout comme les clients MCP, qui agissent dans un seul espace de travail.

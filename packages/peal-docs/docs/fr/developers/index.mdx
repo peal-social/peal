@@ -55,8 +55,6 @@ Un jeton OAuth est limité à ses scopes ([Ce que permet chaque permission](/dev
 
 ### Savoir qui vous êtes [#whoami]
 
-Avec une session ou un jeton OAuth, `GET /api/me` vous dit qui vous êtes. Il liste vos espaces de travail, avec votre rôle et vos permissions dans chacun. Une clé d’API appartient à un espace de travail, pas à une personne : elle y reçoit donc 403.
-
 Tout identifiant, clés et clés partenaires comprises, peut demander à `GET /api/v1/credential` qui il est et ce qu’il peut faire. Pour une clé d’API, ce sont son nom, son espace de travail, ses permissions et son expiration. Pour une clé partenaire, son partenaire, ses portées et ses permissions. La réponse ne contient jamais la clé elle-même ([SDK](/developers/sdks#credential)).
 
 <CodeGroup>
@@ -439,17 +437,9 @@ Les membres qui peuvent gérer les webhooks (propriétaires et administrateurs),
 
 ## Votre compte [#me]
 
-Ce qui vous appartient, plutôt qu’à un espace de travail, se trouve sous `/api/me` :
+Votre compte, vos [notifications](/guides/workspace/notifications#api) et leurs préférences se trouvent sous `/api/me`. L’application web et la ligne de commande de Peal appellent ces points d’accès pour la personne connectée. Ils ne font pas partie de l’API publique : le document OpenAPI, la référence et les SDK les laissent de côté. Ils répondent 403 aux clés d’API, qui appartiennent à un espace de travail, et aux jetons OAuth liés à un seul espace de travail, comme celui d’un client MCP. Un programme vérifie son propre identifiant avec `GET /api/v1/credential` ([Savoir qui vous êtes](#whoami)).
 
-| Requête                            | Ce qu’elle contient                                      |
-| ---------------------------------- | -------------------------------------------------------- |
-| `GET /api/me`                      | Qui vous êtes                                            |
-| `/api/me/notices`                  | Vos [notifications](/guides/workspace/notifications#api) |
-| `/api/me/notification-preferences` | Les notifications qui partent par e-mail                 |
-
-Ces points d’accès répondent 403 aux clés d’API, qui appartiennent à un espace de travail, et aux jetons OAuth liés à un seul espace de travail, comme celui d’un client MCP.
-
-Trois autres ne répondent qu’à votre propre session dans l’application web : une copie de vos données (`GET /api/me/export`), la suppression de votre compte (`DELETE /api/me`) et vos applications connectées (`/api/me/connected-apps`). Les clés d’API, les jetons OAuth et l’équipe qui agit à votre place reçoivent 403 ([Espaces de travail et compte](/guides/workspace#api)).
+Trois d’entre eux ne répondent qu’à votre propre session dans l’application web : une copie de vos données (`GET /api/me/export`), la suppression de votre compte (`DELETE /api/me`) et vos applications connectées (`/api/me/connected-apps`). Les clés d’API, les jetons OAuth et l’équipe qui agit à votre place reçoivent 403 ([Espaces de travail et compte](/guides/workspace#api)).
 
 ## Document OpenAPI [#openapi]
 

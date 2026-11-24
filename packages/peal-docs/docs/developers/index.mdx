@@ -51,8 +51,6 @@ An OAuth token is limited to its scopes ([What each permission allows](/develope
 
 ### Check who you are [#whoami]
 
-With a session or an OAuth token, `GET /api/me` tells you who you are. It lists your workspaces, with your role and permissions in each. An API key belongs to a workspace, not to a person, so it gets 403 there.
-
 Any credential, keys and partner keys included, can ask `GET /api/v1/credential` who it is and what it may do. For an API key, that's its name, workspace, permissions and expiry. For a partner key, it's its partner, scopes and permissions. It never answers the key itself ([SDKs](/developers/sdks#credential)).
 
 <CodeGroup>
@@ -435,17 +433,9 @@ Members who may manage webhooks (owners and admins), and API keys given that per
 
 ## Your account [#me]
 
-What belongs to you rather than to a workspace lives under `/api/me`:
+Your account, your [notifications](/guides/workspace/notifications#api) and their preferences live under `/api/me`. Peal's web app and command line call these endpoints for the person signed in. They aren't part of the public API, so the OpenAPI document, the reference and the SDKs leave them out. They answer 403 to API keys, which belong to a workspace, and to OAuth tokens bound to one workspace, such as an MCP client's. A program checks its own credential with `GET /api/v1/credential` ([Check who you are](#whoami)).
 
-| Request                            | What it holds                                             |
-| ---------------------------------- | --------------------------------------------------------- |
-| `GET /api/me`                      | Who you are                                               |
-| `/api/me/notices`                  | Your [notifications](/guides/workspace/notifications#api) |
-| `/api/me/notification-preferences` | Which notifications are emailed                           |
-
-These endpoints answer 403 to API keys, which belong to a workspace, and to OAuth tokens bound to one workspace, such as an MCP client's.
-
-Three more answer only your own session in the web app: a copy of your data (`GET /api/me/export`), deleting your account (`DELETE /api/me`) and your connected applications (`/api/me/connected-apps`). API keys, OAuth tokens and staff acting as you get 403 ([Workspaces and your account](/guides/workspace#api)).
+Three of them answer only your own session in the web app: a copy of your data (`GET /api/me/export`), deleting your account (`DELETE /api/me`) and your connected applications (`/api/me/connected-apps`). API keys, OAuth tokens and staff acting as you get 403 ([Workspaces and your account](/guides/workspace#api)).
 
 ## OpenAPI document [#openapi]
 
