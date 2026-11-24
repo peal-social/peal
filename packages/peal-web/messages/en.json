@@ -4690,7 +4690,7 @@
     "exportedToast": "Your video is on its way. It shows in Media once it's made.",
     "exportHint": "Your workspace's Shotstack account renders the video with its own key, and it lands in Media. {remaining, plural, =0 {No exports left today.} one {# export left today.} other {# exports left today.}}",
     "loadFailed": "The editor could not load. Refresh the page to try again.",
-    "engineFailed": "The editor could not start in this browser, or your last draft could not be opened. Refresh the page to start a new one.",
+    "engineFailed": "The editor could not start. Refresh the page to try again, or choose Start over for a new video: your last one will be forgotten.",
     "addFiles": "Add files",
     "addFilesTitle": "Add files from your library",
     "addFilesDescription": "Pictures and videos go on a new track on top, sounds on a new track at the bottom.",

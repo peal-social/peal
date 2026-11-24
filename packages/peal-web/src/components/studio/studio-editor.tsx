@@ -30,6 +30,7 @@ import {
   hasClips,
   imageAspectOf,
   laidEnd,
+  mediaIdAt,
   mediaIdsOf,
   playedSecondsOf,
   previewOf,
@@ -51,6 +52,7 @@ import {
   textTool,
   voiceTool,
 } from "./studio-tools.ts";
+import type { StudioTool } from "./studio-tools.ts";
 import { useStudioExport } from "./use-studio-export.ts";
 import type { StudioExport } from "./use-studio-export.ts";
 import { useStudioFrame } from "./use-studio-frame.ts";
@@ -82,8 +84,7 @@ const isEditable = (media: Media): boolean =>
 const storedIn = (studio: Studio, files: ReadonlyMap<string, Media>) =>
   storedOf(
     studio.getEdit(),
-    (address) =>
-      [...files.values()].find(({ url }) => url === address)?.id ?? null,
+    (address) => mediaIdAt(files.values(), address),
     window.location.origin
   );
 
@@ -169,6 +170,9 @@ const LoadedStudio = ({
   const [studio, setStudio] = useState<Studio | null>(null);
   const [broken, setBroken] = useState(false);
   const [full, setFull] = useState(true);
+  // Set once the person starts over: nothing of this draft is kept again.
+  const forgotten = useRef(false);
+
   const exporting = useStudioExport(workspaceId);
   const frame = useStudioFrame(workspaceId);
   const generator = useStudioGenerator(workspaceId, status);
@@ -191,21 +195,25 @@ const LoadedStudio = ({
     }
   );
 
-  const addCaptions = t("addCaptions");
-  const addCircle = t("addCircle");
-  const addRectangle = t("addRectangle");
-  const addText = t("addText");
-  const generateImage = t("generateImage");
-  const imagePrompt = t("imagePrompt");
-  const makesImages = status.images.available;
-  const generateVideo = t("generateVideo");
-  const videoPrompt = t("videoPrompt");
-  const makesVideos = status.videos.available;
-  const generateVoice = t("generateVoice");
-  const voiceWords = t("voiceWords");
-  const makesVoices = status.voiceovers.available;
-  const captionsNeedVoice = t("captionsNeedVoice");
-  const newText = t("newText");
+  // Read as the SDK starts: a change to what AI makes, or to a label, never
+  // starts it again, which would lose what is not in the draft it opened.
+  const toolsOf = useEffectEvent((): readonly StudioTool[] => [
+    textTool(t("addText"), t("newText")),
+    figureTool("rectangle", t("addRectangle")),
+    figureTool("circle", t("addCircle")),
+    ...(status.images.available
+      ? [imageTool(t("generateImage"), t("imagePrompt"))]
+      : []),
+    ...(status.videos.available
+      ? [filmTool(t("generateVideo"), t("videoPrompt"))]
+      : []),
+    ...(status.voiceovers.available
+      ? [voiceTool(t("generateVoice"), t("voiceWords"))]
+      : []),
+    captionsTool(t("addCaptions"), () => {
+      toast.info(t("captionsNeedVoice"));
+    }),
+  ]);
 
   // The SDK starts once, and stops with the page.
   useEffect(() => {
@@ -223,17 +231,7 @@ const LoadedStudio = ({
             window.location.origin
           ),
           timelineBox: element,
-          tools: [
-            textTool(addText, newText),
-            figureTool("rectangle", addRectangle),
-            figureTool("circle", addCircle),
-            ...(makesImages ? [imageTool(generateImage, imagePrompt)] : []),
-            ...(makesVideos ? [filmTool(generateVideo, videoPrompt)] : []),
-            ...(makesVoices ? [voiceTool(generateVoice, voiceWords)] : []),
-            captionsTool(addCaptions, () => {
-              toast.info(captionsNeedVoice);
-            }),
-          ],
+          tools: toolsOf(),
         });
 
         if (stopped) {
@@ -243,10 +241,9 @@ const LoadedStudio = ({
           setStudio(started);
         }
       } catch {
-        // A draft the SDK refuses, or a browser without WebGL: the draft
-        // is forgotten, so the next visit starts afresh.
+        // A draft the SDK refuses, a browser without WebGL, or a download
+        // that failed: the draft is kept, for another try or to start over.
         if (!stopped) {
-          clearDraft(workspaceId);
           setBroken(true);
         }
       }
@@ -260,40 +257,34 @@ const LoadedStudio = ({
       stopped = true;
       running?.dispose();
     };
-  }, [
-    addCaptions,
-    addCircle,
-    addRectangle,
-    addText,
-    generateImage,
-    generateVideo,
-    generateVoice,
-    imagePrompt,
-    makesImages,
-    makesVideos,
-    videoPrompt,
-    makesVoices,
-    voiceWords,
-    captionsNeedVoice,
-    initial,
-    newText,
-    workspaceId,
-  ]);
+  }, [initial]);
 
-  // The draft is kept a moment after each change.
+  // The draft is kept a moment after each change, and what is not kept yet
+  // as the page is left.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let waits = false;
+
+    const keep = () => {
+      clearTimeout(timer);
+
+      if (studio !== null && waits && !forgotten.current) {
+        waits = false;
+        writeDraft(workspaceId, storedIn(studio, files.current));
+      }
+    };
 
     const unsubscribe = studio?.onChange(() => {
+      waits = true;
       clearTimeout(timer);
-
-      timer = setTimeout(() => {
-        writeDraft(workspaceId, storedIn(studio, files.current));
-      }, saveDelayMs);
+      timer = setTimeout(keep, saveDelayMs);
     });
 
+    window.addEventListener("pagehide", keep);
+
     return () => {
-      clearTimeout(timer);
+      window.removeEventListener("pagehide", keep);
+      keep();
       unsubscribe?.();
     };
   }, [studio, workspaceId]);
@@ -345,6 +336,7 @@ const LoadedStudio = ({
   };
 
   const handleStartOver = () => {
+    forgotten.current = true;
     clearDraft(workspaceId);
     window.location.reload();
   };
@@ -394,7 +386,7 @@ const LoadedStudio = ({
         <Button
           size="sm"
           variant="ghost"
-          disabled={studio === null}
+          disabled={studio === null && !broken}
           onClick={handleStartOver}
         >
           <FilePlusIcon aria-hidden />
