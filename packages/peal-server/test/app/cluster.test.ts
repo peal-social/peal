@@ -692,6 +692,16 @@ const forgettingJobs = <A, E, R>(
     );
   });
 
+// The calls the fake platform took for `postId`. A run killed part way
+// leaves its jobs due, which the next run's servers publish through the
+// same fake: a test counts the calls of its own post, never every call.
+const callsFor = (platform: FakePlatform["Service"], postId: PostId) =>
+  platform.calls.pipe(
+    Effect.map((calls) =>
+      calls.filter(({ request }) => request.postId === postId)
+    )
+  );
+
 const isFinished = (postId: PostId) =>
   PostRepository.use((posts) => posts.find(postId)).pipe(
     Effect.map(
@@ -851,7 +861,7 @@ describe("the cluster on Postgres", () => {
               isFinished(scheduled.post.id)
             );
 
-            assert.lengthOf(yield* platform.calls, 1);
+            assert.lengthOf(yield* callsFor(platform, scheduled.post.id), 1);
           }).pipe(
             Effect.provide(
               serverWith(FakePlatformPublisher).pipe(
@@ -920,7 +930,7 @@ describe("the cluster on Postgres", () => {
               isFinished(post.id).pipe(Effect.provideContext(second))
             );
 
-            assert.lengthOf(yield* platform.calls, 1);
+            assert.lengthOf(yield* callsFor(platform, post.id), 1);
 
             yield* Scope.close(after, Exit.void);
           }).pipe(Effect.scoped)
