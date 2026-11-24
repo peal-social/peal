@@ -30,7 +30,7 @@ import {
   queueView,
 } from "#publishing/api/queue-view.ts";
 import { queueDetailsFrom, queueIdFrom } from "#publishing/api/queues.ts";
-import { ruleView } from "#publishing/api/recycling-view.ts";
+import { ruleView } from "#publishing/api/recycling/recycling-view.ts";
 import { signatureView } from "#publishing/api/signature-view.ts";
 import {
   signatureDetailsFrom,
@@ -44,8 +44,8 @@ import type {
   ListedFollowUpRule,
 } from "#publishing/application/follow-ups/follow-up-rules.ts";
 import { Queues } from "#publishing/application/queues.ts";
-import { Recycling } from "#publishing/application/recycling.ts";
-import type { ListedRule } from "#publishing/application/recycling.ts";
+import { Recycling } from "#publishing/application/recycling/recycling.ts";
+import type { ListedRule } from "#publishing/application/recycling/recycling.ts";
 import { Signatures } from "#publishing/application/signatures.ts";
 import type { FollowUpScope } from "#publishing/domain/follow-ups/follow-up-rule.ts";
 import { TargetOptionsSchema } from "#publishing/domain/target-options.ts";

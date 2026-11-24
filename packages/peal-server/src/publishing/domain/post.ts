@@ -62,7 +62,7 @@ import { PostTagIdsSchema } from "./tag.ts";
  * status, never from this alone.
  *
  * `occurrence` says which recycling rule made it, and its place among the
- * rule's posts (`./recycling-rule.ts`): an ordinary post otherwise, with
+ * rule's posts (`./recycling/recycling-rule.ts`): an ordinary post otherwise, with
  * its own job and outcome, which a member moves or cancels as any other.
  *
  * `scheduleRevision` counts the times the post was scheduled or taken back

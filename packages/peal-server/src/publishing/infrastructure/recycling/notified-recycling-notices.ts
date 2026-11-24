@@ -1,8 +1,8 @@
 import { Effect, Layer, Option } from "effect";
 
 import { Notify } from "#notifications/application/notify.ts";
-import { RecyclingNotices } from "#publishing/application/recycling-notices.ts";
-import type { RecyclingEndReason } from "#publishing/domain/recycling-end-reason.ts";
+import { RecyclingNotices } from "#publishing/application/recycling/recycling-notices.ts";
+import type { RecyclingEndReason } from "#publishing/domain/recycling/recycling-end-reason.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 
 type Told = Exclude<RecyclingEndReason, "completed" | "stopped">;

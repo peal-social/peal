@@ -22,8 +22,8 @@ import { RecyclingVariantsInvalid } from "./recycling-variants-invalid.ts";
 import { TooManyRecyclingRules } from "./too-many-recycling-rules.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
 
-// The limits below are the server's (src/publishing/domain/recycling-*.ts):
-// a test keeps them equal.
+// The limits below are the server's
+// (src/publishing/domain/recycling/recycling-*.ts): a test keeps them equal.
 
 /** The most rules a workspace keeps active or paused. */
 export const maxRecyclingRulesPerWorkspace = 100;

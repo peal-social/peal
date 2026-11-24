@@ -16,7 +16,7 @@ import {
 import type { Member } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
-import { RecyclingHandlers } from "#publishing/api/recycling.ts";
+import { RecyclingHandlers } from "#publishing/api/recycling/recycling.ts";
 import { newId } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { memberOf } from "#test/channels/support.ts";

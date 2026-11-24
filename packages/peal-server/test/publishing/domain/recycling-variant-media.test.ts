@@ -6,7 +6,7 @@ import {
   mediaWithoutTextOf,
   RecyclingVariant,
   sayingVariant,
-} from "#publishing/domain/recycling-variant.ts";
+} from "#publishing/domain/recycling/recycling-variant.ts";
 import { TextOverride } from "#publishing/domain/text-override.ts";
 import { ChannelIdSchema, MediaAssetIdSchema } from "#shared/domain/ids.ts";
 

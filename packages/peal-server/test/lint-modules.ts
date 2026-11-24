@@ -26,5 +26,6 @@ export const modules = {
       ],
     },
     "follow-ups": { seams: [] },
+    recycling: { seams: [] },
   },
 } satisfies Readonly<Record<string, Readonly<Record<string, Module>>>>;

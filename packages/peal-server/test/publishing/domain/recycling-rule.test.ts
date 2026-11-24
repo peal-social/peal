@@ -1,9 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Option, Result } from "effect";
 
-import { dueAt, nextDueAfter } from "#publishing/domain/recycling-interval.ts";
-import type { RecyclingInterval } from "#publishing/domain/recycling-interval.ts";
 import { RecyclingRuleIdSchema } from "#publishing/domain/recycling-rule-id.ts";
+import {
+  dueAt,
+  nextDueAfter,
+} from "#publishing/domain/recycling/recycling-interval.ts";
+import type { RecyclingInterval } from "#publishing/domain/recycling/recycling-interval.ts";
 import {
   comingDue,
   editRule,
@@ -16,12 +19,12 @@ import {
   resumeRule,
   startRule,
   variantFor,
-} from "#publishing/domain/recycling-rule.ts";
+} from "#publishing/domain/recycling/recycling-rule.ts";
 import type {
   NewRecyclingRule,
   RecyclingRule,
-} from "#publishing/domain/recycling-rule.ts";
-import { RecyclingVariant } from "#publishing/domain/recycling-variant.ts";
+} from "#publishing/domain/recycling/recycling-rule.ts";
+import { RecyclingVariant } from "#publishing/domain/recycling/recycling-variant.ts";
 import { PostIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 

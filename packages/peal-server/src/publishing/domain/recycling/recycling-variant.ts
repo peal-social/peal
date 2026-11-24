@@ -1,11 +1,13 @@
 import { Schema } from "effect";
 
+import { PostContent } from "#publishing/domain/post-content.ts";
+import { PartOverridesSchema } from "#publishing/domain/post-part.ts";
+import { PostTextSchema } from "#publishing/domain/post-text.ts";
+import {
+  changedOverride,
+  TextOverride,
+} from "#publishing/domain/text-override.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
-
-import { PostContent } from "./post-content.ts";
-import { PartOverridesSchema } from "./post-part.ts";
-import { PostTextSchema } from "./post-text.ts";
-import { changedOverride, TextOverride } from "./text-override.ts";
 
 /**
  * A text an occurrence says instead of the source's: it replaces the first

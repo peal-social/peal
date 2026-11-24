@@ -1,5 +1,11 @@
 import { DateTime, Option, Result, Schema } from "effect";
 
+import { PostOriginSchema } from "#publishing/domain/post-origin.ts";
+import type { PostOrigin } from "#publishing/domain/post-origin.ts";
+import { QueueIdSchema } from "#publishing/domain/queue-id.ts";
+import type { QueueId } from "#publishing/domain/queue-id.ts";
+import { RecyclingRuleIdSchema } from "#publishing/domain/recycling-rule-id.ts";
+import type { RecyclingRuleId } from "#publishing/domain/recycling-rule-id.ts";
 import {
   PostIdSchema,
   UserIdSchema,
@@ -11,18 +17,12 @@ import type { TimeZoneId } from "#shared/domain/time-zone.ts";
 import { LocalDateSchema, localDateOf } from "#shared/domain/wall-clock.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 
-import { PostOriginSchema } from "./post-origin.ts";
-import type { PostOrigin } from "./post-origin.ts";
-import { QueueIdSchema } from "./queue-id.ts";
-import type { QueueId } from "./queue-id.ts";
 import { RecyclingEndReasonSchema } from "./recycling-end-reason.ts";
 import type { RecyclingEndReason } from "./recycling-end-reason.ts";
 import { RecyclingEndsTooSoon } from "./recycling-ends-too-soon.ts";
 import { nextDueAfter, RecyclingIntervalSchema } from "./recycling-interval.ts";
 import type { RecyclingInterval } from "./recycling-interval.ts";
 import { RecyclingRuleEnded } from "./recycling-rule-ended.ts";
-import { RecyclingRuleIdSchema } from "./recycling-rule-id.ts";
-import type { RecyclingRuleId } from "./recycling-rule-id.ts";
 import { RecyclingVariant } from "./recycling-variant.ts";
 
 // The limits below are the owner's to change: each is written once here,

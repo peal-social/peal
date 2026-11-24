@@ -1,7 +1,8 @@
 import { Schema } from "effect";
 
+import { RecyclingRuleIdSchema } from "#publishing/domain/recycling-rule-id.ts";
+
 import { RecyclingEndReasonSchema } from "./recycling-end-reason.ts";
-import { RecyclingRuleIdSchema } from "./recycling-rule-id.ts";
 
 /**
  * The rule ended (`reason`): it changes no more, and is resumed only after
