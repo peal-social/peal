@@ -70,8 +70,10 @@ and no socket, for tests.
 
 - Folders import each other through `#<context>/<layer>/…` (package.json
   `imports`); `../` imports are refused. `packages/peal-server/oxlint.config.ts`
-  enforces the layer rules. Never loosen a rule to make an import pass; move
-  the code. A new context goes into that file's `contexts` list.
+  enforces the layer rules. The MCP endpoint (`src/app/mcp/`) is a delivery
+  layer too, which imports contexts through their container, domain,
+  application and api, never their infrastructure. Never loosen a rule to
+  make an import pass; move the code. A new context goes into that file's `contexts` list.
 - Contexts talk through ports: an adapter in one context may call another
   context's `application` layer, never its domain or infrastructure.
   Publishing lists channels through `ListedWorkspaceChannels`, which calls the
