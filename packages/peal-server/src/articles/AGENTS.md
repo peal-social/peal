@@ -172,6 +172,10 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   keeps it equal to the posts' reasons less the ten, so a reason posts
   gain fails there until someone decides how articles read it. Only the
   ten are written, and any other string still fails to decode.
+- `application/unknown-media.ts` is a copy of publishing's `UnknownMedia`
+  with the same tag on purpose, as an application layer cannot import
+  another context's: the handler maps it by tag to the contract's error,
+  so never tell the two classes apart, nor compare them with `Schema.is`.
 - What articles ask other contexts, always through their `application`
   layer, never their domain: publishing's `ApprovalGate`, `PostAllowance`
   and `withinPlan` behind `ArticleGates` (`PostingArticleGates`), its
