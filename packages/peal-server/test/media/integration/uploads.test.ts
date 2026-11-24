@@ -4,6 +4,7 @@
 // Auth, so these tests read their confirmation emails from Mailpit.
 import { assert, layer } from "@effect/vitest";
 import { Effect, Schema } from "effect";
+import { forWorkspace } from "peal-contract";
 import sharp from "sharp";
 
 import { mebibytes, sendSigned, syntheticBytes } from "#test/media/support.ts";
@@ -96,8 +97,13 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const owner = yield* signedUp("camille");
           const workspaceId = yield* workspaceOf(owner, "Studio");
-          const headers = { cookie: owner.cookies };
-          const base = `/api/workspaces/${workspaceId}/media`;
+
+          const headers = {
+            cookie: owner.cookies,
+            ...forWorkspace(workspaceId),
+          };
+
+          const base = `/api/v1/media`;
           const body = yield* whiteWebp;
 
           const created = yield* app.request(base, {
@@ -139,7 +145,9 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const listed = yield* bodyOf(
             PageSchema,
-            yield* app.request(base, { headers })
+            yield* app.request(base, {
+              headers,
+            })
           );
 
           assert.deepStrictEqual(
@@ -175,7 +183,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           ]);
 
           const headers = { authorization: `Bearer ${key}` };
-          const base = `/api/workspaces/${workspaceId}/media`;
+          const base = `/api/v1/media`;
           const body = syntheticBytes(mebibytes(17) + 123);
 
           const prepared = yield* bodyOf(
@@ -236,7 +244,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const completed = yield* app.request(
             `${base}/${prepared.media.id}/complete`,
-            { headers, method: "POST" }
+            {
+              headers,
+              method: "POST",
+            }
           );
 
           assert.strictEqual(completed.status, 200);

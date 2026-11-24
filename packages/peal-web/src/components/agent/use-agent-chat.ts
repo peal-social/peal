@@ -9,6 +9,7 @@ import {
 import { Exit, Option } from "effect";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type {
   AgentMedia,
   AgentMessageSkill,
@@ -212,7 +213,10 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
       !state.loaded &&
       state.run === null,
     remove: async (): Promise<boolean> => {
-      const exit = await remove({ params: { chatId, workspaceId } });
+      const exit = await remove({
+        headers: forWorkspace(workspaceId),
+        params: { chatId },
+      });
 
       refreshChats();
 
@@ -230,7 +234,8 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
       dispatch({ _tag: "rated", messageId, rating });
 
       const exit = await rate({
-        params: { chatId, messageId, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { chatId, messageId },
         payload: { rating },
       });
 
@@ -241,7 +246,8 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
     },
     rename: async (title: string): Promise<boolean> => {
       const exit = await update({
-        params: { chatId, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { chatId },
         payload: { title },
       });
 
@@ -271,7 +277,8 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
       dispatch({ _tag: "starred", starred });
 
       const exit = await update({
-        params: { chatId, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { chatId },
         payload: { starred },
       });
 
@@ -322,7 +329,7 @@ export const useNewAgentChat = (
       dispatch({ _tag: "typed", text: "" });
       dispatch({ _tag: "picked", skills: [] });
 
-      const exit = await create({ params: { workspaceId } });
+      const exit = await create({ headers: forWorkspace(workspaceId) });
 
       if (Exit.isFailure(exit)) {
         dispatch({ _tag: "refused", refusal: refusalOf(exit), skills, text });

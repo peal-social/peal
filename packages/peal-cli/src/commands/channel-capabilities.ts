@@ -350,11 +350,11 @@ export const capabilities = Command.make(
     json,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     if (Option.isNone(channelId)) {
       const platforms = yield* client.capabilities
-        .platforms({ params: { workspaceId: workspace.id } })
+        .platforms({ headers: {} })
         .pipe(Effect.mapError(explain(url)));
 
       if (json) {
@@ -378,7 +378,8 @@ export const capabilities = Command.make(
 
     const described = yield* client.capabilities
       .channel({
-        params: { channelId: channelId.value, workspaceId: workspace.id },
+        headers: {},
+        params: { channelId: channelId.value },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -501,12 +502,12 @@ export const lookupWith = (creatorLines: CreatorLines) =>
       workspace: workspaceFlag,
     },
     Effect.fn("channels.lookup")(function* lookup(given) {
-      const { client, url, workspace } = yield* inWorkspace(given.workspace);
-      const params = { channelId: given.channelId, workspaceId: workspace.id };
+      const { client, url } = yield* inWorkspace(given.workspace);
+      const params = { channelId: given.channelId };
 
       if (Option.isNone(given.name)) {
         const listed = yield* client.lookups
-          .list({ params })
+          .list({ headers: {}, params })
           .pipe(Effect.mapError(explain(url)));
 
         if (given.json) {
@@ -562,7 +563,11 @@ export const lookupWith = (creatorLines: CreatorLines) =>
       };
 
       const result = yield* client.lookups
-        .run({ params: { ...params, name: given.name.value }, payload })
+        .run({
+          headers: {},
+          params: { ...params, name: given.name.value },
+          payload,
+        })
         .pipe(Effect.mapError(explain(url)));
 
       if (given.json) {

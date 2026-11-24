@@ -715,7 +715,7 @@
   registry's `usageDays` (category `usage`) is kept by
   `data-processing.test.ts`. `UsageReports.ofPartner` (a member with
   partner:read, `GET …/usage/partner`) and `ofPartnerKey` (a partner key
-  with `workspaces:read`, `GET /api/partner/usage`, `PartnerUsageApi`,
+  with `workspaces:read`, `GET /api/v1/partner/usage`, `PartnerUsageApi`,
   refused in the partner API's words from `#shared/api/partner-key.ts`)
   answer a partner's usage per customer: what the workspace context's
   `PartnerTenants` says it holds, through billing's port `PartnerTenancy`

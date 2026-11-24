@@ -5,6 +5,7 @@ import {
   ActivityPageSchema,
   ApiKeySchema,
   WorkspaceMemberSchema,
+  forWorkspace,
 } from "peal-contract";
 
 import {
@@ -71,7 +72,7 @@ const join = Effect.fn("join")(function* join(
 const works = Effect.fn("works")(function* works(key: string) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request("/api/credential", {
+  const reply = yield* app.request("/api/v1/credential", {
     headers: { authorization: `Bearer ${key}` },
   });
 
@@ -118,8 +119,8 @@ const keysOf = Effect.fn("keysOf")(function* keysOf(
 
   return yield* bodyOf(
     KeysSchema,
-    yield* app.request(`/api/workspaces/${workspaceId}/api-keys`, {
-      headers: asPerson(person),
+    yield* app.request(`/api/v1/api-keys`, {
+      headers: { ...asPerson(person), ...forWorkspace(workspaceId) },
     })
   );
 });
@@ -132,10 +133,9 @@ const revocationsIn = Effect.fn("revocationsIn")(function* revocationsIn(
 
   const page = yield* bodyOf(
     PageSchema,
-    yield* app.request(
-      `/api/workspaces/${workspaceId}/activity?operation=apiKeys.revoke`,
-      { headers: asPerson(owner) }
-    )
+    yield* app.request(`/api/v1/activity?operation=apiKeys.revoke`, {
+      headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
+    })
   );
 
   return page.items.map(({ actor, objectIds }) => ({ actor, objectIds }));
@@ -212,8 +212,8 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // would revoke: the two keys they made that are recorded.
           const members = yield* bodyOf(
             MembersSchema,
-            yield* app.request(`/api/workspaces/${workspaceId}/members`, {
-              headers: asPerson(owner),
+            yield* app.request(`/api/v1/members`, {
+              headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
             })
           );
 
@@ -227,8 +227,8 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // An editor, who may not manage members, reads none of it.
           const byEditor = yield* bodyOf(
             MembersSchema,
-            yield* app.request(`/api/workspaces/${workspaceId}/members`, {
-              headers: asPerson(editor),
+            yield* app.request(`/api/v1/members`, {
+              headers: { ...asPerson(editor), ...forWorkspace(workspaceId) },
             })
           );
 

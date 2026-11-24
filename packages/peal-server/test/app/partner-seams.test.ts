@@ -6,7 +6,7 @@
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Option, Schema } from "effect";
 import { McpClient, McpProtocol } from "effect/ai";
-import { ActivityPageSchema, PostSchema } from "peal-contract";
+import { ActivityPageSchema, PostSchema, forWorkspace } from "peal-contract";
 
 import {
   MigratedSqlLive,
@@ -82,14 +82,13 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const { key } = yield* keyOf(owner, home);
           const customer = yield* customerOf(key, "Counted", "cus_seam_1");
 
-          const overview = yield* app.request("/api/partner", {
+          const overview = yield* app.request("/api/v1/partner", {
             headers: bearer(key),
           });
 
-          const inside = yield* app.request(
-            `/api/workspaces/${customer.id}/channels`,
-            { headers: bearer(key) }
-          );
+          const inside = yield* app.request(`/api/v1/channels`, {
+            headers: { ...bearer(key), ...forWorkspace(customer.id) },
+          });
 
           assert.strictEqual(overview.status, 200);
           assert.strictEqual(inside.status, 200);
@@ -111,12 +110,13 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           }
 
           // The caller's own id comes back, on a refusal too, in its body.
-          const elsewhere = yield* app.request(
-            `/api/workspaces/${home}/channels`,
-            {
-              headers: { ...bearer(key), "x-request-id": "seam-request-0001" },
-            }
-          );
+          const elsewhere = yield* app.request(`/api/v1/channels`, {
+            headers: {
+              ...bearer(key),
+              "x-request-id": "seam-request-0001",
+              ...forWorkspace(home),
+            },
+          });
 
           assert.strictEqual(elsewhere.status, 404);
           assert.strictEqual(
@@ -207,12 +207,17 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
               { body: undefined, path: "/posts/search?status=scheduled" },
             ].map(({ body, path }) => ({
               body,
-              path: `/api/workspaces/${workspaceId}${path}`,
+              path: `/api/v1${path}`,
+              workspace: workspaceId,
             }));
 
           const owned = yield* Effect.forEach(
             calls(customer.id),
-            ({ body, path }) => app.request(path, { body, headers }),
+            ({ body, path, workspace }) =>
+              app.request(path, {
+                body,
+                headers: { ...headers, ...forWorkspace(workspace) },
+              }),
             { concurrency: 1 }
           );
 
@@ -243,7 +248,11 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           for (const workspaceId of [home, stranger.home]) {
             const refused = yield* Effect.forEach(
               calls(workspaceId),
-              ({ body, path }) => app.request(path, { body, headers }),
+              ({ body, path, workspace }) =>
+                app.request(path, {
+                  body,
+                  headers: { ...headers, ...forWorkspace(workspace) },
+                }),
               { concurrency: 1 }
             );
 
@@ -280,7 +289,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           });
 
           // A scope of the partner API.
-          const unscoped = yield* app.request("/api/partner/workspaces", {
+          const unscoped = yield* app.request("/api/v1/partner/workspaces", {
             body: { name: "Never made" },
             headers: bearer(reading.key),
           });
@@ -296,10 +305,10 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.include(scope.message, "workspaces:write");
 
           // A permission inside a workspace its partner owns.
-          const unpermitted = yield* app.request(
-            `/api/workspaces/${customer.id}/connect-links`,
-            { body: { platform: "mastodon" }, headers: bearer(reading.key) }
-          );
+          const unpermitted = yield* app.request(`/api/v1/connect-links`, {
+            body: { platform: "mastodon" },
+            headers: { ...bearer(reading.key), ...forWorkspace(customer.id) },
+          });
 
           assert.strictEqual(unpermitted.status, 403);
 
@@ -312,7 +321,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.include(permission.message, "partner key");
 
           // The partner API takes partner keys alone.
-          const inPerson = yield* app.request("/api/partner", {
+          const inPerson = yield* app.request("/api/v1/partner", {
             headers: { cookie: owner.cookies },
           });
 
@@ -352,11 +361,11 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const customer = yield* customerOf(key, "Logged", "cus_seam_3");
           const channel = yield* seedChannel(customer.id, "log@social.test");
           const headers = bearer(key);
-          const base = `/api/workspaces/${customer.id}`;
+          const base = "/api/v1";
 
           // Renamed through the partner API.
           const renamed = yield* app.request(
-            `/api/partner/workspaces/${customer.id}`,
+            `/api/v1/partner/workspaces/${customer.id}`,
             { body: { name: "Logged again" }, headers, method: "PATCH" }
           );
 
@@ -365,7 +374,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // A draft, a check, a dry run and several posts at once.
           const drafted = yield* app.request(`${base}/posts`, {
             body: { channelIds: [], content: content("A synthetic draft.") },
-            headers,
+            headers: { ...headers, ...forWorkspace(customer.id) },
           });
 
           assert.strictEqual(drafted.status, 201);
@@ -376,14 +385,14 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
               content: content("A synthetic check."),
               when: later,
             },
-            headers,
+            headers: { ...headers, ...forWorkspace(customer.id) },
           });
           yield* app.request(`${base}/posts/import`, {
             body: {
               csv: `text,channels,at\nA synthetic row.,${channel},2031-03-04T09:00:00Z`,
               dryRun: true,
             },
-            headers,
+            headers: { ...headers, ...forWorkspace(customer.id) },
           });
           yield* app.request(`${base}/posts/bulk`, {
             body: {
@@ -395,10 +404,12 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 },
               ],
             },
-            headers,
+            headers: { ...headers, ...forWorkspace(customer.id) },
           });
 
-          const log = yield* app.request(`${base}/activity`, { headers });
+          const log = yield* app.request(`${base}/activity`, {
+            headers: { ...headers, ...forWorkspace(customer.id) },
+          });
 
           assert.strictEqual(log.status, 200);
 
@@ -436,7 +447,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const plain = yield* keyOf(owner, home);
 
           const denied = yield* app.request(`${base}/activity`, {
-            headers: bearer(plain.key),
+            headers: { ...bearer(plain.key), ...forWorkspace(customer.id) },
           });
 
           assert.strictEqual(denied.status, 403);
@@ -588,8 +599,8 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Kept in the workspace's log as the tool's call, by the key.
           const log = yield* app.request(
-            `/api/workspaces/${customer.id}/activity?operation=mcp.create_draft`,
-            { headers: bearer(key) }
+            `/api/v1/activity?operation=mcp.create_draft`,
+            { headers: { ...bearer(key), ...forWorkspace(customer.id) } }
           );
 
           assert.deepStrictEqual(
@@ -653,7 +664,7 @@ layer(BillingTest, { excludeTestServices: true, timeout: "180 seconds" })(
           const { key } = yield* keyOf(owner, home);
           const customer = yield* customerOf(key, "Pooled", "cus_seam_6");
           const headers = bearer(key);
-          const base = `/api/workspaces/${customer.id}/posts`;
+          const base = `/api/v1/posts`;
 
           const channel = yield* seedChannel(customer.id, "one@social.test");
 
@@ -664,7 +675,10 @@ layer(BillingTest, { excludeTestServices: true, timeout: "180 seconds" })(
           };
 
           const validate = app
-            .request(`${base}/validate`, { body: post, headers })
+            .request(`${base}/validate`, {
+              body: post,
+              headers: { ...headers, ...forWorkspace(customer.id) },
+            })
             .pipe(Effect.flatMap((reply) => bodyOf(ShortfallSchema, reply)));
 
           // Two accounts on the free tier, the home workspace's and the
@@ -688,7 +702,7 @@ layer(BillingTest, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const bulk = yield* app.request(`${base}/bulk`, {
             body: { posts: [post, post] },
-            headers,
+            headers: { ...headers, ...forWorkspace(customer.id) },
           });
 
           assert.strictEqual(bulk.status, 200);
@@ -709,7 +723,7 @@ layer(BillingTest, { excludeTestServices: true, timeout: "180 seconds" })(
             body: {
               csv: `text,channels,at\nA synthetic row.,${channel},2031-03-04T09:00:00Z`,
             },
-            headers,
+            headers: { ...headers, ...forWorkspace(customer.id) },
           });
 
           assert.strictEqual(imported.status, 200);

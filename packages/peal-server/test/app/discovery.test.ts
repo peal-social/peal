@@ -169,7 +169,7 @@ layer(Test, { excludeTestServices: true, timeout: "120 seconds" })(
         const document = yield* bodyOf(OpenApiSchema, reply);
 
         assert.strictEqual(document.openapi, "3.1.0");
-        assert.property(document.paths, "/api/workspaces/{workspaceId}/posts");
+        assert.property(document.paths, "/api/v1/posts");
 
         // The one the contract writes for the docs, events included, and
         // the same where the server alone answers.

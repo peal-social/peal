@@ -23,6 +23,7 @@ import { PlanLimitReached } from "./plan-limit-reached.ts";
 import { TranscriptionRejected } from "./transcription-rejected.ts";
 import { VoiceNotOffered } from "./voice-not-offered.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * The longest text a voice-over is made from, in UTF-16 code units, and
@@ -82,8 +83,6 @@ export const TranscriptSchema = Schema.Struct({
 
 export type Transcript = typeof TranscriptSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
 /**
  * Audio for the workspace's media library from the providers it chose,
  * with its own keys: voice-overs made from a text, and transcripts of its
@@ -103,7 +102,8 @@ export class MediaAudioApi extends HttpApiGroup.make("mediaAudio")
         PlanLimitReached,
         MediaStoreUnavailable,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: VoiceoverRequestSchema,
       success: MediaSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -122,7 +122,8 @@ export class MediaAudioApi extends HttpApiGroup.make("mediaAudio")
         AudioProviderFailed,
         MediaStoreUnavailable,
       ],
-      params: { mediaId: Schema.String, workspaceId: Schema.String },
+      headers: workspaceHeaders,
+      params: { mediaId: Schema.String },
       payload: TranscriptionRequestSchema,
       success: TranscriptSchema,
     }).annotateMerge(
@@ -134,4 +135,4 @@ export class MediaAudioApi extends HttpApiGroup.make("mediaAudio")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/media") {}
+  .prefix("/api/v1/media") {}

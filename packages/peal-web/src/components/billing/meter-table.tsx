@@ -3,7 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { DateTime, Exit } from "effect";
 import { useFormatter, useTranslations } from "next-intl";
-import { displayVatRate } from "peal-contract";
+import { displayVatRate, forWorkspace } from "peal-contract";
 import type { Billing, BillingMeter, SpendGroup } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { Input } from "peal-ui/components/input";
@@ -154,7 +154,8 @@ const CeilingForm = ({
   const save = () => {
     startTransition(async () => {
       const exit = await set({
-        params: { group, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { group },
         payload: { cents },
         reactivityKeys: [`billing:${workspaceId}`],
       });
@@ -251,7 +252,7 @@ const XReadsSwitch = ({
           onClick={() => {
             startTransition(async () => {
               const exit = await set({
-                params: { workspaceId },
+                headers: forWorkspace(workspaceId),
                 payload: { reads: !reads },
                 reactivityKeys: [`billing:${workspaceId}`],
               });

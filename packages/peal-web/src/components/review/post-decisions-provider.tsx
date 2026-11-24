@@ -3,6 +3,7 @@
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 import type { Post } from "peal-contract";
 import { useCallback, useRef, useState } from "react";
 import type { ReactNode } from "react";
@@ -104,7 +105,8 @@ export const PostDecisionsProvider = ({
     approve: async ({ post, shown }: Decision<Post>) =>
       await decide(async () => {
         const exit = await approve({
-          params: { postId: post.id, workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { postId: post.id },
           payload: shown,
           reactivityKeys: [...reviewKeys, ...postsKeys],
         });
@@ -126,7 +128,8 @@ export const PostDecisionsProvider = ({
     requestChanges: async ({ post, shown }: Decision<Post>, comment: string) =>
       await decide(async () => {
         const exit = await sendBack({
-          params: { postId: post.id, workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { postId: post.id },
           payload: { ...shown, comment },
           reactivityKeys: [...reviewKeys, ...postsKeys],
         });

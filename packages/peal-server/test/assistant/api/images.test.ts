@@ -9,6 +9,7 @@ import {
   AssistantUnavailable,
   Forbidden,
   MediaImportBusy,
+  forWorkspace,
 } from "peal-contract";
 import type { ImageRequest, Member } from "peal-contract";
 import sharp from "sharp";
@@ -107,12 +108,12 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
     Effect.gen(function* makes() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       yield* cleanedUp(workspaceId);
       yield* replying({ _tag: "image", bytes: yield* madePng });
 
-      const status = yield* client.assistant.status({ params });
+      const status = yield* client.assistant.status({ headers });
 
       assert.deepStrictEqual(status.images, {
         aspects: ["square", "landscape", "portrait"],
@@ -126,7 +127,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
       });
 
       const response = yield* client.assistant.generateImage({
-        params,
+        headers,
         payload: lighthouse,
         responseMode: "decoded-and-response",
       });
@@ -143,7 +144,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
       });
       assert.deepStrictEqual(made.dimensions, { height: 32, width: 32 });
       assert.strictEqual(
-        (yield* client.assistant.status({ params })).remaining,
+        (yield* client.assistant.status({ headers })).remaining,
         status.remaining - 5
       );
     }).pipe(Effect.provide(imagesTest()))
@@ -157,7 +158,10 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
       yield* replying({ _tag: "image", bytes: yield* madePng });
 
       const refused = yield* client.assistant
-        .generateImage({ params: { workspaceId }, payload: lighthouse })
+        .generateImage({
+          headers: forWorkspace(workspaceId),
+          payload: lighthouse,
+        })
         .pipe(Effect.flip);
 
       assert.deepStrictEqual(
@@ -177,14 +181,14 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
     Effect.gen(function* failures() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const reasons = yield* Effect.all(
         (["refused", "unusableAnswer", "timedOut", "unreachable"] as const).map(
           (reason) =>
             replying({ _tag: "failure", reason }).pipe(
               Effect.andThen(
-                client.assistant.generateImage({ params, payload: lighthouse })
+                client.assistant.generateImage({ headers, payload: lighthouse })
               ),
               Effect.flip,
               Effect.map((refusal) =>
@@ -205,7 +209,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
 
       const keyRefused = yield* replying({ _tag: "keyRefused" }).pipe(
         Effect.andThen(
-          client.assistant.generateImage({ params, payload: lighthouse })
+          client.assistant.generateImage({ headers, payload: lighthouse })
         ),
         Effect.flip
       );
@@ -220,7 +224,10 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
       const client = yield* as(workspaceId);
 
       const refused = yield* client.assistant
-        .generateImage({ params: { workspaceId }, payload: lighthouse })
+        .generateImage({
+          headers: forWorkspace(workspaceId),
+          payload: lighthouse,
+        })
         .pipe(Effect.flip);
 
       assert.instanceOf(refused, AssistantUnavailable);
@@ -231,7 +238,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
     Effect.gen(function* busy() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const model = yield* FakeImageModel;
 
@@ -240,7 +247,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
 
       const waiting = yield* Effect.forEach([1, 2], () =>
         client.assistant
-          .generateImage({ params, payload: lighthouse })
+          .generateImage({ headers, payload: lighthouse })
           .pipe(Effect.flip, Effect.forkChild)
       );
 
@@ -251,7 +258,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
       yield* model.replyWith({ _tag: "failure", reason: "refused" });
 
       const refused = yield* client.assistant
-        .generateImage({ params, payload: lighthouse })
+        .generateImage({ headers, payload: lighthouse })
         .pipe(Effect.flip);
 
       yield* model.release({ _tag: "failure", reason: "refused" });
@@ -264,7 +271,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
   it.effect("are forbidden without media:upload or assistant:use", () =>
     Effect.gen(function* forbidden() {
       const workspaceId = yield* freshWorkspace;
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const refusals = yield* Effect.all(
         [
@@ -275,7 +282,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
         ].map((permissions) =>
           as(workspaceId, permissions).pipe(
             Effect.flatMap((client) =>
-              client.assistant.generateImage({ params, payload: lighthouse })
+              client.assistant.generateImage({ headers, payload: lighthouse })
             ),
             Effect.flip
           )

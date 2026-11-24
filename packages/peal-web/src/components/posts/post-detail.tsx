@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type {
   SocialChannel,
   Permission,
@@ -932,20 +933,22 @@ export const PostDetail = ({
       const params = {
         postId: post.id,
         targetId: request.targetId,
-        workspaceId,
       };
+
+      const headers = forWorkspace(workspaceId);
 
       const sent = async () => {
         if (request._tag === "repost") {
-          return await repost({ params, reactivityKeys: postsKeys });
+          return await repost({ params, headers, reactivityKeys: postsKeys });
         }
 
         if (request._tag === "leaveOutRest") {
-          return await leaveOut({ params, reactivityKeys: postsKeys });
+          return await leaveOut({ params, headers, reactivityKeys: postsKeys });
         }
 
         return await confirm({
           params,
+          headers,
           payload: request.confirmation,
           reactivityKeys: postsKeys,
         });

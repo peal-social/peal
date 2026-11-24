@@ -583,7 +583,7 @@ export const makeAuth = ({
           transaction: true,
         })(options)
       ),
-    // API keys go through Peal's own API only (/api/workspaces/:id/api-keys):
+    // API keys go through Peal's own API only (/api/v1/api-keys):
     // their permissions are the server's to set, and staff impersonating a
     // member may not see or revoke them, which Better Auth's routes ignore.
     //
@@ -593,7 +593,7 @@ export const makeAuth = ({
     // MCP clients themselves, never by signed-in users.
     //
     // Workspaces and accounts are deleted through Peal's API too
-    // (DELETE /api/workspaces/:id and DELETE /api/me), which delete what
+    // (DELETE /api/v1/workspace and DELETE /api/me), which delete what
     // every context keeps: the admin plugin's removal of a user would leave
     // their notices, preferences and the workspaces they alone belonged to.
     // Staff ban accounts instead.

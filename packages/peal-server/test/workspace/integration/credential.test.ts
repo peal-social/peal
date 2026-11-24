@@ -4,7 +4,7 @@
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
-import { CredentialSchema } from "peal-contract";
+import { CredentialSchema, forWorkspace } from "peal-contract";
 
 import { authorize, registeredClient } from "#test/app/mcp-support.ts";
 import { commandLineToken } from "#test/workspace/support.ts";
@@ -53,7 +53,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const inSession = yield* bodyOf(
             CredentialJsonSchema,
-            yield* app.request("/api/credential", {
+            yield* app.request("/api/v1/credential", {
               headers: { cookie: owner.cookies },
             })
           );
@@ -67,7 +67,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const token = yield* commandLineToken(owner.cookies);
 
-          const reply = yield* app.request("/api/credential", {
+          const reply = yield* app.request("/api/v1/credential", {
             headers: bearer(token),
           });
 
@@ -96,7 +96,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           yield* sql`UPDATE auth."user" SET banned = true WHERE id = ${owner.id}`;
 
-          const suspended = yield* app.request("/api/credential", {
+          const suspended = yield* app.request("/api/v1/credential", {
             headers: bearer(token),
           });
 
@@ -126,7 +126,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
             `${origin}/api`
           );
 
-          const first = yield* app.request("/api/credential", {
+          const first = yield* app.request("/api/v1/credential", {
             headers: bearer(token),
           });
 
@@ -151,7 +151,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const refused = yield* bodyOf(
             CredentialJsonSchema,
-            yield* app.request("/api/credential", { headers: bearer(token) })
+            yield* app.request("/api/v1/credential", { headers: bearer(token) })
           );
 
           assert.deepStrictEqual(
@@ -181,7 +181,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "channel:read",
           ]);
 
-          const reply = yield* app.request("/api/credential", {
+          const reply = yield* app.request("/api/v1/credential", {
             headers: bearer(created.key),
           });
 
@@ -212,20 +212,23 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           yield* sql`UPDATE auth.apikey SET expires_at = now() - interval '1 minute' WHERE id = ${other.apiKey.id}`;
 
-          const expired = yield* app.request("/api/credential", {
+          const expired = yield* app.request("/api/v1/credential", {
             headers: bearer(other.key),
           });
 
           assert.strictEqual(expired.status, 401);
 
           const revoked = yield* app.request(
-            `/api/workspaces/${workspaceId}/api-keys/${created.apiKey.id}`,
-            { headers: { cookie: owner.cookies }, method: "DELETE" }
+            `/api/v1/api-keys/${created.apiKey.id}`,
+            {
+              headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+              method: "DELETE",
+            }
           );
 
           assert.strictEqual(revoked.status, 204);
           assert.strictEqual(
-            (yield* app.request("/api/credential", {
+            (yield* app.request("/api/v1/credential", {
               headers: bearer(created.key),
             })).status,
             401
@@ -251,7 +254,7 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "synthetic-credential"
           );
 
-          const reply = yield* app.request("/api/credential", {
+          const reply = yield* app.request("/api/v1/credential", {
             headers: bearer(created.key),
           });
 
@@ -275,13 +278,16 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
           neverHolds(reply, home);
 
           const revoked = yield* app.request(
-            `/api/workspaces/${home}/partner/keys/${created.partnerKey.id}`,
-            { headers: { cookie: owner.cookies }, method: "DELETE" }
+            `/api/v1/partner-account/keys/${created.partnerKey.id}`,
+            {
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
+              method: "DELETE",
+            }
           );
 
           assert.strictEqual(revoked.status, 204);
           assert.strictEqual(
-            (yield* app.request("/api/credential", {
+            (yield* app.request("/api/v1/credential", {
               headers: bearer(created.key),
             })).status,
             401
@@ -293,7 +299,10 @@ layer(CredentialLive, { excludeTestServices: true, timeout: "180 seconds" })(
       Effect.gen(function* anonymous() {
         const app = yield* TestApp;
 
-        assert.strictEqual((yield* app.request("/api/credential")).status, 401);
+        assert.strictEqual(
+          (yield* app.request("/api/v1/credential")).status,
+          401
+        );
       })
     );
   }

@@ -13,6 +13,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { Permission, Post, Tag } from "peal-contract";
 import {
   AlertDialog,
@@ -155,7 +156,8 @@ export const PostSelectionBar = ({
   const setTags = async (post: Post, tagIds: readonly string[]) =>
     Exit.isSuccess(
       await file({
-        params: { postId: post.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { postId: post.id },
         payload: { tagIds: [...tagIds] },
         reactivityKeys: postsKeys,
       })
@@ -264,7 +266,8 @@ export const PostSelectionBar = ({
     const outcome = await eachOf(unschedulable, async (post) =>
       Exit.isSuccess(
         await unschedule({
-          params: { postId: post.id, workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { postId: post.id },
           reactivityKeys: postsKeys,
         })
       )
@@ -282,7 +285,8 @@ export const PostSelectionBar = ({
     const outcome = await eachOf(cancellable, async (post) =>
       Exit.isSuccess(
         await cancel({
-          params: { postId: post.id, workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { postId: post.id },
           reactivityKeys: postsKeys,
         })
       )

@@ -4,7 +4,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { PencilIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { maxChannelLabelLength } from "peal-contract";
+import { maxChannelLabelLength, forWorkspace } from "peal-contract";
 import type { Channel } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import {
@@ -96,7 +96,8 @@ export const RenameChannel = ({ channel, workspaceId }: RenameChannelProps) => {
   const save = (label: string | null) => {
     startSaving(async () => {
       const exit = await rename({
-        params: { channelId: channel.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { channelId: channel.id },
         payload: { label },
         reactivityKeys: channelsChanged(workspaceId),
       });

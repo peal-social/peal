@@ -4,6 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { Permission, Post } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
@@ -54,7 +55,7 @@ const RepeatForm = ({
 
     startTransition(async () => {
       const exit = await start({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: request.value,
         reactivityKeys: rulesChanged(workspaceId),
       });

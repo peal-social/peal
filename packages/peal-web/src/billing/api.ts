@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 import type { CalendarDay } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -6,7 +7,7 @@ import { PealApi } from "#api/client.ts";
 /** The workspace's plan, its limits and its usage, with the visitor's cookies. */
 export const billingOf = Atom.family((workspaceId: string) =>
   PealApi.query("billing", "get", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: [`billing:${workspaceId}`],
   })
 );
@@ -38,7 +39,7 @@ export const usageOf = (
   period: { readonly from: CalendarDay; readonly to: CalendarDay }
 ) =>
   PealApi.query("usage", "get", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: period,
     reactivityKeys: [`billing:${workspaceId}`],
   });

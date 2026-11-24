@@ -34,15 +34,11 @@ const documentedStatuses = (path: string) =>
 describe("the channels contract", () => {
   it("lists no plan limit on reconnecting, which adds no channel", () => {
     expect(
-      documentedStatuses(
-        "/api/workspaces/{workspaceId}/channels/{channelId}/reconnect"
-      )
+      documentedStatuses("/api/v1/channels/{channelId}/reconnect")
     ).not.toContain("402");
-    expect(
-      documentedStatuses(
-        "/api/workspaces/{workspaceId}/channels/connect/{platform}"
-      )
-    ).toContain("402");
+    expect(documentedStatuses("/api/v1/channels/connect/{platform}")).toContain(
+      "402"
+    );
   });
 
   it("copies the server's websites, and what a channel connects to", () => {

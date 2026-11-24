@@ -389,7 +389,7 @@ describe("the web app's measurement", { serial: true }, () => {
     expect(session).toMatch(uuid);
     expect(
       await browser.evaluate(
-        `(id) => fetch('/api/workspaces/' + id + '/posts', { body: JSON.stringify({ channelIds: [], content: { media: [], overrides: [], text: 'A synthetic draft.' } }), headers: { 'content-type': 'application/json' }, method: 'POST' }).then((answer) => answer.status)`,
+        `(id) => fetch('/api/v1/posts', { body: JSON.stringify({ channelIds: [], content: { media: [], overrides: [], text: 'A synthetic draft.' } }), headers: { 'content-type': 'application/json', 'peal-workspace': id }, method: 'POST' }).then((answer) => answer.status)`,
         workspaceId
       )
     ).toBe(201);

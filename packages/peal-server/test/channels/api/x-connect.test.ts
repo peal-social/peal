@@ -4,7 +4,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, UsageAllowanceReached } from "peal-contract";
+import { Api, UsageAllowanceReached, forWorkspace } from "peal-contract";
 
 import { ChannelsHandlers } from "#channels/api/channels.ts";
 import { ChannelDepartures } from "#channels/application/channel-departures.ts";
@@ -70,7 +70,11 @@ layer(FreeTierTest)("connecting X on the free tier", (it) => {
       );
 
       const refusal = yield* client.channels
-        .connect({ params: { platform: "x", workspaceId }, payload: {} })
+        .connect({
+          headers: forWorkspace(workspaceId),
+          params: { platform: "x" },
+          payload: {},
+        })
         .pipe(Effect.flip);
 
       assert.instanceOf(refusal, UsageAllowanceReached);

@@ -5,6 +5,7 @@ import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { CaptionsIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AssistantStatus, Media, Transcript } from "peal-contract";
 import { Alert, AlertTitle } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
@@ -86,7 +87,8 @@ const TranscribeDialog = ({
 
     startTransition(async () => {
       const exit = await transcribe({
-        params: { mediaId: media.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { mediaId: media.id },
         payload: {},
       });
 

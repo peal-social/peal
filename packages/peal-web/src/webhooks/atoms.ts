@@ -3,6 +3,7 @@ import { Atom } from "effect/reactivity";
 import {
   WebhookDeliveryStatusSchema,
   WebhookEventTypeSchema,
+  forWorkspace,
 } from "peal-contract";
 import type { WebhookDeliveryStatus, WebhookEventType } from "peal-contract";
 
@@ -28,7 +29,7 @@ export const deliveriesChanged = (endpointId: string) => [
 
 export const workspaceWebhooks = Atom.family((workspaceId: string) =>
   PealApi.query("webhooks", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: endpointsChanged(workspaceId),
   })
 );
@@ -79,7 +80,8 @@ const deliveryPages = Atom.family((written: string) => {
   const { endpointId = "", workspaceId, ...query } = decodeKey(written);
 
   return PealApi.query("webhooks", "listDeliveries", {
-    params: { endpointId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { endpointId },
     query,
     reactivityKeys: deliveriesChanged(endpointId),
   });
@@ -100,7 +102,7 @@ const searchPages = Atom.family((written: string) => {
   const { workspaceId, ...query } = decodeKey(written);
 
   return PealApi.query("webhooks", "searchDeliveries", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query,
     reactivityKeys: ["webhook-deliveries"],
   });

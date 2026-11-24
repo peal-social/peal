@@ -1,3 +1,5 @@
+import { forWorkspace } from "peal-contract";
+
 import { PealApi } from "#api/client.ts";
 
 // The queries and mutations of reviews: a workspace's approval policy, the
@@ -10,14 +12,14 @@ export const reviewKeys = ["review"];
 /** The workspace's approval policy. */
 export const reviewSettings = (workspaceId: string) =>
   PealApi.query("review", "settings", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: reviewKeys,
   });
 
 /** The approvals that wait in the workspace. */
 export const pendingApprovals = (workspaceId: string) =>
   PealApi.query("review", "pending", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     // A post taken back or scheduled elsewhere no longer waits.
     reactivityKeys: [...reviewKeys, "posts"],
   });
@@ -25,14 +27,16 @@ export const pendingApprovals = (workspaceId: string) =>
 /** A post's comments and approvals. */
 export const postReview = (workspaceId: string, postId: string) =>
   PealApi.query("review", "thread", {
-    params: { postId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { postId },
     reactivityKeys: [...reviewKeys, "posts"],
   });
 
 /** A post's review links. */
 export const reviewLinks = (workspaceId: string, postId: string) =>
   PealApi.query("review", "links", {
-    params: { postId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { postId },
     reactivityKeys: reviewKeys,
   });
 

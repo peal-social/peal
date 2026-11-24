@@ -4,7 +4,7 @@
 // workspace's log keeps what its members decided.
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
-import { ActivityPageSchema } from "peal-contract";
+import { ActivityPageSchema, forWorkspace } from "peal-contract";
 
 import {
   apiKeyOf,
@@ -67,12 +67,12 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const owner = yield* signedUpUnconfirmed("approval-posting");
           const workspaceId = yield* workspaceOf(owner, "Approvals");
           const channel = yield* seedChannel(workspaceId, "held@social.test");
-          const base = `/api/workspaces/${workspaceId}`;
+          const base = "/api/v1";
           const headers = { cookie: owner.cookies };
 
           const policy = yield* app.request(`${base}/review/settings`, {
             body: { approvalPolicy: "always" },
-            headers,
+            headers: { ...headers, ...forWorkspace(workspaceId) },
             method: "PUT",
           });
 
@@ -87,7 +87,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // A check makes nothing, and says the post would wait.
           const checked = yield* app.request(`${base}/posts/validate`, {
             body: post("A synthetic post to hold.", "2031-03-04T09:00:00Z"),
-            headers,
+            headers: { ...headers, ...forWorkspace(workspaceId) },
           });
 
           assert.deepInclude(checked.body, {
@@ -101,7 +101,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const sent = yield* app.request(`${base}/posts/send?wait=30`, {
             body: post("A synthetic post to hold.", "2031-03-04T09:00:00Z"),
-            headers,
+            headers: { ...headers, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(sent.status, 201);
@@ -113,7 +113,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const outcome = yield* app.request(
             `${base}/posts/${first.id}/outcome?wait=30`,
-            { headers }
+            { headers: { ...headers, ...forWorkspace(workspaceId) } }
           );
 
           assert.strictEqual(
@@ -126,7 +126,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // refused, and no second approval is asked for it.
           const again = yield* app.request(`${base}/posts/send`, {
             body: post("A synthetic post to hold.", "2031-03-04T10:00:00Z"),
-            headers,
+            headers: { ...headers, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(again.status, 409);
@@ -140,7 +140,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 post("A synthetic post to hold.", "2031-03-04T11:00:00Z"),
               ],
             },
-            headers,
+            headers: { ...headers, ...forWorkspace(workspaceId) },
           });
 
           const several = yield* bodyOf(BulkSchema, bulk);
@@ -161,7 +161,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             body: {
               csv: `text,channels,at\nA third synthetic post.,${channel},2031-03-06T09:00:00Z`,
             },
-            headers,
+            headers: { ...headers, ...forWorkspace(workspaceId) },
           });
 
           const rows = yield* bodyOf(ImportSchema, imported);
@@ -175,7 +175,9 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // refused.
           const pending = yield* bodyOf(
             ApprovalsSchema,
-            yield* app.request(`${base}/approvals`, { headers })
+            yield* app.request(`${base}/approvals`, {
+              headers: { ...headers, ...forWorkspace(workspaceId) },
+            })
           );
 
           const made = [
@@ -201,7 +203,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 comment: "A synthetic comment asking for a change.",
                 subjectHash: asked?.subjectHash,
               },
-              headers,
+              headers: { ...headers, ...forWorkspace(workspaceId) },
             }
           );
 
@@ -211,14 +213,22 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const lookup = yield* app.request(
             `${base}/channels/${channel}/lookups/nothing`,
-            { body: {}, headers: { authorization: `Bearer ${key}` } }
+            {
+              body: {},
+              headers: {
+                authorization: `Bearer ${key}`,
+                ...forWorkspace(workspaceId),
+              },
+            }
           );
 
           assert.strictEqual(lookup.status, 404);
 
           const log = yield* bodyOf(
             PageJsonSchema,
-            yield* app.request(`${base}/activity`, { headers })
+            yield* app.request(`${base}/activity`, {
+              headers: { ...headers, ...forWorkspace(workspaceId) },
+            })
           );
 
           const operations = log.items.map(({ operation }) => operation);

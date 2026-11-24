@@ -158,14 +158,14 @@ export const unpublish = Command.make(
         )
       : Effect.void;
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const post = yield* client.posts
-      .get({ params: { postId: input.postId, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { postId: input.postId } })
       .pipe(Effect.mapError(explain(url)));
 
     const channels = yield* client.channels
-      .list({ params: { workspaceId: workspace.id } })
+      .list({ headers: {} })
       .pipe(Effect.orElseSucceed((): readonly Channel[] => []));
 
     const names: ReadonlyMap<string, string> = new Map(
@@ -219,10 +219,10 @@ export const unpublish = Command.make(
     if (Option.isSome(target)) {
       const change = yield* client.posts
         .unpublishTarget({
+          headers: {},
           params: {
             postId: post.id,
             targetId: target.value.id,
-            workspaceId: workspace.id,
           },
           query: Option.match(input.wait, {
             onNone: () => ({}),
@@ -245,7 +245,7 @@ export const unpublish = Command.make(
     }
 
     const made = yield* client.posts
-      .unpublish({ params: { postId: post.id, workspaceId: workspace.id } })
+      .unpublish({ headers: {}, params: { postId: post.id } })
       .pipe(explainingPublishing(url));
 
     if (input.json) {
@@ -281,11 +281,11 @@ export const changes = Command.make(
   "changes",
   { json: jsonFlag, postId: postArgument, workspace: workspaceFlag },
   Effect.fn("posts.changes")(function* listChanges(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
-    const params = { postId: input.postId, workspaceId: workspace.id };
+    const { client, url } = yield* inWorkspace(input.workspace);
+    const params = { postId: input.postId };
 
     const listed = yield* client.posts
-      .changes({ params })
+      .changes({ headers: {}, params })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -303,10 +303,10 @@ export const changes = Command.make(
     }
 
     const post = yield* client.posts
-      .get({ params })
+      .get({ headers: {}, params })
       .pipe(Effect.mapError(explain(url)));
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     for (const change of listed.items) {
       yield* Console.log(

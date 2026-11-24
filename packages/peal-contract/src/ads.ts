@@ -30,6 +30,7 @@ import { PostNotPromotable } from "./post-not-promotable.ts";
 import { SpendCeilingExceeded } from "./spend-ceiling-exceeded.ts";
 import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // The server's ads context (src/ads/domain) is the source of the
 // vocabularies and limits below; a test keeps the two equal.
@@ -636,10 +637,9 @@ export const AdAuditPageSchema = Schema.Struct({
   nextCursor: Schema.NullOr(Schema.String),
 }).annotate({ identifier: "AdAuditPage" });
 
-const workspace = { workspaceId: Schema.String };
-const account = { ...workspace, accountId: Schema.String };
-const connection = { ...workspace, connectionId: Schema.String };
-const boost = { ...workspace, boostId: Schema.String };
+const account = { accountId: Schema.String };
+const connection = { connectionId: Schema.String };
+const boost = { boostId: Schema.String };
 
 const days = {
   from: Schema.optionalKey(CalendarDaySchema),
@@ -669,7 +669,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
   .add(
     HttpApiEndpoint.get("status", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Struct({
         mode: AdsModeSchema,
         networks: Schema.Array(AdNetworkSchema),
@@ -683,7 +684,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("listConnections", "/connections", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(AdConnectionSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -694,7 +696,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.post("connect", "/connections/:network", {
       error: [Forbidden, AdsUnavailable],
-      params: { ...workspace, network: AdNetworkSchema },
+      headers: workspaceHeaders,
+      params: { network: AdNetworkSchema },
       success: Schema.Struct({ authorizationUrl: Schema.String }).annotate({
         identifier: "AdSignIn",
       }),
@@ -707,7 +710,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.post("completeConnect", "/connections/:network/callback", {
       error: [Forbidden, AdsUnavailable, AdSignInFailed, AdNetworkUnavailable],
-      params: { ...workspace, network: AdNetworkSchema },
+      headers: workspaceHeaders,
+      params: { network: AdNetworkSchema },
       payload: Schema.Struct({
         code: Schema.optionalKey(Schema.String),
         error: Schema.optionalKey(Schema.String),
@@ -734,6 +738,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
           AdConnectionNotFound,
           AdNetworkUnavailable,
         ],
+        headers: workspaceHeaders,
         params: connection,
         success: Schema.Array(ReachableAdAccountSchema),
       }
@@ -755,6 +760,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
           AdAccountNotFound,
           AdNetworkUnavailable,
         ],
+        headers: workspaceHeaders,
         params: connection,
         payload: Schema.Struct({
           externalIds: Schema.Array(Schema.String).check(
@@ -771,6 +777,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.delete("disconnect", "/connections/:connectionId", {
       error: [Forbidden, AdConnectionNotFound, AdAccountBusy],
+      headers: workspaceHeaders,
       params: connection,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -782,7 +789,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("listAccounts", "/accounts", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(AdAccountSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -793,6 +801,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("getAccount", "/accounts/:accountId", {
       error: [Forbidden, AdAccountNotFound],
+      headers: workspaceHeaders,
       params: account,
       success: AdSpendingSchema,
     }).annotateMerge(
@@ -804,6 +813,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.delete("removeAccount", "/accounts/:accountId", {
       error: [Forbidden, AdAccountNotFound, AdAccountBusy],
+      headers: workspaceHeaders,
       params: account,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -821,6 +831,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
         CeilingCurrencyMismatch,
         AdAccountBusy,
       ],
+      headers: workspaceHeaders,
       params: account,
       payload: AdSpendingDecisionSchema,
       success: AdSpendingSchema,
@@ -833,6 +844,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("listCampaigns", "/accounts/:accountId/campaigns", {
       error: [Forbidden, AdAccountNotFound, InvalidDateRange],
+      headers: workspaceHeaders,
       params: account,
       query: days,
       success: AdCampaignReportSchema,
@@ -844,6 +856,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("listAds", "/accounts/:accountId/ads", {
       error: [Forbidden, AdAccountNotFound, InvalidDateRange],
+      headers: workspaceHeaders,
       params: account,
       query: { ...days, campaignId: Schema.optionalKey(Schema.String) },
       success: AdReportSchema,
@@ -855,6 +868,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("listInsights", "/accounts/:accountId/insights", {
       error: [Forbidden, AdAccountNotFound, InvalidDateRange],
+      headers: workspaceHeaders,
       params: account,
       query: days,
       success: AdInsightReportSchema,
@@ -866,7 +880,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("postPerformance", "/posts/:postId", {
       error: Forbidden,
-      params: { ...workspace, postId: Schema.String },
+      headers: workspaceHeaders,
+      params: { postId: Schema.String },
       success: PostAdPerformanceSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -887,7 +902,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
         SpendCeilingExceeded,
         AdAccountSpendCapExceeded,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewBoostSchema,
       success: BoostQuoteSchema,
     }).annotateMerge(
@@ -911,9 +927,10 @@ export class AdsApi extends HttpApiGroup.make("ads")
         UsageAllowanceReached,
       ],
       headers: {
+        ...workspaceHeaders,
         "idempotency-key": Schema.String.check(Schema.isBetweenLength(1, 255)),
       },
-      params: workspace,
+
       payload: NewBoostSchema,
       success: BoostSchema.pipe(HttpApiSchema.status(202)),
     }).annotateMerge(
@@ -924,7 +941,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("listBoosts", "/boosts", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         postId: Schema.optionalKey(Schema.String),
@@ -939,6 +957,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("getBoost", "/boosts/:boostId", {
       error: [Forbidden, BoostNotFound],
+      headers: workspaceHeaders,
       params: boost,
       success: BoostDetailSchema,
     }).annotateMerge(
@@ -950,6 +969,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.post("pauseBoost", "/boosts/:boostId/pause", {
       error: controlErrors,
+      headers: workspaceHeaders,
       params: boost,
       success: BoostSchema,
     }).annotateMerge(
@@ -967,6 +987,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
         SpendCeilingExceeded,
         AdAccountSpendCapExceeded,
       ],
+      headers: workspaceHeaders,
       params: boost,
       success: BoostSchema,
     }).annotateMerge(
@@ -978,6 +999,7 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.post("stopBoost", "/boosts/:boostId/stop", {
       error: controlErrors,
+      headers: workspaceHeaders,
       params: boost,
       success: BoostSchema,
     }).annotateMerge(
@@ -989,7 +1011,8 @@ export class AdsApi extends HttpApiGroup.make("ads")
     ),
     HttpApiEndpoint.get("auditTrail", "/audit", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: { cursor: Schema.optionalKey(Schema.String) },
       success: AdAuditPageSchema,
     }).annotateMerge(
@@ -1002,4 +1025,4 @@ export class AdsApi extends HttpApiGroup.make("ads")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/ads") {}
+  .prefix("/api/v1/ads") {}

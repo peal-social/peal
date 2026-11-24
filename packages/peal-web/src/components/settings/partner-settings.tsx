@@ -4,7 +4,11 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useFormatter, useTranslations } from "next-intl";
-import { partnerKeyPermissions, PartnerScopeSchema } from "peal-contract";
+import {
+  partnerKeyPermissions,
+  PartnerScopeSchema,
+  forWorkspace,
+} from "peal-contract";
 import type {
   CustomerHealth,
   Partner,
@@ -76,7 +80,7 @@ const OpenAccount = ({
 
     startTransition(async () => {
       const exit = await open({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { name: name.trim() },
         reactivityKeys: partnerChanged(workspaceId),
       });
@@ -136,7 +140,7 @@ const AccountForm = ({
 
     startTransition(async () => {
       const exit = await update({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: {
           accentColor: accentColor.trim() === "" ? null : accentColor.trim(),
           logoUrl: logoUrl.trim() === "" ? null : logoUrl.trim(),
@@ -289,7 +293,7 @@ const CreateKeyForm = ({
 
     startTransition(async () => {
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: {
           name: name.trim(),
           permissions: partnerKeyPermissions.filter((permission) =>
@@ -394,7 +398,8 @@ export const KeyRow = ({
   const handleRevoke = () => {
     startRevoke(async () => {
       const exit = await revoke({
-        params: { partnerKeyId: partnerKey.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { partnerKeyId: partnerKey.id },
         reactivityKeys: partnerKeysChanged(workspaceId),
       });
 
@@ -545,7 +550,7 @@ const CloseAccount = ({ workspaceId }: { readonly workspaceId: string }) => {
   const handleClose = () => {
     startTransition(async () => {
       const exit = await close({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         reactivityKeys: partnerChanged(workspaceId),
       });
 

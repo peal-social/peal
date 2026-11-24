@@ -4,7 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { isSocialChannel } from "peal-contract";
+import { isSocialChannel, forWorkspace } from "peal-contract";
 import type { InboxMessageSettings, SocialChannel } from "peal-contract";
 import {
   AlertDialog,
@@ -335,7 +335,8 @@ export const MessageSettingsPanel = ({
   const grant = (channel: SocialChannel) => {
     start(async () => {
       const exit = await reconnect({
-        params: { channelId: channel.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { channelId: channel.id },
         query: { messages: "true" },
       });
 
@@ -376,7 +377,8 @@ export const MessageSettingsPanel = ({
                 onSwitch={(enabled) => {
                   start(async () => {
                     const exit = await switchOne({
-                      params: { channelId: channel.id, workspaceId },
+                      headers: forWorkspace(workspaceId),
+                      params: { channelId: channel.id },
                       payload: { enabled },
                       reactivityKeys,
                     });
@@ -409,7 +411,7 @@ export const MessageSettingsPanel = ({
             start(async () => {
               done(
                 await allowOne({
-                  params: { workspaceId },
+                  headers: forWorkspace(workspaceId),
                   payload: { allowed, clientId },
                   reactivityKeys,
                 })

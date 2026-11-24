@@ -1,7 +1,3 @@
-// The whole server, without a socket, for tests that sign people up: the
-// HTTP API and Better Auth on the database DATABASE_URL names, sending email
-// to the development stack's Mailpit (SMTP_URL and MAILPIT_URL override it)
-// and storing media in its SeaweedFS, under tests/media/.
 import { randomUUID } from "node:crypto";
 
 import {
@@ -17,6 +13,11 @@ import {
 } from "effect";
 import { FetchHttpClient, HttpRouter, HttpServer } from "effect/http";
 import { SqlClient } from "effect/sql";
+// The whole server, without a socket, for tests that sign people up: the
+// HTTP API and Better Auth on the database DATABASE_URL names, sending email
+// to the development stack's Mailpit (SMTP_URL and MAILPIT_URL override it)
+// and storing media in its SeaweedFS, under tests/media/.
+import { forWorkspace } from "peal-contract";
 import { workspaceSlugOf } from "peal-contract/workspace-slug";
 
 import { AppLive } from "#app/server.ts";
@@ -448,9 +449,9 @@ export const apiKeyOf = Effect.fn("apiKeyOf")(function* apiKeyOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(`/api/workspaces/${workspaceId}/api-keys`, {
+  const reply = yield* app.request(`/api/v1/api-keys`, {
     body: { name: "ci", permissions },
-    headers: { cookie: owner.cookies },
+    headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
   });
 
   if (reply.status !== 201) {

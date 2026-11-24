@@ -8,7 +8,7 @@ export class TextProviderNotFound extends Schema.TaggedError<TextProviderNotFoun
   { ...errorEnvelope },
   {
     description:
-      "The workspace has no text provider of its own to test: set one first (`PUT /api/workspaces/{workspaceId}/assistant/text-provider`).",
+      "The workspace has no text provider of its own to test: set one first (`PUT /api/v1/assistant/text-provider`).",
     httpApiStatus: 404,
   }
 ) {}

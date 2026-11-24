@@ -2,7 +2,7 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, Forbidden, InvalidTimeRange } from "peal-contract";
+import { Api, Forbidden, InvalidTimeRange, forWorkspace } from "peal-contract";
 import type { Member, PostContent, PostPage } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
@@ -62,7 +62,7 @@ const studio = Effect.gen(function* studio() {
   );
 
   const key = yield* clientAs(keyOf(workspaceId));
-  const params = { workspaceId };
+  const headers = forWorkspace(workspaceId);
 
   const send = (
     client: typeof editor,
@@ -71,8 +71,7 @@ const studio = Effect.gen(function* studio() {
     channelIds: readonly [ChannelId, ...ChannelId[]]
   ) =>
     client.posts.send({
-      headers: {},
-      params,
+      headers,
       payload: {
         channelIds,
         content: text(body),
@@ -85,7 +84,7 @@ const studio = Effect.gen(function* studio() {
   const second = yield* send(editor, "Two", "2026-06-17T08:00:00Z", [bluesky]);
 
   const draft = yield* editor.posts.create({
-    params,
+    headers,
     payload: { channelIds: [mastodon], content: text("A draft") },
   });
 
@@ -95,11 +94,11 @@ const studio = Effect.gen(function* studio() {
   ]);
 
   const other = yield* editor.posts.create({
-    params,
+    headers,
     payload: { channelIds: [], content: text("Another draft") },
   });
 
-  yield* editor.posts.cancel({ params: { ...params, postId: second.id } });
+  yield* editor.posts.cancel({ headers, params: { postId: second.id } });
 
   return {
     bluesky,
@@ -108,7 +107,7 @@ const studio = Effect.gen(function* studio() {
     first,
     mastodon,
     other,
-    params,
+    headers,
     second,
     third,
     workspaceId,
@@ -123,9 +122,9 @@ describe("the search endpoint", () => {
         start,
         Effect.gen(function* lists() {
           const made = yield* studio;
-          const { editor, params } = made;
+          const { editor, headers } = made;
 
-          const all = yield* editor.posts.search({ params, query: {} });
+          const all = yield* editor.posts.search({ headers, query: {} });
 
           assert.deepStrictEqual(
             all.items.map(({ id }) => id),
@@ -150,7 +149,8 @@ describe("the search endpoint", () => {
           assert.deepStrictEqual(
             all.items[1],
             yield* editor.posts.get({
-              params: { ...params, postId: made.third.id },
+              headers,
+              params: { postId: made.third.id },
             })
           );
 
@@ -159,14 +159,16 @@ describe("the search endpoint", () => {
           );
 
           assert.lengthOf(
-            (yield* viewer.posts.search({ params, query: {} })).items,
+            (yield* viewer.posts.search({ headers, query: {} })).items,
             5
           );
 
           const nobody = yield* clientAs(memberOf(made.workspaceId, []));
 
           assert.instanceOf(
-            yield* nobody.posts.search({ params, query: {} }).pipe(Effect.flip),
+            yield* nobody.posts
+              .search({ headers, query: {} })
+              .pipe(Effect.flip),
             Forbidden
           );
         })
@@ -181,13 +183,13 @@ describe("the search endpoint", () => {
         start,
         Effect.gen(function* filters() {
           const made = yield* studio;
-          const { editor, params } = made;
+          const { editor, headers } = made;
 
           const idsOf = (
             query: Parameters<typeof editor.posts.search>[0]["query"]
           ) =>
             editor.posts
-              .search({ params, query })
+              .search({ headers, query })
               .pipe(Effect.map((page) => page.items.map(({ id }) => id)));
 
           assert.deepStrictEqual(yield* idsOf({ status: "draft" }), [
@@ -240,7 +242,7 @@ describe("the search endpoint", () => {
 
           const backwards = yield* editor.posts
             .search({
-              params,
+              headers,
               query: {
                 from: utc("2026-06-18T08:00:00Z"),
                 to: utc("2026-06-17T08:00:00Z"),
@@ -261,11 +263,11 @@ describe("the search endpoint", () => {
         start,
         Effect.gen(function* pages() {
           const made = yield* studio;
-          const { editor, params } = made;
+          const { editor, headers } = made;
 
           // By scheduled time: only the posts that have one.
           const soonest = yield* editor.posts.search({
-            params,
+            headers,
             query: { limit: 2, sort: "scheduledAsc" },
           });
 
@@ -277,8 +279,7 @@ describe("the search endpoint", () => {
 
           // Meanwhile a post is made before the page's end, and one after.
           const early = yield* editor.posts.send({
-            headers: {},
-            params,
+            headers,
             payload: {
               channelIds: [made.mastodon],
               content: text("Early"),
@@ -292,8 +293,7 @@ describe("the search endpoint", () => {
           });
 
           const late = yield* editor.posts.send({
-            headers: {},
-            params,
+            headers,
             payload: {
               channelIds: [made.mastodon],
               content: text("Late"),
@@ -307,7 +307,7 @@ describe("the search endpoint", () => {
           });
 
           const rest = yield* editor.posts.search({
-            params,
+            headers,
             query: {
               cursor: soonest.nextCursor ?? "",
               limit: 2,
@@ -329,7 +329,7 @@ describe("the search endpoint", () => {
           ): Effect.Effect<readonly string[], unknown> =>
             editor.posts
               .search({
-                params,
+                headers,
                 query:
                   cursor === undefined
                     ? { limit: 3, sort: "createdAsc" }
@@ -361,7 +361,7 @@ describe("the search endpoint", () => {
           ]);
 
           const latest = yield* editor.posts.search({
-            params,
+            headers,
             query: { limit: 1, sort: "scheduledDesc" },
           });
 
@@ -374,7 +374,7 @@ describe("the search endpoint", () => {
           // A cursor continues its own list only.
           const mixed = yield* editor.posts
             .search({
-              params,
+              headers,
               query: { cursor: soonest.nextCursor ?? "", sort: "createdAsc" },
             })
             .pipe(Effect.flip);
@@ -382,7 +382,7 @@ describe("the search endpoint", () => {
           assert.strictEqual(mixed._tag, "BadRequest");
 
           const garbage = yield* editor.posts
-            .search({ params, query: { cursor: "not a cursor" } })
+            .search({ headers, query: { cursor: "not a cursor" } })
             .pipe(Effect.flip);
 
           assert.strictEqual(garbage._tag, "BadRequest");
@@ -390,7 +390,8 @@ describe("the search endpoint", () => {
           // Nothing goes out from this test.
           for (const post of [made.first, made.third, early, late]) {
             yield* editor.posts.cancel({
-              params: { ...params, postId: post.id },
+              headers,
+              params: { postId: post.id },
             });
           }
         })

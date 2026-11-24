@@ -166,7 +166,7 @@ const list = Command.make(
     // search was: scripts that read its JSON keep the array they know.
     if (Object.keys(query).length === 0) {
       const channels = yield* client.channels
-        .list({ params: { workspaceId: workspace.id } })
+        .list({ headers: {} })
         .pipe(Effect.mapError(explain(url)));
 
       if (input.json) {
@@ -195,7 +195,7 @@ const list = Command.make(
     }
 
     const page = yield* client.channels
-      .find({ params: { workspaceId: workspace.id }, query })
+      .find({ headers: {}, query })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -296,10 +296,10 @@ const tiktok = Command.make(
     json,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const account = yield* client.tiktok
-      .creator({ params: { channelId, workspaceId: workspace.id } })
+      .creator({ headers: {}, params: { channelId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {

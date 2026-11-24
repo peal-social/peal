@@ -17,6 +17,7 @@ import {
   Tracer,
 } from "effect";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
@@ -112,8 +113,12 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const store = yield* EngagementStore;
           const owner = yield* signedUpUnconfirmed("inbox-logs");
           const workspaceId = yield* workspaceOf(owner, "Inbox logs");
-          const base = `/api/workspaces/${workspaceId}/inbox`;
-          const headers = { cookie: owner.cookies };
+          const base = `/api/v1/inbox`;
+
+          const headers = {
+            cookie: owner.cookies,
+            ...forWorkspace(workspaceId),
+          };
 
           const channel = yield* freshChannel(
             WorkspaceIdSchema.make(workspaceId)

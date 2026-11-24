@@ -1190,6 +1190,11 @@
     "tag": "WorkspaceOverPlan"
   },
   {
+    "code": "workspace_required",
+    "status": 400,
+    "tag": "WorkspaceRequired"
+  },
+  {
     "code": "workspace_subscribed",
     "status": 409,
     "tag": "WorkspaceSubscribed"

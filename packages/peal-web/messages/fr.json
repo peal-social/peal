@@ -80,7 +80,8 @@
       "title": "Export",
       "description": "Les mêmes chiffres en fichiers CSV, à ouvrir dans un tableur. Un chiffre qu’une plateforme ne fournit pas reste vide.",
       "posts": "Publications de la période",
-      "accounts": "Comptes, jour par jour"
+      "accounts": "Comptes, jour par jour",
+      "failed": "Le fichier n’a pas pu être téléchargé. Réessayez dans un instant."
     },
     "bestTimes": {
       "title": "Quand les publications de ce canal ont le mieux marché",

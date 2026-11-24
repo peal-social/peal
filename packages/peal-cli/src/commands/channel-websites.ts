@@ -38,7 +38,7 @@ export const connectWebsite = Command.make(
 
     const channel = yield* client.channels
       .connectSite({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           address: input.address,
           applicationPassword: Redacted.value(password),
@@ -95,7 +95,7 @@ export const connectWebsiteKey = Command.make(
 
       const channel = yield* client.channels
         .connectSiteWithKey({
-          params: { workspaceId: workspace.id },
+          headers: {},
           payload: {
             apiKey: Redacted.value(key),
             platform: input.platform,

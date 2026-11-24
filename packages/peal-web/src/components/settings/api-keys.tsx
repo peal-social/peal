@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { DateTime, Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useFormatter, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { ApiKey, NewApiKey, Permission } from "peal-contract";
 import { Alert, AlertDescription, AlertTitle } from "peal-ui/components/alert";
 import {
@@ -208,7 +209,7 @@ const CreateKeyForm = ({
         days === undefined ? asked : { ...asked, expiresInDays: days };
 
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload,
         reactivityKeys: apiKeysChanged(workspaceId),
       });
@@ -327,7 +328,8 @@ export const KeyRow = ({
   const handleRevoke = () => {
     startRevoke(async () => {
       const exit = await revoke({
-        params: { apiKeyId: apiKey.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { apiKeyId: apiKey.id },
         reactivityKeys: apiKeysChanged(workspaceId),
       });
 

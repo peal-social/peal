@@ -1,12 +1,13 @@
-// Moving a channel between two of a partner's customers, through the
-// partner API, on Postgres: who may, between which workspaces, what goes
-// with the channel and what stays, a post in flight, and the erasure of
-// the workspace it went to.
 import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Option, Redacted, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+// Moving a channel between two of a partner's customers, through the
+// partner API, on Postgres: who may, between which workspaces, what goes
+// with the channel and what stays, a post in flight, and the erasure of
+// the workspace it went to.
+import { forWorkspace } from "peal-contract";
 
 import { encryptTokens } from "#channels/application/channel-tokens.ts";
 import { ChannelIdSchema } from "#shared/domain/ids.ts";
@@ -89,8 +90,8 @@ const channelsOf = Effect.fn("channelsOf")(function* channelsOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(`/api/workspaces/${workspaceId}/channels`, {
-    headers: bearer(key),
+  const reply = yield* app.request(`/api/v1/channels`, {
+    headers: { ...bearer(key), ...forWorkspace(workspaceId) },
   });
 
   return yield* bodyOf(ChannelsSchema, reply);
@@ -127,7 +128,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
           yield* seedPost(from.id, channelId, "A draft");
 
           const reply = yield* app.request(
-            `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+            `/api/v1/partner/workspaces/${from.id}/channels/${channelId}/move`,
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
           );
 
@@ -166,10 +167,9 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Each workspace's log says the channel left, or came.
           for (const workspaceId of [from.id, to.id]) {
-            const log = yield* app.request(
-              `/api/workspaces/${workspaceId}/activity`,
-              { headers: bearer(key) }
-            );
+            const log = yield* app.request(`/api/v1/activity`, {
+              headers: { ...bearer(key), ...forWorkspace(workspaceId) },
+            });
 
             assert.include(
               (yield* bodyOf(ActivitySchema, log)).items.map(
@@ -182,7 +182,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // It moves back, under a new id again, and the workspace it went
           // to keeps nothing of it.
           const back = yield* app.request(
-            `/api/partner/workspaces/${to.id}/channels/${moved.id}/move`,
+            `/api/v1/partner/workspaces/${to.id}/channels/${moved.id}/move`,
             { body: { toWorkspaceId: from.id }, headers: bearer(key) }
           );
 
@@ -201,7 +201,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const to = yield* customerOf(key, "Again to");
         const other = yield* customerOf(key, "Again elsewhere");
         const channelId = yield* connectedIn(from.id, "@again@social.example");
-        const path = `/api/partner/workspaces/${from.id}/channels/${channelId}/move`;
+        const path = `/api/v1/partner/workspaces/${from.id}/channels/${channelId}/move`;
 
         const send = (toWorkspaceId: string) =>
           app.request(path, {
@@ -252,7 +252,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
             toWorkspaceId: string
           ) =>
             app.request(
-              `/api/partner/workspaces/${path.from}/channels/${path.channel}/move`,
+              `/api/v1/partner/workspaces/${path.from}/channels/${path.channel}/move`,
               { body: { toWorkspaceId }, headers: bearer(using) }
             );
 
@@ -306,7 +306,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
           yield* sql`UPDATE channels.channels SET account_id = (SELECT account_id FROM channels.channels WHERE id = ${channelId}) WHERE id = ${there}`;
 
           const taken = yield* app.request(
-            `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+            `/api/v1/partner/workspaces/${from.id}/channels/${channelId}/move`,
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
           );
 
@@ -337,7 +337,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
             VALUES (${callKey}, ${target?.id ?? ""}, 1, 1, 'publish', now())`;
 
           const going = yield* app.request(
-            `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+            `/api/v1/partner/workspaces/${from.id}/channels/${channelId}/move`,
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
           );
 
@@ -353,7 +353,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
           yield* sql`UPDATE publishing.posts SET status = 'finished' WHERE id = ${postId}`;
 
           const moved = yield* app.request(
-            `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+            `/api/v1/partner/workspaces/${from.id}/channels/${channelId}/move`,
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
           );
 
@@ -398,7 +398,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
             VALUES (${followUpId}, ${ruleId}, ${from.id}, ${postId}, ${target?.id ?? ""}, ${channelId}, 'comment', 'sending', '{"_tag":"sending","likes":50,"attemptedAt":null}'::jsonb, now(), now(), now())`;
 
           const move = app.request(
-            `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+            `/api/v1/partner/workspaces/${from.id}/channels/${channelId}/move`,
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
           );
 
@@ -457,7 +457,7 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
               );
 
               const reply = yield* app.request(
-                `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+                `/api/v1/partner/workspaces/${from.id}/channels/${channelId}/move`,
                 { body: { toWorkspaceId: to.id }, headers: bearer(key) }
               );
 
@@ -486,14 +486,14 @@ layer(MovesLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const channelId = yield* connectedIn(from.id, "@gone@social.example");
 
           const reply = yield* app.request(
-            `/api/partner/workspaces/${from.id}/channels/${channelId}/move`,
+            `/api/v1/partner/workspaces/${from.id}/channels/${channelId}/move`,
             { body: { toWorkspaceId: to.id }, headers: bearer(key) }
           );
 
           const { channel: moved } = yield* bodyOf(MovedSchema, reply);
 
           const deleted = yield* app.request(
-            `/api/partner/workspaces/${to.id}`,
+            `/api/v1/partner/workspaces/${to.id}`,
             {
               headers: bearer(key),
               method: "DELETE",

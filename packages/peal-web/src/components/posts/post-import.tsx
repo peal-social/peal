@@ -4,6 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type {
   SocialChannel,
   ChannelSet,
@@ -106,8 +107,7 @@ const LoadedImport = ({ workspaceId }: { readonly workspaceId: string }) => {
         () => newImportKey(crypto),
         async () =>
           await send({
-            headers: {},
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { csv, dryRun: true },
           })
       )
@@ -121,8 +121,7 @@ const LoadedImport = ({ workspaceId }: { readonly workspaceId: string }) => {
         () => key,
         async (sent) =>
           await send({
-            headers: { "idempotency-key": sent },
-            params: { workspaceId },
+            headers: { ...forWorkspace(workspaceId), "idempotency-key": sent },
             payload: { csv },
             reactivityKeys: postsKeys,
           })

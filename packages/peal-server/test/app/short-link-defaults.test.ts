@@ -1,9 +1,10 @@
+import { assert, layer } from "@effect/vitest";
+import { Effect, Schema } from "effect";
 // The workspace's short links default through the whole server: a new
 // post that does not say takes it when it is made, one that says keeps its
 // own choice, and a server without short links shortens nothing whatever
 // the default.
-import { assert, layer } from "@effect/vitest";
-import { Effect, Schema } from "effect";
+import { forWorkspace } from "peal-contract";
 
 import {
   bodyOf,
@@ -33,14 +34,11 @@ const defaultOn = Effect.fn("defaultOn")(function* defaultOn(
 ) {
   const app = yield* TestApp;
 
-  const set = yield* app.request(
-    `/api/workspaces/${workspaceId}/short-links/settings`,
-    {
-      body: { byDefault: true },
-      headers: { cookie: owner.cookies },
-      method: "PUT",
-    }
-  );
+  const set = yield* app.request(`/api/v1/short-links/settings`, {
+    body: { byDefault: true },
+    headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+    method: "PUT",
+  });
 
   assert.strictEqual(set.status, 200);
 });
@@ -53,9 +51,9 @@ const madeWith = Effect.fn("madeWith")(function* madeWith(
 ) {
   const app = yield* TestApp;
 
-  const made = yield* app.request(`/api/workspaces/${workspaceId}/posts`, {
+  const made = yield* app.request(`/api/v1/posts`, {
     body: { ...draft, ...fields },
-    headers: { cookie: owner.cookies },
+    headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
   });
 
   assert.strictEqual(made.status, 201);

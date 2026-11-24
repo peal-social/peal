@@ -10,14 +10,12 @@ import {
   defaultBodyLimit,
 } from "#app/body-limits.ts";
 
-const workspaceId = "5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60";
-
 describe(bodyLimitFor, () => {
   it("takes a workspace's content in larger bodies", () => {
     for (const path of [
-      `/api/workspaces/${workspaceId}/posts/bulk`,
-      `/api/workspaces/${workspaceId}/posts`,
-      `/api/workspaces/${workspaceId}/articles/x`,
+      "/api/v1/posts/bulk",
+      "/api/v1/posts",
+      "/api/v1/articles/x",
       "/api/mcp",
     ]) {
       expect(bodyLimitFor(path)).toBe(contentBodyLimit);
@@ -26,7 +24,8 @@ describe(bodyLimitFor, () => {
 
   it("takes the rest in 1 MiB", () => {
     for (const path of [
-      `/api/workspaces/${workspaceId}/tags`,
+      "/api/v1/tags",
+      "/api/v1/postsearch",
       "/api/auth/sign-in/email",
       "/api/data-deletion/facebook",
       "/api/mcp/server-card",

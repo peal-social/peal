@@ -27,7 +27,7 @@ const show = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const standing = yield* client.partnerAccount
-      .get({ params: { workspaceId: workspace.id } })
+      .get({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -84,7 +84,7 @@ const keys = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const listed = yield* client.partnerAccount
-      .listKeys({ params: { workspaceId: workspace.id } })
+      .listKeys({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -152,7 +152,7 @@ const workspaces = Command.make(
 
     const page = yield* client.partnerAccount
       .listWorkspaces({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(externalId, {
             onNone: () => ({}),
@@ -285,7 +285,7 @@ const usage = Command.make(
 
     const report = yield* client.usage
       .partner({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(input.before, {
             onNone: () => ({}),
@@ -406,7 +406,7 @@ const overview = Command.make(
 
     const page = yield* client.partnerAccount
       .overview({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(input.cursor, {
             onNone: () => ({}),

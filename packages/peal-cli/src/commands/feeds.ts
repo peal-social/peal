@@ -155,7 +155,7 @@ const list = Command.make(
 
     const page = yield* client.feeds
       .list({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(input.cursor, {
             onNone: () => ({}),
@@ -205,10 +205,10 @@ const show = Command.make(
   "show",
   { feed: feedArgument, json: jsonFlag, workspace: workspaceFlag },
   Effect.fn("feeds.show")(function* show(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const feed = yield* client.feeds
-      .get({ params: { feedId: input.feed, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { feedId: input.feed } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* printFeed(feed, input.json, "Feed");
@@ -245,12 +245,12 @@ const add = Command.make(
 
     const template = yield* templateOf(input.template);
     const session = yield* inWorkspace(input.workspace);
-    const { client, url, workspace } = session;
+    const { client, url } = session;
     const { queueId, setId } = yield* savedIdsOf(session, input);
 
     const created = yield* client.feeds
       .create({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           channelIds: channelIdsOf(input.channels),
           url: input.url,
@@ -330,7 +330,7 @@ const update = Command.make(
   Effect.fn("feeds.update")(function* update(input) {
     const template = yield* templateOf(input.template);
     const session = yield* inWorkspace(input.workspace);
-    const { client, url, workspace } = session;
+    const { client, url } = session;
     const { queueId, setId } = yield* savedIdsOf(session, input);
 
     yield* Option.isSome(input.queue) && input.defaultQueue
@@ -347,7 +347,7 @@ const update = Command.make(
       !Option.contains(input.mode, "queue")
     ) {
       const current = yield* client.feeds
-        .get({ params: { feedId: input.feed, workspaceId: workspace.id } })
+        .get({ headers: {}, params: { feedId: input.feed } })
         .pipe(Effect.mapError(explain(url)));
 
       yield* current.mode !== "queue" || Option.contains(input.mode, "draft")
@@ -406,7 +406,8 @@ const update = Command.make(
 
     const feed = yield* client.feeds
       .update({
-        params: { feedId: input.feed, workspaceId: workspace.id },
+        headers: {},
+        params: { feedId: input.feed },
         payload,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -428,11 +429,12 @@ const statusCommand = (
     name,
     { feed: feedArgument, json: jsonFlag, workspace: workspaceFlag },
     Effect.fn(`feeds.${name}`)(function* changed(input) {
-      const { client, url, workspace } = yield* inWorkspace(input.workspace);
+      const { client, url } = yield* inWorkspace(input.workspace);
 
       const feed = yield* client.feeds
         .update({
-          params: { feedId: input.feed, workspaceId: workspace.id },
+          headers: {},
+          params: { feedId: input.feed },
           payload: { status },
         })
         .pipe(Effect.mapError(explain(url)));
@@ -472,10 +474,10 @@ const remove = Command.make(
   "remove",
   { feed: feedArgument, json: jsonFlag, workspace: workspaceFlag },
   Effect.fn("feeds.remove")(function* remove(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     yield* client.feeds
-      .delete({ params: { feedId: input.feed, workspaceId: workspace.id } })
+      .delete({ headers: {}, params: { feedId: input.feed } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* input.json
@@ -500,11 +502,11 @@ const preview = Command.make(
   },
   Effect.fn("feeds.preview")(function* preview(input) {
     const template = yield* templateOf(input.template);
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const read = yield* client.feeds
       .preview({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           url: input.url,
           ...Option.match(template, {
@@ -541,10 +543,10 @@ const items = Command.make(
   "items",
   { feed: feedArgument, json: jsonFlag, workspace: workspaceFlag },
   Effect.fn("feeds.items")(function* items(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const read = yield* client.feeds
-      .items({ params: { feedId: input.feed, workspaceId: workspace.id } })
+      .items({ headers: {}, params: { feedId: input.feed } })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {

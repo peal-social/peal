@@ -5,6 +5,7 @@ import {
   ActivityPageSchema,
   PartnerKeySchema,
   WorkspaceMemberSchema,
+  forWorkspace,
 } from "peal-contract";
 
 import {
@@ -65,7 +66,7 @@ const works = Effect.fn("works")(function* works(key: string) {
   const app = yield* TestApp;
 
   return (
-    (yield* app.request("/api/partner", { headers: bearer(key) })).status ===
+    (yield* app.request("/api/v1/partner", { headers: bearer(key) })).status ===
     200
   );
 });
@@ -103,8 +104,8 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const listed = yield* bodyOf(
             KeysSchema,
-            yield* app.request(`/api/workspaces/${home}/partner/keys`, {
-              headers: asPerson(owner),
+            yield* app.request(`/api/v1/partner-account/keys`, {
+              headers: { ...asPerson(owner), ...forWorkspace(home) },
             })
           );
 
@@ -118,8 +119,8 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const members = yield* bodyOf(
             MembersSchema,
-            yield* app.request(`/api/workspaces/${home}/members`, {
-              headers: asPerson(owner),
+            yield* app.request(`/api/v1/members`, {
+              headers: { ...asPerson(owner), ...forWorkspace(home) },
             })
           );
 
@@ -152,8 +153,8 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const page = yield* bodyOf(
             PageSchema,
             yield* app.request(
-              `/api/workspaces/${home}/activity?operation=partnerAccount.revokeKey`,
-              { headers: asPerson(owner) }
+              `/api/v1/activity?operation=partnerAccount.revokeKey`,
+              { headers: { ...asPerson(owner), ...forWorkspace(home) } }
             )
           );
 

@@ -12,6 +12,7 @@ import {
   PlatformCapabilitiesSchema,
   PlatformSchema,
   TargetOptionsSchema as ContractOptionsSchema,
+  forWorkspace,
 } from "peal-contract";
 import type { MediaContentType, Member } from "peal-contract";
 import * as ContractText from "peal-contract/post-text";
@@ -192,7 +193,7 @@ describe("the platforms' capabilities endpoint", () => {
         const client = yield* clientWith(viewer);
 
         const all = yield* client.capabilities.platforms({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
         });
 
         assert.deepStrictEqual(
@@ -225,7 +226,7 @@ describe("the platforms' capabilities endpoint", () => {
       const client = yield* clientWith(viewer);
 
       const all = yield* client.capabilities.platforms({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
       });
 
       assert.deepStrictEqual(
@@ -313,7 +314,7 @@ describe("the platforms' capabilities endpoint", () => {
         );
 
         const all = yield* client.capabilities.platforms({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
         });
 
         assert.deepStrictEqual(
@@ -330,7 +331,7 @@ describe("the platforms' capabilities endpoint", () => {
       const client = yield* clientWith(viewer, ready);
 
       const all = yield* client.capabilities.platforms({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
       });
 
       assert.deepStrictEqual(
@@ -370,7 +371,7 @@ describe("the platforms' capabilities endpoint", () => {
         );
 
         const all = yield* client.capabilities.platforms({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
         });
 
         assert.deepStrictEqual(
@@ -413,7 +414,7 @@ describe("the platforms' capabilities endpoint", () => {
         const client = yield* clientWith(viewer);
 
         const all = yield* client.capabilities.platforms({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
         });
 
         const kindsOf = new Map(
@@ -433,7 +434,7 @@ describe("the platforms' capabilities endpoint", () => {
       const client = yield* clientWith(viewer);
 
       const all = yield* client.capabilities.platforms({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
       });
 
       const youtube = all.find(({ platform }) => platform === "youtube");
@@ -514,7 +515,7 @@ describe("the platforms' capabilities endpoint", () => {
         const client = yield* clientWith(viewer);
 
         const all = yield* client.capabilities.platforms({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
         });
 
         const youtube = all.find(({ platform }) => platform === "youtube");
@@ -560,7 +561,7 @@ describe("the platforms' capabilities endpoint", () => {
       const client = yield* clientWith(stranger);
 
       const error = yield* client.capabilities
-        .platforms({ params: { workspaceId } })
+        .platforms({ headers: forWorkspace(workspaceId) })
         .pipe(Effect.flip);
 
       assert.instanceOf(error, Forbidden);
@@ -574,7 +575,8 @@ describe("a channel's capabilities endpoint", () => {
       const client = yield* clientWith(viewer);
 
       const described = yield* client.capabilities.channel({
-        params: { channelId: onTikTok, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { channelId: onTikTok },
       });
 
       assert.strictEqual(described.channelId, onTikTok);
@@ -608,7 +610,8 @@ describe("a channel's capabilities endpoint", () => {
       );
 
       const described = yield* client.capabilities.channel({
-        params: { channelId: onTikTok, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { channelId: onTikTok },
       });
 
       assert.deepStrictEqual(described.account, {
@@ -640,7 +643,8 @@ describe("a channel's capabilities endpoint", () => {
             clientWith(viewer, Effect.fail(failure)).pipe(
               Effect.flatMap((client) =>
                 client.capabilities.channel({
-                  params: { channelId: onTikTok, workspaceId },
+                  headers: forWorkspace(workspaceId),
+                  params: { channelId: onTikTok },
                 })
               ),
               Effect.map(({ account, capabilities }) => [
@@ -673,7 +677,8 @@ describe("a channel's capabilities endpoint", () => {
       const client = yield* clientWith(viewer, Effect.die("not asked"));
 
       const described = yield* client.capabilities.channel({
-        params: { channelId: onMastodon, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { channelId: onMastodon },
       });
 
       assert.deepStrictEqual(described.account, { _tag: "unrestricted" });
@@ -695,7 +700,10 @@ describe("a channel's capabilities endpoint", () => {
         const [page, profile] = yield* Effect.forEach(
           [onLinkedInPage, onLinkedInProfile],
           (channelId) =>
-            client.capabilities.channel({ params: { channelId, workspaceId } })
+            client.capabilities.channel({
+              headers: forWorkspace(workspaceId),
+              params: { channelId },
+            })
         );
 
         assert.deepStrictEqual(page?.capabilities.analytics, {
@@ -736,7 +744,10 @@ describe("a channel's capabilities endpoint", () => {
         ["01900000-0000-7000-8000-0000000000c9", "not-an-id"],
         (channelId) =>
           client.capabilities
-            .channel({ params: { channelId, workspaceId } })
+            .channel({
+              headers: forWorkspace(workspaceId),
+              params: { channelId },
+            })
             .pipe(Effect.flip)
       );
 
@@ -750,7 +761,10 @@ describe("a channel's capabilities endpoint", () => {
       const client = yield* clientWith(stranger);
 
       const error = yield* client.capabilities
-        .channel({ params: { channelId: onTikTok, workspaceId } })
+        .channel({
+          headers: forWorkspace(workspaceId),
+          params: { channelId: onTikTok },
+        })
         .pipe(Effect.flip);
 
       assert.instanceOf(error, Forbidden);

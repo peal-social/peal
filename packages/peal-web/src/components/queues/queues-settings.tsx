@@ -4,7 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { maxQueuesPerWorkspace } from "peal-contract";
+import { maxQueuesPerWorkspace, forWorkspace } from "peal-contract";
 import type { SocialChannel, ChannelSet, Queue } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import {
@@ -114,7 +114,8 @@ const EditForm = ({
 
     startTransition(async () => {
       const exit = await update({
-        params: { queueId: queue.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { queueId: queue.id },
         payload: details.value,
         reactivityKeys: queuesChanged(workspaceId),
       });
@@ -202,7 +203,8 @@ const QueueRow = ({
         deleted={t("deleted")}
         remove={async () =>
           await remove({
-            params: { queueId: queue.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { queueId: queue.id },
             reactivityKeys: queuesChanged(workspaceId),
           })
         }
@@ -281,7 +283,7 @@ const CreateForm = ({
 
     startTransition(async () => {
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: details.value,
         reactivityKeys: queuesChanged(workspaceId),
       });

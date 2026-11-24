@@ -1,6 +1,6 @@
 import { assert, layer } from "@effect/vitest";
 import { Effect, Schema } from "effect";
-import { PostSchema } from "peal-contract";
+import { PostSchema, forWorkspace } from "peal-contract";
 
 import {
   apiKeyOf,
@@ -29,13 +29,13 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "120 seconds" })(
         const app = yield* TestApp;
         const owner = yield* signedUp("attribution-owner");
         const workspaceId = yield* workspaceOf(owner, "Attribution");
-        const posts = `/api/workspaces/${workspaceId}/posts`;
+        const posts = `/api/v1/posts`;
 
         const inSession = yield* bodyOf(
           PostJsonSchema,
           yield* app.request(posts, {
             body: draft("A synthetic draft written in the web app."),
-            headers: { cookie: owner.cookies },
+            headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           })
         );
 
@@ -58,7 +58,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "120 seconds" })(
           PostJsonSchema,
           yield* app.request(posts, {
             body: draft("A synthetic draft written by a script."),
-            headers: { authorization: `Bearer ${key}` },
+            headers: {
+              authorization: `Bearer ${key}`,
+              ...forWorkspace(workspaceId),
+            },
           })
         );
 

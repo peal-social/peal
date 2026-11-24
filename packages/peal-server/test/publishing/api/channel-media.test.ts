@@ -2,7 +2,7 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, LastTargetLeft } from "peal-contract";
+import { Api, LastTargetLeft, forWorkspace } from "peal-contract";
 import type { PostContent } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
@@ -83,14 +83,14 @@ describe("a post with media of its own on a channel", () => {
           };
 
           const draft = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [threads, bluesky], content },
           });
 
           assert.deepStrictEqual(draft.content.overrides, content.overrides);
 
           const checked = yield* client.posts.validate({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [threads, bluesky], content },
           });
 
@@ -107,7 +107,8 @@ describe("a post with media of its own on a channel", () => {
           );
 
           const scheduled = yield* client.posts.schedule({
-            params: { postId: draft.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: draft.id },
             payload: { ...later, channelIds: [threads, bluesky] },
           });
 
@@ -133,7 +134,8 @@ describe("a post with media of its own on a channel", () => {
           });
 
           yield* client.posts.cancel({
-            params: { postId: draft.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: draft.id },
           });
         })
       ),
@@ -153,7 +155,7 @@ describe("a post with media of its own on a channel", () => {
 
           const refused = yield* client.posts
             .create({
-              params: { workspaceId },
+              headers: forWorkspace(workspaceId),
               payload: {
                 channelIds: [bluesky],
                 content: {
@@ -189,7 +191,7 @@ describe("a post with media of its own on a channel", () => {
           const photo = yield* storeMedia(workspaceId);
 
           const draft = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: {
               channelIds: [bluesky],
               content: {
@@ -220,7 +222,8 @@ describe("a post with media of its own on a channel", () => {
           });
 
           const kept = yield* client.posts.get({
-            params: { postId: draft.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: draft.id },
           });
 
           // Its only file gone, the channel shows the post's media again.
@@ -246,8 +249,8 @@ describe("removing a channel from a scheduled post", () => {
           const client = yield* editorIn(workspaceId);
 
           const post = yield* client.posts.send({
-            headers: {},
-            params: { workspaceId },
+            headers: { ...forWorkspace(workspaceId) },
+
             payload: {
               channelIds: [bluesky, mastodon],
               content: {
@@ -271,7 +274,8 @@ describe("removing a channel from a scheduled post", () => {
           assert(onBluesky !== undefined && onMastodon !== undefined);
 
           const removed = yield* client.posts.removeTarget({
-            params: { postId: post.id, targetId: onBluesky.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: post.id, targetId: onBluesky.id },
           });
 
           assert.strictEqual(removed.status, "scheduled");
@@ -282,7 +286,10 @@ describe("removing a channel from a scheduled post", () => {
           // channel taken off it.
           const on = (channelId: string) =>
             client.posts
-              .search({ params: { workspaceId }, query: { channelId } })
+              .search({
+                headers: forWorkspace(workspaceId),
+                query: { channelId },
+              })
               .pipe(Effect.map(({ items }) => items.map(({ id }) => id)));
 
           assert.deepStrictEqual(yield* on(mastodon), [post.id]);
@@ -302,21 +309,24 @@ describe("removing a channel from a scheduled post", () => {
 
           // Asked again, as after a lost answer: the post as it is.
           const again = yield* client.posts.removeTarget({
-            params: { postId: post.id, targetId: onBluesky.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: post.id, targetId: onBluesky.id },
           });
 
           assert.deepStrictEqual(again, removed);
 
           const last = yield* client.posts
             .removeTarget({
-              params: { postId: post.id, targetId: onMastodon.id, workspaceId },
+              headers: forWorkspace(workspaceId),
+              params: { postId: post.id, targetId: onMastodon.id },
             })
             .pipe(Effect.flip);
 
           assert.deepStrictEqual(last, new LastTargetLeft());
 
           const response = yield* client.posts.removeTarget({
-            params: { postId: post.id, targetId: onMastodon.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: post.id, targetId: onMastodon.id },
             responseMode: "response-only",
           });
 
@@ -324,7 +334,8 @@ describe("removing a channel from a scheduled post", () => {
 
           // Back to draft and scheduled again as it is.
           const draft = yield* client.posts.unschedule({
-            params: { postId: post.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: post.id },
           });
 
           assert.deepStrictEqual(
@@ -333,14 +344,16 @@ describe("removing a channel from a scheduled post", () => {
           );
 
           const rescheduled = yield* client.posts.schedule({
-            params: { postId: post.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: post.id },
             payload: { ...later, channelIds: [mastodon] },
           });
 
           assert.strictEqual(rescheduled.status, "scheduled");
 
           yield* client.posts.cancel({
-            params: { postId: post.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: post.id },
           });
         })
       ),

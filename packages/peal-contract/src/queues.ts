@@ -16,6 +16,7 @@ import { QueueNotFound } from "./queue-not-found.ts";
 import { TooManyQueues } from "./too-many-queues.ts";
 import { UnknownChannels } from "./unknown-channels.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** The longest name a queue has. */
 export const maxQueueNameLength = 60;
@@ -197,9 +198,7 @@ export const QueueReshuffleSchema = Schema.Struct({
 
 export type QueueReshuffle = typeof QueueReshuffleSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
-const queue = { ...workspace, queueId: Schema.String };
+const queue = { queueId: Schema.String };
 
 const details = `A slot is a weekday and a time of day (\`HH:mm\`) in the queue's IANA time zone, each pair once, ${maxSlotsPerQueue} at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (\`channelIds\`, connected ones, ${maxChannelsPerQueue} at most) and one channel set (\`channelSetId\`), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. \`isDefault\` makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was.`;
 
@@ -211,7 +210,8 @@ export class QueuesApi extends HttpApiGroup.make("queues")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(QueueSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -229,7 +229,8 @@ export class QueuesApi extends HttpApiGroup.make("queues")
         ChannelSetNotFound,
         InvalidTimeZone,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: QueueDetailsSchema,
       success: QueueSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -240,6 +241,7 @@ export class QueuesApi extends HttpApiGroup.make("queues")
     ),
     HttpApiEndpoint.get("get", "/:queueId", {
       error: [Forbidden, QueueNotFound],
+      headers: workspaceHeaders,
       params: queue,
       success: QueueSchema,
     }).annotateMerge(
@@ -258,6 +260,7 @@ export class QueuesApi extends HttpApiGroup.make("queues")
         ChannelSetNotFound,
         InvalidTimeZone,
       ],
+      headers: workspaceHeaders,
       params: queue,
       payload: QueueDetailsSchema,
       success: QueueSchema,
@@ -269,6 +272,7 @@ export class QueuesApi extends HttpApiGroup.make("queues")
     ),
     HttpApiEndpoint.delete("delete", "/:queueId", {
       error: [Forbidden, QueueNotFound],
+      headers: workspaceHeaders,
       params: queue,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -280,6 +284,7 @@ export class QueuesApi extends HttpApiGroup.make("queues")
     ),
     HttpApiEndpoint.get("slots", "/:queueId/slots", {
       error: [Forbidden, QueueNotFound],
+      headers: workspaceHeaders,
       params: queue,
       query: {
         count: Schema.optionalKey(
@@ -297,6 +302,7 @@ export class QueuesApi extends HttpApiGroup.make("queues")
     ),
     HttpApiEndpoint.post("reshuffle", "/:queueId/reshuffle", {
       error: [Forbidden, QueueNotFound, QueueHasNoRoom],
+      headers: workspaceHeaders,
       params: queue,
       success: QueueReshuffleSchema,
     }).annotateMerge(
@@ -308,4 +314,4 @@ export class QueuesApi extends HttpApiGroup.make("queues")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/queues") {}
+  .prefix("/api/v1/queues") {}

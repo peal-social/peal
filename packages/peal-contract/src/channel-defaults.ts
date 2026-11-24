@@ -12,6 +12,7 @@ import { Forbidden } from "./forbidden.ts";
 import { PostContentInvalid } from "./post-content-invalid.ts";
 import { TargetOptionsSchema } from "./target-options.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * The options a workspace's new posts take on a channel when they give
@@ -30,13 +31,14 @@ export const NewChannelDefaultsSchema = Schema.Struct({
 
 export type NewChannelDefaults = typeof NewChannelDefaultsSchema.Type;
 
-const channel = { channelId: Schema.String, workspaceId: Schema.String };
+const channel = { channelId: Schema.String };
 
 /** A channel's default options, which new posts take when they give none. */
 export class ChannelDefaultsApi extends HttpApiGroup.make("channelDefaults")
   .add(
     HttpApiEndpoint.get("get", "/", {
       error: [Forbidden, ChannelNotFound],
+      headers: workspaceHeaders,
       params: channel,
       success: ChannelDefaultsSchema,
     }).annotateMerge(
@@ -48,6 +50,7 @@ export class ChannelDefaultsApi extends HttpApiGroup.make("channelDefaults")
     ),
     HttpApiEndpoint.put("set", "/", {
       error: [Forbidden, ChannelNotFound, PostContentInvalid],
+      headers: workspaceHeaders,
       params: channel,
       payload: NewChannelDefaultsSchema,
       success: ChannelDefaultsSchema,
@@ -60,6 +63,7 @@ export class ChannelDefaultsApi extends HttpApiGroup.make("channelDefaults")
     ),
     HttpApiEndpoint.delete("clear", "/", {
       error: [Forbidden, ChannelNotFound],
+      headers: workspaceHeaders,
       params: channel,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -72,4 +76,4 @@ export class ChannelDefaultsApi extends HttpApiGroup.make("channelDefaults")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/channels/:channelId/default-options") {}
+  .prefix("/api/v1/channels/:channelId/default-options") {}

@@ -1,4 +1,4 @@
-import { Effect, Layer, Option, Redacted, Schema } from "effect";
+import { Effect, Layer, Option, Redacted } from "effect";
 import { HttpRouter, HttpServerRequest } from "effect/http";
 import type { HttpServerResponse } from "effect/http";
 import { HttpApiError } from "effect/http-api";
@@ -17,6 +17,7 @@ import {
   Unauthenticated,
   WorkspaceAccess,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -28,8 +29,7 @@ import {
 import { forbidden, refused } from "#shared/api/forbidden.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { UpgradePaths } from "#shared/application/upgrade-paths.ts";
-import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
-import type { UserId } from "#shared/domain/ids.ts";
+import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
 import { Authenticate } from "#workspace/application/authenticate.ts";
 import { BrowserSessions } from "#workspace/application/browser-sessions.ts";
@@ -52,12 +52,18 @@ import {
 } from "./principal.ts";
 import { pastLimit, tooManyRequests } from "./rate-limit.ts";
 import { explaining } from "./refusal.ts";
+import {
+  actingIn,
+  namedWorkspace,
+  workspaceIdOf,
+} from "./request-workspace.ts";
+
+/** The attribute of a request's span that names the workspace it acts in. */
+export const workspaceIdAttribute = "peal.workspace_id";
 
 // Reads change nothing; any other method needs a trusted origin when it
 // comes with cookies, which a browser sends to Peal from any site.
 const safeMethods: ReadonlySet<string> = new Set(["GET", "HEAD", "OPTIONS"]);
-
-const decodeWorkspaceId = Schema.decodeUnknownOption(WorkspaceIdSchema);
 
 const unauthenticated = () => Effect.fail(new Unauthenticated());
 
@@ -72,8 +78,8 @@ const as =
       actingAs(principal, sessionId)
     );
 
-// The ids a request's path names, but its workspace's, which the record
-// keeps apart.
+// The ids a request's path names, but a workspace's, which the record
+// keeps apart: the partner API names its customers' in the path.
 const objectIdsOf = (
   params: Readonly<Record<string, string | undefined>>
 ): Readonly<Record<string, string | undefined>> =>
@@ -122,7 +128,7 @@ export const contentChangeOf = (
   principal: Principal,
   access: ContentChange["access"],
   request: HttpServerRequest.HttpServerRequest,
-  workspaceId: Option.Option<string>
+  workspaceId: Option.Option<WorkspaceId>
 ): ContentChange => {
   const origin = {
     headers: request.headers,
@@ -139,14 +145,14 @@ export const contentChangeOf = (
     };
   }
 
-  // A partner key, in the workspace of its partner the path names.
+  // A partner key, in the workspace of its partner the request names.
   if (principal._tag === "PartnerKeyPrincipal") {
     return {
       access,
       apiKeyId: Option.some(principal.partnerKeyId),
       origin,
       userId: Option.none(),
-      workspaceId: workspaceId.pipe(Option.flatMap(decodeWorkspaceId)),
+      workspaceId,
     };
   }
 
@@ -158,7 +164,7 @@ export const contentChangeOf = (
     userId: Option.some(
       Option.getOrElse(principal.impersonatedBy, () => principal.userId)
     ),
-    workspaceId: workspaceId.pipe(Option.flatMap(decodeWorkspaceId)),
+    workspaceId,
   };
 };
 
@@ -199,7 +205,8 @@ export const journalled =
  * A session staff act as someone in goes through the ImpersonationGuard
  * here, before any handler runs: refused once the staff member is no longer
  * staff, and every change it asks for recorded in the audit log under the
- * staff member's name, with the endpoint and the ids its path names. Bearer
+ * staff member's name, with the endpoint, the workspace the request names
+ * and the ids its path names. Bearer
  * tokens never act for staff: OAuth tokens carry no impersonation, and
  * staff acting as someone may not grant a client access or create a key.
  *
@@ -237,15 +244,13 @@ export const AuthenticationLive = Layer.effect(
               })
             );
 
+          // The workspace the request names, unchecked: WorkspaceAccess
+          // decides whether it may act there.
+          const workspaceId = actingIn(principal, request.headers);
+
           // A key or an application past its limit is told so before
           // anything is handled.
-          const limited = yield* pastLimit(
-            limits,
-            principal,
-            Option.fromNullishOr(
-              (yield* HttpRouter.params)["workspaceId"]
-            ).pipe(Option.flatMap(decodeWorkspaceId))
-          );
+          const limited = yield* pastLimit(limits, principal, workspaceId);
 
           if (Option.isSome(limited)) {
             return tooManyRequests(limited.value);
@@ -261,8 +266,6 @@ export const AuthenticationLive = Layer.effect(
             return yield* httpEffect.pipe(as(principal), marked);
           }
 
-          const params = yield* HttpRouter.params;
-
           return yield* httpEffect.pipe(
             as(principal),
             Effect.flatMap(
@@ -271,7 +274,7 @@ export const AuthenticationLive = Layer.effect(
                   principal,
                   principal._tag === "UserPrincipal" ? "oauth" : "apiKey",
                   request,
-                  Option.fromNullishOr(params["workspaceId"])
+                  workspaceId
                 )
               )
             ),
@@ -319,13 +322,14 @@ export const AuthenticationLive = Layer.effect(
           );
 
           const params = yield* HttpRouter.params;
+          const workspaceId = actingIn(principal, request.headers);
 
           if (write) {
             yield* guard
               .changed(principal, {
                 objectIds: objectIdsOf(params),
                 operation: `${group.identifier}.${endpoint.identifier}`,
-                workspaceId: decodeWorkspaceId(params["workspaceId"]),
+                workspaceId,
               })
               .pipe(Effect.orDie);
           }
@@ -353,12 +357,7 @@ export const AuthenticationLive = Layer.effect(
             acting,
             Effect.flatMap(
               journalled(journal, () =>
-                contentChangeOf(
-                  principal,
-                  "session",
-                  request,
-                  Option.fromNullishOr(params["workspaceId"])
-                )
+                contentChangeOf(principal, "session", request, workspaceId)
               )
             ),
             marked
@@ -369,8 +368,13 @@ export const AuthenticationLive = Layer.effect(
 );
 
 /**
- * WorkspaceAccess: the caller as a member of the workspace in the path. A
- * workspace they do not belong to reads as one that does not exist.
+ * WorkspaceAccess: the caller as a member of the workspace the request
+ * names, in its `Peal-Workspace` header, else the credential's own (an API
+ * key's, a token's bound to one). A request that names none, from a
+ * credential that belongs to none, is told to name one (WorkspaceRequired);
+ * a workspace the caller does not belong to reads as one that does not
+ * exist, as does a value that is no workspace id. The request's span names
+ * the workspace (`peal.workspace_id`), which its address no longer does.
  *
  * A member's request that asks to change something (any method but GET,
  * HEAD and OPTIONS) is kept in the workspace's activity log once it is
@@ -390,11 +394,25 @@ export const WorkspaceAccessLive = Layer.effect(
         const request = yield* HttpServerRequest.HttpServerRequest;
         const principal = principalOf(yield* CurrentPrincipal);
         const params = yield* HttpRouter.params;
-        const workspaceId = decodeWorkspaceId(params["workspaceId"]);
+        const named = namedWorkspace(principal, request.headers);
+
+        if (Option.isNone(named)) {
+          return yield* new WorkspaceRequired({
+            message:
+              "This credential belongs to no workspace, and the request names none: send the workspace's id in the Peal-Workspace header. Nothing was done.",
+          });
+        }
+
+        const workspaceId = workspaceIdOf(named.value);
 
         if (Option.isNone(workspaceId)) {
           return yield* new WorkspaceNotFound();
         }
+
+        yield* Effect.annotateCurrentSpan(
+          workspaceIdAttribute,
+          workspaceId.value
+        );
 
         // A member whose account lacks the two-step verification the
         // workspace requires is told so, and what to do; keys never are.

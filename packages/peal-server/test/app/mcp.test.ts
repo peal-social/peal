@@ -4,6 +4,7 @@ import { McpClient, McpProtocol } from "effect/ai";
 import {
   AuthorizationServerSchema,
   ProtectedResourceSchema,
+  forWorkspace,
 } from "peal-contract";
 
 import { endedSessions, sessionsPerCredential } from "#app/mcp/sessions.ts";
@@ -490,9 +491,12 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.include(results.whoami.workspace.permissions, "post:publish");
           assert.deepStrictEqual(results.channels.channels, []);
 
-          const deleted = yield* app.request(`/api/workspaces/${workspace}`, {
+          const deleted = yield* app.request(`/api/v1/workspace`, {
             body: { name: "Pop-up" },
-            headers: { cookie: fixture.owner.cookies },
+            headers: {
+              cookie: fixture.owner.cookies,
+              ...forWorkspace(workspace),
+            },
             method: "DELETE",
           });
 

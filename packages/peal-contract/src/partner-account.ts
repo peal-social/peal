@@ -33,6 +33,7 @@ import {
 } from "./partner.ts";
 import { PermissionSchema } from "./permission.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * What a workspace's people read of its partner account: the account and
@@ -148,8 +149,6 @@ export const partnerKeyPermissions = [
   "webhook:manage",
 ] as const satisfies readonly (typeof PermissionSchema.Type)[];
 
-const workspace = { workspaceId: Schema.String };
-
 const inPerson = "a signed-in member rather than an API key or an OAuth client";
 
 /**
@@ -161,7 +160,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
   .add(
     HttpApiEndpoint.get("get", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: PartnerStandingSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -172,7 +172,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
     ),
     HttpApiEndpoint.post("open", "/", {
       error: [Forbidden, PartnerAccountsClosed, PartnerDetailsInvalid],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: OpenPartnerSchema,
       success: PartnerSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -183,7 +184,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
     ),
     HttpApiEndpoint.patch("update", "/", {
       error: [Forbidden, PartnerNotFound, PartnerDetailsInvalid],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: PartnerChangeSchema,
       success: PartnerSchema,
     }).annotateMerge(
@@ -194,7 +196,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
     ),
     HttpApiEndpoint.delete("close", "/", {
       error: [Forbidden, PartnerNotFound, PartnerOwnsWorkspaces],
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
       OpenApi.annotations({
@@ -204,7 +207,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
     ),
     HttpApiEndpoint.get("listKeys", "/keys", {
       error: [Forbidden, PartnerNotFound],
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(PartnerKeySchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -214,7 +218,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
     ),
     HttpApiEndpoint.post("createKey", "/keys", {
       error: [Forbidden, PartnerNotFound, PartnerDetailsInvalid],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewPartnerKeySchema,
       success: CreatedPartnerKeySchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -225,7 +230,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
     ),
     HttpApiEndpoint.delete("revokeKey", "/keys/:partnerKeyId", {
       error: [Forbidden, PartnerNotFound, PartnerKeyNotFound],
-      params: { ...workspace, partnerKeyId: Schema.String },
+      headers: workspaceHeaders,
+      params: { partnerKeyId: Schema.String },
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
       OpenApi.annotations({
@@ -236,7 +242,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
     ),
     HttpApiEndpoint.get("overview", "/overview", {
       error: [Forbidden, PartnerNotFound, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: partnerHealthQuery,
       success: PartnerHealthSchema,
     }).annotateMerge(
@@ -247,7 +254,8 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
     ),
     HttpApiEndpoint.get("listWorkspaces", "/workspaces", {
       error: [Forbidden, PartnerNotFound, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: workspaceListQuery,
       success: CustomerWorkspacePageSchema,
     }).annotateMerge(
@@ -259,4 +267,4 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/partner") {}
+  .prefix("/api/v1/partner-account") {}

@@ -2,7 +2,7 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, Forbidden } from "peal-contract";
+import { Api, Forbidden, forWorkspace } from "peal-contract";
 import type { Member, PostContent } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
@@ -49,7 +49,7 @@ describe("the validate endpoint", () => {
           const workspaceId = yield* freshWorkspace;
           const mastodon = yield* connect(workspaceId, "mastodon");
           const linkedin = yield* connect(workspaceId, "linkedin");
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           const viewer = yield* clientAs(
             memberOf(workspaceId, permissionsFor("viewer"))
@@ -76,7 +76,7 @@ describe("the validate endpoint", () => {
           });
 
           const checked = yield* viewer.posts.validate({
-            params,
+            headers,
             payload: {
               channelIds: [mastodon, linkedin],
               content: thread("b".repeat(501)),
@@ -140,7 +140,7 @@ describe("the validate endpoint", () => {
 
           // A thread that fits is valid, and a post alone has no parts.
           const fine = yield* viewer.posts.validate({
-            params,
+            headers,
             payload: {
               channelIds: [mastodon],
               content: {
@@ -159,7 +159,7 @@ describe("the validate endpoint", () => {
           assert.lengthOf(fine.channels[0]?.parts ?? [], 1);
 
           const alone = yield* viewer.posts.validate({
-            params,
+            headers,
             payload: { channelIds: [mastodon], content: text("Alone") },
           });
 
@@ -177,7 +177,7 @@ describe("the validate endpoint", () => {
         Effect.gen(function* validatesStory() {
           const workspaceId = yield* freshWorkspace;
           const instagram = yield* connect(workspaceId, "instagram");
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           const viewer = yield* clientAs(
             memberOf(workspaceId, permissionsFor("viewer"))
@@ -187,7 +187,7 @@ describe("the validate endpoint", () => {
             readonly format: "feed" | "story";
           }) =>
             viewer.posts.validate({
-              params,
+              headers,
               payload: {
                 channelIds: [instagram],
                 content: text("A synthetic story #one"),
@@ -224,14 +224,14 @@ describe("the validate endpoint", () => {
         Effect.gen(function* validates() {
           const workspaceId = yield* freshWorkspace;
           const mastodon = yield* connect(workspaceId, "mastodon");
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           const viewer = yield* clientAs(
             memberOf(workspaceId, permissionsFor("viewer"))
           );
 
           const fine = yield* viewer.posts.validate({
-            params,
+            headers,
             payload: {
               channelIds: [mastodon],
               content: text("A synthetic post #one"),
@@ -267,7 +267,7 @@ describe("the validate endpoint", () => {
           // Everything wrong at once: ids that are no ids, a zone that is
           // no zone, a time gone by, a text too long.
           const wrong = yield* viewer.posts.validate({
-            params,
+            headers,
             payload: {
               channelIds: [mastodon, "not-a-channel"],
               content: {
@@ -286,7 +286,7 @@ describe("the validate endpoint", () => {
           // A channel that is none is said once, as unknown: not again
           // as a post for no channel, when it was the only one named.
           const none = yield* viewer.posts.validate({
-            params,
+            headers,
             payload: {
               channelIds: ["not-a-channel"],
               content: { media: [], overrides: [], text: "Hello" },
@@ -313,7 +313,7 @@ describe("the validate endpoint", () => {
           ]);
 
           const late = yield* viewer.posts.validate({
-            params,
+            headers,
             payload: {
               channelIds: [mastodon],
               content: text("A synthetic post"),
@@ -330,7 +330,7 @@ describe("the validate endpoint", () => {
 
           // A draft: no time, so none is checked.
           const draft = yield* viewer.posts.validate({
-            params,
+            headers,
             payload: { channelIds: [mastodon], content: text("A draft") },
           });
 
@@ -338,7 +338,7 @@ describe("the validate endpoint", () => {
           assert.isNull(draft.schedule);
 
           // Nothing was made by any of it.
-          const drafts = yield* viewer.posts.drafts({ params, query: {} });
+          const drafts = yield* viewer.posts.drafts({ headers, query: {} });
 
           assert.deepStrictEqual(drafts.items, []);
 
@@ -346,7 +346,7 @@ describe("the validate endpoint", () => {
 
           const denied = yield* nobody.posts
             .validate({
-              params,
+              headers,
               payload: { channelIds: [mastodon], content: text("Words") },
             })
             .pipe(Effect.flip);

@@ -3,6 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { Permission } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
@@ -42,7 +43,8 @@ export const useDuplicatePost = (
 
   return async (postId) => {
     const exit = await duplicate({
-      params: { postId, workspaceId },
+      headers: forWorkspace(workspaceId),
+      params: { postId },
       reactivityKeys: postsKeys,
     });
 

@@ -17,7 +17,7 @@ const list = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const members = yield* client.members
-      .list({ params: { workspaceId: workspace.id } })
+      .list({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {

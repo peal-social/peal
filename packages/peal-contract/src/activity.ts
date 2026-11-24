@@ -9,6 +9,7 @@ import {
 import { Authentication } from "./authentication.ts";
 import { Forbidden } from "./forbidden.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** How many days a workspace's activity log keeps an event. */
 export const activityRetentionDays = 90;
@@ -113,7 +114,8 @@ export class ActivityApi extends HttpApiGroup.make("activity")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       query: {
         // A member's user id, or an API key's id.
         actor: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(128))),
@@ -137,4 +139,4 @@ export class ActivityApi extends HttpApiGroup.make("activity")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/activity") {}
+  .prefix("/api/v1/activity") {}

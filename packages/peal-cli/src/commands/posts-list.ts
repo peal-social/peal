@@ -194,7 +194,7 @@ export const list = Command.make(
 
     const page = yield* client.posts
       .search({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...given(input.author, (authorId) => ({ authorId })),
           ...given(input.channel, (channelId) => ({ channelId })),

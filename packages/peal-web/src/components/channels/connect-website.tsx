@@ -4,6 +4,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { RefreshCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { ChannelPlatform, KeySitePlatform } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
@@ -85,7 +86,7 @@ export const WebsiteFields = ({
 
     startTransition(async () => {
       const exit = await connect({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: {
           address,
           applicationPassword: password,
@@ -243,7 +244,7 @@ export const KeySiteFields = ({
 
     startTransition(async () => {
       const exit = await connect({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload:
           platform === "hashnode" && named !== ""
             ? { apiKey: key, platform, publication: named }
@@ -357,7 +358,8 @@ const useWordPressComSignIn = (workspaceId: string) => {
   const signIn = (channelId?: string) => {
     startTransition(async () => {
       const exit = await start({
-        params: { platform: "wordpressCom", workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { platform: "wordpressCom" },
         payload: channelId === undefined ? {} : { channelId },
       });
 

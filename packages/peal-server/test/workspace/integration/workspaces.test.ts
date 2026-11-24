@@ -1,7 +1,7 @@
 import { assert, layer } from "@effect/vitest";
 import { DateTime, Duration, Effect, Schema } from "effect";
 import { SqlClient } from "effect/sql";
-import { MeSchema, PermissionSchema } from "peal-contract";
+import { MeSchema, PermissionSchema, forWorkspace } from "peal-contract";
 
 import {
   apiKeyOf,
@@ -185,20 +185,16 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           // A viewer may not handle the workspace's API keys.
-          const listed = yield* app.request(
-            `/api/workspaces/${workspaceId}/api-keys`,
-            { headers: { cookie: cookies } }
-          );
+          const listed = yield* app.request(`/api/v1/api-keys`, {
+            headers: { cookie: cookies, ...forWorkspace(workspaceId) },
+          });
 
           assert.strictEqual(listed.status, 403);
 
-          const created = yield* app.request(
-            `/api/workspaces/${workspaceId}/api-keys`,
-            {
-              body: { name: "mine", permissions: ["post:read"] },
-              headers: { cookie: cookies },
-            }
-          );
+          const created = yield* app.request(`/api/v1/api-keys`, {
+            body: { name: "mine", permissions: ["post:read"] },
+            headers: { cookie: cookies, ...forWorkspace(workspaceId) },
+          });
 
           assert.strictEqual(created.status, 403);
         })
@@ -432,7 +428,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const app = yield* TestApp;
         const owner = yield* signedUp("lin");
         const workspaceId = yield* workspaceOf(owner, "Lab");
-        const path = `/api/workspaces/${workspaceId}/api-keys`;
+        const path = `/api/v1/api-keys`;
         const asOwner = { cookie: owner.cookies };
 
         const created = yield* app.request(path, {
@@ -441,7 +437,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             name: "deploy",
             permissions: ["apiKey:read", "post:read"],
           },
-          headers: asOwner,
+          headers: { ...asOwner, ...forWorkspace(workspaceId) },
         });
 
         assert.strictEqual(created.status, 201);
@@ -469,7 +465,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         // The key works as a bearer token, and is never listed.
         const listed = yield* app.request(path, {
-          headers: { authorization: `Bearer ${key}` },
+          headers: {
+            authorization: `Bearer ${key}`,
+            ...forWorkspace(workspaceId),
+          },
         });
 
         assert.strictEqual(listed.status, 200);
@@ -485,7 +484,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         // An API key cannot mint another.
         const minted = yield* app.request(path, {
           body: { name: "copy", permissions: ["post:read"] },
-          headers: { authorization: `Bearer ${key}` },
+          headers: {
+            authorization: `Bearer ${key}`,
+            ...forWorkspace(workspaceId),
+          },
         });
 
         assert.strictEqual(minted.status, 403);
@@ -499,27 +501,30 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         assert.strictEqual(direct.status, 404);
 
         const revoked = yield* app.request(`${path}/${apiKey.id}`, {
-          headers: asOwner,
+          headers: { ...asOwner, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
         assert.strictEqual(revoked.status, 204);
 
         const after = yield* app.request(path, {
-          headers: { authorization: `Bearer ${key}` },
+          headers: {
+            authorization: `Bearer ${key}`,
+            ...forWorkspace(workspaceId),
+          },
         });
 
         assert.strictEqual(after.status, 401);
 
         const again = yield* app.request(`${path}/${apiKey.id}`, {
-          headers: asOwner,
+          headers: { ...asOwner, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
         assert.strictEqual(again.status, 404);
 
         const unknown = yield* app.request(`${path}/not-an-id`, {
-          headers: asOwner,
+          headers: { ...asOwner, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
@@ -543,9 +548,9 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         assert.strictEqual(direct.status, 404);
 
-        const deleted = yield* app.request(`/api/workspaces/${workspaceId}`, {
+        const deleted = yield* app.request(`/api/v1/workspace`, {
           body: { name: "Closing" },
-          headers: { cookie: owner.cookies },
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
@@ -556,10 +561,12 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         assert.lengthOf(keys, 0);
 
-        const after = yield* app.request(
-          `/api/workspaces/${workspaceId}/api-keys`,
-          { headers: { authorization: `Bearer ${key}` } }
-        );
+        const after = yield* app.request(`/api/v1/api-keys`, {
+          headers: {
+            authorization: `Bearer ${key}`,
+            ...forWorkspace(workspaceId),
+          },
+        });
 
         assert.strictEqual(after.status, 401);
       })
@@ -576,10 +583,12 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         // Gone without Better Auth, so its key is left behind.
         yield* sql`DELETE FROM auth.organization WHERE id = ${workspaceId}`;
 
-        const after = yield* app.request(
-          `/api/workspaces/${workspaceId}/api-keys`,
-          { headers: { authorization: `Bearer ${key}` } }
-        );
+        const after = yield* app.request(`/api/v1/api-keys`, {
+          headers: {
+            authorization: `Bearer ${key}`,
+            ...forWorkspace(workspaceId),
+          },
+        });
 
         assert.strictEqual(after.status, 401);
       })
@@ -595,17 +604,16 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const { apiKey } = yield* apiKeyOf(owner, second, ["post:read"]);
 
         // The owner revokes it through the wrong workspace: nothing happens.
-        const revoked = yield* app.request(
-          `/api/workspaces/${first}/api-keys/${apiKey.id}`,
-          { headers: { cookie: owner.cookies }, method: "DELETE" }
-        );
+        const revoked = yield* app.request(`/api/v1/api-keys/${apiKey.id}`, {
+          headers: { cookie: owner.cookies, ...forWorkspace(first) },
+          method: "DELETE",
+        });
 
         assert.strictEqual(revoked.status, 404);
 
-        const listed = yield* app.request(
-          `/api/workspaces/${second}/api-keys`,
-          { headers: { cookie: owner.cookies } }
-        );
+        const listed = yield* app.request(`/api/v1/api-keys`, {
+          headers: { cookie: owner.cookies, ...forWorkspace(second) },
+        });
 
         assert.lengthOf(yield* bodyOf(ListSchema, listed), 1);
       })

@@ -177,7 +177,7 @@ const followed = Effect.fn("media.slideshow.followed")(function* followed({
   }
 
   const read = client.slideshows
-    .get({ params: { slideshowId: asked.id, workspaceId: workspace.id } })
+    .get({ headers: {}, params: { slideshowId: asked.id } })
     .pipe(Effect.mapError(explain(url)));
 
   const rounds = Math.ceil(
@@ -273,7 +273,7 @@ const render = Command.make(
 
     const asked = yield* client.slideshows
       .createFromEdit({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: { edit },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -370,7 +370,7 @@ const create = Command.make(
 
     const asked = yield* client.slideshows
       .create({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           aspect: input.aspect,
           slides: slidesOf(input),
@@ -414,11 +414,12 @@ const status = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("media.slideshow.status")(function* status(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const found = yield* client.slideshows
       .get({
-        params: { slideshowId: input.slideshowId, workspaceId: workspace.id },
+        headers: {},
+        params: { slideshowId: input.slideshowId },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -449,7 +450,7 @@ const list = Command.make(
 
     const found = yield* client.slideshows
       .list({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: Option.match(input.status, {
           onNone: () => ({}),
           onSome: (wanted) => ({ status: wanted }),

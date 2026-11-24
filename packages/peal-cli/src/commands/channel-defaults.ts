@@ -23,10 +23,10 @@ const show = Command.make(
     json,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const defaults = yield* client.channelDefaults
-      .get({ params: { channelId, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { channelId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -75,11 +75,12 @@ const set = Command.make(
       )
     );
 
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const kept = yield* client.channelDefaults
       .set({
-        params: { channelId, workspaceId: workspace.id },
+        headers: {},
+        params: { channelId },
         payload: { options },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -108,10 +109,10 @@ const clear = Command.make(
     json,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     yield* client.channelDefaults
-      .clear({ params: { channelId, workspaceId: workspace.id } })
+      .clear({ headers: {}, params: { channelId } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* json

@@ -2,6 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Exit, Option } from "effect";
+import { forWorkspace } from "peal-contract";
 import type {
   SocialChannel,
   MediaAttachment,
@@ -66,7 +67,7 @@ const usePostPreview = (
     dispatch({ _tag: "asked", key: asked, request: number });
 
     const exit = await validate({
-      params: { workspaceId },
+      headers: forWorkspace(workspaceId),
       payload: previewRequestOf(request),
     });
 

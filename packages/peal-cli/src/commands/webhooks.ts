@@ -251,7 +251,7 @@ const list = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const endpoints = yield* client.webhooks
-      .list({ params: { workspaceId: workspace.id } })
+      .list({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -329,7 +329,7 @@ const create = Command.make(
 
     const created = yield* client.webhooks
       .create({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           ...Option.match(input.description, {
             onNone: () => ({}),
@@ -392,7 +392,7 @@ const show = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const endpoint = yield* client.webhooks
-      .get({ params: { endpointId, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { endpointId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -551,7 +551,8 @@ const update = Command.make(
 
     const endpoint = yield* client.webhooks
       .update({
-        params: { endpointId: input.endpointId, workspaceId: workspace.id },
+        headers: {},
+        params: { endpointId: input.endpointId },
         payload,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -587,7 +588,7 @@ const remove = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     yield* client.webhooks
-      .delete({ params: { endpointId, workspaceId: workspace.id } })
+      .delete({ headers: {}, params: { endpointId } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* json
@@ -613,7 +614,7 @@ const rotateSecret = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const rotated = yield* client.webhooks
-      .rotateSecret({ params: { endpointId, workspaceId: workspace.id } })
+      .rotateSecret({ headers: {}, params: { endpointId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -665,7 +666,8 @@ const test = Command.make(
 
     const delivery = yield* client.webhooks
       .sendTest({
-        params: { endpointId, workspaceId: workspace.id },
+        headers: {},
+        params: { endpointId },
         query: Option.match(event, {
           onNone: () => ({}),
           onSome: (eventType) => ({ eventType }),
@@ -806,16 +808,16 @@ const deliveries = Command.make(
       Option.isNone(until)
         ? yield* client.webhooks
             .listDeliveries({
+              headers: {},
               params: {
                 endpointId: input.endpointId.value,
-                workspaceId: workspace.id,
               },
               query,
             })
             .pipe(Effect.mapError(explain(url)))
         : yield* client.webhooks
             .searchDeliveries({
-              params: { workspaceId: workspace.id },
+              headers: {},
               query: {
                 ...query,
                 ...Option.match(input.endpointId, {
@@ -1006,10 +1008,10 @@ const redeliver = Command.make(
     ) {
       const delivery = yield* client.webhooks
         .redeliver({
+          headers: {},
           params: {
             deliveryId: single,
             endpointId: input.endpoint.value,
-            workspaceId: workspace.id,
           },
         })
         .pipe(Effect.mapError(explain(url)));
@@ -1032,7 +1034,7 @@ const redeliver = Command.make(
 
     const result = yield* client.webhooks
       .redeliverMany({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload:
           input.failed && Option.isSome(input.endpoint)
             ? {
@@ -1066,7 +1068,7 @@ const redeliver = Command.make(
       )
         ? new Set(
             (yield* client.webhooks
-              .list({ params: { workspaceId: workspace.id } })
+              .list({ headers: {} })
               .pipe(Effect.mapError(explain(url)))).map(({ id }) => id)
           )
         : new Set<string>();

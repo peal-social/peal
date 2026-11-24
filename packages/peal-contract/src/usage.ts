@@ -17,6 +17,7 @@ import { PartnerNotFound } from "./partner-not-found.ts";
 import { defaultWorkspacePageSize, maxWorkspacePageSize } from "./partner.ts";
 import { PlatformSchema } from "./platform.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** How many days a usage report covers at most, both ends included. */
 export const maxUsageRangeDays = 92;
@@ -289,7 +290,8 @@ export class UsageApi extends HttpApiGroup.make("usage")
   .add(
     HttpApiEndpoint.get("get", "/", {
       error: [Forbidden, InvalidDateRange],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       query: {
         from: Schema.optionalKey(CalendarDaySchema),
         to: Schema.optionalKey(CalendarDaySchema),
@@ -308,16 +310,17 @@ export class UsageApi extends HttpApiGroup.make("usage")
         InvalidDateRange,
         HttpApiError.BadRequest,
       ],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       query: partnerUsageQuery,
       success: PartnerUsageReportSchema,
     }).annotateMerge(
       OpenApi.annotations({
-        description: `${partnerUsageDescription} For the people of the partner's home workspace: a workspace with no partner account answers 404 \`PartnerNotFound\`. A partner key reads the same at \`GET /api/partner/usage\`. Needs partner:read.`,
+        description: `${partnerUsageDescription} For the people of the partner's home workspace: a workspace with no partner account answers 404 \`PartnerNotFound\`. A partner key reads the same at \`GET /api/v1/partner/usage\`. Needs partner:read.`,
         summary: "Get the partner account's usage per customer",
       })
     )
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/usage") {}
+  .prefix("/api/v1/usage") {}

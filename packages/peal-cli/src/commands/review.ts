@@ -112,7 +112,7 @@ const show = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const thread = yield* client.review
-      .thread({ params: { postId, workspaceId: workspace.id } })
+      .thread({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -201,11 +201,12 @@ const comment = Command.make(
     text,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const written = yield* client.review
       .comment({
-        params: { postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId },
         payload: Option.match(replyTo, {
           onNone: () => ({ text }),
           onSome: (parentId) => ({ parentId, text }),
@@ -242,10 +243,10 @@ const links = Command.make(
     postId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const made = yield* client.review
-      .links({ params: { postId, workspaceId: workspace.id } })
+      .links({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -308,7 +309,7 @@ const link = Command.make(
     postId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     yield* Option.isSome(hours) &&
     (hours.value < 1 || hours.value > maxReviewLinkHours)
@@ -321,7 +322,8 @@ const link = Command.make(
 
     const made = yield* client.review
       .createLink({
-        params: { postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId },
         payload: Option.match(hours, {
           onNone: () => ({ access }),
           onSome: (expiresInHours) => ({ access, expiresInHours }),
@@ -364,10 +366,10 @@ const revoke = Command.make(
     linkId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const revoked = yield* client.review
-      .revokeLink({ params: { linkId, workspaceId: workspace.id } })
+      .revokeLink({ headers: {}, params: { linkId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {

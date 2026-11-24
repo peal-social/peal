@@ -6,6 +6,7 @@
 import { assert, layer } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 
 import {
   apiKeyOf,
@@ -20,12 +21,10 @@ const ChatSchema = Schema.Struct({ id: Schema.String });
 
 const decodeChat = Schema.decodeUnknownEffect(ChatSchema);
 
-const agentOf = (workspaceId: string) => `/api/workspaces/${workspaceId}/agent`;
-
 const newChat = (person: Person, workspaceId: string) =>
   TestApp.use((app) =>
-    app.request(`${agentOf(workspaceId)}/chats`, {
-      headers: { cookie: person.cookies },
+    app.request(`/api/v1/agent/chats`, {
+      headers: { cookie: person.cookies, ...forWorkspace(workspaceId) },
       method: "POST",
     })
   ).pipe(Effect.flatMap((reply) => decodeChat(reply.body)));
@@ -80,8 +79,8 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const asOwner = { cookie: owner.cookies };
 
-          const status = yield* app.request(agentOf(workspaceId), {
-            headers: asOwner,
+          const status = yield* app.request("/api/v1/agent", {
+            headers: { ...asOwner, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(status.status, 200);
@@ -93,28 +92,28 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const chat = yield* newChat(owner, workspaceId);
 
-          const renamed = yield* app.request(
-            `${agentOf(workspaceId)}/chats/${chat.id}`,
-            {
-              body: { starred: true, title: "Launch" },
-              headers: asOwner,
-              method: "PATCH",
-            }
-          );
+          const renamed = yield* app.request(`/api/v1/agent/chats/${chat.id}`, {
+            body: { starred: true, title: "Launch" },
+            headers: { ...asOwner, ...forWorkspace(workspaceId) },
+            method: "PATCH",
+          });
 
           assert.strictEqual(renamed.status, 200);
           assert.deepInclude(renamed.body, { starred: true, title: "Launch" });
 
-          const listed = yield* app.request(`${agentOf(workspaceId)}/chats`, {
-            headers: asOwner,
+          const listed = yield* app.request(`/api/v1/agent/chats`, {
+            headers: { ...asOwner, ...forWorkspace(workspaceId) },
           });
 
           assert.deepInclude(listed.body, { nextCursor: null });
 
           // Without a model, a message is refused before anything streams.
           const sent = yield* app.request(
-            `${agentOf(workspaceId)}/chats/${chat.id}/messages`,
-            { body: { text: "Hello" }, headers: asOwner }
+            `/api/v1/agent/chats/${chat.id}/messages`,
+            {
+              body: { text: "Hello" },
+              headers: { ...asOwner, ...forWorkspace(workspaceId) },
+            }
           );
 
           assert.strictEqual(sent.status, 503);
@@ -122,8 +121,8 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Someone else's chat, or one that never was, is not found.
           const missing = yield* app.request(
-            `${agentOf(workspaceId)}/chats/0190f0e0-0000-7000-8000-00000000ffff`,
-            { headers: asOwner }
+            `/api/v1/agent/chats/0190f0e0-0000-7000-8000-00000000ffff`,
+            { headers: { ...asOwner, ...forWorkspace(workspaceId) } }
           );
 
           assert.strictEqual(missing.status, 404);
@@ -135,17 +134,20 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "post:read",
           ]);
 
-          const byKey = yield* app.request(`${agentOf(workspaceId)}/chats`, {
-            headers: { authorization: `Bearer ${key}` },
+          const byKey = yield* app.request(`/api/v1/agent/chats`, {
+            headers: {
+              authorization: `Bearer ${key}`,
+              ...forWorkspace(workspaceId),
+            },
           });
 
           assert.strictEqual(byKey.status, 403);
           assert.deepInclude(byKey.body, { reason: "personRequired" });
 
-          const deleted = yield* app.request(
-            `${agentOf(workspaceId)}/chats/${chat.id}`,
-            { headers: asOwner, method: "DELETE" }
-          );
+          const deleted = yield* app.request(`/api/v1/agent/chats/${chat.id}`, {
+            headers: { ...asOwner, ...forWorkspace(workspaceId) },
+            method: "DELETE",
+          });
 
           assert.strictEqual(deleted.status, 204);
           assert.lengthOf(yield* chatsIn(workspaceId, owner.id), 0);
@@ -179,18 +181,18 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [removed, "Removed"],
           ] as const) {
             for (const scope of ["personal", "workspace"]) {
-              const made = yield* app.request(
-                `${agentOf(workspaceId)}/skills`,
-                {
-                  body: {
-                    instructions: "Plan the week.",
-                    name: `${label} ${scope}`,
-                    scope,
-                  },
-                  headers: { cookie: person.cookies },
-                  method: "POST",
-                }
-              );
+              const made = yield* app.request(`/api/v1/agent/skills`, {
+                body: {
+                  instructions: "Plan the week.",
+                  name: `${label} ${scope}`,
+                  scope,
+                },
+                headers: {
+                  cookie: person.cookies,
+                  ...forWorkspace(workspaceId),
+                },
+                method: "POST",
+              });
 
               assert.strictEqual(made.status, 201, JSON.stringify(made.body));
             }
@@ -227,8 +229,8 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             { author_id: null, name: "Removed workspace" },
           ]);
 
-          const listed = yield* app.request(`${agentOf(workspaceId)}/skills`, {
-            headers: { cookie: owner.cookies },
+          const listed = yield* app.request(`/api/v1/agent/skills`, {
+            headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           });
 
           assert.deepStrictEqual(

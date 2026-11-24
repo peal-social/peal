@@ -7,8 +7,9 @@ import {
   Forbidden,
   maxFeedsPerWorkspace,
   TooManyFeeds,
+  CurrentMember,
 } from "peal-contract";
-import type { CurrentMember, Feed, Permission } from "peal-contract";
+import type { Feed, Permission } from "peal-contract";
 
 import type { Studio } from "./studio.ts";
 
@@ -60,7 +61,7 @@ export const studioFeedsOf = (world: FeedsWorld) => {
   const groupLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "feeds", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* world.allowed("post:create");
 
@@ -68,7 +69,7 @@ export const studioFeedsOf = (world: FeedsWorld) => {
               yield* world.allowed("post:schedule");
             }
 
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
             yield* readable(payload.url);
 
             const { feeds } = yield* Ref.get(studio.state);
@@ -112,7 +113,7 @@ export const studioFeedsOf = (world: FeedsWorld) => {
         delete: ({ params }) =>
           Effect.gen(function* remove() {
             yield* world.allowed("post:create");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const feed = yield* feedIn(studio, params.feedId);
 
@@ -125,14 +126,14 @@ export const studioFeedsOf = (world: FeedsWorld) => {
         get: ({ params }) =>
           Effect.gen(function* get() {
             yield* world.allowed("post:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             return yield* feedIn(studio, params.feedId);
           }),
         items: ({ params }) =>
           Effect.gen(function* items() {
             yield* world.allowed("post:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
             yield* feedIn(studio, params.feedId);
 
             return {
@@ -158,10 +159,10 @@ export const studioFeedsOf = (world: FeedsWorld) => {
               ],
             };
           }),
-        list: ({ params, query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             yield* world.allowed("post:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const { feeds } = yield* Ref.get(studio.state);
 
@@ -179,10 +180,10 @@ export const studioFeedsOf = (world: FeedsWorld) => {
                 from + limit < feeds.length ? (page.at(-1)?.id ?? null) : null,
             };
           }),
-        preview: ({ params, payload }) =>
+        preview: ({ payload }) =>
           Effect.gen(function* preview() {
             yield* world.allowed("post:create");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
             yield* readable(payload.url);
 
             const template = payload.template ?? "{title}\n\n{link}";
@@ -213,7 +214,7 @@ export const studioFeedsOf = (world: FeedsWorld) => {
               yield* world.allowed("post:schedule");
             }
 
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const feed = yield* feedIn(studio, params.feedId);
 

@@ -2,7 +2,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member, Permission, TextProviderChange } from "peal-contract";
 
 import { AssistantApiLive } from "#assistant/container.ts";
@@ -70,18 +70,18 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("lets owners and admins set it, and nobody else", () =>
       Effect.gen(function* roles() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         for (const role of ["editor", "contributor", "viewer"]) {
           const client = yield* as(workspaceId, role);
 
           const refusals = yield* Effect.all([
-            refusalOf(client.assistant.textProvider({ params })),
+            refusalOf(client.assistant.textProvider({ headers })),
             refusalOf(
-              client.assistant.setTextProvider({ params, payload: provider })
+              client.assistant.setTextProvider({ headers, payload: provider })
             ),
-            refusalOf(client.assistant.removeTextProvider({ params })),
-            refusalOf(client.assistant.testTextProvider({ params })),
+            refusalOf(client.assistant.removeTextProvider({ headers })),
+            refusalOf(client.assistant.testTextProvider({ headers })),
           ]);
 
           assert.deepStrictEqual(
@@ -93,7 +93,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         const admin = yield* as(workspaceId, "admin");
 
         const saved = yield* admin.assistant.setTextProvider({
-          params,
+          headers,
           payload: provider,
         });
 
@@ -106,7 +106,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         });
 
         const owner = yield* as(workspaceId, "owner");
-        const read = yield* owner.assistant.textProvider({ params });
+        const read = yield* owner.assistant.textProvider({ headers });
 
         assert.deepStrictEqual(read.provider, saved);
         // A provider saved by its kind alone is named by it.
@@ -119,11 +119,11 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* named() {
           const workspaceId = yield* freshWorkspace;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
           const owner = yield* as(workspaceId, "owner");
 
           const saved = yield* owner.assistant.setTextProvider({
-            params,
+            headers,
             payload: {
               apiKey: syntheticKey,
               model: "deepseek-v4-pro",
@@ -138,7 +138,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           });
 
           const anthropic = yield* owner.assistant.setTextProvider({
-            params,
+            headers,
             payload: {
               apiKey: syntheticKey,
               model: "claude-sonnet-5-5",
@@ -155,7 +155,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           // Another endpoint has no address of its own.
           const refused = yield* refusalOf(
             owner.assistant.setTextProvider({
-              params,
+              headers,
               payload: {
                 apiKey: syntheticKey,
                 model: "synthetic-text-model",
@@ -171,13 +171,13 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("takes an API key given assistant:configure, and no other", () =>
       Effect.gen(function* keys() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const without = yield* keyWith(workspaceId, ["assistant:use"]);
 
         assert.strictEqual(
           (yield* refusalOf(
-            without.assistant.setTextProvider({ params, payload: provider })
+            without.assistant.setTextProvider({ headers, payload: provider })
           ))._tag,
           "Forbidden"
         );
@@ -187,7 +187,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         ]);
 
         const saved = yield* configuring.assistant.setTextProvider({
-          params,
+          headers,
           payload: provider,
         });
 
@@ -198,21 +198,21 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("never answers the key, and says in the status who writes", () =>
       Effect.gen(function* noKey() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const admin = yield* as(workspaceId, "admin");
 
         assert.strictEqual(
-          (yield* admin.assistant.status({ params })).source,
+          (yield* admin.assistant.status({ headers })).source,
           "server"
         );
 
         const saved = yield* admin.assistant.setTextProvider({
-          params,
+          headers,
           payload: provider,
         });
 
-        const read = yield* admin.assistant.textProvider({ params });
-        const status = yield* admin.assistant.status({ params });
+        const read = yield* admin.assistant.textProvider({ headers });
+        const status = yield* admin.assistant.status({ headers });
 
         for (const answer of [saved, read, status]) {
           assert.notInclude(JSON.stringify(answer), syntheticKey);
@@ -225,21 +225,21 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("keeps the stored key for the same address only", () =>
       Effect.gen(function* origins() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const admin = yield* as(workspaceId, "admin");
         const { apiKey: _key, ...withoutKey } = provider;
 
         assert.strictEqual(
           (yield* refusalOf(
-            admin.assistant.setTextProvider({ params, payload: withoutKey })
+            admin.assistant.setTextProvider({ headers, payload: withoutKey })
           ))._tag,
           "TextProviderKeyRequired"
         );
 
-        yield* admin.assistant.setTextProvider({ params, payload: provider });
+        yield* admin.assistant.setTextProvider({ headers, payload: provider });
 
         const remodelled = yield* admin.assistant.setTextProvider({
-          params,
+          headers,
           payload: { ...withoutKey, model: "synthetic-text-model-2" },
         });
 
@@ -248,7 +248,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         assert.strictEqual(
           (yield* refusalOf(
             admin.assistant.setTextProvider({
-              params,
+              headers,
               payload: {
                 ...withoutKey,
                 baseUrl: "https://other-images.example.com/v1",
@@ -263,7 +263,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("refuses an address Peal sends nothing to, in words", () =>
       Effect.gen(function* addresses() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const admin = yield* as(workspaceId, "admin");
 
         const reasons = yield* Effect.forEach(
@@ -277,7 +277,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           (baseUrl) =>
             refusalOf(
               admin.assistant.setTextProvider({
-                params,
+                headers,
                 payload: { ...provider, baseUrl },
               })
             ).pipe(
@@ -297,7 +297,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           "malformed",
         ]);
         assert.isNull(
-          (yield* admin.assistant.textProvider({ params })).provider
+          (yield* admin.assistant.textProvider({ headers })).provider
         );
       }).pipe(Effect.provide(assistantTest()))
     );
@@ -307,27 +307,30 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* tests() {
           const workspaceId = yield* freshWorkspace;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
           const admin = yield* as(workspaceId, "admin");
 
           assert.strictEqual(
-            (yield* refusalOf(admin.assistant.testTextProvider({ params })))
+            (yield* refusalOf(admin.assistant.testTextProvider({ headers })))
               ._tag,
             "TextProviderNotFound"
           );
 
-          yield* admin.assistant.setTextProvider({ params, payload: provider });
+          yield* admin.assistant.setTextProvider({
+            headers,
+            payload: provider,
+          });
           yield* FakeOwnWritingModel.use((model) =>
             model.replyWith({ _tag: "answer", value: { text: "It works." } })
           );
-          yield* admin.assistant.testTextProvider({ params });
+          yield* admin.assistant.testTextProvider({ headers });
 
           yield* FakeOwnWritingModel.use((model) =>
             model.replyWith({ _tag: "settingsRefused", status: 401 })
           );
 
           const refused = yield* refusalOf(
-            admin.assistant.testTextProvider({ params })
+            admin.assistant.testTextProvider({ headers })
           );
 
           assert.deepInclude(refused, {
@@ -341,7 +344,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           const suggested = yield* refusalOf(
             member.assistant.suggest({
-              params,
+              headers,
               payload: { action: { _tag: "hashtags" }, text: "We shipped." },
             })
           );
@@ -353,17 +356,17 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("removes it, and the server's model writes again", () =>
       Effect.gen(function* removes() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const admin = yield* as(workspaceId, "admin");
 
-        yield* admin.assistant.setTextProvider({ params, payload: provider });
-        yield* admin.assistant.removeTextProvider({ params });
+        yield* admin.assistant.setTextProvider({ headers, payload: provider });
+        yield* admin.assistant.removeTextProvider({ headers });
 
         assert.isNull(
-          (yield* admin.assistant.textProvider({ params })).provider
+          (yield* admin.assistant.textProvider({ headers })).provider
         );
         assert.strictEqual(
-          (yield* admin.assistant.status({ params })).source,
+          (yield* admin.assistant.status({ headers })).source,
           "server"
         );
       }).pipe(Effect.provide(assistantTest()))

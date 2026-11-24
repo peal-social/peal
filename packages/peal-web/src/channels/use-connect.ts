@@ -2,6 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
+import { forWorkspace } from "peal-contract";
 import type { ChannelConnection, Platform } from "peal-contract";
 import { useState, useTransition } from "react";
 
@@ -27,7 +28,8 @@ export const useConnect = (workspaceId: string, platform: Platform) => {
   }) => {
     startTransition(async () => {
       const exit = await connect({
-        params: { platform, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { platform },
         payload,
       });
 

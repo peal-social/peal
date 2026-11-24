@@ -2,7 +2,11 @@ import { assert, layer } from "@effect/vitest";
 import { DateTime, Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { AdNetworkSchema as ContractNetworkSchema, Api } from "peal-contract";
+import {
+  AdNetworkSchema as ContractNetworkSchema,
+  Api,
+  forWorkspace,
+} from "peal-contract";
 import type { Member, NewBoost, Permission } from "peal-contract";
 
 import { AdsHandlers } from "#ads/api/ads.ts";
@@ -66,26 +70,30 @@ const stateOf = (url: string) => new URL(url).searchParams.get("state") ?? "";
 const ready = (workspaceId: WorkspaceId, ceiling = 20_000) =>
   Effect.gen(function* signingIn() {
     const owner = yield* clientAs(person(workspaceId, "owner"));
-    const params = { workspaceId };
+    const headers = forWorkspace(workspaceId);
 
     const { authorizationUrl } = yield* owner.ads.connect({
-      params: { ...params, network: "meta" },
+      headers,
+      params: { network: "meta" },
     });
 
     const signedIn = yield* owner.ads.completeConnect({
-      params: { ...params, network: "meta" },
+      headers,
+      params: { network: "meta" },
       payload: { code: "good-code", state: stateOf(authorizationUrl) },
     });
 
     const [account] = yield* owner.ads.connectAccounts({
-      params: { ...params, connectionId: signedIn.connection.id },
+      headers,
+      params: { connectionId: signedIn.connection.id },
       payload: { externalIds: ["1001"] },
     });
 
     const accountId = account?.id ?? "";
 
     yield* owner.ads.setSpending({
-      params: { ...params, accountId },
+      headers,
+      params: { accountId },
       payload: {
         enabled: true,
         monthlyCeiling: { amount: ceiling, currency: "EUR" },
@@ -128,7 +136,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
       Effect.gen(function* google() {
         const workspaceId = yield* freshWorkspace;
         const owner = yield* clientAs(person(workspaceId, "owner"));
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         yield* onGoogle(
           {
@@ -164,11 +172,13 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
 
         const { authorizationUrl } = yield* owner.ads.connect({
-          params: { ...params, network: "google" },
+          headers,
+          params: { network: "google" },
         });
 
         const signedIn = yield* owner.ads.completeConnect({
-          params: { ...params, network: "google" },
+          headers,
+          params: { network: "google" },
           payload: { code: "good-code", state: stateOf(authorizationUrl) },
         });
 
@@ -176,7 +186,8 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         assert.isFalse(signedIn.connection.maySpend);
 
         const [account] = yield* owner.ads.connectAccounts({
-          params: { ...params, connectionId: signedIn.connection.id },
+          headers,
+          params: { connectionId: signedIn.connection.id },
           payload: { externalIds: ["3333333333"] },
         });
 
@@ -196,7 +207,8 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
 
         const campaigns = yield* owner.ads.listCampaigns({
-          params: { ...params, accountId },
+          headers,
+          params: { accountId },
           query: {},
         });
 
@@ -206,7 +218,8 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
 
         const ads = yield* owner.ads.listAds({
-          params: { ...params, accountId },
+          headers,
+          params: { accountId },
           query: {},
         });
 
@@ -214,7 +227,8 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         assert.strictEqual(
           (yield* failureOf(
             owner.ads.setSpending({
-              params: { ...params, accountId },
+              headers,
+              params: { accountId },
               payload: {
                 enabled: true,
                 monthlyCeiling: { amount: 1000, currency: "EUR" },
@@ -232,24 +246,24 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
       Effect.gen(function* status() {
         const workspaceId = yield* freshWorkspace;
         const owner = yield* clientAs(person(workspaceId, "owner"));
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         yield* onMeta({}, "off");
 
-        assert.deepStrictEqual(yield* owner.ads.status({ params }), {
+        assert.deepStrictEqual(yield* owner.ads.status({ headers }), {
           mode: "off",
           networks: [],
         });
         assert.strictEqual(
           (yield* failureOf(
-            owner.ads.connect({ params: { ...params, network: "meta" } })
+            owner.ads.connect({ headers, params: { network: "meta" } })
           ))._tag,
           "AdsUnavailable"
         );
 
         yield* onMeta({}, "read");
 
-        assert.deepStrictEqual(yield* owner.ads.status({ params }), {
+        assert.deepStrictEqual(yield* owner.ads.status({ headers }), {
           mode: "read",
           networks: ["meta"],
         });
@@ -261,7 +275,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
     () =>
       Effect.gen(function* connecting() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         yield* onMeta({ accounts: [euroAccount(), yenAccount()] });
 
@@ -281,7 +295,8 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         assert.isTrue(signedIn.connection.maySpend);
 
         const spending = yield* owner.ads.getAccount({
-          params: { ...params, accountId },
+          headers,
+          params: { accountId },
         });
 
         assert.strictEqual(spending.account.monthlyCeiling, 20_000);
@@ -302,7 +317,8 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
 
         const decision = {
-          params: { ...params, accountId },
+          headers,
+          params: { accountId },
           payload: {
             enabled: true,
             monthlyCeiling: { amount: 90_000, currency: "EUR" },
@@ -320,7 +336,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
         assert.strictEqual(
           (yield* failureOf(
-            robot.ads.connect({ params: { ...params, network: "meta" } })
+            robot.ads.connect({ headers, params: { network: "meta" } })
           ))._tag,
           "Forbidden"
         );
@@ -346,7 +362,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
     () =>
       Effect.gen(function* boosting() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const api = yield* onMeta();
         const { accountId, owner } = yield* ready(workspaceId);
 
@@ -355,7 +371,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
 
         const payload = yield* boostOf(accountId, post);
-        const quote = yield* owner.ads.quoteBoost({ params, payload });
+        const quote = yield* owner.ads.quoteBoost({ headers, payload });
 
         assert.strictEqual(quote.commitment, 5000);
         assert.strictEqual(quote.ceiling, 20_000);
@@ -363,17 +379,15 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         assert.strictEqual(quote.days, 8);
         assert.isNull(quote.capRoom);
 
-        const headers = { "idempotency-key": "api-key-1" };
+        const withKey = { ...headers, "idempotency-key": "api-key-1" };
 
         const boost = yield* owner.ads.createBoost({
-          headers,
-          params,
+          headers: withKey,
           payload,
         });
 
         const again = yield* owner.ads.createBoost({
-          headers,
-          params,
+          headers: withKey,
           payload,
         });
 
@@ -382,8 +396,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         assert.strictEqual(
           (yield* failureOf(
             owner.ads.createBoost({
-              headers,
-              params,
+              headers: withKey,
               payload: { ...payload, budget: { amount: 9000, kind: "total" } },
             })
           ))._tag,
@@ -397,7 +410,8 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
 
         const detail = yield* owner.ads.getBoost({
-          params: { ...params, boostId: boost.id },
+          headers,
+          params: { boostId: boost.id },
         });
 
         assert.strictEqual(detail.boost.state, "active");
@@ -414,7 +428,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
 
         const listed = yield* owner.ads.listBoosts({
-          params,
+          headers,
           query: { postId: post.postId },
         });
 
@@ -424,12 +438,13 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         );
 
         const performance = yield* owner.ads.postPerformance({
-          params: { ...params, postId: post.postId },
+          headers,
+          params: { postId: post.postId },
         });
 
         assert.lengthOf(performance.boosts, 1);
 
-        const trail = yield* owner.ads.auditTrail({ params, query: {} });
+        const trail = yield* owner.ads.auditTrail({ headers, query: {} });
 
         assert.deepStrictEqual(
           trail.entries.map(({ action }) => action),
@@ -453,7 +468,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         const { owner } = yield* ready(workspaceId);
 
         const accounts = yield* owner.ads.listAccounts({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
         });
 
         assert.isAbove(accounts.length, 0);
@@ -467,7 +482,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
   it.effect("refuse a boost with what a client needs to explain it", () =>
     Effect.gen(function* refusing() {
       const workspaceId = yield* freshWorkspace;
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       yield* onMeta();
 
@@ -478,8 +493,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
       const send = (under: string, changed: typeof payload) =>
         failureOf(
           owner.ads.createBoost({
-            headers: { "idempotency-key": under },
-            params,
+            headers: { ...headers, "idempotency-key": under },
             payload: changed,
           })
         );
@@ -502,8 +516,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
       );
 
       yield* owner.ads.createBoost({
-        headers: { "idempotency-key": "first" },
-        params,
+        headers: { ...headers, "idempotency-key": "first" },
         payload,
       });
 
@@ -532,8 +545,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
       for (const client of [editor, reader]) {
         const refused = yield* failureOf(
           client.ads.createBoost({
-            headers: { "idempotency-key": "no" },
-            params,
+            headers: { ...headers, "idempotency-key": "no" },
             payload,
           })
         );
@@ -550,14 +562,13 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
   it.effect("pause, resume and stop a boost, each asked twice as once", () =>
     Effect.gen(function* controlling() {
       const workspaceId = yield* freshWorkspace;
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
       const api = yield* onMeta();
       const { accountId, owner } = yield* ready(workspaceId);
       const post = yield* TestPosts.use((posts) => posts.publish(workspaceId));
 
       const boost = yield* owner.ads.createBoost({
-        headers: { "idempotency-key": "control" },
-        params,
+        headers: { ...headers, "idempotency-key": "control" },
         payload: yield* boostOf(accountId, post),
       });
 
@@ -565,7 +576,7 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
         operations.place(BoostIdSchema.make(boost.id))
       );
 
-      const on = { params: { ...params, boostId: boost.id } };
+      const on = { headers, params: { boostId: boost.id } };
       const writes = api.writes().length;
 
       assert.strictEqual((yield* owner.ads.pauseBoost(on)).state, "paused");
@@ -580,13 +591,13 @@ layer(AdsTest, { excludeTestServices: true })("the ads endpoints", (it) => {
       assert.strictEqual(conflict._tag, "BoostStateConflict");
       assert.strictEqual(
         (yield* failureOf(
-          owner.ads.pauseBoost({ params: { ...params, boostId: "nope" } })
+          owner.ads.pauseBoost({ headers, params: { boostId: "nope" } })
         ))._tag,
         "BoostNotFound"
       );
       // The account can go once nothing of it may spend.
-      yield* owner.ads.removeAccount({ params: { ...params, accountId } });
-      assert.lengthOf(yield* owner.ads.listAccounts({ params }), 0);
+      yield* owner.ads.removeAccount({ headers, params: { accountId } });
+      assert.lengthOf(yield* owner.ads.listAccounts({ headers }), 0);
     }).pipe(Effect.scoped)
   );
 });

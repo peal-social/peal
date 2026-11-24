@@ -2,7 +2,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Option } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
 import { AssistantApiLive, SlideshowsApiLive } from "#assistant/container.ts";
@@ -53,16 +53,18 @@ const sandbox = "https://api.shotstack.io/edit/stage";
 // Connects Shotstack's sandbox and chooses it for slide videos.
 const composing = (workspaceId: WorkspaceId) =>
   Effect.gen(function* connect() {
-    const params = { workspaceId };
+    const headers = forWorkspace(workspaceId);
     const owner = yield* as(workspaceId, "owner");
 
     yield* owner.assistant.connectProvider({
-      params: { ...params, provider: "shotstack" },
+      headers,
+      params: { provider: "shotstack" },
       payload: { apiKey: syntheticKey, baseUrl: sandbox },
     });
 
     return yield* owner.assistant.setModel({
-      params: { ...params, capability: "composition" },
+      headers,
+      params: { capability: "composition" },
       payload: { provider: "shotstack" },
     });
   });
@@ -75,12 +77,12 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* composes() {
           const workspaceId = yield* freshWorkspace;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
           const owner = yield* as(workspaceId, "owner");
           const editor = yield* as(workspaceId, "editor");
 
           const off = yield* editor.slideshows
-            .create({ params, payload: { aspect: "portrait", slides } })
+            .create({ headers, payload: { aspect: "portrait", slides } })
             .pipe(Effect.flip);
 
           assert.deepInclude(off, {
@@ -91,7 +93,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           // Its production API or its sandbox, nowhere else.
           const proxy = yield* owner.assistant
             .connectProvider({
-              params: { ...params, provider: "shotstack" },
+              headers,
+              params: { provider: "shotstack" },
               payload: {
                 apiKey: syntheticKey,
                 baseUrl: "https://proxy.example.com/edit/v1",
@@ -117,14 +120,15 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           // Every other use needs one.
           const noModel = yield* owner.assistant
             .setModel({
-              params: { ...params, capability: "text" },
+              headers,
+              params: { capability: "text" },
               payload: { provider: "shotstack" },
             })
             .pipe(Effect.flip);
 
           assert.strictEqual(noModel._tag, "AiCapabilityNotOffered");
 
-          const status = yield* editor.assistant.status({ params });
+          const status = yield* editor.assistant.status({ headers });
 
           assert.deepStrictEqual(status.slideshows, {
             available: true,
@@ -137,7 +141,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           // The test's library holds no image.
           const missing = yield* editor.slideshows
-            .create({ params, payload: { aspect: "portrait", slides } })
+            .create({ headers, payload: { aspect: "portrait", slides } })
             .pipe(Effect.flip);
 
           assert.deepInclude(missing, {
@@ -145,14 +149,14 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             reason: "imageNotFound",
           });
 
-          const listed = yield* editor.slideshows.list({ params, query: {} });
+          const listed = yield* editor.slideshows.list({ headers, query: {} });
 
           assert.lengthOf(listed.slideshows, 0);
 
           const none = yield* editor.slideshows
             .get({
+              headers,
               params: {
-                ...params,
                 slideshowId: "019a0000-0000-7000-8000-00000000dead",
               },
             })
@@ -165,17 +169,19 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("a model is required for a use that takes one", () =>
       Effect.gen(function* required() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const owner = yield* as(workspaceId, "owner");
 
         yield* owner.assistant.connectProvider({
-          params: { ...params, provider: "openai" },
+          headers,
+          params: { provider: "openai" },
           payload: { apiKey: "sk_test_synthetic_openai_key" },
         });
 
         const refused = yield* owner.assistant
           .setModel({
-            params: { ...params, capability: "image" },
+            headers,
+            params: { capability: "image" },
             payload: { provider: "openai" },
           })
           .pipe(Effect.flip);
@@ -189,17 +195,17 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* unpaid() {
           const workspaceId = yield* freshWorkspace;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
           const editor = yield* as(workspaceId, "editor");
 
           yield* composing(workspaceId);
 
-          const status = yield* editor.assistant.status({ params });
+          const status = yield* editor.assistant.status({ headers });
 
           assert.isTrue(status.slideshows.paymentMethodRequired);
 
           const refused = yield* editor.slideshows
-            .create({ params, payload: { aspect: "portrait", slides } })
+            .create({ headers, payload: { aspect: "portrait", slides } })
             .pipe(Effect.flip);
 
           assert.strictEqual(refused._tag, "CompositionNeedsPayment");
@@ -224,7 +230,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* edits() {
           const workspaceId = yield* freshWorkspace;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
           const editor = yield* as(workspaceId, "editor");
 
           yield* forgetSlideshowsOf(workspaceId);
@@ -248,7 +254,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           };
 
           const off = yield* editor.slideshows
-            .createFromEdit({ params, payload: { edit } })
+            .createFromEdit({ headers, payload: { edit } })
             .pipe(Effect.flip);
 
           assert.deepInclude(off, {
@@ -283,7 +289,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
               { ...edit, output: { format: "gif", resolution: "sd" } },
             ].map((each) =>
               editor.slideshows
-                .createFromEdit({ params, payload: { edit: each } })
+                .createFromEdit({ headers, payload: { edit: each } })
                 .pipe(Effect.flip)
             )
           );
@@ -300,7 +306,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           );
 
           const queued = yield* editor.slideshows.createFromEdit({
-            params,
+            headers,
             payload: { edit },
           });
 
@@ -315,7 +321,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           // One at a time a workspace.
           const busy = yield* editor.slideshows
-            .createFromEdit({ params, payload: { edit } })
+            .createFromEdit({ headers, payload: { edit } })
             .pipe(Effect.flip);
 
           assert.deepInclude(busy, {
@@ -326,7 +332,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           const viewer = yield* as(workspaceId, "viewer");
 
           const forbidden = yield* viewer.slideshows
-            .createFromEdit({ params, payload: { edit } })
+            .createFromEdit({ headers, payload: { edit } })
             .pipe(Effect.flip);
 
           assert.strictEqual(forbidden._tag, "Forbidden");
@@ -336,14 +342,14 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("refuse viewers, who may not use the assistant", () =>
       Effect.gen(function* viewers() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const viewer = yield* as(workspaceId, "viewer");
 
         const refusals = yield* Effect.all([
           viewer.slideshows
-            .create({ params, payload: { aspect: "portrait", slides } })
+            .create({ headers, payload: { aspect: "portrait", slides } })
             .pipe(Effect.flip),
-          viewer.slideshows.list({ params, query: {} }).pipe(Effect.flip),
+          viewer.slideshows.list({ headers, query: {} }).pipe(Effect.flip),
         ]);
 
         assert.deepStrictEqual(

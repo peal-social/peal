@@ -1,7 +1,12 @@
 import { assert, layer } from "@effect/vitest";
 import { Context, Effect, Layer } from "effect";
 import { HttpApiClient } from "effect/http-api";
-import { deviceCodeGrantType, MeSchema, OAuthApi } from "peal-contract";
+import {
+  deviceCodeGrantType,
+  MeSchema,
+  OAuthApi,
+  forWorkspace,
+} from "peal-contract";
 
 import {
   bodyOf,
@@ -178,10 +183,12 @@ layer(DeviceGrantLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
           assert.include(me.workspaces[0]?.permissions ?? [], "post:publish");
 
-          const channels = yield* app.request(
-            `/api/workspaces/${workspaceId}/channels`,
-            { headers: bearer(tokens.access_token) }
-          );
+          const channels = yield* app.request(`/api/v1/channels`, {
+            headers: {
+              ...bearer(tokens.access_token),
+              ...forWorkspace(workspaceId),
+            },
+          });
 
           assert.strictEqual(channels.status, 200);
 
@@ -240,10 +247,9 @@ layer(DeviceGrantLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const { access_token: token } = yield* poll(device.device_code);
 
-        const elsewhere = yield* app.request(
-          `/api/workspaces/${othersWorkspace}/channels`,
-          { headers: bearer(token) }
-        );
+        const elsewhere = yield* app.request(`/api/v1/channels`, {
+          headers: { ...bearer(token), ...forWorkspace(othersWorkspace) },
+        });
 
         assert.strictEqual(elsewhere.status, 404);
 

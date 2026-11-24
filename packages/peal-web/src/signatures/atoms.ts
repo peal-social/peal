@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -12,7 +13,7 @@ export const signaturesChanged = (workspaceId: string) => [
 
 export const workspaceSignatures = Atom.family((workspaceId: string) =>
   PealApi.query("signatures", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: signaturesChanged(workspaceId),
   })
 );

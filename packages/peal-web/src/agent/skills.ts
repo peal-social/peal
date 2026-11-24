@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealAgentApi } from "#agent/client.ts";
 
@@ -15,7 +16,7 @@ export const agentSkillsChanged = (workspaceId: string) => [
 /** The skills the person may use in the workspace, by name. */
 export const agentSkills = Atom.family((workspaceId: string) =>
   PealAgentApi.query("agent", "skills", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: agentSkillsChanged(workspaceId),
   })
 );

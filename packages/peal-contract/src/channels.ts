@@ -31,6 +31,7 @@ import { SiteConnectLimited } from "./site-connect-limited.ts";
 import { SiteNotConnected } from "./site-not-connected.ts";
 import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * Whether a channel posts:
@@ -264,8 +265,6 @@ export const ChooseAccountsSchema = Schema.Struct({
 
 export type ChooseAccounts = typeof ChooseAccountsSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
 /** The longest website address Peal takes. */
 export const maxSiteAddressLength = 2048;
 
@@ -387,7 +386,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(ChannelSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -398,7 +398,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.get("find", "/search", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         limit: Schema.optionalKey(
@@ -421,7 +422,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.get("platforms", "/platforms", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: ConnectablePlatformsSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -432,7 +434,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.post("connectSite", "/websites", {
       error: [...connectErrors, SiteNotConnected, SiteConnectLimited],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: ConnectSiteSchema,
       success: ChannelSchema,
     }).annotateMerge(
@@ -444,7 +447,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.post("connectSiteWithKey", "/websites/keys", {
       error: [...connectErrors, SiteNotConnected, SiteConnectLimited],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: ConnectSiteWithKeySchema,
       success: ChannelSchema,
     }).annotateMerge(
@@ -461,7 +465,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
         ChatNotConnected,
         ChatConnectLimited,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: ConnectChatSchema,
       success: ChannelSchema,
     }).annotateMerge(
@@ -478,7 +483,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
         SiteNotConnected,
         SiteConnectLimited,
       ],
-      params: { ...workspace, platform: OAuthSitePlatformSchema },
+      headers: workspaceHeaders,
+      params: { platform: OAuthSitePlatformSchema },
       payload: StartSiteSignInSchema,
       success: AuthorizationSchema,
     }).annotateMerge(
@@ -498,7 +504,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
           SiteNotConnected,
           SiteConnectLimited,
         ],
-        params: { ...workspace, platform: OAuthSitePlatformSchema },
+        headers: workspaceHeaders,
+        params: { platform: OAuthSitePlatformSchema },
         payload: SiteSignInCallbackSchema,
         success: ChannelSchema,
       }
@@ -511,7 +518,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.post("connect", "/connect/:platform", {
       error: connectErrors,
-      params: { ...workspace, platform: PlatformSchema },
+      headers: workspaceHeaders,
+      params: { platform: PlatformSchema },
       payload: ConnectChannelSchema,
       success: AuthorizationSchema,
     }).annotateMerge(
@@ -523,7 +531,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.post("completeConnect", "/connect/:platform/callback", {
       error: [...connectErrors, ChannelNotFound],
-      params: { ...workspace, platform: PlatformSchema },
+      headers: workspaceHeaders,
+      params: { platform: PlatformSchema },
       payload: ConnectCallbackSchema,
       success: ConnectOutcomeSchema,
     }).annotateMerge(
@@ -535,7 +544,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.post("chooseAccounts", "/connect/:platform/accounts", {
       error: [...connectErrors, ChannelNotFound],
-      params: { ...workspace, platform: PlatformSchema },
+      headers: workspaceHeaders,
+      params: { platform: PlatformSchema },
       payload: ChooseAccountsSchema,
       success: Schema.Array(ChannelSchema),
     }).annotateMerge(
@@ -547,7 +557,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.post("reconnect", "/:channelId/reconnect", {
       error: [...reconnectErrors, ChannelNotFound],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       query: {
         // `true` also asks the account for its direct messages, where the
         // platform asks for them apart (Bluesky's chat).
@@ -566,7 +577,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.patch("update", "/:channelId", {
       error: [Forbidden, ChannelNotFound],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       payload: ChannelUpdateSchema,
       success: ChannelSchema,
     }).annotateMerge(
@@ -577,7 +589,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.post("disable", "/:channelId/disable", {
       error: [Forbidden, ChannelNotFound],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       success: ChannelSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -588,7 +601,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.post("enable", "/:channelId/enable", {
       error: [Forbidden, ChannelNotFound],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       success: ChannelSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -599,7 +613,8 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
     ),
     HttpApiEndpoint.delete("disconnect", "/:channelId", {
       error: [Forbidden, ChannelNotFound],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
       OpenApi.annotations({
@@ -611,4 +626,4 @@ export class ChannelsApi extends HttpApiGroup.make("channels")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/channels") {}
+  .prefix("/api/v1/channels") {}

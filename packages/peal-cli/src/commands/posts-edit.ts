@@ -55,14 +55,14 @@ export const edit = Command.make(
       });
     }
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const post = yield* client.posts
-      .get({ params: { postId: input.postId, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { postId: input.postId } })
       .pipe(Effect.mapError(explain(url)));
 
     const channels = yield* client.channels
-      .list({ params: { workspaceId: workspace.id } })
+      .list({ headers: {} })
       .pipe(Effect.orElseSucceed((): readonly Channel[] => []));
 
     const names: ReadonlyMap<string, string> = new Map(
@@ -93,10 +93,10 @@ export const edit = Command.make(
 
     const change = yield* client.posts
       .editTarget({
+        headers: {},
         params: {
           postId: post.id,
           targetId: target.id,
-          workspaceId: workspace.id,
         },
         payload: { part: input.part, text: input.text },
         query: Option.match(input.wait, {

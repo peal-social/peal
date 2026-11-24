@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { Atom } from "effect/reactivity";
-import { maxFollowUpPageSize } from "peal-contract";
+import { maxFollowUpPageSize, forWorkspace } from "peal-contract";
 import type { FollowUpRule, FollowUpRulePage } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -39,7 +39,7 @@ export const workspaceFollowUps = Atom.family((workspaceId: string) =>
       PealApi.use((client) =>
         everyFollowUpRule((cursor) =>
           client.followUps.list({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query:
               cursor === undefined
                 ? { limit: maxFollowUpPageSize }

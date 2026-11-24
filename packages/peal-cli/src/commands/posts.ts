@@ -229,7 +229,7 @@ const show = Command.make(
     const { client, url, workspace } = session;
 
     const post = yield* client.posts
-      .get({ params: { postId, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -238,7 +238,7 @@ const show = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     // Its tags by name; by id when the workspace's cannot be read.
     const tagNames =
@@ -309,7 +309,7 @@ const attempts = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const found = yield* client.posts
-      .attempts({ params: { postId, workspaceId: workspace.id } })
+      .attempts({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -375,11 +375,12 @@ const wait = Command.make(
         )
       : Effect.void;
 
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const post = yield* client.posts
       .outcome({
-        params: { postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId },
         query: { wait: seconds },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -390,7 +391,7 @@ const wait = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     for (const line of outcomeLines(post, names)) {
       yield* Console.log(line);
@@ -410,10 +411,10 @@ const unschedule = Command.make(
     postId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const post = yield* client.posts
-      .unschedule({ params: { postId, workspaceId: workspace.id } })
+      .unschedule({ headers: {}, params: { postId } })
       .pipe(explainingPublishing(url));
 
     yield* printPost(
@@ -443,10 +444,10 @@ const leaveOutRest = Command.make(
     targetId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const post = yield* client.posts
-      .leaveOutRest({ params: { postId, targetId, workspaceId: workspace.id } })
+      .leaveOutRest({ headers: {}, params: { postId, targetId } })
       .pipe(explainingPublishing(url));
 
     if (json) {
@@ -455,7 +456,7 @@ const leaveOutRest = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     yield* Option.match(targetOf(post, targetId), {
       onNone: () =>
@@ -486,10 +487,10 @@ const repost = Command.make(
     targetId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const post = yield* client.posts
-      .repost({ params: { postId, targetId, workspaceId: workspace.id } })
+      .repost({ headers: {}, params: { postId, targetId } })
       .pipe(explainingPublishing(url));
 
     if (json) {
@@ -498,7 +499,7 @@ const repost = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     yield* Option.match(targetOf(post, targetId), {
       onNone: () => Console.log(`Posting ${postId} again, now.`),
@@ -539,7 +540,7 @@ const confirm = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("posts.confirm")(function* confirm(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     yield* input.verdict === "not-published" && Option.isSome(input.permalink)
       ? Effect.fail(
@@ -565,10 +566,10 @@ const confirm = Command.make(
 
     const post = yield* client.posts
       .confirm({
+        headers: {},
         params: {
           postId: input.postId,
           targetId: input.targetId,
-          workspaceId: workspace.id,
         },
         payload,
       })
@@ -580,7 +581,7 @@ const confirm = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     const channel = targetOf(post, input.targetId).pipe(
       Option.map(({ channelId }) => named(names, channelId)),
@@ -613,23 +614,25 @@ const schedule = Command.make(
   },
   Effect.fn("posts.schedule")(function* schedule(input) {
     const at = yield* instantOf(input.at, input.timeZone);
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
-    const params = { postId: input.postId, workspaceId: workspace.id };
+    const { client, url } = yield* inWorkspace(input.workspace);
+    const params = { postId: input.postId };
     const channelIds = channelIdsOf(input.channels);
 
     const post = yield* (
       Arr.isArrayNonEmpty(channelIds)
         ? client.posts.schedule({
+            headers: {},
             params,
             payload: { at, channelIds, timeZone: input.timeZone },
           })
         : client.posts.reschedule({
+            headers: {},
             params,
             payload: { at, timeZone: input.timeZone },
           })
     ).pipe(explainingPublishing(url));
 
-    const names = yield* namesFor(input.json, client, workspace.id);
+    const names = yield* namesFor(input.json, client);
 
     yield* printPost(
       post,
@@ -653,16 +656,17 @@ const publish = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("posts.publish")(function* publish(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const post = yield* client.posts
       .reschedule({
-        params: { postId: input.postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId: input.postId },
         payload: { at: yield* DateTime.now, timeZone: input.timeZone },
       })
       .pipe(explainingPublishing(url));
 
-    const names = yield* namesFor(input.json, client, workspace.id);
+    const names = yield* namesFor(input.json, client);
 
     yield* printPost(
       post,
@@ -688,16 +692,17 @@ const reschedule = Command.make(
   },
   Effect.fn("posts.reschedule")(function* reschedule(input) {
     const at = yield* instantOf(input.at, input.timeZone);
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const post = yield* client.posts
       .reschedule({
-        params: { postId: input.postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId: input.postId },
         payload: { at, timeZone: input.timeZone },
       })
       .pipe(explainingPublishing(url));
 
-    const names = yield* namesFor(input.json, client, workspace.id);
+    const names = yield* namesFor(input.json, client);
 
     yield* printPost(
       post,
@@ -731,7 +736,7 @@ const queue = Command.make(
   },
   Effect.fn("posts.queue")(function* queuePost(input) {
     const session = yield* inWorkspace(input.workspace);
-    const { client, url, workspace } = session;
+    const { client, url } = session;
 
     const chosen = yield* queueOf(
       session,
@@ -743,7 +748,8 @@ const queue = Command.make(
 
     const post = yield* client.posts
       .enqueue({
-        params: { postId: input.postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId: input.postId },
         payload:
           first === undefined
             ? { queueId: chosen.id }
@@ -751,7 +757,7 @@ const queue = Command.make(
       })
       .pipe(explainingPublishing(url));
 
-    const names = yield* namesFor(input.json, client, workspace.id);
+    const names = yield* namesFor(input.json, client);
 
     yield* printPost(
       post,
@@ -774,10 +780,10 @@ const cancel = Command.make(
     postId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const post = yield* client.posts
-      .cancel({ params: { postId, workspaceId: workspace.id } })
+      .cancel({ headers: {}, params: { postId } })
       .pipe(explainingPublishing(url));
 
     yield* printPost(post, json, () =>
@@ -823,11 +829,12 @@ const removeTarget = Command.make(
     targetId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const answer = yield* client.posts
       .removeTarget({
-        params: { postId, targetId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId, targetId },
       })
       .pipe(
         Effect.map((post) => Result.succeed(post)),
@@ -862,7 +869,7 @@ const removeTarget = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     const channel = targetOf(post, targetId).pipe(
       Option.map((target) => named(names, target.channelId)),
@@ -903,15 +910,15 @@ const duplicate = Command.make(
     workspace: choice,
   }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
-    const params = { postId, workspaceId: workspace.id };
+    const params = { postId };
 
     // Read first, only to say what the copy was made without.
     const original = json
       ? Option.none()
-      : yield* client.posts.get({ params }).pipe(Effect.option);
+      : yield* client.posts.get({ headers: {}, params }).pipe(Effect.option);
 
     const copy = yield* client.posts
-      .duplicate({ params })
+      .duplicate({ headers: {}, params })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -920,7 +927,7 @@ const duplicate = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     yield* Console.log(
       `Duplicated post ${postId} as draft ${copy.id} in ${workspace.name}, for ${channelsOf(copy, names)}: its text, media, channels with their options, and tags. It has no time: peal posts schedule ${copy.id} gives it one.`
@@ -976,12 +983,13 @@ const tag = Command.make(
     workspace: choice,
   }) {
     const session = yield* inWorkspace(choice);
-    const { client, url, workspace } = session;
+    const { client, url } = session;
     const chosen = yield* tagsNamed(session, given);
 
     const post = yield* client.posts
       .tag({
-        params: { postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId },
         payload: { tagIds: chosen.map(({ id }) => id) },
       })
       .pipe(Effect.mapError(explain(url)));

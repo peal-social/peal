@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 import type { CalendarDay } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -22,14 +23,14 @@ export const partnerKeysChanged = (workspaceId: string) => [
 
 export const partnerOf = Atom.family((workspaceId: string) =>
   PealApi.query("partnerAccount", "get", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: partnerChanged(workspaceId),
   })
 );
 
 export const partnerKeysOf = Atom.family((workspaceId: string) =>
   PealApi.query("partnerAccount", "listKeys", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: partnerKeysChanged(workspaceId),
   })
 );
@@ -37,7 +38,7 @@ export const partnerKeysOf = Atom.family((workspaceId: string) =>
 /** The workspaces the account owns, the newest of them. */
 export const partnerWorkspacesOf = Atom.family((workspaceId: string) =>
   PealApi.query("partnerAccount", "listWorkspaces", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: {},
   })
 );
@@ -48,7 +49,7 @@ export const partnerWorkspacesOf = Atom.family((workspaceId: string) =>
  */
 export const partnerHealthOf = Atom.family((workspaceId: string) =>
   PealApi.query("partnerAccount", "overview", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: {},
   })
 );
@@ -66,7 +67,7 @@ export const partnerUsageOf = (
   }
 ) =>
   PealApi.query("usage", "partner", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query,
     reactivityKeys: [`billing:${workspaceId}`],
   });

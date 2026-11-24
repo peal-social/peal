@@ -1,5 +1,5 @@
 import { Atom } from "effect/reactivity";
-import { isSocialChannel } from "peal-contract";
+import { isSocialChannel, forWorkspace } from "peal-contract";
 import type { Channel } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -17,7 +17,7 @@ export const articlesKeys = (workspaceId: string) => [
 /** The workspace's articles, newest first. */
 export const workspaceArticles = (workspaceId: string) =>
   PealApi.query("articles", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: {},
     reactivityKeys: articlesKeys(workspaceId),
   });
@@ -25,7 +25,8 @@ export const workspaceArticles = (workspaceId: string) =>
 /** One article of the workspace. */
 export const workspaceArticle = (workspaceId: string, articleId: string) =>
   PealApi.query("articles", "get", {
-    params: { articleId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { articleId },
     reactivityKeys: articlesKeys(workspaceId),
   });
 

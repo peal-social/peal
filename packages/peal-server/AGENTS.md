@@ -215,7 +215,7 @@ and no socket, for tests.
   windows, one upsert per request on `activity.request_counts` under the
   subject's SHA-256, the same count for the API and the MCP endpoint;
   sessions are not counted. `RequestLimits.admit` takes the workspace the
-  request names (`:workspaceId`, or the MCP connection's). Every
+  request names (`actingIn`, below, or the MCP connection's). Every
   such answer carries `RateLimit-Policy` and `RateLimit` (the IETF draft's
   structured fields); past the limit `Authentication` answers
   `TooManyRequests` (429, `Retry-After`) as a response, not a failure, which
@@ -282,13 +282,27 @@ and no socket, for tests.
   session cookie, and provides `CurrentPrincipal`. A cookie request that
   changes something needs an `Origin` of `PUBLIC_URL` or `TRUSTED_ORIGINS`,
   and reads the session fresh from the database.
-- `WorkspaceAccess` reads `:workspaceId` and provides `CurrentMember`. A
-  workspace the caller does not belong to answers 404, a banned user 403.
-  Membership and bans are read on every request (`MemberDirectory`), so they
-  apply at once.
-- Put workspace groups under `/api/workspaces/:workspaceId/…`, with
+- A request's workspace never comes from its path. `WorkspaceAccess`
+  takes it from the `Peal-Workspace` header (`workspaceHeader`, a
+  workspace's id), else from the credential's own workspace (an API key's,
+  or the one an OAuth token is bound to: `ownWorkspaceOf`), else answers
+  400 `WorkspaceRequired`: a session, the command line's token and a
+  partner key always send the header. It provides `CurrentMember` and puts
+  the workspace on the request's span (`peal.workspace_id`). A workspace
+  the caller does not belong to answers 404, as does a value that is no
+  workspace id, a banned user 403, a key or a bound token naming another
+  workspace 403. Membership and bans are read on every request
+  (`MemberDirectory`), so they apply at once. `Authentication`'s rate
+  limit, connection journal and impersonation guard read the same value,
+  unchecked, through `actingIn` (`#workspace/api/request-workspace.ts`).
+- Put workspace groups under `/api/v1/…`, every endpoint taking
+  `headers: workspaceHeaders` (spread first into headers of its own), with
   `.middleware(WorkspaceAccess).middleware(Authentication)` (Authentication
   runs first), and add them to `WorkspaceGroupsLive` in `src/app/server.ts`.
+  A path that names a workspace is a resource of another group (the
+  partner API's customers, the staff console's), never the request's.
+  The addresses platforms hold (`/api/channels/oauth/…`,
+  `/api/data-deletion/…`, `/api/platform-events/…`) never move.
 - Put the signed-in user's own groups, which span workspaces (notices,
   notification preferences), under `/api/me/…` with `Authentication` alone,
   in `WorkspaceGroupsLive` too. They answer 403 to API keys, which belong to

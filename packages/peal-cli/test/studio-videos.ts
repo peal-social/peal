@@ -11,8 +11,9 @@ import {
   VideoGenerationNotFound,
   VideoRequestRejected,
   VideoUnavailable,
+  CurrentMember,
 } from "peal-contract";
-import type { CurrentMember, Permission, VideoGeneration } from "peal-contract";
+import type { Permission, VideoGeneration } from "peal-contract";
 
 import type { Studio } from "./studio.ts";
 
@@ -98,11 +99,11 @@ export const studioVideosOf = (world: VideosWorld) => {
   const groupLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "videoGenerations", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* world.allowed("assistant:use");
             yield* world.allowed("media:upload");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const prompt = payload.prompt.trim();
 
@@ -169,7 +170,7 @@ export const studioVideosOf = (world: VideosWorld) => {
         get: ({ params }) =>
           Effect.gen(function* get() {
             yield* world.allowed("assistant:use");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const found = yield* read(studio, params.generationId);
 
@@ -178,10 +179,10 @@ export const studioVideosOf = (world: VideosWorld) => {
               onSome: Effect.succeed,
             });
           }),
-        list: ({ params, query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             yield* world.allowed("assistant:use");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const { videos } = yield* Ref.get(studio.state);
 

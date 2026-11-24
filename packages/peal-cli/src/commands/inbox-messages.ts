@@ -95,7 +95,7 @@ const list = Command.make(
 
     const page = yield* client.inboxMessages
       .listConversations({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(flags.channel, {
             onNone: () => ({}),
@@ -165,13 +165,13 @@ const show = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("inbox.messages.show")(function* showing(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const detail = yield* client.inboxMessages
       .getConversation({
+        headers: {},
         params: {
           conversationId: flags.conversationId,
-          workspaceId: workspace.id,
         },
         query: Option.match(flags.cursor, {
           onNone: () => ({}),
@@ -276,7 +276,7 @@ const send = Command.make(
   Effect.fn("inbox.messages.send")(function* sending(flags) {
     yield* keyChecked(flags.idempotencyKey);
 
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const sent = yield* client.inboxMessages
       .sendMessage({
@@ -286,7 +286,6 @@ const send = Command.make(
         }),
         params: {
           conversationId: flags.conversationId,
-          workspaceId: workspace.id,
         },
         payload: { text: flags.text },
       })
@@ -321,13 +320,13 @@ const read = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("inbox.messages.read")(function* marking(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const marked = yield* client.inboxMessages
       .setConversationRead({
+        headers: {},
         params: {
           conversationId: flags.conversationId,
-          workspaceId: workspace.id,
         },
         payload: { read: !flags.undo },
       })
@@ -378,11 +377,12 @@ const confirm = Command.make(
         )
       : Effect.void;
 
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const settled = yield* client.inboxMessages
       .confirmMessage({
-        params: { messageId: flags.messageId, workspaceId: workspace.id },
+        headers: {},
+        params: { messageId: flags.messageId },
         payload: { sent: flags.sent },
       })
       .pipe(Effect.mapError(explain(url)));

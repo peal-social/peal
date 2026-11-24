@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -12,7 +13,7 @@ export const shortLinksChanged = (workspaceId: string) => [
 
 export const shortLinkStatus = Atom.family((workspaceId: string) =>
   PealApi.query("shortLinks", "status", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: shortLinksChanged(workspaceId),
   })
 );
@@ -21,7 +22,7 @@ export const shortLinkStatus = Atom.family((workspaceId: string) =>
 export const postShortLinks = Atom.family(
   ({ postId, workspaceId }: { postId: string; workspaceId: string }) =>
     PealApi.query("shortLinks", "list", {
-      params: { workspaceId },
+      headers: forWorkspace(workspaceId),
       query: { postId },
       reactivityKeys: shortLinksChanged(workspaceId),
     })

@@ -5,7 +5,7 @@
   endpoints are `AgentApi` (`peal-contract/agent`), apart from `Api`:
   never in the OpenAPI document, the SDKs, the command line or an MCP
   tool. `src/app/agent/live.ts` serves it beside `Api`, under
-  `/api/workspaces/:workspaceId/agent`, behind the same Authentication and
+  `/api/v1/agent`, behind the same Authentication and
   WorkspaceAccess, with its handlers in `src/app/agent/handlers.ts` (the
   composition root, as only it may import `peal-contract/agent`).
 - Every use case (`AgentDesk`, `AgentSkillDesk`) needs `assistant:use`

@@ -137,7 +137,7 @@ export const usage = Command.make(
     }
 
     const report = yield* client.usage
-      .get({ params: { workspaceId: workspace.id }, query })
+      .get({ headers: {}, query })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {

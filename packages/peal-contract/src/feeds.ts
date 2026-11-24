@@ -20,6 +20,7 @@ import { QueueNotFound } from "./queue-not-found.ts";
 import { TooManyFeeds } from "./too-many-feeds.ts";
 import { UnknownChannels } from "./unknown-channels.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // The limits below are the server's, copied here for clients; a test
 // keeps them equal.
@@ -323,9 +324,7 @@ export const FeedItemsSchema = Schema.Struct({
 
 export type FeedItems = typeof FeedItemsSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
-const feed = { ...workspace, feedId: Schema.String };
+const feed = { feedId: Schema.String };
 
 const reading = `Reading an address takes one of the workspace's ${String(feedReadsPerHour)} reads an hour (FeedReadsLimited past them): a public HTTPS address only, ${String(maxFeedBytes)} bytes at most, three redirects at most, each checked again.`;
 
@@ -339,7 +338,8 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         limit: Schema.optionalKey(
@@ -367,7 +367,8 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
         TooManyFeeds,
         UnknownChannels,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewFeedSchema,
       success: CreatedFeedSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -384,7 +385,8 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
         FeedUnreadable,
         Forbidden,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: FeedPreviewRequestSchema,
       success: FeedPreviewSchema,
     }).annotateMerge(
@@ -395,6 +397,7 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
     ),
     HttpApiEndpoint.get("get", "/:feedId", {
       error: [FeedNotFound, Forbidden],
+      headers: workspaceHeaders,
       params: feed,
       success: FeedSchema,
     }).annotateMerge(
@@ -416,6 +419,7 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
         QueueNotFound,
         UnknownChannels,
       ],
+      headers: workspaceHeaders,
       params: feed,
       payload: FeedChangeSchema,
       success: FeedSchema,
@@ -427,6 +431,7 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
     ),
     HttpApiEndpoint.delete("delete", "/:feedId", {
       error: [FeedNotFound, Forbidden],
+      headers: workspaceHeaders,
       params: feed,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -438,6 +443,7 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
     ),
     HttpApiEndpoint.get("items", "/:feedId/items", {
       error: [FeedNotFound, Forbidden],
+      headers: workspaceHeaders,
       params: feed,
       success: FeedItemsSchema,
     }).annotateMerge(
@@ -449,4 +455,4 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/feeds") {}
+  .prefix("/api/v1/feeds") {}

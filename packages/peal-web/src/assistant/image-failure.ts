@@ -15,6 +15,7 @@ import type {
   Unauthenticated,
   UsageAllowanceReached,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 
 /** Why an image was not made, as the API declares it. */
@@ -33,6 +34,7 @@ export type ImageFailure =
   | Unauthenticated
   | UsageAllowanceReached
   | WorkspaceNotFound
+  | WorkspaceRequired
   // The request failed in a way the API does not declare.
   | { readonly _tag: "Unexpected" };
 
@@ -96,6 +98,7 @@ export const imageFailureKey = (failure: ImageFailure): ImageFailureKey =>
       return reason === "paymentFailed" ? "paymentFailed" : "allowance";
     },
     WorkspaceNotFound: (): ImageFailureKey => "generic",
+    WorkspaceRequired: (): ImageFailureKey => "generic",
   });
 
 /**

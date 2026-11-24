@@ -189,7 +189,7 @@ const list = Command.make(
 
     const page = yield* client.recycling
       .list({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(input.cursor, {
             onNone: () => ({}),
@@ -251,10 +251,10 @@ const show = Command.make(
   "show",
   { json: jsonFlag, rule: ruleArgument, workspace: workspaceFlag },
   Effect.fn("recycling.show")(function* show(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.recycling
-      .get({ params: { ruleId: input.rule, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* printRule(
@@ -307,7 +307,7 @@ const start = Command.make(
 
     yield* checkedEnding(input);
     const session = yield* inWorkspace(input.workspace);
-    const { client, url, workspace } = session;
+    const { client, url } = session;
 
     const queueId = yield* Option.match(input.queue, {
       onNone: () => Effect.succeed(Option.none<string>()),
@@ -317,7 +317,7 @@ const start = Command.make(
 
     const rule = yield* client.recycling
       .create({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           every,
           postId: input.post,
@@ -402,11 +402,12 @@ const update = Command.make(
 
     yield* checkedEnding(input);
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.recycling
       .update({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
         payload,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -423,11 +424,12 @@ const pause = Command.make(
   "pause",
   { json: jsonFlag, rule: ruleArgument, workspace: workspaceFlag },
   Effect.fn("recycling.pause")(function* paused(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.recycling
       .update({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
         payload: { paused: true },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -455,11 +457,12 @@ const resume = Command.make(
       variants: input.variants,
     });
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.recycling
       .resume({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
         payload:
           input.variants.length > 0
             ? { variants: variantsOf(input.variants) }
@@ -479,10 +482,10 @@ const end = Command.make(
   "end",
   { json: jsonFlag, rule: ruleArgument, workspace: workspaceFlag },
   Effect.fn("recycling.end")(function* end(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     yield* client.recycling
-      .delete({ params: { ruleId: input.rule, workspaceId: workspace.id } })
+      .delete({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* input.json

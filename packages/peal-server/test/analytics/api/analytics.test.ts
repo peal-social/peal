@@ -10,6 +10,7 @@ import {
   Forbidden,
   InvalidDateRange,
   InvalidTimeZone,
+  forWorkspace,
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -67,7 +68,7 @@ const exported = (
   query: Parameters<Client["analytics"]["export"]>[0]["query"]
 ) =>
   client.analytics
-    .export({ params: { workspaceId }, query })
+    .export({ headers: forWorkspace(workspaceId), query })
     .pipe(
       Effect.flatMap((file) => file.pipe(Stream.decodeText(), Stream.mkString))
     );
@@ -110,7 +111,7 @@ layer(ApiTest)("the analytics endpoints", (it) => {
         const client = yield* as(workspaceId);
 
         const found = yield* client.analytics.summary({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
           query: {
             from: "2043-05-04",
             timeZone: "America/New_York",
@@ -215,7 +216,7 @@ layer(ApiTest)("the analytics endpoints", (it) => {
           const client = yield* as(workspaceId);
 
           const found = yield* client.analytics.dashboard({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: { from: "2044-03-08", timeZone: "UTC", to: "2044-03-14" },
           });
 
@@ -371,7 +372,7 @@ layer(ApiTest)("the analytics endpoints", (it) => {
           assert.strictEqual(found.topPosts[0]?.targetId, recent.targetId);
 
           const single = yield* client.analytics.dashboard({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: {
               from: "2044-03-08",
               timeZone: "UTC",
@@ -384,7 +385,8 @@ layer(ApiTest)("the analytics endpoints", (it) => {
 
           // One channel, day by day.
           const series = yield* client.analytics.channel({
-            params: { channelId: linkedin, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { channelId: linkedin },
             query: { from: "2044-03-09", timeZone: "UTC", to: "2044-03-11" },
           });
 
@@ -418,7 +420,8 @@ layer(ApiTest)("the analytics endpoints", (it) => {
           const other = yield* as(yield* freshWorkspace);
 
           const foreign = yield* other.analytics.channel({
-            params: { channelId: linkedin, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { channelId: linkedin },
             query: { from: "2044-03-09", timeZone: "UTC", to: "2044-03-11" },
           });
 
@@ -491,7 +494,8 @@ layer(ApiTest)("the analytics endpoints", (it) => {
         const client = yield* as(workspaceId);
 
         const found = yield* client.analytics.post({
-          params: { postId: publication.postId, workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { postId: publication.postId },
         });
 
         assert.deepStrictEqual(found, {
@@ -551,13 +555,15 @@ layer(ApiTest)("the analytics endpoints", (it) => {
         const stranger = yield* as(elsewhere);
 
         const hidden = yield* stranger.analytics.post({
-          params: { postId: publication.postId, workspaceId: elsewhere },
+          headers: forWorkspace(elsewhere),
+          params: { postId: publication.postId },
         });
 
         assert.deepStrictEqual(hidden.targets, []);
 
         const malformed = yield* client.analytics.post({
-          params: { postId: "not-a-post", workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { postId: "not-a-post" },
         });
 
         assert.deepStrictEqual(malformed.targets, []);
@@ -569,17 +575,17 @@ layer(ApiTest)("the analytics endpoints", (it) => {
     Effect.gen(function* forbidden() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId, ["post:read"]);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const summary = yield* client.analytics
         .summary({
-          params,
+          headers,
           query: { from: "2043-05-04", timeZone: "UTC", to: "2043-05-04" },
         })
         .pipe(Effect.flip);
 
       const post = yield* client.analytics
-        .post({ params: { ...params, postId: "not-a-post" } })
+        .post({ headers, params: { postId: "not-a-post" } })
         .pipe(Effect.flip);
 
       assert.instanceOf(summary, Forbidden);
@@ -591,25 +597,25 @@ layer(ApiTest)("the analytics endpoints", (it) => {
     Effect.gen(function* refusals() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const backwards = yield* client.analytics
         .summary({
-          params,
+          headers,
           query: { from: "2043-05-04", timeZone: "UTC", to: "2043-05-03" },
         })
         .pipe(Effect.flip);
 
       const long = yield* client.analytics
         .summary({
-          params,
+          headers,
           query: { from: "2043-01-01", timeZone: "UTC", to: "2044-01-02" },
         })
         .pipe(Effect.flip);
 
       const offset = yield* client.analytics
         .summary({
-          params,
+          headers,
           query: { from: "2043-05-04", timeZone: "+01:00", to: "2043-05-04" },
         })
         .pipe(Effect.flip);
@@ -627,7 +633,7 @@ layer(ApiTest)("the analytics endpoints", (it) => {
     Effect.gen(function* edges() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const refused = yield* Effect.forEach(
         [
@@ -636,7 +642,7 @@ layer(ApiTest)("the analytics endpoints", (it) => {
           { from: "9999-12-01", timeZone: "UTC", to: "9999-12-31" },
         ],
         (query) =>
-          client.analytics.summary({ params, query }).pipe(Effect.flip),
+          client.analytics.summary({ headers, query }).pipe(Effect.flip),
         { concurrency: 1 }
       );
 
@@ -646,12 +652,12 @@ layer(ApiTest)("the analytics endpoints", (it) => {
 
       // Its first and last days, otherwise, are days like any other.
       const first = yield* client.analytics.summary({
-        params,
+        headers,
         query: { from: "1970-01-01", timeZone: "Asia/Tokyo", to: "1970-01-02" },
       });
 
       const last = yield* client.analytics.summary({
-        params,
+        headers,
         query: {
           from: "9999-12-30",
           timeZone: "America/New_York",
@@ -675,15 +681,15 @@ layer(ApiTest, { excludeTestServices: true })(
       Effect.gen(function* periods() {
         const workspaceId = yield* freshWorkspace;
         const client = yield* as(workspaceId);
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const week = yield* client.analytics.dashboard({
-          params,
+          headers,
           query: { days: 7, timeZone: "Pacific/Auckland" },
         });
 
         const quarter = yield* client.analytics.dashboard({
-          params,
+          headers,
           query: { days: 90, timeZone: "Pacific/Auckland" },
         });
 
@@ -708,7 +714,7 @@ layer(ApiTest, { excludeTestServices: true })(
         // Both ways of naming a range, or neither, is no range.
         const both = yield* client.analytics
           .dashboard({
-            params,
+            headers,
             query: {
               days: 7,
               from: "2044-03-08",
@@ -719,12 +725,13 @@ layer(ApiTest, { excludeTestServices: true })(
           .pipe(Effect.flip);
 
         const neither = yield* client.analytics
-          .dashboard({ params, query: { timeZone: "UTC" } })
+          .dashboard({ headers, query: { timeZone: "UTC" } })
           .pipe(Effect.flip);
 
         const half = yield* client.analytics
           .channel({
-            params: { channelId: "not-a-channel", workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { channelId: "not-a-channel" },
             query: { from: "2044-03-08", timeZone: "UTC" },
           })
           .pipe(Effect.flip);
@@ -737,17 +744,18 @@ layer(ApiTest, { excludeTestServices: true })(
 
         const refusals = yield* Effect.all([
           denied.analytics
-            .dashboard({ params, query: { days: 7, timeZone: "UTC" } })
+            .dashboard({ headers, query: { days: 7, timeZone: "UTC" } })
             .pipe(Effect.flip),
           denied.analytics
             .channel({
-              params: { channelId: "x", workspaceId },
+              headers: forWorkspace(workspaceId),
+              params: { channelId: "x" },
               query: { days: 7, timeZone: "UTC" },
             })
             .pipe(Effect.flip),
           denied.analytics
             .export({
-              params,
+              headers,
               query: { days: 7, kind: "posts", timeZone: "UTC" },
             })
             .pipe(Effect.flip),
@@ -766,7 +774,7 @@ layer(ApiTest, { excludeTestServices: true })(
           const workspaceId = yield* freshWorkspace;
           const channelId = yield* newChannelId;
           const sql = yield* SqlClient.SqlClient;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           yield* sql`INSERT INTO analytics.tracked_channels (channel_id, workspace_id, platform, next_collection_at)
             VALUES (${channelId}, ${workspaceId}, 'pinterest', '2090-01-01T00:00:00Z')`;
@@ -775,23 +783,23 @@ layer(ApiTest, { excludeTestServices: true })(
             const client = yield* as(workspaceId);
 
             const answered = yield* client.analytics.bestTimes({
-              params,
+              headers,
               query: { channelId, days: 180, timeZone: "Europe/Paris" },
             });
 
             const zone = yield* client.analytics
-              .bestTimes({ params, query: { channelId, timeZone: "+01:00" } })
+              .bestTimes({ headers, query: { channelId, timeZone: "+01:00" } })
               .pipe(Effect.flip);
 
             const unknown = yield* client.analytics
               .bestTimes({
-                params,
+                headers,
                 query: { channelId: "not-a-channel", timeZone: "UTC" },
               })
               .pipe(Effect.flip);
 
             const denied = yield* (yield* as(workspaceId, [])).analytics
-              .bestTimes({ params, query: { channelId, timeZone: "UTC" } })
+              .bestTimes({ headers, query: { channelId, timeZone: "UTC" } })
               .pipe(Effect.flip);
 
             return { answered, denied, unknown, zone };

@@ -63,6 +63,7 @@ import { UnknownChannels } from "./unknown-channels.ts";
 import { UnknownMedia } from "./unknown-media.ts";
 import { UnknownTags } from "./unknown-tags.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 const uniqueBy = <A>(key: (item: A) => string, expected: string) =>
   Schema.makeFilter(
@@ -861,9 +862,7 @@ export const TargetConfirmationSchema = Schema.Union([
 
 export type TargetConfirmation = typeof TargetConfirmationSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
-const post = { ...workspace, postId: Schema.String };
+const post = { postId: Schema.String };
 
 const target = { ...post, targetId: Schema.String };
 
@@ -891,7 +890,8 @@ export class PostsApi extends HttpApiGroup.make("posts")
   .add(
     HttpApiEndpoint.get("drafts", "/drafts", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         limit: Schema.optionalKey(
@@ -909,7 +909,8 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, InvalidTimeRange],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: { from: Schema.DateTimeUtc, to: Schema.DateTimeUtc },
       success: Schema.Array(PostSchema),
     }).annotateMerge(
@@ -921,7 +922,8 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.get("search", "/search", {
       error: [Forbidden, InvalidTimeRange, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         authorId: Schema.optionalKey(Schema.String),
         channelId: Schema.optionalKey(Schema.String),
@@ -960,7 +962,8 @@ export class PostsApi extends HttpApiGroup.make("posts")
         ChannelSetNotFound,
         SignatureNotFound,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: PostDraftSchema,
       success: PostSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -989,13 +992,14 @@ export class PostsApi extends HttpApiGroup.make("posts")
         QueueHasNoRoom,
       ],
       headers: {
+        ...workspaceHeaders,
         "idempotency-key": Schema.optionalKey(
           Schema.String.check(
             Schema.isBetweenLength(1, maxIdempotencyKeyLength)
           )
         ),
       },
-      params: workspace,
+
       payload: NewPostSchema,
       query: { wait },
       success: PostSchema.pipe(HttpApiSchema.status(201)),
@@ -1008,13 +1012,14 @@ export class PostsApi extends HttpApiGroup.make("posts")
     HttpApiEndpoint.post("bulk", "/bulk", {
       error: [Forbidden],
       headers: {
+        ...workspaceHeaders,
         "idempotency-key": Schema.optionalKey(
           Schema.String.check(
             Schema.isBetweenLength(1, maxIdempotencyKeyLength)
           )
         ),
       },
-      params: workspace,
+
       payload: BulkPostsSchema,
       success: BulkResultSchema,
     }).annotateMerge(
@@ -1026,13 +1031,14 @@ export class PostsApi extends HttpApiGroup.make("posts")
     HttpApiEndpoint.post("import", "/import", {
       error: [Forbidden, ImportUnreadable],
       headers: {
+        ...workspaceHeaders,
         "idempotency-key": Schema.optionalKey(
           Schema.String.check(
             Schema.isBetweenLength(1, maxIdempotencyKeyLength)
           )
         ),
       },
-      params: workspace,
+
       payload: PostImportSchema,
       success: ImportResultSchema,
     }).annotateMerge(
@@ -1043,7 +1049,8 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("validate", "/validate", {
       error: [Forbidden, ChannelSetNotFound, SignatureNotFound, QueueNotFound],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: PostToValidateSchema,
       success: PostValidationSchema,
     }).annotateMerge(
@@ -1055,6 +1062,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.get("get", "/:postId", {
       error: [Forbidden, PostNotFound],
+      headers: workspaceHeaders,
       params: post,
       success: PostSchema,
     }).annotateMerge(
@@ -1065,6 +1073,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.get("outcome", "/:postId/outcome", {
       error: [Forbidden, PostNotFound],
+      headers: workspaceHeaders,
       params: post,
       query: { wait },
       success: PostSchema,
@@ -1076,6 +1085,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.get("attempts", "/:postId/attempts", {
       error: [Forbidden, PostNotFound],
+      headers: workspaceHeaders,
       params: post,
       success: Schema.Array(PublicationAttemptSchema),
     }).annotateMerge(
@@ -1087,6 +1097,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.delete("discard", "/:postId", {
       error: [Forbidden, PostNotFound, PostStatusConflict],
+      headers: workspaceHeaders,
       params: post,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -1108,6 +1119,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
         ChannelSetNotFound,
         SignatureNotFound,
       ],
+      headers: workspaceHeaders,
       params: post,
       payload: PostDraftSchema,
       success: PostSchema,
@@ -1120,6 +1132,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.put("tag", "/:postId/tags", {
       error: [Forbidden, PostNotFound, UnknownTags],
+      headers: workspaceHeaders,
       params: post,
       payload: PostTagsSchema,
       success: PostSchema,
@@ -1131,6 +1144,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("duplicate", "/:postId/duplicate", {
       error: [Forbidden, PostNotFound, PostContentInvalid],
+      headers: workspaceHeaders,
       params: post,
       success: PostSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -1142,6 +1156,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("schedule", "/:postId/schedule", {
       error: scheduling,
+      headers: workspaceHeaders,
       params: post,
       payload: SchedulePostSchema,
       success: PostSchema,
@@ -1154,6 +1169,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("reschedule", "/:postId/reschedule", {
       error: scheduling,
+      headers: workspaceHeaders,
       params: post,
       payload: PostScheduleSchema,
       success: PostSchema,
@@ -1166,6 +1182,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("enqueue", "/:postId/queue", {
       error: [...scheduling, QueueNotFound, QueueHasNoRoom, ChannelSetNotFound],
+      headers: workspaceHeaders,
       params: post,
       payload: QueuePostSchema,
       success: PostSchema,
@@ -1177,6 +1194,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("unschedule", "/:postId/unschedule", {
       error: [Forbidden, PostNotFound, PostStatusConflict],
+      headers: workspaceHeaders,
       params: post,
       success: PostSchema,
     }).annotateMerge(
@@ -1188,6 +1206,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("repost", "/:postId/targets/:targetId/repost", {
       error: followUp,
+      headers: workspaceHeaders,
       params: target,
       success: PostSchema,
     }).annotateMerge(
@@ -1199,6 +1218,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.delete("removeTarget", "/:postId/targets/:targetId", {
       error: [...followUp, LastTargetLeft],
+      headers: workspaceHeaders,
       params: target,
       success: PostSchema,
     }).annotateMerge(
@@ -1210,6 +1230,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("confirm", "/:postId/targets/:targetId/confirm", {
       error: followUp,
+      headers: workspaceHeaders,
       params: target,
       payload: TargetConfirmationSchema,
       success: PostSchema,
@@ -1223,7 +1244,12 @@ export class PostsApi extends HttpApiGroup.make("posts")
     HttpApiEndpoint.post(
       "leaveOutRest",
       "/:postId/targets/:targetId/leave-out-rest",
-      { error: followUp, params: target, success: PostSchema }
+      {
+        error: followUp,
+        headers: workspaceHeaders,
+        params: target,
+        success: PostSchema,
+      }
     ).annotateMerge(
       OpenApi.annotations({
         description:
@@ -1236,6 +1262,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
       "/:postId/targets/:targetId/unpublish",
       {
         error: [Forbidden, PostNotFound, LivePostNotChangeable],
+        headers: workspaceHeaders,
         params: target,
         query: { wait },
         success: LivePostChangeSchema.pipe(HttpApiSchema.status(202)),
@@ -1253,6 +1280,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
         LivePostNotChangeable,
         PostContentInvalid,
       ],
+      headers: workspaceHeaders,
       params: target,
       payload: LivePostEditSchema,
       query: { wait },
@@ -1265,6 +1293,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("unpublish", "/:postId/unpublish", {
       error: [Forbidden, PostNotFound],
+      headers: workspaceHeaders,
       params: post,
       success: PostUnpublishSchema,
     }).annotateMerge(
@@ -1276,6 +1305,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.get("changes", "/:postId/changes", {
       error: [Forbidden, PostNotFound],
+      headers: workspaceHeaders,
       params: post,
       success: LivePostChangesSchema,
     }).annotateMerge(
@@ -1287,6 +1317,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
     ),
     HttpApiEndpoint.post("cancel", "/:postId/cancel", {
       error: [Forbidden, PostNotFound, PostStatusConflict],
+      headers: workspaceHeaders,
       params: post,
       success: PostSchema,
     }).annotateMerge(
@@ -1299,4 +1330,4 @@ export class PostsApi extends HttpApiGroup.make("posts")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/posts") {}
+  .prefix("/api/v1/posts") {}

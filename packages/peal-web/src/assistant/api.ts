@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -13,7 +14,7 @@ import { PealApi } from "#api/client.ts";
  */
 export const assistantStatus = (workspaceId: string) =>
   PealApi.query("assistant", "status", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     // The workspace's own providers change who writes and who makes images.
     reactivityKeys: [`ai-providers:${workspaceId}`],
   });
@@ -33,7 +34,7 @@ export const videosKey = (workspaceId: string): string =>
 /** The videos the workspace asked for, newest first, with where each stands. */
 export const videoGenerations = Atom.family((workspaceId: string) =>
   PealApi.query("videoGenerations", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: {},
     reactivityKeys: [videosKey(workspaceId)],
   })
@@ -55,14 +56,16 @@ export const readVideo = PealApi.runtime.fn<{
     const client = yield* PealApi;
 
     const job = yield* client.videoGenerations.get({
-      params: { generationId, workspaceId },
+      headers: forWorkspace(workspaceId),
+      params: { generationId },
     });
 
     const media =
       job.mediaId === null
         ? null
         : yield* client.media.get({
-            params: { mediaId: job.mediaId, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { mediaId: job.mediaId },
           });
 
     return { job, media };
@@ -76,7 +79,7 @@ export const slideshowsKey = (workspaceId: string): string =>
 /** The slide videos the workspace asked for, newest first, with where each stands. */
 export const slideshows = Atom.family((workspaceId: string) =>
   PealApi.query("slideshows", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: {},
     reactivityKeys: [slideshowsKey(workspaceId)],
   })

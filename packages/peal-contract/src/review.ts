@@ -24,6 +24,7 @@ import { ReviewLinkNotFound } from "./review-link-not-found.ts";
 import { TargetOptionsSchema } from "./target-options.ts";
 import { TooManyReviewLinks } from "./too-many-review-links.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** The longest comment, in characters. */
 export const maxCommentLength = 2000;
@@ -402,9 +403,7 @@ export const CreatedReviewLinkSchema = Schema.Struct({
 
 export type CreatedReviewLink = typeof CreatedReviewLinkSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
-const post = { ...workspace, postId: Schema.String };
+const post = { postId: Schema.String };
 
 /**
  * Reviews of a workspace's posts: its approval policy, the approvals that
@@ -415,7 +414,8 @@ export class ReviewApi extends HttpApiGroup.make("review")
   .add(
     HttpApiEndpoint.get("settings", "/review/settings", {
       error: [Forbidden],
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: ReviewSettingsSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -426,7 +426,8 @@ export class ReviewApi extends HttpApiGroup.make("review")
     ),
     HttpApiEndpoint.put("updateSettings", "/review/settings", {
       error: [Forbidden],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: ReviewSettingsSchema,
       success: ReviewSettingsSchema,
     }).annotateMerge(
@@ -438,7 +439,8 @@ export class ReviewApi extends HttpApiGroup.make("review")
     ),
     HttpApiEndpoint.get("pending", "/approvals", {
       error: [Forbidden],
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(ApprovalRequestSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -449,6 +451,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
     ),
     HttpApiEndpoint.get("thread", "/posts/:postId/review", {
       error: [Forbidden, PostNotFound],
+      headers: workspaceHeaders,
       params: post,
       success: PostReviewSchema,
     }).annotateMerge(
@@ -460,6 +463,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
     ),
     HttpApiEndpoint.post("comment", "/posts/:postId/comments", {
       error: [Forbidden, PostNotFound, CommentInvalid],
+      headers: workspaceHeaders,
       params: post,
       payload: NewCommentSchema,
       success: ReviewCommentSchema.pipe(HttpApiSchema.status(201)),
@@ -471,6 +475,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
     ),
     HttpApiEndpoint.patch("resolve", "/posts/:postId/comments/:commentId", {
       error: [Forbidden, PostNotFound, CommentNotFound, CommentInvalid],
+      headers: workspaceHeaders,
       params: { ...post, commentId: Schema.String },
       payload: Schema.Struct({ resolved: Schema.Boolean }),
       success: ReviewCommentSchema,
@@ -489,6 +494,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         ApprovalChanged,
         PlanLimitReached,
       ],
+      headers: workspaceHeaders,
       params: post,
       payload: ApprovalDecisionSchema,
       success: ApprovalOutcomeSchema,
@@ -507,6 +513,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         ApprovalChanged,
         CommentInvalid,
       ],
+      headers: workspaceHeaders,
       params: post,
       payload: ChangesRequestSchema,
       success: ChangesOutcomeSchema,
@@ -519,6 +526,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
     ),
     HttpApiEndpoint.get("links", "/posts/:postId/review-links", {
       error: [Forbidden, PostNotFound],
+      headers: workspaceHeaders,
       params: post,
       success: Schema.Array(ReviewLinkSchema),
     }).annotateMerge(
@@ -530,6 +538,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
     ),
     HttpApiEndpoint.post("createLink", "/posts/:postId/review-links", {
       error: [Forbidden, PostNotFound, PostNotReviewable, TooManyReviewLinks],
+      headers: workspaceHeaders,
       params: post,
       payload: NewReviewLinkSchema,
       success: CreatedReviewLinkSchema.pipe(HttpApiSchema.status(201)),
@@ -541,7 +550,8 @@ export class ReviewApi extends HttpApiGroup.make("review")
     ),
     HttpApiEndpoint.delete("revokeLink", "/review-links/:linkId", {
       error: [Forbidden, ReviewLinkNotFound],
-      params: { ...workspace, linkId: Schema.String },
+      headers: workspaceHeaders,
+      params: { linkId: Schema.String },
       success: ReviewLinkSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -553,4 +563,4 @@ export class ReviewApi extends HttpApiGroup.make("review")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId") {}
+  .prefix("/api/v1") {}

@@ -2,7 +2,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Option } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, defaultActivityPageSize } from "peal-contract";
+import { Api, defaultActivityPageSize, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
 import { ActivityHandlers } from "#activity/api/activity.ts";
@@ -72,7 +72,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       );
 
       const page = yield* client.activity.list({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         query: {},
       });
 
@@ -130,7 +130,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       const ana = yield* freshUser;
       const ben = yield* freshUser;
       const client = yield* clientAs(owner(workspaceId));
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const made = yield* Effect.forEach(
         [
@@ -144,7 +144,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       const newest = made.map(({ id }) => id).toReversed();
 
       const first = yield* client.activity.list({
-        params,
+        headers,
         query: { limit: 2 },
       });
 
@@ -155,7 +155,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       assert.strictEqual(first.nextCursor, newest[1]);
 
       const second = yield* client.activity.list({
-        params,
+        headers,
         query: { cursor: first.nextCursor ?? "", limit: 2 },
       });
 
@@ -166,7 +166,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       assert.isNull(second.nextCursor);
 
       const scheduledByAna = yield* client.activity.list({
-        params,
+        headers,
         query: { actor: ana, operation: "posts.schedule" },
       });
 
@@ -177,7 +177,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
 
       // A cursor that is no event's id is the caller's mistake.
       const refused = yield* client.activity
-        .list({ params, query: { cursor: "not-a-cursor" } })
+        .list({ headers, query: { cursor: "not-a-cursor" } })
         .pipe(Effect.flip);
 
       assert.strictEqual(refused._tag, "BadRequest");
@@ -198,7 +198,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       );
 
       const page = yield* client.activity.list({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         query: {},
       });
 
@@ -217,7 +217,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
         );
 
         const refused = yield* client.activity
-          .list({ params: { workspaceId }, query: {} })
+          .list({ headers: forWorkspace(workspaceId), query: {} })
           .pipe(Effect.flip);
 
         assert.strictEqual(refused._tag, "Forbidden");

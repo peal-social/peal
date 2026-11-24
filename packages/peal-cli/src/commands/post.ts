@@ -160,20 +160,16 @@ const checkModes = (input: {
 
 // Checks the post without making it: what each channel would receive on
 // stdout, and, when it would be refused, every reason as the refusal.
-const check = (
-  { client, url, workspace }: InWorkspace,
-  payload: NewPost,
-  json: boolean
-) =>
+const check = ({ client, url }: InWorkspace, payload: NewPost, json: boolean) =>
   Effect.gen(function* checking() {
     const validation = yield* client.posts
-      .validate({ params: { workspaceId: workspace.id }, payload })
+      .validate({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
       yield* printJson(PostValidationSchema, validation);
     } else {
-      const names = yield* channelNames(client, workspace.id);
+      const names = yield* channelNames(client);
 
       if (validation.valid) {
         yield* Console.log(
@@ -461,8 +457,8 @@ export const post = Command.make(
     yield* withMedia([]);
 
     const session = yield* inWorkspace(input.workspace);
-    const { client, url, workspace } = session;
-    const destination = { client, url, workspaceId: workspace.id };
+    const { client, url } = session;
+    const destination = { client, url };
     // A tag the workspace lacks is refused before any media is stored.
     const tagIds = yield* tagIdsOf(session, input.tags);
     // So is a channel set or a signature it lacks, or a queue.
@@ -510,7 +506,7 @@ export const post = Command.make(
           onNone: () => ({}),
           onSome: (key) => ({ "idempotency-key": key }),
         }),
-        params: { workspaceId: workspace.id },
+
         payload: yield* withMedia(media, tagIds, presets, when),
         query: Option.match(input.wait, {
           onNone: () => ({}),
@@ -519,7 +515,7 @@ export const post = Command.make(
       })
       .pipe(explainingPublishing(url));
 
-    const names = yield* namesFor(input.json, client, workspace.id);
+    const names = yield* namesFor(input.json, client);
     const where = channelsOf(sent, names);
 
     yield* printPost(sent, input.json, () =>

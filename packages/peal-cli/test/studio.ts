@@ -1,5 +1,5 @@
 import { DateTime, Effect, Layer, Option, Ref, Result, Stream } from "effect";
-import { HttpRouter } from "effect/http";
+import { HttpServerRequest } from "effect/http";
 import { HttpApiBuilder, HttpApiError, HttpApiSchema } from "effect/http-api";
 import {
   AiCapabilityNotOffered,
@@ -82,7 +82,9 @@ import {
   WebhooksNotConfigured,
   WebhookUrlRefused,
   WorkspaceAccess,
+  workspaceHeader,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 import type {
   AiCapabilityModel,
@@ -122,6 +124,7 @@ import type {
   Partner,
   PartnerUsageReport,
   Permission,
+  Principal,
   Post,
   RecyclingRule,
   PostContent,
@@ -1541,21 +1544,22 @@ const record = (studio: Studio, change: string) =>
 const actorIdOf = ({ actor }: ActivityEvent): string | null =>
   actor._tag === "apiKey" ? actor.apiKeyId : actor.userId;
 
-// The studio's channel a path names.
-const channelIn = (params: {
-  readonly channelId: string;
-  readonly workspaceId: string;
-}) =>
-  Option.match(
-    Option.fromUndefinedOr(
-      params.workspaceId === studioId
-        ? channels.find(({ id }) => id === params.channelId)
-        : undefined
-    ),
-    {
-      onNone: () => Effect.fail(new ChannelNotFound()),
-      onSome: (channel) => Effect.succeed(channel),
-    }
+// The studio's channel a path names, in the workspace the request acts in.
+const channelIn = (params: { readonly channelId: string }) =>
+  CurrentMember.pipe(
+    Effect.flatMap(({ workspaceId }) =>
+      Option.match(
+        Option.fromUndefinedOr(
+          workspaceId === studioId
+            ? channels.find(({ id }) => id === params.channelId)
+            : undefined
+        ),
+        {
+          onNone: () => Effect.fail(new ChannelNotFound()),
+          onSome: (channel) => Effect.succeed(channel),
+        }
+      )
+    )
   );
 
 // The workspace's channels as they are now, oldest first.
@@ -1624,16 +1628,17 @@ const allowed = (permission: Permission) =>
 // recorded.
 const changingChannel = (
   studio: Studio,
-  params: { readonly channelId: string; readonly workspaceId: string },
+  params: { readonly channelId: string },
   change: (channel: SocialChannel) => SocialChannel,
   what: string
 ) =>
   Effect.gen(function* changing() {
     yield* allowed("channel:connect");
 
-    const found = (yield* channelsNow(studio, params.workspaceId)).find(
-      ({ id }) => id === params.channelId
-    );
+    const found = (yield* channelsNow(
+      studio,
+      (yield* CurrentMember).workspaceId
+    )).find(({ id }) => id === params.channelId);
 
     if (found === undefined) {
       return yield* new ChannelNotFound();
@@ -1683,14 +1688,11 @@ const savePost = (studio: Studio, post: Post) =>
 
 const changingTarget = (
   studio: Studio,
-  {
-    postId,
-    targetId,
-    workspaceId,
-  }: Record<"postId" | "targetId" | "workspaceId", string>,
+  { postId, targetId }: Record<"postId" | "targetId", string>,
   change: (target: PostTarget) => Option.Option<PostTarget>
 ) =>
   Effect.gen(function* changing() {
+    const { workspaceId } = yield* CurrentMember;
     const post = yield* findPost(studio, workspaceId, postId);
     const target = post.targets.find(({ id }) => id === targetId);
 
@@ -1883,16 +1885,13 @@ const checkTags = (studio: Studio, tagIds: readonly string[]) =>
     })
   );
 
-// The studio's tag a path names.
-const findTag = (
-  studio: Studio,
-  params: { readonly tagId: string; readonly workspaceId: string }
-) =>
-  Ref.get(studio.state).pipe(
-    Effect.flatMap(({ tags: all }) =>
+// The studio's tag a path names, in the workspace the request acts in.
+const findTag = (studio: Studio, params: { readonly tagId: string }) =>
+  Effect.all([Ref.get(studio.state), CurrentMember]).pipe(
+    Effect.flatMap(([{ tags: all }, { workspaceId }]) =>
       Option.match(
         Option.fromUndefinedOr(
-          params.workspaceId === studioId
+          workspaceId === studioId
             ? all.find(({ id }) => id === params.tagId)
             : undefined
         ),
@@ -1961,16 +1960,16 @@ const scopeKey = (scope: SignatureScope): string => {
   return scope._tag === "channel" ? `channel:${scope.channelId}` : "workspace";
 };
 
-// The studio's signature a path names.
+// The studio's signature a path names, in the workspace the request acts in.
 const findSignature = (
   studio: Studio,
-  params: { readonly signatureId: string; readonly workspaceId: string }
+  params: { readonly signatureId: string }
 ) =>
-  Ref.get(studio.state).pipe(
-    Effect.flatMap(({ signatures: all }) =>
+  Effect.all([Ref.get(studio.state), CurrentMember]).pipe(
+    Effect.flatMap(([{ signatures: all }, { workspaceId }]) =>
       Option.match(
         Option.fromUndefinedOr(
-          params.workspaceId === studioId
+          workspaceId === studioId
             ? all.find(({ id }) => id === params.signatureId)
             : undefined
         ),
@@ -2027,16 +2026,13 @@ const withSignature = (
     : [...all.map(beside), kept];
 };
 
-// The studio's channel set a path names.
-const findSet = (
-  studio: Studio,
-  params: { readonly channelSetId: string; readonly workspaceId: string }
-) =>
-  Ref.get(studio.state).pipe(
-    Effect.flatMap(({ channelSets: all }) =>
+// The studio's channel set a path names, in the workspace the request acts in.
+const findSet = (studio: Studio, params: { readonly channelSetId: string }) =>
+  Effect.all([Ref.get(studio.state), CurrentMember]).pipe(
+    Effect.flatMap(([{ channelSets: all }, { workspaceId }]) =>
       Option.match(
         Option.fromUndefinedOr(
-          params.workspaceId === studioId
+          workspaceId === studioId
             ? all.find(({ id }) => id === params.channelSetId)
             : undefined
         ),
@@ -3277,12 +3273,12 @@ export const studioGroupsLive = (studio: Studio) =>
     // recording whose transcript is fixed.
     HttpApiBuilder.group(Api, "mediaAudio", (handlers) =>
       handlers.handleAll({
-        createVoiceover: ({ params, payload }) =>
+        createVoiceover: ({ payload }) =>
           Effect.gen(function* createVoiceover() {
             yield* allowed("assistant:use");
             yield* allowed("media:upload");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -3316,7 +3312,7 @@ export const studioGroupsLive = (studio: Studio) =>
             yield* allowed("assistant:use");
             yield* allowed("media:read");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -3386,11 +3382,11 @@ export const studioGroupsLive = (studio: Studio) =>
         connect: () => refusing,
         // A website connects at once: a password with "refused" in it
         // stands for one the site refuses.
-        connectSite: ({ params, payload }) =>
+        connectSite: ({ payload }) =>
           Effect.gen(function* connectSite() {
             yield* allowed("channel:connect");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -3422,11 +3418,11 @@ export const studioGroupsLive = (studio: Studio) =>
         // A chat connects at once: a webhook's address on another host,
         // or a token with "refused" in it, stands for one the platform
         // refuses.
-        connectChat: ({ params, payload }) =>
+        connectChat: ({ payload }) =>
           Effect.gen(function* connectChat() {
             yield* allowed("channel:connect");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -3472,11 +3468,11 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return chat;
           }),
-        connectSiteWithKey: ({ params, payload }) =>
+        connectSiteWithKey: ({ payload }) =>
           Effect.gen(function* connectSiteWithKey() {
             yield* allowed("channel:connect");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -3510,7 +3506,7 @@ export const studioGroupsLive = (studio: Studio) =>
         disconnect: () => refusing,
         enable: ({ params }) =>
           changingChannel(studio, params, turnedOn, "enable"),
-        find: ({ params, query }) =>
+        find: ({ query }) =>
           Effect.gen(function* find() {
             yield* allowed("channel:read");
 
@@ -3518,7 +3514,7 @@ export const studioGroupsLive = (studio: Studio) =>
             // narrows the list alone.
             const matching = (yield* channelsNow(
               studio,
-              params.workspaceId
+              (yield* CurrentMember).workspaceId
             )).filter(
               (channel) =>
                 (query.platform === undefined ||
@@ -3553,9 +3549,13 @@ export const studioGroupsLive = (studio: Studio) =>
                   : null,
             };
           }),
-        list: ({ params }) =>
-          allowed("channel:read").pipe(
-            Effect.andThen(channelsNow(studio, params.workspaceId))
+        list: () =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("channel:read").pipe(
+                Effect.andThen(channelsNow(studio, workspaceId))
+              )
+            )
           ),
         platforms: () => refusing,
         reconnect: () => refusing,
@@ -3575,15 +3575,19 @@ export const studioGroupsLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "posts", (handlers) =>
       handlers.handleAll({
         attempts: ({ params }) =>
-          allowed("post:read").pipe(
-            Effect.andThen(findPost(studio, params.workspaceId, params.postId)),
-            Effect.map(({ id }) => (id === finishedId ? attempts : []))
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("post:read").pipe(
+                Effect.andThen(findPost(studio, workspaceId, params.postId)),
+                Effect.map(({ id }) => (id === finishedId ? attempts : []))
+              )
+            )
           ),
-        bulk: ({ headers, params, payload }) =>
+        bulk: ({ headers, payload }) =>
           Effect.gen(function* bulk() {
             yield* publishing;
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -3627,7 +3631,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -3645,13 +3649,19 @@ export const studioGroupsLive = (studio: Studio) =>
             );
           }),
         changes: ({ params }) =>
-          allowed("post:read").pipe(
-            Effect.andThen(findPost(studio, params.workspaceId, params.postId)),
-            Effect.map((post) => ({
-              items: post.targets.flatMap((target) =>
-                target.removedAt === null ? [] : [doneChange(post.id, target)]
-              ),
-            }))
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("post:read").pipe(
+                Effect.andThen(findPost(studio, workspaceId, params.postId)),
+                Effect.map((post) => ({
+                  items: post.targets.flatMap((target) =>
+                    target.removedAt === null
+                      ? []
+                      : [doneChange(post.id, target)]
+                  ),
+                }))
+              )
+            )
           ),
         confirm: ({ params, payload }) =>
           publishing.pipe(
@@ -3680,11 +3690,11 @@ export const studioGroupsLive = (studio: Studio) =>
               record(studio, `confirm:${params.targetId}:${payload._tag}`)
             )
           ),
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* allowed("post:create");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -3730,7 +3740,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -3744,14 +3754,14 @@ export const studioGroupsLive = (studio: Studio) =>
             }));
             yield* record(studio, `discard:${post.id}`);
           }),
-        drafts: ({ params, query }) =>
+        drafts: ({ query }) =>
           Effect.gen(function* drafts() {
             yield* allowed("post:read");
 
             const { posts: all } = yield* Ref.get(studio.state);
 
             const listed =
-              params.workspaceId === studioId
+              (yield* CurrentMember).workspaceId === studioId
                 ? all.filter(({ status }) => status === "draft")
                 : [];
 
@@ -3780,7 +3790,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -3831,7 +3841,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -3875,13 +3885,13 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const queue = yield* queuesOfStudio.queueFor(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               payload.queueId
             );
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -3941,14 +3951,18 @@ export const studioGroupsLive = (studio: Studio) =>
             });
           }),
         get: ({ params }) =>
-          allowed("post:read").pipe(
-            Effect.andThen(findPost(studio, params.workspaceId, params.postId))
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("post:read").pipe(
+                Effect.andThen(findPost(studio, workspaceId, params.postId))
+              )
+            )
           ),
-        import: ({ headers, params, payload }) =>
+        import: ({ headers, payload }) =>
           Effect.gen(function* importing() {
             yield* publishing;
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -3982,7 +3996,7 @@ export const studioGroupsLive = (studio: Studio) =>
               rows,
             };
           }),
-        list: ({ params, query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             yield* allowed("post:read");
 
@@ -3992,7 +4006,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const { posts: all } = yield* Ref.get(studio.state);
 
-            return params.workspaceId === studioId
+            return (yield* CurrentMember).workspaceId === studioId
               ? all.filter(
                   ({ schedule }) =>
                     schedule !== null &&
@@ -4002,9 +4016,13 @@ export const studioGroupsLive = (studio: Studio) =>
               : [];
           }),
         outcome: ({ params, query }) =>
-          allowed("post:read").pipe(
-            Effect.andThen(findPost(studio, params.workspaceId, params.postId)),
-            Effect.flatMap((post) => afterWaiting(studio, post, query.wait))
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("post:read").pipe(
+                Effect.andThen(findPost(studio, workspaceId, params.postId)),
+                Effect.flatMap((post) => afterWaiting(studio, post, query.wait))
+              )
+            )
           ),
         removeTarget: ({ params }) =>
           Effect.gen(function* removeTarget() {
@@ -4012,7 +4030,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -4103,7 +4121,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -4137,7 +4155,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -4169,7 +4187,7 @@ export const studioGroupsLive = (studio: Studio) =>
               }),
             });
           }),
-        search: ({ params, query }) =>
+        search: ({ query }) =>
           Effect.gen(function* search() {
             yield* allowed("post:read");
             yield* allowed("channel:read");
@@ -4186,7 +4204,7 @@ export const studioGroupsLive = (studio: Studio) =>
             const { posts: all } = yield* Ref.get(studio.state);
 
             const matching = sorted(
-              params.workspaceId === studioId ? all : [],
+              (yield* CurrentMember).workspaceId === studioId ? all : [],
               query.sort ?? "createdDesc"
             ).filter((post) =>
               [
@@ -4226,11 +4244,11 @@ export const studioGroupsLive = (studio: Studio) =>
                 last !== undefined && limit < listed.length ? last.id : null,
             };
           }),
-        send: ({ headers, params, payload, query }) =>
+        send: ({ headers, payload, query }) =>
           Effect.gen(function* send() {
             yield* publishing;
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4251,7 +4269,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -4269,7 +4287,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -4301,7 +4319,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -4335,7 +4353,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -4357,7 +4375,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -4386,12 +4404,12 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return told(saved, warnings);
           }),
-        validate: ({ params, payload: asked }) =>
+        validate: ({ payload: asked }) =>
           Effect.gen(function* validate() {
             yield* allowed("post:read");
             yield* allowed("channel:read");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4510,12 +4528,12 @@ export const studioGroupsLive = (studio: Studio) =>
     // an image model.
     HttpApiBuilder.group(Api, "assistant", (handlers) =>
       handlers.handleAll({
-        generateImage: ({ params, payload }) =>
+        generateImage: ({ payload }) =>
           Effect.gen(function* generateImage() {
             yield* allowed("assistant:use");
             yield* allowed("media:upload");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4555,7 +4573,7 @@ export const studioGroupsLive = (studio: Studio) =>
           Effect.gen(function* connectProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4618,7 +4636,7 @@ export const studioGroupsLive = (studio: Studio) =>
           Effect.gen(function* disconnectProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4639,11 +4657,11 @@ export const studioGroupsLive = (studio: Studio) =>
               `provider:disconnect:${params.provider}`
             );
           }),
-        models: ({ params }) =>
+        models: () =>
           Effect.gen(function* models() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4660,11 +4678,11 @@ export const studioGroupsLive = (studio: Studio) =>
               })),
             };
           }),
-        providers: ({ params }) =>
+        providers: () =>
           Effect.gen(function* providers() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4678,7 +4696,7 @@ export const studioGroupsLive = (studio: Studio) =>
           Effect.gen(function* setModel() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4733,7 +4751,7 @@ export const studioGroupsLive = (studio: Studio) =>
           Effect.gen(function* testProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4776,7 +4794,7 @@ export const studioGroupsLive = (studio: Studio) =>
           Effect.gen(function* unsetModel() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4793,11 +4811,11 @@ export const studioGroupsLive = (studio: Studio) =>
           }),
         // The studio's own image provider. An address on a host named
         // `internal` stands for one that is not public.
-        imageProvider: ({ params }) =>
+        imageProvider: () =>
           Effect.gen(function* imageProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4805,11 +4823,11 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return { provider: brought?.provider ?? null };
           }),
-        removeImageProvider: ({ params }) =>
+        removeImageProvider: () =>
           Effect.gen(function* removeImageProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4820,11 +4838,11 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return yield* record(studio, "image-provider:remove");
           }),
-        setImageProvider: ({ params, payload }) =>
+        setImageProvider: ({ payload }) =>
           Effect.gen(function* setImageProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4884,11 +4902,11 @@ export const studioGroupsLive = (studio: Studio) =>
         suggest: () => Effect.fail(new Forbidden()),
         // The studio's own text provider, kept as the image provider is. A
         // key with "refused" in it stands for one the provider refuses.
-        removeTextProvider: ({ params }) =>
+        removeTextProvider: () =>
           Effect.gen(function* removeTextProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4899,11 +4917,11 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return yield* record(studio, "text-provider:remove");
           }),
-        setTextProvider: ({ params, payload }) =>
+        setTextProvider: ({ payload }) =>
           Effect.gen(function* setTextProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4960,11 +4978,11 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return provider;
           }),
-        testTextProvider: ({ params }) =>
+        testTextProvider: () =>
           Effect.gen(function* testTextProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -4983,11 +5001,11 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return yield* record(studio, "text-provider:test");
           }),
-        textProvider: ({ params }) =>
+        textProvider: () =>
           Effect.gen(function* textProvider() {
             yield* allowed("assistant:configure");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -5022,11 +5040,11 @@ export const studioGroupsLive = (studio: Studio) =>
               url: `https://${storeHost}/read/${pending.id}`,
             });
           }),
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* allowed("media:upload");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -5134,11 +5152,11 @@ export const studioGroupsLive = (studio: Studio) =>
           ),
         // What the address stands for, by its host: one the server does not
         // fetch, one that answers too slowly, one that has no such file.
-        importFromUrl: ({ params, payload }) =>
+        importFromUrl: ({ payload }) =>
           Effect.gen(function* importFromUrl() {
             yield* allowed("media:upload");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -5186,7 +5204,7 @@ export const studioGroupsLive = (studio: Studio) =>
               })
             );
           }),
-        list: ({ params, query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             yield* allowed("media:read");
 
@@ -5195,7 +5213,9 @@ export const studioGroupsLive = (studio: Studio) =>
 
             // As the server searches: the kind, and text in the name or
             // the description, whatever its case.
-            const listed = (params.workspaceId === studioId ? all : []).filter(
+            const listed = (
+              (yield* CurrentMember).workspaceId === studioId ? all : []
+            ).filter(
               (media) =>
                 (query.kind === undefined || media.kind === query.kind) &&
                 (text === undefined ||
@@ -5546,20 +5566,24 @@ export const studioGroupsLive = (studio: Studio) =>
               })
             )
           ),
-        partner: ({ params, query }) =>
-          allowed("partner:read").pipe(
-            Effect.andThen(
-              params.workspaceId === studioId
-                ? Effect.succeed(
-                    partnerUsageReport(
-                      {
-                        from: query.from ?? "2026-11-01",
-                        to: query.to ?? "2026-11-03",
-                      },
-                      query.before
-                    )
-                  )
-                : Effect.fail(new PartnerNotFound())
+        partner: ({ query }) =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("partner:read").pipe(
+                Effect.andThen(
+                  workspaceId === studioId
+                    ? Effect.succeed(
+                        partnerUsageReport(
+                          {
+                            from: query.from ?? "2026-11-01",
+                            to: query.to ?? "2026-11-03",
+                          },
+                          query.before
+                        )
+                      )
+                    : Effect.fail(new PartnerNotFound())
+                )
+              )
             )
           ),
       })
@@ -5671,11 +5695,11 @@ export const studioGroupsLive = (studio: Studio) =>
     ),
     HttpApiBuilder.group(Api, "connectLinks", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* allowed("channel:connect");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -5736,11 +5760,15 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return found ?? (yield* new ConnectLinkNotFound());
           }),
-        list: ({ params }) =>
-          allowed("channel:read").pipe(
-            Effect.andThen(Ref.get(studio.state)),
-            Effect.map(({ connectLinks }) =>
-              params.workspaceId === studioId ? connectLinks : []
+        list: () =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("channel:read").pipe(
+                Effect.andThen(Ref.get(studio.state)),
+                Effect.map(({ connectLinks }) =>
+                  workspaceId === studioId ? connectLinks : []
+                )
+              )
             )
           ),
         revoke: ({ params }) =>
@@ -5781,16 +5809,20 @@ export const studioGroupsLive = (studio: Studio) =>
       handlers.handleAll({
         close: () => refusing,
         createKey: () => refusing,
-        get: ({ params }) =>
-          allowed("partner:read").pipe(
-            Effect.as(
-              params.workspaceId === studioId
-                ? {
-                    canOpen: false,
-                    partner: studioPartner,
-                    usage: { channels: 5, days: [], workspaces: 2 },
-                  }
-                : { canOpen: false, partner: null, usage: null }
+        get: () =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("partner:read").pipe(
+                Effect.as(
+                  workspaceId === studioId
+                    ? {
+                        canOpen: false,
+                        partner: studioPartner,
+                        usage: { channels: 5, days: [], workspaces: 2 },
+                      }
+                    : { canOpen: false, partner: null, usage: null }
+                )
+              )
             )
           ),
         listKeys: () =>
@@ -5958,7 +5990,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -6010,7 +6042,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -6052,7 +6084,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -6087,19 +6119,23 @@ export const studioGroupsLive = (studio: Studio) =>
         links: ({ params }) =>
           Effect.gen(function* listLinks() {
             yield* allowed("post:read");
-            yield* findPost(studio, params.workspaceId, params.postId);
+            yield* findPost(
+              studio,
+              (yield* CurrentMember).workspaceId,
+              params.postId
+            );
 
             const { links } = yield* Ref.get(studio.state);
 
             return links.filter(({ postId }) => postId === params.postId);
           }),
-        pending: ({ params }) =>
+        pending: () =>
           Effect.gen(function* pending() {
             yield* allowed("post:read");
 
             const { approvals } = yield* Ref.get(studio.state);
 
-            return params.workspaceId === studioId
+            return (yield* CurrentMember).workspaceId === studioId
               ? approvals.filter(({ status }) => status === "pending")
               : [];
           }),
@@ -6109,7 +6145,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -6175,7 +6211,10 @@ export const studioGroupsLive = (studio: Studio) =>
             const { links } = yield* Ref.get(studio.state);
             const link = links.find(({ id }) => id === params.linkId);
 
-            if (link === undefined || params.workspaceId !== studioId) {
+            if (
+              link === undefined ||
+              (yield* CurrentMember).workspaceId !== studioId
+            ) {
               return yield* new ReviewLinkNotFound();
             }
 
@@ -6199,7 +6238,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const post = yield* findPost(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.postId
             );
 
@@ -6240,11 +6279,11 @@ export const studioGroupsLive = (studio: Studio) =>
     ),
     HttpApiBuilder.group(Api, "webhooks", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* allowed("webhook:manage");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -6295,7 +6334,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const endpoint = yield* findEndpoint(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.endpointId
             );
 
@@ -6309,16 +6348,24 @@ export const studioGroupsLive = (studio: Studio) =>
             yield* record(studio, `webhook:delete:${endpoint.id}`);
           }),
         get: ({ params }) =>
-          allowed("webhook:read").pipe(
-            Effect.andThen(
-              findEndpoint(studio, params.workspaceId, params.endpointId)
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("webhook:read").pipe(
+                Effect.andThen(
+                  findEndpoint(studio, workspaceId, params.endpointId)
+                )
+              )
             )
           ),
-        list: ({ params }) =>
-          allowed("webhook:read").pipe(
-            Effect.andThen(Ref.get(studio.state)),
-            Effect.map(({ webhooks: all }) =>
-              params.workspaceId === studioId ? all : []
+        list: () =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("webhook:read").pipe(
+                Effect.andThen(Ref.get(studio.state)),
+                Effect.map(({ webhooks: all }) =>
+                  workspaceId === studioId ? all : []
+                )
+              )
             )
           ),
         listDeliveries: ({ params, query }) =>
@@ -6327,7 +6374,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const endpoint = yield* findEndpoint(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.endpointId
             );
 
@@ -6346,7 +6393,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const endpoint = yield* findEndpoint(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.endpointId
             );
 
@@ -6372,11 +6419,11 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return again;
           }),
-        redeliverMany: ({ params, payload }) =>
+        redeliverMany: ({ payload }) =>
           Effect.gen(function* redeliverMany() {
             yield* allowed("webhook:manage");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new WebhookEndpointNotFound();
             }
 
@@ -6387,7 +6434,7 @@ export const studioGroupsLive = (studio: Studio) =>
             if ("endpointId" in payload) {
               yield* findEndpoint(
                 studio,
-                params.workspaceId,
+                (yield* CurrentMember).workspaceId,
                 payload.endpointId
               );
             }
@@ -6454,7 +6501,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const found = yield* findEndpoint(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.endpointId
             );
 
@@ -6474,14 +6521,14 @@ export const studioGroupsLive = (studio: Studio) =>
 
             return { endpoint, secret: secretAfter(current.changes) };
           }),
-        searchDeliveries: ({ params, query }) =>
+        searchDeliveries: ({ query }) =>
           Effect.gen(function* searchDeliveries() {
             yield* allowed("webhook:read");
 
             const { deliveries: all } = yield* Ref.get(studio.state);
 
             return pageOf(
-              params.workspaceId === studioId
+              (yield* CurrentMember).workspaceId === studioId
                 ? all
                     .filter(
                       ({ endpointId }) =>
@@ -6499,7 +6546,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const endpoint = yield* findEndpoint(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.endpointId
             );
 
@@ -6521,7 +6568,7 @@ export const studioGroupsLive = (studio: Studio) =>
 
             const found = yield* findEndpoint(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.endpointId
             );
 
@@ -6566,11 +6613,11 @@ export const studioGroupsLive = (studio: Studio) =>
     studioMessagesLive(studio.messages),
     HttpApiBuilder.group(Api, "tags", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* allowed("post:update");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -6621,11 +6668,15 @@ export const studioGroupsLive = (studio: Studio) =>
             }));
             yield* record(studio, `tag:delete:${tag.id}`);
           }),
-        list: ({ params }) =>
-          allowed("post:read").pipe(
-            Effect.andThen(Ref.get(studio.state)),
-            Effect.map(({ tags: all }) =>
-              params.workspaceId === studioId ? all : []
+        list: () =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("post:read").pipe(
+                Effect.andThen(Ref.get(studio.state)),
+                Effect.map(({ tags: all }) =>
+                  workspaceId === studioId ? all : []
+                )
+              )
             )
           ),
         update: ({ params, payload }) =>
@@ -6655,11 +6706,11 @@ export const studioGroupsLive = (studio: Studio) =>
     ),
     HttpApiBuilder.group(Api, "signatures", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* allowed("post:update");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -6711,11 +6762,15 @@ export const studioGroupsLive = (studio: Studio) =>
             }));
             yield* record(studio, `signature:delete:${gone.id}`);
           }),
-        list: ({ params }) =>
-          allowed("post:read").pipe(
-            Effect.andThen(Ref.get(studio.state)),
-            Effect.map(({ signatures: all }) =>
-              params.workspaceId === studioId ? all : []
+        list: () =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("post:read").pipe(
+                Effect.andThen(Ref.get(studio.state)),
+                Effect.map(({ signatures: all }) =>
+                  workspaceId === studioId ? all : []
+                )
+              )
             )
           ),
         update: ({ params, payload }) =>
@@ -6748,11 +6803,11 @@ export const studioGroupsLive = (studio: Studio) =>
     ),
     HttpApiBuilder.group(Api, "channelSets", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* allowed("post:update");
 
-            if (params.workspaceId !== studioId) {
+            if ((yield* CurrentMember).workspaceId !== studioId) {
               return yield* new Forbidden();
             }
 
@@ -6806,12 +6861,16 @@ export const studioGroupsLive = (studio: Studio) =>
             }));
             yield* record(studio, `set:delete:${set.id}`);
           }),
-        list: ({ params }) =>
-          allowed("post:read").pipe(
-            Effect.andThen(allowed("channel:read")),
-            Effect.andThen(Ref.get(studio.state)),
-            Effect.map(({ channelSets: all }) =>
-              params.workspaceId === studioId ? all.map(setView) : []
+        list: () =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("post:read").pipe(
+                Effect.andThen(allowed("channel:read")),
+                Effect.andThen(Ref.get(studio.state)),
+                Effect.map(({ channelSets: all }) =>
+                  workspaceId === studioId ? all.map(setView) : []
+                )
+              )
             )
           ),
         update: ({ params, payload }) =>
@@ -6892,7 +6951,7 @@ export const studioGroupsLive = (studio: Studio) =>
     ),
     HttpApiBuilder.group(Api, "activity", (handlers) =>
       handlers.handleAll({
-        list: ({ params, query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             const member = yield* CurrentMember;
 
@@ -6907,7 +6966,7 @@ export const studioGroupsLive = (studio: Studio) =>
             }
 
             const listed = (
-              params.workspaceId === studioId ? activityLog : []
+              (yield* CurrentMember).workspaceId === studioId ? activityLog : []
             ).filter(
               (event) =>
                 (query.operation === undefined ||
@@ -6937,20 +6996,38 @@ export const studioGroupsLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "tiktok", (handlers) =>
       handlers.handleAll({
         creator: ({ params }) =>
-          allowed("post:create").pipe(
-            Effect.andThen(
-              params.workspaceId === studioId && params.channelId === tiktokId
-                ? Effect.succeed(tiktokAccount)
-                : Effect.fail(new ChannelNotFound())
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              allowed("post:create").pipe(
+                Effect.andThen(
+                  workspaceId === studioId && params.channelId === tiktokId
+                    ? Effect.succeed(tiktokAccount)
+                    : Effect.fail(new ChannelNotFound())
+                )
+              )
             )
           ),
       })
     )
   );
 
+// The workspace a credential belongs to, which its requests act in when
+// they name none: a key's, or the one an application's token is bound to.
+const ownWorkspaceOf = (principal: Principal): Option.Option<string> => {
+  if (principal._tag === "apiKey") {
+    return Option.some(principal.workspaceId);
+  }
+
+  return principal._tag === "user"
+    ? Option.fromNullishOr(principal.oauth?.workspaceId)
+    : Option.none();
+};
+
 /**
  * WorkspaceAccess as the server has it: the user, as a member of the
- * workspace in the path, with what their role allows there.
+ * workspace the request names in `Peal-Workspace` (else a key's own, or
+ * a token's bound one), with what their role allows there. A request that
+ * names none, from a credential that belongs to none, is refused.
  */
 export const studioAccessLive = (studio: Studio) =>
   Layer.succeed(
@@ -6958,11 +7035,19 @@ export const studioAccessLive = (studio: Studio) =>
     WorkspaceAccess.of((httpEffect) =>
       Effect.gen(function* member() {
         const principal = yield* CurrentPrincipal;
-        const params = yield* HttpRouter.params;
+        const request = yield* HttpServerRequest.HttpServerRequest;
+
+        const named = Option.fromUndefinedOr(
+          request.headers[workspaceHeader]
+        ).pipe(Option.orElse(() => ownWorkspaceOf(principal)));
+
+        if (Option.isNone(named)) {
+          return yield* new WorkspaceRequired();
+        }
 
         // A key acts in its own workspace alone, with its own permissions.
         if (principal._tag === "apiKey") {
-          if (principal.workspaceId !== params["workspaceId"]) {
+          if (principal.workspaceId !== named.value) {
             return yield* wrongWorkspace;
           }
 
@@ -6976,7 +7061,7 @@ export const studioAccessLive = (studio: Studio) =>
         }
 
         const workspace = studio.me.workspaces.find(
-          ({ id }) => id === params["workspaceId"]
+          ({ id }) => id === named.value
         );
 
         if (workspace === undefined) {

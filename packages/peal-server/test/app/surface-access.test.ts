@@ -6,7 +6,7 @@
 import { assert, layer } from "@effect/vitest";
 import { Context, Effect, Layer, Option, Schema } from "effect";
 import { HttpApiClient } from "effect/http-api";
-import { deviceCodeGrantType, OAuthApi } from "peal-contract";
+import { deviceCodeGrantType, OAuthApi, forWorkspace } from "peal-contract";
 
 import { SqlLive } from "#shared/infrastructure/database.ts";
 import {
@@ -109,7 +109,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const owner = yield* signedUpUnconfirmed("surface-owner");
           const workspaceId = yield* workspaceOf(owner, "Surfaces");
-          const base = `/api/workspaces/${workspaceId}`;
+          const base = "/api/v1";
 
           const reader = yield* commandLine(
             owner,
@@ -324,7 +324,10 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             ([caller, headers]) =>
               Effect.forEach(Object.entries(requests), ([name, request]) =>
                 app
-                  .request(request.path, { ...request, headers })
+                  .request(request.path, {
+                    ...request,
+                    headers: { ...headers, ...forWorkspace(workspaceId) },
+                  })
                   .pipe(
                     Effect.map(
                       (reply) =>
@@ -456,7 +459,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const owner = yield* signedUpUnconfirmed("depth-owner");
           const workspaceId = yield* workspaceOf(owner, "Depths");
-          const base = `/api/workspaces/${workspaceId}`;
+          const base = "/api/v1";
 
           const reader = yield* commandLine(
             owner,
@@ -581,7 +584,10 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             ([caller, headers]) =>
               Effect.forEach(Object.entries(requests), ([name, request]) =>
                 app
-                  .request(request.path, { ...request, headers })
+                  .request(request.path, {
+                    ...request,
+                    headers: { ...headers, ...forWorkspace(workspaceId) },
+                  })
                   .pipe(
                     Effect.map(
                       (reply) =>
@@ -746,13 +752,13 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           headers: Readonly<Record<string, string>>,
           workspace = workspaceId
         ) =>
-          app.request(`/api/workspaces/${workspace}/posts/send`, {
+          app.request(`/api/v1/posts/send`, {
             body: {
               channelIds: ["0190f3a0-0000-7000-8000-00000000c0de"],
               content: { media: [], overrides: [], text: "Synthetic." },
               when: { _tag: "now" },
             },
-            headers,
+            headers: { ...headers, ...forWorkspace(workspace) },
           });
 
         const refusal = Schema.decodeUnknownSync(
@@ -814,10 +820,12 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
         assert.strictEqual(refusal(foreign.body).reason, "untrustedOrigin");
 
         // What only the person does, asked by a key.
-        const person = yield* app.request(
-          `/api/workspaces/${workspaceId}/members`,
-          { headers: { authorization: `Bearer ${key}` } }
-        );
+        const person = yield* app.request(`/api/v1/members`, {
+          headers: {
+            authorization: `Bearer ${key}`,
+            ...forWorkspace(workspaceId),
+          },
+        });
 
         assert.strictEqual(person.status, 403);
         assert.strictEqual(refusal(person.body).reason, "personRequired");

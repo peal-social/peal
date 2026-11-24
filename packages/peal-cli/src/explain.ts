@@ -1301,6 +1301,12 @@ const reasonOf =
         ),
       WorkspaceNotFound: () =>
         refused("You do not belong to this workspace, or it no longer exists."),
+      // The command line names the workspace on every request, so only a
+      // server that reads it elsewhere answers this.
+      WorkspaceRequired: () =>
+        refused(
+          "The server needs the workspace this command acts in, and did not read it from the request: name it with --workspace or PEAL_WORKSPACE, and check that --api-url points at a Peal server of this version."
+        ),
     });
 
 // The request a refusal answers, as the API's errors name it.

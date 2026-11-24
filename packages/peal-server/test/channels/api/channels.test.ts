@@ -10,6 +10,7 @@ import {
   Forbidden,
   OAuthClientNotPublished,
   SiteNotConnected,
+  forWorkspace,
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -150,9 +151,9 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       const expiring = yield* connected(workspaceId);
       const renewing = yield* connected(workspaceId, refreshable);
       const client = yield* clientAs(owner(workspaceId));
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
-      const listed = yield* client.channels.list({ params });
+      const listed = yield* client.channels.list({ headers });
 
       assert.deepStrictEqual(listed, [
         {
@@ -180,7 +181,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       ]);
 
       const response = yield* client.channels.list({
-        params,
+        headers,
         responseMode: "response-only",
       });
 
@@ -198,7 +199,9 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       const channel = yield* connected(workspaceId);
       const client = yield* clientAs(viewer(workspaceId));
 
-      const listed = yield* client.channels.list({ params: { workspaceId } });
+      const listed = yield* client.channels.list({
+        headers: forWorkspace(workspaceId),
+      });
 
       assert.deepStrictEqual(
         listed.map(({ id }) => id),
@@ -214,15 +217,15 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       yield* connected(workspaceId);
 
       const client = yield* clientAs(postReader(workspaceId));
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       assert.instanceOf(
-        yield* Effect.flip(client.channels.list({ params })),
+        yield* Effect.flip(client.channels.list({ headers })),
         Forbidden
       );
 
       const response = yield* client.channels.list({
-        params,
+        headers,
         responseMode: "response-only",
       });
 
@@ -243,7 +246,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
         const client = yield* clientAs(owner(mine));
 
         const listed = yield* client.channels.list({
-          params: { workspaceId: theirs },
+          headers: forWorkspace(theirs),
         });
 
         assert.deepStrictEqual(
@@ -259,9 +262,10 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       const channel = yield* connected(workspaceId);
       const kept = yield* connected(workspaceId);
       const client = yield* clientAs(owner(workspaceId));
-      const params = { channelId: channel.id, workspaceId };
+      const params = { channelId: channel.id };
 
       const response = yield* client.channels.disconnect({
+        headers: forWorkspace(workspaceId),
         params,
         responseMode: "response-only",
       });
@@ -278,14 +282,20 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
     Effect.gen(function* notFound() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* clientAs(owner(workspaceId));
-      const params = { channelId, workspaceId };
+      const params = { channelId };
 
       assert.instanceOf(
-        yield* Effect.flip(client.channels.disconnect({ params })),
+        yield* Effect.flip(
+          client.channels.disconnect({
+            headers: forWorkspace(workspaceId),
+            params,
+          })
+        ),
         ChannelNotFound
       );
 
       const response = yield* client.channels.disconnect({
+        headers: forWorkspace(workspaceId),
         params,
         responseMode: "response-only",
       });
@@ -305,7 +315,8 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
 
         const error = yield* Effect.flip(
           client.channels.disconnect({
-            params: { channelId: channel.id, workspaceId: theirs },
+            headers: forWorkspace(theirs),
+            params: { channelId: channel.id },
           })
         );
 
@@ -318,13 +329,18 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
     Effect.gen(function* forbidden() {
       const workspaceId = yield* freshWorkspace;
       const channel = yield* connected(workspaceId);
-      const params = { channelId: channel.id, workspaceId };
+      const params = { channelId: channel.id };
 
       for (const member of [viewer(workspaceId), postReader(workspaceId)]) {
         const client = yield* clientAs(member);
 
         assert.instanceOf(
-          yield* Effect.flip(client.channels.disconnect({ params })),
+          yield* Effect.flip(
+            client.channels.disconnect({
+              headers: forWorkspace(workspaceId),
+              params,
+            })
+          ),
           Forbidden
         );
       }
@@ -338,9 +354,10 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       const instance = yield* mastodonInstance();
       const workspaceId = yield* freshWorkspace;
       const client = yield* clientAs(owner(workspaceId));
-      const params = { platform: "mastodon" as const, workspaceId };
+      const params = { platform: "mastodon" as const };
 
       const { authorizationUrl } = yield* client.channels.connect({
+        headers: forWorkspace(workspaceId),
         params,
         payload: { instance: instance.url },
       });
@@ -348,6 +365,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       const back = instance.approve(authorizationUrl);
 
       const outcome = yield* client.channels.completeConnect({
+        headers: forWorkspace(workspaceId),
         params,
         payload: { code: back.code, state: back.state },
       });
@@ -373,7 +391,8 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       const client = yield* clientAs(owner(workspaceId));
 
       const request = {
-        params: { platform: "mastodon" as const, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { platform: "mastodon" as const },
         payload: { code: "code-1", state: "made-up" },
       };
 
@@ -398,11 +417,11 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
     () =>
       Effect.gen(function* platforms() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const listed = yield* (yield* clientAs(
           owner(workspaceId)
-        )).channels.platforms({ params });
+        )).channels.platforms({ headers });
 
         assert.deepStrictEqual(listed, {
           // The chats connect with a secret, never a sign-in: apart from
@@ -416,7 +435,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
         });
 
         const refused = yield* Effect.flip(
-          (yield* clientAs(viewer(workspaceId))).channels.platforms({ params })
+          (yield* clientAs(viewer(workspaceId))).channels.platforms({ headers })
         );
 
         assert.instanceOf(refused, Forbidden);
@@ -428,10 +447,10 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       const site = yield* fakeWordPress();
       const workspaceId = yield* freshWorkspace;
       const client = yield* clientAs(owner(workspaceId));
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const channel = yield* client.channels.connectSite({
-        params,
+        headers,
         payload: {
           address: site.home,
           applicationPassword: editor.password,
@@ -445,7 +464,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
 
       const refused = yield* Effect.flip(
         client.channels.connectSite({
-          params,
+          headers,
           payload: {
             address: site.home,
             applicationPassword: "synthetic wrong",
@@ -460,7 +479,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
 
       const forbidden = yield* Effect.flip(
         (yield* clientAs(viewer(workspaceId))).channels.connectSite({
-          params,
+          headers,
           payload: {
             address: site.home,
             applicationPassword: editor.password,
@@ -478,10 +497,10 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
     Effect.gen(function* chat() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* clientAs(owner(workspaceId));
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const discord = yield* client.channels.connectChat({
-        params,
+        headers,
         payload: {
           platform: "discord",
           webhookUrl: "https://discord.com/api/webhooks/1/synthetic-token",
@@ -492,7 +511,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       assert.strictEqual(discord.handle, "Synthetic news");
 
       const telegram = yield* client.channels.connectChat({
-        params,
+        headers,
         payload: {
           botToken: "1:synthetic-token",
           chat: "@synthetic_news",
@@ -504,7 +523,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
 
       // The same chat again reconnects its channel, by name or not.
       const again = yield* client.channels.connectChat({
-        params,
+        headers,
         payload: {
           channelId: discord.id,
           platform: "discord",
@@ -516,7 +535,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
 
       const refused = yield* Effect.flip(
         client.channels.connectChat({
-          params,
+          headers,
           payload: { platform: "discord", webhookUrl: "synthetic-address" },
         })
       );
@@ -529,7 +548,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
         assert.instanceOf(
           yield* Effect.flip(
             client.channels.connectChat({
-              params,
+              headers,
               payload: {
                 channelId,
                 platform: "discord",
@@ -544,7 +563,7 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       assert.instanceOf(
         yield* Effect.flip(
           (yield* clientAs(viewer(workspaceId))).channels.connectChat({
-            params,
+            headers,
             payload: {
               platform: "discord",
               webhookUrl: "https://discord.com/api/webhooks/1/synthetic-token",
@@ -564,7 +583,8 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       for (const platform of ["discord", "telegram"] as const) {
         const refused = yield* Effect.flip(
           client.channels.connect({
-            params: { platform, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { platform },
             payload: {},
           })
         );
@@ -585,7 +605,8 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
 
       const error = yield* Effect.flip(
         client.channels.chooseAccounts({
-          params: { platform: "facebook", workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { platform: "facebook" },
           payload: { accountIds: ["101"], selection: "made-up" },
         })
       );
@@ -603,15 +624,18 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       const reasons = yield* Effect.all(
         [
           client.channels.connect({
-            params: { platform: "mastodon", workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { platform: "mastodon" },
             payload: { instance: "not a server" },
           }),
           client.channels.connect({
-            params: { platform: "mastodon", workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { platform: "mastodon" },
             payload: {},
           }),
           client.channels.connect({
-            params: { platform: "linkedin", workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { platform: "linkedin" },
             payload: {},
           }),
         ].map((attempt) =>
@@ -640,7 +664,8 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       assert.instanceOf(
         yield* Effect.flip(
           client.channels.connect({
-            params: { platform: "mastodon", workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { platform: "mastodon" },
             payload: { instance: "mastodon.example" },
           })
         ),
@@ -661,7 +686,8 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
         // request was taken, and the sign-in began.
         const failure = yield* Effect.flip(
           client.channels.reconnect({
-            params: { channelId: channel.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { channelId: channel.id },
             query: { messages: "true" },
           })
         );
@@ -678,7 +704,8 @@ layer(UseCasesTest)("the channels endpoints", (it) => {
       assert.instanceOf(
         yield* Effect.flip(
           client.channels.reconnect({
-            params: { channelId: "not-a-channel-id", workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { channelId: "not-a-channel-id" },
             query: {},
           })
         ),
@@ -768,9 +795,10 @@ layer(UseCasesTest)("a channel's name and switch", (it) => {
       const workspaceId = yield* freshWorkspace;
       const channel = yield* connected(workspaceId);
       const client = yield* clientAs(owner(workspaceId));
-      const params = { channelId: channel.id, workspaceId };
+      const params = { channelId: channel.id };
 
       const named = yield* client.channels.update({
+        headers: forWorkspace(workspaceId),
         params,
         payload: { label: "Client A" },
       });
@@ -780,7 +808,10 @@ layer(UseCasesTest)("a channel's name and switch", (it) => {
       assert.strictEqual(named.handle, "@peal_example");
       assert.strictEqual(named.displayName, "Peal Example");
 
-      const off = yield* client.channels.disable({ params });
+      const off = yield* client.channels.disable({
+        headers: forWorkspace(workspaceId),
+        params,
+      });
 
       assert.deepStrictEqual(off.status, {
         _tag: "disabled",
@@ -788,11 +819,15 @@ layer(UseCasesTest)("a channel's name and switch", (it) => {
       });
       assert.strictEqual(off.label, "Client A");
 
-      const on = yield* client.channels.enable({ params });
+      const on = yield* client.channels.enable({
+        headers: forWorkspace(workspaceId),
+        params,
+      });
 
       assert.deepStrictEqual(on.status, { _tag: "active" });
 
       const unnamed = yield* client.channels.update({
+        headers: forWorkspace(workspaceId),
         params,
         payload: { label: null },
       });
@@ -806,20 +841,29 @@ layer(UseCasesTest)("a channel's name and switch", (it) => {
       const workspaceId = yield* freshWorkspace;
       const channel = yield* connected(workspaceId);
       const client = yield* clientAs(viewer(workspaceId));
-      const params = { channelId: channel.id, workspaceId };
+      const params = { channelId: channel.id };
 
       const renamed = yield* client.channels
-        .update({ params, payload: { label: "Mine" } })
+        .update({
+          headers: forWorkspace(workspaceId),
+          params,
+          payload: { label: "Mine" },
+        })
         .pipe(Effect.flip);
 
       assert.instanceOf(renamed, Forbidden);
 
-      const off = yield* client.channels.disable({ params }).pipe(Effect.flip);
+      const off = yield* client.channels
+        .disable({ headers: forWorkspace(workspaceId), params })
+        .pipe(Effect.flip);
 
       assert.instanceOf(off, Forbidden);
 
       const missing = yield* (yield* clientAs(owner(workspaceId))).channels
-        .enable({ params: { channelId: "not-an-id", workspaceId } })
+        .enable({
+          headers: forWorkspace(workspaceId),
+          params: { channelId: "not-an-id" },
+        })
         .pipe(Effect.flip);
 
       assert.instanceOf(missing, ChannelNotFound);
@@ -835,18 +879,20 @@ layer(UseCasesTest)("the channel search", (it) => {
       const second = yield* connected(workspaceId);
       const third = yield* connected(workspaceId);
       const client = yield* clientAs(owner(workspaceId));
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       yield* client.channels.update({
-        params: { ...params, channelId: second.id },
+        headers,
+        params: { channelId: second.id },
         payload: { label: "Client A" },
       });
       yield* client.channels.disable({
-        params: { ...params, channelId: third.id },
+        headers,
+        params: { channelId: third.id },
       });
 
       const one = yield* client.channels.find({
-        params,
+        headers,
         query: { limit: 2 },
       });
 
@@ -861,7 +907,7 @@ layer(UseCasesTest)("the channel search", (it) => {
       });
 
       const two = yield* client.channels.find({
-        params,
+        headers,
         query: { cursor: one.nextCursor ?? "", limit: 2 },
       });
 
@@ -872,7 +918,7 @@ layer(UseCasesTest)("the channel search", (it) => {
       assert.isNull(two.nextCursor);
 
       const named = yield* client.channels.find({
-        params,
+        headers,
         query: { q: "client a", status: "active" },
       });
 
@@ -882,7 +928,7 @@ layer(UseCasesTest)("the channel search", (it) => {
       );
 
       const badCursor = yield* client.channels
-        .find({ params, query: { cursor: "not-a-cursor" } })
+        .find({ headers, query: { cursor: "not-a-cursor" } })
         .pipe(Effect.flip);
 
       assert.strictEqual(badCursor._tag, "BadRequest");
@@ -940,7 +986,8 @@ layer(AskingTest)("the channels endpoints, on a reconnect", (it) => {
       ] as const) {
         yield* Effect.flip(
           client.channels.reconnect({
-            params: { channelId: channel.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { channelId: channel.id },
             query,
           })
         );

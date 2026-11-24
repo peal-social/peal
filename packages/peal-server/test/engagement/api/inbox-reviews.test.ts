@@ -12,6 +12,7 @@ import {
   NewInboxReviewReplySchema,
   ReplyInvalid,
   ReplyPending,
+  forWorkspace,
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -53,7 +54,7 @@ const clientAs = (
     )
   );
 
-const params = { workspaceId };
+const headers = forWorkspace(workspaceId);
 
 // A world whose one location was read once, with two reviews.
 const collected = (world: ReviewWorld) =>
@@ -97,7 +98,7 @@ describe("the reviews endpoints", () => {
       const client = yield* clientAs(world, permissionsFor("viewer"));
 
       const page = yield* client.inboxReviews.listReviewThreads({
-        params,
+        headers,
         query: { unanswered: "true" },
       });
 
@@ -123,7 +124,8 @@ describe("the reviews endpoints", () => {
       );
 
       const detail = yield* client.inboxReviews.getReviewThread({
-        params: { ...params, threadId: thread?.id ?? "" },
+        headers,
+        params: { threadId: thread?.id ?? "" },
       });
 
       assert.strictEqual(detail.platform, "googleBusiness");
@@ -159,8 +161,8 @@ describe("the reviews endpoints", () => {
         const reviewId = reviews[0]?.id ?? "";
 
         const reply = yield* client.inboxReviews.replyToReview({
-          headers: {},
-          params: { ...params, reviewId },
+          headers,
+          params: { reviewId },
           payload: { text: "Thank you for coming!" },
         });
 
@@ -169,8 +171,8 @@ describe("the reviews endpoints", () => {
 
         const again = yield* client.inboxReviews
           .replyToReview({
-            headers: {},
-            params: { ...params, reviewId },
+            headers,
+            params: { reviewId },
             payload: { text: "Again" },
           })
           .pipe(Effect.flip);
@@ -179,8 +181,8 @@ describe("the reviews endpoints", () => {
 
         const tooLong = yield* client.inboxReviews
           .replyToReview({
-            headers: {},
-            params: { ...params, reviewId: reviews[1]?.id ?? "" },
+            headers,
+            params: { reviewId: reviews[1]?.id ?? "" },
             payload: { text: "é".repeat(2049) },
           })
           .pipe(Effect.flip);
@@ -200,7 +202,8 @@ describe("the reviews endpoints", () => {
       const waiting = reviews.find((review) => Option.isNone(review.reply));
 
       const marked = yield* client.inboxReviews.setReviewAnswered({
-        params: { ...params, reviewId: waiting?.id ?? "" },
+        headers,
+        params: { reviewId: waiting?.id ?? "" },
         payload: { answered: true },
       });
 
@@ -208,7 +211,8 @@ describe("the reviews endpoints", () => {
       assert.isTrue(marked.markedAnswered);
 
       const withdrawn = yield* client.inboxReviews.withdrawReviewReply({
-        params: { ...params, reviewId: replied?.id ?? "" },
+        headers,
+        params: { reviewId: replied?.id ?? "" },
       });
 
       assert.isNull(withdrawn.reply);
@@ -228,8 +232,8 @@ describe("the reviews endpoints", () => {
 
         const forbidden = yield* viewer.inboxReviews
           .replyToReview({
-            headers: {},
-            params: { ...params, reviewId },
+            headers,
+            params: { reviewId },
             payload: { text: "Thanks" },
           })
           .pipe(Effect.flip);
@@ -240,8 +244,8 @@ describe("the reviews endpoints", () => {
 
         const missing = yield* editor.inboxReviews
           .replyToReview({
-            headers: {},
-            params: { ...params, reviewId: "not-a-review" },
+            headers,
+            params: { reviewId: "not-a-review" },
             payload: { text: "Thanks" },
           })
           .pipe(Effect.flip);
@@ -249,7 +253,7 @@ describe("the reviews endpoints", () => {
         assert.instanceOf(missing, InboxReviewNotFound);
 
         const nowhere = yield* editor.inboxReviews
-          .getReviewThread({ params: { ...params, threadId: "not-a-thread" } })
+          .getReviewThread({ headers, params: { threadId: "not-a-thread" } })
           .pipe(Effect.flip);
 
         assert.instanceOf(nowhere, InboxReviewThreadNotFound);
@@ -261,8 +265,8 @@ describe("the reviews endpoints", () => {
 
         const unable = yield* editor.inboxReviews
           .replyToReview({
-            headers: {},
-            params: { ...params, reviewId },
+            headers,
+            params: { reviewId },
             payload: { text: "Thanks" },
           })
           .pipe(Effect.flip);
@@ -295,14 +299,14 @@ describe("the reviews endpoints", () => {
 
         const replied = yield* key.inboxReviews
           .replyToReview({
-            headers: {},
-            params: { ...params, reviewId },
+            headers,
+            params: { reviewId },
             payload: { text: "Thanks" },
           })
           .pipe(Effect.flip);
 
         const withdrawn = yield* key.inboxReviews
-          .withdrawReviewReply({ params: { ...params, reviewId } })
+          .withdrawReviewReply({ headers, params: { reviewId } })
           .pipe(Effect.flip);
 
         for (const refused of [replied, withdrawn]) {
@@ -315,7 +319,7 @@ describe("the reviews endpoints", () => {
 
         // Reading stays open to it.
         const page = yield* key.inboxReviews.listReviewThreads({
-          params,
+          headers,
           query: {},
         });
 

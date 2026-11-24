@@ -4,6 +4,7 @@ import { HttpApiEndpoint, HttpApiGroup, OpenApi } from "effect/http-api";
 import { Authentication } from "./authentication.ts";
 import { Forbidden } from "./forbidden.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 const count = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0));
 
@@ -54,7 +55,8 @@ export class MembersApi extends HttpApiGroup.make("members")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       success: Schema.Array(WorkspaceMemberSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -66,4 +68,4 @@ export class MembersApi extends HttpApiGroup.make("members")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/members") {}
+  .prefix("/api/v1/members") {}

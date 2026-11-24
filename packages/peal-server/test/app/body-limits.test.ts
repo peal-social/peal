@@ -12,8 +12,6 @@ import { MigratedSqlLive } from "#test/workspace/integration/harness.ts";
 
 const origin = "http://localhost:3001";
 
-const workspaceId = "5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60";
-
 const mebibytes = (count: number) => "x".repeat(count * 1024 * 1024);
 
 const CodedSchema = Schema.fromJsonString(
@@ -140,7 +138,7 @@ layer(MigratedSqlLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The content routes take more, up to their own limit: past it
           // they refuse, below it the credential is what is missing.
-          const posts = `/api/workspaces/${workspaceId}/posts/bulk`;
+          const posts = `/api/v1/posts/bulk`;
 
           const bulk = yield* answer(
             posts,

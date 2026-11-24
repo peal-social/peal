@@ -8,7 +8,12 @@ import { assert, layer } from "@effect/vitest";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { HttpApiClient } from "effect/http-api";
 import { SqlClient } from "effect/sql";
-import { deviceCodeGrantType, MeSchema, OAuthApi } from "peal-contract";
+import {
+  deviceCodeGrantType,
+  MeSchema,
+  OAuthApi,
+  forWorkspace,
+} from "peal-contract";
 
 import {
   appWithPostHog,
@@ -393,7 +398,7 @@ layer(
         const app = yield* TestApp;
         const person = yield* signedUpUnconfirmed("measure-session");
         const workspaceId = yield* workspaceOf(person, "Joined");
-        const posts = `/api/workspaces/${workspaceId}/posts`;
+        const posts = `/api/v1/posts`;
 
         // Only once the person allowed it.
         assert.strictEqual(
@@ -406,6 +411,7 @@ layer(
           headers: {
             cookie: person.cookies,
             "x-posthog-session-id": browserSessionId,
+            ...forWorkspace(workspaceId),
           },
         });
 
@@ -416,6 +422,7 @@ layer(
           headers: {
             cookie: person.cookies,
             "x-posthog-session-id": "not-a-session",
+            ...forWorkspace(workspaceId),
           },
         });
 
@@ -430,6 +437,7 @@ layer(
           headers: {
             authorization: `Bearer ${token}`,
             "x-posthog-session-id": browserSessionId,
+            ...forWorkspace(workspaceId),
           },
         });
 
@@ -473,7 +481,7 @@ layer(
         const app = yield* TestApp;
         const person = yield* signedUpUnconfirmed("measure-unjoined");
         const workspaceId = yield* workspaceOf(person, "Unjoined");
-        const posts = `/api/workspaces/${workspaceId}/posts`;
+        const posts = `/api/v1/posts`;
 
         const write = () =>
           app.request(posts, {
@@ -481,6 +489,7 @@ layer(
             headers: {
               cookie: person.cookies,
               "x-posthog-session-id": browserSessionId,
+              ...forWorkspace(workspaceId),
             },
           });
 

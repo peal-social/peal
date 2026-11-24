@@ -4,6 +4,7 @@ import {
   ChatNotConnectedReasonSchema,
   ConnectFailureReasonSchema,
   SiteNotConnectedReasonSchema,
+  forWorkspace,
 } from "peal-contract";
 import type {
   ChatNotConnectedReason,
@@ -28,7 +29,7 @@ export const channelsChanged = (workspaceId: string) => [
 /** The workspace's channels, fetched through /api with the visitor's cookies. */
 export const channelsOf = Atom.family((workspaceId: string) =>
   PealApi.query("channels", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: channelsChanged(workspaceId),
   })
 );
@@ -38,7 +39,7 @@ export const channelsOf = Atom.family((workspaceId: string) =>
  * visitor's cookies.
  */
 export const connectablePlatformsOf = Atom.family((workspaceId: string) =>
-  PealApi.query("channels", "platforms", { params: { workspaceId } })
+  PealApi.query("channels", "platforms", { headers: forWorkspace(workspaceId) })
 );
 
 export const connectChannel = PealApi.mutation("channels", "connect");

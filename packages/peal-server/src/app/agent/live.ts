@@ -23,7 +23,7 @@ const AgentDeskWithToolsLive = AgentDeskLive.pipe(
 
 /**
  * The agent's endpoints (`AgentApi`), beside `Api` under
- * `/api/workspaces/:workspaceId/agent`, behind the same Authentication and
+ * `/api/v1/agent`, behind the same Authentication and
  * WorkspaceAccess: its use cases, its tools (the MCP endpoint's handlers)
  * and its language models. Not in the OpenAPI document.
  */

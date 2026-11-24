@@ -52,7 +52,7 @@ const show = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     const setting = yield* client.assistant
-      .imageProvider({ params: { workspaceId: workspace.id } })
+      .imageProvider({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -122,7 +122,7 @@ const set = Command.make(
 
     const saved = yield* client.assistant
       .setImageProvider({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           // Each left out when not given: the server reads the provider's
           // own address, and `openai-compatible`.
@@ -189,7 +189,7 @@ const clear = Command.make(
     yield* confirmed({ question: "Remove it?", yes: input.yes });
 
     yield* client.assistant
-      .removeImageProvider({ params: { workspaceId: workspace.id } })
+      .removeImageProvider({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     yield* input.json
@@ -233,7 +233,7 @@ const showText = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     const setting = yield* client.assistant
-      .textProvider({ params: { workspaceId: workspace.id } })
+      .textProvider({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -309,7 +309,7 @@ const setText = Command.make(
 
     const saved = yield* client.assistant
       .setTextProvider({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           // Each left out when not given: the server reads the provider's
           // own address, and the provider from the kind.
@@ -357,7 +357,7 @@ const testText = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     yield* client.assistant
-      .testTextProvider({ params: { workspaceId: workspace.id } })
+      .testTextProvider({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     yield* input.json
@@ -402,7 +402,7 @@ const clearText = Command.make(
     yield* confirmed({ question: "Remove it?", yes: input.yes });
 
     yield* client.assistant
-      .removeTextProvider({ params: { workspaceId: workspace.id } })
+      .removeTextProvider({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     yield* input.json
@@ -447,7 +447,7 @@ const listProviders = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     const connected = yield* client.assistant
-      .providers({ params: { workspaceId: workspace.id } })
+      .providers({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -534,7 +534,8 @@ const connectProvider = Command.make(
 
     const saved = yield* client.assistant
       .connectProvider({
-        params: { provider: input.provider, workspaceId: workspace.id },
+        headers: {},
+        params: { provider: input.provider },
         payload: {
           // Left out when not given: the server takes the provider's own.
           ...Option.match(baseUrl, {
@@ -580,11 +581,12 @@ const testProvider = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("assistant.providers.test")(function* testProvider(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     yield* client.assistant
       .testProvider({
-        params: { provider: input.provider, workspaceId: workspace.id },
+        headers: {},
+        params: { provider: input.provider },
         payload: Option.match(input.model, {
           onNone: () => ({}),
           onSome: (model) => ({ model }),
@@ -637,7 +639,8 @@ const disconnectProvider = Command.make(
 
       yield* client.assistant
         .disconnectProvider({
-          params: { provider: input.provider, workspaceId: workspace.id },
+          headers: {},
+          params: { provider: input.provider },
         })
         .pipe(Effect.mapError(explain(url)));
 
@@ -700,7 +703,7 @@ const listModels = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     const chosen = yield* client.assistant
-      .models({ params: { workspaceId: workspace.id } })
+      .models({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -754,7 +757,8 @@ const setModel = Command.make(
 
     const chosen = yield* client.assistant
       .setModel({
-        params: { capability: input.capability, workspaceId: workspace.id },
+        headers: {},
+        params: { capability: input.capability },
         payload: {
           provider: input.provider,
           ...Option.match(input.model, {
@@ -791,7 +795,8 @@ const unsetModel = Command.make(
 
     yield* client.assistant
       .unsetModel({
-        params: { capability: input.capability, workspaceId: workspace.id },
+        headers: {},
+        params: { capability: input.capability },
       })
       .pipe(Effect.mapError(explain(url)));
 

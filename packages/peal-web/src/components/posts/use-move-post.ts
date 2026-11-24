@@ -3,6 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { DateTime, Exit, Option } from "effect";
 import { useFormatter, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import { toast } from "peal-ui/components/toast";
 
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
@@ -61,7 +62,7 @@ export const useMovePost = (
     at: DateTime.Utc
   ): Promise<boolean> => {
     const exit = await readPostsAt({
-      params: { workspaceId },
+      headers: forWorkspace(workspaceId),
       query: { from: at, to: DateTime.add(at, { seconds: 1 }) },
     });
 
@@ -76,7 +77,8 @@ export const useMovePost = (
     undoable: boolean
   ): Promise<void> => {
     const exit = await reschedule({
-      params: { postId, workspaceId },
+      headers: forWorkspace(workspaceId),
+      params: { postId },
       payload: { at, timeZone: scheduleZone },
       reactivityKeys: postsKeys,
     });

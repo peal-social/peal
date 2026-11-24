@@ -2514,6 +2514,14 @@ export type {
 
 export { WorkspaceAccess } from "./workspace-access.ts";
 
+export {
+  forWorkspace,
+  workspaceHeader,
+  workspaceHeaders,
+} from "./workspace-header.ts";
+
+export { WorkspaceRequired } from "./workspace-required.ts";
+
 export { ApprovalChanged } from "./approval-changed.ts";
 
 export { WorkspaceOverPlan } from "./workspace-over-plan.ts";

@@ -7,8 +7,9 @@ import {
   CommentRuleNotFound,
   CommentRuleNotPossible,
   Forbidden,
+  CurrentMember,
 } from "peal-contract";
-import type { CommentRule, CurrentMember } from "peal-contract";
+import type { CommentRule } from "peal-contract";
 
 import type { Studio } from "./studio.ts";
 
@@ -83,10 +84,10 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
   const groupLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "inboxRules", (handlers) =>
       handlers.handleAll({
-        createCommentRule: ({ params, payload }) =>
+        createCommentRule: ({ payload }) =>
           Effect.gen(function* create() {
             yield* world.allowed("engagement:reply");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const channelId = payload.channelId ?? "";
 
@@ -150,7 +151,7 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
         deleteCommentRule: ({ params }) =>
           Effect.gen(function* stop() {
             yield* world.allowed("engagement:reply");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rule = yield* ruleIn(studio, params.ruleId);
 
@@ -163,14 +164,14 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
         getCommentRule: ({ params }) =>
           Effect.gen(function* get() {
             yield* world.allowed("engagement:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             return yield* ruleIn(studio, params.ruleId);
           }),
-        listCommentRules: ({ params, query }) =>
+        listCommentRules: ({ query }) =>
           Effect.gen(function* list() {
             yield* world.allowed("engagement:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rules = yield* Ref.get(rulesOf(studio));
 
@@ -185,7 +186,7 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
         updateCommentRule: ({ params, payload }) =>
           Effect.gen(function* update() {
             yield* world.allowed("engagement:reply");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rule = yield* ruleIn(studio, params.ruleId);
 

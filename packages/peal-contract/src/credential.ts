@@ -67,7 +67,7 @@ export type CredentialPartner = typeof CredentialPartnerSchema.Type;
  * - `apiKey`: a workspace's API key.
  * - `partnerKey`: a partner's key, which holds `permissions` in each
  *   workspace its partner owns, and `scopes` over those workspaces; it
- *   names none of them (`GET /api/partner/workspaces` lists them).
+ *   names none of them (`GET /api/v1/partner/workspaces` lists them).
  */
 export const CredentialSchema = Schema.Union([
   Schema.TaggedStruct("user", {
@@ -101,7 +101,7 @@ export type Credential = typeof CredentialSchema.Type;
 
 export class CredentialApi extends HttpApiGroup.make("credential")
   .add(
-    HttpApiEndpoint.get("get", "/api/credential", {
+    HttpApiEndpoint.get("get", "/api/v1/credential", {
       error: [Forbidden, Unauthenticated],
       success: CredentialSchema,
     }).annotateMerge(

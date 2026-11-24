@@ -15,6 +15,7 @@ import { PlanLimitReached } from "./plan-limit-reached.ts";
 import { RoleSchema } from "./role.ts";
 import { TooManyInvitations } from "./too-many-invitations.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** An invitation to join the workspace, still waiting for an answer. */
 export const InvitationSchema = Schema.Struct({
@@ -50,8 +51,6 @@ export const NewInvitationSchema = Schema.Struct({
 
 export type NewInvitation = typeof NewInvitationSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
 /**
  * Who is invited to a workspace. Accepting and declining an invitation go
  * through the sign-in service's organization routes, under /api/auth, as
@@ -61,7 +60,8 @@ export class InvitationsApi extends HttpApiGroup.make("invitations")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden],
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(InvitationSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -78,7 +78,8 @@ export class InvitationsApi extends HttpApiGroup.make("invitations")
         PlanLimitReached,
         HttpApiError.BadRequest,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewInvitationSchema,
       success: InvitationSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -90,7 +91,8 @@ export class InvitationsApi extends HttpApiGroup.make("invitations")
     ),
     HttpApiEndpoint.delete("revoke", "/:invitationId", {
       error: [Forbidden, InvitationNotFound],
-      params: { ...workspace, invitationId: Schema.String },
+      headers: workspaceHeaders,
+      params: { invitationId: Schema.String },
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
       OpenApi.annotations({
@@ -102,4 +104,4 @@ export class InvitationsApi extends HttpApiGroup.make("invitations")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/invitations") {}
+  .prefix("/api/v1/invitations") {}

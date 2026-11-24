@@ -17,6 +17,7 @@ import type {
   TooManyRequests,
   Unauthenticated,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 import { aiProviders } from "peal-contract/ai-providers";
 import type { AiProviderId } from "peal-contract/ai-providers";
@@ -190,6 +191,7 @@ export type ConnectionFailure =
   | TooManyRequests
   | Unauthenticated
   | WorkspaceNotFound
+  | WorkspaceRequired
   | { readonly _tag: "Unexpected" };
 
 /** The message of `Assistant.connections.errors` that says why. */
@@ -212,6 +214,7 @@ export const connectionErrorKey = (
     Unauthenticated: (): ConnectionErrorKey => "generic",
     Unexpected: (): ConnectionErrorKey => "generic",
     WorkspaceNotFound: (): ConnectionErrorKey => "generic",
+    WorkspaceRequired: (): ConnectionErrorKey => "generic",
   });
 
 /** Why the test failed, as the API declares it. */
@@ -227,6 +230,7 @@ export type ConnectionTestFailure =
   | TooManyRequests
   | Unauthenticated
   | WorkspaceNotFound
+  | WorkspaceRequired
   | { readonly _tag: "Unexpected" };
 
 // The provider's own refusals: its settings are to fix.
@@ -265,4 +269,5 @@ export const testFailureKey = (
     Unauthenticated: (): ConnectionTestKey => "generic",
     Unexpected: (): ConnectionTestKey => "generic",
     WorkspaceNotFound: (): ConnectionTestKey => "generic",
+    WorkspaceRequired: (): ConnectionTestKey => "generic",
   });

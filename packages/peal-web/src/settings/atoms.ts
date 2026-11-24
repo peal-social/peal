@@ -1,5 +1,6 @@
 import { Schema } from "effect";
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 import { authClient } from "#auth/client.ts";
@@ -94,7 +95,7 @@ export const apiKeysChanged = apiKeysKey;
 
 export const workspaceApiKeys = Atom.family((workspaceId: string) =>
   PealApi.query("apiKeys", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: apiKeysKey(workspaceId),
   })
 );

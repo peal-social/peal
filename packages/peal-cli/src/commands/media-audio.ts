@@ -38,7 +38,7 @@ export const voiceover = Command.make(
 
     const made = yield* client.mediaAudio
       .createVoiceover({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           text: input.text,
           ...Option.match(input.voice, {
@@ -80,11 +80,12 @@ export const transcribe = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("media.transcribe")(function* transcribe(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const transcript = yield* client.mediaAudio
       .transcribe({
-        params: { mediaId: input.mediaId, workspaceId: workspace.id },
+        headers: {},
+        params: { mediaId: input.mediaId },
         payload: { saveAsDescription: input.saveDescription },
       })
       .pipe(Effect.mapError(explain(url)));

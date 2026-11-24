@@ -4,7 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { maxSignaturesPerWorkspace } from "peal-contract";
+import { maxSignaturesPerWorkspace, forWorkspace } from "peal-contract";
 import type { SocialChannel, Signature } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import {
@@ -87,7 +87,8 @@ const EditForm = ({
 
     startTransition(async () => {
       const exit = await update({
-        params: { signatureId: signature.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { signatureId: signature.id },
         payload: details.value,
         reactivityKeys: signaturesChanged(workspaceId),
       });
@@ -173,7 +174,8 @@ const SignatureRow = ({
                   deleted={t("deleted")}
                   remove={async () =>
                     await remove({
-                      params: { signatureId: signature.id, workspaceId },
+                      headers: forWorkspace(workspaceId),
+                      params: { signatureId: signature.id },
                       reactivityKeys: signaturesChanged(workspaceId),
                     })
                   }
@@ -263,7 +265,7 @@ const CreateForm = ({
 
     startTransition(async () => {
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: details.value,
         reactivityKeys: signaturesChanged(workspaceId),
       });

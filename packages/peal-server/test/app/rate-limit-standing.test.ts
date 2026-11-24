@@ -122,7 +122,7 @@ const keyed = Effect.fn("keyed")(function* keyed(label: string) {
   const workspaceId = yield* workspaceOf(owner, label);
   const { key } = yield* apiKeyOf(owner, workspaceId, ["channel:read"]);
 
-  return { key, path: `/api/workspaces/${workspaceId}/channels`, workspaceId };
+  return { key, path: "/api/v1/channels", workspaceId };
 });
 
 layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(

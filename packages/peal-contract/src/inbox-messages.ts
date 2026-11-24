@@ -35,6 +35,7 @@ import { ReplyInvalid } from "./reply-invalid.ts";
 import { ReplyStatusConflict } from "./reply-status-conflict.ts";
 import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // The inbox's direct messages: the private conversations of a workspace's
 // Mastodon, Bluesky, Facebook Page and Instagram channels, read from the platforms where the
@@ -308,13 +309,11 @@ export const InboxMessageSettingsSchema = Schema.Struct({
 
 export type InboxMessageSettings = typeof InboxMessageSettingsSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
+const conversation = { conversationId: Schema.String };
 
-const conversation = { ...workspace, conversationId: Schema.String };
+const message = { messageId: Schema.String };
 
-const message = { ...workspace, messageId: Schema.String };
-
-const privateReply = { ...workspace, privateReplyId: Schema.String };
+const privateReply = { privateReplyId: Schema.String };
 
 const listing =
   "Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.";
@@ -337,7 +336,8 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
   .add(
     HttpApiEndpoint.get("listConversations", "/conversations", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         channelId: Schema.optionalKey(Schema.String),
         cursor: Schema.optionalKey(Schema.String),
@@ -358,6 +358,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
     ),
     HttpApiEndpoint.get("getConversation", "/conversations/:conversationId", {
       error: [Forbidden, InboxConversationNotFound, HttpApiError.BadRequest],
+      headers: workspaceHeaders,
       params: conversation,
       query: {
         cursor: Schema.optionalKey(Schema.String),
@@ -389,6 +390,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
           UsageAllowanceReached,
         ],
         headers: {
+          ...workspaceHeaders,
           "idempotency-key": Schema.optionalKey(
             Schema.String.check(
               Schema.isBetweenLength(1, maxIdempotencyKeyLength)
@@ -417,13 +419,14 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
         UsageAllowanceReached,
       ],
       headers: {
+        ...workspaceHeaders,
         "idempotency-key": Schema.optionalKey(
           Schema.String.check(
             Schema.isBetweenLength(1, maxIdempotencyKeyLength)
           )
         ),
       },
-      params: workspace,
+
       payload: NewInboxPrivateReplySchema,
       success: InboxPrivateReplySchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -434,6 +437,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
     ),
     HttpApiEndpoint.get("getPrivateReply", "/private-replies/:privateReplyId", {
       error: [Forbidden, InboxPrivateReplyNotFound],
+      headers: workspaceHeaders,
       params: privateReply,
       success: InboxPrivateReplySchema,
     }).annotateMerge(
@@ -447,6 +451,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
       "/private-replies/:privateReplyId/confirm",
       {
         error: [Forbidden, InboxPrivateReplyNotFound, ReplyStatusConflict],
+        headers: workspaceHeaders,
         params: privateReply,
         payload: Schema.Struct({ went: Schema.Boolean }),
         success: InboxPrivateReplySchema,
@@ -462,6 +467,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
       "/conversations/:conversationId/read",
       {
         error: [Forbidden, InboxConversationNotFound],
+        headers: workspaceHeaders,
         params: conversation,
         payload: Schema.Struct({ read: Schema.Boolean }),
         success: InboxConversationSchema,
@@ -474,7 +480,8 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
     ),
     HttpApiEndpoint.get("getMessageSettings", "/settings", {
       error: [Forbidden],
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: InboxMessageSettingsSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -485,7 +492,8 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
     ),
     HttpApiEndpoint.put("setChannelMessages", "/channels/:channelId", {
       error: [Forbidden, InboxActionUnavailable],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       payload: Schema.Struct({ enabled: Schema.Boolean }),
       success: InboxMessageSettingsSchema,
     }).annotateMerge(
@@ -496,7 +504,8 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
     ),
     HttpApiEndpoint.put("setMessageApplication", "/applications", {
       error: [Forbidden],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: Schema.Struct({
         allowed: Schema.Boolean,
         clientId: Schema.String.check(Schema.isBetweenLength(1, 255)),
@@ -513,6 +522,7 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
       "/outgoing/:messageId/confirmation",
       {
         error: [Forbidden, InboxMessageNotFound, ReplyStatusConflict],
+        headers: workspaceHeaders,
         params: message,
         payload: Schema.Struct({ sent: Schema.Boolean }),
         success: InboxOutgoingMessageSchema,
@@ -526,4 +536,4 @@ export class InboxMessagesApi extends HttpApiGroup.make("inboxMessages")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/inbox/messages") {}
+  .prefix("/api/v1/inbox/messages") {}

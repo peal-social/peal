@@ -65,7 +65,7 @@ const list = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const waiting = yield* client.review
-      .pending({ params: { workspaceId: workspace.id } })
+      .pending({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -118,11 +118,12 @@ const approve = Command.make(
     subject: subjectHash,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const outcome = yield* client.review
       .approve({
-        params: { postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId },
         payload: { approvalId, subjectHash },
       })
       .pipe(explainingPublishing(url));
@@ -169,11 +170,12 @@ const requestChanges = Command.make(
     subject: subjectHash,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const outcome = yield* client.review
       .requestChanges({
-        params: { postId, workspaceId: workspace.id },
+        headers: {},
+        params: { postId },
         payload: { approvalId, comment, subjectHash },
       })
       .pipe(explainingPublishing(url));
@@ -212,13 +214,12 @@ const policy = Command.make(
     workspace: choice,
   }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
-    const params = { workspaceId: workspace.id };
 
     const settings = yield* Option.match(set, {
-      onNone: () => client.review.settings({ params }),
+      onNone: () => client.review.settings({ headers: {} }),
       onSome: (chosen) =>
         client.review.updateSettings({
-          params,
+          headers: {},
           payload: { approvalPolicy: chosen },
         }),
     }).pipe(Effect.mapError(explain(url)));

@@ -1,5 +1,5 @@
 import { Atom } from "effect/reactivity";
-import { maxPostPageSize } from "peal-contract";
+import { maxPostPageSize, forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -14,7 +14,7 @@ export const queuesChanged = (workspaceId: string) => [`queues:${workspaceId}`];
 
 export const workspaceQueues = Atom.family((workspaceId: string) =>
   PealApi.query("queues", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: [...queuesChanged(workspaceId), "channels"],
   })
 );
@@ -29,7 +29,8 @@ export const queueSlots = (
   count: number = shownSlots
 ) =>
   PealApi.query("queues", "slots", {
-    params: { queueId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { queueId },
     query: { count },
     reactivityKeys: [...queuesChanged(workspaceId), "posts"],
   });
@@ -55,7 +56,7 @@ export const queuedPosts = (
   status: "awaitingApproval" | "scheduled"
 ) =>
   PealApi.query("posts", "search", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: { limit: maxPostPageSize, queueId, status },
     reactivityKeys: [...queuesChanged(workspaceId), "posts"],
   });

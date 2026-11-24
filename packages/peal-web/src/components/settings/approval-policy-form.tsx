@@ -4,7 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { ApprovalPolicySchema } from "peal-contract";
+import { ApprovalPolicySchema, forWorkspace } from "peal-contract";
 import type { ApprovalPolicy } from "peal-contract";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
@@ -90,7 +90,7 @@ const LoadedForm = ({
 
     startTransition(async () => {
       const exit = await update({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { approvalPolicy: chosen },
         reactivityKeys: reviewKeys,
       });

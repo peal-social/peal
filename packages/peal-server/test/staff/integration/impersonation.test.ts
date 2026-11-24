@@ -12,6 +12,7 @@ import {
   AccountExportSchema,
   PostSchema,
   StaffAuditPageSchema,
+  forWorkspace,
 } from "peal-contract";
 import type { StaffAuditEvent } from "peal-contract";
 
@@ -124,11 +125,11 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             yield* impersonation("acting");
 
           const secretText = `A synthetic draft staff wrote ${randomUUID()}`;
-          const posts = `/api/workspaces/${workspaceId}/posts`;
+          const posts = `/api/v1/posts`;
 
           const created = yield* app.request(posts, {
             body: draftOf(secretText),
-            headers: { cookie: actingAs },
+            headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(created.status, 201);
@@ -140,7 +141,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const updated = yield* app.request(`${posts}/${post.id}`, {
             body: draftOf(`${secretText}, again`),
-            headers: { cookie: actingAs },
+            headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
             method: "PUT",
           });
 
@@ -148,7 +149,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Reading changes nothing, and is not recorded.
           const listed = yield* app.request(`${posts}/${post.id}`, {
-            headers: { cookie: actingAs },
+            headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(listed.status, 200);
@@ -170,13 +171,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // A change the handler then refuses is recorded all the same:
           // the record says what staff asked for.
-          const refusedKey = yield* app.request(
-            `/api/workspaces/${workspaceId}/api-keys`,
-            {
-              body: { name: "synthetic", permissions: ["post:read"] },
-              headers: { cookie: actingAs },
-            }
-          );
+          const refusedKey = yield* app.request(`/api/v1/api-keys`, {
+            body: { name: "synthetic", permissions: ["post:read"] },
+            headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
+          });
 
           assert.strictEqual(refusedKey.status, 403);
 
@@ -298,14 +296,11 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Agreeing to end the subscription does not let staff delete:
           // only the member, signed in as themselves, may.
-          const workspaceDeletion = yield* app.request(
-            `/api/workspaces/${workspaceId}`,
-            {
-              body: { cancelSubscriptions: true, name: "deleting" },
-              headers: { cookie: actingAs },
-              method: "DELETE",
-            }
-          );
+          const workspaceDeletion = yield* app.request(`/api/v1/workspace`, {
+            body: { cancelSubscriptions: true, name: "deleting" },
+            headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
+            method: "DELETE",
+          });
 
           assert.strictEqual(workspaceDeletion.status, 403);
 
@@ -420,13 +415,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(read.status, 401);
           assert.strictEqual(yield* openImpersonations(staff.id), 0);
 
-          const write = yield* app.request(
-            `/api/workspaces/${workspaceId}/posts`,
-            {
-              body: draftOf("A synthetic draft"),
-              headers: { cookie: actingAs },
-            }
-          );
+          const write = yield* app.request(`/api/v1/posts`, {
+            body: draftOf("A synthetic draft"),
+            headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
+          });
 
           assert.strictEqual(write.status, 401);
 

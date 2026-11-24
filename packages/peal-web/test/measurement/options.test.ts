@@ -166,7 +166,7 @@ describe("the recording's masking", () => {
       duration: 12,
       entryType: "resource",
       method: "POST",
-      name: "https://app.peal.test/api/workspaces/4d5e6f7a-8b9c-4d0e-9f1a-2b3c4d5e6f70/posts?q=secret",
+      name: "https://app.peal.test/api/v1/posts/4d5e6f7a-8b9c-4d0e-9f1a-2b3c4d5e6f70?q=secret",
       requestBody: '{"text":"secret"}',
       requestHeaders: { cookie: "synthetic" },
       responseBody: "{}",
@@ -179,7 +179,7 @@ describe("the recording's masking", () => {
       duration: 12,
       entryType: "resource",
       method: "POST",
-      name: "https://app.peal.test/api/workspaces/:id/posts",
+      name: "https://app.peal.test/api/v1/posts/:id",
       startTime: 3,
       status: 201,
     });

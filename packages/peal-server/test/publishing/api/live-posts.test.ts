@@ -8,6 +8,7 @@ import {
   LivePostNotChangeable,
   PostContentInvalid,
   PostNotFound,
+  forWorkspace,
 } from "peal-contract";
 import type { Member, Permission } from "peal-contract";
 
@@ -71,8 +72,8 @@ const sentOn = Effect.fn("test.sentOn")(function* sentOn(
   text: string
 ) {
   const post = yield* client.posts.send({
-    headers: {},
-    params: { workspaceId },
+    headers: { ...forWorkspace(workspaceId) },
+
     payload: {
       channelIds: [...channelIds],
       content: { media: [], overrides: [], text },
@@ -86,7 +87,10 @@ const sentOn = Effect.fn("test.sentOn")(function* sentOn(
     isFinished(PostIdSchema.make(post.id))
   );
 
-  return yield* client.posts.get({ params: { postId: post.id, workspaceId } });
+  return yield* client.posts.get({
+    headers: forWorkspace(workspaceId),
+    params: { postId: post.id },
+  });
 });
 
 describe("who may unpublish", () => {
@@ -133,18 +137,29 @@ describe("the unpublishing endpoints", () => {
           assert(target !== undefined);
           assert.strictEqual(target.removedAt, null);
 
-          const params = { postId: sent.id, targetId: target.id, workspaceId };
+          const params = { postId: sent.id, targetId: target.id };
 
           assert.deepStrictEqual(
             yield* Effect.all([
               viewer.posts
-                .unpublishTarget({ params, query: {} })
+                .unpublishTarget({
+                  headers: forWorkspace(workspaceId),
+                  params,
+                  query: {},
+                })
                 .pipe(Effect.flip),
               contributor.posts
-                .unpublishTarget({ params, query: {} })
+                .unpublishTarget({
+                  headers: forWorkspace(workspaceId),
+                  params,
+                  query: {},
+                })
                 .pipe(Effect.flip),
               contributor.posts
-                .unpublish({ params: { postId: sent.id, workspaceId } })
+                .unpublish({
+                  headers: forWorkspace(workspaceId),
+                  params: { postId: sent.id },
+                })
                 .pipe(Effect.flip),
             ]),
             [
@@ -164,7 +179,8 @@ describe("the unpublishing endpoints", () => {
           assert.deepStrictEqual(
             yield* stranger.posts
               .unpublishTarget({
-                params: { ...params, workspaceId: yield* freshId },
+                headers: forWorkspace(yield* freshId),
+                params: { ...params },
                 query: {},
               })
               .pipe(Effect.flip),
@@ -172,6 +188,7 @@ describe("the unpublishing endpoints", () => {
           );
 
           const change = yield* editor.posts.unpublishTarget({
+            headers: forWorkspace(workspaceId),
             params,
             query: {},
           });
@@ -183,7 +200,10 @@ describe("the unpublishing endpoints", () => {
           yield* eventually(
             "the change is done",
             viewer.posts
-              .changes({ params: { postId: sent.id, workspaceId } })
+              .changes({
+                headers: forWorkspace(workspaceId),
+                params: { postId: sent.id },
+              })
               .pipe(
                 Effect.map(({ items }) =>
                   items.some(({ status }) => status === "done")
@@ -192,7 +212,8 @@ describe("the unpublishing endpoints", () => {
           );
 
           const { items } = yield* viewer.posts.changes({
-            params: { postId: sent.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: sent.id },
           });
 
           assert.deepStrictEqual(
@@ -206,7 +227,8 @@ describe("the unpublishing endpoints", () => {
           );
 
           const after = yield* viewer.posts.get({
-            params: { postId: sent.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: sent.id },
           });
 
           assert.strictEqual(after.targets[0]?.status, "published");
@@ -215,19 +237,23 @@ describe("the unpublishing endpoints", () => {
 
           assert.deepStrictEqual(
             yield* editor.posts
-              .unpublishTarget({ params, query: {} })
+              .unpublishTarget({
+                headers: forWorkspace(workspaceId),
+                params,
+                query: {},
+              })
               .pipe(Effect.flip),
             new LivePostNotChangeable({ reason: "alreadyRemoved" })
           );
 
           // Found among the removed posts, and not among the others.
           const removed = yield* viewer.posts.search({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: { removed: "true" },
           });
 
           const kept = yield* viewer.posts.search({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: { removed: "false" },
           });
 
@@ -275,7 +301,8 @@ describe("the unpublishing endpoints", () => {
           );
 
           const asked = yield* editor.posts.unpublish({
-            params: { postId: sent.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: sent.id },
           });
 
           assert.deepStrictEqual(
@@ -290,10 +317,10 @@ describe("the unpublishing endpoints", () => {
           assert.deepStrictEqual(
             yield* editor.posts
               .unpublishTarget({
+                headers: forWorkspace(workspaceId),
                 params: {
                   postId: sent.id,
                   targetId: onMastodon.id,
-                  workspaceId,
                 },
                 query: { wait: 30 },
               })
@@ -307,7 +334,10 @@ describe("the unpublishing endpoints", () => {
           yield* eventually(
             "the change is done",
             editor.posts
-              .changes({ params: { postId: sent.id, workspaceId } })
+              .changes({
+                headers: forWorkspace(workspaceId),
+                params: { postId: sent.id },
+              })
               .pipe(
                 Effect.map(({ items }) =>
                   items.every(({ status }) => status === "done")
@@ -333,7 +363,8 @@ describe("the unpublishing endpoints", () => {
 
         const waiting = yield* editor.posts
           .unpublishTarget({
-            params: { postId: sent.id, targetId: target.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: sent.id, targetId: target.id },
             query: { wait: 30 },
           })
           .pipe(Effect.forkChild);
@@ -405,10 +436,20 @@ describe("the editing endpoint", () => {
           assert.deepStrictEqual(
             yield* Effect.all([
               viewer.posts
-                .editTarget({ params: on(mastodon), payload: fix, query: {} })
+                .editTarget({
+                  headers: forWorkspace(workspaceId),
+                  params: on(mastodon),
+                  payload: fix,
+                  query: {},
+                })
                 .pipe(Effect.flip),
               contributor.posts
-                .editTarget({ params: on(mastodon), payload: fix, query: {} })
+                .editTarget({
+                  headers: forWorkspace(workspaceId),
+                  params: on(mastodon),
+                  payload: fix,
+                  query: {},
+                })
                 .pipe(Effect.flip),
             ]),
             [
@@ -419,13 +460,19 @@ describe("the editing endpoint", () => {
 
           assert.deepStrictEqual(
             yield* editor.posts
-              .editTarget({ params: on(bluesky), payload: fix, query: {} })
+              .editTarget({
+                headers: forWorkspace(workspaceId),
+                params: on(bluesky),
+                payload: fix,
+                query: {},
+              })
               .pipe(Effect.flip),
             new LivePostNotChangeable({ reason: "notSupported" })
           );
 
           const tooLong = yield* editor.posts
             .editTarget({
+              headers: forWorkspace(workspaceId),
               params: on(mastodon),
               payload: { text: "x".repeat(501) },
               query: {},
@@ -439,6 +486,7 @@ describe("the editing endpoint", () => {
           );
 
           const change = yield* editor.posts.editTarget({
+            headers: forWorkspace(workspaceId),
             params: on(mastodon),
             payload: { part: 0, text: "Live, corrected" },
             query: {},
@@ -451,7 +499,10 @@ describe("the editing endpoint", () => {
           yield* eventually(
             "the edit is done",
             viewer.posts
-              .changes({ params: { postId: sent.id, workspaceId } })
+              .changes({
+                headers: forWorkspace(workspaceId),
+                params: { postId: sent.id },
+              })
               .pipe(
                 Effect.map(({ items }) =>
                   items.some(({ status }) => status === "done")
@@ -460,7 +511,8 @@ describe("the editing endpoint", () => {
           );
 
           const after = yield* viewer.posts.get({
-            params: { postId: sent.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: sent.id },
           });
 
           const edited = after.targets.find(
@@ -513,7 +565,8 @@ describe("the editing endpoint", () => {
 
           const otherPost = yield* editor.posts
             .editTarget({
-              params: { postId: first.id, targetId: ofSecond.id, workspaceId },
+              headers: forWorkspace(workspaceId),
+              params: { postId: first.id, targetId: ofSecond.id },
               payload: fix,
               query: {},
             })
@@ -521,10 +574,10 @@ describe("the editing endpoint", () => {
 
           const otherWorkspace = yield* stranger.posts
             .editTarget({
+              headers: forWorkspace(elsewhere),
               params: {
                 postId: second.id,
                 targetId: ofSecond.id,
-                workspaceId: elsewhere,
               },
               payload: fix,
               query: {},
@@ -535,7 +588,8 @@ describe("the editing endpoint", () => {
           assert.instanceOf(otherWorkspace, PostNotFound);
 
           const changes = yield* editor.posts.changes({
-            params: { postId: second.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: second.id },
           });
 
           assert.lengthOf(changes.items, 0);

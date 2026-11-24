@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -56,7 +57,7 @@ const threadPages = Atom.family((key: string) => {
   }
 
   return PealApi.query("inbox", "listThreads", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query,
     reactivityKeys: threadsChanged(workspaceId),
   });
@@ -79,7 +80,8 @@ const threads = Atom.family((key: string) => {
   const [workspaceId = "", threadId = ""] = key.split("/");
 
   return PealApi.query("inbox", "getThread", {
-    params: { threadId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { threadId },
     reactivityKeys: threadChanged(threadId),
   });
 });

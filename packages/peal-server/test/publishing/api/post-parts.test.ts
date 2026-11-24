@@ -2,7 +2,12 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, PostContentInvalid, UnknownMedia } from "peal-contract";
+import {
+  Api,
+  PostContentInvalid,
+  UnknownMedia,
+  forWorkspace,
+} from "peal-contract";
 import type { PostContent } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
@@ -70,7 +75,7 @@ describe("the posts endpoints, for a post of several parts", () => {
           const client = yield* clientIn(workspaceId);
 
           const created = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [mastodon], content: thread },
           });
 
@@ -82,7 +87,8 @@ describe("the posts endpoints, for a post of several parts", () => {
 
           // A client from before parts sends none, and replaces them all.
           const alone = yield* client.posts.update({
-            params: { postId: created.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: created.id },
             payload: {
               channelIds: [mastodon],
               content: { media: [], overrides: [], text: "Alone" },
@@ -112,7 +118,7 @@ describe("the posts endpoints, for a post of several parts", () => {
 
           const refused = yield* client.posts
             .create({
-              params: { workspaceId },
+              headers: forWorkspace(workspaceId),
               payload: {
                 channelIds: [mastodon],
                 content: {
@@ -154,8 +160,8 @@ describe("the posts endpoints, for a post of several parts", () => {
 
           const refused = yield* client.posts
             .send({
-              headers: {},
-              params: { workspaceId },
+              headers: { ...forWorkspace(workspaceId) },
+
               payload: {
                 channelIds: [linkedin, mastodon],
                 content: {
@@ -216,8 +222,8 @@ describe("the posts endpoints, for a post of several parts", () => {
           const client = yield* clientIn(workspaceId);
 
           const sent = yield* client.posts.send({
-            headers: {},
-            params: { workspaceId },
+            headers: { ...forWorkspace(workspaceId) },
+
             payload: {
               channelIds: [mastodon],
               content: thread,
@@ -230,17 +236,21 @@ describe("the posts endpoints, for a post of several parts", () => {
             query: {},
           });
 
-          const params = { postId: sent.id, workspaceId };
+          const params = { postId: sent.id };
 
           yield* setTime("2026-06-15T08:00:00Z");
           yield* eventually(
             "the post finishes",
             client.posts
-              .get({ params })
+              .get({ headers: forWorkspace(workspaceId), params })
               .pipe(Effect.map(({ status }) => status === "finished"))
           );
 
-          const post = yield* client.posts.get({ params });
+          const post = yield* client.posts.get({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
+
           const [target] = post.targets;
 
           assert(target !== undefined);
@@ -253,7 +263,10 @@ describe("the posts endpoints, for a post of several parts", () => {
           // The target's address is its first part's.
           assert.strictEqual(target.permalink, target.parts.live[0]?.permalink);
 
-          const attempts = yield* client.posts.attempts({ params });
+          const attempts = yield* client.posts.attempts({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
 
           assert.deepStrictEqual(
             attempts.map(({ attempt, part, result }) => [

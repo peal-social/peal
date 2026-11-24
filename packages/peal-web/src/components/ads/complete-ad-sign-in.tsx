@@ -4,6 +4,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { constVoid } from "effect/Function";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AdNetwork, ReachableAdAccount } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
@@ -97,7 +98,8 @@ export const CompleteAdSignIn = ({
 
     const finish = async (workspace: string, payload: AdSignInCallback) => {
       const exit = await complete({
-        params: { network, workspaceId: workspace },
+        headers: forWorkspace(workspace),
+        params: { network },
         payload,
       });
 
@@ -129,9 +131,9 @@ export const CompleteAdSignIn = ({
 
     startTransition(async () => {
       const exit = await connect({
+        headers: forWorkspace(reached.workspaceId),
         params: {
           connectionId: reached.connectionId,
-          workspaceId: reached.workspaceId,
         },
         payload: { externalIds: [...selected] },
         reactivityKeys: adsChanged(reached.workspaceId),

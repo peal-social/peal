@@ -28,6 +28,7 @@ import {
 import { ReplyInvalid } from "./reply-invalid.ts";
 import { ReplyPending } from "./reply-pending.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // The inbox's reviews: what people write about the locations a
 // workspace's Google Business Profile channels post as, read from Google
@@ -231,11 +232,9 @@ export const NewInboxReviewReplySchema = Schema.Struct({
 
 export type NewInboxReviewReply = typeof NewInboxReviewReplySchema.Type;
 
-const workspace = { workspaceId: Schema.String };
+const thread = { threadId: Schema.String };
 
-const thread = { ...workspace, threadId: Schema.String };
-
-const review = { ...workspace, reviewId: Schema.String };
+const review = { reviewId: Schema.String };
 
 const reading = "Needs engagement:read.";
 
@@ -256,7 +255,8 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
   .add(
     HttpApiEndpoint.get("listReviewThreads", "/threads", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         channelId: Schema.optionalKey(Schema.String),
         cursor: Schema.optionalKey(Schema.String),
@@ -277,6 +277,7 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
     ),
     HttpApiEndpoint.get("getReviewThread", "/threads/:threadId", {
       error: [Forbidden, InboxReviewThreadNotFound],
+      headers: workspaceHeaders,
       params: thread,
       success: InboxReviewThreadDetailSchema,
     }).annotateMerge(
@@ -295,6 +296,7 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
         IdempotencyKeyReused,
       ],
       headers: {
+        ...workspaceHeaders,
         "idempotency-key": Schema.optionalKey(
           Schema.String.check(
             Schema.isBetweenLength(1, maxIdempotencyKeyLength)
@@ -317,6 +319,7 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
         InboxActionUnavailable,
         InboxActionFailed,
       ],
+      headers: workspaceHeaders,
       params: review,
       success: InboxReviewSchema,
     }).annotateMerge(
@@ -327,6 +330,7 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
     ),
     HttpApiEndpoint.post("setReviewAnswered", "/:reviewId/answered", {
       error: [Forbidden, InboxReviewNotFound],
+      headers: workspaceHeaders,
       params: review,
       payload: Schema.Struct({ answered: Schema.Boolean }),
       success: InboxReviewSchema,
@@ -339,4 +343,4 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/inbox/reviews") {}
+  .prefix("/api/v1/inbox/reviews") {}

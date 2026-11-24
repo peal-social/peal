@@ -5,6 +5,7 @@ import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { AudioLinesIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AssistantStatus } from "peal-contract";
 import type { AiSpeechOffer } from "peal-contract/ai-providers";
 import { Alert, AlertTitle } from "peal-ui/components/alert";
@@ -169,7 +170,7 @@ const VoiceoverDialog = ({
 
     startTransition(async () => {
       const exit = await make({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: voiceoverRequestOf(text, voice),
         reactivityKeys: [mediaKey(workspaceId)],
       });

@@ -81,7 +81,7 @@ const rename = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const channel = yield* client.channels
-      .update({ params: { channelId, workspaceId: workspace.id }, payload })
+      .update({ headers: {}, params: { channelId }, payload })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -113,7 +113,7 @@ const disable = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const channel = yield* client.channels
-      .disable({ params: { channelId, workspaceId: workspace.id } })
+      .disable({ headers: {}, params: { channelId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -143,7 +143,7 @@ const enable = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const channel = yield* client.channels
-      .enable({ params: { channelId, workspaceId: workspace.id } })
+      .enable({ headers: {}, params: { channelId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {

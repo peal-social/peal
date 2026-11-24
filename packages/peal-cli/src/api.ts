@@ -2,7 +2,13 @@ import { Context, Effect, Layer } from "effect";
 import type { Redacted } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 import { HttpApiClient } from "effect/http-api";
-import { Api, apiVersion, apiVersionHeader, OAuthApi } from "peal-contract";
+import {
+  Api,
+  apiVersion,
+  apiVersionHeader,
+  OAuthApi,
+  workspaceHeader,
+} from "peal-contract";
 
 import { apiKeyVariable } from "#api-key.ts";
 import { display } from "#display.ts";
@@ -55,17 +61,21 @@ export class PealApi extends Context.Service<
     readonly sendingApiKey: Effect.Effect<void, Refused>;
     /**
      * The HTTP API's client, sending an OAuth access token: refused as
-     * `sendingCredentials` refuses.
+     * `sendingCredentials` refuses. Given a workspace's id, every request
+     * names it in `Peal-Workspace`, which the workspace's endpoints act in.
      */
     readonly signedIn: (
-      accessToken: Redacted.Redacted
+      accessToken: Redacted.Redacted,
+      workspaceId?: string
     ) => Effect.Effect<HttpApiClient.ForApi<typeof Api>, Refused>;
     /**
      * The HTTP API's client, sending an API key: refused as
-     * `sendingApiKey` refuses.
+     * `sendingApiKey` refuses. Given a workspace's id, every request names
+     * it in `Peal-Workspace`, as `signedIn` does.
      */
     readonly withApiKey: (
-      key: Redacted.Redacted
+      key: Redacted.Redacted,
+      workspaceId?: string
     ) => Effect.Effect<HttpApiClient.ForApi<typeof Api>, Refused>;
   }
 >()("peal-cli/PealApi") {
@@ -108,11 +118,25 @@ export class PealApi extends Context.Service<
               })
             );
 
-        const bearing = (credential: Redacted.Redacted) =>
+        // The workspace a run acts in goes in a header, once for every
+        // request, as the API's paths no longer name it.
+        const bearing = (
+          credential: Redacted.Redacted,
+          workspaceId: string | undefined
+        ) =>
           HttpApiClient.makeWith(Api, {
             baseUrl,
             httpClient: httpClient.pipe(
-              HttpClient.mapRequest(HttpClientRequest.bearerToken(credential))
+              HttpClient.mapRequest(HttpClientRequest.bearerToken(credential)),
+              HttpClient.mapRequest((request) =>
+                workspaceId === undefined
+                  ? request
+                  : HttpClientRequest.setHeader(
+                      request,
+                      workspaceHeader,
+                      workspaceId
+                    )
+              )
             ),
           });
 
@@ -126,9 +150,12 @@ export class PealApi extends Context.Service<
           }),
           sendingApiKey,
           sendingCredentials,
-          signedIn: (accessToken) =>
-            sendingCredentials.pipe(Effect.andThen(bearing(accessToken))),
-          withApiKey: (key) => sendingApiKey.pipe(Effect.andThen(bearing(key))),
+          signedIn: (accessToken, workspaceId) =>
+            sendingCredentials.pipe(
+              Effect.andThen(bearing(accessToken, workspaceId))
+            ),
+          withApiKey: (key, workspaceId) =>
+            sendingApiKey.pipe(Effect.andThen(bearing(key, workspaceId))),
         });
       })
     );

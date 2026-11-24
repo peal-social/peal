@@ -112,7 +112,7 @@ const generate = Command.make(
 
     const asked = yield* client.videoGenerations
       .create({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           aspect: input.aspect,
           prompt: input.prompt,
@@ -146,7 +146,8 @@ const generate = Command.make(
 
     const read = client.videoGenerations
       .get({
-        params: { generationId: asked.id, workspaceId: workspace.id },
+        headers: {},
+        params: { generationId: asked.id },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -195,13 +196,13 @@ const status = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("media.video.status")(function* status(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const found = yield* client.videoGenerations
       .get({
+        headers: {},
         params: {
           generationId: input.generationId,
-          workspaceId: workspace.id,
         },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -223,7 +224,7 @@ const list = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     const found = yield* client.videoGenerations
-      .list({ params: { workspaceId: workspace.id }, query: {} })
+      .list({ headers: {}, query: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {

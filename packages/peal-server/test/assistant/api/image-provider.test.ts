@@ -2,7 +2,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { ImageProviderChange, Member, Permission } from "peal-contract";
 
 import { AssistantApiLive } from "#assistant/container.ts";
@@ -77,17 +77,17 @@ layer(StoreTest, { timeout: "60 seconds" })(
     it.effect("lets owners and admins set it, and nobody else", () =>
       Effect.gen(function* roles() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         for (const role of ["editor", "contributor", "viewer"]) {
           const client = yield* as(workspaceId, role);
 
           const refusals = yield* Effect.all([
-            refusalOf(client.assistant.imageProvider({ params })),
+            refusalOf(client.assistant.imageProvider({ headers })),
             refusalOf(
-              client.assistant.setImageProvider({ params, payload: provider })
+              client.assistant.setImageProvider({ headers, payload: provider })
             ),
-            refusalOf(client.assistant.removeImageProvider({ params })),
+            refusalOf(client.assistant.removeImageProvider({ headers })),
           ]);
 
           assert.deepStrictEqual(
@@ -99,7 +99,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
         const admin = yield* as(workspaceId, "admin");
 
         const saved = yield* admin.assistant.setImageProvider({
-          params,
+          headers,
           payload: provider,
         });
 
@@ -111,7 +111,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
         });
 
         const owner = yield* as(workspaceId, "owner");
-        const read = yield* owner.assistant.imageProvider({ params });
+        const read = yield* owner.assistant.imageProvider({ headers });
 
         assert.deepStrictEqual(read.provider, saved);
       }).pipe(Effect.provide(imagesTest()))
@@ -120,12 +120,12 @@ layer(StoreTest, { timeout: "60 seconds" })(
     it.effect("refuses an API key without assistant:configure", () =>
       Effect.gen(function* keys() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const without = yield* keyWith(workspaceId, ["assistant:use"]);
 
         const refused = yield* refusalOf(
-          without.assistant.setImageProvider({ params, payload: provider })
+          without.assistant.setImageProvider({ headers, payload: provider })
         );
 
         assert.strictEqual(refused._tag, "Forbidden");
@@ -135,7 +135,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
         ]);
 
         const saved = yield* configuring.assistant.setImageProvider({
-          params,
+          headers,
           payload: provider,
         });
 
@@ -146,16 +146,16 @@ layer(StoreTest, { timeout: "60 seconds" })(
     it.effect("never answers the key, in any view", () =>
       Effect.gen(function* noKey() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const admin = yield* as(workspaceId, "admin");
 
         const saved = yield* admin.assistant.setImageProvider({
-          params,
+          headers,
           payload: provider,
         });
 
-        const read = yield* admin.assistant.imageProvider({ params });
-        const status = yield* admin.assistant.status({ params });
+        const read = yield* admin.assistant.imageProvider({ headers });
+        const status = yield* admin.assistant.status({ headers });
 
         for (const answer of [saved, read, status]) {
           assert.notInclude(JSON.stringify(answer), syntheticKey);
@@ -173,13 +173,13 @@ layer(StoreTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* origins() {
           const workspaceId = yield* freshWorkspace;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
           const admin = yield* as(workspaceId, "admin");
 
           // No key stored yet: it is required.
           const first = yield* refusalOf(
             admin.assistant.setImageProvider({
-              params,
+              headers,
               payload: { baseUrl: provider.baseUrl, model: provider.model },
             })
           );
@@ -187,13 +187,13 @@ layer(StoreTest, { timeout: "60 seconds" })(
           assert.strictEqual(first._tag, "ImageProviderKeyRequired");
 
           yield* admin.assistant.setImageProvider({
-            params,
+            headers,
             payload: provider,
           });
 
           // Another model at the same address keeps the key.
           const remodelled = yield* admin.assistant.setImageProvider({
-            params,
+            headers,
             payload: {
               baseUrl: "https://images.example.com/v1",
               model: "synthetic-image-model-2",
@@ -214,7 +214,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
           ]) {
             const elsewhere = yield* refusalOf(
               admin.assistant.setImageProvider({
-                params,
+                headers,
                 payload: { baseUrl, model: provider.model },
               })
             );
@@ -222,7 +222,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
             assert.strictEqual(elsewhere._tag, "ImageProviderKeyRequired");
           }
 
-          const kept = yield* admin.assistant.imageProvider({ params });
+          const kept = yield* admin.assistant.imageProvider({ headers });
 
           assert.strictEqual(
             kept.provider?.baseUrl,
@@ -236,19 +236,19 @@ layer(StoreTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* named() {
           const workspaceId = yield* freshWorkspace;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
           const admin = yield* as(workspaceId, "admin");
 
           // A change that names none is the OpenAI images API at its address.
           const generic = yield* admin.assistant.setImageProvider({
-            params,
+            headers,
             payload: provider,
           });
 
           assert.strictEqual(generic.provider, "openai-compatible");
 
           const xai = yield* admin.assistant.setImageProvider({
-            params,
+            headers,
             payload: {
               apiKey: syntheticKey,
               model: "grok-imagine-image-2.0",
@@ -261,14 +261,14 @@ layer(StoreTest, { timeout: "60 seconds" })(
             provider: "xai",
           });
 
-          const read = yield* admin.assistant.imageProvider({ params });
+          const read = yield* admin.assistant.imageProvider({ headers });
 
           assert.strictEqual(read.provider?.provider, "xai");
 
           // The generic endpoint has no address of its own.
           const addressless = yield* refusalOf(
             admin.assistant.setImageProvider({
-              params,
+              headers,
               payload: {
                 apiKey: syntheticKey,
                 model: provider.model,
@@ -287,7 +287,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
     it.effect("refuses an address Peal sends nothing to, in words", () =>
       Effect.gen(function* addresses() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const admin = yield* as(workspaceId, "admin");
 
         const reasons = yield* Effect.forEach(
@@ -303,7 +303,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
           (baseUrl) =>
             refusalOf(
               admin.assistant.setImageProvider({
-                params,
+                headers,
                 payload: { ...provider, baseUrl },
               })
             ).pipe(
@@ -325,7 +325,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
           "malformed",
         ]);
 
-        const none = yield* admin.assistant.imageProvider({ params });
+        const none = yield* admin.assistant.imageProvider({ headers });
 
         assert.isNull(none.provider);
       }).pipe(Effect.provide(imagesTest()))
@@ -338,7 +338,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
     it.effect("refuses a model or a key that is not one line", () =>
       Effect.gen(function* lines() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const admin = yield* as(workspaceId, "admin");
 
         const refusals = yield* Effect.forEach(
@@ -349,7 +349,7 @@ layer(StoreTest, { timeout: "60 seconds" })(
           ],
           (payload) =>
             refusalOf(
-              admin.assistant.setImageProvider({ params, payload })
+              admin.assistant.setImageProvider({ headers, payload })
             ).pipe(Effect.map((refusal) => refusal._tag))
         );
 
@@ -364,14 +364,14 @@ layer(StoreTest, { timeout: "60 seconds" })(
     it.effect("removes it, and the server's model makes images again", () =>
       Effect.gen(function* removes() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const admin = yield* as(workspaceId, "admin");
 
-        yield* admin.assistant.setImageProvider({ params, payload: provider });
-        yield* admin.assistant.removeImageProvider({ params });
+        yield* admin.assistant.setImageProvider({ headers, payload: provider });
+        yield* admin.assistant.removeImageProvider({ headers });
 
-        const status = yield* admin.assistant.status({ params });
-        const read = yield* admin.assistant.imageProvider({ params });
+        const status = yield* admin.assistant.status({ headers });
+        const read = yield* admin.assistant.imageProvider({ headers });
 
         assert.isNull(read.provider);
         assert.deepInclude(status.images, {

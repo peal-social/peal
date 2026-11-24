@@ -107,7 +107,7 @@ const list = Command.make(
 
     const page = yield* client.activity
       .list({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...given(input.actor, (actor) => ({ actor })),
           ...given(input.cursor, (cursor) => ({ cursor })),

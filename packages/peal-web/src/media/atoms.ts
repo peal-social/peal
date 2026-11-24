@@ -1,5 +1,6 @@
 import { Effect, Option } from "effect";
 import { Atom, Reactivity } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 import type { Media } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -21,7 +22,7 @@ const pages = Atom.family((key: string) => {
   const { cursor, search, workspaceId } = pageOfKey(key);
 
   return PealApi.query("media", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: queryOf(search, cursor),
     reactivityKeys: [mediaKey(workspaceId)],
   });
@@ -53,7 +54,8 @@ export const mediaUsage = Atom.family((key: string) => {
   const [workspaceId = "", mediaId = ""] = key.split("/");
 
   return PealApi.query("media", "usage", {
-    params: { mediaId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { mediaId },
     reactivityKeys: [mediaKey(workspaceId)],
   });
 });
@@ -150,7 +152,8 @@ export const describeUpload = Atom.family((_id: string) =>
 
       return yield* client.media
         .describe({
-          params: { mediaId, workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { mediaId },
           payload: { altText: trimmed === "" ? null : trimmed },
         })
         .pipe(Reactivity.mutation([mediaKey(workspaceId)]));

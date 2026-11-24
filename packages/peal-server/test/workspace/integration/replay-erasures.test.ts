@@ -1,13 +1,14 @@
-// A restore of the database brings back what was erased since its backup.
-// Here a workspace is deleted and an account closed through the app, the
-// rows a restore would bring back are put back, and the ledger kept in the
-// object store (the development stack's SeaweedFS) is replayed: both are
-// erased again, and nothing else is touched.
 import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
 import { ConfigProvider, DateTime, Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+// A restore of the database brings back what was erased since its backup.
+// Here a workspace is deleted and an account closed through the app, the
+// rows a restore would bring back are put back, and the ledger kept in the
+// object store (the development stack's SeaweedFS) is replayed: both are
+// erased again, and nothing else is touched.
+import { forWorkspace } from "peal-contract";
 
 import { ErasureReplayServicesLive } from "#app/server.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -192,9 +193,9 @@ layer(ReplayTest, { excludeTestServices: true, timeout: "180 seconds" })(
           // Ana deletes her workspace; Bea closes her account, which
           // deletes the workspace she had alone.
           assert.strictEqual(
-            (yield* app.request(`/api/workspaces/${harbour}`, {
+            (yield* app.request(`/api/v1/workspace`, {
               body: { name: "Harbour" },
-              headers: { cookie: ana.cookies },
+              headers: { cookie: ana.cookies, ...forWorkspace(harbour) },
               method: "DELETE",
             })).status,
             204
@@ -431,16 +432,16 @@ layer(ReplayTest, { excludeTestServices: true, timeout: "180 seconds" })(
           const home = yield* workspaceOf(owner, "Suite");
 
           assert.strictEqual(
-            (yield* app.request(`/api/workspaces/${home}/partner`, {
+            (yield* app.request(`/api/v1/partner-account`, {
               body: { name: "Replay Suite" },
-              headers: { cookie: owner.cookies },
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
             })).status,
             201
           );
 
           const { key } = yield* keyOf(owner, home);
           const customer = yield* customerOf(key, "Offboarded", "cus_replay");
-          const base = `/api/workspaces/${customer.id}`;
+          const base = "/api/v1";
 
           // What the partner's key leaves there: a connect link, a draft,
           // and the workspace's log of both.
@@ -457,7 +458,7 @@ layer(ReplayTest, { excludeTestServices: true, timeout: "180 seconds" })(
             assert.strictEqual(
               (yield* app.request(`${base}${path}`, {
                 body,
-                headers: bearer(key),
+                headers: { ...bearer(key), ...forWorkspace(customer.id) },
               })).status,
               201
             );
@@ -490,7 +491,7 @@ layer(ReplayTest, { excludeTestServices: true, timeout: "180 seconds" })(
           }
 
           assert.strictEqual(
-            (yield* app.request(`/api/partner/workspaces/${customer.id}`, {
+            (yield* app.request(`/api/v1/partner/workspaces/${customer.id}`, {
               headers: bearer(key),
               method: "DELETE",
             })).status,
@@ -522,7 +523,7 @@ layer(ReplayTest, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.deepStrictEqual(yield* rows, [0, 0, 0, 0, 0]);
 
           // The partner account stays, owning nothing.
-          const overview = yield* app.request("/api/partner/workspaces", {
+          const overview = yield* app.request("/api/v1/partner/workspaces", {
             headers: bearer(key),
           });
 

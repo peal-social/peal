@@ -257,7 +257,7 @@ The staff context follows these rules too. What the law has a host keep is in
   `PermissionNotGrantable`, 403 `personRequired`), nor the direct
   messages' (`engagement:readMessages`, `engagement:message`) unless an
   owner in person gives them, as the owner's leave for an application;
-  partner keys never hold those. Keys are created only through `POST /api/workspaces/:workspaceId/api-keys`:
+  partner keys never hold those. Keys are created only through `POST /api/v1/api-keys`:
   Better Auth's own key routes are disabled.
 - A key records its maker in Better Auth's `metadata` (`makerMetadata`,
   `{"createdBy": <user id>}`, read with `makerOf`), and the list names
@@ -460,7 +460,7 @@ The staff context follows these rules too. What the law has a host keep is in
   session staff act in; `analysedRequestLimits`, around the rate limit,
   tells it the API or the MCP endpoint was used that day (`api_used`), by
   a key as its workspace or an application as its person, from what the
-  credential carries alone (`actingIn` is a path's word, unchecked there),
+  credential carries alone (`actingIn` is the request's word, unchecked there),
   never a session or a partner key; `as` in `security.ts` and `mcpAuthentication`
   provide `AnalyticsActor`, and `StaffAccess` marks staff `internal`.
   `CloseAccount`, `DeleteWorkspace` and `OffboardWorkspace` start the
@@ -745,7 +745,7 @@ The staff context follows these rules too. What the law has a host keep is in
   true (`PartnerSettings`); otherwise opening answers `PartnerAccountsClosed`.
   It prices nothing: `MeterPartnerUsage` (the `workspace.partner-usage`
   cron) keeps each day's workspaces and channels in
-  `workspace.partner_usage_days`, which `GET /api/partner` answers, and
+  `workspace.partner_usage_days`, which `GET /api/v1/partner` answers, and
   deletes the days past `partnerUsageRetentionDays` (400, equal to the
   contract's `usageRetentionDays`, by `test/workspace/api/contract.test.ts`)
   in one statement on the `day` index, whether the count went through or
@@ -761,7 +761,7 @@ The staff context follows these rules too. What the law has a host keep is in
 - A partner key is `peal_partner_` and 32 random bytes, kept as its SHA-256
   (`partner_keys`), created by a person in their own session only
   (`PersonRequired` otherwise), shown once. It carries scopes
-  (`workspaces:read`, `:write`, `:delete`) for `/api/partner`, and the
+  (`workspaces:read`, `:write`, `:delete`) for `/api/v1/partner`, and the
   permissions it holds in each workspace, out of `partnerKeyPermissions`
   (`workspace/domain/partner-key.ts`): never members, invitations, API keys,
   billing changes or any `ads:*` (a boost spends the customer's money on
@@ -773,8 +773,9 @@ The staff context follows these rules too. What the law has a host keep is in
   `PartnerKeyPrincipal`; `WorkspaceAccess` lets it into a workspace its
   partner owns and answers 404 for every other, the home workspace
   included (`PartnerOwnership.ownerOf`). `/api/me` and the groups for
-  people answer it 403, and `/api/partner` answers 403 to anything else.
-  `GET /api/credential` (`CredentialCheck`) answers every principal, a
+  people answer it 403, and `/api/v1/partner` answers 403 to anything else.
+  Inside a customer's workspace it names the workspace in `Peal-Workspace`
+  on every request, as it belongs to none. `GET /api/v1/credential` (`CredentialCheck`) answers every principal, a
   partner key included, with its partner, scopes and permissions, never
   its workspaces; a session or token of a member a workspace refuses is
   answered too (the bound workspace `refused`), as it names no data, and
@@ -783,7 +784,7 @@ The staff context follows these rules too. What the law has a host keep is in
   new workspace group to it.
 - `PartnerHealth` (`forKey`, a partner key with `workspaces:read`;
   `forMember`, partner:read in the home workspace) answers
-  `GET /api/partner/overview` and `…/partner/overview` of the home
+  `GET /api/v1/partner/overview` and `/api/v1/partner-account/overview` of the home
   workspace: a page of `PartnerWorkspaces.listingOf` (its order and
   cursor, the home workspace left out) with its sources
   (`OverviewSources`, which `ContextOverviewSourcesLive` backs at the
@@ -809,7 +810,7 @@ The staff context follows these rules too. What the law has a host keep is in
   owner's account not closed and the partner account not closed while it
   owns a workspace (`PartnerOwnership.ensureDeletable`,
   `PartnerOwnsWorkspaces`, 409).
-- `MoveCustomerChannel` (`POST /api/partner/workspaces/:workspaceId/channels/:channelId/move`,
+- `MoveCustomerChannel` (`POST /api/v1/partner/workspaces/:workspaceId/channels/:channelId/move`,
   scope `workspaces:write` and the key's `channel:connect` and
   `channel:disconnect`) moves a channel between two workspaces the key's
   partner owns, never its home, through `ChannelMover`

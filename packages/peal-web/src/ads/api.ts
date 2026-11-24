@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -12,19 +13,19 @@ export const adsChanged = (workspaceId: string) => [`ads:${workspaceId}`];
 
 /** What the server offers of ads: nothing, reading, or spending too. */
 export const adsStatus = Atom.family((workspaceId: string) =>
-  PealApi.query("ads", "status", { params: { workspaceId } })
+  PealApi.query("ads", "status", { headers: forWorkspace(workspaceId) })
 );
 
 export const adConnections = Atom.family((workspaceId: string) =>
   PealApi.query("ads", "listConnections", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: adsChanged(workspaceId),
   })
 );
 
 export const adAccounts = Atom.family((workspaceId: string) =>
   PealApi.query("ads", "listAccounts", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: adsChanged(workspaceId),
   })
 );
@@ -32,28 +33,32 @@ export const adAccounts = Atom.family((workspaceId: string) =>
 /** An ad account with what its boosts commit this month. */
 export const adSpending = (workspaceId: string, accountId: string) =>
   PealApi.query("ads", "getAccount", {
-    params: { accountId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { accountId },
     reactivityKeys: adsChanged(workspaceId),
   });
 
 /** An ad account's campaigns, with their numbers over the last 30 days. */
 export const adCampaigns = (workspaceId: string, accountId: string) =>
   PealApi.query("ads", "listCampaigns", {
-    params: { accountId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { accountId },
     query: {},
   });
 
 /** What an ad account's ads did each of the last 30 days. */
 export const adInsights = (workspaceId: string, accountId: string) =>
   PealApi.query("ads", "listInsights", {
-    params: { accountId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { accountId },
     query: {},
   });
 
 /** A post's organic and paid numbers, and its boosts. */
 export const postPerformance = (workspaceId: string, postId: string) =>
   PealApi.query("ads", "postPerformance", {
-    params: { postId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { postId },
     reactivityKeys: adsChanged(workspaceId),
   });
 

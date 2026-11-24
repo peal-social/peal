@@ -9,13 +9,9 @@ import {
   FollowUpRuleTaken,
   Forbidden,
   PostNotFound,
-} from "peal-contract";
-import type {
-  ChannelFollowUps,
   CurrentMember,
-  FollowUpRule,
-  Post,
 } from "peal-contract";
+import type { ChannelFollowUps, FollowUpRule, Post } from "peal-contract";
 
 import type { Studio } from "./studio.ts";
 
@@ -132,7 +128,7 @@ export const studioFollowUpsOf = (world: FollowUpsWorld) => {
         approve: ({ params }) =>
           Effect.gen(function* approve() {
             yield* world.allowed("post:approve");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rule = yield* open(yield* ruleIn(studio, params.ruleId));
 
@@ -149,10 +145,10 @@ export const studioFollowUpsOf = (world: FollowUpsWorld) => {
               `followUps.approve ${rule.id}`
             );
           }),
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* world.allowed("post:schedule");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const posts = yield* world.posts(studio);
             const comment = payload.comment ?? null;
@@ -238,7 +234,7 @@ export const studioFollowUpsOf = (world: FollowUpsWorld) => {
         delete: ({ params }) =>
           Effect.gen(function* stop() {
             yield* world.allowed("post:schedule");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rule = yield* ruleIn(studio, params.ruleId);
 
@@ -253,14 +249,14 @@ export const studioFollowUpsOf = (world: FollowUpsWorld) => {
         get: ({ params }) =>
           Effect.gen(function* get() {
             yield* world.allowed("post:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             return yield* ruleIn(studio, params.ruleId);
           }),
-        list: ({ params, query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             yield* world.allowed("post:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             if (query.cursor !== undefined && query.cursor.length === 0) {
               return yield* new HttpApiError.BadRequest();
@@ -281,7 +277,7 @@ export const studioFollowUpsOf = (world: FollowUpsWorld) => {
         update: ({ params, payload }) =>
           Effect.gen(function* update() {
             yield* world.allowed("post:schedule");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rule = yield* open(yield* ruleIn(studio, params.ruleId));
 

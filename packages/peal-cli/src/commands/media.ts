@@ -77,11 +77,7 @@ const upload = Command.make(
   Effect.fn("media.upload")(function* upload(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const media = yield* uploadFile(
-      { client, url, workspaceId: workspace.id },
-      input.file,
-      input.altText
-    );
+    const media = yield* uploadFile({ client, url }, input.file, input.altText);
 
     yield* stored(media, input.file, workspace.name, input.json);
   })
@@ -107,7 +103,7 @@ const importMedia = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     const media = yield* importAddress(
-      { client, url, workspaceId: workspace.id },
+      { client, url },
       input.address,
       input.altText
     );
@@ -143,7 +139,7 @@ const generate = Command.make(
 
     const made = yield* client.assistant
       .generateImage({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: { aspect: input.aspect, prompt: input.prompt },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -177,7 +173,7 @@ const show = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const found = yield* client.media
-      .get({ params: { mediaId, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { mediaId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -246,7 +242,7 @@ const list = Command.make(
 
     const page = yield* client.media
       .list({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...given(input.cursor, (cursor) => ({ cursor })),
           ...given(input.kind, (kind) => ({ kind })),
@@ -338,11 +334,12 @@ const describe = Command.make(
       });
     }
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const described = yield* client.media
       .describe({
-        params: { mediaId: input.mediaId, workspaceId: workspace.id },
+        headers: {},
+        params: { mediaId: input.mediaId },
         payload: { altText: Option.getOrNull(input.text) },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -384,10 +381,10 @@ const remove = Command.make(
     });
 
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
-    const params = { mediaId: input.mediaId, workspaceId: workspace.id };
+    const params = { mediaId: input.mediaId };
 
     const usage = yield* client.media
-      .usage({ params })
+      .usage({ headers: {}, params })
       .pipe(Effect.mapError(explain(url)));
 
     if (!input.json) {
@@ -398,7 +395,9 @@ const remove = Command.make(
 
     yield* confirmed({ question: "Delete it?", yes: input.yes });
 
-    yield* client.media.delete({ params }).pipe(Effect.mapError(explain(url)));
+    yield* client.media
+      .delete({ headers: {}, params })
+      .pipe(Effect.mapError(explain(url)));
 
     yield* input.json
       ? printNothing

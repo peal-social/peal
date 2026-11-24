@@ -8,7 +8,7 @@ export class AiProviderNotConnected extends Schema.TaggedError<AiProviderNotConn
   { ...errorEnvelope },
   {
     description:
-      "The workspace has not connected this provider: connect it first (`PUT /api/workspaces/{workspaceId}/assistant/providers/{provider}`). Nothing was changed.",
+      "The workspace has not connected this provider: connect it first (`PUT /api/v1/assistant/providers/{provider}`). Nothing was changed.",
     httpApiStatus: 404,
   }
 ) {}

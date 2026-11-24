@@ -4,7 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { defaultFeedTemplate } from "peal-contract";
+import { defaultFeedTemplate, forWorkspace } from "peal-contract";
 import type {
   SocialChannel,
   Feed,
@@ -134,7 +134,8 @@ const FeedActions = ({
   const remove = useAtomSet(deleteFeed, { mode: "promiseExit" });
   const answered = useAnswered();
   const [busy, start] = useTransition();
-  const params = { feedId: feed.id, workspaceId };
+  const params = { feedId: feed.id };
+  const headers = forWorkspace(workspaceId);
   const reactivityKeys = feedsChanged(workspaceId);
 
   return (
@@ -154,7 +155,12 @@ const FeedActions = ({
             const status = feed.status === "active" ? "paused" : "active";
 
             answered(
-              await update({ params, payload: { status }, reactivityKeys }),
+              await update({
+                headers,
+                params,
+                payload: { status },
+                reactivityKeys,
+              }),
               status === "paused" ? t("paused") : t("resumed")
             );
           });
@@ -181,7 +187,7 @@ const FeedActions = ({
               onClick={() => {
                 start(async () => {
                   answered(
-                    await remove({ params, reactivityKeys }),
+                    await remove({ headers, params, reactivityKeys }),
                     t("deleted")
                   );
                 });
@@ -252,7 +258,8 @@ const EditForm = ({
     start(async () => {
       const saved = answered(
         await update({
-          params: { feedId: feed.id, workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { feedId: feed.id },
           payload: asked,
           reactivityKeys: feedsChanged(workspaceId),
         }),
@@ -374,7 +381,7 @@ const CreateForm = ({
   const [draft, setDraft] = useState(emptyDraft);
   const [read, setRead] = useState<FeedPreview | null>(null);
   const [busy, start] = useTransition();
-  const params = { workspaceId };
+  const headers = forWorkspace(workspaceId);
 
   const onSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -396,7 +403,7 @@ const CreateForm = ({
     start(async () => {
       const added = answered(
         await create({
-          params,
+          headers,
           payload: asked,
           reactivityKeys: feedsChanged(workspaceId),
         }),
@@ -431,7 +438,7 @@ const CreateForm = ({
           onClick={() => {
             start(async () => {
               const exit = await preview({
-                params,
+                headers,
                 payload: { template: draft.template, url: draft.url.trim() },
               });
 

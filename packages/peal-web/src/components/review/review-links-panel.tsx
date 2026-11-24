@@ -4,7 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { DateTime, Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useFormatter, useTranslations } from "next-intl";
-import { ReviewLinkAccessSchema } from "peal-contract";
+import { ReviewLinkAccessSchema, forWorkspace } from "peal-contract";
 import type { CreatedReviewLink, ReviewLinkAccess } from "peal-contract";
 import { Alert, AlertDescription, AlertTitle } from "peal-ui/components/alert";
 import { Badge } from "peal-ui/components/badge";
@@ -71,7 +71,8 @@ export const ReviewLinksPanel = ({
   const make = () => {
     startTransition(async () => {
       const exit = await create({
-        params: { postId, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { postId },
         payload: { access, expiresInHours: hours },
         reactivityKeys: reviewKeys,
       });
@@ -87,7 +88,8 @@ export const ReviewLinksPanel = ({
   const end = (linkId: string) => {
     startTransition(async () => {
       const exit = await revoke({
-        params: { linkId, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { linkId },
         reactivityKeys: reviewKeys,
       });
 

@@ -3,6 +3,7 @@
 // and refused past it with a 429 that says when to come back.
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
+import { forWorkspace } from "peal-contract";
 
 import {
   MigratedSqlLive,
@@ -47,7 +48,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const owner = yield* signedUpUnconfirmed("limit-owner");
           const workspaceId = yield* workspaceOf(owner, "Limits");
-          const path = `/api/workspaces/${workspaceId}/channels`;
+          const path = `/api/v1/channels`;
 
           const { key } = yield* apiKeyOf(owner, workspaceId, ["channel:read"]);
 
@@ -55,7 +56,10 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             [1, 2, 3, 4, 5, 6, 7],
             () =>
               app.request(path, {
-                headers: { authorization: `Bearer ${key}` },
+                headers: {
+                  authorization: `Bearer ${key}`,
+                  ...forWorkspace(workspaceId),
+                },
               }),
             { concurrency: 1 }
           );
@@ -105,14 +109,23 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const other = yield* apiKeyOf(owner, workspaceId, ["channel:read"]);
 
           const fresh = yield* app.request(path, {
-            headers: { authorization: `Bearer ${other.key}` },
+            headers: {
+              authorization: `Bearer ${other.key}`,
+              ...forWorkspace(workspaceId),
+            },
           });
 
           assert.strictEqual(fresh.status, 200);
 
           const inPerson = yield* Effect.forEach(
             [1, 2, 3, 4, 5, 6, 7],
-            () => app.request(path, { headers: { cookie: owner.cookies } }),
+            () =>
+              app.request(path, {
+                headers: {
+                  cookie: owner.cookies,
+                  ...forWorkspace(workspaceId),
+                },
+              }),
             { concurrency: 1 }
           );
 
@@ -131,7 +144,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const owner = yield* signedUpUnconfirmed("limit-depth");
           const workspaceId = yield* workspaceOf(owner, "Depth limits");
-          const base = `/api/workspaces/${workspaceId}`;
+          const base = "/api/v1";
           const days = "days=7&timeZone=Europe%2FParis";
           const unknown = "0190f3a0-0000-7000-8000-00000000c0de";
 

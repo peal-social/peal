@@ -2,7 +2,7 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, PostContentInvalid } from "peal-contract";
+import { Api, PostContentInvalid, forWorkspace } from "peal-contract";
 import type { PostContent } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
@@ -53,7 +53,7 @@ describe("the posts endpoints, for a post asking a poll", () => {
           const client = yield* clientIn(workspaceId);
 
           const created = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [mastodon], content: asking },
           });
 
@@ -66,7 +66,8 @@ describe("the posts endpoints, for a post asking a poll", () => {
           // An update that sends no poll takes it off, as it replaces the
           // content whole.
           const without = yield* client.posts.update({
-            params: { postId: created.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: created.id },
             payload: {
               channelIds: [mastodon],
               content: { media: [], overrides: [], text: "No question" },
@@ -91,8 +92,8 @@ describe("the posts endpoints, for a post asking a poll", () => {
 
           const refused = yield* client.posts
             .send({
-              headers: {},
-              params: { workspaceId },
+              headers: { ...forWorkspace(workspaceId) },
+
               payload: {
                 channelIds: [bluesky],
                 content: asking,

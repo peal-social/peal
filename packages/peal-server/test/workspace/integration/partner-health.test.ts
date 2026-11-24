@@ -5,7 +5,7 @@
 import { assert, layer } from "@effect/vitest";
 import { Config, Effect, Layer, Schema, Tracer } from "effect";
 import { SqlClient } from "effect/sql";
-import { PartnerHealthSchema } from "peal-contract";
+import { PartnerHealthSchema, forWorkspace } from "peal-contract";
 
 import { commandLineToken } from "#test/workspace/support.ts";
 
@@ -98,7 +98,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const answered = yield* bodyOf(
             HealthJsonSchema,
-            yield* app.request("/api/partner/overview", {
+            yield* app.request("/api/v1/partner/overview", {
               headers: bearer(key),
             })
           );
@@ -135,8 +135,8 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // The home workspace's owner reads the same figures.
           const asMember = yield* bodyOf(
             HealthJsonSchema,
-            yield* app.request(`/api/workspaces/${home}/partner/overview`, {
-              headers: { cookie: owner.cookies },
+            yield* app.request(`/api/v1/partner-account/overview`, {
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
             })
           );
 
@@ -175,7 +175,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const page = yield* bodyOf(
             HealthJsonSchema,
-            yield* app.request("/api/partner/overview?limit=1", {
+            yield* app.request("/api/v1/partner/overview?limit=1", {
               headers: bearer(channelsOnly),
             })
           );
@@ -193,7 +193,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Offboarded meanwhile: the next pages go on without it.
           const offboarded = yield* app.request(
-            `/api/partner/workspaces/${second.id}`,
+            `/api/v1/partner/workspaces/${second.id}`,
             { headers: bearer(everything), method: "DELETE" }
           );
 
@@ -202,7 +202,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const next = yield* bodyOf(
             HealthJsonSchema,
             yield* app.request(
-              `/api/partner/overview?limit=1&before=${encodeURIComponent(page.next ?? "")}`,
+              `/api/v1/partner/overview?limit=1&before=${encodeURIComponent(page.next ?? "")}`,
               { headers: bearer(channelsOnly) }
             )
           );
@@ -214,7 +214,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.isNull(next.account);
 
           const refused = yield* app.request(
-            "/api/partner/overview?before=not-a-cursor",
+            "/api/v1/partner/overview?before=not-a-cursor",
             { headers: bearer(channelsOnly) }
           );
 
@@ -243,7 +243,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const token = yield* commandLineToken(alpha.owner.cookies);
 
           // Another partner's key reads its own customers, none of alpha's.
-          const ofBeta = yield* app.request("/api/partner/overview", {
+          const ofBeta = yield* app.request("/api/v1/partner/overview", {
             headers: bearer(betaKey),
           });
 
@@ -255,7 +255,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
             bearer(token),
             { cookie: alpha.owner.cookies },
           ]) {
-            const reply = yield* app.request("/api/partner/overview", {
+            const reply = yield* app.request("/api/v1/partner/overview", {
               headers,
             });
 
@@ -264,8 +264,8 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // A member of a workspace that is no partner's home.
           const notHome = yield* app.request(
-            `/api/workspaces/${ordinary}/partner/overview`,
-            { headers: { cookie: stranger.cookies } }
+            `/api/v1/partner-account/overview`,
+            { headers: { cookie: stranger.cookies, ...forWorkspace(ordinary) } }
           );
 
           assert.strictEqual(notHome.status, 404);
@@ -276,16 +276,21 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Nor a stranger to the home workspace.
           const intruder = yield* app.request(
-            `/api/workspaces/${alpha.home}/partner/overview`,
-            { headers: { cookie: stranger.cookies } }
+            `/api/v1/partner-account/overview`,
+            {
+              headers: {
+                cookie: stranger.cookies,
+                ...forWorkspace(alpha.home),
+              },
+            }
           );
 
           assert.strictEqual(intruder.status, 404);
 
           // Nor a partner key in a home workspace's own route.
           const keyAtHome = yield* app.request(
-            `/api/workspaces/${alpha.home}/partner/overview`,
-            { headers: bearer(alphaKey) }
+            `/api/v1/partner-account/overview`,
+            { headers: { ...bearer(alphaKey), ...forWorkspace(alpha.home) } }
           );
 
           assert.strictEqual(keyAtHome.status, 404);
@@ -295,7 +300,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
             scopes: ["workspaces:write"],
           });
 
-          const unscoped = yield* app.request("/api/partner/overview", {
+          const unscoped = yield* app.request("/api/v1/partner/overview", {
             headers: bearer(writeOnly),
           });
 
@@ -313,11 +318,13 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           yield* customerOf(key, "Member's customer", "member");
 
-          const path = `/api/workspaces/${home}/partner/overview`;
+          const path = `/api/v1/partner-account/overview`;
 
           const asOwner = yield* bodyOf(
             HealthJsonSchema,
-            yield* app.request(path, { headers: { cookie: owner.cookies } })
+            yield* app.request(path, {
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
+            })
           );
 
           assert.deepStrictEqual(asOwner.workspaces[0]?.inbox, {
@@ -332,7 +339,9 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const asKey = yield* bodyOf(
             HealthJsonSchema,
-            yield* app.request(path, { headers: bearer(narrowKey) })
+            yield* app.request(path, {
+              headers: { ...bearer(narrowKey), ...forWorkspace(home) },
+            })
           );
 
           assert.deepStrictEqual(
@@ -365,7 +374,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const asStaff = yield* bodyOf(
             HealthJsonSchema,
             yield* app.request(path, {
-              headers: { cookie: cookiesOf(started) },
+              headers: { cookie: cookiesOf(started), ...forWorkspace(home) },
             })
           );
 
@@ -396,7 +405,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const pageOf = (limit: number) =>
             statementsDuring(
-              app.request(`/api/partner/overview?limit=${String(limit)}`, {
+              app.request(`/api/v1/partner/overview?limit=${String(limit)}`, {
                 headers: bearer(key),
               })
             );
@@ -454,7 +463,9 @@ layer(BillingHealthLive, {
 
         const within = yield* bodyOf(
           HealthJsonSchema,
-          yield* app.request("/api/partner/overview", { headers: bearer(key) })
+          yield* app.request("/api/v1/partner/overview", {
+            headers: bearer(key),
+          })
         );
 
         assert.deepStrictEqual(within.account, { overPlan: false });
@@ -464,7 +475,9 @@ layer(BillingHealthLive, {
 
         const lonelyOver = yield* bodyOf(
           HealthJsonSchema,
-          yield* app.request("/api/partner/overview", { headers: bearer(key) })
+          yield* app.request("/api/v1/partner/overview", {
+            headers: bearer(key),
+          })
         );
 
         assert.deepStrictEqual(lonelyOver.account, { overPlan: true });
@@ -477,7 +490,7 @@ layer(BillingHealthLive, {
 
         const page = yield* bodyOf(
           HealthJsonSchema,
-          yield* app.request("/api/partner/overview?limit=1", {
+          yield* app.request("/api/v1/partner/overview?limit=1", {
             headers: bearer(key),
           })
         );
@@ -487,7 +500,7 @@ layer(BillingHealthLive, {
         const next = yield* bodyOf(
           HealthJsonSchema,
           yield* app.request(
-            `/api/partner/overview?limit=1&before=${encodeURIComponent(page.next ?? "")}`,
+            `/api/v1/partner/overview?limit=1&before=${encodeURIComponent(page.next ?? "")}`,
             { headers: bearer(key) }
           )
         );

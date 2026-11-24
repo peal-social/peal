@@ -3,7 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Exit, Option, Schema } from "effect";
 import { useLocale } from "next-intl";
-import { orderConsentVersion } from "peal-contract";
+import { orderConsentVersion, forWorkspace } from "peal-contract";
 
 import { billingClient } from "#auth/billing-client.ts";
 import { placeOrder } from "#billing/api.ts";
@@ -84,7 +84,7 @@ export const useCheckout = (workspaceId: string) => {
     returnTo,
   }: CheckoutRequest): Promise<Option.Option<CheckoutFailure>> => {
     const placed = await order({
-      params: { workspaceId },
+      headers: forWorkspace(workspaceId),
       payload: {
         consentVersion: orderConsentVersion,
         interval: "month",

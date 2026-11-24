@@ -5,6 +5,7 @@ import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { ClapperboardIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type {
   AssistantStatus,
   ImageAspect,
@@ -142,7 +143,7 @@ const VideoDialog = ({
 
     startTransition(async () => {
       const exit = await generate({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: videoRequestOf({
           aspect,
           durationSeconds: duration === auto ? null : Number(duration),

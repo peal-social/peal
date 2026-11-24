@@ -18,6 +18,7 @@ import type {
   Unauthenticated,
   UsageAllowanceReached,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 import { platformRules } from "peal-contract/post-text";
 
@@ -40,6 +41,7 @@ export type AssistantFailure =
   // or reached its monthly ceiling.
   | UsageAllowanceReached
   | WorkspaceNotFound
+  | WorkspaceRequired
   // The request failed in a way the API does not declare: the network, or
   // an answer that could not be read.
   | { readonly _tag: "Unexpected" };

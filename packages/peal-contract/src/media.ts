@@ -25,6 +25,7 @@ import { UnsupportedMediaType } from "./unsupported-media-type.ts";
 import { UploadIncomplete } from "./upload-incomplete.ts";
 import { UploadRejected } from "./upload-rejected.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** The content types Peal stores. */
 export const MediaContentTypeSchema = Schema.Literals([
@@ -242,9 +243,7 @@ export const MediaQuerySchema = Schema.String.check(
   Schema.isPattern(/^[^\0]*$/u, { expected: "text without a NUL character" })
 ).annotate({ identifier: "MediaQuery" });
 
-const workspace = { workspaceId: Schema.String };
-
-const media = { ...workspace, mediaId: Schema.String };
+const media = { mediaId: Schema.String };
 
 /**
  * A workspace's images and videos. Files go from the client straight to the
@@ -256,7 +255,8 @@ export class MediaApi extends HttpApiGroup.make("media")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, MediaStoreUnavailable, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         kind: Schema.optionalKey(MediaKindSchema),
@@ -287,7 +287,8 @@ export class MediaApi extends HttpApiGroup.make("media")
         MediaStoreUnavailable,
         PlanLimitReached,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewUploadSchema,
       success: PreparedUploadSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -310,7 +311,8 @@ export class MediaApi extends HttpApiGroup.make("media")
         UploadRejected,
         MediaImportBusy,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: MediaImportSchema,
       success: MediaSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -321,6 +323,7 @@ export class MediaApi extends HttpApiGroup.make("media")
     ),
     HttpApiEndpoint.get("get", "/:mediaId", {
       error: [Forbidden, MediaNotFound, MediaStoreUnavailable],
+      headers: workspaceHeaders,
       params: media,
       success: MediaSchema,
     }).annotateMerge(
@@ -339,6 +342,7 @@ export class MediaApi extends HttpApiGroup.make("media")
         PlanLimitReached,
         MediaImportBusy,
       ],
+      headers: workspaceHeaders,
       params: media,
       success: MediaSchema,
     }).annotateMerge(
@@ -350,6 +354,7 @@ export class MediaApi extends HttpApiGroup.make("media")
     ),
     HttpApiEndpoint.patch("describe", "/:mediaId", {
       error: [Forbidden, MediaNotFound, AltTextTooLong, MediaStoreUnavailable],
+      headers: workspaceHeaders,
       params: media,
       payload: MediaDescriptionSchema,
       success: MediaSchema,
@@ -362,6 +367,7 @@ export class MediaApi extends HttpApiGroup.make("media")
     ),
     HttpApiEndpoint.get("usage", "/:mediaId/usage", {
       error: [Forbidden, MediaNotFound],
+      headers: workspaceHeaders,
       params: media,
       success: MediaUsageSchema,
     }).annotateMerge(
@@ -373,6 +379,7 @@ export class MediaApi extends HttpApiGroup.make("media")
     ),
     HttpApiEndpoint.delete("delete", "/:mediaId", {
       error: [Forbidden, MediaNotFound, MediaInUse, MediaStoreUnavailable],
+      headers: workspaceHeaders,
       params: media,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -385,4 +392,4 @@ export class MediaApi extends HttpApiGroup.make("media")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/media") {}
+  .prefix("/api/v1/media") {}

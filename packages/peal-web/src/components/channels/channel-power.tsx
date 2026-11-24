@@ -4,6 +4,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { PowerIcon, PowerOffIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { Channel } from "peal-contract";
 import {
   AlertDialog,
@@ -47,7 +48,8 @@ export const ChannelPower = ({ channel, workspaceId }: ChannelPowerProps) => {
   const isOff = channel.status._tag === "disabled";
 
   const request = {
-    params: { channelId: channel.id, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { channelId: channel.id },
     reactivityKeys: channelsChanged(workspaceId),
   };
 

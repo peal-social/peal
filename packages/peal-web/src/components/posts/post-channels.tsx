@@ -3,6 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Exit } from "effect";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { SocialChannel, Post } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
@@ -115,7 +116,8 @@ export const PostChannels = ({
     setBusy(targetId);
 
     const exit = await remove({
-      params: { postId: post.id, targetId, workspaceId },
+      headers: forWorkspace(workspaceId),
+      params: { postId: post.id, targetId },
       reactivityKeys: postsKeys,
     });
 

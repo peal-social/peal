@@ -3,6 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -78,7 +79,7 @@ export const DeleteWorkspace = ({
   const handleDelete = () => {
     startTransition(async () => {
       const exit = await remove({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { cancelSubscriptions: agreed, name: typed },
       });
 

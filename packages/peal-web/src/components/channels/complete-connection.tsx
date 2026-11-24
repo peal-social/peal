@@ -4,6 +4,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { constVoid } from "effect/Function";
 import { useLocale, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type {
   ChannelConnection,
   ChoosableAccount,
@@ -175,7 +176,8 @@ export const CompleteConnection = ({
 
     const finish = async (workspace: string, payload: ConnectCallback) => {
       const exit = await complete({
-        params: { platform, workspaceId: workspace },
+        headers: forWorkspace(workspace),
+        params: { platform },
         payload,
       });
 
