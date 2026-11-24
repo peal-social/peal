@@ -1,6 +1,6 @@
 // Runs one language's smoke test against a stand-in API:
 // `bun scripts/test.ts <language>`, after its sdk:build. The stand-in answers
-// the health check, and the signed-in user to the bearer token peal_test
+// the health check, and the credential check to the bearer token peal_test
 // only. The test calls both through the SDK as its users would, and checks
 // the answer; the run passes only when the stand-in saw both calls, each
 // naming the version of the API the SDK was generated against, and none
@@ -19,28 +19,18 @@ const language = languageNamed(Bun.argv[2]);
 /** The token every smoke test sends, and the only one the stand-in accepts. */
 const token = "peal_test";
 
-/** GET /api/me's answer, with the nulls and the enum the SDKs must decode. */
-const me = {
-  impersonatedBy: null,
-  user: {
-    email: "ada@example.test",
-    emailVerified: true,
-    id: "user-1",
-    image: null,
-    locale: "en",
-    name: "Ada",
-    twoStepEnabled: false,
-  },
-  workspaces: [
-    {
-      id: "workspace-1",
-      name: "Studio",
-      permissions: ["post:schedule", "media:upload"],
-      role: "owner",
-      slug: "studio",
-      twoStepRequired: false,
-    },
-  ],
+/**
+ * GET /api/v1/credential's answer for a workspace's API key, with the nulls
+ * and the enum the SDKs must decode, in a tagged union.
+ */
+const credential = {
+  _tag: "apiKey",
+  expiresAt: null,
+  id: "key-1",
+  name: "Studio's scheduler",
+  permissions: ["post:schedule", "media:upload"],
+  start: null,
+  workspace: { id: "workspace-1", name: "Studio" },
 };
 
 /**
@@ -65,7 +55,7 @@ const info = {
       .at(-1) ?? "",
 };
 
-const seen = { health: false, me: false };
+const seen = { credential: false, health: false };
 
 /** What each call the stand-in counted sent as its version. */
 const versions: (string | null)[] = [];
@@ -85,16 +75,16 @@ const server = Bun.serve({
       return new Response(null, { status: 204 });
     }
 
-    if (request.method === "GET" && pathname === "/api/me") {
+    if (request.method === "GET" && pathname === "/api/v1/credential") {
       if (request.headers.get("authorization") !== `Bearer ${token}`) {
         return Response.json({ _tag: "Unauthenticated" }, { status: 401 });
       }
 
-      seen.me = true;
+      seen.credential = true;
       versions.push(request.headers.get("peal-version"));
       workspaces.push(request.headers.get("peal-workspace"));
 
-      return Response.json(me);
+      return Response.json(credential);
     }
 
     return new Response(null, { status: 404 });
@@ -126,9 +116,9 @@ try {
   await server.stop(true);
 }
 
-if (!seen.health || !seen.me) {
+if (!seen.health || !seen.credential) {
   throw new Error(
-    `The ${language.name} SDK's smoke test passed without calling ${seen.health ? "" : "the health check "}${seen.me ? "" : "GET /api/me with its token"}.`
+    `The ${language.name} SDK's smoke test passed without calling ${seen.health ? "" : "the health check "}${seen.credential ? "" : "GET /api/v1/credential with its token"}.`
   );
 }
 

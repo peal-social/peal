@@ -17,7 +17,6 @@ public partial interface IPealClient
     public IWebhooksClient Webhooks { get; }
     public IAssistantClient Assistant { get; }
     public IPartnerClient Partner { get; }
-    public IMeClient Me { get; }
     public ICredentialClient Credential { get; }
     public ISystemClient System { get; }
     public IAutomationsClient Automations { get; }

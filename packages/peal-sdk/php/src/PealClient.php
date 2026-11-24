@@ -13,7 +13,6 @@ use Peal\Links\LinksClient;
 use Peal\Webhooks\WebhooksClient;
 use Peal\Assistant\AssistantClient;
 use Peal\Partner\PartnerClient;
-use Peal\Me\MeClient;
 use Peal\Credential\CredentialClient;
 use Peal\System\SystemClient;
 use Peal\Automations\AutomationsClient;
@@ -78,11 +77,6 @@ class PealClient
      * @var PartnerClient $partner
      */
     public PartnerClient $partner;
-
-    /**
-     * @var MeClient $me
-     */
-    public MeClient $me;
 
     /**
      * @var CredentialClient $credential
@@ -182,7 +176,6 @@ class PealClient
         $this->webhooks = new WebhooksClient($this->client, $this->options);
         $this->assistant = new AssistantClient($this->client, $this->options);
         $this->partner = new PartnerClient($this->client, $this->options);
-        $this->me = new MeClient($this->client, $this->options);
         $this->credential = new CredentialClient($this->client, $this->options);
         $this->system = new SystemClient($this->client, $this->options);
         $this->automations = new AutomationsClient($this->client, $this->options);

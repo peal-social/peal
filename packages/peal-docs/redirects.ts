@@ -45,61 +45,13 @@ export const movedPages: [string, string][] = [
  * posts/posts-create (create and send, which was posts.send).
  */
 export const movedReferencePages: [string, string][] = [
-  ["account/account-closure", "me/me-account-closure"],
-  ["account/account-delete", "me/me-account-delete"],
-  ["account/account-export", "me/me-account-export"],
-  ["account/account-two-step", "me/me-account-two-step"],
   ["activity/activity-list", "workspace/workspace-activity-list"],
   ["api-keys/api-keys-create", "workspace/workspace-api-keys-create"],
   ["api-keys/api-keys-list", "workspace/workspace-api-keys-list"],
   ["api-keys/api-keys-revoke", "workspace/workspace-api-keys-revoke"],
   ["assistant/assistant-generate-image", "media/media-images-create"],
-  [
-    "billing-actions/billing-actions-accept-transfer",
-    "workspace/workspace-billing-actions-accept-transfer",
-  ],
-  [
-    "billing-actions/billing-actions-cancel",
-    "workspace/workspace-billing-actions-cancel",
-  ],
-  [
-    "billing-actions/billing-actions-offer-transfer",
-    "workspace/workspace-billing-actions-offer-transfer",
-  ],
-  [
-    "billing-actions/billing-actions-order",
-    "workspace/workspace-billing-actions-order",
-  ],
-  [
-    "billing-actions/billing-actions-reduce",
-    "workspace/workspace-billing-actions-reduce",
-  ],
-  [
-    "billing-actions/billing-actions-set-ceiling",
-    "workspace/workspace-billing-actions-set-ceiling",
-  ],
-  [
-    "billing-actions/billing-actions-set-x-reads",
-    "workspace/workspace-billing-actions-set-x-reads",
-  ],
-  [
-    "billing-actions/billing-actions-withdraw",
-    "workspace/workspace-billing-actions-withdraw",
-  ],
-  [
-    "billing-actions/billing-actions-withdraw-transfer",
-    "workspace/workspace-billing-actions-withdraw-transfer",
-  ],
-  [
-    "billing-actions/billing-actions-withdrawal",
-    "workspace/workspace-billing-actions-withdrawal",
-  ],
   ["billing/billing-get", "workspace/workspace-billing-get"],
   ["billing/billing-standing", "workspace/workspace-billing-standing"],
-  [
-    "browser-analytics/browser-analytics-set-consent",
-    "me/me-browser-analytics-set-consent",
-  ],
   ["capabilities/capabilities-channel", "channels/channels-capabilities-get"],
   [
     "capabilities/capabilities-platforms",
@@ -131,8 +83,6 @@ export const movedReferencePages: [string, string][] = [
     "connect-links/connect-links-revoke",
     "channels/channels-connect-links-revoke",
   ],
-  ["connected-apps/connected-apps-list", "me/me-connected-apps-list"],
-  ["connected-apps/connected-apps-revoke", "me/me-connected-apps-revoke"],
   ["feeds/feeds-create", "automations/automations-feeds-create"],
   ["feeds/feeds-delete", "automations/automations-feeds-delete"],
   ["feeds/feeds-get", "automations/automations-feeds-get"],
@@ -243,18 +193,6 @@ export const movedReferencePages: [string, string][] = [
   ["media-audio/media-audio-create-voiceover", "media/media-voiceovers-create"],
   ["media-audio/media-audio-transcribe", "media/media-transcriptions-create"],
   ["members/members-list", "workspace/workspace-members-list"],
-  ["notices/notices-list", "me/me-notices-list"],
-  ["notices/notices-mark-all-read", "me/me-notices-mark-all-read"],
-  ["notices/notices-mark-read", "me/me-notices-mark-read"],
-  ["notices/notices-unread", "me/me-notices-unread"],
-  [
-    "notification-preferences/notification-preferences-get",
-    "me/me-notification-preferences-get",
-  ],
-  [
-    "notification-preferences/notification-preferences-update",
-    "me/me-notification-preferences-update",
-  ],
   ["partner-account/partner-account-close", "partner/partner-account-close"],
   [
     "partner-account/partner-account-create-key",
@@ -310,7 +248,6 @@ export const movedReferencePages: [string, string][] = [
   ["review/review-settings", "approvals/approvals-settings"],
   ["review/review-thread", "approvals/approvals-get"],
   ["review/review-update-settings", "approvals/approvals-update-settings"],
-  ["session/session-me", "me/me-get"],
   ["short-links/short-links-get", "links/links-get"],
   ["short-links/short-links-list", "links/links-list"],
   ["short-links/short-links-set-default", "links/links-set-default"],
@@ -336,9 +273,92 @@ export const movedReferencePages: [string, string][] = [
   ["video-generations/video-generations-create", "media/media-videos-create"],
   ["video-generations/video-generations-get", "media/media-videos-get"],
   ["video-generations/video-generations-list", "media/media-videos-list"],
-  ["workspaces/workspaces-delete", "workspace/workspace-delete"],
-  ["workspaces/workspaces-secure", "workspace/workspace-secure"],
-  ["workspaces/workspaces-security", "workspace/workspace-security"],
+  ["workspaces/workspaces-security", "workspace/workspace-security-get"],
+];
+
+/**
+ * The reference's pages of groups that are not part of the public API (the
+ * contract's `appGroups`), which the reference no longer shows: each leads
+ * to the guide that describes its endpoint, at its section.
+ */
+export const leftReferencePages: [string, string][] = [
+  [
+    "/reference/account/account-closure",
+    "/guides/workspace/account#legal-hold",
+  ],
+  ["/reference/account/account-delete", "/guides/workspace#api"],
+  ["/reference/account/account-export", "/guides/workspace#api"],
+  ["/reference/account/account-two-step", "/guides/workspace/account#two-step"],
+  [
+    "/reference/billing-actions/billing-actions-accept-transfer",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-cancel",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-offer-transfer",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-order",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-reduce",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-set-ceiling",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-set-x-reads",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-withdraw",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-withdraw-transfer",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/billing-actions/billing-actions-withdrawal",
+    "/guides/workspace/billing#ordering",
+  ],
+  [
+    "/reference/browser-analytics/browser-analytics-set-consent",
+    "/developers#me",
+  ],
+  ["/reference/connected-apps/connected-apps-list", "/guides/workspace#api"],
+  ["/reference/connected-apps/connected-apps-revoke", "/guides/workspace#api"],
+  ["/reference/notices/notices-list", "/guides/workspace/notifications#api"],
+  [
+    "/reference/notices/notices-mark-all-read",
+    "/guides/workspace/notifications#api",
+  ],
+  [
+    "/reference/notices/notices-mark-read",
+    "/guides/workspace/notifications#api",
+  ],
+  ["/reference/notices/notices-unread", "/guides/workspace/notifications#api"],
+  [
+    "/reference/notification-preferences/notification-preferences-get",
+    "/guides/workspace/notifications#api",
+  ],
+  [
+    "/reference/notification-preferences/notification-preferences-update",
+    "/guides/workspace/notifications#api",
+  ],
+  ["/reference/session/session-me", "/developers#me"],
+  ["/reference/workspaces/workspaces-delete", "/guides/workspace#api"],
+  [
+    "/reference/workspaces/workspaces-secure",
+    "/guides/workspace#require-two-step",
+  ],
 ];
 
 /** Every redirect the docs serve. */
@@ -348,6 +368,7 @@ export const redirects = [
     `/reference/${from}`,
     `/reference/${to}`,
   ]),
+  ...leftReferencePages,
 ].flatMap(([from, to]) => [
   { from, to },
   { from: `/fr${from}`, to: to.startsWith("/") ? `/fr${to}` : to },

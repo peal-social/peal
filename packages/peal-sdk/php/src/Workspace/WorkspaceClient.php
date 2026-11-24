@@ -2,6 +2,7 @@
 
 namespace Peal\Workspace;
 
+use Peal\Workspace\Security\SecurityClient;
 use Peal\Workspace\Activity\ActivityClient;
 use Peal\Workspace\ApiKeys\ApiKeysClient;
 use Peal\Workspace\Members\MembersClient;
@@ -13,6 +14,11 @@ use Peal\Core\Client\RawClient;
 
 class WorkspaceClient
 {
+    /**
+     * @var SecurityClient $security
+     */
+    public SecurityClient $security;
+
     /**
      * @var ActivityClient $activity
      */
@@ -75,6 +81,7 @@ class WorkspaceClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+        $this->security = new SecurityClient($this->client, $this->options);
         $this->activity = new ActivityClient($this->client, $this->options);
         $this->apiKeys = new ApiKeysClient($this->client, $this->options);
         $this->members = new MembersClient($this->client, $this->options);

@@ -5,7 +5,7 @@ import { PealApi } from "#api/client.ts";
 
 /** What a workspace requires of its members, which every member reads. */
 export const workspaceSecurity = Atom.family((workspaceId: string) =>
-  PealApi.query("workspace", "security", {
+  PealApi.query("workspace.security", "get", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: [`security:${workspaceId}`],
   })

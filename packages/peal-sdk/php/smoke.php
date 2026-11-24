@@ -1,7 +1,7 @@
 <?php
 
 // The smoke test, which scripts/test.ts runs against a stand-in API: the
-// health check, the signed-in user with a bearer token, and the error a
+// health check, the credential check with a bearer token, and the error a
 // refused token raises.
 
 require __DIR__ . '/vendor/autoload.php';
@@ -13,19 +13,25 @@ $baseUrl = getenv('PEAL_API_URL');
 $peal = new PealClient(token: 'peal_test', options: ['baseUrl' => $baseUrl]);
 
 $peal->system->health();
-$me = $peal->me->get();
+$credential = $peal->credential->get();
+
+if (!$credential->isApiKey()) {
+    throw new RuntimeException('Unexpected answer: ' . $credential);
+}
+
+$key = $credential->asApiKey();
 
 if (
-    $me->user->email !== 'ada@example.test'
-    || $me->impersonatedBy !== null
-    || $me->user->image !== null
-    || !in_array('post:schedule', $me->workspaces[0]->permissions, true)
+    $key->workspace->name !== 'Studio'
+    || $key->expiresAt !== null
+    || $key->start !== null
+    || !in_array('post:schedule', $key->permissions, true)
 ) {
-    throw new RuntimeException('Unexpected answer: ' . $me->toJson());
+    throw new RuntimeException('Unexpected answer: ' . $credential);
 }
 
 try {
-    (new PealClient(token: 'refused', options: ['baseUrl' => $baseUrl]))->me->get();
+    (new PealClient(token: 'refused', options: ['baseUrl' => $baseUrl]))->credential->get();
     throw new RuntimeException('A refused token got an answer');
 } catch (PealApiException $error) {
     if ($error->getCode() !== 401) {

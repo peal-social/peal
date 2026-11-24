@@ -8946,62 +8946,6 @@ await client.partner.moveChannel({
 </dl>
 </details>
 
-## me
-<details><summary><code>client.me.<a href="/src/api/resources/me/client/Client.ts">get</a>() -> Peal.Me</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Answers with the signed-in user and every workspace they belong to, with their role and permissions in each, whether the account has two-step verification on and a password, and whether each workspace requires it (a workspace that requires it refuses the user while it is off). Where the server measures the web app's use, it also says how, with the person's choice about it. API keys belong to a workspace, not a user, and get 403.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```typescript
-await client.me.get();
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**requestOptions:** `MeClient.RequestOptions` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
 ## credential
 <details><summary><code>client.credential.<a href="/src/api/resources/credential/client/Client.ts">get</a>() -> Peal.Credential</code></summary>
 <dl>
@@ -13827,364 +13771,6 @@ await client.inbox.reviews.setAnswered({
 </dl>
 </details>
 
-## Me Notices
-<details><summary><code>client.me.notices.<a href="/src/api/resources/me/resources/notices/client/Client.ts">list</a>({ ...params }) -> Peal.NoticePage</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Lists the user's notices, newest first, 20 a page unless `limit` (at most 100) says otherwise. Pass the page's `nextCursor` as `cursor` for the next one. Each notice is data, for the client to write in the reader's language.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```typescript
-await client.me.notices.list();
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.me.ListNoticesRequest` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requestOptions:** `NoticesClient.RequestOptions` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.me.notices.<a href="/src/api/resources/me/resources/notices/client/Client.ts">unread</a>() -> Peal.UnreadNotices</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Counts the user's unread notices.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```typescript
-await client.me.notices.unread();
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**requestOptions:** `NoticesClient.RequestOptions` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.me.notices.<a href="/src/api/resources/me/resources/notices/client/Client.ts">markRead</a>({ ...params }) -> Peal.UnreadNotices</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Marks up to 100 of the user's notices read, and answers with how many stay unread. Ids that name none of the user's notices, and notices already read, are left as they are.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```typescript
-await client.me.notices.markRead({
-    ids: ["ids"]
-});
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.me.MarkNoticesRead` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requestOptions:** `NoticesClient.RequestOptions` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.me.notices.<a href="/src/api/resources/me/resources/notices/client/Client.ts">markAllRead</a>() -> Peal.UnreadNotices</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Marks every notice of the user read.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```typescript
-await client.me.notices.markAllRead();
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**requestOptions:** `NoticesClient.RequestOptions` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Me NotificationPreferences
-<details><summary><code>client.me.notificationPreferences.<a href="/src/api/resources/me/resources/notificationPreferences/client/Client.ts">get</a>() -> Peal.NotificationPreferences</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Answers with which notices the user receives by email, and whether they hear about every post. Until they change it: failed and unconfirmed posts, channels to reconnect, posts to review, recycling rules that ended, rules acting by themselves that ended or whose follow-ups did not go out, and webhook deliveries failing, but not published posts nor comments, are emailed, and no weekly digest; and they hear only about the posts they wrote.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```typescript
-await client.me.notificationPreferences.get();
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**requestOptions:** `NotificationPreferencesClient.RequestOptions` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.me.notificationPreferences.<a href="/src/api/resources/me/resources/notificationPreferences/client/Client.ts">update</a>({ ...params }) -> Peal.NotificationPreferences</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Changes the preferences given, keeps the others, and answers with them all. Staff impersonating the user may not change them.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```typescript
-await client.me.notificationPreferences.update();
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.me.NotificationPreferencesChange` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requestOptions:** `NotificationPreferencesClient.RequestOptions` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
 ## Media Images
 <details><summary><code>client.media.images.<a href="/src/api/resources/media/resources/images/client/Client.ts">create</a>({ ...params }) -> Peal.Media</code></summary>
 <dl>
@@ -16165,6 +15751,62 @@ await client.posts.signatures.delete({
 <dd>
 
 **requestOptions:** `SignaturesClient.RequestOptions` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Workspace Security
+<details><summary><code>client.workspace.security.<a href="/src/api/resources/workspace/resources/security/client/Client.ts">get</a>() -> Peal.WorkspaceSecurity</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Answers whether the workspace requires two-step verification of every member, and, to a member who may manage members (member:update), how many members' accounts do not have it on. Any member, application or API key of the workspace may read it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```typescript
+await client.workspace.security.get();
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**requestOptions:** `SecurityClient.RequestOptions` 
     
 </dd>
 </dl>

@@ -6,5 +6,6 @@ export * as billing from "./billing/index.js";
 export * as invitations from "./invitations/index.js";
 export * from "./invitations/client/requests/index.js";
 export * as members from "./members/index.js";
+export * as security from "./security/index.js";
 export * as usage from "./usage/index.js";
 export * from "./usage/client/requests/index.js";

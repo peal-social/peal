@@ -11,10 +11,13 @@ import social.peal.resources.workspace.apikeys.AsyncApiKeysClient;
 import social.peal.resources.workspace.billing.AsyncBillingClient;
 import social.peal.resources.workspace.invitations.AsyncInvitationsClient;
 import social.peal.resources.workspace.members.AsyncMembersClient;
+import social.peal.resources.workspace.security.AsyncSecurityClient;
 import social.peal.resources.workspace.usage.AsyncUsageClient;
 
 public class AsyncWorkspaceClient {
     protected final ClientOptions clientOptions;
+
+    protected final Supplier<AsyncSecurityClient> securityClient;
 
     protected final Supplier<AsyncActivityClient> activityClient;
 
@@ -30,12 +33,17 @@ public class AsyncWorkspaceClient {
 
     public AsyncWorkspaceClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
+        this.securityClient = Suppliers.memoize(() -> new AsyncSecurityClient(clientOptions));
         this.activityClient = Suppliers.memoize(() -> new AsyncActivityClient(clientOptions));
         this.apiKeysClient = Suppliers.memoize(() -> new AsyncApiKeysClient(clientOptions));
         this.membersClient = Suppliers.memoize(() -> new AsyncMembersClient(clientOptions));
         this.invitationsClient = Suppliers.memoize(() -> new AsyncInvitationsClient(clientOptions));
         this.billingClient = Suppliers.memoize(() -> new AsyncBillingClient(clientOptions));
         this.usageClient = Suppliers.memoize(() -> new AsyncUsageClient(clientOptions));
+    }
+
+    public AsyncSecurityClient security() {
+        return this.securityClient.get();
     }
 
     public AsyncActivityClient activity() {

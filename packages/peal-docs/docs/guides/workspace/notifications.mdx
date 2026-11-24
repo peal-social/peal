@@ -142,7 +142,7 @@ The digest goes once a week. When the mail server turns it away for now, Peal tr
 
 ## From the API [#api]
 
-Your notifications and preferences belong to you, not to a workspace, so they live under `/api/me`:
+Your notifications and preferences belong to you, not to a workspace, so they live under `/api/me`. Peal's web app calls these endpoints. They aren't part of the public API, so the [API reference](/reference) and the SDKs leave them out:
 
 | Endpoint                                           | What it does                                                                                                                                   |
 | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -154,4 +154,4 @@ Your notifications and preferences belong to you, not to a workspace, so they li
 
 Each notification is data, such as a post's id, a channel and a reason, for the client to write in its reader's language.
 
-These endpoints take a session, or an OAuth token that isn't bound to one workspace, such as the command line's. API keys, which belong to a workspace, get 403, and so do MCP clients, which act in one workspace. The [API reference](/reference) lists their parameters.
+These endpoints take a session, or an OAuth token that isn't bound to one workspace, such as the command line's. API keys, which belong to a workspace, get 403, and so do MCP clients, which act in one workspace.

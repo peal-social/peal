@@ -1,5 +1,6 @@
 import { Schema } from "effect";
 import { HttpApi } from "effect/http-api";
+import type { HttpApiGroup } from "effect/http-api";
 
 import { Api } from "./api.ts";
 import { errorCodeOf } from "./error-code.ts";
@@ -127,10 +128,15 @@ const DeclaredSchema = Schema.Struct({
 
 const decodeDeclared = Schema.decodeUnknownOption(DeclaredSchema);
 
-const declaredErrors = (): readonly CatalogueEntry[] => {
+const declaredErrors = <
+  Id extends string,
+  Groups extends HttpApiGroup.Constraint,
+>(
+  api: HttpApi.HttpApi<Id, Groups>
+): readonly CatalogueEntry[] => {
   const entries = new Map<string, CatalogueEntry>();
 
-  HttpApi.reflect(Api, {
+  HttpApi.reflect(api, {
     onEndpoint: ({ errors }) => {
       for (const [status, schemas] of errors) {
         for (const schema of schemas) {
@@ -162,12 +168,20 @@ const declaredErrors = (): readonly CatalogueEntry[] => {
 };
 
 /**
- * Every error the API answers: those its endpoints declare, read from the
- * contract itself, and the general ones. Sorted by code; the docs' list of
- * codes is this.
+ * Every error an API answers: those its endpoints declare, read from the
+ * contract itself, and the general ones. Sorted by code. The whole `Api`'s
+ * is every code the server answers; the docs' list of codes is
+ * `PublicApi`'s.
  */
-export const errorCatalogue = (): readonly CatalogueEntry[] => {
-  const declared = declaredErrors();
+export const errorCatalogue = <
+  Id extends string,
+  Groups extends HttpApiGroup.Constraint,
+>(
+  api?: HttpApi.HttpApi<Id, Groups>
+): readonly CatalogueEntry[] => {
+  const declared =
+    api === undefined ? declaredErrors(Api) : declaredErrors(api);
+
   const tags = new Set(declared.map(({ tag }) => tag));
 
   return [

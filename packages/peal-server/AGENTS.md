@@ -156,7 +156,10 @@ and no socket, for tests.
   `src/proxy.ts`: add a path to both), so Peal has one public origin;
   `/openapi.json` is reachable on the server only, and `/api/openapi.json` is
   the same document for everyone: the contract's `openApiDocument()`, the
-  events webhooks send included, both served by the discovery routes.
+  public API alone (`PublicApi`) with the events webhooks send, both served
+  by the discovery routes. The server implements and serves the whole `Api`,
+  Peal's own clients' groups and the staff console's included
+  (the contract's guide: which group is in which list).
 - `ApiAnswersLive` (`src/app/answers.ts`), a global router middleware in
   `RoutesLive`, shapes every answer, a failure's included (it changes the
   response a cause would get; a failure of the server's own (5xx) fails
@@ -215,9 +218,10 @@ and no socket, for tests.
   alike), and a request the API could not decode `InvalidRequest` with its
   `issues`. Better Auth's routes and the MCP endpoint keep their own shapes, and Meta's events answer bare statuses.
   `errorCatalogue()` (`peal-contract/errors`) reads the list from the
-  contract: `test/app/fixtures/error-codes.json` freezes the published codes
-  (`UPDATE_ERROR_CODES=1` adds new ones; never remove or rename one), and the
-  docs' "API conventions" page lists them all, in both languages, which
+  contract: `test/app/fixtures/error-codes.json` freezes every code the
+  server answers, to every audience (`UPDATE_ERROR_CODES=1` adds new ones;
+  never remove or rename one), and the docs' "API conventions" page lists
+  the public API's (`errorCatalogue(PublicApi)`), in both languages, which
   `test/app/error-catalogue.test.ts` checks.
 - Handlers answer a use case's refusal with `forbidden` from
   `#shared/api/forbidden.ts` (`MissingPermission: forbidden`,

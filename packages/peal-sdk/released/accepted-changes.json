@@ -100,10 +100,6 @@
     "reason": "A channel now connects a social network or a website (a self-hosted WordPress site), so its platform is a ChannelPlatform: every Platform value, plus wordpress. Nothing a client knew changes on the wire: a social channel answers the value it did, and a website's channel answers wordpress, which an SDK released before reads as a value it does not know, without failing. Platform stays the social networks' list everywhere else, the channels list's platform filter included, so no request takes wordpress where it would be refused. Upgrading an SDK changes the field's type from Platform to ChannelPlatform. TypeScript: compare channel.platform with the same strings; a variable typed Platform takes it once the value is checked to be a social network, or is typed ChannelPlatform. Go: compare with peal.ChannelPlatformX and its kin, not peal.PlatformX, which no longer compiles there. Rust: match ChannelPlatform::X and its kin, with an arm for the others. .NET: compare with ChannelPlatform.X, not Platform.X, which no longer compiles there. Java: Platform.X.equals(channel.getPlatform()) still compiles and is now always false: compare with ChannelPlatform.X, or the values' strings (toString()), and review every equals or switch on the field. Python, PHP and Ruby read the field as a string, and need no change."
   },
   {
-    "change": "NoticeChannel.platform was a Platform, and is a ChannelPlatform",
-    "reason": "A channel now connects a social network or a website (a self-hosted WordPress site), so its platform is a ChannelPlatform: every Platform value, plus wordpress. Nothing a client knew changes on the wire: a social channel answers the value it did, and a website's channel answers wordpress, which an SDK released before reads as a value it does not know, without failing. Platform stays the social networks' list everywhere else, the channels list's platform filter included, so no request takes wordpress where it would be refused. Upgrading an SDK changes the field's type from Platform to ChannelPlatform. TypeScript: compare channel.platform with the same strings; a variable typed Platform takes it once the value is checked to be a social network, or is typed ChannelPlatform. Go: compare with peal.ChannelPlatformX and its kin, not peal.PlatformX, which no longer compiles there. Rust: match ChannelPlatform::X and its kin, with an arm for the others. .NET: compare with ChannelPlatform.X, not Platform.X, which no longer compiles there. Java: Platform.X.equals(channel.getPlatform()) still compiles and is now always false: compare with ChannelPlatform.X, or the values' strings (toString()), and review every equals or switch on the field. Python, PHP and Ruby read the field as a string, and need no change."
-  },
-  {
     "change": "Every endpoint that takes query parameters refuses one it does not take (400 InvalidRequest, field query.<name>) instead of ignoring it",
     "kind": "behaviour",
     "reason": "A misspelt filter, such as channelIds for channelId on GET …/posts/search, answered as if it applied: every post of the workspace, with a 200, which a script would then act on. The document already listed each endpoint's parameters, and the SDKs and the command line send only those. Endpoints without query parameters, the health checks among them, still take any query, and request bodies are read as before."
@@ -214,10 +210,6 @@
     "reason": "Every workspace endpoint now answers 400 WorkspaceRequired to a request that names no workspace from a credential that belongs to none, beside the 400s some already had, and the generator names a single body type for each status, after one of the endpoints that has a union there. Nothing changes on the wire: every 400 body still carries its _tag. Code that matched BadRequestErrorBody.BadRequest, or read the date or time range errors' _tag through their types, reads the body's _tag as a string instead. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
   },
   {
-    "change": "session.me is now called me.get: the SDKs' method changes name",
-    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
-  },
-  {
     "change": "apiKeys.list is now called workspace.apiKeys.list: the SDKs' method changes name",
     "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps what it takes and answers under its new name and path. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
   },
@@ -244,30 +236,6 @@
   {
     "change": "posts.discard is gone (DELETE /api/workspaces/{workspaceId}/posts/{postId})",
     "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. Deleting a draft is posts.drafts.delete at DELETE /api/v1/posts/drafts/{postId}: it deletes a draft and refuses any other post, as posts.discard did. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
-  },
-  {
-    "change": "notices.list is now called me.notices.list: the SDKs' method changes name",
-    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
-  },
-  {
-    "change": "notices.unread is now called me.notices.unread: the SDKs' method changes name",
-    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
-  },
-  {
-    "change": "notices.markRead is now called me.notices.markRead: the SDKs' method changes name",
-    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
-  },
-  {
-    "change": "notices.markAllRead is now called me.notices.markAllRead: the SDKs' method changes name",
-    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
-  },
-  {
-    "change": "notificationPreferences.get is now called me.notificationPreferences.get: the SDKs' method changes name",
-    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
-  },
-  {
-    "change": "notificationPreferences.update is now called me.notificationPreferences.update: the SDKs' method changes name",
-    "reason": "Decided on 2026-11-24, before the API had users: the API has one vocabulary, a namespace such as inbox.messages being at once the operation's id, the SDKs' group (client.inbox.messages.send), the family of its paths under /api/v1 and, by its first segment, the reference's section. The operation keeps its route and what it takes and answers; only its name changes, and so does the SDKs' method. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
   },
   {
     "change": "members.list is now called workspace.members.list: the SDKs' method changes name",
@@ -312,5 +280,93 @@
     "change": "The .NET SDK's constructor is PealClient(string token, string? workspace = null, ClientOptions? clientOptions = null): the client's options are its third parameter, so new PealClient(token, options) no longer compiles",
     "kind": "sdk",
     "reason": "The workspace a client acts in became a client option, Peal-Workspace, which the generator places before the client's options. Code that passed the options by position passes them by name (clientOptions: options), or gives the workspace first. Nothing changes on the wire. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "session.me is gone (GET /api/me)",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notices.list is gone (GET /api/me/notices)",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notices.unread is gone (GET /api/me/notices/unread)",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notices.markRead is gone (POST /api/me/notices/read)",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notices.markAllRead is gone (POST /api/me/notices/read-all)",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notificationPreferences.get is gone (GET /api/me/notification-preferences)",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "notificationPreferences.update is gone (PATCH /api/me/notification-preferences)",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "MarkNoticesRead is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "Me is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "Membership is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "Notice is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NoticeChannel is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NoticeEvent is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NoticeEventChannelReconnectRequired is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NoticeEventChannelReconnectSoon is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NoticeEventPostFailed is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NoticeEventPostPublished is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NoticeEventPostUnconfirmed is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NoticePage is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NotificationPreferences is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "NotificationPreferencesChange is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "UnreadNotices is no longer a schema of the API: the SDKs' type of that name goes",
+    "reason": "Decided on 2026-11-24, before the API had users: /api/me answers the person signed in to Peal's web app or command line, and is not part of the public API. It refuses an API key (403), which belongs to a workspace, not a person, and the notices and notification preferences under it are the ones the web app shows that person. A key or an application's token asks who it is with credential.get (GET /api/v1/credential), which answers every kind of credential. Nothing changes on the wire: the operations answer a session at the same paths; they leave the OpenAPI document, the reference and the SDKs, with the types only they used. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
   }
 ]

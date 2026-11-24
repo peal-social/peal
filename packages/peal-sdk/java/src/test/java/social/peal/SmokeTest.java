@@ -1,5 +1,5 @@
 // The smoke test, which scripts/test.ts runs against a stand-in API: the
-// health check, the signed-in user with a bearer token, and the error a
+// health check, the credential check with a bearer token, and the error a
 // refused token raises.
 package social.peal;
 
@@ -10,7 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import social.peal.core.PealClientApiException;
-import social.peal.types.Me;
+import social.peal.types.Credential;
+import social.peal.types.CredentialApiKey;
 import social.peal.types.Permission;
 
 class SmokeTest {
@@ -21,16 +22,18 @@ class SmokeTest {
         PealClient peal = PealClient.builder().url(BASE_URL).token("peal_test").build();
 
         peal.system().health();
-        Me me = peal.me().get();
+        Credential credential = peal.credential().get();
 
-        assertEquals("ada@example.test", me.getUser().getEmail());
-        assertFalse(me.getImpersonatedBy().isPresent());
-        assertFalse(me.getUser().getImage().isPresent());
-        assertTrue(me.getWorkspaces().get(0).getPermissions().contains(Permission.POST_SCHEDULE));
+        assertTrue(credential.isApiKey(), credential.toString());
+        CredentialApiKey key = credential.getApiKey().get();
+        assertEquals("Studio", key.getWorkspace().getName());
+        assertFalse(key.getExpiresAt().isPresent());
+        assertFalse(key.getStart().isPresent());
+        assertTrue(key.getPermissions().contains(Permission.POST_SCHEDULE));
 
         PealClient refused = PealClient.builder().url(BASE_URL).token("refused").build();
         PealClientApiException error =
-                assertThrows(PealClientApiException.class, () -> refused.me().get());
+                assertThrows(PealClientApiException.class, () -> refused.credential().get());
         assertEquals(401, error.statusCode());
     }
 }

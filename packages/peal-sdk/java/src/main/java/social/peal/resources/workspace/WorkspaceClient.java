@@ -11,10 +11,13 @@ import social.peal.resources.workspace.apikeys.ApiKeysClient;
 import social.peal.resources.workspace.billing.BillingClient;
 import social.peal.resources.workspace.invitations.InvitationsClient;
 import social.peal.resources.workspace.members.MembersClient;
+import social.peal.resources.workspace.security.SecurityClient;
 import social.peal.resources.workspace.usage.UsageClient;
 
 public class WorkspaceClient {
     protected final ClientOptions clientOptions;
+
+    protected final Supplier<SecurityClient> securityClient;
 
     protected final Supplier<ActivityClient> activityClient;
 
@@ -30,12 +33,17 @@ public class WorkspaceClient {
 
     public WorkspaceClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
+        this.securityClient = Suppliers.memoize(() -> new SecurityClient(clientOptions));
         this.activityClient = Suppliers.memoize(() -> new ActivityClient(clientOptions));
         this.apiKeysClient = Suppliers.memoize(() -> new ApiKeysClient(clientOptions));
         this.membersClient = Suppliers.memoize(() -> new MembersClient(clientOptions));
         this.invitationsClient = Suppliers.memoize(() -> new InvitationsClient(clientOptions));
         this.billingClient = Suppliers.memoize(() -> new BillingClient(clientOptions));
         this.usageClient = Suppliers.memoize(() -> new UsageClient(clientOptions));
+    }
+
+    public SecurityClient security() {
+        return this.securityClient.get();
     }
 
     public ActivityClient activity() {

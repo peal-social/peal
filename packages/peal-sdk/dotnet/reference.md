@@ -7521,46 +7521,6 @@ await client.Partner.MoveChannelAsync(
 </dl>
 </details>
 
-## me
-<details><summary><code>client.Me.<a href="/src/Peal/Me/MeClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;Me_&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Answers with the signed-in user and every workspace they belong to, with their role and permissions in each, whether the account has two-step verification on and a password, and whether each workspace requires it (a workspace that requires it refuses the user while it is off). Where the server measures the web app's use, it also says how, with the person's choice about it. API keys belong to a workspace, not a user, and get 403.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Me.GetAsync();
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
 ## credential
 <details><summary><code>client.Credential.<a href="/src/Peal/Credential/CredentialClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;Credential&gt;</code></summary>
 <dl>
@@ -11594,287 +11554,6 @@ await client.Inbox.Reviews.SetAnsweredAsync(
 </dl>
 </details>
 
-## Me Notices
-<details><summary><code>client.Me.Notices.<a href="/src/Peal/Me/Notices/NoticesClient.cs">ListAsync</a>(ListNoticesRequest { ... }) -> WithRawResponseTask&lt;NoticePage&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Lists the user's notices, newest first, 20 a page unless `limit` (at most 100) says otherwise. Pass the page's `nextCursor` as `cursor` for the next one. Each notice is data, for the client to write in the reader's language.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Me.Notices.ListAsync(new ListNoticesRequest());
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListNoticesRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Me.Notices.<a href="/src/Peal/Me/Notices/NoticesClient.cs">UnreadAsync</a>() -> WithRawResponseTask&lt;UnreadNotices&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Counts the user's unread notices.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Me.Notices.UnreadAsync();
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Me.Notices.<a href="/src/Peal/Me/Notices/NoticesClient.cs">MarkReadAsync</a>(MarkNoticesRead { ... }) -> WithRawResponseTask&lt;UnreadNotices&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Marks up to 100 of the user's notices read, and answers with how many stay unread. Ids that name none of the user's notices, and notices already read, are left as they are.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Me.Notices.MarkReadAsync(new MarkNoticesRead { Ids = new List<string>() { "ids" } });
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `MarkNoticesRead` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Me.Notices.<a href="/src/Peal/Me/Notices/NoticesClient.cs">MarkAllReadAsync</a>() -> WithRawResponseTask&lt;UnreadNotices&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Marks every notice of the user read.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Me.Notices.MarkAllReadAsync();
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Me NotificationPreferences
-<details><summary><code>client.Me.NotificationPreferences.<a href="/src/Peal/Me/NotificationPreferences/NotificationPreferencesClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;NotificationPreferences&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Answers with which notices the user receives by email, and whether they hear about every post. Until they change it: failed and unconfirmed posts, channels to reconnect, posts to review, recycling rules that ended, rules acting by themselves that ended or whose follow-ups did not go out, and webhook deliveries failing, but not published posts nor comments, are emailed, and no weekly digest; and they hear only about the posts they wrote.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Me.NotificationPreferences.GetAsync();
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Me.NotificationPreferences.<a href="/src/Peal/Me/NotificationPreferences/NotificationPreferencesClient.cs">UpdateAsync</a>(NotificationPreferencesChange { ... }) -> WithRawResponseTask&lt;NotificationPreferences&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Changes the preferences given, keeps the others, and answers with them all. Staff impersonating the user may not change them.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Me.NotificationPreferences.UpdateAsync(new NotificationPreferencesChange());
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `NotificationPreferencesChange` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
 ## Media Images
 <details><summary><code>client.Media.Images.<a href="/src/Peal/Media/Images/ImagesClient.cs">CreateAsync</a>(ImageRequest { ... }) -> WithRawResponseTask&lt;Media&gt;</code></summary>
 <dl>
@@ -13526,6 +13205,46 @@ await client.Posts.Signatures.DeleteAsync(
 
 **request:** `DeleteSignaturesRequest` 
     
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Workspace Security
+<details><summary><code>client.Workspace.Security.<a href="/src/Peal/Workspace/Security/SecurityClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;WorkspaceSecurity&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Answers whether the workspace requires two-step verification of every member, and, to a member who may manage members (member:update), how many members' accounts do not have it on. Any member, application or API key of the workspace may read it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Workspace.Security.GetAsync();
+```
 </dd>
 </dl>
 </dd>

@@ -6,9 +6,10 @@ import { tokenEndpoints } from "./contract-endpoints.ts";
 
 // Whatever a token can ask the API, the command line can do, or says why
 // not: an agent that has the command line needs no second client. Each
-// endpoint a bearer token can call (the rule the SDKs are generated with)
-// is either covered by a command that takes --json, or exempt for a stated
-// reason. A new endpoint fails this test until it has one or the other.
+// endpoint of the public API (the contract's `publicGroups`, which the
+// SDKs are generated from) is either covered by a command that takes
+// --json, or exempt for a stated reason. A new endpoint fails this test
+// until it has one or the other.
 
 type Coverage = { readonly command: string } | { readonly exempt: string };
 
@@ -23,9 +24,6 @@ const partnerApi =
 
 const partnerSettings =
   "A partner account is opened, changed and closed, and its keys created and revoked, by an owner or an admin in the web app's settings, where a new key is shown once.";
-
-const inbox =
-  "A person's own notices, which the web app shows them; an API key has none.";
 
 const adSignIn =
   "Signing in to an ad network and choosing the ad accounts it connects is a person's, in the web app, in their own session: the server refuses an API key and an application, the command line included.";
@@ -105,9 +103,6 @@ const coverage = {
   "assistant.setImageProvider": by("assistant image-provider set"),
   "assistant.setTextProvider": by("assistant text-provider set"),
   "assistant.setModel": by("assistant models set"),
-  "me.browserAnalytics.setConsent": exempt(
-    "The web app's measurement consent is the person's, in their own session in the browser it measures: the server refuses an OAuth token, the command line's included."
-  ),
   "assistant.status": exempt(
     "The writing assistant serves the web app's composer; an agent writes its own text."
   ),
@@ -214,12 +209,6 @@ const coverage = {
   "media.list": by("media list"),
   "media.usage": by("media delete"),
   "workspace.members.list": by("members list"),
-  "me.notices.list": exempt(inbox),
-  "me.notices.markAllRead": exempt(inbox),
-  "me.notices.markRead": exempt(inbox),
-  "me.notices.unread": exempt(inbox),
-  "me.notificationPreferences.get": exempt(inbox),
-  "me.notificationPreferences.update": exempt(inbox),
   "partner.get": exempt(partnerApi),
   "partner.createWorkspace": exempt(partnerApi),
   "partner.deleteWorkspace": exempt(partnerApi),
@@ -302,7 +291,6 @@ const coverage = {
   "approvals.settings": by("approvals policy"),
   "approvals.get": by("review show"),
   "approvals.updateSettings": by("approvals policy"),
-  "me.get": by("whoami"),
   "links.get": by("short-links show"),
   "links.list": by("short-links list"),
   "links.setDefault": by("short-links set-default"),
@@ -320,6 +308,9 @@ const coverage = {
   "posts.tags.update": by("tags update"),
   "channels.tiktokCreator.get": by("channels tiktok"),
   "workspace.usage.get": by("usage"),
+  "workspace.security.get": exempt(
+    "Whether a workspace requires two-step verification is an owner's setting, in the web app: peal doctor tells a signed-in person whose account it locks out, and an API key is never concerned."
+  ),
   "workspace.usage.partner": by("partner usage"),
   "media.videos.create": by("media video generate"),
   "media.videos.get": by("media video status"),

@@ -1,10 +1,8 @@
-import { HttpApi, HttpApiMiddleware } from "effect/http-api";
-import { Api } from "peal-contract";
+import { HttpApi } from "effect/http-api";
+import { Api, publicGroups } from "peal-contract";
 
 /** One endpoint of the contract, as `group.endpoint` names it. */
 export interface ContractEndpoint {
-  /** Whether a bearer token may call it. */
-  readonly bearer: boolean;
   readonly group: string;
   /** `group.endpoint`, the SDKs' method: `posts.schedule`. */
   readonly id: string;
@@ -21,17 +19,12 @@ const reflected = (): readonly ContractEndpoint[] => {
   const endpoints: ContractEndpoint[] = [];
 
   HttpApi.reflect(Api, {
-    onEndpoint: ({ endpoint, group, middleware }) => {
+    onEndpoint: ({ endpoint, group }) => {
       const name = Object.entries(group.endpoints).find(
         ([, declared]) => declared === endpoint
       )?.[0];
 
       endpoints.push({
-        bearer: [...middleware].some(
-          (service) =>
-            HttpApiMiddleware.isSecurity(service) &&
-            "bearer" in service.security
-        ),
         group: group.identifier,
         id: `${group.identifier}.${name ?? ""}`,
         method: endpoint.method,
@@ -49,25 +42,15 @@ const reflected = (): readonly ContractEndpoint[] => {
 /** Every endpoint of the contract. */
 export const contractEndpoints = reflected();
 
-// The groups that answer only the person in their own session, as
-// packages/peal-sdk/scripts/spec.ts lists them (`ownSessionTags`): keep
-// both equal.
-const ownSessionGroups = new Set([
-  "me.account",
-  "me.connectedApps",
-  "workspace",
-  "workspace.billingActions",
-]);
-
-// The group anyone calls, without credentials (`publicTag` there).
-const publicGroup = "system";
+// The public API's groups, which the SDKs and the reference hold.
+const publicGroupIds = new Set<string>(
+  publicGroups.map(({ identifier }) => identifier)
+);
 
 /**
- * The endpoints a bearer token can call, by the rule the SDKs are
- * generated with: those whose security allows a bearer token, less the
- * groups of the person's own session, and the health checks.
+ * The public API's endpoints, which a bearer token can call (the health
+ * checks need none): those of the contract's `publicGroups`.
  */
-export const tokenEndpoints = contractEndpoints.filter(
-  ({ bearer, group }) =>
-    group === publicGroup || (bearer && !ownSessionGroups.has(group))
+export const tokenEndpoints = contractEndpoints.filter(({ group }) =>
+  publicGroupIds.has(group)
 );

@@ -139,17 +139,6 @@
       },
       "default": "./dist/cjs/api/resources/partner/exports.js"
     },
-    "./me": {
-      "import": {
-        "types": "./dist/esm/api/resources/me/exports.d.mts",
-        "default": "./dist/esm/api/resources/me/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/me/exports.d.ts",
-        "default": "./dist/cjs/api/resources/me/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/me/exports.js"
-    },
     "./credential": {
       "import": {
         "types": "./dist/esm/api/resources/credential/exports.d.mts",
@@ -348,28 +337,6 @@
       },
       "default": "./dist/cjs/api/resources/inbox/resources/reviews/exports.js"
     },
-    "./me/notices": {
-      "import": {
-        "types": "./dist/esm/api/resources/me/resources/notices/exports.d.mts",
-        "default": "./dist/esm/api/resources/me/resources/notices/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/me/resources/notices/exports.d.ts",
-        "default": "./dist/cjs/api/resources/me/resources/notices/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/me/resources/notices/exports.js"
-    },
-    "./me/notificationPreferences": {
-      "import": {
-        "types": "./dist/esm/api/resources/me/resources/notificationPreferences/exports.d.mts",
-        "default": "./dist/esm/api/resources/me/resources/notificationPreferences/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/me/resources/notificationPreferences/exports.d.ts",
-        "default": "./dist/cjs/api/resources/me/resources/notificationPreferences/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/me/resources/notificationPreferences/exports.js"
-    },
     "./media/images": {
       "import": {
         "types": "./dist/esm/api/resources/media/resources/images/exports.d.mts",
@@ -490,6 +457,17 @@
         "default": "./dist/cjs/api/resources/workspace/exports.js"
       },
       "default": "./dist/cjs/api/resources/workspace/exports.js"
+    },
+    "./workspace/security": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/resources/security/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/resources/security/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/resources/security/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/resources/security/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/resources/security/exports.js"
     },
     "./workspace/activity": {
       "import": {

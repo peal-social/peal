@@ -9,6 +9,7 @@ import { ApiKeysClient } from "../resources/apiKeys/client/Client.js";
 import { BillingClient } from "../resources/billing/client/Client.js";
 import { InvitationsClient } from "../resources/invitations/client/Client.js";
 import { MembersClient } from "../resources/members/client/Client.js";
+import { SecurityClient } from "../resources/security/client/Client.js";
 import { UsageClient } from "../resources/usage/client/Client.js";
 
 export declare namespace WorkspaceClient {
@@ -17,6 +18,7 @@ export declare namespace WorkspaceClient {
 
 export class WorkspaceClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<WorkspaceClient.Options>;
+    protected _security: SecurityClient | undefined;
     protected _activity: ActivityClient | undefined;
     protected _apiKeys: ApiKeysClient | undefined;
     protected _members: MembersClient | undefined;
@@ -27,6 +29,10 @@ export class WorkspaceClient {
     constructor(options: WorkspaceClient.Options = {}) {
 
         this._options = normalizeClientOptionsWithAuth(options);
+    }
+
+    public get security(): SecurityClient {
+        return (this._security ??= new SecurityClient(this._options));
     }
 
     public get activity(): ActivityClient {

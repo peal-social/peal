@@ -4,6 +4,7 @@
 // Blume's rules (blume/src/openapi/model.ts: `tagSlugger` and
 // `operationKey`), the guides' from docs/.
 import { describe, expect, it } from "bun:test";
+import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
@@ -59,6 +60,19 @@ const guidePages = async (): Promise<Set<string>> => {
   );
 };
 
+// The page a target names, without its #anchor.
+const pageOf = (to: string): string => to.split("#")[0] ?? to;
+
+// A guide's file from its address, `index.mdx` for a folder's own page:
+// /guides/workspace is docs/guides/workspace/index.mdx.
+const fileOf = (page: string): string => {
+  const direct = path.join(root, "docs", `${page}.mdx`);
+
+  return existsSync(direct)
+    ? direct
+    : path.join(root, "docs", page, "index.mdx");
+};
+
 describe("the docs' redirects", () => {
   it("send every old address to a page the docs serve, and hide none", async () => {
     const reference = referencePages();
@@ -71,15 +85,37 @@ describe("the docs' redirects", () => {
       ...[...reference].map((page) => `/fr${page}`),
     ]);
 
-    expect(reference.size).toBeGreaterThan(300);
+    // The public API's operations, one page each.
+    expect(reference.size).toBeGreaterThan(200);
     expect(
       redirects.filter(({ from }) => served.has(from)).map(({ from }) => from)
     ).toEqual([]);
     expect(
       redirects
-        .filter(({ to }) => to.startsWith("/") && !served.has(to))
+        .filter(({ to }) => to.startsWith("/") && !served.has(pageOf(to)))
         .map(({ to }) => to)
     ).toEqual([]);
+  });
+
+  it("sends an address with an #anchor to a section its page has", async () => {
+    const anchored = redirects.flatMap(({ to }) => {
+      const [page = "", anchor] = to.split("#");
+
+      return to.startsWith("/") && anchor !== undefined
+        ? [{ anchor, page, to }]
+        : [];
+    });
+
+    const texts = await Promise.all(
+      anchored.map(async ({ page }) => await Bun.file(fileOf(page)).text())
+    );
+
+    const missing = anchored.flatMap(({ anchor, to }, at) =>
+      texts[at]?.includes(`[#${anchor}]`) === true ? [] : [to]
+    );
+
+    expect(anchored.length).toBeGreaterThan(0);
+    expect(missing).toEqual([]);
   });
 
   it("names each old address once", () => {

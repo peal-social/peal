@@ -1,23 +1,24 @@
 """The smoke test, which scripts/test.ts runs against a stand-in API: the
-health check, the signed-in user with a bearer token, and the error a
+health check, the credential check with a bearer token, and the error a
 refused token raises, through the wheel as PyPI ships it."""
 import os
 
-from peal import Peal
+from peal import Credential_ApiKey, Peal
 from peal.core.api_error import ApiError
 
 base_url = os.environ["PEAL_API_URL"]
 peal = Peal(base_url=base_url, token="peal_test")
 
 peal.system.health()
-me = peal.me.get()
+credential = peal.credential.get()
 
-assert me.user.email == "ada@example.test", me
-assert me.impersonated_by is None and me.user.image is None, me
-assert "post:schedule" in me.workspaces[0].permissions, me
+assert isinstance(credential, Credential_ApiKey), credential
+assert credential.workspace.name == "Studio", credential
+assert credential.expires_at is None and credential.start is None, credential
+assert "post:schedule" in credential.permissions, credential
 
 try:
-    Peal(base_url=base_url, token="refused").me.get()
+    Peal(base_url=base_url, token="refused").credential.get()
 except ApiError as error:
     assert error.status_code == 401, error
 else:

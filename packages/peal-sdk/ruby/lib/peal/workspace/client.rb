@@ -10,6 +10,11 @@ module Peal
         @client = client
       end
 
+      # @return [Peal::Security::Client]
+      def security
+        @security ||= Peal::Workspace::Security::Client.new(client: @client)
+      end
+
       # @return [Peal::Activity::Client]
       def activity
         @activity ||= Peal::Workspace::Activity::Client.new(client: @client)

@@ -10974,56 +10974,6 @@ async fn main() {
 </dl>
 </details>
 
-## me
-<details><summary><code>client.me.<a href="/src/api/resources/me/client.rs">get</a>() -> Result&lt;Me, ApiError&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Answers with the signed-in user and every workspace they belong to, with their role and permissions in each, whether the account has two-step verification on and a password, and whether each workspace requires it (a workspace that requires it refuses the user while it is off). Where the server measures the web app's use, it also says how, with the person's choice about it. API keys belong to a workspace, not a user, and get 403.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```rust
-use peal_sdk::prelude::*;
-
-#[tokio::main]
-async fn main() {
-    let config = ClientConfig {
-        token: Some("<token>".to_string()),
-        ..Default::default()
-    };
-    let client = PealClient::new(config).expect("Failed to build client");
-    client.me.get(None).await;
-}
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
 ## credential
 <details><summary><code>client.credential.<a href="/src/api/resources/credential/client.rs">get</a>() -> Result&lt;Credential, ApiError&gt;</code></summary>
 <dl>
@@ -16900,390 +16850,6 @@ async fn main() {
 </dl>
 </details>
 
-## Me Notices
-<details><summary><code>client.me().notices.<a href="/src/api/resources/me/notices/client.rs">list</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;NoticePage, ApiError&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Lists the user's notices, newest first, 20 a page unless `limit` (at most 100) says otherwise. Pass the page's `nextCursor` as `cursor` for the next one. Each notice is data, for the client to write in the reader's language.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```rust
-use peal_sdk::prelude::*;
-
-#[tokio::main]
-async fn main() {
-    let config = ClientConfig {
-        token: Some("<token>".to_string()),
-        ..Default::default()
-    };
-    let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .me
-        .notices
-        .list(
-            &MeNoticesListQueryRequest {
-                ..Default::default()
-            },
-            None,
-        )
-        .await;
-}
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**cursor:** `Option<String>` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limit:** `Option<String>` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.me().notices.<a href="/src/api/resources/me/notices/client.rs">unread</a>() -> Result&lt;UnreadNotices, ApiError&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Counts the user's unread notices.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```rust
-use peal_sdk::prelude::*;
-
-#[tokio::main]
-async fn main() {
-    let config = ClientConfig {
-        token: Some("<token>".to_string()),
-        ..Default::default()
-    };
-    let client = PealClient::new(config).expect("Failed to build client");
-    client.me.notices.unread(None).await;
-}
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.me().notices.<a href="/src/api/resources/me/notices/client.rs">mark_read</a>(request: MarkNoticesRead) -> Result&lt;UnreadNotices, ApiError&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Marks up to 100 of the user's notices read, and answers with how many stay unread. Ids that name none of the user's notices, and notices already read, are left as they are.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```rust
-use peal_sdk::prelude::*;
-
-#[tokio::main]
-async fn main() {
-    let config = ClientConfig {
-        token: Some("<token>".to_string()),
-        ..Default::default()
-    };
-    let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .me
-        .notices
-        .mark_read(
-            &MarkNoticesRead {
-                ids: vec!["ids".to_string()],
-            },
-            None,
-        )
-        .await;
-}
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**ids:** `Vec<String>` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.me().notices.<a href="/src/api/resources/me/notices/client.rs">mark_all_read</a>() -> Result&lt;UnreadNotices, ApiError&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Marks every notice of the user read.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```rust
-use peal_sdk::prelude::*;
-
-#[tokio::main]
-async fn main() {
-    let config = ClientConfig {
-        token: Some("<token>".to_string()),
-        ..Default::default()
-    };
-    let client = PealClient::new(config).expect("Failed to build client");
-    client.me.notices.mark_all_read(None).await;
-}
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Me NotificationPreferences
-<details><summary><code>client.me().notification_preferences.<a href="/src/api/resources/me/notification_preferences/client.rs">get</a>() -> Result&lt;NotificationPreferences, ApiError&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Answers with which notices the user receives by email, and whether they hear about every post. Until they change it: failed and unconfirmed posts, channels to reconnect, posts to review, recycling rules that ended, rules acting by themselves that ended or whose follow-ups did not go out, and webhook deliveries failing, but not published posts nor comments, are emailed, and no weekly digest; and they hear only about the posts they wrote.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```rust
-use peal_sdk::prelude::*;
-
-#[tokio::main]
-async fn main() {
-    let config = ClientConfig {
-        token: Some("<token>".to_string()),
-        ..Default::default()
-    };
-    let client = PealClient::new(config).expect("Failed to build client");
-    client.me.notification_preferences.get(None).await;
-}
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.me().notification_preferences.<a href="/src/api/resources/me/notification_preferences/client.rs">update</a>(request: NotificationPreferencesChange) -> Result&lt;NotificationPreferences, ApiError&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Changes the preferences given, keeps the others, and answers with them all. Staff impersonating the user may not change them.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```rust
-use peal_sdk::prelude::*;
-
-#[tokio::main]
-async fn main() {
-    let config = ClientConfig {
-        token: Some("<token>".to_string()),
-        ..Default::default()
-    };
-    let client = PealClient::new(config).expect("Failed to build client");
-    client
-        .me
-        .notification_preferences
-        .update(
-            &NotificationPreferencesChange {
-                ..Default::default()
-            },
-            None,
-        )
-        .await;
-}
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**email:** `Option<NotificationPreferencesChangeEmail>` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**every_post:** `Option<bool>` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
 ## Media Images
 <details><summary><code>client.media().images.<a href="/src/api/resources/media/images/client.rs">create</a>(request: ImageRequest) -> Result&lt;Media, ApiError&gt;</code></summary>
 <dl>
@@ -19579,6 +19145,56 @@ async fn main() {
 
 **signature_id:** `String` 
     
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Workspace Security
+<details><summary><code>client.workspace().security.<a href="/src/api/resources/workspace/security/client.rs">get</a>() -> Result&lt;WorkspaceSecurity, ApiError&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Answers whether the workspace requires two-step verification of every member, and, to a member who may manage members (member:update), how many members' accounts do not have it on. Any member, application or API key of the workspace may read it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```rust
+use peal_sdk::prelude::*;
+
+#[tokio::main]
+async fn main() {
+    let config = ClientConfig {
+        token: Some("<token>".to_string()),
+        ..Default::default()
+    };
+    let client = PealClient::new(config).expect("Failed to build client");
+    client.workspace.security.get(None).await;
+}
+```
 </dd>
 </dl>
 </dd>

@@ -1,0 +1,57 @@
+# frozen_string_literal: true
+
+module Peal
+  module Workspace
+    module Security
+      class Client
+        # @param client [Peal::Internal::Http::RawClient]
+        #
+        # @return [void]
+        def initialize(client:)
+          @client = client
+        end
+
+        # Answers whether the workspace requires two-step verification of every member, and, to a member who may manage
+        # members (member:update), how many members' accounts do not have it on. Any member, application or API key of
+        # the workspace may read it.
+        #
+        # @param request_options [Hash]
+        # @param _params [Hash]
+        # @option request_options [String] :base_url
+        # @option request_options [Hash{String => Object}] :additional_headers
+        # @option request_options [Hash{String => Object}] :additional_query_parameters
+        # @option request_options [Hash{String => Object}] :additional_body_parameters
+        # @option request_options [Integer] :timeout_in_seconds
+        #
+        # @example
+        #   client.workspace.security.get
+        #
+        # @return [Peal::Types::WorkspaceSecurity]
+        def get(request_options: {}, **_params)
+          request = Peal::Internal::JSON::Request.new(
+            base_url: request_options[:base_url],
+            method: "GET",
+            path: "api/v1/workspace/security",
+            request_options: request_options
+          )
+          begin
+            response = @client.send(request)
+          rescue Net::HTTPRequestTimeout
+            raise Peal::Errors::TimeoutError
+          end
+          code = response.code.to_i
+          if code.between?(200, 299)
+            (response.body.to_s.empty? ? nil : Peal::Types::WorkspaceSecurity.load(response.body))
+          else
+            error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+            error_types = {
+              401 => Peal::Types::UnauthenticatedEncoded
+            }
+            error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+            raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+          end
+        end
+      end
+    end
+  end
+end

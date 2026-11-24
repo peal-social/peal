@@ -808,8 +808,8 @@
 - `billingActions` (`/orders`, `/cancellation`, `/withdrawal`) answer only
   members with billing:manage in their own session: never an API key, an
   OAuth client or staff impersonating them (403; the use cases refuse an
-  impersonated actor too, `PersonRequired`). The SDKs leave the group out
-  (`ownSessionTags`).
+  impersonated actor too, `PersonRequired`). The group is one of the
+  contract's `appGroups`, so the document and the SDKs leave it out.
 - A `payAsYouGo` subscription ends with its usage invoiced: withdrawing
   uses `StripeContracts.endAndInvoice` (`invoice_now`), and deleting the
   workspace cancels a subscription with a metered price with

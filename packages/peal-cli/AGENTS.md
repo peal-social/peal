@@ -222,9 +222,9 @@
   the person to their account's settings in the web app (`twoStepFixOf`,
   the API's origin, whose `/` opens their workspace), and `peal doctor` fails the workspace's check with the same
   words. With `PEAL_API_KEY` nothing changes: keys are not concerned.
-- `test/parity.test.ts` maps every endpoint a bearer token can call
-  (`test/contract-endpoints.ts`, which copies the SDK spec's rule and its
-  `ownSessionTags`: keep them equal) to the command that covers it, or to
+- `test/parity.test.ts` maps every endpoint of the public API (the
+  contract's `publicGroups`, which the SDKs hold, through
+  `test/contract-endpoints.ts`) to the command that covers it, or to
   an exemption with its reason, and checks the command exists and takes
   `--json`: a new endpoint gets a command or a stated reason.
   `test/command-tree.ts` reads commands, flags and arguments from

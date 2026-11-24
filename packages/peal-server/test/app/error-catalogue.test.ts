@@ -2,12 +2,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 import { Schema } from "effect";
 import { OpenApi } from "effect/http-api";
-import { Api } from "peal-contract";
+import { Api, PublicApi } from "peal-contract";
 import { errorCatalogue, errorCodeOf } from "peal-contract/errors";
 import { describe, expect, it } from "vitest";
 
 // The codes published so far, with the tag and status each was published
-// with. Run with UPDATE_ERROR_CODES=1 to add the new ones; never remove or
+// with: every code the server answers, to every audience (the whole `Api`).
+// Run with UPDATE_ERROR_CODES=1 to add the new ones; never remove or
 // change one: clients match on them.
 const published = new URL("fixtures/error-codes.json", import.meta.url);
 
@@ -168,13 +169,24 @@ describe("the error catalogue", () => {
     ).toStrictEqual([]);
   });
 
-  // The docs' "API conventions" page lists every code, in each language,
-  // in its section #error-codes: a row of the table starts with the code,
-  // in backticks.
+  // The docs' "API conventions" page lists every code the public API
+  // answers, in each language, in its section #error-codes: a row of the
+  // table starts with the code, in backticks. The codes only Peal's own
+  // clients and the staff console get are not in it.
+  it("keeps the public API's codes within every code the server answers", () => {
+    const every = new Set(catalogue.map(({ code }) => code));
+
+    expect(
+      errorCatalogue(PublicApi).filter(({ code }) => !every.has(code))
+    ).toStrictEqual([]);
+  });
+
   it.each([
     "docs/developers/conventions/errors.mdx",
     "docs/fr/developers/conventions/errors.mdx",
-  ])("is listed whole in %s", (page) => {
+  ])("is listed, the public API's, in %s", (page) => {
+    const publicCodes = errorCatalogue(PublicApi).map(({ code }) => code);
+
     const text = readFileSync(
       new URL(`../../../peal-docs/${page}`, import.meta.url),
       "utf-8"
@@ -190,12 +202,10 @@ describe("the error catalogue", () => {
       )
     );
 
-    expect(
-      catalogue.map(({ code }) => code).filter((code) => !listed.has(code))
-    ).toStrictEqual([]);
+    expect(publicCodes.filter((code) => !listed.has(code))).toStrictEqual([]);
 
-    // And nothing the API does not answer.
-    const known = new Set(catalogue.map(({ code }) => code));
+    // And nothing the public API does not answer.
+    const known = new Set(publicCodes);
 
     expect([...listed].filter((code) => !known.has(code))).toStrictEqual([]);
   });
