@@ -9,6 +9,7 @@ import path from "node:path";
 import { Option, Schema } from "effect";
 
 import { contactEmail, homepage } from "./languages.ts";
+import { namespaceProblems } from "./sdk-names.ts";
 
 const contractDocument = path.join(
   import.meta.dirname,
@@ -261,38 +262,10 @@ const sdkNames = Object.values(paths)
     })
   );
 
-const sdkNamespaces = new Set(sdkNames.map(({ namespace }) => namespace));
+const [problem] = namespaceProblems(sdkNames);
 
-// The generators name a namespace's client and its inlined request types
-// after its last segment alone: Rust numbers a second client of the same
-// name (`UsageClient2`), and a Ruby client named like its gem's module
-// does not load. A method named as a namespace beside it clashes in every
-// language.
-const lastSegments = new Map<string, string>();
-
-for (const namespace of sdkNamespaces) {
-  const last = namespace.split(".").at(-1) ?? namespace;
-  const before = lastSegments.get(last);
-
-  if (before !== undefined) {
-    throw new Error(
-      `The SDKs' namespaces ${before} and ${namespace} end alike: rename one`
-    );
-  }
-
-  if (namespace.split(".").includes("peal")) {
-    throw new Error(`No SDK namespace may be called peal: ${namespace}`);
-  }
-
-  lastSegments.set(last, namespace);
-}
-
-for (const { method, namespace } of sdkNames) {
-  if (sdkNamespaces.has(`${namespace}.${method}`)) {
-    throw new Error(
-      `The method ${namespace}.${method} has the name of a namespace beside it`
-    );
-  }
+if (problem !== undefined) {
+  throw new Error(problem);
 }
 
 const isNonFinite = (value: Json): boolean => {

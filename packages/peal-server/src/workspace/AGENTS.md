@@ -343,6 +343,14 @@ The staff context follows these rules too. What the law has a host keep is in
   keys never act for staff. A new route that changes something under a
   cookie session needs nothing more; one outside `Authentication` and
   `/api/auth` must call the guard itself.
+- `Authentication` keeps the connection of each write to a content group
+  in the legal journal (the legal guide's `ConnectionJournal`): the groups
+  are `contentGroups` in `api/security.ts`, matched by their whole
+  identifier, less `checksOnly`. A new group whose writes create, change
+  or delete content joins `contentGroups` and the frozen list of
+  `test/workspace/api/journalled-writes.test.ts` together: the test notices
+  a write that leaves the list or joins a listed group, never a group left
+  out.
 - Better Auth caches a session in a cookie for five minutes, which a
   sign-out everywhere, a password reset or a ban does not reach. Its
   routes whose effect outlives the session (`refusedWhileImpersonating`)

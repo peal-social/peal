@@ -123,7 +123,7 @@ export const PostValidationSchema = Schema.Struct({
   // One per channel of the workspace the post names, in the order given.
   channels: Schema.Array(ChannelPreviewSchema),
   // The channels that already have the same content from another post
-  // near its time, which `send` refuses unless told `allowDuplicate`;
+  // near its time, which `create` refuses unless told `allowDuplicate`;
   // none when the request gave no time, or allowed them.
   duplicates: Schema.Array(DuplicateOnChannelSchema),
   // The limit of the plan it would pass; null when it has room, on a

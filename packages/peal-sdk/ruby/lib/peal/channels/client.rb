@@ -596,9 +596,9 @@ module Peal
       # no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where
       # the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram
       # account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on
-      # needs them (`setChannelMessages` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A
-      # reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With
-      # `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that
+      # needs them (`inbox.messages.setChannel` answers 409 `InboxActionUnavailable`, `reconnect`, until they are
+      # granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable.
+      # With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that
       # reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted
       # it asks it again. Needs channel:connect.
       #

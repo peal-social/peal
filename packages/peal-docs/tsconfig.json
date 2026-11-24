@@ -8,6 +8,7 @@
     "components.ts",
     "platform-variables.ts",
     "pricing-variables.ts",
+    "redirects.ts",
     "retention-variables.ts",
     "scripts/*.ts"
   ]
