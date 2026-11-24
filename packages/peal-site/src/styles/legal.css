@@ -1,0 +1,151 @@
+/* The legal documents' layout, over the sections src/legal-sections.ts
+   cuts their rendered Markdown into: numbered sections, each one's legal text beside its
+   plain-language lines on a wide screen, and under it on a narrow one. */
+
+.legal {
+  counter-reset: legal-section;
+}
+
+.legal-section {
+  border-top: 1px solid var(--border);
+  padding-block: 2.5rem;
+}
+
+.legal-section > h2,
+.legal-text > h2 {
+  margin-top: 0;
+}
+
+/* Sections are numbered from the first one after the opening summary,
+   and their subsections under them (2.1, 2.2). A document that opens
+   without an aside-less summary numbers every section. */
+.legal-section:not(.legal-opening) {
+  counter-increment: legal-section;
+  counter-reset: legal-subsection;
+}
+
+.legal-section:not(.legal-opening) h2::before {
+  color: var(--muted-foreground);
+  content: counter(legal-section) ". ";
+  font-variant-numeric: tabular-nums;
+}
+
+.legal-section:not(.legal-opening) h3 {
+  counter-increment: legal-subsection;
+}
+
+.legal-section:not(.legal-opening) h3::before {
+  color: var(--muted-foreground);
+  content: counter(legal-section) "." counter(legal-subsection) " ";
+  font-variant-numeric: tabular-nums;
+}
+
+/* The opening summary, a card. */
+.legal-opening {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 2.5rem;
+  padding: 1.75rem;
+}
+
+.legal-opening > * {
+  max-width: 48rem;
+}
+
+.legal-opening > :last-child {
+  margin-bottom: 0;
+}
+
+/* The plain-language lines. */
+.legal-section > aside {
+  border-inline-start: 2px solid var(--brand);
+  margin-top: 1.5rem;
+  padding-inline-start: 1.25rem;
+}
+
+.legal-section > aside > :first-child {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  margin-top: 0;
+  text-transform: uppercase;
+}
+
+.legal-section > aside > :last-child {
+  margin-bottom: 0;
+}
+
+.legal-section table {
+  display: block;
+  overflow-x: auto;
+}
+
+/* A section without plain-language lines, and a stacked one's text, keep
+   a readable measure on the wide page. */
+.legal-plain > :not(table),
+.legal-stacked > aside {
+  max-width: 48rem;
+}
+
+@media (width >= 64rem) {
+  .legal-paired {
+    column-gap: 3rem;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  .legal-paired > .legal-text {
+    font-size: 0.9375rem;
+  }
+
+  .legal-paired > .legal-text > :last-child {
+    margin-bottom: 0;
+  }
+
+  /* The lines follow the reader down a long section. */
+  .legal-paired > aside {
+    align-self: start;
+    border-inline-start: 1px solid var(--border);
+    font-size: 1rem;
+    margin-top: 0;
+    padding-inline-start: 2rem;
+    position: sticky;
+    top: 6rem;
+  }
+}
+
+/* The contents, under the title: the numbered sections, in the order and
+   with the numbers the page gives them. */
+.legal-contents {
+  font-size: 0.875rem;
+  margin-block: 1.5rem 2.5rem;
+}
+
+.legal-contents > p {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.legal-contents > ol {
+  column-gap: 3rem;
+  columns: 18rem 3;
+  list-style: decimal inside;
+}
+
+.legal-contents li {
+  break-inside: avoid;
+  padding-block: 0.125rem;
+}
+
+.legal-contents li::marker {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.legal-contents a:hover {
+  text-decoration: underline;
+}

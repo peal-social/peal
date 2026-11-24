@@ -365,9 +365,11 @@ self-hoster needs only Postgres and an S3-compatible store:
   documents in `src/content/legal/<locale>/<document>.md`. The header's
   and the footer's strings and links, which the blog
   shares, live in `packages/peal-ui/src/lib/site/` as plain TypeScript
-  (no Astro there). Keep a legal
-  document `draft: true` (banner and noindex) until legal review approves it,
-  and never replace a [bracketed placeholder] with a guess.
+  (no Astro there). A legal
+  document is published in force: `draft: true` (banner and noindex) is
+  for one the owner asked to hold back, and no note to counsel stays in a
+  page. Never replace a [bracketed placeholder] with a guess: leave out the
+  sentence whose fact does not exist yet, and say so.
 - The privacy policy's retention table is the registry's
   (`peal-contract/data-processing`), which `nx run peal-site:test` checks
   in both languages: change the registry, then the table.

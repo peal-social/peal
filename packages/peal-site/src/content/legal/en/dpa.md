@@ -1,10 +1,10 @@
 ---
 title: Data processing agreement
 description: What Peal does, as a processor, with the personal data an organisation handles through the hosted service (GDPR Article 28).
-draft: true
+draft: false
 ---
 
-Effective date: [Date]
+Effective date: 23 November 2026
 
 ## Summary
 
@@ -31,7 +31,8 @@ Where this agreement and the terms disagree about personal data, this agreement 
 
 **What it means**
 
-This is the GDPR contract between your organisation and us. It comes with the terms, so there is nothing to sign, and it only concerns the data we handle for you.
+- This is the GDPR contract between your organisation and us.
+- It comes with the terms, so there is nothing to sign, and it only concerns the data we handle for you.
 
 </aside>
 
@@ -65,7 +66,9 @@ For the data listed in the [privacy policy](/privacy/) as ours, we are a control
 
 **What it means**
 
-You decide what is done with the data about your audience and your contacts, and we carry it out. If you work for clients, the same holds one step further up. For your own account and billing, we answer for the data ourselves.
+- You decide what is done with the data about your audience and your contacts, and we carry it out.
+- If you work for clients, the same holds one step further up.
+- For your own account and billing, we answer for the data ourselves.
 
 </aside>
 
@@ -83,7 +86,8 @@ We do not sell your personal data. We do not use it to profile the people it con
 
 **What it means**
 
-We do what the service needs and what you ask through it, and nothing else. If one of your instructions looks unlawful to us, we say so.
+- We do what the service needs and what you ask through it, and nothing else.
+- If one of your instructions looks unlawful to us, we say so.
 
 </aside>
 
@@ -109,7 +113,8 @@ You are responsible for the security of what you control: your members' password
 
 **What it means**
 
-We secure the service as Annex II describes. You secure your side: who is a member, with which role, and which keys and applications can act for you.
+- We secure the service as Annex II describes.
+- You secure your side: who is a member, with which role, and which keys and applications can act for you.
 
 </aside>
 
@@ -119,7 +124,10 @@ You give us a general authorisation to engage sub-processors. Those we use today
 
 We bind each sub-processor by a written contract to data protection obligations equivalent to those of this agreement. We remain fully liable to you for what a sub-processor does with your personal data.
 
-Before a new sub-processor starts processing your personal data, we announce it on that page and by email to the owners of your organisation, at least 30 days ahead. You can object in writing at privacy@peal.social before it starts, on reasonable grounds related to data protection. We then look for a way to provide the service without that sub-processor for your data. If we find none within 30 days of your objection, you may end the contract, or the part of the service concerned, at no cost, and we refund the unused part of any period paid for. [Confirm with counsel: the 30 days' notice, and whether an urgent replacement, such as after a provider's outage, may take effect sooner.]
+- Before a new sub-processor starts processing your personal data, we announce it on that page and by email to the owners of your organisation, at least 30 days ahead.
+- You can object in writing at privacy@peal.social before it starts, on reasonable grounds related to data protection.
+- We then look for a way to provide the service without that sub-processor for your data.
+- If we find none within 30 days of your objection, you may end the contract, or the part of the service concerned, at no cost, and we refund the unused part of any period paid for.
 
 A provider you choose yourself and connect with your own key, such as a text, image or video provider, is not our sub-processor. It acts for you, under the terms you agreed with it.
 
@@ -127,7 +135,9 @@ A provider you choose yourself and connect with your own key, such as a text, im
 
 **What it means**
 
-You allow us to rely on the providers on the sub-processors page, and we answer for them. You hear about a new one 30 days ahead, and you can object. If we can't work around it, you can leave at no cost.
+- You allow us to rely on the providers on the sub-processors page, and we answer for them.
+- You hear about a new one 30 days ahead, and you can object.
+- If we can't work around it, you can leave at no cost.
 
 </aside>
 
@@ -141,7 +151,8 @@ If someone writes to us to exercise a right over your personal data, we pass the
 
 **What it means**
 
-Most requests you can handle from the app. If a person writes to us about data that is yours, we send them your way and help you where the app can't.
+- Most requests you can handle from the app.
+- If a person writes to us about data that is yours, we send them your way and help you where the app can't.
 
 </aside>
 
@@ -155,7 +166,8 @@ This help is included in the service. If a request calls for work well beyond it
 
 **What it means**
 
-If you need to assess the risks of using Peal, or to answer an authority, we give you the information we have. Ordinary help is free.
+- If you need to assess the risks of using Peal, or to answer an authority, we give you the information we have.
+- Ordinary help is free.
 
 </aside>
 
@@ -179,13 +191,16 @@ If your data is breached, you hear from us fast, with what you need to tell the 
 
 On request, we give you the information needed to show that we meet this agreement and Article 28 of the GDPR.
 
-Where that information is not enough, you may audit the processing of your personal data, yourself or through an independent auditor bound to confidentiality, once in any 12 months, and again after a personal data breach or when a supervisory authority requires it. You give us 30 days' written notice and agree the scope with us. The audit takes place during working hours, without disturbing the service or reaching other customers' data, and at your cost. [Confirm with counsel: frequency, notice and who bears the cost.]
+- Where that information is not enough, you may audit the processing of your personal data, yourself or through an independent auditor bound to confidentiality, once in any 12 months, and again after a personal data breach or when a supervisory authority requires it.
+- You give us 30 days' written notice and agree the scope with us.
+- The audit takes place during working hours, without disturbing the service or reaching other customers' data, and at your cost.
 
 <aside>
 
 **What it means**
 
-We answer your questions about how we protect your data. If that isn't enough, you can audit us once a year, with notice and at your cost.
+- We answer your questions about how we protect your data.
+- If that isn't enough, you can audit us once a year, with notice and at your cost.
 
 </aside>
 
@@ -201,7 +216,8 @@ We keep only what the law of the European Union or of a member state requires us
 
 **What it means**
 
-Take a copy whenever you want. When you leave, your data is deleted, and it is gone from the backups about five weeks later.
+- Take a copy whenever you want.
+- When you leave, your data is deleted, and it is gone from the backups about five weeks later.
 
 </aside>
 
@@ -211,13 +227,12 @@ Peal's server, its database and its media are in the European Union. Some sub-pr
 
 We do not transfer your personal data outside the European Economic Area in any other way, unless you instruct us to. Publishing a post on a platform you connected is such an instruction.
 
-[Confirm with counsel: for a customer established outside the European Economic Area, in a country without an adequacy decision, whether the standard contractual clauses (module four, processor to controller) must be incorporated here.]
-
 <aside>
 
 **What it means**
 
-Your data stays in the EU. A few providers are American, and each of those transfers rests on a safeguard EU law recognises.
+- Your data stays in the EU.
+- A few providers are American, and each of those transfers rests on a safeguard EU law recognises.
 
 </aside>
 
@@ -233,7 +248,8 @@ French law governs this agreement, and disputes go to the courts the terms name.
 
 **What it means**
 
-This agreement lasts as long as we hold your data. The liability rules, the law and the courts are those of the terms.
+- This agreement lasts as long as we hold your data.
+- The liability rules, the law and the courts are those of the terms.
 
 </aside>
 

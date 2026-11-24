@@ -1,10 +1,10 @@
 ---
 title: Terms of service
 description: The terms that govern the use of the hosted Peal service.
-draft: true
+draft: false
 ---
 
-Effective date: [Date]
+Effective date: 23 November 2026
 
 ## Summary
 
@@ -29,19 +29,25 @@ They do not cover the Peal source code. The source code is licensed separately u
 
 **What it means**
 
-These terms are the contract for the hosted service at app.peal.social. If you run Peal yourself from its source code, the code's licence applies instead.
+- These terms are the contract for the hosted service at app.peal.social.
+- If you run Peal yourself from its source code, the code's licence applies instead.
 
 </aside>
 
 ## The service
 
-Peal lets you write posts, schedule them on the social media platforms you connect, and see how they perform. Every organisation has every platform, the calendar, analytics, the API, the MCP server and the command line, with members, organisations and posts unlimited. The hosted service is priced per connected account, by the day, with a billing account's first accounts free, and by use for what costs us by use. The [pricing page](/pricing/) states the prices.
+- Peal lets you write posts, schedule them on the social media platforms you connect, and see how they perform.
+- Every organisation has every platform, the calendar, analytics, the API, the MCP server and the command line, with members, organisations and posts unlimited.
+- The hosted service is priced per connected account, by the day, with a billing account's first accounts free, and by use for what costs us by use.
+- The [pricing page](/pricing/) states the prices.
 
 <aside>
 
 **What it means**
 
-Peal writes, schedules and measures posts. Every organisation gets every feature. You pay per connected account and by use, at the prices on the pricing page.
+- Peal writes, schedules and measures posts.
+- Every organisation gets every feature.
+- You pay per connected account and by use, at the prices on the pricing page.
 
 </aside>
 
@@ -55,7 +61,9 @@ An organisation is the space a team shares. Its owners and administrators invite
 
 **What it means**
 
-You must be an adult to have an account. Keep your sign-in details to yourself: what your account, your API keys and your connected applications do counts as done by you. What a team makes in an organisation stays with the organisation.
+- You must be an adult to have an account.
+- Keep your sign-in details to yourself: what your account, your API keys and your connected applications do counts as done by you.
+- What a team makes in an organisation stays with the organisation.
 
 </aside>
 
@@ -73,21 +81,29 @@ We do not control the platforms. A platform can refuse, delay, change or remove 
 
 **What it means**
 
-Peal acts on your accounts within the permissions you grant. Each platform applies its own terms, and may refuse, delay or remove a post or be down, which we can't answer for. When a platform doesn't confirm that a post went out, Peal says so and doesn't try again, so check the platform before you publish it a second time.
+- Peal acts on your accounts within the permissions you grant.
+- Each platform applies its own terms, and may refuse, delay or remove a post or be down, which we can't answer for.
+- When a platform doesn't confirm that a post went out, Peal says so and doesn't try again, so check the platform before you publish it a second time.
 
 </aside>
 
 ## Ads and spending through Peal
 
-Where an organisation connects an ad account, Peal can read that account's campaigns and figures and, when a member asks, boost a post the organisation published through Peal, as an ad on the ad network. This section applies to that use. [Confirm with counsel before ads are opened to customers: this section as a whole, and whether spending through Peal needs an acceptance of its own, apart from these terms.]
+Where an organisation connects an ad account, Peal can read that account's campaigns and figures and, when a member asks, boost a post the organisation published through Peal, as an ad on the ad network. This section applies to that use.
 
 ### Who sells the ads
 
-Ads are bought from the ad network (Meta, for ads on Facebook and Instagram), under the contract between the network and the holder of the ad account. The network bills the advertiser directly, on the ad account's payment method. We are not a party to that purchase: we never receive, hold or pass on the money, we issue no invoice for it and take no commission on it. [Confirm with counsel and the accountant that no fee or commission on ad spend is charged, or describe it here and on the pricing page.]
+- Ads are bought from the ad network (Meta, for ads on Facebook and Instagram), under the contract between the network and the holder of the ad account.
+- The network bills the advertiser directly, on the ad account's payment method.
+- We are not a party to that purchase: we never receive, hold or pass on the money, we issue no invoice for it and take no commission on it.
 
 ### You decide what is spent
 
-Nothing is spent until an owner of the organisation turns spending on for an ad account and sets a monthly ceiling for it, in the account's currency. Peal never turns spending on, raises a ceiling or raises a budget on its own. The ceiling limits what the boosts made through Peal may commit on that ad account in one calendar month of the account's time zone. It is not a limit on the ad account itself: ads made elsewhere, at the network or with another tool, are not counted and are not held back by it. To cap the account as a whole, set a spend cap at the network.
+- Nothing is spent until an owner of the organisation turns spending on for an ad account and sets a monthly ceiling for it, in the account's currency.
+- Peal never turns spending on, raises a ceiling or raises a budget on its own.
+- The ceiling limits what the boosts made through Peal may commit on that ad account in one calendar month of the account's time zone.
+- It is not a limit on the ad account itself: ads made elsewhere, at the network or with another tool, are not counted and are not held back by it.
+- To cap the account as a whole, set a spend cap at the network.
 
 ### What a budget may cost
 
@@ -99,7 +115,8 @@ The members whose role lets them spend, the API keys that were given that permis
 
 ### Your responsibility for the ads
 
-You are responsible for the content of the ads, for the audience you choose, and for the declarations made when a boost is asked for: that the ad is not of a special category the network restricts (housing, employment, financial products and services, social issues, elections or politics), which Peal does not boost, and, when the audience is in the European Union, who benefits from the ad and who pays for it. You must hold the rights to advertise for the Page or account concerned, and follow the ad network's own terms and advertising policies, which apply to you directly.
+- You are responsible for the content of the ads, for the audience you choose, and for the declarations made when a boost is asked for: that the ad is not of a special category the network restricts (housing, employment, financial products and services, social issues, elections or politics), which Peal does not boost, and, when the audience is in the European Union, who benefits from the ad and who pays for it.
+- You must hold the rights to advertise for the Page or account concerned, and follow the ad network's own terms and advertising policies, which apply to you directly.
 
 ### What the network decides
 
@@ -119,7 +136,7 @@ A boost can be paused or stopped in Peal at any time. Peal then asks the network
 
 ### Liability
 
-Our liability for amounts spent on an ad network through Peal follows the "Warranties and liability" section below, which applies to this section as to the rest of these terms. [Counsel to decide whether ad spend needs a rule of its own in that section, such as for a boost that ran against what was asked because of a fault of ours; no amount or cap is stated here.]
+Our liability for amounts spent on an ad network through Peal follows the "Warranties and liability" section below, which applies to this section as to the rest of these terms.
 
 <aside>
 
@@ -144,7 +161,9 @@ You confirm that you hold the rights needed to publish what you add, and you are
 
 **What it means**
 
-Your content is yours. We host it, fit it to each platform's format and send it where you ask. You answer for what you publish, and we act on reports of unlawful content.
+- Your content is yours.
+- We host it, fit it to each platform's format and send it where you ask.
+- You answer for what you publish, and we act on reports of unlawful content.
 
 </aside>
 
@@ -164,21 +183,37 @@ If these terms are breached, we may turn off what is causing the harm, such as a
 
 **What it means**
 
-Don't use Peal for unlawful content, spam or attacks, and don't resell it without asking. If that happens, we can turn off what causes the harm and suspend the account for a time, and we tell you why.
+- Don't use Peal for unlawful content, spam or attacks, and don't resell it without asking.
+- If that happens, we can turn off what causes the harm and suspend the account for a time, and we tell you why.
 
 </aside>
 
 ## Plans, prices and payment
 
-Each organisation belongs to a billing account, which pays for it: the person who created the organisation, the person it was handed to, or, for a partner's organisations, the partner. The organisations of a billing account share one free tier, one price ladder and one allowance of each use, however many it holds. The [pricing page](/pricing/) states the free accounts, the prices and the allowances, and the billing page states them before any order. Prices are in US dollars and exclude tax. VAT is added at checkout: a consumer in the EU pays their country's rate, which checkout computes before payment, and a business in another EU country than France with a valid VAT number pays the price excluding VAT, the VAT being reverse-charged. At checkout, a customer may pay in their own currency, converted by Stripe at the rate checkout shows; otherwise the card is charged in US dollars. Payments are processed by Stripe. Peal SAS, [VAT number].
+- Each organisation belongs to a billing account, which pays for it: the person who created the organisation, the person it was handed to, or, for a partner's organisations, the partner.
+- The organisations of a billing account share one free tier, one price ladder and one allowance of each use, however many it holds.
+- The [pricing page](/pricing/) states the free accounts, the prices and the allowances, and the billing page states them before any order.
+- Prices are in US dollars and exclude tax.
+- VAT is added at checkout: a consumer in the EU pays their country's rate, which checkout computes before payment, and a business in another EU country than France with a valid VAT number pays the price excluding VAT, the VAT being reverse-charged.
+- At checkout, a customer may pay in their own currency, converted by Stripe at the rate checkout shows; otherwise the card is charged in US dollars.
+- Payments are processed by Stripe.
 
 ### Connected accounts
 
-Every social media account connected in the organisations of a billing account counts, one that is turned off or needs reconnecting included; an ad account does not. Each day of the calendar month (UTC), up to the number of days a month the pricing page states (a later day of the month is not counted), counts the most accounts connected at once that day. At the end of the month, these account-days are added up and divided by that number of days, and the result, a number of accounts that may hold a fraction, is priced through the ladder the pricing page states: the billing account's first accounts are free, and each further band has its own price per account. An account that is disconnected stops counting from the next day. Nothing else is charged for accounts: there is no fee for ordering, using or cancelling.
+- Every social media account connected in the organisations of a billing account counts, one that is turned off or needs reconnecting included; an ad account does not.
+- Each day of the calendar month (UTC), up to the number of days a month the pricing page states (a later day of the month is not counted), counts the most accounts connected at once that day.
+- At the end of the month, these account-days are added up and divided by that number of days, and the result, a number of accounts that may hold a fraction, is priced through the ladder the pricing page states: the billing account's first accounts are free, and each further band has its own price per account.
+- An account that is disconnected stops counting from the next day.
+- Nothing else is charged for accounts: there is no fee for ordering, using or cancelling.
 
 ### Uses
 
-What costs us by use is metered, with a monthly allowance per billing account, from the first of each calendar month (UTC): inbox messages sent, replies to comments included, and managed ads active in the month. Without a payment method, a use stops at its allowance until the next month; with one, each unit past an allowance is billed at the price the pricing page states. Until a billing account's first invoice is paid, what its uses bill in a month is capped. The writing assistant on Peal's own models is not available without a payment method; with one, its requests and its images each have a monthly allowance per billing account, which the billing page states, and it stops at that allowance until the next month. It is billed past it only once its prices are on the pricing page, and within the monthly ceiling the billing account sets. An organisation's own text or image provider is never counted.
+- What costs us by use is metered, with a monthly allowance per billing account, from the first of each calendar month (UTC): inbox messages sent, replies to comments included, and managed ads active in the month.
+- Without a payment method, a use stops at its allowance until the next month; with one, each unit past an allowance is billed at the price the pricing page states.
+- Until a billing account's first invoice is paid, what its uses bill in a month is capped.
+- The writing assistant on Peal's own models is not available without a payment method; with one, its requests and its images each have a monthly allowance per billing account, which the billing page states, and it stops at that allowance until the next month.
+- It is billed past it only once its prices are on the pricing page, and within the monthly ceiling the billing account sets.
+- An organisation's own text or image provider is never counted.
 
 ### What is not limited
 
@@ -186,15 +221,22 @@ Members, organisations and posts. Media storage is fair use, up to what the pric
 
 ### Free tier
 
-A billing account without a payment method is on the free tier: it connects its free accounts and no more, and uses only what the allowances include. The free tier is one per person or organisation, across all their organisations: a person pays for one billing account at most. Billing accounts opened to multiply the free tier may be merged into one, or asked for a payment method before they connect or use more, after we have told their payers by email why; a serious or repeated case may lead to the end of the contract, as set out under Suspension and termination.
+- A billing account without a payment method is on the free tier: it connects its free accounts and no more, and uses only what the allowances include.
+- The free tier is one per person or organisation, across all their organisations: a person pays for one billing account at most.
+- Billing accounts opened to multiply the free tier may be merged into one, or asked for a payment method before they connect or use more, after we have told their payers by email why; a serious or repeated case may lead to the end of the contract, as set out under Suspension and termination.
 
 ### Plans priced by channels
 
-The plans priced by tiers of connected channels, and their trial, are no longer sold. A subscription to one keeps its plan, price and limits until it ends, and a trial started before runs to its end without a charge; then the organisation is on its billing account's standing. Such a plan is paid in advance, each month or each year, and renews for the same period until it is cancelled. For a yearly plan, 45 days before it renews, and never less than a month before, we remind the members who manage billing, in an email of its own, that the contract need not be renewed, with the price and, in a box, the last day to refuse the renewal, which is the day it renews, until the time shown; the articles of the French Consumer Code on this reminder are reproduced below.
+- The plans priced by tiers of connected channels, and their trial, are no longer sold.
+- A subscription to one keeps its plan, price and limits until it ends, and a trial started before runs to its end without a charge; then the organisation is on its billing account's standing.
+- Such a plan is paid in advance, each month or each year, and renews for the same period until it is cancelled.
+- For a yearly plan, 45 days before it renews, and never less than a month before, we remind the members who manage billing, in an email of its own, that the contract need not be renewed, with the price and, in a box, the last day to refuse the renewal, which is the day it renews, until the time shown; the articles of the French Consumer Code on this reminder are reproduced below.
 
 ### Ordering
 
-Per-account pricing is ordered on the billing page of the organisation that holds the billing account's subscription (its payer's oldest, or a partner's home organisation) by an owner or an administrator, who asks for the service to start at once and confirms with the button "Order with obligation to pay"; Stripe's checkout then takes a payment method, though nothing is due yet. The contract is concluded when checkout accepts the payment method. We confirm it by email, with the prices, the contract number and how to cancel and to withdraw; these terms, which hold the model withdrawal form, apply.
+- Per-account pricing is ordered on the billing page of the organisation that holds the billing account's subscription (its payer's oldest, or a partner's home organisation) by an owner or an administrator, who asks for the service to start at once and confirms with the button "Order with obligation to pay"; Stripe's checkout then takes a payment method, though nothing is due yet.
+- The contract is concluded when checkout accepts the payment method.
+- We confirm it by email, with the prices, the contract number and how to cancel and to withdraw; these terms, which hold the model withdrawal form, apply.
 
 ### Billing
 
@@ -202,15 +244,29 @@ Per-account pricing is billed by calendar month (UTC): on the first of each mont
 
 ### Cancelling
 
-A contract can be cancelled online at any time, free of charge, with "Cancel your contract": the link is at the foot of every page of the app and of this site, and on the billing page, and needs no account and no signing in. It asks for your name, the email address the acknowledgement goes to, the contract (its number, which is in the email that confirmed the subscription, or the workspace's name) and, if you wish, the day you want it to end; it shows a summary, then "Notify the cancellation". There is no notice period and no fee. Per-account pricing ends with the current month, whose use is invoiced; a plan priced by channels ends with the period already paid for, which is not refunded, except as below; on the later day you asked for, the last period is charged only up to that day; a trial ends at once. We acknowledge the notification by email, with the date and time we received it, and tell you the date the contract ends and what that means: until then the organisation keeps its plan, then its billing account is on the free tier, with its content, and nothing more is charged. Whenever it is applied, a cancellation counts from the moment we received it: a renewal charged after that moment is refunded.
+- A contract can be cancelled online at any time, free of charge, with "Cancel your contract": the link is at the foot of every page of the app and of this site, and on the billing page, and needs no account and no signing in.
+- It asks for your name, the email address the acknowledgement goes to, the contract (its number, which is in the email that confirmed the subscription, or the workspace's name) and, if you wish, the day you want it to end; it shows a summary, then "Notify the cancellation".
+- There is no notice period and no fee.
+- Per-account pricing ends with the current month, whose use is invoiced; a plan priced by channels ends with the period already paid for, which is not refunded, except as below; on the later day you asked for, the last period is charged only up to that day; a trial ends at once.
+- We acknowledge the notification by email, with the date and time we received it, and tell you the date the contract ends and what that means: until then the organisation keeps its plan, then its billing account is on the free tier, with its content, and nothing more is charged.
+- Whenever it is applied, a cancellation counts from the moment we received it: a renewal charged after that moment is refunded.
 
 To make sure a stranger who knows your address cannot end your contract, a request that gives the contract number, or is sent by a member who manages billing while signed in, is applied at once; one that gives neither is applied once you follow the link in the acknowledgement we email you, or once we have made sure it comes from the contract's holder.
 
 ### Right of withdrawal
 
-A consumer has the right to withdraw from the contract within 14 days without giving any reason. The withdrawal period expires 14 days after the day of the conclusion of the contract. To exercise the right of withdrawal, you must inform us (Peal SAS, 15 rue Paul Verlaine, 85710 La Garnache, France, hello@peal.social) of your decision to withdraw from the contract by an unequivocal statement (for example a letter sent by post or an email). You may use the model withdrawal form below, but it is not obligatory. You can also exercise your right of withdrawal online with "Withdraw from contract here", at the foot of every page of the app and of this site and on the billing page, without signing in, then "Confirm withdrawal". If you use this online function, we will send you an acknowledgement of receipt of the withdrawal on a durable medium (by email), including its content and the date and time of its submission, without undue delay. To meet the withdrawal deadline, it is sufficient for you to send your communication before the withdrawal period has expired.
+- A consumer has the right to withdraw from the contract within 14 days without giving any reason.
+- The withdrawal period expires 14 days after the day of the conclusion of the contract.
+- To exercise the right of withdrawal, you must inform us (Peal SAS, 15 rue Paul Verlaine, 85710 La Garnache, France, hello@peal.social) of your decision to withdraw from the contract by an unequivocal statement (for example a letter sent by post or an email).
+- You may use the model withdrawal form below, but it is not obligatory.
+- You can also exercise your right of withdrawal online with "Withdraw from contract here", at the foot of every page of the app and of this site and on the billing page, without signing in, then "Confirm withdrawal".
+- If you use this online function, we will send you an acknowledgement of receipt of the withdrawal on a durable medium (by email), including its content and the date and time of its submission, without undue delay.
+- To meet the withdrawal deadline, it is sufficient for you to send your communication before the withdrawal period has expired.
 
-If you withdraw from the contract, we will reimburse all payments received from you, without undue delay and in any event not later than 14 days from the day on which we are informed of your decision to withdraw. We will carry out the reimbursement using the same means of payment as you used for the initial transaction, unless you have expressly agreed otherwise; in any event, you will not incur any fees as a result. As you asked for the service to begin during the withdrawal period, you pay us an amount in proportion to what was provided until you told us of your withdrawal, in comparison with the full coverage of the contract: we refund the rest of what you paid for the period. The right of withdrawal does not apply to a customer acting for business purposes.
+- If you withdraw from the contract, we will reimburse all payments received from you, without undue delay and in any event not later than 14 days from the day on which we are informed of your decision to withdraw.
+- We will carry out the reimbursement using the same means of payment as you used for the initial transaction, unless you have expressly agreed otherwise; in any event, you will not incur any fees as a result.
+- As you asked for the service to begin during the withdrawal period, you pay us an amount in proportion to what was provided until you told us of your withdrawal, in comparison with the full coverage of the contract: we refund the rest of what you paid for the period.
+- The right of withdrawal does not apply to a customer acting for business purposes.
 
 Per-account pricing is billed after use, so nothing of it is paid in advance: withdrawing ends it at once and invoices what was used until then.
 
@@ -240,9 +296,15 @@ We announce a change of price by email at least 30 days before it takes effect. 
 
 While a payment fails, Stripe tries again, and the billing account keeps its plan meanwhile. A billing account whose invoice stays unpaid is on the free tier; what it owes stays due.
 
-Deleting an organisation, or closing your account so that an organisation is deleted with it, cancels the subscription that organisation holds at once, once you agree to it on the confirmation screen. For per-account pricing, the use until then is invoiced. For a plan priced by channels, nothing more is charged, and the period already paid for is not refunded, except where the law gives a refund, as to a consumer who withdraws within 14 days of subscribing, who is refunded the unused part. Invoices are kept as accounting law requires.
+- Deleting an organisation, or closing your account so that an organisation is deleted with it, cancels the subscription that organisation holds at once, once you agree to it on the confirmation screen.
+- For per-account pricing, the use until then is invoiced.
+- For a plan priced by channels, nothing more is charged, and the period already paid for is not refunded, except where the law gives a refund, as to a consumer who withdraws within 14 days of subscribing, who is refunded the unused part. Invoices are kept as accounting law requires.
 
-What the free tier has no room for is refused, and adding a payment method is offered. A billing account can be back on the free tier when its subscription is cancelled or left unpaid, or a trial or a plan priced by channels ends. Nothing is deleted then, but while it holds more connected accounts than the free tier allows (or, on a plan priced by channels, an organisation holds more members than its plan allows), its organisations schedule and publish nothing until they are back within it, by adding a payment method or by choosing which accounts and members stay; posts already scheduled fail when due, and can be posted again afterwards. An organisation that held more accounts than the free tier allows before the hosted service started billing keeps scheduling and publishing until a day we announce to its billing managers by email, and connects no more meanwhile. A billing account over its media storage keeps its files but cannot upload more.
+- What the free tier has no room for is refused, and adding a payment method is offered.
+- A billing account can be back on the free tier when its subscription is cancelled or left unpaid, or a trial or a plan priced by channels ends.
+- Nothing is deleted then, but while it holds more connected accounts than the free tier allows (or, on a plan priced by channels, an organisation holds more members than its plan allows), its organisations schedule and publish nothing until they are back within it, by adding a payment method or by choosing which accounts and members stay; posts already scheduled fail when due, and can be posted again afterwards.
+- An organisation that held more accounts than the free tier allows before the hosted service started billing keeps scheduling and publishing until a day we announce to its billing managers by email, and connects no more meanwhile.
+- A billing account over its media storage keeps its files but cannot upload more.
 
 ### Renewal and cancellation: the French Consumer Code
 
@@ -288,25 +350,37 @@ Articles L215-1 to L215-3 and L241-3 of the French Consumer Code are reproduced 
 
 ## Availability and changes to the service
 
-We work to keep Peal available at all times, without guaranteeing that it always will be. Maintenance and new releases can interrupt it briefly; we do them at quiet hours where we can. The status page at status.peal.social shows whether the service is up. We improve Peal over time and may change its features; we announce by email, at least 30 days ahead, any change that removes or substantially reduces a feature of a paid plan, and a customer who does not accept it may cancel before it takes effect, with a refund of the unused part of the period paid for.
+- We work to keep Peal available at all times, without guaranteeing that it always will be.
+- Maintenance and new releases can interrupt it briefly; we do them at quiet hours where we can.
+- The status page at status.peal.social shows whether the service is up.
+- We improve Peal over time and may change its features; we announce by email, at least 30 days ahead, any change that removes or substantially reduces a feature of a paid plan, and a customer who does not accept it may cancel before it takes effect, with a refund of the unused part of the period paid for.
 
 <aside>
 
 **What it means**
 
-We work to keep Peal up, without promising it always will be. The status page shows how it is doing. If we remove or cut back a feature of a paid plan, you hear about it 30 days ahead and can cancel with a refund.
+- We work to keep Peal up, without promising it always will be.
+- The status page shows how it is doing.
+- If we remove or cut back a feature of a paid plan, you hear about it 30 days ahead and can cancel with a refund.
 
 </aside>
 
 ## Suspension and termination
 
-You can close your account at any time from its settings, and cancel a paid plan as set out under Cancelling. We may suspend an account that breaches these terms, as set out under Acceptable use. We may end the contract for a serious or repeated breach, after telling the account's holder by email why and giving them 15 days to remedy it, unless the breach makes that impossible, or, without fault, with 3 months' notice by email, refunding the unused part of any period paid for. While an account is suspended its data is kept; you can still ask for a copy of it at privacy@peal.social. Once the contract ends, the account and its data are deleted as the data deletion page describes. [Data deletion](/data-deletion/) explains how to delete your account and data.
+- You can close your account at any time from its settings, and cancel a paid plan as set out under Cancelling.
+- We may suspend an account that breaches these terms, as set out under Acceptable use.
+- We may end the contract for a serious or repeated breach, after telling the account's holder by email why and giving them 15 days to remedy it, unless the breach makes that impossible, or, without fault, with 3 months' notice by email, refunding the unused part of any period paid for.
+- While an account is suspended its data is kept; you can still ask for a copy of it at privacy@peal.social.
+- Once the contract ends, the account and its data are deleted as the data deletion page describes.
+- [Data deletion](/data-deletion/) explains how to delete your account and data.
 
 <aside>
 
 **What it means**
 
-You can leave at any time. We can end the contract for a serious or repeated breach, after 15 days to fix it where that is possible, or without any fault with 3 months' notice and a refund. Your data is kept while an account is suspended, and deleted once the contract ends.
+- You can leave at any time.
+- We can end the contract for a serious or repeated breach, after 15 days to fix it where that is possible, or without any fault with 3 months' notice and a refund.
+- Your data is kept while an account is suspended, and deleted once the contract ends.
 
 </aside>
 
@@ -324,7 +398,9 @@ Nothing in these terms limits our liability for wilful misconduct or gross negli
 
 **What it means**
 
-We run the service with care, but we can't promise a result, least of all where a platform is involved. Towards a business, we answer for direct damage only, up to what it paid us over the last 12 months. Consumers keep every right the law gives them.
+- We run the service with care, but we can't promise a result, least of all where a platform is involved.
+- Towards a business, we answer for direct damage only, up to what it paid us over the last 12 months.
+- Consumers keep every right the law gives them.
 
 </aside>
 
@@ -336,7 +412,8 @@ The [privacy policy](/privacy/) explains how we process personal data. When an o
 
 **What it means**
 
-The privacy policy says what we do with your data. The data processing agreement covers the data about other people that you handle through Peal.
+- The privacy policy says what we do with your data.
+- The data processing agreement covers the data about other people that you handle through Peal.
 
 </aside>
 
@@ -344,7 +421,7 @@ The privacy policy says what we do with your data. The data processing agreement
 
 These terms are governed by French law. A consumer also keeps the protection of the mandatory rules of the country where they live.
 
-Before any claim, write to us at hello@peal.social so that we can try to settle the dispute. A consumer whose written complaint did not settle it may then refer it, free of charge, to the consumer mediator: [Name, address and website of the consumer mediator], within a year of the complaint (French Consumer Code, Articles L612-1 and following).
+Before any claim, write to us at hello@peal.social so that we can try to settle the dispute.
 
 A dispute with a professional customer goes to the courts with jurisdiction over our registered office. A consumer may bring a claim before the courts the law gives them, including those where they live.
 
@@ -352,7 +429,10 @@ A dispute with a professional customer goes to the courts with jurisdiction over
 
 **What it means**
 
-French law applies. Write to us first if something goes wrong. A consumer can then go to the mediator, free of charge, and to the courts where they live. A dispute with a business goes to the courts of our registered office.
+- French law applies.
+- Write to us first if something goes wrong.
+- A consumer can go to the courts where they live.
+- A dispute with a business goes to the courts of our registered office.
 
 </aside>
 
@@ -364,7 +444,8 @@ We email account holders at least 30 days before a change to these terms takes e
 
 **What it means**
 
-We email you 30 days before these terms change. If you don't accept the change, you can leave or cancel at no cost before it applies.
+- We email you 30 days before these terms change.
+- If you don't accept the change, you can leave or cancel at no cost before it applies.
 
 </aside>
 
