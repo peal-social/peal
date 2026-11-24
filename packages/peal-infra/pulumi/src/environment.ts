@@ -65,13 +65,18 @@ const blogUploadRule = (origin: string) => ({
   maxAgeSeconds: 3600,
 });
 
-/** Browsers upload media straight to the bucket (peal-server:media-cors). */
+/**
+ * Browsers upload media straight to the bucket, and the editor's preview
+ * reads it there: the rule peal-server:media-cors writes (`uploadRule` in
+ * its bucket-cors.ts). Change both together.
+ */
 const uploadRule = (origin: string) => ({
   allowed: {
-    headers: ["content-type", "if-none-match"],
-    methods: ["PUT"],
+    headers: ["content-type", "if-none-match", "range"],
+    methods: ["GET", "PUT"],
     origins: [origin],
   },
+  exposeHeaders: ["accept-ranges", "content-length", "content-range"],
   maxAgeSeconds: 3600,
 });
 
