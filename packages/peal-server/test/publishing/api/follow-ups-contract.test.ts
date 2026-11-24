@@ -14,23 +14,23 @@ import {
   minLikesThreshold as contractMinLikes,
 } from "peal-contract";
 
-import { followUpView } from "#publishing/api/follow-up-view.ts";
+import { followUpView } from "#publishing/api/follow-ups/follow-up-view.ts";
 import {
   followUpsShown,
   maxFollowUpCommentLength,
-} from "#publishing/application/follow-up-rules.ts";
-import { FollowUpAbilitySchema as AbilitySchema } from "#publishing/domain/follow-up-ability.ts";
-import { FollowUpEndReasonSchema } from "#publishing/domain/follow-up-end-reason.ts";
-import { FollowUpIdSchema } from "#publishing/domain/follow-up-id.ts";
-import { FollowUpRuleIdSchema } from "#publishing/domain/follow-up-rule-id.ts";
+} from "#publishing/application/follow-ups/follow-up-rules.ts";
+import { FollowUpAbilitySchema as AbilitySchema } from "#publishing/domain/follow-ups/follow-up-ability.ts";
+import { FollowUpEndReasonSchema } from "#publishing/domain/follow-ups/follow-up-end-reason.ts";
+import { FollowUpIdSchema } from "#publishing/domain/follow-ups/follow-up-id.ts";
+import { FollowUpRuleIdSchema } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
 import {
   followUpWindow,
   maxFollowUpRulesPerWorkspace,
   maxFollowUpsPerChannelDay,
   maxLikesThreshold,
   minLikesThreshold,
-} from "#publishing/domain/follow-up-rule.ts";
-import { FollowUpBlockerSchema } from "#publishing/domain/follow-up-support.ts";
+} from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import { FollowUpBlockerSchema } from "#publishing/domain/follow-ups/follow-up-support.ts";
 import {
   FollowUpKindSchema,
   FollowUpStatusSchema,
@@ -38,7 +38,7 @@ import {
   settleFollowUp,
   triggerFollowUp,
   waitFollowUp,
-} from "#publishing/domain/follow-up.ts";
+} from "#publishing/domain/follow-ups/follow-up.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,

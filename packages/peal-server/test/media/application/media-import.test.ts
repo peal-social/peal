@@ -32,7 +32,7 @@ import {
   DatabaseTest,
   fetchBytes,
   mebibytes,
-  MediaInPostsTest,
+  MediaHoldersTest,
   MediaTestLive,
   memberIn,
   NoWebhooks,
@@ -148,7 +148,7 @@ const importing = (entitlements: typeof UnmeteredTest) =>
     ).pipe(
       Layer.provide(
         Layer.mergeAll(
-          MediaInPostsTest,
+          MediaHoldersTest,
           entitlements,
           NoAccountsConnectedTest,
           NoWebhooks,
@@ -509,7 +509,7 @@ const importingHeard = Layer.mergeAll(
     )
   ).pipe(
     Layer.provide(
-      Layer.mergeAll(MediaInPostsTest, UnmeteredTest, NoAccountsConnectedTest)
+      Layer.mergeAll(MediaHoldersTest, UnmeteredTest, NoAccountsConnectedTest)
     )
   ),
   S3MediaStorageLive

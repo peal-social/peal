@@ -5,8 +5,8 @@ import type {
   RuleStarter,
   StartedIn,
 } from "#publishing/application/recycling-actors.ts";
-import { RecyclingNotices } from "#publishing/application/recycling-notices.ts";
-import type { RecyclingEndReason } from "#publishing/domain/recycling-end-reason.ts";
+import { RecyclingNotices } from "#publishing/application/recycling/recycling-notices.ts";
+import type { RecyclingEndReason } from "#publishing/domain/recycling/recycling-end-reason.ts";
 import { actorIn } from "#test/publishing/support.ts";
 
 // Who a rule's starter is, as a test says, and the ends a rule told, as

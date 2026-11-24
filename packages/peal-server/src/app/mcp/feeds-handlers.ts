@@ -7,13 +7,13 @@ import {
   feedItemView,
   feedPreviewView,
   feedView,
-} from "#publishing/api/feed-view.ts";
+} from "#publishing/api/feeds/feed-view.ts";
 import { channelIdsFrom, queueIdOf } from "#publishing/api/post-input.ts";
-import type { ChangeFeedRequest } from "#publishing/application/feeds.ts";
-import { Feeds } from "#publishing/application/feeds.ts";
+import type { ChangeFeedRequest } from "#publishing/application/feeds/feeds.ts";
+import { Feeds } from "#publishing/application/feeds/feeds.ts";
 import { ChannelSetIdSchema } from "#publishing/domain/channel-set-id.ts";
-import { FeedIdSchema } from "#publishing/domain/feed-id.ts";
-import type { Feed } from "#publishing/domain/feed.ts";
+import { FeedIdSchema } from "#publishing/domain/feeds/feed-id.ts";
+import type { Feed } from "#publishing/domain/feeds/feed.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { authorize } from "#shared/domain/authorize.ts";
 

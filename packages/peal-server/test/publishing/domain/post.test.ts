@@ -26,7 +26,6 @@ import {
   schedulePost,
   startPublishing,
 } from "#publishing/domain/post.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
@@ -34,6 +33,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import { actorAs, apiKeyIn, contentOf } from "#test/publishing/support.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";

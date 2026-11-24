@@ -18,8 +18,7 @@ import type {
   TargetOutcome,
 } from "#publishing/domain/publication-claims.ts";
 import { PublicationDecisionSchema } from "#publishing/domain/publication-policy.ts";
-
-import { retryingDatabase } from "./activity-retry.ts";
+import { retryingDatabase } from "#shared/infrastructure/workflows/activity-retry.ts";
 
 /**
  * Publishes one post on one channel, for one round: claims the target, makes

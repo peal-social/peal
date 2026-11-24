@@ -519,7 +519,7 @@
 - Refresh a channel's tokens only inside `ChannelLocks.withLock` (Postgres
   advisory locks, `#shared/infrastructure/advisory-locks.ts`). A process
   holds at most four at once, each on a pool connection, beside the two
-  article turns of the publishing context, so never nest `withLock`. Bluesky and X refresh tokens work
+  article turns of the articles context, so never nest `withLock`. Bluesky and X refresh tokens work
   once.
 - Other contexts get a working token only from `ChannelAccess`
   (`channels/application/channel-access.ts`). `withToken` decrypts it,
@@ -564,6 +564,68 @@
   after where it stopped, then come back to the channels before (in this
   process): channels whose platform hangs never take every run.
   `CollectMetrics` does the same between channels.
+
+## The channel gate
+
+- Every platform call of a channel goes through its gate, `ChannelGate`
+  (`infrastructure/channel-gate.ts`), one cluster entity per channel whose
+  id is the channel's id: publishing's publishes, resumes, follow-ups and
+  changes of live posts, analytics' reads of post counts and of the
+  account, engagement's reads of comments, reviews and messages and what
+  it sends to them. Its handlers run one call at a time, in the order the
+  calls came, whichever context sent them, so two posts due at once on
+  one account go out one after the other, and a read never races a
+  publish.
+- The gate's protocol is persisted contract: the entity's name, each
+  `Rpc.make` name and its payload, success and error schemas. A running
+  cluster holds messages addressed to them, so never rename or remove
+  one, and change a schema only as the server guide's "The cluster" says.
+  The schemas are the other contexts' port vocabulary
+  (`#publishing/application/platform-publisher.ts`, `live-post-clients.ts`
+  and `follow-up-publisher.ts`, `#analytics/application/metrics-reader.ts`,
+  `#engagement/application/ports/*`): a change to one of those requests or
+  answers is a change to the gate.
+- Calls are volatile: nothing about them is stored in the cluster's
+  tables, so a post's content, a reply's text and a message never land
+  there. Engagement's payloads are ids, and an edit's text is read from
+  the change inside the gate. The job that calls through the gate is
+  durable, and its own journal covers a call cut short.
+- `ChannelGateLive` (`infrastructure/channel-gate-live.ts`) runs each call
+  with the direct adapters the composition root gives it: publishing's
+  `PlatformsLive`, `LivePostPlatformsLive` and `FollowUpPlatformsLive`,
+  analytics' `PlatformMetricsReaderLive` and engagement's
+  `PlatformEngagementLive`. A bug in an adapter fails its own call
+  (`disableFatalDefects`) instead of restarting the entity, which would
+  replay the call in flight; an entity idle ten minutes stops.
+  `UnreadMetrics`, `UnreadComments`, `UnreadReviews` and `UnreadMessages`
+  stand for the adapters of a gate that does not read or answer them, as
+  in tests: every read is `PlatformUnavailable`, and nothing is sent.
+  `AppLive` runs no gate: there `UnreadComments` stands in for
+  engagement's gated clients, handed to `engagementOver`
+  (`src/app/server.ts`).
+- The other contexts reach the gate through their own ports only, which
+  `infrastructure/gated-clients.ts` implements by sending each call to the
+  channel's gate: `GatedPlatformPublisher`, `GatedLivePostClients` and
+  `GatedFollowUpPublisher` (publishing), `GatedMetricsReader` (analytics),
+  `GatedCommentSource`, `GatedReplySender`, `GatedReviews` and
+  `GatedMessages` (engagement). A call the gate did not take (a full
+  mailbox, an entity not assigned yet) is tried again four times from 100
+  milliseconds, doubling, but for a comment's moderation and a reply's
+  withdrawal, which are safe to ask again later; then a send counts as not
+  sent, a resume as unchecked, and a read, an edit or a removal as
+  `PlatformUnavailable`. A send the gate lost once taken, or whose adapter
+  broke, may have reached the platform: it answers unconfirmed and is
+  never sent again for that.
+- Each collection (post counts, the account, comments, reviews,
+  messages) has one call a channel outstanding at most, so a publish
+  waits for one read of each at most, each bounded, never for those that
+  came after it. Their crons start on minutes of their own
+  (`test/app/cron-schedules.test.ts`), and
+  `test/channels/infrastructure/channel-gate.test.ts` holds the gate to
+  this order.
+- `publishingWorkers` (`src/app/publishing-workers.ts`) registers
+  publishing's workflows over the gated clients and the gates over the
+  adapters it is given, the server's or a test's fakes.
 
 ## Connect links
 

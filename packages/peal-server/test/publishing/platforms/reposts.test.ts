@@ -2,16 +2,16 @@ import { assert, describe, it } from "@effect/vitest";
 import type { Context } from "effect";
 import { DateTime, Duration, Effect, Layer, Option } from "effect";
 
-import type { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
 import type {
   OutgoingRepost,
   RepostClient,
-} from "#publishing/application/platform-reposts.ts";
-import { followUpSupport } from "#publishing/domain/follow-up-support.ts";
+} from "#publishing/application/follow-ups/platform-reposts.ts";
+import type { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
+import { followUpSupport } from "#publishing/domain/follow-ups/follow-up-support.ts";
 import {
   notReposting,
   repostRegistryWith,
-} from "#publishing/infrastructure/platforms/platform-reposts-live.ts";
+} from "#publishing/infrastructure/follow-ups/platforms/platform-reposts-live.ts";
 import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { platforms } from "#shared/domain/platform.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";

@@ -33,7 +33,6 @@ import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTargetStatus } from "#publishing/domain/post-target-status.ts";
 import { PostTarget } from "#publishing/domain/post-target.ts";
 import { Post } from "#publishing/domain/post.ts";
-import type { Schedule } from "#publishing/domain/schedule.ts";
 import {
   mediaOptionFields,
   TargetOptionsSchema,
@@ -42,6 +41,7 @@ import type { TextOverride } from "#publishing/domain/text-override.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { ChannelIdSchema, PostIdSchema } from "#shared/domain/ids.ts";
 import type { MediaAssetId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
+import type { Schedule } from "#shared/domain/schedule.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { pageConditions, pageOrder } from "./post-search-query.ts";

@@ -1,0 +1,283 @@
+[
+  {
+    "_tag": "retry",
+    "delay": 60000
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "published",
+      "platformPostId": "4271"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "published",
+      "permalink": "https://site.example/2026/06/15/an-article/",
+      "platformPostId": "4271"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "reason": "noResponse"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "attemptedAt": "2026-06-15T08:00:01.000Z",
+      "reason": "noResponse"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "reason": "unreadableResponse"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "attemptedAt": "2026-06-15T08:00:01.000Z",
+      "reason": "unreadableResponse"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "reason": "interrupted"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "attemptedAt": "2026-06-15T08:00:01.000Z",
+      "reason": "interrupted"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "reason": "adapterFailure"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "attemptedAt": "2026-06-15T08:00:01.000Z",
+      "reason": "adapterFailure"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "reason": "searchRefused"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "attemptedAt": "2026-06-15T08:00:01.000Z",
+      "reason": "searchRefused"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "reason": "severalOnSite"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "unconfirmed",
+      "attemptedAt": "2026-06-15T08:00:01.000Z",
+      "reason": "severalOnSite"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "contentRejected"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "rest_cannot_create",
+      "reason": "contentRejected"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "channelDisconnected"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "channelDisconnected",
+      "reason": "channelDisconnected"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "channelDisabled"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "channelDisabled",
+      "reason": "channelDisabled"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "mediaRemoved"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "mediaUnavailable",
+      "reason": "mediaRemoved"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "mediaRejected"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "rest_upload_sideload_error",
+      "reason": "mediaRejected"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "missed"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "site_code",
+      "reason": "missed"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "rateLimited"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "site_code",
+      "reason": "rateLimited"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "tokenExpired"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "site_code",
+      "reason": "tokenExpired"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "unavailable"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "site_code",
+      "reason": "unavailable"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "reason": "planLimit"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "planLimit",
+      "reason": "planLimit"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "devto422",
+      "reason": "contentRejected"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "failed",
+      "code": "sitePlanRequired",
+      "reason": "contentRejected"
+    }
+  },
+  {
+    "_tag": "settle",
+    "settlement": {
+      "_tag": "cancelled"
+    }
+  }
+]

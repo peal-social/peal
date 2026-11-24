@@ -5,6 +5,7 @@ import { AdRecords } from "#ads/application/ad-records.ts";
 import { AgentRecords } from "#agent/application/agent-records.ts";
 import type { ExportedChat } from "#agent/application/ports/agent-chats.ts";
 import { AnalyticsRecords } from "#analytics/application/analytics-records.ts";
+import { ArticleRecords } from "#articles/application/article-records.ts";
 import { UsageRecords } from "#assistant/application/ports/usage-records.ts";
 import { BillingRecords } from "#billing/application/billing-records.ts";
 import type { WorkspaceStillBilled } from "#billing/application/workspace-still-billed.ts";
@@ -13,7 +14,6 @@ import { EngagementRecords } from "#engagement/application/engagement-records.ts
 import { LegalRecords } from "#legal/application/legal-records.ts";
 import { MediaRecords } from "#media/application/media-records.ts";
 import { NoticeRecords } from "#notifications/application/notice-records.ts";
-import { ArticleRecords } from "#publishing/application/article-records.ts";
 import { PostRecords } from "#publishing/application/post-records.ts";
 import { ReviewRecords } from "#review/application/review-records.ts";
 import { Pseudonyms } from "#shared/application/pseudonyms.ts";
@@ -130,7 +130,7 @@ export const ContextRecordsLive = Layer.effect(
           // Articles too, whose jobs would send to its websites.
           yield* articles
             .eraseWorkspace(workspaceId)
-            .pipe(Effect.catchTag("PostsPublishing", busy));
+            .pipe(Effect.catchTag("ArticlesSending", busy));
 
           yield* reviews.eraseWorkspace(workspaceId);
           yield* analytics.eraseWorkspace(workspaceId);
@@ -240,7 +240,10 @@ export const ContextRecordsLive = Layer.effect(
             (workspaceId) =>
               posts.ensureErasable(workspaceId).pipe(
                 Effect.andThen(articles.ensureErasable(workspaceId)),
-                Effect.catchTag("PostsPublishing", busy),
+                Effect.catchTags({
+                  ArticlesSending: busy,
+                  PostsPublishing: busy,
+                }),
                 // Nor while a boost may still spend: erasing would leave
                 // it running at its network with nobody to stop it here.
                 Effect.andThen(adRecords.ensureErasable(workspaceId)),
