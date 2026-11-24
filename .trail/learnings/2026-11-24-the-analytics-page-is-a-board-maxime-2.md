@@ -3,7 +3,7 @@ title: "The analytics page is a board of widgets kept in the person's browser, m
 author: Maxime
 date: 2026-11-24
 branch: worktree-silly-imagining-snowglobe
-cost: { minutes: 51, tokens: 368074 }
+cost: { minutes: 55, tokens: 410062 }
 id: l-35173635
 scope: repo
 status: active
@@ -31,6 +31,7 @@ The owner wants moving a widget to be smooth and to work in any direction, and a
 The owner (2026-11-24) wants a widget resizable from all four edges and all four corners, as the dashboards it follows do: the card follows the pointer to the pixel and snaps on release; pulled from its start or top, it moves so its other side stays put. The owner also had two lines removed from Analytics as noise: the time zone line above the board and the note on how often counts are read. Do not add explanatory notes to the analytics page; the docs carry them.
 
 In the code: packages/peal-web/src/components/analytics/widgets/analytics-board.tsx (pulls, handlePlaces, startResize), widget-card.tsx (--resize-x, --resize-y), DESIGN.md "Analytics board" and "Time zone".
+The owner wants widgets to move as smoothly as possible (2026-11-24): every move on the board (others gliding aside, the drop settling into its slot, a resize gliding to its snap) shares one curve, 320 ms cubic-bezier(0.22, 1, 0.36, 1); the carried widget lifts 2 % with a deep shadow, and its slot shows as a dashed outline.
 
 ## Tried and ruled out
 Keeping the board on the server. It would need a contract endpoint, regenerating the eight SDKs, a table and migration, an entry in the data-processing registry with the privacy policy's table in both languages, and erasure on account and workspace deletion. That is too much for a layout. Move it to the server only once people ask for the same board across devices.
@@ -47,3 +48,7 @@ In the code: packages/peal-web/src/analytics/widgets.ts (kinds, periods, board c
 - In local dev, new Tailwind classes need the files staged and the stylesheet refetched with cache "reload" before a reload shows them.
 
 In the code: packages/peal-web/src/analytics/widgets.ts (sizeFor, resizeWidget, kinds' width and minWidth), src/components/analytics/widgets/widget-bodies.tsx, analytics-board.tsx (startResize, keyResize), DESIGN.md "Analytics board".
+- dnd-kit hides the placeholder it leaves (visibility: hidden), so the slot is drawn by the placeholder's ::after made visible again; dnd-kit copies the item's classes onto it.
+- dnd-kit ignores synthetic (untrusted) pointer events: check a move with its keyboard path (focus the handle, Space, arrows), not dispatched PointerEvents.
+
+In the code: packages/peal-web/src/components/analytics/widgets/analytics-board.tsx (motion, glide, boardPlugins with @dnd-kit/dom Feedback), widget-card.tsx (data-[dnd-placeholder]:after:*).
