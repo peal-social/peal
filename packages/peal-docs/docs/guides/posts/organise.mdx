@@ -127,7 +127,7 @@ To send the same post at several times, duplicate it and schedule each copy.
 
 ## Through the API [#api]
 
-Everything above is in the [HTTP API](/developers), under `/api/workspaces/{workspaceId}`, in the [MCP tools](/developers/mcp/tools#tools) and on the [command line](/developers/cli). These are the endpoints:
+Everything above is in the [HTTP API](/developers), under `/api/v1`, in the [MCP tools](/developers/mcp/tools#tools) and on the [command line](/developers/cli). These are the endpoints:
 
 | What                    | Endpoints                                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------------------- |
@@ -142,7 +142,7 @@ Everything above is in the [HTTP API](/developers), under `/api/workspaces/{work
 A post names what it takes when it's made. This one goes to the channels of the set "Launch", takes each channel's default signature, and is filed under a tag:
 
 ```sh
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/posts/send" \
+curl -X POST "https://peal.example/api/v1/posts/send" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{

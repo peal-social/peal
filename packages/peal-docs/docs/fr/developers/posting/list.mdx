@@ -38,10 +38,8 @@ Cette requête liste les publications Bluesky en échec, la plus récemment prog
 import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
-const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
 
 const page = await peal.posts.search({
-  workspaceId,
   status: "finished",
   outcome: "failed",
   platform: "bluesky",
@@ -56,10 +54,8 @@ import os
 from peal import Peal
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
-workspace_id = os.environ["PEAL_WORKSPACE_ID"]
 
 page = peal.posts.search(
-    workspace_id=workspace_id,
     status="finished",
     outcome="failed",
     platform="bluesky",
@@ -79,15 +75,13 @@ import (
 )
 
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
-workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
 
 page, err := client.Posts.Search(context.TODO(), &peal.SearchPostsRequest{
-	WorkspaceID: workspaceID,
-	Status:      peal.PostStatusFinished.Ptr(),
-	Outcome:     peal.PostOutcomeFailed.Ptr(),
-	Platform:    peal.PlatformBluesky.Ptr(),
-	Sort:        peal.PostSortScheduledDesc.Ptr(),
-	Limit:       peal.String("50"),
+	Status:   peal.PostStatusFinished.Ptr(),
+	Outcome:  peal.PostOutcomeFailed.Ptr(),
+	Platform: peal.PlatformBluesky.Ptr(),
+	Sort:     peal.PostSortScheduledDesc.Ptr(),
+	Limit:    peal.String("50"),
 })
 ```
 
@@ -95,10 +89,8 @@ page, err := client.Posts.Search(context.TODO(), &peal.SearchPostsRequest{
 require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
-workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
 
 page = peal.posts.search(
-  workspace_id: workspace_id,
   status: "finished",
   outcome: "failed",
   platform: "bluesky",
@@ -115,10 +107,8 @@ import social.peal.types.*;
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
-String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
 
 PostPage page = peal.posts().search(
-    workspaceId,
     SearchPostsRequest.builder()
         .status(PostStatus.FINISHED)
         .outcome(PostOutcome.FAILED)
@@ -134,9 +124,8 @@ use Peal\PealClient;
 use Peal\Posts\Requests\SearchPostsRequest;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
-$workspaceId = getenv('PEAL_WORKSPACE_ID');
 
-$page = $peal->posts->search($workspaceId, new SearchPostsRequest([
+$page = $peal->posts->search(new SearchPostsRequest([
     'status' => 'finished',
     'outcome' => 'failed',
     'platform' => 'bluesky',
@@ -149,11 +138,9 @@ $page = $peal->posts->search($workspaceId, new SearchPostsRequest([
 using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
-var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
 
 var page = await peal.Posts.SearchAsync(new SearchPostsRequest
 {
-    WorkspaceId = workspaceId,
     Status = PostStatus.Finished,
     Outcome = PostOutcome.Failed,
     Platform = Platform.Bluesky,
@@ -169,12 +156,10 @@ let peal = PealClient::new(ClientConfig {
     token: std::env::var("PEAL_API_KEY").ok(),
     ..Default::default()
 })?;
-let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
 
 let page = peal
     .posts
     .search(
-        &workspace_id,
         &SearchQueryRequest::builder()
             .status(PostStatus::Finished)
             .outcome(PostOutcome::Failed)
@@ -188,7 +173,7 @@ let page = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/search?status=finished&outcome=failed&platform=bluesky&sort=scheduledDesc&limit=50" \
+curl "https://api.example.com/api/v1/posts/search?status=finished&outcome=failed&platform=bluesky&sort=scheduledDesc&limit=50" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 

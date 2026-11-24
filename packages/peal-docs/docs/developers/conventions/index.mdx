@@ -1,6 +1,6 @@
 ---
 title: API conventions
-description: "What every endpoint has in common: request ids, the answers' shape and authentication."
+description: "What every endpoint has in common: request ids, the answers' shape, authentication and the workspace a request acts in."
 sidebar:
   icon: book-open
 ---
@@ -53,7 +53,7 @@ Every endpoint of the [API](/developers) follows the same rules, so a client wri
 
 ## Requests and answers [#requests]
 
-Requests go to the address you open Peal at, under `/api`. Bodies are JSON, sent with `Content-Type: application/json`. So are answers, except those with no body (204).
+Requests go to the address you open Peal at, under `/api`, and a workspace's endpoints under `/api/v1` ([The workspace of a request](#workspace)). Bodies are JSON, sent with `Content-Type: application/json`. So are answers, except those with no body (204).
 
 Every answer carries an `X-Request-Id` header, whatever answered it and whether or not it succeeded. Here's how the id works:
 
@@ -64,7 +64,7 @@ Every answer carries an `X-Request-Id` header, whatever answered it and whether 
 This request sends its own id:
 
 ```bash
-curl -i https://api.example.com/api/workspaces/$WORKSPACE_ID/channels \
+curl -i https://api.example.com/api/v1/channels \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "X-Request-Id: nightly-sync:2026-11-16:0042"
 ```
@@ -112,8 +112,37 @@ Every authorization names the resource it is for, the API or the MCP endpoint. A
 
 When the credential doesn't get through, you'll see one of these:
 
-| Status | Code              | When                                                                                                                        |
-| ------ | ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| 401    | `unauthenticated` | No credential, or one that no longer works: a key revoked or expired, or a token past its time.                             |
-| 403    | `forbidden`       | The credential works but doesn't allow the request. `reason` says why ([Errors](/developers/conventions/errors#forbidden)). |
-| 404    | `not_found`       | No such resource, or a workspace the caller doesn't belong to.                                                              |
+| Status | Code                 | When                                                                                                                        |
+| ------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `workspace_required` | The request names no workspace, and the credential belongs to none ([The workspace of a request](#workspace)).              |
+| 401    | `unauthenticated`    | No credential, or one that no longer works: a key revoked or expired, or a token past its time.                             |
+| 403    | `forbidden`          | The credential works but doesn't allow the request. `reason` says why ([Errors](/developers/conventions/errors#forbidden)). |
+| 404    | `not_found`          | No such resource, or a workspace the caller doesn't belong to.                                                              |
+
+## The workspace of a request [#workspace]
+
+A workspace's endpoints are under `/api/v1`, and their paths don't name the workspace. Each request acts in one workspace, decided in this order:
+
+1. The workspace whose id the `Peal-Workspace` header gives, when the request sends one.
+2. Otherwise, the workspace the credential belongs to: an API key's, or the one an application's OAuth token is bound to, as an MCP client's is.
+3. Otherwise none, and the API answers 400 `workspace_required` without doing anything.
+
+| Credential                          | Without `Peal-Workspace` | With `Peal-Workspace`                                                     |
+| ----------------------------------- | ------------------------ | ------------------------------------------------------------------------- |
+| An API key                          | Its own workspace        | Its own workspace. Another one answers 403 `forbidden` (`wrongWorkspace`) |
+| An application bound to a workspace | That workspace           | That workspace. Another one answers 403 `forbidden` (`wrongWorkspace`)    |
+| The command line's sign-in          | 400 `workspace_required` | Any workspace its user belongs to                                         |
+| A partner key                       | 400 `workspace_required` | Any workspace its partner account owns                                    |
+| The web app's session               | 400 `workspace_required` | Any workspace its user belongs to                                         |
+
+The header is optional for an API key, so its first call is `POST /api/v1/posts` with the key and nothing else. A workspace the caller doesn't belong to answers 404 `workspace_not_found`, and so does a value that isn't a workspace's id.
+
+A partner key names the customer's workspace on every request inside it:
+
+```bash
+curl https://api.example.com/api/v1/channels \
+  -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: 7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
+```
+
+The partner API keeps a workspace's id in the path where the workspace is the thing it acts on, as in `DELETE /api/v1/partner/workspaces/{workspaceId}` ([Embedding Peal](/developers/embedding#workspaces)).

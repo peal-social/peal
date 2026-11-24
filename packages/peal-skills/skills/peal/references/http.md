@@ -4,19 +4,21 @@ The same steps as [SKILL.md](../SKILL.md), with curl. Read that file first:
 its rules about publishing, idempotency and unconfirmed posts apply here
 unchanged.
 
-Every route is under `/api`. The API describes itself, without credentials,
-at `/api/openapi.json`.
+A workspace's routes are under `/api/v1`. The API describes itself, without
+credentials, at `/api/openapi.json`.
 
 ## Set up
 
 ```sh
 export PEAL_API_URL=https://peal.example.com
 export PEAL_API_KEY=peal_your_key
-export PEAL_WORKSPACE=5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60
 ```
 
 Send the key as a bearer token. Never print it, and never put it in a URL.
-`PEAL_WORKSPACE` is the workspace's id.
+A key belongs to one workspace, and every request it sends acts there: no
+request names the workspace. Any other bearer token (a person's sign-in)
+names it in the `Peal-Workspace` header, with the workspace's id, or the API
+answers 400 `workspace_required`.
 
 ## Check the server
 
@@ -34,11 +36,11 @@ curl -sS "$PEAL_API_URL/api/changelog"
 
 ```sh
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/channels"
+  "$PEAL_API_URL/api/v1/channels"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/media?limit=20"
+  "$PEAL_API_URL/api/v1/media?limit=20"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/media/<media-id>"
+  "$PEAL_API_URL/api/v1/media/<media-id>"
 ```
 
 A list that pages answers `{"items": [...], "nextCursor": ...}`: pass
@@ -51,7 +53,7 @@ Import a media from a public https address. It answers the media, with its
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com/cover.png", "altText": "The spring catalogue cover"}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/media/import"
+  "$PEAL_API_URL/api/v1/media/import"
 ```
 
 Uploading a file takes several requests (a signed upload, then
@@ -66,7 +68,7 @@ Create a draft. It answers 201 with the post, and its `id`:
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"channelIds": ["<channel-id>"], "content": {"text": "Our spring catalogue is out.", "media": [], "overrides": []}}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts"
+  "$PEAL_API_URL/api/v1/posts"
 ```
 
 `content.media` is a list of `{"mediaId": "...", "altText": "..."}`.
@@ -78,20 +80,20 @@ read it, change it, send it all back.
 
 ```sh
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>"
+  "$PEAL_API_URL/api/v1/posts/<post-id>"
 curl -sS -X PUT -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"channelIds": ["<channel-id>"], "content": {"text": "Our spring catalogue is out today.", "media": [], "overrides": []}}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>"
+  "$PEAL_API_URL/api/v1/posts/<post-id>"
 ```
 
 List drafts, and delete one:
 
 ```sh
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/drafts?limit=20"
+  "$PEAL_API_URL/api/v1/posts/drafts?limit=20"
 curl -sS -X DELETE -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>"
+  "$PEAL_API_URL/api/v1/posts/<post-id>"
 ```
 
 A draft is not checked against the platforms.
@@ -110,7 +112,7 @@ curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: <key>" \
   -d '{"channelIds": ["<channel-id>"], "content": {"text": "Our spring catalogue is out.", "media": [], "overrides": []}, "when": {"_tag": "at", "at": "2026-11-20T09:00:00Z", "timeZone": "Europe/Paris"}}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/send"
+  "$PEAL_API_URL/api/v1/posts/send"
 ```
 
 Within 24 hours, the same key with the same body answers the first post, and
@@ -129,26 +131,26 @@ Schedule a draft, move it, take it back to draft, or cancel it:
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"at": "2026-11-20T09:00:00Z", "timeZone": "Europe/Paris", "channelIds": ["<channel-id>"]}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/schedule"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/schedule"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"at": "2026-11-21T09:00:00Z", "timeZone": "Europe/Paris"}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/reschedule"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/reschedule"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/unschedule"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/unschedule"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/cancel"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/cancel"
 ```
 
 ## Read how it went
 
 ```sh
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>"
+  "$PEAL_API_URL/api/v1/posts/<post-id>"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/attempts"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/attempts"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts?from=2026-11-01T00:00:00Z&to=2026-12-01T00:00:00Z"
+  "$PEAL_API_URL/api/v1/posts?from=2026-11-01T00:00:00Z&to=2026-12-01T00:00:00Z"
 ```
 
 Each entry of the post's `targets` has a `status`. For an `unconfirmed`
@@ -159,11 +161,11 @@ blindly.
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"_tag": "published", "permalink": "https://social.example/@studio/1"}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/targets/<target-id>/confirm"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/targets/<target-id>/confirm"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"_tag": "notPublished"}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/targets/<target-id>/confirm"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/targets/<target-id>/confirm"
 ```
 
 Repost a target that failed, only when the user wants it sent again. Each
@@ -171,16 +173,16 @@ request sends the post again:
 
 ```sh
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/targets/<target-id>/repost"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/targets/<target-id>/repost"
 ```
 
 Counts and the activity log:
 
 ```sh
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/analytics/posts/<post-id>"
+  "$PEAL_API_URL/api/v1/analytics/posts/<post-id>"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/activity?limit=20"
+  "$PEAL_API_URL/api/v1/activity?limit=20"
 ```
 
 ## Errors and rate limits
@@ -205,5 +207,5 @@ long, then send the same request once. Print the headers with `-D -`:
 
 ```sh
 curl -sS -D - -o /dev/null -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/channels"
+  "$PEAL_API_URL/api/v1/channels"
 ```

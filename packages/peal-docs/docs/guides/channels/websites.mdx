@@ -171,9 +171,9 @@ Drafts can still be written, and an article can still leave its site. Someone wh
 
 The [articles endpoints](/reference) do the same:
 
-- `POST /api/workspaces/{workspaceId}/channels/websites` connects a WordPress site.
+- `POST /api/v1/channels/websites` connects a WordPress site.
 - `…/channels/websites/keys` connects an account on DEV or Hashnode.
 - `…/channels/websites/sign-in/wordpressCom` starts signing in to WordPress.com.
-- `/api/workspaces/{workspaceId}/articles` writes, schedules, sends again, updates and unpublishes articles.
+- `/api/v1/articles` writes, schedules, sends again, updates and unpublishes articles.
 
 The webhook events [`article.published` and `article.failed`](/developers/webhooks/events/articles) tell you how each one ended. The command line has `peal channels connect-website`, `peal channels connect-website-key` and `peal articles`.

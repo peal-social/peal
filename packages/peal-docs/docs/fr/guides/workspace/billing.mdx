@@ -51,7 +51,7 @@ Les prix sont fixés en dollars américains, hors taxes. La TVA que vous payez d
 
 Au paiement, vous pouvez régler dans votre propre devise, convertie par notre prestataire de paiement au taux du jour. Sinon, votre carte est débitée en dollars américains. Les factures sont en dollars américains.
 
-La page **Facturation** de l’espace de travail indique son abonnement et ce qu’il utilise de chaque limite. Pour l’ouvrir, cliquez sur **Paramètres** en bas de la barre latérale de l’espace de travail, puis sur **Facturation**, sous **Administration**. `GET /api/workspaces/:workspaceId/billing` répond la même chose.
+La page **Facturation** de l’espace de travail indique son abonnement et ce qu’il utilise de chaque limite. Pour l’ouvrir, cliquez sur **Paramètres** en bas de la barre latérale de l’espace de travail, puis sur **Facturation**, sous **Administration**. `GET /api/v1/billing` répond la même chose.
 
 ## Les compteurs d’usage [#meters]
 
@@ -224,13 +224,13 @@ Un espace de travail de l’offre gratuite qui compte plus de comptes qu’elle 
 
 Trois jours avant la fin d’un essai, le rappel énumère ce que l’espace de travail possède au-delà de l’offre gratuite.
 
-`GET /api/workspaces/:workspaceId/billing/standing` répond la même chose à chaque membre. Il donne ce qui dépasse, si l’espace de travail doit revenir dans son abonnement, jusqu’à quand un délai le laisse publier (`graceUntil`), et l’abonnement qui contient tout.
+`GET /api/v1/billing/standing` répond la même chose à chaque membre. Il donne ce qui dépasse, si l’espace de travail doit revenir dans son abonnement, jusqu’à quand un délai le laisse publier (`graceUntil`), et l’abonnement qui contient tout.
 
 ## Utilisation [#usage]
 
 Sous l’abonnement, la page **Facturation** de l’espace de travail montre ce qu’il a fait jour par jour sur les 7, 30 ou 90 derniers jours. Ce sont les publications parties et les canaux qu’il avait connectés, en graphique et en tableau, avec les totaux de la période.
 
-Vous obtenez la même chose avec `GET /api/workspaces/:workspaceId/usage?from=2026-10-01&to=2026-10-31`, [`peal usage`](/developers/cli/workspace#usage) ou l’outil MCP [`get_usage`](/developers/mcp). Ils répondent à qui lit la facturation de l’espace de travail : les propriétaires et les administrateurs, une clé d’API ou une application à qui ce droit a été donné, et les clés d’un partenaire dans les espaces de travail qu’il possède.
+Vous obtenez la même chose avec `GET /api/v1/usage?from=2026-10-01&to=2026-10-31`, [`peal usage`](/developers/cli/workspace#usage) ou l’outil MCP [`get_usage`](/developers/mcp). Ils répondent à qui lit la facturation de l’espace de travail : les propriétaires et les administrateurs, une clé d’API ou une application à qui ce droit a été donné, et les clés d’un partenaire dans les espaces de travail qu’il possède.
 
 Ce ne sont que des décomptes, et rien n’est facturé, prélevé ou limité d’après eux. Un serveur qui ne facture pas conserve et répond les mêmes décomptes, avec `plan` et `allowances` à null.
 

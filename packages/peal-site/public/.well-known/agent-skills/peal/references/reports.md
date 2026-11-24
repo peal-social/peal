@@ -59,7 +59,7 @@ workspaces:read), which the command line never holds:
 
 ```sh
 curl -sS -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
-  "$PEAL_API_URL/api/partner/usage?from=2026-11-01&to=2026-11-30"
+  "$PEAL_API_URL/api/v1/partner/usage?from=2026-11-01&to=2026-11-30"
 ```
 
 ## Short links

@@ -9,13 +9,16 @@ Une fois qu’un client a un espace de travail et un canal connecté ([Intégrer
 
 ## Publier pour eux [#post]
 
-Dans l’espace de travail d’un client, votre clé appelle les mêmes points d’accès que n’importe quel autre client : [médias](/guides/media), [publications](/guides/posts) et [statistiques](/guides/engage/analytics). Cet appel publie une publication en une fois, à un instant donné :
+Dans l’espace de travail d’un client, votre clé appelle les mêmes points d’accès que n’importe quel autre client : [médias](/guides/media), [publications](/guides/posts) et [statistiques](/guides/engage/analytics). Une clé partenaire n’appartient à aucun espace de travail : chaque requête nomme donc celui du client dans l’en-tête `Peal-Workspace`. Dans les SDK, c’est l’option `workspace` du client : créez un client par espace de travail de client. Les appels propres à l’API partenaire, dans les sections suivantes (`partner`, `partnerUsage`), ne nomment aucun espace de travail : ils passent par un client créé sans : `peal` dans ces exemples, `client` en Go.
+
+Cet appel publie une publication en une fois, à un instant donné :
 
 <CodeGroup>
 
 ```ts Node.js
 import { PealClient } from "peal-sdk";
 
+// Le client de l’API partenaire, qui ne nomme aucun espace de travail.
 const peal = new PealClient({
   token: process.env.PEAL_PARTNER_KEY,
   baseUrl: "https://api.example.com",
@@ -25,8 +28,14 @@ const peal = new PealClient({
 const workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
 const channelId = "019a6f40-11aa-7c3d-8e21-9f0b6a5d4c33";
 
-const post = await peal.posts.send({
-  workspaceId,
+// Un client qui agit dans cet espace de travail : une clé partenaire n’appartient à aucun.
+const customer = new PealClient({
+  token: process.env.PEAL_PARTNER_KEY,
+  baseUrl: "https://api.example.com",
+  workspace: workspaceId,
+});
+
+const post = await customer.posts.send({
   "idempotency-key": "campaign-881-cus_42",
   channelIds: [channelId],
   content: { text: "Fresh bread at 7.", media: [], overrides: [] },
@@ -39,14 +48,21 @@ import os
 
 from peal import Peal, PostContent, PostTiming_At
 
+# Le client de l’API partenaire, qui ne nomme aucun espace de travail.
 peal = Peal(token=os.environ["PEAL_PARTNER_KEY"], base_url="https://api.example.com")
 
 # L’espace de travail de votre client, et l’un de ses canaux.
 workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
 channel_id = "019a6f40-11aa-7c3d-8e21-9f0b6a5d4c33"
 
-post = peal.posts.send(
-    workspace_id,
+# Un client qui agit dans cet espace de travail : une clé partenaire n’appartient à aucun.
+customer = Peal(
+    token=os.environ["PEAL_PARTNER_KEY"],
+    base_url="https://api.example.com",
+    workspace=workspace_id,
+)
+
+post = customer.posts.send(
     idempotency_key="campaign-881-cus_42",
     channel_ids=[channel_id],
     content=PostContent(text="Fresh bread at 7.", media=[], overrides=[]),
@@ -64,6 +80,7 @@ import (
 	"github.com/peal-social/peal/packages/peal-sdk/go/option"
 )
 
+// Le client de l’API partenaire, qui ne nomme aucun espace de travail.
 client := pealclient.NewClient(
 	option.WithToken(os.Getenv("PEAL_PARTNER_KEY")),
 	option.WithBaseURL("https://api.example.com"),
@@ -74,8 +91,14 @@ ctx := context.TODO()
 workspaceID := "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
 channelID := "019a6f40-11aa-7c3d-8e21-9f0b6a5d4c33"
 
-post, err := client.Posts.Send(ctx, &peal.NewPost{
-	WorkspaceID:    workspaceID,
+// Un client qui agit dans cet espace de travail : une clé partenaire n’appartient à aucun.
+customer := pealclient.NewClient(
+	option.WithToken(os.Getenv("PEAL_PARTNER_KEY")),
+	option.WithBaseURL("https://api.example.com"),
+	option.WithWorkspace(peal.String(workspaceID)),
+)
+
+post, err := customer.Posts.Send(ctx, &peal.NewPost{
 	IdempotencyKey: peal.String("campaign-881-cus_42"),
 	ChannelIDs:     []string{channelID},
 	Content: &peal.PostContent{
@@ -92,14 +115,21 @@ post, err := client.Posts.Send(ctx, &peal.NewPost{
 ```ruby Ruby
 require "peal"
 
+# Le client de l’API partenaire, qui ne nomme aucun espace de travail.
 peal = Peal::Client.new(token: ENV.fetch("PEAL_PARTNER_KEY"), base_url: "https://api.example.com")
 
 # L’espace de travail de votre client, et l’un de ses canaux.
 workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
 channel_id = "019a6f40-11aa-7c3d-8e21-9f0b6a5d4c33"
 
-post = peal.posts.send_(
-  workspace_id: workspace_id,
+# Un client qui agit dans cet espace de travail : une clé partenaire n’appartient à aucun.
+customer = Peal::Client.new(
+  token: ENV.fetch("PEAL_PARTNER_KEY"),
+  base_url: "https://api.example.com",
+  workspace: workspace_id
+)
+
+post = customer.posts.send_(
   idempotency_key: "campaign-881-cus_42",
   channel_ids: [channel_id],
   content: { text: "Fresh bread at 7.", media: [], overrides: [] },
@@ -116,6 +146,7 @@ import social.peal.types.PostContent;
 import social.peal.types.PostTiming;
 import social.peal.types.PostTimingAt;
 
+// Le client de l’API partenaire, qui ne nomme aucun espace de travail.
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_PARTNER_KEY"))
     .url("https://api.example.com")
@@ -125,8 +156,14 @@ PealClient peal = PealClient.builder()
 String workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
 String channelId = "019a6f40-11aa-7c3d-8e21-9f0b6a5d4c33";
 
-Post post = peal.posts().send(
-    workspaceId,
+// Un client qui agit dans cet espace de travail : une clé partenaire n’appartient à aucun.
+PealClient customer = PealClient.builder()
+    .token(System.getenv("PEAL_PARTNER_KEY"))
+    .url("https://api.example.com")
+    .workspace(workspaceId)
+    .build();
+
+Post post = customer.posts().send(
     NewPost.builder()
         .content(PostContent.builder().text("Fresh bread at 7.").build())
         .when(PostTiming.at(PostTimingAt.builder()
@@ -146,6 +183,7 @@ use Peal\Types\PostContent;
 use Peal\Types\PostTiming;
 use Peal\Types\PostTimingAt;
 
+// Le client de l’API partenaire, qui ne nomme aucun espace de travail.
 $peal = new PealClient(
     token: getenv('PEAL_PARTNER_KEY'),
     options: ['baseUrl' => 'https://api.example.com'],
@@ -155,7 +193,14 @@ $peal = new PealClient(
 $workspaceId = '7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90';
 $channelId = '019a6f40-11aa-7c3d-8e21-9f0b6a5d4c33';
 
-$post = $peal->posts->send($workspaceId, new NewPost([
+// Un client qui agit dans cet espace de travail : une clé partenaire n’appartient à aucun.
+$customer = new PealClient(
+    token: getenv('PEAL_PARTNER_KEY'),
+    workspace: $workspaceId,
+    options: ['baseUrl' => 'https://api.example.com'],
+);
+
+$post = $customer->posts->send(new NewPost([
     'idempotencyKey' => 'campaign-881-cus_42',
     'channelIds' => [$channelId],
     'content' => new PostContent(['text' => 'Fresh bread at 7.', 'media' => [], 'overrides' => []]),
@@ -166,18 +211,25 @@ $post = $peal->posts->send($workspaceId, new NewPost([
 ```csharp .NET
 using Peal;
 
+// Le client de l’API partenaire, qui ne nomme aucun espace de travail.
 var peal = new PealClient(
     Environment.GetEnvironmentVariable("PEAL_PARTNER_KEY")!,
-    new ClientOptions { BaseUrl = "https://api.example.com" }
+    clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
 );
 
 // L’espace de travail de votre client, et l’un de ses canaux.
 var workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
 var channelId = "019a6f40-11aa-7c3d-8e21-9f0b6a5d4c33";
 
-var post = await peal.Posts.SendAsync(new NewPost
+// Un client qui agit dans cet espace de travail : une clé partenaire n’appartient à aucun.
+var customer = new PealClient(
+    Environment.GetEnvironmentVariable("PEAL_PARTNER_KEY")!,
+    workspace: workspaceId,
+    clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
+);
+
+var post = await customer.Posts.SendAsync(new NewPost
 {
-    WorkspaceId = workspaceId,
     IdempotencyKey = "campaign-881-cus_42",
     ChannelIds = new[] { channelId },
     Content = new PostContent { Text = "Fresh bread at 7." },
@@ -192,6 +244,7 @@ var post = await peal.Posts.SendAsync(new NewPost
 ```rust Rust
 use peal_sdk::prelude::*;
 
+// Le client de l’API partenaire, qui ne nomme aucun espace de travail.
 let peal = PealClient::new(ClientConfig {
     token: std::env::var("PEAL_PARTNER_KEY").ok(),
     base_url: "https://api.example.com".to_string(),
@@ -202,10 +255,18 @@ let peal = PealClient::new(ClientConfig {
 let workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90".to_string();
 let channel_id = "019a6f40-11aa-7c3d-8e21-9f0b6a5d4c33".to_string();
 
-let post = peal
+// Un client qui agit dans cet espace de travail : une clé partenaire n’appartient à aucun.
+// Le SDK Rust nomme l’espace de travail dans un en-tête du client.
+let customer = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_PARTNER_KEY").ok(),
+    base_url: "https://api.example.com".to_string(),
+    custom_headers: HashMap::from([("Peal-Workspace".to_string(), workspace_id.clone())]),
+    ..Default::default()
+})?;
+
+let post = customer
     .posts
     .send(
-        &workspace_id,
         &NewPost::builder()
             .channel_ids(vec![channel_id.clone()])
             .content(PostContent {
@@ -224,8 +285,9 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send \
+curl -X POST https://api.example.com/api/v1/posts/send \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: $WORKSPACE_ID" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: campaign-881-cus_42" \
   -d '{"channelIds": ["'$CHANNEL_ID'"], "content": {"text": "Fresh bread at 7.", "media": [], "overrides": []}, "when": {"_tag": "at", "at": "2026-11-12T06:00:00Z", "timeZone": "Europe/Paris"}}'
@@ -259,7 +321,6 @@ const home = new PealClient({
 });
 
 const { endpoint, secret } = await home.webhooks.create({
-  workspaceId: process.env.HOME_WORKSPACE_ID ?? "",
   url: "https://hooks.example.com/peal",
   eventTypes: [
     "channel.connected",
@@ -277,7 +338,6 @@ const { endpoint, secret } = await home.webhooks.create({
 home = Peal(token=os.environ["HOME_API_KEY"], base_url="https://api.example.com")
 
 created = home.webhooks.create(
-    os.environ["HOME_WORKSPACE_ID"],
     url="https://hooks.example.com/peal",
     event_types=[
         "channel.connected",
@@ -298,8 +358,7 @@ home := pealclient.NewClient(
 )
 
 created, err := home.Webhooks.Create(ctx, &peal.NewWebhookEndpoint{
-	WorkspaceID: os.Getenv("HOME_WORKSPACE_ID"),
-	URL:         "https://hooks.example.com/peal",
+	URL: "https://hooks.example.com/peal",
 	EventTypes: []peal.SubscribableWebhookEventType{
 		peal.SubscribableWebhookEventTypeChannelConnected,
 		peal.SubscribableWebhookEventTypeChannelReconnectNeeded,
@@ -316,7 +375,6 @@ created, err := home.Webhooks.Create(ctx, &peal.NewWebhookEndpoint{
 home = Peal::Client.new(token: ENV.fetch("HOME_API_KEY"), base_url: "https://api.example.com")
 
 created = home.webhooks.create(
-  workspace_id: ENV.fetch("HOME_WORKSPACE_ID"),
   url: "https://hooks.example.com/peal",
   event_types: %w[channel.connected channel.reconnect_needed post.published post.failed post.unconfirmed],
   scope: "partner"
@@ -336,7 +394,6 @@ PealClient home = PealClient.builder()
     .build();
 
 WebhookEndpointSecret created = home.webhooks().create(
-    System.getenv("HOME_WORKSPACE_ID"),
     NewWebhookEndpoint.builder()
         .url("https://hooks.example.com/peal")
         .eventTypes(List.of(
@@ -358,7 +415,7 @@ $home = new PealClient(
     options: ['baseUrl' => 'https://api.example.com'],
 );
 
-$created = $home->webhooks->create(getenv('HOME_WORKSPACE_ID'), new NewWebhookEndpoint([
+$created = $home->webhooks->create(new NewWebhookEndpoint([
     'url' => 'https://hooks.example.com/peal',
     'eventTypes' => [
         'channel.connected',
@@ -375,12 +432,11 @@ $created = $home->webhooks->create(getenv('HOME_WORKSPACE_ID'), new NewWebhookEn
 // La clé d’API de votre espace de travail principal, pas la clé partenaire.
 var home = new PealClient(
     Environment.GetEnvironmentVariable("HOME_API_KEY"),
-    new ClientOptions { BaseUrl = "https://api.example.com" }
+    clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
 );
 
 var created = await home.Webhooks.CreateAsync(new NewWebhookEndpoint
 {
-    WorkspaceId = Environment.GetEnvironmentVariable("HOME_WORKSPACE_ID")!,
     Url = "https://hooks.example.com/peal",
     EventTypes = new[]
     {
@@ -405,7 +461,6 @@ let home = PealClient::new(ClientConfig {
 let created = home
     .webhooks
     .create(
-        &std::env::var("HOME_WORKSPACE_ID")?,
         &NewWebhookEndpoint {
             url: "https://hooks.example.com/peal".to_string(),
             event_types: vec![
@@ -424,7 +479,7 @@ let created = home
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$HOME_WORKSPACE_ID/webhooks \
+curl -X POST https://api.example.com/api/v1/webhooks \
   -H "Authorization: Bearer $HOME_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://hooks.example.com/peal", "eventTypes": ["channel.connected", "channel.reconnect_needed", "post.published", "post.failed", "post.unconfirmed"], "scope": "partner"}'
@@ -470,7 +525,7 @@ Le [journal de tous les points d’accès](/developers/webhooks/delivery#log) de
 
 ## Voir quels clients demandent votre attention [#health]
 
-Les webhooks vous disent chaque changement au moment où il arrive. `GET /api/partner/overview` vous dit où en est chaque client en ce moment, une page par appel. Votre produit peut afficher sa propre liste de clients à suivre, ou faire le point après une panne de son récepteur.
+Les webhooks vous disent chaque changement au moment où il arrive. `GET /api/v1/partner/overview` vous dit où en est chaque client en ce moment, une page par appel. Votre produit peut afficher sa propre liste de clients à suivre, ou faire le point après une panne de son récepteur.
 
 <CodeGroup>
 
@@ -524,7 +579,7 @@ let page = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/partner/overview?limit=100" \
+curl "https://api.example.com/api/v1/partner/overview?limit=100" \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY"
 ```
 
@@ -585,7 +640,7 @@ Rien ne filtre la liste pour ne garder que les espaces qui demandent votre atten
 
 ### En tant que personne dans votre espace principal [#health-home]
 
-Les propriétaires et administrateurs de votre espace de travail principal peuvent lire le même état à `GET /api/workspaces/{homeWorkspaceId}/partner/overview` (`partner:read`), sous **Paramètres**, puis **Partenaire**, et avec `peal partner overview` ([ligne de commande](/developers/cli/workspace#partner)).
+Les propriétaires et administrateurs de votre espace de travail principal peuvent lire le même état à `GET /api/v1/partner-account/overview` (`partner:read`), sous **Paramètres**, puis **Partenaire**, et avec `peal partner overview` ([ligne de commande](/developers/cli/workspace#partner)).
 
 Ils voient chaque section pour laquelle ils détiennent la permission dans l’espace principal. L’équipe d’administration qui agit en leur nom ne lit aucune boîte de réception. `mayApprove` est toujours faux pour eux, car ils ne sont membres d’aucun espace de travail client.
 
@@ -698,7 +753,6 @@ let to_workspace_id = "2c9e4b7a-5f1d-4e8a-b3c6-0d7f9a1e2b45".to_string();
 let moved = peal
     .partner
     .move_channel(
-        &workspace_id,
         &channel_id,
         &ChannelMove {
             to_workspace_id: to_workspace_id.clone(),
@@ -713,7 +767,7 @@ let moved = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/partner/workspaces/$FROM/channels/$CHANNEL/move \
+curl -X POST https://api.example.com/api/v1/partner/workspaces/$FROM/channels/$CHANNEL/move \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: move-$CHANNEL-$TO" \
@@ -804,7 +858,7 @@ peal.partner.delete_workspace(&workspace_id, None).await?;
 ```
 
 ```bash curl
-curl -X DELETE https://api.example.com/api/partner/workspaces/$WORKSPACE_ID \
+curl -X DELETE https://api.example.com/api/v1/partner/workspaces/$WORKSPACE_ID \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY"
 ```
 
@@ -846,7 +900,7 @@ Chaque limite se compte ainsi :
   abonnement](/guides/workspace/billing#over)).
 </Callout>
 
-Un Peal auto-hébergé sans facturation ne limite rien. `GET /api/partner` répond ce que le compte détient chaque jour, et [son utilisation par client](#usage) ce que chaque espace a utilisé. C’est ce que compterait un prix par espace de travail ou par canal connecté.
+Un Peal auto-hébergé sans facturation ne limite rien. `GET /api/v1/partner` répond ce que le compte détient chaque jour, et [son utilisation par client](#usage) ce que chaque espace a utilisé. C’est ce que compterait un prix par espace de travail ou par canal connecté.
 
 ## Utilisation par client [#usage]
 
@@ -933,7 +987,7 @@ let usage = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/partner/usage?from=2026-11-01&to=2026-11-30&limit=50" \
+curl "https://api.example.com/api/v1/partner/usage?from=2026-11-01&to=2026-11-30&limit=50" \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY"
 ```
 
@@ -947,7 +1001,7 @@ peal partner usage --from 2026-11-01 --to 2026-11-30 --limit 50
 
 </CodeGroup>
 
-Une clé partenaire avec la portée `workspaces:read` la lit à `GET /api/partner/usage`. Les propriétaires et administrateurs de votre espace de travail principal (`partner:read`) la lisent à `GET /api/workspaces/{workspaceId}/usage/partner`, qui répond la même chose, tout comme la ligne de commande et l’outil MCP. Tout autre espace de travail reçoit 404 `PartnerNotFound`.
+Une clé partenaire avec la portée `workspaces:read` la lit à `GET /api/v1/partner/usage`. Les propriétaires et administrateurs de votre espace de travail principal (`partner:read`) la lisent à `GET /api/v1/usage/partner`, qui répond la même chose, tout comme la ligne de commande et l’outil MCP. Tout autre espace de travail reçoit 404 `PartnerNotFound`.
 
 `from` et `to` sont des jours UTC, inclus tous les deux, 92 jours au plus. Par défaut, vous obtenez les 30 jours qui se terminent aujourd’hui.
 
@@ -964,7 +1018,7 @@ La réponse a ces champs :
 
 ### Par espace de travail [#usage-workspaces]
 
-`workspaces` en est une page, dans l’ordre et avec le curseur de [`GET /api/partner/workspaces`](/developers/embedding#workspaces) : du plus récent au plus ancien, 50 par page sauf si `limit` dit autrement (100 au plus). Passez `next` comme `before` pour la page suivante. Votre espace de travail principal vient en premier, sur la première page seulement, avec `home: true`, un de plus que demandé.
+`workspaces` en est une page, dans l’ordre et avec le curseur de [`GET /api/v1/partner/workspaces`](/developers/embedding#workspaces) : du plus récent au plus ancien, 50 par page sauf si `limit` dit autrement (100 au plus). Passez `next` comme `before` pour la page suivante. Votre espace de travail principal vient en premier, sur la première page seulement, avec `home: true`, un de plus que demandé.
 
 Chacun donne son `externalId` et les canaux qu’il a connectés lui-même maintenant. Sur la période, il donne ses jours-canaux, ses publications par plateforme, ses requêtes à l’assistant de rédaction, son dernier stockage de médias et ses publications facturées au compteur.
 
@@ -976,17 +1030,17 @@ Les décomptes quotidiens sont gardés {{keep-partner-usage-fr}}. Ce sont des d�
 
 Chaque tâche a sa place, selon que c’est votre serveur ou une personne qui la fait :
 
-| Pour                                               | Utiliser                                                                                                                                                                               |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Régler le compte, créer et révoquer des clés       | L’application web : **Paramètres**, puis **Partenaire**                                                                                                                                |
-| Créer, trouver, modifier et supprimer des espaces  | `/api/partner`, avec une clé partenaire, `partner` dans les SDK                                                                                                                        |
-| Agir dans un espace de travail                     | `/api/workspaces/{workspaceId}/…`, avec la même clé, `connectLinks`, `channels`, `media`, `posts`, `analytics` dans les SDK                                                            |
-| Lire le compte et ses espaces en tant que personne | `peal partner show`, `peal partner keys`, `peal partner workspaces` ([ligne de commande](/developers/cli/workspace#partner))                                                           |
-| Lire l’utilisation par client                      | `GET /api/partner/usage`, avec la clé, `partnerUsage` dans les SDK, `peal partner usage`, l’outil MCP `get_partner_usage` et **Paramètres**, puis **Partenaire**, en tant que personne |
-| Voir quels clients demandent votre attention       | `GET /api/partner/overview`, avec la clé, `partner.overview` dans les SDK, `peal partner overview` et **Paramètres**, puis **Partenaire**, en tant que personne ([Santé](#health))     |
-| Créer un lien à la main pour l’un de vos espaces   | `peal links create` ([ligne de commande](/developers/cli/workspace#links)), ou l’outil MCP `create_connect_link` ([MCP](/developers/mcp/tools#tools))                                  |
+| Pour                                               | Utiliser                                                                                                                                                                                  |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Régler le compte, créer et révoquer des clés       | L’application web : **Paramètres**, puis **Partenaire**                                                                                                                                   |
+| Créer, trouver, modifier et supprimer des espaces  | `/api/v1/partner`, avec une clé partenaire, `partner` dans les SDK                                                                                                                        |
+| Agir dans un espace de travail                     | `/api/v1/…`, avec la même clé, `connectLinks`, `channels`, `media`, `posts`, `analytics` dans les SDK                                                                                     |
+| Lire le compte et ses espaces en tant que personne | `peal partner show`, `peal partner keys`, `peal partner workspaces` ([ligne de commande](/developers/cli/workspace#partner))                                                              |
+| Lire l’utilisation par client                      | `GET /api/v1/partner/usage`, avec la clé, `partnerUsage` dans les SDK, `peal partner usage`, l’outil MCP `get_partner_usage` et **Paramètres**, puis **Partenaire**, en tant que personne |
+| Voir quels clients demandent votre attention       | `GET /api/v1/partner/overview`, avec la clé, `partner.overview` dans les SDK, `peal partner overview` et **Paramètres**, puis **Partenaire**, en tant que personne ([Santé](#health))     |
+| Créer un lien à la main pour l’un de vos espaces   | `peal links create` ([ligne de commande](/developers/cli/workspace#links)), ou l’outil MCP `create_connect_link` ([MCP](/developers/mcp/tools#tools))                                     |
 
-La [référence de l’API](/reference) liste chaque point d’accès avec ses erreurs. Les [SDK](/developers/sdks) sont générés à partir du même contrat, en huit langages. Une clé partenaire peut se vérifier avec `GET /api/credential` (`credential.get`), qui nomme son partenaire, ses portées et ses permissions, et jamais ses espaces de travail.
+La [référence de l’API](/reference) liste chaque point d’accès avec ses erreurs. Les [SDK](/developers/sdks) sont générés à partir du même contrat, en huit langages. Une clé partenaire peut se vérifier avec `GET /api/v1/credential` (`credential.get`), qui nomme son partenaire, ses portées et ses permissions, et jamais ses espaces de travail.
 
 ### Sans compte partenaire [#agencies]
 

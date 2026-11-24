@@ -58,7 +58,7 @@ You can run the same search from any of these:
 
 - The [command line](/developers/cli/posts#media): `peal media list --search "…" --kind image`.
 - An [MCP client](/developers/mcp/tools#tools): the `list_media` tool's `q` and `kind`.
-- The API: `GET /api/workspaces/{workspaceId}/media?q=…&kind=…`, with `fileName` in each media it answers.
+- The API: `GET /api/v1/media?q=…&kind=…`, with `fileName` in each media it answers.
 
 An upload gives the name as `fileName` when it starts (`POST …/media`). The name is the member's own text, so show it as text.
 
@@ -83,7 +83,7 @@ The `import_media` tool, from an [MCP client](/developers/mcp/tools#tools).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/import`, with the file's `url` and, if you like, its `altText`.
+`POST /api/v1/media/import`, with the file's `url` and, if you like, its `altText`.
 
 </Tab>
 </Tabs>
@@ -128,7 +128,7 @@ The `generate_image` tool, from an [MCP client](/developers/mcp/tools#tools).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/assistant/images`, with the `prompt` and the `aspect` (`square`, `landscape` or `portrait`).
+`POST /api/v1/assistant/images`, with the `prompt` and the `aspect` (`square`, `landscape` or `portrait`).
 
 </Tab>
 </Tabs>
@@ -197,7 +197,7 @@ See [`peal media video`](/developers/cli/posts#media-video).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/videos/generations`, with the `prompt`, the `aspect` and, optionally, `durationSeconds` and `imageMediaId`. The answer is `202` with the job. Follow it with `GET /api/workspaces/{workspaceId}/media/videos/generations/{id}` until its `status` is `succeeded`, with the video's `mediaId`, or `failed`, with its `reason`.
+`POST /api/v1/media/videos/generations`, with the `prompt`, the `aspect` and, optionally, `durationSeconds` and `imageMediaId`. The answer is `202` with the job. Follow it with `GET /api/v1/media/videos/generations/{id}` until its `status` is `succeeded`, with the video's `mediaId`, or `failed`, with its `reason`.
 
 </Tab>
 </Tabs>
@@ -271,7 +271,7 @@ See [`peal media voiceover`](/developers/cli/posts#media-audio).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/voiceovers`, with the `text` and, optionally, a `voice`. The answer is `201` with the new file of the library.
+`POST /api/v1/media/voiceovers`, with the `text` and, optionally, a `voice`. The answer is `201` with the new file of the library.
 
 </Tab>
 </Tabs>
@@ -310,7 +310,7 @@ peal media transcribe <media-id> --save-description
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/{mediaId}/transcription`, with `saveAsDescription` when the transcript should become the file's description. The answer holds the `text`, the `language` and the `durationSeconds` when the provider gives them, and `descriptionSaved`.
+`POST /api/v1/media/{mediaId}/transcription`, with `saveAsDescription` when the transcript should become the file's description. The answer holds the `text`, the `language` and the `durationSeconds` when the provider gives them, and `descriptionSaved`.
 
 </Tab>
 </Tabs>
@@ -361,7 +361,7 @@ See [`peal media slideshow`](/developers/cli/posts#media-slideshow).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/slideshows`, with the `aspect` and the `slides`, each a `mediaId` with an optional `caption` and `motion`, and optionally `secondsPerSlide`, `transition` and `voiceoverMediaId`. The answer is `202` with the job. Follow it with `GET /api/workspaces/{workspaceId}/media/slideshows/{id}` until its `status` is `succeeded`, with the video's `mediaId`, or `failed`, with its `reason`.
+`POST /api/v1/media/slideshows`, with the `aspect` and the `slides`, each a `mediaId` with an optional `caption` and `motion`, and optionally `secondsPerSlide`, `transition` and `voiceoverMediaId`. The answer is `202` with the job. Follow it with `GET /api/v1/media/slideshows/{id}` until its `status` is `succeeded`, with the video's `mediaId`, or `failed`, with its `reason`.
 
 </Tab>
 </Tabs>
@@ -426,7 +426,7 @@ The video is an MP4 file in the library, with no description. It's marked **Made
 
 A program, or a video editor that writes Shotstack's format, can send a whole [Shotstack Edit](https://shotstack.io/docs/api/#tocs_edit) instead of a list of images. Peal checks it and renders it with the workspace's Shotstack connection, as the same job as a slide video, with the same rights.
 
-Send `POST /api/workspaces/{workspaceId}/media/slideshows/edits` with the edit in `edit`. The answer is `202` with the job, which you follow as above. The job's `durationSeconds` is the latest end of a clip whose start and length are numbers, and its `imageMediaIds` lists every library file the edit names, images or not.
+Send `POST /api/v1/media/slideshows/edits` with the edit in `edit`. The answer is `202` with the job, which you follow as above. The job's `durationSeconds` is the latest end of a clip whose start and length are numbers, and its `imageMediaIds` lists every library file the edit names, images or not.
 
 ```json
 {

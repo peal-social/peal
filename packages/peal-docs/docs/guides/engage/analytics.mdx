@@ -174,7 +174,7 @@ It tells you what happened on this channel, never what will. These rules shape t
 
 You can get the same figures elsewhere:
 
-- The API: `GET /api/workspaces/{workspaceId}/analytics/best-times?channelId=…&days=90&timeZone=Europe/Paris` answers with `buckets`, `best`, `enough`, `counted` and `recent`.
+- The API: `GET /api/v1/analytics/best-times?channelId=…&days=90&timeZone=Europe/Paris` answers with `buckets`, `best`, `enough`, `counted` and `recent`.
 - The [command line](/developers/cli/workspace#analytics): `peal analytics best-times`.
 - MCP clients: `best_times` ([MCP](/developers/mcp/tools#tools)).
 
@@ -197,18 +197,18 @@ The post's page lists its links and their clicks over the last 30 days to member
 
 Through the API, short links have these requests:
 
-| Request                                         | What it does                                                                                                                                                           | Permission            |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `GET /api/workspaces/{workspaceId}/short-links` | Lists the workspace's links by cursor, newest first, those of a `postId` or a `channelId`, with their clicks from `from` to `to` (UTC days, 30 by default, 92 at most) | `analytics:read`      |
-| `GET …/short-links/{linkId}`                    | Answers one link with its clicks day by day                                                                                                                            | `analytics:read`      |
-| `GET …/short-links/status`                      | Says whether the server has short links                                                                                                                                | `post:read`           |
-| `PUT …/short-links/settings`                    | Sets the workspace's default                                                                                                                                           | `organization:update` |
+| Request                      | What it does                                                                                                                                                           | Permission            |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `GET /api/v1/short-links`    | Lists the workspace's links by cursor, newest first, those of a `postId` or a `channelId`, with their clicks from `from` to `to` (UTC days, 30 by default, 92 at most) | `analytics:read`      |
+| `GET …/short-links/{linkId}` | Answers one link with its clicks day by day                                                                                                                            | `analytics:read`      |
+| `GET …/short-links/status`   | Says whether the server has short links                                                                                                                                | `post:read`           |
+| `PUT …/short-links/settings` | Sets the workspace's default                                                                                                                                           | `organization:update` |
 
 The [command line](/developers/cli/workspace#short-links) and the [MCP tools](/developers/mcp/tools#tools) read the same.
 
 ## Through the API [#api]
 
-Every endpoint is under `/api/workspaces/{workspaceId}/analytics` and needs the `analytics:read` permission. A range is `days=7`, `30` or `90`, ending today in `timeZone`. Or it's `from` and `to`, at most 366 days, with days running in an IANA `timeZone`.
+Every endpoint is under `/api/v1/analytics` and needs the `analytics:read` permission. A range is `days=7`, `30` or `90`, ending today in `timeZone`. Or it's `from` and `to`, at most 366 days, with days running in an IANA `timeZone`.
 
 The endpoints are:
 

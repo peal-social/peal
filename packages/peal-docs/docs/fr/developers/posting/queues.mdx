@@ -31,10 +31,8 @@ Cette publication ne nomme aucun canal, et part donc sur les canaux de la file p
 import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
-const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
 
 const post = await peal.posts.send({
-  workspaceId,
   channelIds: [],
   content: { text: "An evergreen tip.", media: [], overrides: [] },
   when: { _tag: "queue" },
@@ -47,10 +45,8 @@ import os
 from peal import Peal, PostContent, PostTiming_Queue
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
-workspace_id = os.environ["PEAL_WORKSPACE_ID"]
 
 post = peal.posts.send(
-    workspace_id=workspace_id,
     channel_ids=[],
     content=PostContent(text="An evergreen tip.", media=[], overrides=[]),
     when=PostTiming_Queue(),
@@ -68,11 +64,9 @@ import (
 )
 
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
-workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
 
 post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
-	WorkspaceID: workspaceID,
-	ChannelIDs:  []string{},
+	ChannelIDs: []string{},
 	Content: &peal.PostContent{
 		Text:      "An evergreen tip.",
 		Media:     []*peal.MediaAttachment{},
@@ -86,10 +80,8 @@ post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
 require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
-workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
 
 post = peal.posts.send_(
-  workspace_id: workspace_id,
   channel_ids: [],
   content: { text: "An evergreen tip.", media: [], overrides: [] },
   when_: { _tag: "queue" }
@@ -105,10 +97,8 @@ import social.peal.types.*;
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
-String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
 
 Post post = peal.posts().send(
-    workspaceId,
     NewPost.builder()
         .content(PostContent.builder().text("An evergreen tip.").build())
         .when(PostTiming.queue(PostTimingQueue.builder().build()))
@@ -125,9 +115,8 @@ use Peal\Types\PostTiming;
 use Peal\Types\PostTimingQueue;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
-$workspaceId = getenv('PEAL_WORKSPACE_ID');
 
-$post = $peal->posts->send($workspaceId, new NewPost([
+$post = $peal->posts->send(new NewPost([
     'channelIds' => [],
     'content' => new PostContent([
         'text' => 'An evergreen tip.',
@@ -142,11 +131,9 @@ $post = $peal->posts->send($workspaceId, new NewPost([
 using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
-var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
 
 var post = await peal.Posts.SendAsync(new NewPost
 {
-    WorkspaceId = workspaceId,
     ChannelIds = new List<string>(),
     Content = new PostContent { Text = "An evergreen tip." },
     When = new PostTiming(new PostTiming.Queue(new PostTimingQueue())),
@@ -160,12 +147,10 @@ let peal = PealClient::new(ClientConfig {
     token: std::env::var("PEAL_API_KEY").ok(),
     ..Default::default()
 })?;
-let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
 
 let post = peal
     .posts
     .send(
-        &workspace_id,
         &NewPost::builder()
             .channel_ids(vec![])
             .content(
@@ -183,7 +168,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/posts/send" \
+curl -X POST "https://peal.example/api/v1/posts/send" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"channelIds": [], "content": {"text": "An evergreen tip.", "media": [], "overrides": []}, "when": {"_tag": "queue"}}'
@@ -213,7 +198,6 @@ Le créneau de la publication elle-même compte comme libre. Une publication ajo
 
 ```ts Node.js
 const post = await peal.posts.enqueue({
-  workspaceId,
   postId: "0190f3a0-0000-7000-8000-00000000b001",
   queueId: "0190f3a0-0000-7000-8000-00000000e001",
 });
@@ -221,7 +205,6 @@ const post = await peal.posts.enqueue({
 
 ```python Python
 post = peal.posts.enqueue(
-    workspace_id=workspace_id,
     post_id="0190f3a0-0000-7000-8000-00000000b001",
     queue_id="0190f3a0-0000-7000-8000-00000000e001",
 )
@@ -229,15 +212,13 @@ post = peal.posts.enqueue(
 
 ```go Go
 post, err := client.Posts.Enqueue(context.TODO(), &peal.QueuePost{
-	WorkspaceID: workspaceID,
-	PostID:      "0190f3a0-0000-7000-8000-00000000b001",
-	QueueID:     peal.String("0190f3a0-0000-7000-8000-00000000e001"),
+	PostID:  "0190f3a0-0000-7000-8000-00000000b001",
+	QueueID: peal.String("0190f3a0-0000-7000-8000-00000000e001"),
 })
 ```
 
 ```ruby Ruby
 post = peal.posts.enqueue(
-  workspace_id: workspace_id,
   post_id: "0190f3a0-0000-7000-8000-00000000b001",
   queue_id: "0190f3a0-0000-7000-8000-00000000e001"
 )
@@ -245,7 +226,6 @@ post = peal.posts.enqueue(
 
 ```java Java
 Post post = peal.posts().enqueue(
-    workspaceId,
     "0190f3a0-0000-7000-8000-00000000b001",
     QueuePost.builder()
         .queueId("0190f3a0-0000-7000-8000-00000000e001")
@@ -256,7 +236,6 @@ Post post = peal.posts().enqueue(
 use Peal\Posts\Requests\QueuePost;
 
 $post = $peal->posts->enqueue(
-    $workspaceId,
     '0190f3a0-0000-7000-8000-00000000b001',
     new QueuePost(['queueId' => '0190f3a0-0000-7000-8000-00000000e001']),
 );
@@ -265,7 +244,6 @@ $post = $peal->posts->enqueue(
 ```csharp .NET
 var post = await peal.Posts.EnqueueAsync(new QueuePost
 {
-    WorkspaceId = workspaceId,
     PostId = "0190f3a0-0000-7000-8000-00000000b001",
     QueueId = "0190f3a0-0000-7000-8000-00000000e001",
 });
@@ -275,7 +253,6 @@ var post = await peal.Posts.EnqueueAsync(new QueuePost
 let post = peal
     .posts
     .enqueue(
-        &workspace_id,
         "0190f3a0-0000-7000-8000-00000000b001",
         &QueuePost::builder()
             .queue_id("0190f3a0-0000-7000-8000-00000000e001")
@@ -286,7 +263,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/queue" \
+curl -X POST "https://peal.example/api/v1/posts/0190f3a0-0000-7000-8000-00000000b001/queue" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"queueId": "0190f3a0-0000-7000-8000-00000000e001"}'
@@ -314,41 +291,35 @@ Enregistrer les créneaux d’une file ne déplace aucune publication. `POST …
 
 ```ts Node.js
 const result = await peal.queues.reshuffle({
-  workspaceId,
   queueId: "0190f3a0-0000-7000-8000-00000000e001",
 });
 ```
 
 ```python Python
 result = peal.queues.reshuffle(
-    workspace_id=workspace_id,
     queue_id="0190f3a0-0000-7000-8000-00000000e001",
 )
 ```
 
 ```go Go
 result, err := client.Queues.Reshuffle(context.TODO(), &peal.ReshuffleQueuesRequest{
-	WorkspaceID: workspaceID,
-	QueueID:     "0190f3a0-0000-7000-8000-00000000e001",
+	QueueID: "0190f3a0-0000-7000-8000-00000000e001",
 })
 ```
 
 ```ruby Ruby
 result = peal.queues.reshuffle(
-  workspace_id: workspace_id,
   queue_id: "0190f3a0-0000-7000-8000-00000000e001"
 )
 ```
 
 ```java Java
 QueueReshuffle result = peal.queues().reshuffle(
-    workspaceId,
     "0190f3a0-0000-7000-8000-00000000e001");
 ```
 
 ```php PHP
 $result = $peal->queues->reshuffle(
-    $workspaceId,
     '0190f3a0-0000-7000-8000-00000000e001',
 );
 ```
@@ -356,7 +327,6 @@ $result = $peal->queues->reshuffle(
 ```csharp .NET
 var result = await peal.Queues.ReshuffleAsync(new ReshuffleQueuesRequest
 {
-    WorkspaceId = workspaceId,
     QueueId = "0190f3a0-0000-7000-8000-00000000e001",
 });
 ```
@@ -364,12 +334,12 @@ var result = await peal.Queues.ReshuffleAsync(new ReshuffleQueuesRequest
 ```rust Rust
 let result = peal
     .queues
-    .reshuffle(&workspace_id, "0190f3a0-0000-7000-8000-00000000e001", None)
+    .reshuffle("0190f3a0-0000-7000-8000-00000000e001", None)
     .await?;
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/queues/0190f3a0-0000-7000-8000-00000000e001/reshuffle" \
+curl -X POST "https://peal.example/api/v1/queues/0190f3a0-0000-7000-8000-00000000e001/reshuffle" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -420,7 +390,6 @@ Cette règle publie six fois en tout, toutes les deux semaines, avec une variant
 
 ```ts Node.js
 const rule = await peal.recycling.create({
-  workspaceId,
   postId: "0190f3a0-0000-7000-8000-00000000b001",
   every: { count: 2, unit: "weeks" },
   count: 6,
@@ -432,7 +401,6 @@ const rule = await peal.recycling.create({
 from peal import RecyclingInterval, RecyclingVariant
 
 rule = peal.recycling.create(
-    workspace_id=workspace_id,
     post_id="0190f3a0-0000-7000-8000-00000000b001",
     every=RecyclingInterval(count=2, unit="weeks"),
     count=6,
@@ -442,17 +410,15 @@ rule = peal.recycling.create(
 
 ```go Go
 rule, err := client.Recycling.Create(context.TODO(), &peal.NewRecyclingRule{
-	WorkspaceID: workspaceID,
-	PostID:      "0190f3a0-0000-7000-8000-00000000b001",
-	Every:       &peal.RecyclingInterval{Count: 2, Unit: peal.RecyclingUnitWeeks},
-	Count:       peal.Int(6),
-	Variants:    []*peal.RecyclingVariant{{Text: "Open all summer, as before."}},
+	PostID:   "0190f3a0-0000-7000-8000-00000000b001",
+	Every:    &peal.RecyclingInterval{Count: 2, Unit: peal.RecyclingUnitWeeks},
+	Count:    peal.Int(6),
+	Variants: []*peal.RecyclingVariant{{Text: "Open all summer, as before."}},
 })
 ```
 
 ```ruby Ruby
 rule = peal.recycling.create(
-  workspace_id: workspace_id,
   post_id: "0190f3a0-0000-7000-8000-00000000b001",
   every: { count: 2, unit: "weeks" },
   count: 6,
@@ -464,7 +430,6 @@ rule = peal.recycling.create(
 import social.peal.resources.recycling.requests.NewRecyclingRule;
 
 RecyclingRule rule = peal.recycling().create(
-    workspaceId,
     NewRecyclingRule.builder()
         .every(RecyclingInterval.builder()
             .count(2)
@@ -484,7 +449,7 @@ use Peal\Types\RecyclingInterval;
 use Peal\Types\RecyclingUnit;
 use Peal\Types\RecyclingVariant;
 
-$rule = $peal->recycling->create($workspaceId, new NewRecyclingRule([
+$rule = $peal->recycling->create(new NewRecyclingRule([
     'postId' => '0190f3a0-0000-7000-8000-00000000b001',
     'every' => new RecyclingInterval([
         'count' => 2,
@@ -500,7 +465,6 @@ $rule = $peal->recycling->create($workspaceId, new NewRecyclingRule([
 ```csharp .NET
 var rule = await peal.Recycling.CreateAsync(new NewRecyclingRule
 {
-    WorkspaceId = workspaceId,
     PostId = "0190f3a0-0000-7000-8000-00000000b001",
     Every = new RecyclingInterval { Count = 2, Unit = RecyclingUnit.Weeks },
     Count = 6,
@@ -515,7 +479,6 @@ var rule = await peal.Recycling.CreateAsync(new NewRecyclingRule
 let rule = peal
     .recycling
     .create(
-        &workspace_id,
         &NewRecyclingRule::builder()
             .post_id("0190f3a0-0000-7000-8000-00000000b001")
             .every(
@@ -535,7 +498,7 @@ let rule = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/recycling" \
+curl -X POST "https://peal.example/api/v1/recycling" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"postId": "0190f3a0-0000-7000-8000-00000000b001", "every": {"count": 2, "unit": "weeks"}, "count": 6, "variants": [{"text": "Open all summer, as before."}]}'
@@ -582,13 +545,12 @@ Les requêtes peuvent être refusées avec ces erreurs :
 
 ## Relancer une publication [#follow-ups]
 
-`POST /api/workspaces/{workspaceId}/follow-ups` lance une [règle de relance](/guides/posts/queues#follow-ups) sur une publication ou sur un canal, exactement l’un des deux. Cette règle commente et repartage une fois que la publication atteint 50 mentions J’aime :
+`POST /api/v1/follow-ups` lance une [règle de relance](/guides/posts/queues#follow-ups) sur une publication ou sur un canal, exactement l’un des deux. Cette règle commente et repartage une fois que la publication atteint 50 mentions J’aime :
 
 <CodeGroup>
 
 ```ts Node.js
 const rule = await peal.followUps.create({
-  workspaceId,
   postId: "0190f3a0-0000-7000-8000-00000000b001",
   likes: 50,
   comment: "Thank you all for reading!",
@@ -598,7 +560,6 @@ const rule = await peal.followUps.create({
 
 ```python Python
 rule = peal.follow_ups.create(
-    workspace_id=workspace_id,
     post_id="0190f3a0-0000-7000-8000-00000000b001",
     likes=50,
     comment="Thank you all for reading!",
@@ -608,17 +569,15 @@ rule = peal.follow_ups.create(
 
 ```go Go
 rule, err := client.FollowUps.Create(context.TODO(), &peal.NewFollowUpRule{
-	WorkspaceID: workspaceID,
-	PostID:      peal.String("0190f3a0-0000-7000-8000-00000000b001"),
-	Likes:       50,
-	Comment:     peal.String("Thank you all for reading!"),
-	Repost:      peal.Bool(true),
+	PostID:  peal.String("0190f3a0-0000-7000-8000-00000000b001"),
+	Likes:   50,
+	Comment: peal.String("Thank you all for reading!"),
+	Repost:  peal.Bool(true),
 })
 ```
 
 ```ruby Ruby
 rule = peal.follow_ups.create(
-  workspace_id: workspace_id,
   post_id: "0190f3a0-0000-7000-8000-00000000b001",
   likes: 50,
   comment: "Thank you all for reading!",
@@ -630,7 +589,6 @@ rule = peal.follow_ups.create(
 import social.peal.resources.followups.requests.NewFollowUpRule;
 
 FollowUpRule rule = peal.followUps().create(
-    workspaceId,
     NewFollowUpRule.builder()
         .likes(50)
         .postId("0190f3a0-0000-7000-8000-00000000b001")
@@ -642,7 +600,7 @@ FollowUpRule rule = peal.followUps().create(
 ```php PHP
 use Peal\FollowUps\Requests\NewFollowUpRule;
 
-$rule = $peal->followUps->create($workspaceId, new NewFollowUpRule([
+$rule = $peal->followUps->create(new NewFollowUpRule([
     'postId' => '0190f3a0-0000-7000-8000-00000000b001',
     'likes' => 50,
     'comment' => 'Thank you all for reading!',
@@ -653,7 +611,6 @@ $rule = $peal->followUps->create($workspaceId, new NewFollowUpRule([
 ```csharp .NET
 var rule = await peal.FollowUps.CreateAsync(new NewFollowUpRule
 {
-    WorkspaceId = workspaceId,
     PostId = "0190f3a0-0000-7000-8000-00000000b001",
     Likes = 50,
     Comment = "Thank you all for reading!",
@@ -665,7 +622,6 @@ var rule = await peal.FollowUps.CreateAsync(new NewFollowUpRule
 let rule = peal
     .follow_ups
     .create(
-        &workspace_id,
         &NewFollowUpRule::builder()
             .post_id("0190f3a0-0000-7000-8000-00000000b001")
             .likes(50)
@@ -678,7 +634,7 @@ let rule = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/follow-ups" \
+curl -X POST "https://peal.example/api/v1/follow-ups" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"postId": "0190f3a0-0000-7000-8000-00000000b001", "likes": 50, "comment": "Thank you all for reading!", "repost": true}'
@@ -724,7 +680,6 @@ Le corps prend ces champs :
 
 ```ts Node.js
 const feed = await peal.feeds.create({
-  workspaceId,
   url: "https://blog.example/feed.xml",
   channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
   template: "New on the blog: {title}\n\n{link}",
@@ -733,7 +688,6 @@ const feed = await peal.feeds.create({
 
 ```python Python
 feed = peal.feeds.create(
-    workspace_id=workspace_id,
     url="https://blog.example/feed.xml",
     channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
     template="New on the blog: {title}\n\n{link}",
@@ -742,16 +696,14 @@ feed = peal.feeds.create(
 
 ```go Go
 feed, err := client.Feeds.Create(context.TODO(), &peal.NewFeed{
-	WorkspaceID: workspaceID,
-	URL:         "https://blog.example/feed.xml",
-	ChannelIDs:  []string{"0190f3a0-0000-7000-8000-00000000c001"},
-	Template:    peal.String("New on the blog: {title}\n\n{link}"),
+	URL:        "https://blog.example/feed.xml",
+	ChannelIDs: []string{"0190f3a0-0000-7000-8000-00000000c001"},
+	Template:   peal.String("New on the blog: {title}\n\n{link}"),
 })
 ```
 
 ```ruby Ruby
 feed = peal.feeds.create(
-  workspace_id: workspace_id,
   url: "https://blog.example/feed.xml",
   channel_ids: ["0190f3a0-0000-7000-8000-00000000c001"],
   template: "New on the blog: {title}\n\n{link}"
@@ -762,7 +714,6 @@ feed = peal.feeds.create(
 import social.peal.resources.feeds.requests.NewFeed;
 
 CreatedFeed feed = peal.feeds().create(
-    workspaceId,
     NewFeed.builder()
         .url("https://blog.example/feed.xml")
         .channelIds(List.of("0190f3a0-0000-7000-8000-00000000c001"))
@@ -773,7 +724,7 @@ CreatedFeed feed = peal.feeds().create(
 ```php PHP
 use Peal\Feeds\Requests\NewFeed;
 
-$feed = $peal->feeds->create($workspaceId, new NewFeed([
+$feed = $peal->feeds->create(new NewFeed([
     'url' => 'https://blog.example/feed.xml',
     'channelIds' => ['0190f3a0-0000-7000-8000-00000000c001'],
     'template' => "New on the blog: {title}\n\n{link}",
@@ -783,7 +734,6 @@ $feed = $peal->feeds->create($workspaceId, new NewFeed([
 ```csharp .NET
 var feed = await peal.Feeds.CreateAsync(new NewFeed
 {
-    WorkspaceId = workspaceId,
     Url = "https://blog.example/feed.xml",
     ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c001" },
     Template = "New on the blog: {title}\n\n{link}",
@@ -794,7 +744,6 @@ var feed = await peal.Feeds.CreateAsync(new NewFeed
 let feed = peal
     .feeds
     .create(
-        &workspace_id,
         &NewFeed::builder()
             .url("https://blog.example/feed.xml")
             .channel_ids(vec!["0190f3a0-0000-7000-8000-00000000c001".to_string()])
@@ -806,7 +755,7 @@ let feed = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/feeds" \
+curl -X POST "https://peal.example/api/v1/feeds" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://blog.example/feed.xml", "channelIds": ["0190f3a0-0000-7000-8000-00000000c001"], "template": "New on the blog: {title}\n\n{link}"}'

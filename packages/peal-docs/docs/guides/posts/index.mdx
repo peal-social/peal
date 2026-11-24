@@ -324,6 +324,6 @@ A post can show images and videos from the workspace's media library. [Images an
 
 An [MCP client](/developers/mcp/tools#tools), the [command line](/developers/cli/posts#posts) and the [HTTP API](/developers) do what the composer does, through the same checks. They can write a draft, schedule it, publish it now, move it, take a channel off it, take it back to draft and cancel it.
 
-`POST /api/workspaces/{workspaceId}/posts/send` creates a post and sends it in one request, now or at a given instant. If the post breaks a rule of one of its channels' platforms, the request refuses the whole post and lists every violation at once. [Posting through the API](/developers/posting) shows how to check a post first, send several at once, import them from a CSV file and list them.
+`POST /api/v1/posts/send` creates a post and sends it in one request, now or at a given instant. If the post breaks a rule of one of its channels' platforms, the request refuses the whole post and lists every violation at once. [Posting through the API](/developers/posting) shows how to check a post first, send several at once, import them from a CSV file and list them.
 
 An application you connected schedules and publishes only if you let it. Publishing is a permission of its own, and you can leave it out so the application writes drafts for you to review. An API key does only what its permissions allow. [Posting from an AI agent](/developers/agents) explains both, with an example.

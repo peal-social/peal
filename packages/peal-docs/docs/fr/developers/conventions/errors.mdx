@@ -60,7 +60,7 @@ Une requête qui ne correspond pas à ce que son point d’accès attend répond
 Cette requête demande plus de médias qu’une page n’en contient :
 
 ```bash
-curl -i "https://api.example.com/api/workspaces/$WORKSPACE_ID/media?limit=500" \
+curl -i "https://api.example.com/api/v1/media?limit=500" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -107,8 +107,9 @@ Un 403 dit pourquoi dans `reason`. Quand une permission manque, il nomme la `per
 Un jeton auquel il manque un scope reçoit aussi, dans `WWW-Authenticate`, la demande que lisent les clients OAuth. Ici, une application sans `workspace:publish` tente d’annuler une publication :
 
 ```bash
-curl -i -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/019a6c3f-1b72-7d3c-8e90-4f5a6b7c8d02/cancel \
-  -H "Authorization: Bearer $PEAL_ACCESS_TOKEN"
+curl -i -X POST https://api.example.com/api/v1/posts/019a6c3f-1b72-7d3c-8e90-4f5a6b7c8d02/cancel \
+  -H "Authorization: Bearer $PEAL_ACCESS_TOKEN" \
+  -H "Peal-Workspace: $WORKSPACE_ID"
 ```
 
 Elle répond :
@@ -381,4 +382,5 @@ Les codes, par ordre alphabétique :
 | `workspace_name_mismatch`          | 400    | Le nom envoyé pour confirmer la suppression n’est pas celui de l’espace de travail.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `workspace_not_found`              | 404    | Aucun espace de travail portant cet identifiant n’est ouvert à l’appelant.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `workspace_over_plan`              | 409    | L’espace de travail détient plus que son abonnement ne permet, et ne programme rien tant qu’il n’y est pas revenu. Rien n’a été approuvé.                                                                                                                                                                                                                                                                                                                                                                                              |
+| `workspace_required`               | 400    | La requête ne nomme aucun espace de travail, et son moyen d’authentification n’appartient à aucun. Envoyez l’identifiant de l’espace de travail dans l’en-tête `Peal-Workspace` ([L’espace de travail d’une requête](/developers/conventions#workspace)).                                                                                                                                                                                                                                                                              |
 | `workspace_subscribed`             | 409    | Un espace de travail que la suppression effacerait a un abonnement encore facturable, et la requête n’a pas accepté de le résilier.                                                                                                                                                                                                                                                                                                                                                                                                    |

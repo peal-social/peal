@@ -51,7 +51,7 @@ Prices are in US dollars and exclude VAT. The VAT you pay depends on your countr
 
 At checkout you can pay in your own currency, converted by our payment provider at the day's rate. Otherwise your card is charged in US dollars. Invoices are in US dollars.
 
-The workspace's **Billing** page shows its plan and how much of each limit it uses. To open it, click **Settings** at the foot of the workspace's sidebar, then **Billing**, under **Administration**. `GET /api/workspaces/:workspaceId/billing` answers the same.
+The workspace's **Billing** page shows its plan and how much of each limit it uses. To open it, click **Settings** at the foot of the workspace's sidebar, then **Billing**, under **Administration**. `GET /api/v1/billing` answers the same.
 
 ## Usage meters [#meters]
 
@@ -224,13 +224,13 @@ A workspace on the free tier with more accounts than it includes keeps schedulin
 
 Three days before a trial ends, the reminder lists what the workspace holds beyond the free tier.
 
-`GET /api/workspaces/:workspaceId/billing/standing` answers the same for every member. It gives what's over, whether the workspace has to come back within its plan, until when a grace keeps it publishing (`graceUntil`), and the plan that holds everything.
+`GET /api/v1/billing/standing` answers the same for every member. It gives what's over, whether the workspace has to come back within its plan, until when a grace keeps it publishing (`graceUntil`), and the plan that holds everything.
 
 ## Usage [#usage]
 
 Under the plan, the workspace's **Billing** page shows what it did day by day over the last 7, 30 or 90 days. That's the posts that went out and the channels it had connected, as a chart and as a table, with the period's totals.
 
-You can get the same from `GET /api/workspaces/:workspaceId/usage?from=2026-10-01&to=2026-10-31`, [`peal usage`](/developers/cli/workspace#usage) or the MCP tool [`get_usage`](/developers/mcp). They answer whoever reads the workspace's billing: owners and admins, an API key or an application given it, and a partner's keys in the workspaces the partner owns.
+You can get the same from `GET /api/v1/usage?from=2026-10-01&to=2026-10-31`, [`peal usage`](/developers/cli/workspace#usage) or the MCP tool [`get_usage`](/developers/mcp). They answer whoever reads the workspace's billing: owners and admins, an API key or an application given it, and a partner's keys in the workspaces the partner owns.
 
 They're counts only, and nothing is priced, charged or limited by them. A server that doesn't bill keeps and answers the same counts, with `plan` and `allowances` null.
 

@@ -31,10 +31,8 @@ La requête est acceptée (202) avec le changement. Une tâche supprime ensuite 
 import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
-const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
 
 const change = await peal.posts.unpublishTarget({
-  workspaceId,
   postId: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
   targetId: "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
   wait: "30",
@@ -47,10 +45,8 @@ import os
 from peal import Peal
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
-workspace_id = os.environ["PEAL_WORKSPACE_ID"]
 
 change = peal.posts.unpublish_target(
-    workspace_id=workspace_id,
     post_id="019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
     target_id="019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
     wait="30",
@@ -68,13 +64,11 @@ import (
 )
 
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
-workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
 
 change, err := client.Posts.UnpublishTarget(context.TODO(), &peal.UnpublishTargetPostsRequest{
-	WorkspaceID: workspaceID,
-	PostID:      "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
-	TargetID:    "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
-	Wait:        peal.String("30"),
+	PostID:   "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+	TargetID: "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
+	Wait:     peal.String("30"),
 })
 ```
 
@@ -82,10 +76,8 @@ change, err := client.Posts.UnpublishTarget(context.TODO(), &peal.UnpublishTarge
 require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
-workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
 
 change = peal.posts.unpublish_target(
-  workspace_id: workspace_id,
   post_id: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
   target_id: "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
   wait: "30"
@@ -100,10 +92,8 @@ import social.peal.types.LivePostChange;
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
-String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
 
 LivePostChange change = peal.posts().unpublishTarget(
-    workspaceId,
     "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
     "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
     UnpublishTargetPostsRequest.builder().wait("30").build());
@@ -115,10 +105,8 @@ use Peal\PealClient;
 use Peal\Posts\Requests\UnpublishTargetPostsRequest;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
-$workspaceId = getenv('PEAL_WORKSPACE_ID');
 
 $change = $peal->posts->unpublishTarget(
-    $workspaceId,
     '019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01',
     '019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15',
     new UnpublishTargetPostsRequest(['wait' => '30']),
@@ -129,11 +117,9 @@ $change = $peal->posts->unpublishTarget(
 using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
-var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
 
 var change = await peal.Posts.UnpublishTargetAsync(new UnpublishTargetPostsRequest
 {
-    WorkspaceId = workspaceId,
     PostId = "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
     TargetId = "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
     Wait = "30",
@@ -147,12 +133,10 @@ let peal = PealClient::new(ClientConfig {
     token: std::env::var("PEAL_API_KEY").ok(),
     ..Default::default()
 })?;
-let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
 
 let change = peal
     .posts
     .unpublish_target(
-        &workspace_id,
         "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
         "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
         &UnpublishTargetQueryRequest::builder().wait("30").build()?,
@@ -162,7 +146,7 @@ let change = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/posts/019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01/targets/019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15/unpublish?wait=30" \
+curl -X POST "https://peal.example/api/v1/posts/019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01/targets/019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15/unpublish?wait=30" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -225,7 +209,6 @@ Seul le texte change, jamais les médias, les options ni l’heure. Il faut post
 
 ```ts Node.js
 const change = await peal.posts.editTarget({
-  workspaceId,
   postId: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
   targetId: "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
   wait: "30",
@@ -235,7 +218,6 @@ const change = await peal.posts.editTarget({
 
 ```python Python
 change = peal.posts.edit_target(
-    workspace_id=workspace_id,
     post_id="019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
     target_id="019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
     wait="30",
@@ -245,17 +227,15 @@ change = peal.posts.edit_target(
 
 ```go Go
 change, err := client.Posts.EditTarget(context.TODO(), &peal.LivePostEdit{
-	WorkspaceID: workspaceID,
-	PostID:      "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
-	TargetID:    "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
-	Wait:        peal.String("30"),
-	Text:        "Doors open at 7 pm, not 6.",
+	PostID:   "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
+	TargetID: "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
+	Wait:     peal.String("30"),
+	Text:     "Doors open at 7 pm, not 6.",
 })
 ```
 
 ```ruby Ruby
 change = peal.posts.edit_target(
-  workspace_id: workspace_id,
   post_id: "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
   target_id: "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
   wait: "30",
@@ -265,7 +245,6 @@ change = peal.posts.edit_target(
 
 ```java Java
 LivePostChange change = peal.posts().editTarget(
-    workspaceId,
     "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
     "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
     LivePostEdit.builder()
@@ -278,7 +257,6 @@ LivePostChange change = peal.posts().editTarget(
 use Peal\Posts\Requests\LivePostEdit;
 
 $change = $peal->posts->editTarget(
-    $workspaceId,
     '019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01',
     '019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15',
     new LivePostEdit([
@@ -291,7 +269,6 @@ $change = $peal->posts->editTarget(
 ```csharp .NET
 var change = await peal.Posts.EditTargetAsync(new LivePostEdit
 {
-    WorkspaceId = workspaceId,
     PostId = "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
     TargetId = "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
     Wait = "30",
@@ -303,7 +280,6 @@ var change = await peal.Posts.EditTargetAsync(new LivePostEdit
 let change = peal
     .posts
     .edit_target(
-        &workspace_id,
         "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
         "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
         &LivePostEdit::builder()
@@ -316,7 +292,7 @@ let change = peal
 ```
 
 ```bash curl
-curl -X POST "https://peal.example/api/workspaces/$WORKSPACE_ID/posts/019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01/targets/019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15/edit?wait=30" \
+curl -X POST "https://peal.example/api/v1/posts/019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01/targets/019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15/edit?wait=30" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"text": "Doors open at 7 pm, not 6."}'

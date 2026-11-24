@@ -66,7 +66,7 @@ export interface Snippet {
   readonly sdk?: SdkCall | undefined;
 }
 
-const curl = `curl -X POST "https://app.peal.social/api/workspaces/${workspaceId}/posts/send?wait=${wait}" \\
+const curl = `curl -X POST "https://app.peal.social/api/v1/posts/send?wait=${wait}" \\
   -H "Authorization: Bearer $PEAL_API_KEY" \\
   -H "Content-Type: application/json" \\
   -H "Idempotency-Key: ${idempotencyKey}" \\
@@ -97,7 +97,6 @@ const typescript = `import { PealClient } from "peal-sdk";
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
 const post = await peal.posts.send({
-  workspaceId: "${workspaceId}",
   wait: "${wait}",
   "idempotency-key": "${idempotencyKey}",
   channelIds: [
@@ -119,7 +118,6 @@ from peal import Peal, PostContent, PostTiming_Now
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
 post = peal.posts.send(
-    workspace_id="${workspaceId}",
     wait="${wait}",
     idempotency_key="${idempotencyKey}",
     channel_ids=[
@@ -146,7 +144,6 @@ const go = `import (
 api := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
 post, err := api.Posts.Send(context.TODO(), &peal.NewPost{
-	WorkspaceID:    "${workspaceId}",
 	Wait:           peal.String("${wait}"),
 	IdempotencyKey: peal.String("${idempotencyKey}"),
 	ChannelIDs: []string{
@@ -166,7 +163,6 @@ const ruby = `require "peal"
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
 post = peal.posts.send_(
-  workspace_id: "${workspaceId}",
   wait: "${wait}",
   idempotency_key: "${idempotencyKey}",
   channel_ids: [
@@ -195,7 +191,6 @@ PealClient peal = PealClient.builder()
     .build();
 
 Post post = peal.posts().send(
-    "${workspaceId}",
     NewPost.builder()
         .content(PostContent.builder()
             .text("${postText}")
@@ -218,7 +213,6 @@ use Peal\\Types\\PostTimingNow;
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
 $post = $peal->posts->send(
-    '${workspaceId}',
     new NewPost([
         'wait' => '${wait}',
         'idempotencyKey' => '${idempotencyKey}',
@@ -241,13 +235,12 @@ const dotnet = `using Peal;
 
 var peal = new PealClient(
     Environment.GetEnvironmentVariable("PEAL_API_KEY"),
-    new ClientOptions { Timeout = TimeSpan.FromSeconds(60) }
+    clientOptions: new ClientOptions { Timeout = TimeSpan.FromSeconds(60) }
 );
 
 var post = await peal.Posts.SendAsync(
     new NewPost
     {
-        WorkspaceId = "${workspaceId}",
         Wait = "${wait}",
         IdempotencyKey = "${idempotencyKey}",
         ChannelIds = new List<string>
@@ -272,7 +265,6 @@ let peal = PealClient::new(ClientConfig {
 let post = peal
     .posts
     .send(
-        "${workspaceId}",
         &NewPost::builder()
             .channel_ids(vec![
                 "${first}".to_string(),
@@ -311,7 +303,7 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
       names: [
         {
           file: "src/Peal/PealClient.cs",
-          name: "public PealClient(string token, ClientOptions? clientOptions",
+          name: "public PealClient(string token, string? workspace = null, ClientOptions? clientOptions",
         },
         {
           file: "src/Peal/Core/Public/ClientOptions.cs",
@@ -324,10 +316,6 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
         {
           file: "src/Peal/Posts/Requests/NewPost.cs",
           name: "public string? IdempotencyKey",
-        },
-        {
-          file: "src/Peal/Posts/Requests/NewPost.cs",
-          name: "public required string WorkspaceId",
         },
         {
           file: "src/Peal/Types/PostTiming.cs",
@@ -369,7 +357,7 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     label: "Java",
     sdk: {
       call: "peal.posts().send(",
-      declaration: "public Post send(String workspaceId, NewPost request)",
+      declaration: "public Post send(NewPost request)",
       folder: "java",
       names: [
         {
@@ -399,7 +387,7 @@ export const publishSnippets: Readonly<Record<RequestLanguage, Snippet>> = {
     label: "PHP",
     sdk: {
       call: "$peal->posts->send(",
-      declaration: "public function send(string $workspaceId, NewPost $request",
+      declaration: "public function send(NewPost $request",
       folder: "php",
       names: [
         {

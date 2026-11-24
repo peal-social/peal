@@ -196,19 +196,19 @@ The same rules, with curl. `Idempotency-Key` is required to create.
 
 ```sh
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/ads/accounts"
+  "$PEAL_API_URL/api/v1/ads/accounts"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" -d @boost.json \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/ads/boosts/quote"
+  "$PEAL_API_URL/api/v1/ads/boosts/quote"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" -H "Idempotency-Key: <key>" -d @boost.json \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/ads/boosts"
+  "$PEAL_API_URL/api/v1/ads/boosts"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/ads/boosts/<boost-id>"
+  "$PEAL_API_URL/api/v1/ads/boosts/<boost-id>"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/ads/boosts/<boost-id>/pause"
+  "$PEAL_API_URL/api/v1/ads/boosts/<boost-id>/pause"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/ads/boosts/<boost-id>/stop"
+  "$PEAL_API_URL/api/v1/ads/boosts/<boost-id>/stop"
 ```
 
 Over HTTP the body's `budget.amount` is in minor units (5000 for 50.00 EUR),

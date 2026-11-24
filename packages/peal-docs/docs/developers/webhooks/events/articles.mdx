@@ -8,7 +8,7 @@ sidebar:
 
 ## What article events hold [#article-events]
 
-An [article](/guides/channels/websites#articles) goes to one website, through its channel. Its events name the article and the channel, never what the article says. For that, read it through the API, with `GET /api/workspaces/{workspaceId}/articles/{articleId}`.
+An [article](/guides/channels/websites#articles) goes to one website, through its channel. Its events name the article and the channel, never what the article says. For that, read it through the API, with `GET /api/v1/articles/{articleId}`.
 
 When a site's answer is lost and Peal can't find the article there, the article ends `unconfirmed`, and no event reports it. If your integration waits for an article to end, read its state from the API.
 
