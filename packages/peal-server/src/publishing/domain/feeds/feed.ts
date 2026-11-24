@@ -91,7 +91,7 @@ export interface FeedValidators {
 }
 
 /**
- * A web feed a workspace follows (`#publishing/application/feeds.ts`):
+ * A web feed a workspace follows (`#publishing/application/feeds/feeds.ts`):
  * read every `feedCheckInterval`, each item it had not held before
  * becomes a draft (`draft`) or a post on a queue's next free slot
  * (`queue`: the queue named, or the workspace's default), for its
