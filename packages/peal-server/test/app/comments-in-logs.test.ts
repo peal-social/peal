@@ -164,8 +164,8 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const statuses = yield* Effect.forEach(
             [
               // Read: the list, then the thread with the comment whole.
-              { path: `${base}/threads` },
-              { path: `${base}/threads/${thread.id}` },
+              { path: `${base}/comments/threads` },
+              { path: `${base}/comments/threads/${thread.id}` },
               // Refused: Mastodon hides nobody's reply.
               { body: { action: "hide" }, path: `${comments}/moderation` },
               // Unreadable: far longer than a reply may be.
@@ -190,7 +190,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const all = written();
 
           // The requests were written about, the failure with its cause.
-          assert.include(all, `/inbox/threads/${thread.id}`);
+          assert.include(all, `/inbox/comments/threads/${thread.id}`);
           assert.include(all, "SendReplyV1 is not registered");
           assert.isAbove(spans.length, 10);
 

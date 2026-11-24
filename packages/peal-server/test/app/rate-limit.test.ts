@@ -159,7 +159,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const replies = yield* Effect.forEach(
             [
-              { path: `${base}/inbox/threads` },
+              { path: `${base}/inbox/comments/threads` },
               { path: `${base}/analytics/dashboard?${days}` },
               { path: exported },
               {
@@ -169,7 +169,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
               { path: `${base}/analytics/export?kind=accounts&${days}` },
               // Past the five of this minute.
               { path: exported },
-              { path: `${base}/inbox/threads` },
+              { path: `${base}/inbox/comments/threads` },
             ],
             (request) => app.request(request.path, { ...request, headers }),
             { concurrency: 1 }

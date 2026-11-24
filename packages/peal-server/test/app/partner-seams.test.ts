@@ -204,7 +204,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 },
                 path: "/posts/import",
               },
-              { body: undefined, path: "/posts/search?status=scheduled" },
+              { body: undefined, path: "/posts?status=scheduled" },
             ].map(({ body, path }) => ({
               body,
               path: `/api/v1${path}`,
@@ -375,7 +375,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(renamed.status, 200);
 
           // A draft, a check, a dry run and several posts at once.
-          const drafted = yield* app.request(`${base}/posts`, {
+          const drafted = yield* app.request(`${base}/posts/drafts`, {
             body: { channelIds: [], content: content("A synthetic draft.") },
             headers: { ...headers, ...forWorkspace(customer.id) },
           });
@@ -410,7 +410,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             headers: { ...headers, ...forWorkspace(customer.id) },
           });
 
-          const log = yield* app.request(`${base}/activity`, {
+          const log = yield* app.request(`${base}/workspace/activity`, {
             headers: { ...headers, ...forWorkspace(customer.id) },
           });
 
@@ -449,7 +449,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // A key without the permission does not read the log.
           const plain = yield* keyOf(owner, home);
 
-          const denied = yield* app.request(`${base}/activity`, {
+          const denied = yield* app.request(`${base}/workspace/activity`, {
             headers: { ...bearer(plain.key), ...forWorkspace(customer.id) },
           });
 

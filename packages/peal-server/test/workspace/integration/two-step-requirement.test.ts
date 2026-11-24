@@ -290,7 +290,7 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
             headers: { ...asPerson(member), ...forWorkspace(workspaceId) },
           });
 
-          const written = yield* app.request(posts, {
+          const written = yield* app.request(`${posts}/drafts`, {
             body: draft,
             headers: { ...asPerson(member), ...forWorkspace(workspaceId) },
           });
@@ -361,7 +361,7 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
             200
           );
 
-          const created = yield* app.request(posts, {
+          const created = yield* app.request(`${posts}/drafts`, {
             body: draft,
             headers: { ...bearer(key), ...forWorkspace(workspaceId) },
           });

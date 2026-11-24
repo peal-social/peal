@@ -45,6 +45,34 @@ const kebabCase = (segment: string) =>
 // The session's own billing actions share the billing reads' paths.
 const pathExempt = new Set(["workspace.billingActions"]);
 
+// Whether the path's static segments spell the group's namespace.
+const spells = ({ group, path }: Operation) => {
+  const statics = path
+    .slice("/api/v1/".length)
+    .split("/")
+    .filter((segment) => !segment.startsWith(":"));
+
+  const [first, ...rest] = group.split(".").map(kebabCase);
+
+  if (statics[0] !== first) {
+    return false;
+  }
+
+  let at = 1;
+
+  for (const segment of rest) {
+    const found = statics.indexOf(segment, at);
+
+    if (found === -1) {
+      return false;
+    }
+
+    at = found + 1;
+  }
+
+  return true;
+};
+
 describe("the API's namespaces", () => {
   it("names each group with camelCase segments, and each endpoint with one", () => {
     expect(
@@ -60,34 +88,6 @@ describe("the API's namespaces", () => {
   });
 
   it("puts a namespace's paths under /api/v1, its segments in order", () => {
-    // Whether the path's static segments spell the group's namespace.
-    const spells = ({ group, path }: Operation) => {
-      const statics = path
-        .slice("/api/v1/".length)
-        .split("/")
-        .filter((segment) => !segment.startsWith(":"));
-
-      const [first, ...rest] = group.split(".").map(kebabCase);
-
-      if (statics[0] !== first) {
-        return false;
-      }
-
-      let at = 1;
-
-      for (const segment of rest) {
-        const found = statics.indexOf(segment, at);
-
-        if (found === -1) {
-          return false;
-        }
-
-        at = found + 1;
-      }
-
-      return true;
-    };
-
     const strays = operations.flatMap((operation) =>
       operation.path.startsWith("/api/v1/") &&
       !pathExempt.has(operation.group) &&

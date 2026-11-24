@@ -300,9 +300,9 @@ const workspaceRows = {
     sql`SELECT count(*)::int AS count FROM review.approval_requests WHERE workspace_id = ${id}`,
   "review.comments": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM review.comments WHERE workspace_id = ${id}`,
-  "approvals.listLinks": (sql, id) =>
+  "review.links": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM review.links WHERE workspace_id = ${id}`,
-  "approvals.settings": (sql, id) =>
+  "review.settings": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM review.settings WHERE workspace_id = ${id}`,
   // Its short links' clicks go with their links.
   "shortlinks.clicks": (sql, id) =>
@@ -471,9 +471,9 @@ const userRows = {
     sql`SELECT count(*)::int AS count FROM review.approval_requests WHERE requested_by = ${id} OR decided_by_user_id = ${id}`,
   "review.comments": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM review.comments WHERE author_user_id = ${id} OR resolved_by_user_id = ${id}`,
-  "approvals.listLinks": (sql, id) =>
+  "review.links": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM review.links WHERE created_by = ${id}`,
-  "approvals.settings": (sql, id) =>
+  "review.settings": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM review.settings WHERE updated_by = ${id}`,
   // What staff did to them: the events stay, without them and without the
   // reason given about them. What they did as staff keeps their id (below).

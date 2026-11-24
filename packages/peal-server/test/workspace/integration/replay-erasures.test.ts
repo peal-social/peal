@@ -446,9 +446,9 @@ layer(ReplayTest, { excludeTestServices: true, timeout: "180 seconds" })(
           // What the partner's key leaves there: a connect link, a draft,
           // and the workspace's log of both.
           for (const [path, body] of [
-            ["/connect-links", { platform: "mastodon" }],
+            ["/channels/connect-links", { platform: "mastodon" }],
             [
-              "/posts",
+              "/posts/drafts",
               {
                 channelIds: [],
                 content: { media: [], overrides: [], text: "A draft." },

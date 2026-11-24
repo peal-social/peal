@@ -141,7 +141,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const reads = yield* Effect.forEach(
             [
-              `${base}/inbox/threads/${thread.id}`,
+              `${base}/inbox/comments/threads/${thread.id}`,
               `${base}/analytics/export?kind=posts&${days}`,
               `${base}/analytics/export?kind=accounts&format=json&${days}`,
             ],
@@ -154,7 +154,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           const log = yield* app
-            .request(`${base}/activity`, {
+            .request(`${base}/workspace/activity`, {
               headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
             })
             .pipe(Effect.flatMap((reply) => bodyOf(PageJsonSchema, reply)));

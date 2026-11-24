@@ -127,7 +127,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const secretText = `A synthetic draft staff wrote ${randomUUID()}`;
           const posts = `/api/v1/posts`;
 
-          const created = yield* app.request(posts, {
+          const created = yield* app.request(`${posts}/drafts`, {
             body: draftOf(secretText),
             headers: { cookie: actingAs, ...forWorkspace(workspaceId) },
           });

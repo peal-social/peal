@@ -105,7 +105,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const withKey = { authorization: `Bearer ${writer.key}` };
 
           // A write with a key, which succeeds.
-          const created = yield* app.request(posts, {
+          const created = yield* app.request(`${posts}/drafts`, {
             body: draft,
             headers: {
               ...withKey,
@@ -117,7 +117,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(created.status, 201);
 
           // One the key may not make.
-          const refused = yield* app.request(posts, {
+          const refused = yield* app.request(`${posts}/drafts`, {
             body: draft,
             headers: {
               authorization: `Bearer ${reader.key}`,
@@ -129,7 +129,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(refused.status, 403);
 
           // One that fails: no such post.
-          const failed = yield* app.request(`${posts}/${unknownPost}`, {
+          const failed = yield* app.request(`${posts}/drafts/${unknownPost}`, {
             headers: {
               ...withKey,
               "x-request-id": "activity-test-0003",
@@ -141,7 +141,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(failed.status, 404);
 
           // One the API cannot read.
-          const invalid = yield* app.request(posts, {
+          const invalid = yield* app.request(`${posts}/drafts`, {
             body: { channelIds: "none" },
             headers: {
               ...withKey,
