@@ -400,7 +400,8 @@ copy run without Pulumi, and for what Pulumi does in their place.
    `bun nx run peal-server:media-cors`, from your machine, with a token that
    may change the bucket's settings, or paste the policy it prints into the
    dashboard (R2 › the bucket › Settings › CORS policy), which needs no such
-   token.
+   token. On Peal's own environments the rule is Pulumi's: never run the
+   command there.
 
 5. **Telegram** ([Telegram](#telegram)): three bots from @BotFather, one for
    each server that alerts, and two private channels.

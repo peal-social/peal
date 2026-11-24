@@ -185,10 +185,11 @@ export const sandboxResources = [
       rules: [
         {
           allowed: {
-            headers: ["content-type", "if-none-match"],
-            methods: ["PUT"],
+            headers: ["content-type", "if-none-match", "range"],
+            methods: ["GET", "PUT"],
             origins: ["https://sandbox.example.test"],
           },
+          exposeHeaders: ["accept-ranges", "content-length", "content-range"],
           maxAgeSeconds: 3600,
         },
       ],
