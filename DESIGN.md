@@ -1363,9 +1363,9 @@ thing over a period of its own.
 - **`widget`** — A `card` (24 px inside). Its header holds the name
   (`card-title`) with one muted line under it, the period and, where it
   shows one, the channel ("This year · @peal.social"), and at its end two
-  buttons: **Filter**, the list's Filter menu for this widget (a
-  `list-tool-button`, its border and icon blue while the widget shows
-  other than its own; its menu searches the widget's properties, Period
+  `icon-sm` ghost buttons: **Filter**, the list's Filter menu for this
+  widget (a quiet `list-tool-button`: no border, no background, its icon
+  blue while the widget shows other than its own, its tooltip "Filter"; its menu searches the widget's properties, Period
   and, where it may show one, Channel, each a page of its values, a
   channel with its platform's mark) and the ghost **…**
   (Duplicate, Rename, then Remove in destructive text). Remove and Reset layout say so in a toast with

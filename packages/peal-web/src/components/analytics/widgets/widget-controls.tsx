@@ -99,6 +99,7 @@ export const WidgetFilter = ({
         period: [period],
       }}
       label={t("filter", { name })}
+      quiet
       shortcut={false}
       properties={properties}
       state={menu}

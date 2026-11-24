@@ -119,15 +119,21 @@ export const FilterMenu = ({
   label,
   onChoose,
   properties,
+  quiet = false,
   shortcut = true,
   state,
 }: {
   /** Whether the button shows the list narrowed: by default, a value is chosen. */
   readonly active?: boolean;
-  /** The button's name, "Filter" unless the menu filters one thing of many. */
+  /**
+   * The button's accessible name, "Filter" unless the menu filters one
+   * thing of many; its tooltip says "Filter" either way.
+   */
   readonly label?: string;
   /** Whether the button names F, the list's key for it. */
   readonly shortcut?: boolean;
+  /** A ghost button, for a filter in a card's header rather than a toolbar. */
+  readonly quiet?: boolean;
   /** The values chosen for each property, by the property's id. */
   readonly chosen: Readonly<Record<string, readonly string[]>>;
   readonly onChoose: (property: string, values: readonly string[]) => void;
@@ -210,6 +216,7 @@ export const FilterMenu = ({
             <PopoverTrigger
               render={
                 <ListToolButton
+                  quiet={quiet}
                   aria-label={label ?? t("filter")}
                   aria-keyshortcuts={
                     shortcut ? hint.ariaKeyshortcuts : undefined
@@ -226,7 +233,7 @@ export const FilterMenu = ({
           <ListFilterIcon aria-hidden />
         </TooltipTrigger>
         <TooltipContent>
-          {label ?? t("filter")}
+          {t("filter")}
           {shortcut ? ` ${hint.text}` : null}
         </TooltipContent>
       </Tooltip>

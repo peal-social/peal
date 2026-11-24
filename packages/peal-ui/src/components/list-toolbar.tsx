@@ -42,15 +42,26 @@ const ListToolbarEnd = ({
 const ListToolButton = ({
   active = false,
   className,
+  quiet = false,
   ...props
-}: React.ComponentProps<"button"> & { readonly active?: boolean }) => (
+}: React.ComponentProps<"button"> & {
+  readonly active?: boolean;
+  /**
+   * Ghost, as a card's other header buttons are, where the button sits in
+   * a card rather than a list's toolbar: no border, no background, its
+   * icon blue while active.
+   */
+  readonly quiet?: boolean;
+}) => (
   <button
     type="button"
     data-slot="list-tool-button"
     data-active={active ? "" : undefined}
     className={cn(
-      buttonVariants({ size: "icon-sm", variant: "outline" }),
-      "data-[active]:border-brand data-[active]:text-brand-text",
+      buttonVariants({ size: "icon-sm", variant: quiet ? "ghost" : "outline" }),
+      quiet
+        ? "data-[active]:text-brand-text"
+        : "data-[active]:border-brand data-[active]:text-brand-text",
       className
     )}
     {...props}
