@@ -1,9 +1,11 @@
 import { once } from "node:events";
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { buffer } from "node:stream/consumers";
 
 import { Effect, Schema } from "effect";
+
+import { fakeHandler } from "#test/shared/fake-handler.ts";
+import { receivedBody } from "#test/shared/received-body.ts";
 
 /** A request a fake platform received, with its body's bytes. */
 export interface PlatformRequest {
@@ -203,7 +205,13 @@ export const platformServer = (
         incoming: IncomingMessage,
         response: ServerResponse
       ) => {
-        const body = new Uint8Array(await buffer(incoming));
+        const bytes = await receivedBody(incoming);
+
+        if (bytes === undefined) {
+          return;
+        }
+
+        const body = new Uint8Array(bytes);
         const url = new URL(incoming.url ?? "/", origin);
 
         const request: PlatformRequest = {
@@ -219,9 +227,7 @@ export const platformServer = (
         send(response, await handle(request, origin));
       };
 
-      const server = createServer((incoming, response) => {
-        void answer(incoming, response);
-      });
+      const server = createServer(fakeHandler(answer));
 
       server.listen(0, "127.0.0.1");
       await once(server, "listening");
