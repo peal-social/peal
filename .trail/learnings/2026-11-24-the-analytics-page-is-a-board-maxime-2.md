@@ -3,7 +3,7 @@ title: "The analytics page is a board of widgets kept in the person's browser, m
 author: Maxime
 date: 2026-11-24
 branch: worktree-silly-imagining-snowglobe
-cost: { minutes: 65, tokens: 484916 }
+cost: { minutes: 67, tokens: 497525 }
 id: l-35173635
 scope: repo
 status: active
@@ -38,6 +38,9 @@ In the code: packages/peal-web/src/components/analytics/widgets/widget-controls.
 The owner (2026-11-24) found four pills on hover noisy and an off-centre grip odd: each edge is a strip along its whole length whose pill shows only while hovered, focused or pulled; the grip spans the 24 px gap (w-6, icon centred), halfway between two widgets.
 
 In the code: packages/peal-web/src/components/analytics/widgets/analytics-board.tsx (handlePlaces, data-pulled, SortableWidget's grip).
+The owner (2026-11-24) wants a widget's filter button to look like the "…" beside it: transparent, no border, no background, its icon blue while the widget is filtered, and its tooltip only "Filter" (the accessible name still names the widget, for screen readers). List toolbars keep the outline Filter button.
+
+In the code: packages/peal-ui/src/components/list-toolbar.tsx (ListToolButton quiet), packages/peal-web/src/components/lists/filter-menu.tsx (quiet, tooltip), widget-controls.tsx.
 
 ## Tried and ruled out
 Keeping the board on the server. It would need a contract endpoint, regenerating the eight SDKs, a table and migration, an entry in the data-processing registry with the privacy policy's table in both languages, and erasure on account and workspace deletion. That is too much for a layout. Move it to the server only once people ask for the same board across devices.
