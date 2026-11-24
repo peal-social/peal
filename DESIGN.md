@@ -1363,12 +1363,15 @@ thing over a period of its own.
 - **`widget`** — A `card` (24 px inside). Its header holds the name
   (`card-title`) with one muted line under it, the period and, where it
   shows one, the channel ("This year · @peal.social"), and at its end two
-  `icon-sm` ghost buttons: **Filter** (a popover with Period and,
-  where the widget may show one channel, Channel; a 6 px `brand` dot on
-  the button while either differs from the widget's own) and **…**
+  buttons: **Filter**, the list's Filter menu for this widget (a
+  `list-tool-button`, its border and icon blue while the widget shows
+  other than its own; its menu searches the widget's properties, Period
+  and, where it may show one, Channel, each a page of its values, a
+  channel with its platform's mark) and the ghost **…**
   (Duplicate, Rename, then Remove in destructive text). Remove and Reset layout say so in a toast with
-  **Undo**. A handle at the card's start edge, shown on hover and focus,
-  picks it up: it follows the pointer in any direction, lifted (2 %
+  **Undo**. A grip just outside the card's start edge, beside its name
+  (no border, `muted-foreground`), shown on hover and focus, picks it
+  up: it follows the pointer in any direction, lifted (2 %
   larger, a deep shadow), while the others glide aside and a dashed
   `muted` slot shows where it lands; let go, it settles into the slot; Space picks it up from the keyboard, the arrows carry
   it and Space puts it down. Every edge and corner resizes it: a pill

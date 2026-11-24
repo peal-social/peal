@@ -153,7 +153,7 @@ const SortableWidget = ({
           type="button"
           aria-label={dragLabel}
           title={dragLabel}
-          className="text-muted-foreground hover:bg-muted bg-card focus-visible:ring-ring absolute top-6 left-0 z-10 hidden -translate-x-1/2 cursor-grab touch-none rounded-sm border py-1 opacity-0 transition-opacity outline-none select-none group-hover/widget:opacity-100 group-data-[dragging]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 active:cursor-grabbing sm:block"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring absolute top-6 right-full z-10 mr-1 hidden cursor-grab touch-none rounded-sm p-0.5 opacity-0 transition-opacity outline-none select-none group-hover/widget:opacity-100 group-data-[dragging]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 active:cursor-grabbing sm:block"
         >
           <GripVerticalIcon aria-hidden className="size-4" />
         </button>

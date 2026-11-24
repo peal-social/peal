@@ -1,6 +1,6 @@
 "use client";
 
-import { EllipsisIcon, ListFilterIcon } from "lucide-react";
+import { CalendarIcon, EllipsisIcon, RadioTowerIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { SocialChannel } from "peal-contract";
 import { Button } from "peal-ui/components/button";
@@ -22,29 +22,23 @@ import {
 } from "peal-ui/components/dropdown-menu";
 import { Input } from "peal-ui/components/input";
 import { Label } from "peal-ui/components/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "peal-ui/components/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "peal-ui/components/select";
 import { useId, useState } from "react";
 
 import { kinds, maxTitleLength } from "#analytics/widgets.ts";
 import type { Period, WidgetKind } from "#analytics/widgets.ts";
 import { channelName } from "#channels/channel-name.ts";
-
-const allChannels = "all";
+import { PlatformMark } from "#components/channels/platform-mark.tsx";
+import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
+import type { FilterProperty } from "#components/lists/filter-menu.tsx";
 
 /**
- * A widget's filter: its period and, where its kind may show one, its
- * channel. A dot marks the button while either is not the kind's own.
+ * A widget's filter, the list's Filter menu (DESIGN.md, "Lists: filters
+ * and display") for one widget: an outline icon button, blue while the
+ * widget shows other than its own; its menu searches the widget's
+ * properties, Period and, where its kind may show one, Channel, each a
+ * page of values. A period is always chosen: choosing the one shown
+ * again keeps it. A channel chosen again shows every channel, but where
+ * the kind needs one.
  */
 export const WidgetFilter = ({
   channelId,
@@ -64,97 +58,68 @@ export const WidgetFilter = ({
   readonly period: Period;
 }) => {
   const t = useTranslations("Analytics.widgets");
-  const periodLabel = useId();
-  const channelLabel = useId();
+  const menu = useFilterMenu({ shortcut: false });
   const described = kinds[kind];
+  const byChannel = described.channel !== "none" && channels.length > 0;
 
-  const changed =
-    period !== described.period ||
-    (described.channel === "optional" && channelId !== null);
-
-  const chosen = channels.find(({ id }) => id === channelId);
+  const properties: readonly FilterProperty[] = [
+    {
+      icon: CalendarIcon,
+      id: "period",
+      label: t("periodLabel"),
+      values: described.periods.map((each) => ({
+        id: each,
+        label: t("period", { period: each }),
+      })),
+    },
+    ...(byChannel
+      ? [
+          {
+            icon: RadioTowerIcon,
+            id: "channel",
+            label: t("channelLabel"),
+            values: channels.map((channel) => ({
+              id: channel.id,
+              label: channelName(channel),
+              mark: <PlatformMark platform={channel.platform} />,
+            })),
+          },
+        ]
+      : []),
+  ];
 
   return (
-    <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t("filter", { name })}
-            className="relative"
-          />
-        }
-      >
-        <ListFilterIcon aria-hidden />
-        {changed ? (
-          <span
-            aria-hidden="true"
-            className="bg-brand absolute top-1 right-1 size-1.5 rounded-full"
-          />
-        ) : null}
-      </PopoverTrigger>
-      <PopoverContent align="end">
-        <p className="text-muted-foreground text-xs">{t("filterBy")}</p>
-        <div className="flex flex-col gap-1.5">
-          <Label id={periodLabel}>{t("periodLabel")}</Label>
-          <Select
-            value={period}
-            onValueChange={(value: string | null) => {
-              const found = described.periods.find((each) => each === value);
+    <FilterMenu
+      active={
+        period !== described.period ||
+        (described.channel === "optional" && channelId !== null)
+      }
+      chosen={{
+        channel: channelId === null ? [] : [channelId],
+        period: [period],
+      }}
+      label={t("filter", { name })}
+      shortcut={false}
+      properties={properties}
+      state={menu}
+      onChoose={(property, values) => {
+        const [value] = values;
 
-              if (found !== undefined) {
-                onPeriod(found);
-              }
-            }}
-          >
-            <SelectTrigger aria-labelledby={periodLabel} className="w-full">
-              <SelectValue>{t("period", { period })}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {described.periods.map((each) => (
-                <SelectItem key={each} value={each}>
-                  {t("period", { period: each })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {described.channel === "none" || channels.length === 0 ? null : (
-          <div className="flex flex-col gap-1.5">
-            <Label id={channelLabel}>{t("channelLabel")}</Label>
-            <Select
-              value={channelId ?? allChannels}
-              onValueChange={(value: string | null) => {
-                if (value !== null) {
-                  onChannel(value === allChannels ? null : value);
-                }
-              }}
-            >
-              <SelectTrigger aria-labelledby={channelLabel} className="w-full">
-                <SelectValue>
-                  {chosen === undefined
-                    ? t("allChannels")
-                    : channelName(chosen)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {described.channel === "optional" ? (
-                  <SelectItem value={allChannels}>
-                    {t("allChannels")}
-                  </SelectItem>
-                ) : null}
-                {channels.map((each) => (
-                  <SelectItem key={each.id} value={each.id}>
-                    {channelName(each)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-      </PopoverContent>
-    </Popover>
+        if (property === "period") {
+          const found = described.periods.find((each) => each === value);
+
+          if (found !== undefined) {
+            onPeriod(found);
+          }
+
+          return;
+        }
+
+        if (value !== undefined || described.channel === "optional") {
+          onChannel(value ?? null);
+        }
+      }}
+    />
   );
 };
 

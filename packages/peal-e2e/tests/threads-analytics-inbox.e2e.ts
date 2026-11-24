@@ -165,9 +165,8 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     const followers = screen.getByRole("article", "Followers");
 
     await followers.getByRole("button", "Filter Followers").tap();
-    await screen.getByRole("combobox", "Period").tap();
+    await screen.getByRole("option", "Period").tap();
     await screen.getByRole("option", "Last 7 days").tap();
-    await screen.getByRole("combobox", "Period").press("Escape");
 
     await expect(followers).toContainText("Last 7 days");
     await expect(exports).toContainText("Last 30 days");
