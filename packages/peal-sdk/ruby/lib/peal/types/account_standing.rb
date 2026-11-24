@@ -7,13 +7,13 @@ module Peal
     class AccountStanding < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::AccountStandingUnrestricted }, key: "UNRESTRICTED"
+      member -> { Peal::Types::AccountStandingUnrestricted }, key: "unrestricted"
 
-      member -> { Peal::Types::AccountStandingRead }, key: "READ"
+      member -> { Peal::Types::AccountStandingRead }, key: "read"
 
-      member -> { Peal::Types::AccountStandingUnread }, key: "UNREAD"
+      member -> { Peal::Types::AccountStandingUnread }, key: "unread"
     end
   end
 end

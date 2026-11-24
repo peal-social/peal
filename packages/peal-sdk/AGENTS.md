@@ -14,7 +14,10 @@
   of objects with a one-value `_tag`) as Fern reads one: a `oneOf` with a
   discriminator mapping each tag to a schema, a member written inline
   becoming `<Schema><Tag>` (`ChannelStatusDisabled`); the SDKs that rename
-  properties call `_tag` `type`, as Fern refuses a leading underscore. Each
+  properties call `_tag` `type`, as Fern refuses a leading underscore.
+  Ruby's generator then reads the tag under `type` and keys each member in
+  capitals (`API_KEY` for `apiKey`), and has no option for either: see
+  `finish.ts` below. Each
   operation's SDK group and method come from its operationId
   (`posts.schedule`; `inbox.messages.send` writes the group as a list,
   `["inbox", "messages"]`, which every generator nests:
@@ -85,6 +88,15 @@
   deletes (OkHttp's JVM artifact is `okhttp-jvm` to Maven). Each replacement
   fails when its text is missing, so a generator upgrade that changes its
   output stops there: update the replacement.
+- Ruby's tagged unions are finished there too (`scripts/ruby-unions.ts`):
+  each union file reads its discriminant under the property the API sends
+  (`_tag`, or `platform` for the channels' options) and keys each member by
+  its tag, both read from the document through the member's schema, and
+  any member, property or key the document does not account for stops the
+  run. The runtime records the tag of a member given as its own type
+  (`SignatureScopeChannel.new(…)`), so `to_h` sends it, and a union that is
+  a request's whole body (`channels.connect_chat`) is built as its member,
+  whose fields then take their API names.
 - The SDKs' manifests keep the generator's dependency ranges, and their lock
   files (`Gemfile.lock`, `composer.lock`, `Cargo.lock`) stay out of Git: a
   library leaves its dependencies' versions to the projects that install it.
@@ -124,9 +136,10 @@
   holds nulls and an enum, then with a refused token, which must raise the
   SDK's 401 error. Keep every test calling both, and checking what it
   decodes; the run fails when the stand-in did not see both calls. Ruby's
-  generator looks for a union's tag under `type`, where the API sends
-  `_tag`, so its tagged unions come back as the parsed JSON: its test reads
-  that.
+  test also lists the channels and creates a signature (`testsUnions` in
+  `languages.ts`): statuses decoded as their members in a list, some with
+  no field beside their tag, and a scope sent as its member's type; the run
+  fails when that scope went out without its `_tag`.
   Containers reach it as `host.docker.internal`; Ruby's client sends plain
   HTTP to localhost alone, so its test forwards from its container's
   loopback. Fern's own tests (Go's call WireMock) do not run.

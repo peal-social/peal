@@ -136,9 +136,11 @@ module Peal
           coerced = Utils.coerce(type, value, strict: strict)
 
           # For discriminated unions, store the discriminant info on the coerced instance
-          # so it can be injected back during serialization (to_h)
-          if discriminated? && value.is_a?(::Hash) && coerced.is_a?(Model)
-            discriminant_value = value.fetch(@discriminant, nil) || value.fetch(@discriminant.to_s, nil)
+          # so it can be injected back during serialization (to_h): the value's own, or the
+          # key of the member a model given as such is
+          if discriminated? && coerced.is_a?(Model)
+            discriminant_value = (value.fetch(@discriminant, nil) || value.fetch(@discriminant.to_s, nil) if value.is_a?(::Hash))
+            discriminant_value ||= members.find { |_key, member_type| member_type.call == type }&.first
             if discriminant_value
               coerced.instance_variable_set(:@_fern_union_discriminant_key, @discriminant.to_s)
               coerced.instance_variable_set(:@_fern_union_discriminant_value, discriminant_value)

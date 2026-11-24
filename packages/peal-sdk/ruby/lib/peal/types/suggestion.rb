@@ -7,11 +7,11 @@ module Peal
     class Suggestion < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::SuggestionText }, key: "TEXT"
+      member -> { Peal::Types::SuggestionText }, key: "text"
 
-      member -> { Peal::Types::SuggestionHashtags }, key: "HASHTAGS"
+      member -> { Peal::Types::SuggestionHashtags }, key: "hashtags"
     end
   end
 end

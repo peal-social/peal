@@ -7,13 +7,13 @@ module Peal
     class SignatureScope < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::SignatureScopeWorkspace }, key: "WORKSPACE"
+      member -> { Peal::Types::SignatureScopeWorkspace }, key: "workspace"
 
-      member -> { Peal::Types::SignatureScopePlatform }, key: "PLATFORM"
+      member -> { Peal::Types::SignatureScopePlatform }, key: "platform"
 
-      member -> { Peal::Types::SignatureScopeChannel }, key: "CHANNEL"
+      member -> { Peal::Types::SignatureScopeChannel }, key: "channel"
     end
   end
 end

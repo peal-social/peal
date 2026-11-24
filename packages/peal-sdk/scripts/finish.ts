@@ -17,6 +17,7 @@ import {
   sourceUrl,
 } from "./languages.ts";
 import type { Language, LanguageName } from "./languages.ts";
+import { rubyUnionSource, unionDocument } from "./ruby-unions.ts";
 
 const decodeManifest = Schema.decodeUnknownSync(
   Schema.fromJsonString(Schema.JsonObject)
@@ -465,8 +466,99 @@ const go = async (language: Language, folder: string): Promise<void> => {
   );
 };
 
+/** The document the SDKs are generated from, which generate.ts requires. */
+const sdkDocument = path.join(import.meta.dirname, "..", "openapi.json");
+
+const decodeSchemas = Schema.decodeUnknownSync(
+  Schema.fromJsonString(
+    Schema.Struct({
+      components: Schema.Struct({ schemas: Schema.JsonObject }),
+    })
+  )
+);
+
+/** A union built straight from a method's keyword arguments, as its body. */
+const unionBody =
+  /(?<prefix>Peal::Types::(?<className>\w+))\.new\((?<arguments>params|body_params)\)\.to_h/gu;
+
+/**
+ * Ruby's tagged unions, as the API sends and reads them (ruby-unions.ts):
+ * each union file reads its discriminant and keys its members as the
+ * document gives them. A member given as its own type
+ * (`Peal::Types::SignatureScopeChannel.new(…)`) goes through its union,
+ * which records its tag for `to_h`, as a member decoded from JSON has it;
+ * and a union that is a request's whole body is decoded into its member
+ * from the method's arguments, whose fields then take their API names.
+ */
+const rubyUnions = async (folder: string): Promise<void> => {
+  const document = unionDocument(
+    decodeSchemas(await Bun.file(sdkDocument).text()).components.schemas
+  );
+
+  const files = await Array.fromAsync(
+    new Bun.Glob("lib/peal/**/*.rb").scan({ cwd: folder })
+  );
+
+  const unions = new Set<string>();
+
+  await Promise.all(
+    files
+      .filter((file) => !file.startsWith("lib/peal/internal/"))
+      .map(async (file) => {
+        const source = await Bun.file(path.join(folder, file)).text();
+        const rewritten = rubyUnionSource(source, document);
+
+        if (rewritten !== source) {
+          unions.add(
+            /^ *class (?<name>\w+) < /mu.exec(source)?.groups?.["name"] ?? ""
+          );
+          await Bun.write(path.join(folder, file), rewritten);
+        }
+      })
+  );
+
+  if (unions.size === 0) {
+    throw new Error("The Ruby SDK no longer writes tagged unions as expected");
+  }
+
+  await Promise.all(
+    files
+      .filter((file) => file.endsWith("/client.rb"))
+      .map(async (file) => {
+        const source = await Bun.file(path.join(folder, file)).text();
+
+        const rewritten = source.replaceAll(
+          unionBody,
+          (body, prefix: string, className: string, parameters: string) =>
+            unions.has(className)
+              ? `${prefix}.coerce(${parameters}).to_h`
+              : body
+        );
+
+        if (rewritten !== source) {
+          await Bun.write(path.join(folder, file), rewritten);
+        }
+      })
+  );
+
+  await replaceIn(path.join(folder, "lib/peal/internal/types/union.rb"), [
+    [
+      "          # For discriminated unions, store the discriminant info on the coerced instance\n          # so it can be injected back during serialization (to_h)\n          if discriminated? && value.is_a?(::Hash) && coerced.is_a?(Model)\n            discriminant_value = value.fetch(@discriminant, nil) || value.fetch(@discriminant.to_s, nil)\n",
+      "          # For discriminated unions, store the discriminant info on the coerced instance\n          # so it can be injected back during serialization (to_h): the value's own, or the\n          # key of the member a model given as such is\n          if discriminated? && coerced.is_a?(Model)\n            discriminant_value = (value.fetch(@discriminant, nil) || value.fetch(@discriminant.to_s, nil) if value.is_a?(::Hash))\n            discriminant_value ||= members.find { |_key, member_type| member_type.call == type }&.first\n",
+    ],
+  ]);
+
+  await replaceIn(path.join(folder, "lib/peal/internal/types/utils.rb"), [
+    [
+      "            when ::Hash\n              return type.coerce(value, strict: strict)\n            end\n          in Module\n",
+      "            when ::Hash\n              return type.coerce(value, strict: strict)\n            when Model\n              # A union's member given as its own type: the union records its tag\n              return type.coerce(value, strict: strict) if type.is_a?(Union)\n            end\n          in Module\n",
+    ],
+  ]);
+};
+
 const ruby = async (_language: Language, folder: string): Promise<void> => {
   await addInstallation(folder, "```sh\ngem install peal\n```");
+  await rubyUnions(folder);
 };
 
 /**

@@ -7,15 +7,15 @@ module Peal
     class OptionConstraint < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::OptionConstraintNeedsOneOf }, key: "NEEDS_ONE_OF"
+      member -> { Peal::Types::OptionConstraintNeedsOneOf }, key: "needsOneOf"
 
-      member -> { Peal::Types::OptionConstraintNotWith }, key: "NOT_WITH"
+      member -> { Peal::Types::OptionConstraintNotWith }, key: "notWith"
 
-      member -> { Peal::Types::OptionConstraintNeededWith }, key: "NEEDED_WITH"
+      member -> { Peal::Types::OptionConstraintNeededWith }, key: "neededWith"
 
-      member -> { Peal::Types::OptionConstraintOnlyWith }, key: "ONLY_WITH"
+      member -> { Peal::Types::OptionConstraintOnlyWith }, key: "onlyWith"
     end
   end
 end

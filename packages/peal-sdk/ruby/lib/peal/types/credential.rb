@@ -7,13 +7,13 @@ module Peal
     class Credential < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::CredentialUser }, key: "USER"
+      member -> { Peal::Types::CredentialUser }, key: "user"
 
-      member -> { Peal::Types::CredentialAPIKey }, key: "API_KEY"
+      member -> { Peal::Types::CredentialAPIKey }, key: "apiKey"
 
-      member -> { Peal::Types::CredentialPartnerKey }, key: "PARTNER_KEY"
+      member -> { Peal::Types::CredentialPartnerKey }, key: "partnerKey"
     end
   end
 end

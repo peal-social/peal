@@ -7,37 +7,37 @@ module Peal
     class PostRefusal < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::PostContentInvalidEncoded }, key: "POST_CONTENT_INVALID"
+      member -> { Peal::Types::PostContentInvalidEncoded }, key: "PostContentInvalid"
 
-      member -> { Peal::Types::UnknownChannelsEncoded }, key: "UNKNOWN_CHANNELS"
+      member -> { Peal::Types::UnknownChannelsEncoded }, key: "UnknownChannels"
 
-      member -> { Peal::Types::UnknownMediaEncoded }, key: "UNKNOWN_MEDIA"
+      member -> { Peal::Types::UnknownMediaEncoded }, key: "UnknownMedia"
 
-      member -> { Peal::Types::ScheduleInPastEncoded }, key: "SCHEDULE_IN_PAST"
+      member -> { Peal::Types::ScheduleInPastEncoded }, key: "ScheduleInPast"
 
-      member -> { Peal::Types::InvalidTimeZoneEncoded }, key: "INVALID_TIME_ZONE"
+      member -> { Peal::Types::InvalidTimeZoneEncoded }, key: "InvalidTimeZone"
 
-      member -> { Peal::Types::PlanLimitReachedEncoded }, key: "PLAN_LIMIT_REACHED"
+      member -> { Peal::Types::PlanLimitReachedEncoded }, key: "PlanLimitReached"
 
-      member -> { Peal::Types::IdempotencyKeyReusedEncoded }, key: "IDEMPOTENCY_KEY_REUSED"
+      member -> { Peal::Types::IdempotencyKeyReusedEncoded }, key: "IdempotencyKeyReused"
 
-      member -> { Peal::Types::PostNotFoundEncoded }, key: "POST_NOT_FOUND"
+      member -> { Peal::Types::PostNotFoundEncoded }, key: "PostNotFound"
 
-      member -> { Peal::Types::DuplicatePostEncoded }, key: "DUPLICATE_POST"
+      member -> { Peal::Types::DuplicatePostEncoded }, key: "DuplicatePost"
 
-      member -> { Peal::Types::ForbiddenEncoded }, key: "FORBIDDEN"
+      member -> { Peal::Types::ForbiddenEncoded }, key: "Forbidden"
 
-      member -> { Peal::Types::UnknownTagsEncoded }, key: "UNKNOWN_TAGS"
+      member -> { Peal::Types::UnknownTagsEncoded }, key: "UnknownTags"
 
-      member -> { Peal::Types::ChannelSetNotFoundEncoded }, key: "CHANNEL_SET_NOT_FOUND"
+      member -> { Peal::Types::ChannelSetNotFoundEncoded }, key: "ChannelSetNotFound"
 
-      member -> { Peal::Types::SignatureNotFoundEncoded }, key: "SIGNATURE_NOT_FOUND"
+      member -> { Peal::Types::SignatureNotFoundEncoded }, key: "SignatureNotFound"
 
-      member -> { Peal::Types::QueueNotFoundEncoded }, key: "QUEUE_NOT_FOUND"
+      member -> { Peal::Types::QueueNotFoundEncoded }, key: "QueueNotFound"
 
-      member -> { Peal::Types::QueueHasNoRoomEncoded }, key: "QUEUE_HAS_NO_ROOM"
+      member -> { Peal::Types::QueueHasNoRoomEncoded }, key: "QueueHasNoRoom"
     end
   end
 end

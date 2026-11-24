@@ -86,6 +86,9 @@ module Peal
               return value
             when ::Hash
               return type.coerce(value, strict: strict)
+            when Model
+              # A union's member given as its own type: the union records its tag
+              return type.coerce(value, strict: strict) if type.is_a?(Union)
             end
           in Module
             case type

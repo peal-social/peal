@@ -7,11 +7,11 @@ module Peal
     class ConnectOutcome < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ConnectOutcomeConnected }, key: "CONNECTED"
+      member -> { Peal::Types::ConnectOutcomeConnected }, key: "connected"
 
-      member -> { Peal::Types::ConnectOutcomeChoose }, key: "CHOOSE"
+      member -> { Peal::Types::ConnectOutcomeChoose }, key: "choose"
     end
   end
 end

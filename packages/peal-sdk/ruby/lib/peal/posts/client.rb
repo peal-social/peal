@@ -1096,7 +1096,7 @@ module Peal
           base_url: request_options[:base_url],
           method: "POST",
           path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/confirm",
-          body: Peal::Types::TargetConfirmation.new(body_params).to_h,
+          body: Peal::Types::TargetConfirmation.coerce(body_params).to_h,
           request_options: request_options,
           max_retries: 0
         )

@@ -7,11 +7,11 @@ module Peal
     class UploadTarget < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::UploadTargetSingle }, key: "SINGLE"
+      member -> { Peal::Types::UploadTargetSingle }, key: "single"
 
-      member -> { Peal::Types::UploadTargetMultipart }, key: "MULTIPART"
+      member -> { Peal::Types::UploadTargetMultipart }, key: "multipart"
     end
   end
 end

@@ -7,11 +7,11 @@ module Peal
     class BadRequestErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::InvalidDateRangeEncoded }, key: "INVALID_DATE_RANGE"
+      member -> { Peal::Types::InvalidDateRangeEncoded }, key: "InvalidDateRange"
 
-      member -> { Peal::Types::EffectHttpApiErrorBadRequestEncoded }, key: "BAD_REQUEST"
+      member -> { Peal::Types::EffectHttpApiErrorBadRequestEncoded }, key: "BadRequest"
     end
   end
 end

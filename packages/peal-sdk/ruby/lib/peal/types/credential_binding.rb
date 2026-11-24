@@ -7,13 +7,13 @@ module Peal
     class CredentialBinding < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::CredentialBindingUnbound }, key: "UNBOUND"
+      member -> { Peal::Types::CredentialBindingUnbound }, key: "unbound"
 
-      member -> { Peal::Types::CredentialBindingBound }, key: "BOUND"
+      member -> { Peal::Types::CredentialBindingBound }, key: "bound"
 
-      member -> { Peal::Types::CredentialBindingLeft }, key: "LEFT"
+      member -> { Peal::Types::CredentialBindingLeft }, key: "left"
     end
   end
 end

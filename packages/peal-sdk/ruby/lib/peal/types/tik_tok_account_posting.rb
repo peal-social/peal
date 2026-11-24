@@ -7,11 +7,11 @@ module Peal
     class TikTokAccountPosting < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::TikTokAccountPostingReady }, key: "READY"
+      member -> { Peal::Types::TikTokAccountPostingReady }, key: "ready"
 
-      member -> { Peal::Types::TikTokAccountPostingBlocked }, key: "BLOCKED"
+      member -> { Peal::Types::TikTokAccountPostingBlocked }, key: "blocked"
     end
   end
 end

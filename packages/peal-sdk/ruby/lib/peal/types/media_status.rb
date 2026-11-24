@@ -7,15 +7,15 @@ module Peal
     class MediaStatus < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::MediaStatusPending }, key: "PENDING"
+      member -> { Peal::Types::MediaStatusPending }, key: "pending"
 
-      member -> { Peal::Types::MediaStatusUploaded }, key: "UPLOADED"
+      member -> { Peal::Types::MediaStatusUploaded }, key: "uploaded"
 
-      member -> { Peal::Types::MediaStatusReady }, key: "READY"
+      member -> { Peal::Types::MediaStatusReady }, key: "ready"
 
-      member -> { Peal::Types::MediaStatusRejected }, key: "REJECTED"
+      member -> { Peal::Types::MediaStatusRejected }, key: "rejected"
     end
   end
 end

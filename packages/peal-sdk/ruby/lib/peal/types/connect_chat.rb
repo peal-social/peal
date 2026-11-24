@@ -9,9 +9,9 @@ module Peal
 
       discriminant :platform
 
-      member -> { Peal::Types::ConnectDiscordChat }, key: "DISCORD"
+      member -> { Peal::Types::ConnectDiscordChat }, key: "discord"
 
-      member -> { Peal::Types::ConnectTelegramChat }, key: "TELEGRAM"
+      member -> { Peal::Types::ConnectTelegramChat }, key: "telegram"
     end
   end
 end

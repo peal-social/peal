@@ -7,31 +7,31 @@ module Peal
     class ArticleViolation < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ArticleViolationTitleMissing }, key: "TITLE_MISSING"
+      member -> { Peal::Types::ArticleViolationTitleMissing }, key: "titleMissing"
 
-      member -> { Peal::Types::ArticleViolationTitleTooLong }, key: "TITLE_TOO_LONG"
+      member -> { Peal::Types::ArticleViolationTitleTooLong }, key: "titleTooLong"
 
-      member -> { Peal::Types::ArticleViolationBodyMissing }, key: "BODY_MISSING"
+      member -> { Peal::Types::ArticleViolationBodyMissing }, key: "bodyMissing"
 
-      member -> { Peal::Types::ArticleViolationBodyInvalid }, key: "BODY_INVALID"
+      member -> { Peal::Types::ArticleViolationBodyInvalid }, key: "bodyInvalid"
 
-      member -> { Peal::Types::ArticleViolationExcerptTooLong }, key: "EXCERPT_TOO_LONG"
+      member -> { Peal::Types::ArticleViolationExcerptTooLong }, key: "excerptTooLong"
 
-      member -> { Peal::Types::ArticleViolationTooManyTerms }, key: "TOO_MANY_TERMS"
+      member -> { Peal::Types::ArticleViolationTooManyTerms }, key: "tooManyTerms"
 
-      member -> { Peal::Types::ArticleViolationTermInvalid }, key: "TERM_INVALID"
+      member -> { Peal::Types::ArticleViolationTermInvalid }, key: "termInvalid"
 
-      member -> { Peal::Types::ArticleViolationSiteTimeInPast }, key: "SITE_TIME_IN_PAST"
+      member -> { Peal::Types::ArticleViolationSiteTimeInPast }, key: "siteTimeInPast"
 
-      member -> { Peal::Types::ArticleViolationSiteStatusNotTaken }, key: "SITE_STATUS_NOT_TAKEN"
+      member -> { Peal::Types::ArticleViolationSiteStatusNotTaken }, key: "siteStatusNotTaken"
 
-      member -> { Peal::Types::ArticleViolationTimeInPast }, key: "TIME_IN_PAST"
+      member -> { Peal::Types::ArticleViolationTimeInPast }, key: "timeInPast"
 
-      member -> { Peal::Types::ArticleViolationCoverNotImage }, key: "COVER_NOT_IMAGE"
+      member -> { Peal::Types::ArticleViolationCoverNotImage }, key: "coverNotImage"
 
-      member -> { Peal::Types::ArticleViolationApprovalRequired }, key: "APPROVAL_REQUIRED"
+      member -> { Peal::Types::ArticleViolationApprovalRequired }, key: "approvalRequired"
     end
   end
 end

@@ -59,6 +59,14 @@ export interface Language {
    * scripts/test.ts, with PEAL_API_URL pointing at its stand-in server.
    */
   readonly test: string;
+  /**
+   * The smoke test also lists the channels, whose statuses are tagged
+   * unions in a list, some with no field beside their tag, and creates a
+   * signature, sending a tagged union and decoding the one answered.
+   * scripts/test.ts fails the run when it made neither call, or sent the
+   * union without its `_tag`.
+   */
+  readonly testsUnions?: true;
   readonly version: string;
 }
 
@@ -197,6 +205,7 @@ export const languages: readonly Language[] = [
     name: "ruby",
     package: { name: "peal", registry: "RubyGems" },
     test: "ruby -Ilib smoke.rb",
+    testsUnions: true,
     version: ruby,
   },
   {

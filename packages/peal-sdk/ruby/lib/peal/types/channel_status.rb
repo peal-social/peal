@@ -7,13 +7,13 @@ module Peal
     class ChannelStatus < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ChannelStatusActive }, key: "ACTIVE"
+      member -> { Peal::Types::ChannelStatusActive }, key: "active"
 
-      member -> { Peal::Types::ChannelStatusRefreshNeeded }, key: "REFRESH_NEEDED"
+      member -> { Peal::Types::ChannelStatusRefreshNeeded }, key: "refreshNeeded"
 
-      member -> { Peal::Types::ChannelStatusDisabled }, key: "DISABLED"
+      member -> { Peal::Types::ChannelStatusDisabled }, key: "disabled"
     end
   end
 end
