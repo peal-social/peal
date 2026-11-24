@@ -7,6 +7,7 @@ import { openapi } from "blume/reference";
 
 import { platformVariables } from "./platform-variables.ts";
 import { pricingVariables } from "./pricing-variables.ts";
+import { redirects } from "./redirects.ts";
 import { retentionVariables } from "./retention-variables.ts";
 
 // Values that differ per deployment come from the environment, so the same
@@ -74,121 +75,6 @@ const assistant = () => {
     ? settings
     : { ...settings, captcha: turnstile({ siteKey: turnstileSiteKey }) };
 };
-
-// The pages' addresses before the tabs (old, new), so links already out
-// there still land, in both languages; the browser keeps the #anchor.
-const moved: [string, string][] = [
-  ["/channels", "/guides/channels"],
-  ["/scheduling", "/guides/posts"],
-  ["/organise", "/guides/posts/organise"],
-  ["/review", "/guides/posts/review"],
-  ["/media", "/guides/media"],
-  ["/notifications", "/guides/workspace/notifications"],
-  ["/inbox", "/guides/engage/inbox"],
-  ["/analytics", "/guides/engage/analytics"],
-  ["/ads", "/guides/engage/ads"],
-  ["/settings", "/guides/workspace"],
-  ["/billing", "/guides/workspace/billing"],
-  ["/api-overview", "/developers"],
-  ["/api-conventions", "/developers/conventions"],
-  ["/posting-api", "/developers/posting"],
-  ["/sdks", "/developers/sdks"],
-  ["/webhooks", "/developers/webhooks"],
-  ["/cli", "/developers/cli"],
-  ["/mcp", "/developers/mcp"],
-  ["/agents", "/developers/agents"],
-  ["/embedding", "/developers/embedding"],
-  ["/environment-variables", "/self-hosting/environment-variables"],
-  ["/staff", "/self-hosting/staff"],
-  [
-    "/deployment",
-    "https://github.com/peal-social/peal/blob/main/packages/peal-infra/DEPLOYMENT.md",
-  ],
-];
-
-// The API reference's sections before the API named each group by its
-// namespace (the old section and its pages' prefix, then the new ones). A
-// page there moved to the one with the same ending: /reference/tags/tags-list
-// is /reference/posts/posts-tags-list.
-const movedReferenceSections: [string, string][] = [
-  ["account/account", "me/me-account"],
-  ["notices/notices", "me/me-notices"],
-  [
-    "notification-preferences/notification-preferences",
-    "me/me-notification-preferences",
-  ],
-  ["browser-analytics/browser-analytics", "me/me-browser-analytics"],
-  ["connected-apps/connected-apps", "me/me-connected-apps"],
-  ["api-keys/api-keys", "workspace/workspace-api-keys"],
-  ["workspaces/workspaces", "workspace/workspace"],
-  ["members/members", "workspace/workspace-members"],
-  ["invitations/invitations", "workspace/workspace-invitations"],
-  ["billing/billing", "workspace/workspace-billing"],
-  ["billing-actions/billing-actions", "workspace/workspace-billing-actions"],
-  ["usage/usage", "workspace/workspace-usage"],
-  ["activity/activity", "workspace/workspace-activity"],
-  ["video-generations/video-generations", "media/media-videos"],
-  ["slideshows/slideshows", "media/media-slideshows"],
-  ["capabilities/capabilities", "channels/channels-capabilities"],
-  ["lookups/lookups", "channels/channels-lookups"],
-  ["connect-links/connect-links", "channels/channels-connect-links"],
-  ["channel-sets/channel-sets", "channels/channels-sets"],
-  ["channel-defaults/channel-defaults", "channels/channels-default-options"],
-  ["tags/tags", "posts/posts-tags"],
-  ["signatures/signatures", "posts/posts-signatures"],
-  ["review/review", "approvals/approvals"],
-  ["inbox-messages/inbox-messages", "inbox/inbox-messages"],
-  ["queues/queues", "automations/automations-queues"],
-  ["recycling/recycling", "automations/automations-recycling"],
-  ["follow-ups/follow-ups", "automations/automations-follow-ups"],
-  ["feeds/feeds", "automations/automations-feeds"],
-  ["short-links/short-links", "links/links"],
-  ["partner-account/partner-account", "partner/partner-account"],
-];
-
-// The reference's pages whose ending changed too, in those sections or in
-// sections of one page. An exact redirect wins over a section's pattern.
-const movedReferencePages: [string, string][] = [
-  ["session/session-me", "me/me-get"],
-  ["tiktok/tiktok-creator", "channels/channels-tiktok-creator-get"],
-  ["partner-usage/partner-usage-get", "partner/partner-customer-usage-get"],
-  ["capabilities/capabilities-channel", "channels/channels-capabilities-get"],
-  ["review/review-pending", "approvals/approvals-list"],
-  ["review/review-thread", "approvals/approvals-get"],
-  ["review/review-links", "approvals/approvals-list-links"],
-  ["inbox-messages/inbox-messages-send-message", "inbox/inbox-messages-send"],
-  [
-    "inbox-messages/inbox-messages-get-message-settings",
-    "inbox/inbox-messages-get-settings",
-  ],
-  [
-    "inbox-messages/inbox-messages-set-channel-messages",
-    "inbox/inbox-messages-set-channel",
-  ],
-  [
-    "inbox-messages/inbox-messages-set-message-application",
-    "inbox/inbox-messages-set-application",
-  ],
-  [
-    "inbox-messages/inbox-messages-confirm-message",
-    "inbox/inbox-messages-confirm",
-  ],
-];
-
-const redirects = [
-  ...moved,
-  ...movedReferencePages.map(([from, to]): [string, string] => [
-    `/reference/${from}`,
-    `/reference/${to}`,
-  ]),
-  ...movedReferenceSections.map(([from, to]): [string, string] => [
-    `/reference/${from}-*`,
-    `/reference/${to}-*`,
-  ]),
-].flatMap(([from, to]) => [
-  { from, to },
-  { from: `/fr${from}`, to: to.startsWith("/") ? `/fr${to}` : to },
-]);
 
 export default defineConfig({
   agents: {

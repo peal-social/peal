@@ -20,9 +20,14 @@
       "options": { "cwd": "{projectRoot}" },
       "cache": false
     },
+    "redirects": {
+      "command": "bun test scripts",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": false
+    },
     "test": {
       "executor": "nx:noop",
-      "dependsOn": ["validate", "typography"]
+      "dependsOn": ["validate", "typography", "redirects"]
     },
     "build": {
       "command": "blume build",
