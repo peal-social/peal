@@ -38,7 +38,7 @@ import { useLibraryFiles } from "#studio/library-files.ts";
 
 import { canvasAttribute, startStudio } from "./studio-engine.ts";
 import type { Studio } from "./studio-engine.ts";
-import { captionsTool, textTool } from "./studio-tools.ts";
+import { captionsTool, figureTool, textTool } from "./studio-tools.ts";
 import { useStudioExport } from "./use-studio-export.ts";
 import type { StudioExport } from "./use-studio-export.ts";
 
@@ -159,6 +159,8 @@ const LoadedStudio = ({
   useFullWindow(full);
 
   const addCaptions = t("addCaptions");
+  const addCircle = t("addCircle");
+  const addRectangle = t("addRectangle");
   const addText = t("addText");
   const captionsNeedVoice = t("captionsNeedVoice");
   const newText = t("newText");
@@ -180,6 +182,8 @@ const LoadedStudio = ({
           timelineBox: element,
           tools: [
             textTool(addText, newText),
+            figureTool("rectangle", addRectangle),
+            figureTool("circle", addCircle),
             captionsTool(addCaptions, () => {
               toast.info(captionsNeedVoice);
             }),
@@ -210,7 +214,16 @@ const LoadedStudio = ({
       stopped = true;
       running?.dispose();
     };
-  }, [addCaptions, addText, captionsNeedVoice, initial, newText, workspaceId]);
+  }, [
+    addCaptions,
+    addCircle,
+    addRectangle,
+    addText,
+    captionsNeedVoice,
+    initial,
+    newText,
+    workspaceId,
+  ]);
 
   // The draft is kept a moment after each change.
   useEffect(() => {

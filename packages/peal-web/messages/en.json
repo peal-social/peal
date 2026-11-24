@@ -4668,6 +4668,8 @@
     }
   },
   "Studio": {
+    "addCircle": "Add a circle",
+    "addRectangle": "Add a rectangle",
     "addCaptions": "Add captions",
     "captionsNeedVoice": "Add a video or a sound first: captions are made from its voice.",
     "fullScreen": "Full screen",

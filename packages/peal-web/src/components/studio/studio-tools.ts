@@ -1,5 +1,7 @@
 import { captionClipOf } from "#studio/captions.ts";
 import { textClipOf } from "#studio/edit-document.ts";
+import { figureClipOf } from "#studio/figures.ts";
+import type { FigureKind } from "#studio/figures.ts";
 
 import type { Studio } from "./studio-engine.ts";
 
@@ -22,6 +24,21 @@ export const textTool = (label: string, words: string): StudioTool => ({
   label,
   onPress: (studio) => {
     void studio.addTrack("over", [textClipOf(words, studio.time())]);
+  },
+});
+
+const figureIcons: Readonly<Record<FigureKind, string>> = {
+  circle: iconOf('<circle cx="8" cy="8" r="6"/>'),
+  rectangle: iconOf('<rect x="2" y="3.5" width="12" height="9" rx="1"/>'),
+};
+
+/** A shape over the others, at the playhead. */
+export const figureTool = (kind: FigureKind, label: string): StudioTool => ({
+  icon: figureIcons[kind],
+  id: kind,
+  label,
+  onPress: (studio) => {
+    void studio.addTrack("over", [figureClipOf(kind, studio.time())]);
   },
 });
 
