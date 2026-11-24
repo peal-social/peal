@@ -155,3 +155,22 @@ describe("a fake whose own code fails", () => {
       }).pipe(Effect.scoped)
   );
 });
+
+it.effect("the fake HTTP server reads a body as text, its BOM dropped", () =>
+  Effect.gen(function* withMark() {
+    const local = yield* fakeHttpServer(() => ({ status: 204 }));
+
+    yield* Effect.promise(
+      async () =>
+        await fetch(`${local.url}/marked`, {
+          body: "﻿{}",
+          method: "POST",
+        })
+    );
+
+    assert.deepStrictEqual(
+      local.requests().map(({ body }) => body),
+      ["{}"]
+    );
+  }).pipe(Effect.scoped)
+);

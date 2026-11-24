@@ -1,6 +1,6 @@
 import type { Buffer } from "node:buffer";
 import type { IncomingMessage } from "node:http";
-import { buffer } from "node:stream/consumers";
+import { buffer, text } from "node:stream/consumers";
 
 /**
  * A request's whole body, as a fake server receives it, or `undefined`
@@ -16,6 +16,20 @@ export const receivedBody = async (
 ): Promise<Buffer | undefined> => {
   try {
     return await buffer(incoming);
+  } catch {
+    return undefined;
+  }
+};
+
+/**
+ * The body as text, decoded as UTF-8 with a leading byte order mark
+ * dropped, or `undefined` as `receivedBody` says.
+ */
+export const receivedText = async (
+  incoming: IncomingMessage
+): Promise<string | undefined> => {
+  try {
+    return await text(incoming);
   } catch {
     return undefined;
   }

@@ -5,7 +5,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { Effect, Schema } from "effect";
 
 import { fakeHandler } from "#test/shared/fake-handler.ts";
-import { receivedBody } from "#test/shared/received-body.ts";
+import { receivedText } from "#test/shared/received-body.ts";
 
 /** A request a fake platform received. */
 export interface FakeRequest {
@@ -74,7 +74,7 @@ export const fakeHttpServer = (
         incoming: IncomingMessage,
         response: ServerResponse
       ) => {
-        const body = await receivedBody(incoming);
+        const body = await receivedText(incoming);
 
         if (body === undefined) {
           return;
@@ -83,7 +83,7 @@ export const fakeHttpServer = (
         const url = new URL(incoming.url ?? "/", origin);
 
         const request: FakeRequest = {
-          body: body.toString("utf-8"),
+          body,
           headers: incoming.headers,
           method: incoming.method ?? "GET",
           path: decodeURIComponent(url.pathname),
