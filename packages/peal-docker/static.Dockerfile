@@ -25,6 +25,7 @@ ENV ASTRO_TELEMETRY_DISABLED=1
 # The docs render the API reference from the contract's openapi.json, and
 # take their tokens from peal-ui.
 COPY package.json bun.lock ./
+COPY patches patches
 COPY packages/peal-contract/package.json packages/peal-contract/
 COPY packages/peal-docs/package.json packages/peal-docs/
 COPY packages/peal-site/package.json packages/peal-site/

@@ -17,6 +17,7 @@ FROM oven/bun:1.4.5-slim@sha256:b780593f3e10918cbdaec3d5a08d52224b9198069a65eb47
 WORKDIR /app
 
 COPY package.json bun.lock ./
+COPY patches patches
 COPY packages/peal-contract/package.json packages/peal-contract/
 COPY packages/peal-server/package.json packages/peal-server/
 

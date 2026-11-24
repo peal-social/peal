@@ -25,6 +25,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # workspaces need. Bun skips the workspaces listed in bun.lock whose
 # manifests are not copied here.
 COPY package.json bun.lock ./
+COPY patches patches
 COPY packages/peal-contract/package.json packages/peal-contract/
 COPY packages/peal-ui/package.json packages/peal-ui/
 COPY packages/peal-web/package.json packages/peal-web/

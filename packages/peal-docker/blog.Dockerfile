@@ -25,6 +25,7 @@ ENV ASTRO_TELEMETRY_DISABLED=1
 # The blog takes its chrome from peal-ui, which reads the contract's
 # platform lists.
 COPY package.json bun.lock ./
+COPY patches patches
 COPY packages/peal-blog/package.json packages/peal-blog/
 COPY packages/peal-contract/package.json packages/peal-contract/
 COPY packages/peal-ui/package.json packages/peal-ui/
@@ -51,6 +52,7 @@ COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /app
 
 COPY package.json bun.lock ./
+COPY patches patches
 COPY packages/peal-blog/package.json packages/peal-blog/
 COPY packages/peal-contract/package.json packages/peal-contract/
 COPY packages/peal-ui/package.json packages/peal-ui/
