@@ -33,6 +33,16 @@ export interface Studio {
   readonly time: () => number;
 }
 
+/** What a clip asks to be generated. */
+export interface Generation {
+  readonly prompt: string;
+  readonly type: string;
+}
+
+const decodeGeneration = Schema.decodeUnknownPromise(
+  Schema.Struct({ prompt: Schema.String, type: Schema.String })
+);
+
 const isText = Schema.is(Schema.String);
 
 // A request with a relayed host's address sent through the relay.
@@ -108,10 +118,16 @@ const fitted = (fit: () => void): (() => void) => {
  * `canvasAttribute`, its timeline in `timelineBox`.
  */
 export const startStudio = async ({
+  generate,
   initial,
   timelineBox,
   tools,
 }: {
+  /** Makes what a clip asks for, and answers its address. */
+  readonly generate: (
+    studio: Studio,
+    generation: Generation
+  ) => Promise<string>;
   readonly initial: StudioEdit;
   readonly timelineBox: HTMLElement;
   /** The buttons beside the preview, in order. */
@@ -159,6 +175,10 @@ export const startStudio = async ({
       },
       time: () => edit.playbackTime,
     };
+
+    edit.registerAssetGenerator(async ({ asset }) => ({
+      url: await generate(studio, await decodeGeneration(asset)),
+    }));
 
     for (const { icon, id, label, onPress } of tools) {
       ui.registerButton({ icon, id, tooltip: label });

@@ -965,7 +965,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   Shotstack removes one folder. Its buttons beside the
   preview are `studio-tools.ts` (text; shapes, which are SVG clips, as the
   SDK's toolbar edits those and not Shotstack's shape asset; captions,
-  which the SDK links to a sound or a film by itself). It opens over the whole window
+  which the SDK links to a sound or a film by itself). The SDK's Generate button
+  asks `useStudioGenerator`, which makes the file with the workspace's own
+  providers into the library; the export sends what was made by its file
+  alone (`renderedOf`) and refuses a clip not made yet
+  (`waitsToBeGenerated`), as Shotstack would generate a prompt again, on
+  the workspace's credits. It opens over the whole window
   (`useFullWindow`, which `FrameView` answers by hiding the sidebar and
   the bottom bar, never remounting the page). The document is Shotstack's Edit
   (`#studio/edit-document.ts`, tested), library files named

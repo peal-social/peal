@@ -4668,6 +4668,10 @@
     }
   },
   "Studio": {
+    "generateImage": "Generate an image",
+    "imagePrompt": "A calm sea at sunrise, soft light",
+    "generateFirst": "Generate or delete the AI clips that have no picture yet, then export.",
+    "notGenerated": "This clip could not be generated here.",
     "saveFrame": "Save frame",
     "frameSaved": "Frame saved to Media.",
     "frameFailed": "The frame could not be saved. Try again.",

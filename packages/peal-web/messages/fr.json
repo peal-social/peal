@@ -4668,6 +4668,10 @@
     }
   },
   "Studio": {
+    "generateImage": "Générer une image",
+    "imagePrompt": "Une mer calme au lever du soleil, lumière douce",
+    "generateFirst": "Générez ou supprimez les éléments IA encore vides, puis exportez.",
+    "notGenerated": "Cet élément n’a pas pu être généré ici.",
     "saveFrame": "Enregistrer l’image",
     "frameSaved": "Image enregistrée dans Médias.",
     "frameFailed": "L’image n’a pas pu être enregistrée. Réessayez.",

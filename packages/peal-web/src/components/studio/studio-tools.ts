@@ -1,5 +1,5 @@
 import { captionClipOf } from "#studio/captions.ts";
-import { textClipOf } from "#studio/edit-document.ts";
+import { promptedImageOf, textClipOf } from "#studio/edit-document.ts";
 import { figureClipOf } from "#studio/figures.ts";
 import type { FigureKind } from "#studio/figures.ts";
 
@@ -39,6 +39,18 @@ export const figureTool = (kind: FigureKind, label: string): StudioTool => ({
   label,
   onPress: (studio) => {
     void studio.addTrack("over", [figureClipOf(kind, studio.time())]);
+  },
+});
+
+/** A picture to generate, over the others, at the playhead. */
+export const imageTool = (label: string, prompt: string): StudioTool => ({
+  icon: iconOf(
+    '<path d="M7.5 2.5l1.2 3.3 3.3 1.2-3.3 1.2-1.2 3.3-1.2-3.3L3 7l3.3-1.2z"/><path d="M12.5 10.5v3"/><path d="M11 12h3"/>'
+  ),
+  id: "generate-image",
+  label,
+  onPress: (studio) => {
+    void studio.addTrack("over", [promptedImageOf(prompt, studio.time())]);
   },
 });
 
