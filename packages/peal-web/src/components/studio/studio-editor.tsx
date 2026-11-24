@@ -46,6 +46,7 @@ import type { Generated, Generation, Studio } from "./studio-engine.ts";
 import {
   captionsTool,
   figureTool,
+  filmTool,
   imageTool,
   textTool,
   voiceTool,
@@ -197,6 +198,9 @@ const LoadedStudio = ({
   const generateImage = t("generateImage");
   const imagePrompt = t("imagePrompt");
   const makesImages = status.images.available;
+  const generateVideo = t("generateVideo");
+  const videoPrompt = t("videoPrompt");
+  const makesVideos = status.videos.available;
   const generateVoice = t("generateVoice");
   const voiceWords = t("voiceWords");
   const makesVoices = status.voiceovers.available;
@@ -224,6 +228,7 @@ const LoadedStudio = ({
             figureTool("rectangle", addRectangle),
             figureTool("circle", addCircle),
             ...(makesImages ? [imageTool(generateImage, imagePrompt)] : []),
+            ...(makesVideos ? [filmTool(generateVideo, videoPrompt)] : []),
             ...(makesVoices ? [voiceTool(generateVoice, voiceWords)] : []),
             captionsTool(addCaptions, () => {
               toast.info(captionsNeedVoice);
@@ -261,9 +266,12 @@ const LoadedStudio = ({
     addRectangle,
     addText,
     generateImage,
+    generateVideo,
     generateVoice,
     imagePrompt,
     makesImages,
+    makesVideos,
+    videoPrompt,
     makesVoices,
     voiceWords,
     captionsNeedVoice,

@@ -4668,6 +4668,8 @@
     }
   },
   "Studio": {
+    "generateVideo": "Generate a video",
+    "videoPrompt": "Waves rolling on a beach, seen from above",
     "generateVoice": "Generate a voice-over",
     "voiceWords": "Write what the voice says here.",
     "generateImage": "Generate an image",

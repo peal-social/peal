@@ -239,6 +239,14 @@ export const promptedVoiceOf = (words: string, start: number): StudioClip => ({
   start,
 });
 
+/** A film to generate from a prompt, at `start`. */
+export const promptedFilmOf = (prompt: string, start: number): StudioClip => ({
+  asset: { prompt, type: "video", volume: 1 },
+  fit: "crop",
+  length: stillSeconds,
+  start,
+});
+
 /** How long a generated file plays, in seconds, when the library knows. */
 export const playedSecondsOf = (
   media: Pick<Media, "durationMs">

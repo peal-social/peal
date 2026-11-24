@@ -4668,6 +4668,8 @@
     }
   },
   "Studio": {
+    "generateVideo": "Générer une vidéo",
+    "videoPrompt": "Des vagues sur une plage, vues d’en haut",
     "generateVoice": "Générer une voix off",
     "voiceWords": "Écrivez ici ce que dit la voix.",
     "generateImage": "Générer une image",

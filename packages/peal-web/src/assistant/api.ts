@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import { Atom } from "effect/reactivity";
 
 import { PealApi } from "#api/client.ts";
@@ -44,6 +45,29 @@ export const videoGenerations = Atom.family((workspaceId: string) =>
  * its way and the count left changes.
  */
 export const generateVideo = PealApi.mutation("videoGenerations", "create");
+
+/** Reads where one video stands, with its file once made. */
+export const readVideo = PealApi.runtime.fn<{
+  readonly generationId: string;
+  readonly workspaceId: string;
+}>()(({ generationId, workspaceId }) =>
+  Effect.gen(function* read() {
+    const client = yield* PealApi;
+
+    const job = yield* client.videoGenerations.get({
+      params: { generationId, workspaceId },
+    });
+
+    const media =
+      job.mediaId === null
+        ? null
+        : yield* client.media.get({
+            params: { mediaId: job.mediaId, workspaceId },
+          });
+
+    return { job, media };
+  })
+);
 
 /** What lists a workspace's slide videos, which asking for one refreshes. */
 export const slideshowsKey = (workspaceId: string): string =>
