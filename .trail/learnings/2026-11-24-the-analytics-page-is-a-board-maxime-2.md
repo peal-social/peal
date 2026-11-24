@@ -3,7 +3,7 @@ title: "The analytics page is a board of widgets kept in the person's browser, m
 author: Maxime
 date: 2026-11-24
 branch: worktree-silly-imagining-snowglobe
-cost: { minutes: 62, tokens: 455186 }
+cost: { minutes: 65, tokens: 484916 }
 id: l-35173635
 scope: repo
 status: active
@@ -35,6 +35,9 @@ The owner wants widgets to move as smoothly as possible (2026-11-24): every move
 The owner (2026-11-24) wants every filter to match the app's Linear-style Filter menu: a widget's filter is FilterMenu (search, properties Period and Channel, pages of values), not a popover of selects. A board holds one per widget, so the menu takes a label of its own and no F key. The drag grip sits just outside the card's start edge, borderless, as on the dashboards the board follows.
 
 In the code: packages/peal-web/src/components/analytics/widgets/widget-controls.tsx (WidgetFilter), src/components/lists/filter-menu.tsx (label, shortcut), analytics-board.tsx (SortableWidget's grip: right-full).
+The owner (2026-11-24) found four pills on hover noisy and an off-centre grip odd: each edge is a strip along its whole length whose pill shows only while hovered, focused or pulled; the grip spans the 24 px gap (w-6, icon centred), halfway between two widgets.
+
+In the code: packages/peal-web/src/components/analytics/widgets/analytics-board.tsx (handlePlaces, data-pulled, SortableWidget's grip).
 
 ## Tried and ruled out
 Keeping the board on the server. It would need a contract endpoint, regenerating the eight SDKs, a table and migration, an entry in the data-processing registry with the privacy policy's table in both languages, and erasure on account and workspace deletion. That is too much for a layout. Move it to the server only once people ask for the same board across devices.
