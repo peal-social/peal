@@ -16242,6 +16242,46 @@ $client->posts->signatures->delete(
 </dl>
 </details>
 
+## Workspace Security
+<details><summary><code>$client-&gt;workspace-&gt;security-&gt;get() -> ?WorkspaceSecurity</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Answers whether the workspace requires two-step verification of every member, and, to a member who may manage members (member:update), how many members' accounts do not have it on. Any member, application or API key of the workspace may read it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```php
+$client->workspace->security->get();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Workspace Activity
 <details><summary><code>$client-&gt;workspace-&gt;activity-&gt;list($request) -> ?ActivityPage</code></summary>
 <dl>

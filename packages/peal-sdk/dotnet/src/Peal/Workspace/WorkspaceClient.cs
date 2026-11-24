@@ -9,6 +9,7 @@ public partial class WorkspaceClient : IWorkspaceClient
     internal WorkspaceClient(RawClient client)
     {
         _client = client;
+        Security = new SecurityClient(_client);
         Activity = new ActivityClient(_client);
         ApiKeys = new ApiKeysClient(_client);
         Members = new MembersClient(_client);
@@ -16,6 +17,8 @@ public partial class WorkspaceClient : IWorkspaceClient
         Billing = new BillingClient(_client);
         Usage = new UsageClient(_client);
     }
+
+    public ISecurityClient Security { get; }
 
     public IActivityClient Activity { get; }
 

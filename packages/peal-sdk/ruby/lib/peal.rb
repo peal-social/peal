@@ -282,6 +282,7 @@ require_relative "peal/posts/signatures/client"
 require_relative "peal/posts/signatures/types/update_signatures_request"
 require_relative "peal/posts/signatures/types/delete_signatures_request"
 require_relative "peal/workspace/client"
+require_relative "peal/workspace/security/client"
 require_relative "peal/workspace/activity/client"
 require_relative "peal/workspace/activity/types/list_activity_request"
 require_relative "peal/workspace/api_keys/client"
@@ -1312,6 +1313,7 @@ module Peal
     autoload :WorkspaceMember, ::File.join(__dir__, "peal/types/workspace_member")
     autoload :WorkspaceRequiredEncodedTag, ::File.join(__dir__, "peal/types/workspace_required_encoded_tag")
     autoload :WorkspaceRequiredEncoded, ::File.join(__dir__, "peal/types/workspace_required_encoded")
+    autoload :WorkspaceSecurity, ::File.join(__dir__, "peal/types/workspace_security")
     autoload :WorkspaceUsageReport, ::File.join(__dir__, "peal/types/workspace_usage_report")
   end
 end

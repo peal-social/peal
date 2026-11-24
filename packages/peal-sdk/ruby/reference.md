@@ -17850,6 +17850,61 @@ client.posts.signatures.delete(signature_id: "signatureId")
 </dl>
 </details>
 
+## Workspace Security
+<details><summary><code>client.workspace.security.<a href="/lib/peal/workspace/security/client.rb">get</a>() -> Peal::Types::WorkspaceSecurity</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Answers whether the workspace requires two-step verification of every member, and, to a member who may manage members (member:update), how many members' accounts do not have it on. Any member, application or API key of the workspace may read it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```ruby
+client.workspace.security.get
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `Peal::Workspace::Security::RequestOptions` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Workspace Activity
 <details><summary><code>client.workspace.activity.<a href="/lib/peal/workspace/activity/client.rb">list</a>() -> Peal::Types::ActivityPage</code></summary>
 <dl>
