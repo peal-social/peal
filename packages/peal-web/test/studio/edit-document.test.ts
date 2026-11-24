@@ -9,6 +9,7 @@ import {
   imageAspectOf,
   laidEnd,
   mediaIdOfRef,
+  mediaIdAt,
   mediaIdsOf,
   mediaRefOf,
   previewOf,
@@ -129,6 +130,18 @@ describe("the editor's document", () => {
         origin
       ).timeline.fonts
     ).toStrictEqual([{ src: font }]);
+  });
+
+  it("knows a file by any of its links", () => {
+    const files = [
+      { id: sound, url: null },
+      { id: picture, url: `${pictureAddress}2` },
+    ];
+
+    expect([
+      mediaIdAt(files, pictureAddress),
+      mediaIdAt(files, "https://bucket.example.com/other.png"),
+    ]).toStrictEqual([picture, null]);
   });
 
   it("leaves a file the library no longer has by its name", () => {

@@ -4690,7 +4690,7 @@
     "exportedToast": "Votre vidéo est en route. Elle apparaît dans Médias une fois créée.",
     "exportHint": "Le compte Shotstack de votre espace de travail rend la vidéo avec sa propre clé, et elle arrive dans Médias. {remaining, plural, =0 {Plus aucun export aujourd’hui.} one {# export restant aujourd’hui.} other {# exports restants aujourd’hui.}}",
     "loadFailed": "Le montage n’a pas pu se charger. Actualisez la page pour réessayer.",
-    "engineFailed": "Le montage n’a pas pu démarrer dans ce navigateur, ou votre dernier brouillon n’a pas pu s’ouvrir. Actualisez la page pour en commencer un nouveau.",
+    "engineFailed": "Le montage n’a pas pu démarrer. Actualisez la page pour réessayer, ou choisissez Recommencer pour une nouvelle vidéo : la dernière sera oubliée.",
     "addFiles": "Ajouter des fichiers",
     "addFilesTitle": "Ajouter des fichiers de votre médiathèque",
     "addFilesDescription": "Les images et les vidéos vont sur une nouvelle piste en haut, les sons sur une nouvelle piste en bas.",

@@ -28,6 +28,26 @@ export const mediaIdOfRef = (src: string): string | null =>
     ? src.slice(mediaRefPrefix.length)
     : null;
 
+/**
+ * The library file an address shows, whichever link to it: each reading
+ * of a file answers a new link to the same place, another signature after
+ * the `?`.
+ */
+export const mediaIdAt = (
+  files: Iterable<Pick<Media, "id" | "url">>,
+  address: string
+): string | null => {
+  const [place] = address.split("?", 1);
+
+  for (const { id, url } of files) {
+    if (url !== null && url.split("?", 1)[0] === place) {
+      return id;
+    }
+  }
+
+  return null;
+};
+
 type StudioAsset = StudioClip["asset"];
 
 // An asset with its file swapped, for the kinds that take a file (images,
