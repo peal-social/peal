@@ -965,7 +965,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   Shotstack removes one folder. Its buttons beside the
   preview are `studio-tools.ts` (text; shapes, which are SVG clips, as the
   SDK's toolbar edits those and not Shotstack's shape asset; captions,
-  which the SDK links to a sound or a film by itself). The SDK's Generate button
+  which the SDK links to a sound or a film by itself). The SDK listens to the whole
+  page's keys: `isNotForSdk` takes back those of fields, open dialogs and
+  menus, and buttons. The SDK's Generate button
   asks `useStudioGenerator`, which makes the file with the workspace's own
   providers into the library; the export sends what was made by its file
   alone (`renderedOf`) and refuses a clip not made yet
