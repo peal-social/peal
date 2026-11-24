@@ -48,11 +48,15 @@ export const useCloseMenu = (): (() => void) => use(CloseMenu);
 // header.
 interface Header {
   readonly actions: HTMLElement | null;
+  readonly setFull: (full: boolean) => void;
   readonly setTitle: (title: string | null) => void;
 }
 
 const PanelHeader = createContext<Header>({
   actions: null,
+  setFull: () => {
+    // Outside the frame, there is nothing to hide.
+  },
   setTitle: () => {
     // Outside the frame, a page has no header to name.
   },
@@ -84,6 +88,22 @@ export const PageTitle = ({ children }: { readonly children: string }) => {
   }, [children, setTitle]);
 
   return null;
+};
+
+/**
+ * Gives the page the whole window while `full`: the sidebar and the
+ * bottom bar are hidden, the panel's header and the footer stay.
+ */
+export const useFullWindow = (full: boolean): void => {
+  const { setFull } = use(PanelHeader);
+
+  useEffect(() => {
+    setFull(full);
+
+    return () => {
+      setFull(false);
+    };
+  }, [full, setFull]);
 };
 
 // What a split page places itself: the panel's header and footer, which
@@ -308,13 +328,14 @@ export const FrameView = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [actionsSlot, setActionsSlot] = useState<HTMLElement | null>(null);
   const [title, setTitle] = useState<string | null>(null);
+  const [full, setFull] = useState(false);
 
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
   }, []);
 
   const header = useMemo(
-    () => ({ actions: actionsSlot, setTitle }),
+    () => ({ actions: actionsSlot, setFull, setTitle }),
     [actionsSlot]
   );
 
@@ -385,11 +406,21 @@ export const FrameView = ({
     <PanelHeader value={header}>
       <div className="bg-background flex h-svh flex-col">
         <div className="flex min-h-0 flex-1">
-          <div className="hidden shrink-0 flex-col md:flex">
+          <div className={cn("hidden shrink-0 flex-col", !full && "md:flex")}>
             <div className="min-h-0 flex-1">{sidebar}</div>
           </div>
-          <div className="flex min-w-0 flex-1 flex-col md:pt-2 md:pr-2">
-            <div className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden md:rounded-xl md:border">
+          <div
+            className={cn(
+              "flex min-w-0 flex-1 flex-col",
+              !full && "md:pt-2 md:pr-2"
+            )}
+          >
+            <div
+              className={cn(
+                "bg-card flex min-h-0 flex-1 flex-col overflow-hidden",
+                !full && "md:rounded-xl md:border"
+              )}
+            >
               {split ? null : panelHeader}
               {split ? (
                 <SplitParts value={splitParts}>
@@ -398,11 +429,27 @@ export const FrameView = ({
                   </main>
                 </SplitParts>
               ) : (
-                <main className="min-h-0 flex-1 overflow-y-auto">
-                  <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">
+                <main
+                  className={cn(
+                    "min-h-0 flex-1 overflow-y-auto",
+                    full && "flex flex-col"
+                  )}
+                >
+                  <div
+                    className={
+                      full
+                        ? "flex w-full flex-1 flex-col p-3"
+                        : "mx-auto w-full max-w-6xl px-4 py-6 md:px-6"
+                    }
+                  >
                     {children}
                   </div>
-                  <footer className="text-muted-foreground px-4 pt-2 pb-6 text-xs md:px-6">
+                  <footer
+                    className={cn(
+                      "text-muted-foreground px-4 text-xs",
+                      full ? "pb-3" : "pt-2 pb-6 md:px-6"
+                    )}
+                  >
                     {footer}
                   </footer>
                 </main>
@@ -410,7 +457,9 @@ export const FrameView = ({
             </div>
           </div>
         </div>
-        <div className="flex h-11 shrink-0 items-center">
+        <div
+          className={cn("h-11 shrink-0 items-center", full ? "hidden" : "flex")}
+        >
           <div className="flex items-center gap-1.5 px-2.5 md:w-60">
             {actions}
           </div>

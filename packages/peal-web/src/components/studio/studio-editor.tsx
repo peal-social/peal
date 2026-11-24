@@ -1,18 +1,24 @@
 "use client";
 
 import { Option } from "effect";
-import { DownloadIcon, FilePlusIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  FilePlusIcon,
+  MaximizeIcon,
+  MinimizeIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { AssistantStatus, Media } from "peal-contract";
 import { Alert, AlertTitle } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
+import { cn } from "peal-ui/lib/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { isSlideshowSettingsRefusal } from "#assistant/slideshows.ts";
 import { SlideshowJobs } from "#components/media/generate-slideshow.tsx";
 import { MediaPicker } from "#components/posts/media-picker.tsx";
-import { PageActions } from "#components/shell/frame-view.tsx";
+import { PageActions, useFullWindow } from "#components/shell/frame-view.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { clearDraft, readDraft, writeDraft } from "#studio/draft.ts";
@@ -146,7 +152,10 @@ const LoadedStudio = ({
   const files = useRef(new Map(initialFiles));
   const [studio, setStudio] = useState<Studio | null>(null);
   const [broken, setBroken] = useState(false);
+  const [full, setFull] = useState(true);
   const exporting = useStudioExport(workspaceId);
+  useFullWindow(full);
+
   const addTextLabel = t("addText");
   const newText = t("newText");
 
@@ -260,8 +269,18 @@ const LoadedStudio = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-3">
       <PageActions>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            setFull(!full);
+          }}
+        >
+          {full ? <MinimizeIcon aria-hidden /> : <MaximizeIcon aria-hidden />}
+          {full ? t("exitFullScreen") : t("fullScreen")}
+        </Button>
         <MediaPicker
           accepts={isEditable}
           attached={[]}
@@ -307,15 +326,18 @@ const LoadedStudio = ({
           <AlertTitle>{t("engineFailed")}</AlertTitle>
         </Alert>
       ) : null}
-      <div data-peal-studio="" className="flex flex-col gap-4">
+      <div data-peal-studio="" className="flex flex-1 flex-col gap-3">
         <div
           {...{ [canvasAttribute]: "" }}
-          className="bg-muted relative h-[48dvh] min-h-72 overflow-hidden rounded-lg border"
+          className={cn(
+            "bg-muted relative min-h-72 overflow-hidden rounded-lg border",
+            full ? "flex-1 basis-0" : "h-[48dvh]"
+          )}
         />
         <div
           ref={timelineBox}
           data-shotstack-timeline=""
-          className="h-72 overflow-hidden rounded-lg border"
+          className="h-72 shrink-0 overflow-hidden rounded-lg border"
         />
       </div>
       <ExportNotice

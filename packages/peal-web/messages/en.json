@@ -4668,6 +4668,8 @@
     }
   },
   "Studio": {
+    "fullScreen": "Full screen",
+    "exitFullScreen": "Exit full screen",
     "export": "Export video",
     "exporting": "Exporting…",
     "exportedToast": "Your video is on its way. It shows in Media once it's made.",

@@ -870,10 +870,15 @@ language. Its export is the workspace's own Shotstack account, as slide
 videos are. It shows only to members who may compose one (assistant:use
 and media:upload).
 
-- The panel's header holds **Add files** (the library's picker), **Start
+- The page opens over the whole window: the sidebar and the bottom bar
+  are hidden, the panel's header and the contract functions stay, and the
+  stage takes the height the timeline leaves. **Exit full screen**, first
+  in the header, brings the frame back, and **Full screen** hides it
+  again.
+- The panel's header then holds **Add files** (the library's picker), **Start
   over** and **Export video**.
 - The **stage**, on `muted` with a hairline, `{rounded.lg}`, 48 % of the
-  window's height: the SDK's preview, its toolbars beside it on `popover`
+  window's height in the frame: the SDK's preview, its toolbars beside it on `popover`
   with a hairline, the chosen clip's over it on `primary`. A new video
   starts with one text.
 - The **timeline** under it, in a bordered box on `card`: the playhead and

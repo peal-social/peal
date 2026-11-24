@@ -1,5 +1,5 @@
 /* The Studio SDK's interface in Peal's look (DESIGN.md, "The editor"):
-   colours, type and radius only, never its layout or behaviour. The SDK
+   colours, type and radius, never its layout or behaviour. The SDK
    adds its stylesheet as it starts, after this one: each rule is under
    `[data-peal-studio]`, or `body` for what the SDK puts there, so it wins. */
 
@@ -12,6 +12,11 @@ body .ss-clip-context-menu {
 [data-peal-studio] .ss-html-timeline,
 body .ss-clip-context-menu {
   color: var(--foreground);
+}
+
+/* The SDK sizes its canvas to this box, which must not grow with it. */
+[data-peal-studio] [data-shotstack-studio] {
+  contain: size;
 }
 
 /* The timeline. */
