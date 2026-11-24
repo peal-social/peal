@@ -114,6 +114,29 @@ body .ss-clip-context-menu-item:hover {
   border-radius: var(--radius);
 }
 
+/* On a narrow window, the chosen clip's toolbar wraps rather than running
+   out of the preview, and the zoom leaves its place to the time. */
+@media (width < 64rem) {
+  [data-peal-studio] .ss-toolbar,
+  [data-peal-studio] .ss-clip-toolbar,
+  [data-peal-studio] .ss-media-toolbar,
+  [data-peal-studio] .ss-generate-toolbar {
+    flex-wrap: wrap;
+    max-width: calc(100% - 16px);
+    width: max-content;
+  }
+}
+
+@media (width < 40rem) {
+  [data-peal-studio] .ss-zoom-slider {
+    display: none;
+  }
+
+  [data-peal-studio] .ss-timeline-toolbar {
+    justify-content: flex-start;
+  }
+}
+
 [data-peal-studio] :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 1px;

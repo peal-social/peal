@@ -152,6 +152,45 @@ const ExportNotice = ({
   );
 };
 
+// What generating in the editor costs, and how much is left.
+const AiNotice = ({ status }: { readonly status: AssistantStatus }) => {
+  const images = useTranslations("Assistant.images");
+  const videos = useTranslations("Assistant.videos");
+  const audio = useTranslations("Assistant.audio");
+
+  const imageLine = () => {
+    if (status.images.source === "workspace") {
+      return images("ownProvider");
+    }
+
+    return status.images.month === null
+      ? images("cost", {
+          cost: status.images.requestCost,
+          remaining: status.remaining,
+        })
+      : images("costMonth", {
+          remaining: Math.max(
+            0,
+            status.images.month.most - status.images.month.used
+          ),
+        });
+  };
+
+  const lines = [
+    ...(status.images.available ? [imageLine()] : []),
+    ...(status.videos.available
+      ? [videos("remaining", { remaining: status.videos.remaining })]
+      : []),
+    ...(status.voiceovers.available
+      ? [audio("remaining", { remaining: status.voiceovers.remaining })]
+      : []),
+  ];
+
+  return lines.length === 0 ? null : (
+    <p className="text-muted-foreground text-xs">{lines.join(" ")}</p>
+  );
+};
+
 const LoadedStudio = ({
   files: initialFiles,
   initial,
@@ -352,11 +391,14 @@ const LoadedStudio = ({
           }}
         >
           {full ? <MinimizeIcon aria-hidden /> : <MaximizeIcon aria-hidden />}
-          {full ? t("exitFullScreen") : t("fullScreen")}
+          <span className="max-xl:sr-only">
+            {full ? t("exitFullScreen") : t("fullScreen")}
+          </span>
         </Button>
         <MediaPicker
           accepts={isEditable}
           attached={[]}
+          compact
           disabled={studio === null}
           room={filesAtOnce}
           texts={{
@@ -381,7 +423,7 @@ const LoadedStudio = ({
           }}
         >
           <CameraIcon aria-hidden />
-          {t("saveFrame")}
+          <span className="max-xl:sr-only">{t("saveFrame")}</span>
         </Button>
         <Button
           size="sm"
@@ -390,7 +432,7 @@ const LoadedStudio = ({
           onClick={handleStartOver}
         >
           <FilePlusIcon aria-hidden />
-          {t("startOver")}
+          <span className="max-xl:sr-only">{t("startOver")}</span>
         </Button>
         <Button
           size="sm"
@@ -399,7 +441,9 @@ const LoadedStudio = ({
           onClick={handleExport}
         >
           <DownloadIcon aria-hidden />
-          {exporting.sending ? t("exporting") : t("export")}
+          <span className="max-xl:sr-only">
+            {exporting.sending ? t("exporting") : t("export")}
+          </span>
         </Button>
       </PageActions>
       {status.slideshows.sandbox ? (
@@ -416,7 +460,7 @@ const LoadedStudio = ({
         <div
           {...{ [canvasAttribute]: "" }}
           className={cn(
-            "bg-muted relative min-h-72 overflow-hidden rounded-lg border",
+            "bg-muted relative min-h-80 overflow-hidden rounded-lg border",
             full ? "flex-1 basis-0" : "h-[48dvh]"
           )}
         />
@@ -432,6 +476,7 @@ const LoadedStudio = ({
         remaining={status.slideshows.remaining}
         workspaceId={workspaceId}
       />
+      <AiNotice status={status} />
       <SlideshowJobs workspaceId={workspaceId} />
     </div>
   );
