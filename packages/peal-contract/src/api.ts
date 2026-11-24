@@ -63,6 +63,7 @@ import { TikTokApi } from "./tiktok.ts";
 import { UsageApi } from "./usage.ts";
 import { VideoGenerationsApi } from "./video-generations.ts";
 import { WebhooksApi } from "./webhooks.ts";
+import { WorkspaceSecurityApi } from "./workspace-security.ts";
 import { WorkspacesApi } from "./workspaces.ts";
 
 export { DatabaseUnavailable } from "./database-unavailable.ts";
@@ -488,6 +489,8 @@ export {
   WorkspaceSecuritySchema,
   WorkspacesApi,
 } from "./workspaces.ts";
+
+export { WorkspaceSecurityApi } from "./workspace-security.ts";
 
 export { AlreadyMember } from "./already-member.ts";
 
@@ -2731,6 +2734,7 @@ export const publicGroups = [
   ShortLinksApi,
   WebhooksApi,
   AssistantApi,
+  WorkspaceSecurityApi,
   ActivityApi,
   ApiKeysApi,
   MembersApi,

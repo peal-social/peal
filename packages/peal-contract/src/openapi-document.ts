@@ -176,9 +176,11 @@ interface NamespaceTag {
 }
 
 /**
- * How the reference shows each top-level namespace: its name and what it
- * holds. A group's identifier is its namespace (`inbox.messages`), and its
- * operations are filed under the first segment (`inbox`).
+ * How the reference shows each top-level namespace of the public API: its
+ * name and what it holds. A group's identifier is its namespace
+ * (`inbox.messages`), and its operations are filed under the first segment
+ * (`inbox`). The namespaces of Peal's own clients and the staff console
+ * are not in the document, so they have no entry.
  */
 export const namespaceTags = new Map<string, NamespaceTag>([
   [
@@ -227,27 +229,6 @@ export const namespaceTags = new Map<string, NamespaceTag>([
     },
   ],
   [
-    "billingAccountsDesk",
-    {
-      description: "Billing accounts, for Peal's staff.",
-      name: "Billing accounts desk",
-    },
-  ],
-  [
-    "captcha",
-    {
-      description: "The challenge a browser solves before signing up.",
-      name: "Captcha",
-    },
-  ],
-  [
-    "channelOAuth",
-    {
-      description: "What platforms read to let a channel sign in.",
-      name: "Channel sign-in",
-    },
-  ],
-  [
     "channels",
     {
       description:
@@ -256,45 +237,10 @@ export const namespaceTags = new Map<string, NamespaceTag>([
     },
   ],
   [
-    "clientErrors",
-    {
-      description: "Errors the web app reports.",
-      name: "Client errors",
-    },
-  ],
-  [
-    "contractRequests",
-    {
-      description: "Requests to end or change a contract.",
-      name: "Contract requests",
-    },
-  ],
-  [
-    "contractRequestsDesk",
-    {
-      description: "Contract requests, for Peal's staff.",
-      name: "Contract requests desk",
-    },
-  ],
-  [
     "credential",
     {
       description: "What the credential of a request is, and what it may do.",
       name: "Credential",
-    },
-  ],
-  [
-    "dataDeletion",
-    {
-      description: "Platforms' requests to delete a person's data.",
-      name: "Data deletion",
-    },
-  ],
-  [
-    "hostedConnect",
-    {
-      description: "The page a connect link opens.",
-      name: "Hosted connect",
     },
   ],
   [
@@ -306,25 +252,10 @@ export const namespaceTags = new Map<string, NamespaceTag>([
     },
   ],
   [
-    "legal",
-    {
-      description: "Requests from authorities, for Peal's staff.",
-      name: "Legal",
-    },
-  ],
-  [
     "links",
     {
       description: "The short links in posts, and how often they were opened.",
       name: "Links",
-    },
-  ],
-  [
-    "me",
-    {
-      description:
-        "The person signed in: their notices, notification preferences and account.",
-      name: "Me",
     },
   ],
   [
@@ -349,20 +280,6 @@ export const namespaceTags = new Map<string, NamespaceTag>([
       description:
         "Posts, from draft to published, with their tags and signatures.",
       name: "Posts",
-    },
-  ],
-  [
-    "reviewLink",
-    {
-      description: "The page a review link opens.",
-      name: "Review link",
-    },
-  ],
-  [
-    "staff",
-    {
-      description: "The staff console.",
-      name: "Staff",
     },
   ],
   [

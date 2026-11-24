@@ -6,13 +6,14 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from . import activity, api_keys, billing, invitations, members, usage
+    from . import activity, api_keys, billing, invitations, members, security, usage
 _dynamic_imports: typing.Dict[str, str] = {
     "activity": ".activity",
     "api_keys": ".api_keys",
     "billing": ".billing",
     "invitations": ".invitations",
     "members": ".members",
+    "security": ".security",
     "usage": ".usage",
 }
 
@@ -38,4 +39,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["activity", "api_keys", "billing", "invitations", "members", "usage"]
+__all__ = ["activity", "api_keys", "billing", "invitations", "members", "security", "usage"]

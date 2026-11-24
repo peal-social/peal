@@ -19155,6 +19155,56 @@ async fn main() {
 </dl>
 </details>
 
+## Workspace Security
+<details><summary><code>client.workspace().security.<a href="/src/api/resources/workspace/security/client.rs">get</a>() -> Result&lt;WorkspaceSecurity, ApiError&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Answers whether the workspace requires two-step verification of every member, and, to a member who may manage members (member:update), how many members' accounts do not have it on. Any member, application or API key of the workspace may read it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```rust
+use peal_sdk::prelude::*;
+
+#[tokio::main]
+async fn main() {
+    let config = ClientConfig {
+        token: Some("<token>".to_string()),
+        ..Default::default()
+    };
+    let client = PealClient::new(config).expect("Failed to build client");
+    client.workspace.security.get(None).await;
+}
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Workspace Activity
 <details><summary><code>client.workspace().activity.<a href="/src/api/resources/workspace/activity/client.rs">list</a>(actor: Option&lt;Option&lt;String&gt;&gt;, cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, operation: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;ActivityPage, ApiError&gt;</code></summary>
 <dl>

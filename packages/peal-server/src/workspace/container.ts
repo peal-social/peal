@@ -20,7 +20,10 @@ import {
   WorkspaceAccessLive,
 } from "#workspace/api/security.ts";
 import { SessionHandlers } from "#workspace/api/session.ts";
-import { WorkspacesHandlers } from "#workspace/api/workspaces.ts";
+import {
+  WorkspaceSecurityHandlers,
+  WorkspacesHandlers,
+} from "#workspace/api/workspaces.ts";
 import { AccountData } from "#workspace/application/account-data.ts";
 import { AccountStanding } from "#workspace/application/account-standing.ts";
 import { Accounts } from "#workspace/application/accounts.ts";
@@ -358,6 +361,7 @@ export const WorkspaceApiLive = Layer.mergeAll(
   CredentialHandlers,
   ApiKeysHandlers,
   WorkspacesHandlers,
+  WorkspaceSecurityHandlers,
   AccountHandlers,
   ConnectedAppsHandlers,
   BrowserAnalyticsHandlers,

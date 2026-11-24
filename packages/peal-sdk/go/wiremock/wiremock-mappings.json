@@ -8396,6 +8396,38 @@
       }
     },
     {
+      "id": "4db1a36f-fda8-4811-871a-8244760b0d86",
+      "name": "Get the workspace's security policy - default",
+      "request": {
+        "urlPathTemplate": "/api/v1/workspace/security",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"membersWithoutTwoStep\": 1,\n  \"twoStepRequired\": true\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "4db1a36f-fda8-4811-871a-8244760b0d86",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
       "id": "15b726ce-702a-41de-bc41-75bdcd95040a",
       "name": "List the workspace's activity - default",
       "request": {
@@ -8787,6 +8819,6 @@
     }
   ],
   "meta": {
-    "total": 256
+    "total": 257
   }
 }

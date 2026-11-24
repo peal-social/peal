@@ -117,7 +117,19 @@ export const WorkspacesHandlers = HttpApiBuilder.group(
             )
           );
         }),
-      security: () =>
+    });
+  })
+);
+
+/** The workspace's requirement, which any credential of the workspace reads. */
+export const WorkspaceSecurityHandlers = HttpApiBuilder.group(
+  Api,
+  "workspace.security",
+  Effect.fn(function* workspaceSecurityHandlers(handlers) {
+    const security = yield* WorkspaceSecurity;
+
+    return handlers.handleAll({
+      get: () =>
         Effect.gen(function* read() {
           const actor = actorOf(yield* CurrentMember);
 

@@ -67405,6 +67405,108 @@ func (w WorkspaceRequiredEncodedTag) Ptr() *WorkspaceRequiredEncodedTag {
 }
 
 var (
+	workspaceSecurityFieldMembersWithoutTwoStep = big.NewInt(1 << 0)
+	workspaceSecurityFieldTwoStepRequired       = big.NewInt(1 << 1)
+)
+
+type WorkspaceSecurity struct {
+	MembersWithoutTwoStep *int `json:"membersWithoutTwoStep,omitempty" url:"membersWithoutTwoStep,omitempty"`
+	TwoStepRequired       bool `json:"twoStepRequired" url:"twoStepRequired"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (w *WorkspaceSecurity) GetMembersWithoutTwoStep() *int {
+	if w == nil {
+		return nil
+	}
+	return w.MembersWithoutTwoStep
+}
+
+func (w *WorkspaceSecurity) GetTwoStepRequired() bool {
+	if w == nil {
+		return false
+	}
+	return w.TwoStepRequired
+}
+
+func (w *WorkspaceSecurity) GetExtraProperties() map[string]interface{} {
+	if w == nil {
+		return nil
+	}
+	return w.extraProperties
+}
+
+func (w *WorkspaceSecurity) require(field *big.Int) {
+	next := new(big.Int)
+	if w.explicitFields != nil {
+		next.Set(w.explicitFields)
+	}
+	next.Or(next, field)
+	w.explicitFields = next
+}
+
+// SetMembersWithoutTwoStep sets the MembersWithoutTwoStep field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WorkspaceSecurity) SetMembersWithoutTwoStep(membersWithoutTwoStep *int) {
+	w.MembersWithoutTwoStep = membersWithoutTwoStep
+	w.require(workspaceSecurityFieldMembersWithoutTwoStep)
+}
+
+// SetTwoStepRequired sets the TwoStepRequired field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WorkspaceSecurity) SetTwoStepRequired(twoStepRequired bool) {
+	w.TwoStepRequired = twoStepRequired
+	w.require(workspaceSecurityFieldTwoStepRequired)
+}
+
+func (w *WorkspaceSecurity) UnmarshalJSON(data []byte) error {
+	type unmarshaler WorkspaceSecurity
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*w = WorkspaceSecurity(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *w)
+	if err != nil {
+		return err
+	}
+	w.extraProperties = extraProperties
+	w.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (w *WorkspaceSecurity) MarshalJSON() ([]byte, error) {
+	type embed WorkspaceSecurity
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*w),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, w.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (w *WorkspaceSecurity) String() string {
+	if w == nil {
+		return "<nil>"
+	}
+	if len(w.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(w.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(w); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", w)
+}
+
+var (
 	workspaceUsageReportFieldAllowances = big.NewInt(1 << 0)
 	workspaceUsageReportFieldCurrent    = big.NewInt(1 << 1)
 	workspaceUsageReportFieldDays       = big.NewInt(1 << 2)

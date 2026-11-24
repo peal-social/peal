@@ -458,6 +458,17 @@
       },
       "default": "./dist/cjs/api/resources/workspace/exports.js"
     },
+    "./workspace/security": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/resources/security/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/resources/security/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/resources/security/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/resources/security/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/resources/security/exports.js"
+    },
     "./workspace/activity": {
       "import": {
         "types": "./dist/esm/api/resources/workspace/resources/activity/exports.d.mts",

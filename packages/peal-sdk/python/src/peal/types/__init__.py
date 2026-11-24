@@ -1157,6 +1157,7 @@ if typing.TYPE_CHECKING:
     from .workspace_not_found_encoded_tag import WorkspaceNotFoundEncodedTag
     from .workspace_required_encoded import WorkspaceRequiredEncoded
     from .workspace_required_encoded_tag import WorkspaceRequiredEncodedTag
+    from .workspace_security import WorkspaceSecurity
     from .workspace_usage_report import WorkspaceUsageReport
     from .x_options import XOptions
     from .x_reply_settings import XReplySettings
@@ -2295,6 +2296,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "WorkspaceNotFoundEncodedTag": ".workspace_not_found_encoded_tag",
     "WorkspaceRequiredEncoded": ".workspace_required_encoded",
     "WorkspaceRequiredEncodedTag": ".workspace_required_encoded_tag",
+    "WorkspaceSecurity": ".workspace_security",
     "WorkspaceUsageReport": ".workspace_usage_report",
     "XOptions": ".x_options",
     "XReplySettings": ".x_reply_settings",
@@ -3457,6 +3459,7 @@ __all__ = [
     "WorkspaceNotFoundEncodedTag",
     "WorkspaceRequiredEncoded",
     "WorkspaceRequiredEncodedTag",
+    "WorkspaceSecurity",
     "WorkspaceUsageReport",
     "XOptions",
     "XReplySettings",

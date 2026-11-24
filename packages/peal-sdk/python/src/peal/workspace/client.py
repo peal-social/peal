@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:
     from .billing.client import AsyncBillingClient, BillingClient
     from .invitations.client import AsyncInvitationsClient, InvitationsClient
     from .members.client import AsyncMembersClient, MembersClient
+    from .security.client import AsyncSecurityClient, SecurityClient
     from .usage.client import AsyncUsageClient, UsageClient
 
 
@@ -20,6 +21,7 @@ class WorkspaceClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._raw_client = RawWorkspaceClient(client_wrapper=client_wrapper)
         self._client_wrapper = client_wrapper
+        self._security: typing.Optional[SecurityClient] = None
         self._activity: typing.Optional[ActivityClient] = None
         self._api_keys: typing.Optional[ApiKeysClient] = None
         self._members: typing.Optional[MembersClient] = None
@@ -37,6 +39,14 @@ class WorkspaceClient:
         RawWorkspaceClient
         """
         return self._raw_client
+
+    @property
+    def security(self):
+        if self._security is None:
+            from .security.client import SecurityClient  # noqa: E402
+
+            self._security = SecurityClient(client_wrapper=self._client_wrapper)
+        return self._security
 
     @property
     def activity(self):
@@ -91,6 +101,7 @@ class AsyncWorkspaceClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._raw_client = AsyncRawWorkspaceClient(client_wrapper=client_wrapper)
         self._client_wrapper = client_wrapper
+        self._security: typing.Optional[AsyncSecurityClient] = None
         self._activity: typing.Optional[AsyncActivityClient] = None
         self._api_keys: typing.Optional[AsyncApiKeysClient] = None
         self._members: typing.Optional[AsyncMembersClient] = None
@@ -108,6 +119,14 @@ class AsyncWorkspaceClient:
         AsyncRawWorkspaceClient
         """
         return self._raw_client
+
+    @property
+    def security(self):
+        if self._security is None:
+            from .security.client import AsyncSecurityClient  # noqa: E402
+
+            self._security = AsyncSecurityClient(client_wrapper=self._client_wrapper)
+        return self._security
 
     @property
     def activity(self):

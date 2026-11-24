@@ -125401,6 +125401,149 @@ func TestSettersMarkExplicitWorkspaceRequiredEncoded(t *testing.T) {
 
 }
 
+func TestSettersWorkspaceSecurity(t *testing.T) {
+	t.Run("SetMembersWithoutTwoStep", func(t *testing.T) {
+		obj := &WorkspaceSecurity{}
+		var fernTestValueMembersWithoutTwoStep *int
+		obj.SetMembersWithoutTwoStep(fernTestValueMembersWithoutTwoStep)
+		assert.Equal(t, fernTestValueMembersWithoutTwoStep, obj.MembersWithoutTwoStep)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetTwoStepRequired", func(t *testing.T) {
+		obj := &WorkspaceSecurity{}
+		var fernTestValueTwoStepRequired bool
+		obj.SetTwoStepRequired(fernTestValueTwoStepRequired)
+		assert.Equal(t, fernTestValueTwoStepRequired, obj.TwoStepRequired)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersWorkspaceSecurity(t *testing.T) {
+	t.Run("GetMembersWithoutTwoStep", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceSecurity{}
+		var expected *int
+		obj.MembersWithoutTwoStep = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMembersWithoutTwoStep(), "getter should return the property value")
+	})
+
+	t.Run("GetMembersWithoutTwoStep_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceSecurity{}
+		obj.MembersWithoutTwoStep = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMembersWithoutTwoStep(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMembersWithoutTwoStep_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceSecurity
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMembersWithoutTwoStep() // Should return zero value
+	})
+
+	t.Run("GetTwoStepRequired", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceSecurity{}
+		var expected bool
+		obj.TwoStepRequired = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetTwoStepRequired(), "getter should return the property value")
+	})
+
+	t.Run("GetTwoStepRequired_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceSecurity
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetTwoStepRequired() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitWorkspaceSecurity(t *testing.T) {
+	t.Run("SetMembersWithoutTwoStep_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceSecurity{}
+		var fernTestValueMembersWithoutTwoStep *int
+
+		// Act
+		obj.SetMembersWithoutTwoStep(fernTestValueMembersWithoutTwoStep)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetTwoStepRequired_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceSecurity{}
+		var fernTestValueTwoStepRequired bool
+
+		// Act
+		obj.SetTwoStepRequired(fernTestValueTwoStepRequired)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersWorkspaceUsageReport(t *testing.T) {
 	t.Run("SetAllowances", func(t *testing.T) {
 		obj := &WorkspaceUsageReport{}
@@ -141206,6 +141349,39 @@ func TestJSONMarshalingWorkspaceRequiredEncoded(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingWorkspaceSecurity(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceSecurity{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled WorkspaceSecurity
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj WorkspaceSecurity
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj WorkspaceSecurity
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingWorkspaceUsageReport(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -152937,6 +153113,22 @@ func TestStringWorkspaceRequiredEncoded(t *testing.T) {
 	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *WorkspaceRequiredEncoded
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringWorkspaceSecurity(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &WorkspaceSecurity{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceSecurity
 		result := obj.String()
 		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
 	})
@@ -171374,6 +171566,29 @@ func TestExtraPropertiesWorkspaceRequiredEncoded(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *WorkspaceRequiredEncoded
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesWorkspaceSecurity(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &WorkspaceSecurity{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceSecurity
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

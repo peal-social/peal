@@ -273,6 +273,7 @@ export const movedReferencePages: [string, string][] = [
   ["video-generations/video-generations-create", "media/media-videos-create"],
   ["video-generations/video-generations-get", "media/media-videos-get"],
   ["video-generations/video-generations-list", "media/media-videos-list"],
+  ["workspaces/workspaces-security", "workspace/workspace-security-get"],
 ];
 
 /**
@@ -281,10 +282,13 @@ export const movedReferencePages: [string, string][] = [
  * to the guide that describes its endpoint, at its section.
  */
 export const leftReferencePages: [string, string][] = [
-  ["/reference/account/account-closure", "/developers#me"],
+  [
+    "/reference/account/account-closure",
+    "/guides/workspace/account#legal-hold",
+  ],
   ["/reference/account/account-delete", "/guides/workspace#api"],
   ["/reference/account/account-export", "/guides/workspace#api"],
-  ["/reference/account/account-two-step", "/developers#me"],
+  ["/reference/account/account-two-step", "/guides/workspace/account#two-step"],
   [
     "/reference/billing-actions/billing-actions-accept-transfer",
     "/guides/workspace/billing#ordering",
@@ -351,8 +355,10 @@ export const leftReferencePages: [string, string][] = [
   ],
   ["/reference/session/session-me", "/developers#me"],
   ["/reference/workspaces/workspaces-delete", "/guides/workspace#api"],
-  ["/reference/workspaces/workspaces-secure", "/guides/workspace#api"],
-  ["/reference/workspaces/workspaces-security", "/guides/workspace#api"],
+  [
+    "/reference/workspaces/workspaces-secure",
+    "/guides/workspace#require-two-step",
+  ],
 ];
 
 /** Every redirect the docs serve. */

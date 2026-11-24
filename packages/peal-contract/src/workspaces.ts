@@ -54,10 +54,13 @@ export const SecureWorkspaceSchema = Schema.Struct({
 export type SecureWorkspace = typeof SecureWorkspaceSchema.Type;
 
 /**
- * A workspace itself, and what it requires of its members. Renaming it,
- * changing its members' roles and removing members go through the sign-in
- * service's organization routes, under /api/auth; MembersApi and
- * InvitationsApi list its members and invite.
+ * A workspace itself, and what it requires of its members: what only a
+ * person in their own session does, deleting it and requiring two-step
+ * verification. WorkspaceSecurityApi reads the requirement, for any
+ * credential of the workspace. Renaming it, changing its members' roles and
+ * removing members go through the sign-in service's organization routes,
+ * under /api/auth; MembersApi and InvitationsApi list its members and
+ * invite.
  */
 export class WorkspacesApi extends HttpApiGroup.make("workspace")
   .add(
@@ -81,20 +84,6 @@ export class WorkspacesApi extends HttpApiGroup.make("workspace")
         description:
           "Deletes the workspace and everything in it, for good: its channels and their tokens, its posts, its media and their files, its analytics, its notices, its writing assistant usage, what billing recorded of its subscriptions, its members and invitations, and its API keys, which stop working at once. Needs organization:delete (owners), a signed-in member rather than an API key or an OAuth client, and the workspace's name in `name`. Answers 409 while a post of the workspace is being published (`WorkspaceBusy`), and while its partner account still owns workspaces (`PartnerOwnsWorkspaces`): each is deleted through the partner API first. A workspace with a subscription Stripe may still bill answers 409 `WorkspaceSubscribed`, with its plan and the end of the period paid for, unless `cancelSubscriptions` is `true`: then the subscription is cancelled at Stripe at once, with no proration and no final invoice, so the period already paid for is not refunded, except where the law gives a refund (a consumer who withdraws within 14 days of subscribing), and nothing more is charged. Invoices stay with Stripe, as accounting law keeps them for 10 years: download them from the billing page first. Checkouts of the workspace still open at Stripe are expired, so none completes once it is gone; when Stripe cannot be reached, nothing is deleted (503 `BillingUnavailable`). The deletion is recorded by id in the object store before it is done, so that a restored backup deletes the workspace again; when the store cannot be reached, nothing is deleted (503 `MediaStoreUnavailable`). A deletion that fails once the subscription is cancelled, whatever stopped it, the object store included, says so (500 `DeletionIncomplete`): the cancellation stands, nothing was deleted, and deleting again cancels nothing more. The owner is emailed a confirmation.",
         summary: "Delete a workspace",
-      })
-    )
-  )
-  .add(
-    HttpApiEndpoint.get("security", "/security", {
-      error: [Forbidden],
-      headers: workspaceHeaders,
-
-      success: WorkspaceSecuritySchema,
-    }).annotateMerge(
-      OpenApi.annotations({
-        description:
-          "Answers whether the workspace requires two-step verification of every member, and, to a member who may manage members (member:update), how many members' accounts do not have it on. Any member, application or API key of the workspace may read it.",
-        summary: "Get the workspace's security policy",
       })
     )
   )

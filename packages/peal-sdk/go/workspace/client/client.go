@@ -10,10 +10,12 @@ import (
 	billing "github.com/peal-social/peal/packages/peal-sdk/go/workspace/billing"
 	invitations "github.com/peal-social/peal/packages/peal-sdk/go/workspace/invitations"
 	members "github.com/peal-social/peal/packages/peal-sdk/go/workspace/members"
+	security "github.com/peal-social/peal/packages/peal-sdk/go/workspace/security"
 	usage "github.com/peal-social/peal/packages/peal-sdk/go/workspace/usage"
 )
 
 type Client struct {
+	Security    *security.Client
 	Activity    *activity.Client
 	APIKeys     *apikeys.Client
 	Members     *members.Client
@@ -28,6 +30,7 @@ type Client struct {
 
 func NewClient(options *core.RequestOptions) *Client {
 	return &Client{
+		Security:    security.NewClient(options),
 		Activity:    activity.NewClient(options),
 		APIKeys:     apikeys.NewClient(options),
 		Members:     members.NewClient(options),

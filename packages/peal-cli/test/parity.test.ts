@@ -308,6 +308,9 @@ const coverage = {
   "posts.tags.update": by("tags update"),
   "channels.tiktokCreator.get": by("channels tiktok"),
   "workspace.usage.get": by("usage"),
+  "workspace.security.get": exempt(
+    "Whether a workspace requires two-step verification is an owner's setting, in the web app: peal doctor tells a signed-in person whose account it locks out, and an API key is never concerned."
+  ),
   "workspace.usage.partner": by("partner usage"),
   "media.videos.create": by("media video generate"),
   "media.videos.get": by("media video status"),
