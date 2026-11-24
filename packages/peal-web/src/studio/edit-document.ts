@@ -232,6 +232,18 @@ export const promptedImageOf = (prompt: string, start: number): StudioClip => ({
   start,
 });
 
+/** A voice-over to generate from its words, at `start`. */
+export const promptedVoiceOf = (words: string, start: number): StudioClip => ({
+  asset: { prompt: words, type: "audio", volume: 1 },
+  length: stillSeconds,
+  start,
+});
+
+/** How long a generated file plays, in seconds, when the library knows. */
+export const playedSecondsOf = (
+  media: Pick<Media, "durationMs">
+): number | null => secondsOf(media);
+
 /** A new portrait edit of these clips, on one track. */
 export const emptyEdit = (clips: readonly StudioClip[]): StudioEdit => ({
   output: { aspectRatio: "9:16", format: "mp4", fps: 25, resolution: "1080" },

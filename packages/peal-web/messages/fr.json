@@ -4668,6 +4668,8 @@
     }
   },
   "Studio": {
+    "generateVoice": "Générer une voix off",
+    "voiceWords": "Écrivez ici ce que dit la voix.",
     "generateImage": "Générer une image",
     "imagePrompt": "Une mer calme au lever du soleil, lumière douce",
     "generateFirst": "Générez ou supprimez les éléments IA encore vides, puis exportez.",

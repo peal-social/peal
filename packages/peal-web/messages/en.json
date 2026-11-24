@@ -4668,6 +4668,8 @@
     }
   },
   "Studio": {
+    "generateVoice": "Generate a voice-over",
+    "voiceWords": "Write what the voice says here.",
     "generateImage": "Generate an image",
     "imagePrompt": "A calm sea at sunrise, soft light",
     "generateFirst": "Generate or delete the AI clips that have no picture yet, then export.",

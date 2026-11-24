@@ -13,6 +13,7 @@ import {
   mediaRefOf,
   previewOf,
   promptedImageOf,
+  promptedVoiceOf,
   renderedOf,
   storedOf,
   textClipOf,
@@ -191,6 +192,30 @@ describe("the editor's document", () => {
       false,
       { src: mediaRefOf(picture), type: "image" },
       edit,
+    ]);
+  });
+
+  it("waits for a voice-over, then renders it by its file", () => {
+    const waiting = promptedVoiceOf("Hello", 2);
+
+    const made = emptyEdit([
+      {
+        ...waiting,
+        asset: {
+          prompt: "Hello",
+          src: mediaRefOf(sound),
+          type: "audio",
+          volume: 1,
+        },
+      },
+    ]);
+
+    expect([
+      waitsToBeGenerated(emptyEdit([waiting])),
+      renderedOf(made).timeline.tracks[0]?.clips[0]?.asset,
+    ]).toStrictEqual([
+      true,
+      { src: mediaRefOf(sound), type: "audio", volume: 1 },
     ]);
   });
 

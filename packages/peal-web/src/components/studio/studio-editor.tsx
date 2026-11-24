@@ -31,6 +31,7 @@ import {
   imageAspectOf,
   laidEnd,
   mediaIdsOf,
+  playedSecondsOf,
   previewOf,
   renderedOf,
   storedOf,
@@ -41,12 +42,13 @@ import type { StudioEdit } from "#studio/edit-document.ts";
 import { useLibraryFiles } from "#studio/library-files.ts";
 
 import { canvasAttribute, startStudio } from "./studio-engine.ts";
-import type { Generation, Studio } from "./studio-engine.ts";
+import type { Generated, Generation, Studio } from "./studio-engine.ts";
 import {
   captionsTool,
   figureTool,
   imageTool,
   textTool,
+  voiceTool,
 } from "./studio-tools.ts";
 import { useStudioExport } from "./use-studio-export.ts";
 import type { StudioExport } from "./use-studio-export.ts";
@@ -172,13 +174,9 @@ const LoadedStudio = ({
   useFullWindow(full);
 
   const handleGeneration = useEffectEvent(
-    async (from: Studio, { prompt, type }: Generation): Promise<string> => {
-      if (type !== "image") {
-        throw new Error(t("notGenerated"));
-      }
-
-      const media = await generator.image(
-        prompt,
+    async (from: Studio, generation: Generation): Promise<Generated> => {
+      const media = await generator.make(
+        generation,
         imageAspectOf(from.getEdit())
       );
 
@@ -188,7 +186,7 @@ const LoadedStudio = ({
         throw new Error(t("notGenerated"));
       }
 
-      return media.url;
+      return { seconds: playedSecondsOf(media), url: media.url };
     }
   );
 
@@ -199,6 +197,9 @@ const LoadedStudio = ({
   const generateImage = t("generateImage");
   const imagePrompt = t("imagePrompt");
   const makesImages = status.images.available;
+  const generateVoice = t("generateVoice");
+  const voiceWords = t("voiceWords");
+  const makesVoices = status.voiceovers.available;
   const captionsNeedVoice = t("captionsNeedVoice");
   const newText = t("newText");
 
@@ -223,6 +224,7 @@ const LoadedStudio = ({
             figureTool("rectangle", addRectangle),
             figureTool("circle", addCircle),
             ...(makesImages ? [imageTool(generateImage, imagePrompt)] : []),
+            ...(makesVoices ? [voiceTool(generateVoice, voiceWords)] : []),
             captionsTool(addCaptions, () => {
               toast.info(captionsNeedVoice);
             }),
@@ -259,8 +261,11 @@ const LoadedStudio = ({
     addRectangle,
     addText,
     generateImage,
+    generateVoice,
     imagePrompt,
     makesImages,
+    makesVoices,
+    voiceWords,
     captionsNeedVoice,
     initial,
     newText,

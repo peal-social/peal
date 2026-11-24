@@ -1,5 +1,9 @@
 import { captionClipOf } from "#studio/captions.ts";
-import { promptedImageOf, textClipOf } from "#studio/edit-document.ts";
+import {
+  promptedImageOf,
+  promptedVoiceOf,
+  textClipOf,
+} from "#studio/edit-document.ts";
 import { figureClipOf } from "#studio/figures.ts";
 import type { FigureKind } from "#studio/figures.ts";
 
@@ -51,6 +55,18 @@ export const imageTool = (label: string, prompt: string): StudioTool => ({
   label,
   onPress: (studio) => {
     void studio.addTrack("over", [promptedImageOf(prompt, studio.time())]);
+  },
+});
+
+/** A voice-over to generate, under the others, at the playhead. */
+export const voiceTool = (label: string, words: string): StudioTool => ({
+  icon: iconOf(
+    '<rect x="6" y="1.5" width="4" height="7.5" rx="2"/><path d="M3.5 7.5a4.5 4.5 0 0 0 9 0"/><path d="M8 12v2.5"/>'
+  ),
+  id: "generate-voice",
+  label,
+  onPress: (studio) => {
+    void studio.addTrack("under", [promptedVoiceOf(words, studio.time())]);
   },
 });
 
