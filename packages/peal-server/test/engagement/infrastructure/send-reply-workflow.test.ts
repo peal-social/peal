@@ -13,6 +13,16 @@ import {
 import { MessageStorage } from "effect/cluster";
 import { TestClock } from "effect/testing";
 
+import {
+  ChannelGateLive,
+  UnreadMessages,
+  UnreadMetrics,
+  UnreadReviews,
+} from "#channels/infrastructure/channel-gate-live.ts";
+import {
+  GatedCommentSource,
+  GatedReplySender,
+} from "#channels/infrastructure/gated-clients.ts";
 import { EngagementReplies } from "#engagement/application/engagement-replies.ts";
 import { CommentSource } from "#engagement/application/ports/comment-source.ts";
 import type { CommentsRequest } from "#engagement/application/ports/comment-source.ts";
@@ -34,14 +44,6 @@ import {
 } from "#engagement/infrastructure/workflows/send-reply.ts";
 import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
-import {
-  ChannelGateLive,
-  GatedCommentSource,
-  GatedReplySender,
-  UnreadMessages,
-  UnreadReviews,
-  UnreadMetrics,
-} from "#publishing/infrastructure/channel-gate.ts";
 import { FakePlatformPublisher } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { Actor } from "#shared/domain/access.ts";

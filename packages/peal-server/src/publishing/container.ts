@@ -18,12 +18,10 @@ import { Feeds } from "#publishing/application/feeds.ts";
 import { FollowUpChannels } from "#publishing/application/follow-up-channels.ts";
 import { FollowUpCounts } from "#publishing/application/follow-up-counts.ts";
 import { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
 import { FollowUpRules } from "#publishing/application/follow-up-rules.ts";
 import { FollowUps } from "#publishing/application/follow-ups.ts";
 import { HeldPosts } from "#publishing/application/held-posts.ts";
 import { LivePostChanges } from "#publishing/application/live-post-changes.ts";
-import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import { LivePostEdits } from "#publishing/application/live-post-edits.ts";
 import { LivePostEvents } from "#publishing/application/live-post-events.ts";
 import { LivePostHolds } from "#publishing/application/live-post-holds.ts";
@@ -31,7 +29,6 @@ import { LiveTargetParts } from "#publishing/application/live-target-parts.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { pacedLookups } from "#publishing/application/paced-lookups.ts";
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
-import type { PlatformPublisher } from "#publishing/application/platform-publisher.ts";
 import type { PostAllowance } from "#publishing/application/post-allowance.ts";
 import { PostAttention } from "#publishing/application/post-attention.ts";
 import { PostBatches } from "#publishing/application/post-batches.ts";
@@ -69,14 +66,6 @@ import {
   ChannelAccessSiteCredentials,
 } from "#publishing/infrastructure/channel-access-credentials.ts";
 import { ChannelAccessGrants } from "#publishing/infrastructure/channel-access-grants.ts";
-import {
-  ChannelGateLive,
-  GatedFollowUpPublisher,
-  GatedLivePostClients,
-  GatedPlatformPublisher,
-  UnreadComments,
-  UnreadMetrics,
-} from "#publishing/infrastructure/channel-gate.ts";
 import {
   FeedsCron,
   FollowUpsCron,
@@ -584,64 +573,20 @@ export { CapabilitiesHandlers as CapabilitiesApiLive } from "#publishing/api/cap
 
 export { LookupsHandlers as LookupsApiLive } from "#publishing/api/lookups.ts";
 
-// What the gates read analytics' counts with (MetricsReader): the readers
-// the composition root brings, or none.
-type GateReaders<E, R> = Layer.Layer<Layer.Success<typeof UnreadMetrics>, E, R>;
-
-// What the gates read comments and answer them with (CommentSource,
-// ReplySender): engagement's platforms, or none.
-type GateEngagement<E, R> = Layer.Layer<
-  Layer.Success<typeof UnreadComments>,
-  E,
-  R
->;
-
 /**
- * Registers the publishing workflows and the channel gates, which call the
- * platforms through `platforms`, and read counts for analytics with
- * `readers` (by default, none), and comments for engagement with
- * `engagement` (by default, none). Needs the cluster and what
- * PublishingLive provides, PublicationOutcomes included.
+ * Registers the publishing workflows, which call the platforms through the
+ * PlatformPublisher, LivePostClients and FollowUpPublisher they are given:
+ * on the server, the channels context's, which send each call through its
+ * channel's gate. Needs the cluster and what PublishingLive provides,
+ * PublicationOutcomes included.
  */
-export const publishingWorkers = <
-  E,
-  R,
-  E2 = never,
-  R2 = never,
-  E3 = never,
-  R3 = never,
-  E4 = never,
-  R4 = never,
-  E5 = never,
-  R5 = never,
->(
-  platforms: Layer.Layer<PlatformPublisher, E, R>,
-  readers: GateReaders<E2, R2> = UnreadMetrics,
-  engagement: GateEngagement<E3, R3> = UnreadComments,
-  live: Layer.Layer<LivePostClients, E4, R4> = LivePostClients.none,
-  followUps: Layer.Layer<FollowUpPublisher, E5, R5> = FollowUpPublisher.none
-) =>
-  Layer.mergeAll(
-    PublishPostV1Live,
-    PublishTargetV1Live,
-    PublishTargetV2Live
-  ).pipe(
-    Layer.provide(GatedPlatformPublisher),
-    Layer.merge(ChangeLivePostV1Live.pipe(Layer.provide(GatedLivePostClients))),
-    Layer.merge(
-      SendFollowUpV1Live.pipe(
-        Layer.provide(SendFollowUp.layer),
-        Layer.provide(GatedFollowUpPublisher)
-      )
-    ),
-    Layer.merge(
-      ChannelGateLive.pipe(
-        Layer.provide(
-          Layer.mergeAll(platforms, readers, engagement, live, followUps)
-        )
-      )
-    )
-  );
+export const PublishingWorkersLive = Layer.mergeAll(
+  PublishPostV1Live,
+  PublishTargetV1Live,
+  PublishTargetV2Live,
+  ChangeLivePostV1Live,
+  SendFollowUpV1Live.pipe(Layer.provide(SendFollowUp.layer))
+);
 
 /**
  * The platforms the gates publish to, Mastodon, Bluesky, LinkedIn, X,
@@ -713,25 +658,12 @@ export const FollowUpPlatformsLive = RoutedFollowUpPublisher.pipe(
 );
 
 /**
- * The workers as the server runs them, publishing to the platforms, with
- * the readers analytics' counts come from (MetricsReader), which the
- * composition root provides.
+ * What the gates delete the posts members unpublish with, and edit those
+ * they edit, with the channels' tokens and the edits' texts.
  */
-export const publishingWorkersReading = <E, R, E2, R2>(
-  readers: GateReaders<E, R>,
-  engagement: GateEngagement<E2, R2>
-) =>
-  publishingWorkers(
-    PlatformsLive,
-    readers,
-    engagement,
-    // What deletes the posts members unpublish, and edits those they
-    // edit, with the channels' tokens and the edits' texts.
-    LivePostClientsLive.pipe(
-      Layer.provide(Layer.merge(ChannelAccessCredentials, LivePostEdits.layer))
-    ),
-    FollowUpPlatformsLive
-  );
+export const LivePostPlatformsLive = LivePostClientsLive.pipe(
+  Layer.provide(Layer.merge(ChannelAccessCredentials, LivePostEdits.layer))
+);
 
 /**
  * The server's ledger of the platforms' daily quotas, in Postgres: for
@@ -739,26 +671,6 @@ export const publishingWorkersReading = <E, R, E2, R2>(
  * day with publishing. Needs the database (Drizzle).
  */
 export { DrizzlePlatformQuota as PlatformQuotaLive } from "#publishing/infrastructure/drizzle-platform-quota.ts";
-
-/**
- * The MetricsReader that sends each read through its channel's gate, for
- * analytics' collection.
- */
-export { GatedMetricsReader } from "#publishing/infrastructure/channel-gate.ts";
-
-/**
- * The CommentSource and ReplySender, the ReviewSource and
- * ReviewReplySender (GatedReviews), and the MessageSource and
- * MessageSender (GatedMessages), that send each call through its
- * channel's gate, for engagement.
- */
-export {
-  GatedCommentSource,
-  GatedReplySender,
-  GatedMessages,
-  GatedReviews,
-  UnreadComments,
-} from "#publishing/infrastructure/channel-gate.ts";
 
 /**
  * The idempotency keys' daily retention, the recycling rules'
