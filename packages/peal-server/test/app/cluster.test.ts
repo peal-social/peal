@@ -2,11 +2,13 @@ import { assert, describe, it } from "@effect/vitest";
 import {
   Cron,
   DateTime,
+  Deferred,
   Duration,
   Effect,
   Exit,
   Layer,
   Option,
+  Ref,
   Schema,
   Scope,
 } from "effect";
@@ -121,11 +123,31 @@ const Database = MigrationsLive.pipe(Layer.provideMerge(DatabaseLive));
 // register it would retry its pending run forever.
 const tickName = "test.tick";
 
-const Ticks = ClusterCron.make({
-  cron: Cron.parseUnsafe("* * * * * *", "UTC"),
-  execute: Effect.void,
-  name: tickName,
+// Where the ticks' runs pass, so a test can stop them on the real clock:
+// once it is shut, the next run waits there (`held`) until the test lets
+// it go (`released`), and no run is processed meanwhile.
+const tickGate = Effect.all({
+  held: Deferred.make<boolean>(),
+  open: Ref.make(true),
+  released: Deferred.make<boolean>(),
 });
+
+type TickGate = Effect.Success<typeof tickGate>;
+
+const ticksThrough = (gate: TickGate) =>
+  ClusterCron.make({
+    cron: Cron.parseUnsafe("* * * * * *", "UTC"),
+    execute: Ref.get(gate.open).pipe(
+      Effect.flatMap((open) =>
+        open
+          ? Effect.void
+          : Deferred.succeed(gate.held, true).pipe(
+              Effect.andThen(Deferred.await(gate.released))
+            )
+      )
+    ),
+    name: tickName,
+  });
 
 // The jobs the server's crons call, doing nothing: a real sweep would
 // refresh, or mark, the channels other suites keep in this database, a
@@ -842,52 +864,75 @@ describe("the cluster on Postgres", () => {
     () =>
       live(
         Effect.gen(function* purges() {
-          const finished = yield* scheduleSoon(Duration.zero);
-          const waiting = yield* scheduleSoon(Duration.hours(1));
+          const gate = yield* tickGate;
 
-          yield* waitUntil("a post finishes", isFinished(finished.post.id));
-          yield* waitUntil("its job ends", hasEnded(finished.execution));
-          yield* waitUntil(
-            "a cron run is processed",
-            cronRuns(true).pipe(Effect.map((runs) => runs > 0))
-          );
+          yield* Effect.gen(function* purging() {
+            const finished = yield* scheduleSoon(Duration.zero);
+            const waiting = yield* scheduleSoon(Duration.hours(1));
 
-          // Younger than a day: kept.
-          yield* purgeFinishedClusterRows(Duration.days(1));
+            yield* waitUntil("a post finishes", isFinished(finished.post.id));
+            yield* waitUntil("its job ends", hasEnded(finished.execution));
+            yield* waitUntil(
+              "a cron run is processed",
+              cronRuns(true).pipe(Effect.map((runs) => runs > 0))
+            );
 
-          assert.isAbove(yield* messagesOf(finished.execution), 0);
-          assert.isAbove(yield* cronRuns(true), 0);
+            // The ticks stop: the next run waits at the gate, the one before
+            // it is processed, and none is until the test ends, however long
+            // a loaded machine takes between the purges and their counts.
+            yield* Ref.set(gate.open, false);
+            yield* Deferred.await(gate.held);
+            yield* waitUntil(
+              "only the held run is left to process",
+              cronRuns(false).pipe(Effect.map((runs) => runs === 1))
+            );
 
-          const purged = yield* purgeFinishedClusterRows(Duration.zero);
+            // Younger than a day: kept.
+            yield* purgeFinishedClusterRows(Duration.days(1));
 
-          assert.isAtLeast(purged.executions, 1);
-          assert.isAtLeast(purged.cronRuns, 1);
-          assert.strictEqual(yield* messagesOf(finished.execution), 0);
-          assert.isAbove(yield* messagesOf(waiting.execution), 0);
-          assert.strictEqual(yield* cronRuns(true), 0);
-          // The next run of each cron is still scheduled.
-          assert.isAbove(yield* cronRuns(false), 0);
+            assert.isAbove(yield* messagesOf(finished.execution), 0);
+            assert.isAbove(yield* cronRuns(true), 0);
 
-          const retention = yield* SqlClient.SqlClient.use((sql) =>
-            count(
-              sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_type = 'ClusterCron/cluster.retention' AND NOT processed`
-            )
-          );
+            const purged = yield* purgeFinishedClusterRows(Duration.zero);
 
-          assert.isAbove(retention, 0);
+            assert.isAtLeast(purged.executions, 1);
+            assert.isAtLeast(purged.cronRuns, 1);
+            assert.strictEqual(yield* messagesOf(finished.execution), 0);
+            assert.isAbove(yield* messagesOf(waiting.execution), 0);
+            assert.strictEqual(yield* cronRuns(true), 0);
+            // The next run of each cron is still scheduled.
+            assert.isAbove(yield* cronRuns(false), 0);
 
-          // Leaves no job waiting for a dev server to run.
-          yield* PostScheduling.use((scheduling) =>
-            scheduling.cancel(
-              actorIn(waiting.post.workspaceId),
-              waiting.post.id
+            const retention = yield* SqlClient.SqlClient.use((sql) =>
+              count(
+                sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_type = 'ClusterCron/cluster.retention' AND NOT processed`
+              )
+            );
+
+            assert.isAbove(retention, 0);
+
+            // Leaves no job waiting for a dev server to run.
+            yield* PostScheduling.use((scheduling) =>
+              scheduling.cancel(
+                actorIn(waiting.post.workspaceId),
+                waiting.post.id
+              )
+            );
+          }).pipe(
+            // The held run goes on before the server stops.
+            Effect.ensuring(Deferred.succeed(gate.released, true)),
+            Effect.provide(
+              serverWith(
+                FakePlatformPublisher,
+                Layer.merge(CronsTest, ticksThrough(gate))
+              )
             )
           );
         }).pipe(
-          Effect.provide(
-            serverWith(FakePlatformPublisher, Layer.merge(CronsTest, Ticks))
-          ),
-          // Once the server has stopped.
+          // What a run stopped part way left of the ticks first, as a
+          // second chain of them would tick on; this run's once the server
+          // has stopped.
+          (test) => Effect.orDie(forgetTicks).pipe(Effect.andThen(test)),
           Effect.ensuring(Effect.orDie(forgetTicks)),
           Effect.provide(Database)
         )
