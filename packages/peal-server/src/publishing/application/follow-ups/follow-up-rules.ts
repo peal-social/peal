@@ -148,7 +148,7 @@ const cleanComment = (
 
 /**
  * Rules that act by themselves on the workspace's own posts once they have
- * enough likes (`#publishing/domain/follow-up-rule.ts`), as members keep
+ * enough likes (`#publishing/domain/follow-ups/follow-up-rule.ts`), as members keep
  * them: one post's, or every post a channel publishes after it starts.
  *
  * Reading needs post:read. Starting one needs to be able to ask for posts
