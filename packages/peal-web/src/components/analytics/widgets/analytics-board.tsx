@@ -1,5 +1,8 @@
 "use client";
 
+import { DragDropProvider } from "@dnd-kit/react";
+import type { DragDropEventHandlers } from "@dnd-kit/react";
+import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import { Effect, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
@@ -17,7 +20,7 @@ import {
 import { Skeleton } from "peal-ui/components/skeleton";
 import { toast } from "peal-ui/components/toast";
 import { useRef, useState } from "react";
-import type { DragEvent, KeyboardEvent, PointerEvent, ReactNode } from "react";
+import type { ComponentProps, KeyboardEvent, JSX, PointerEvent } from "react";
 
 import {
   analyticsChannel,
@@ -83,7 +86,6 @@ import {
 } from "./widget-bodies.tsx";
 import type { PostLinkProps } from "./widget-bodies.tsx";
 import { WidgetCardView } from "./widget-card.tsx";
-import type { DropSide } from "./widget-card.tsx";
 import {
   RenameWidgetDialog,
   WidgetFilter,
@@ -91,6 +93,54 @@ import {
 } from "./widget-controls.tsx";
 
 const newId = (): string => crypto.randomUUID();
+
+// How a widget glides to its place as another moves through the board.
+const glide = { duration: 240, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
+
+/**
+ * A widget the board sorts: it follows the pointer in any direction from
+ * its handle while the others glide aside, and the handle takes the
+ * keyboard too (Space picks it up, the arrows carry it, Space puts it
+ * down, Escape gives up).
+ */
+const SortableWidget = ({
+  dragLabel,
+  id,
+  index,
+  ...card
+}: Omit<
+  ComponentProps<typeof WidgetCardView>,
+  "dragging" | "handle" | "ref"
+> & {
+  readonly dragLabel: string;
+  readonly id: string;
+  readonly index: number;
+}) => {
+  const { handleRef, isDragging, ref } = useSortable({
+    id,
+    index,
+    transition: glide,
+  });
+
+  return (
+    <WidgetCardView
+      {...card}
+      ref={ref}
+      dragging={isDragging}
+      handle={
+        <button
+          ref={handleRef}
+          type="button"
+          aria-label={dragLabel}
+          title={dragLabel}
+          className="text-muted-foreground hover:bg-muted bg-card focus-visible:ring-ring absolute top-6 left-0 z-10 hidden -translate-x-1/2 cursor-grab touch-none rounded-sm border py-1 opacity-0 transition-opacity outline-none select-none group-hover/widget:opacity-100 group-data-[dragging]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 active:cursor-grabbing sm:block"
+        >
+          <GripVerticalIcon aria-hidden className="size-4" />
+        </button>
+      }
+    />
+  );
+};
 
 /** How much room a widget has: the columns and rows it spans. */
 interface Room {
@@ -440,38 +490,10 @@ const WidgetBody = (
   return <DashboardData {...props} />;
 };
 
-interface Drop {
-  readonly id: string;
-  readonly side: DropSide;
-}
-
 interface Resize {
   readonly id: string;
   readonly room: Room;
 }
-
-// Which side of a widget the pointer is on: a widget as wide as the
-// board has others above and below it, a narrower one beside it.
-const sideOf = (event: DragEvent<HTMLElement>, full: boolean): DropSide => {
-  const box = event.currentTarget.getBoundingClientRect();
-
-  const before = full
-    ? event.clientY < box.top + box.height / 2
-    : event.clientX < box.left + box.width / 2;
-
-  return before ? "before" : "after";
-};
-
-/** Where the board places a widget dropped on another's side. */
-const dropIndex = (
-  board: Board,
-  dragged: string,
-  target: string,
-  side: DropSide
-): number =>
-  board.widgets
-    .filter(({ id }) => id !== dragged)
-    .findIndex(({ id }) => id === target) + (side === "after" ? 1 : 0);
 
 // A computed length in pixels ("24px"), or none.
 const pixels = (value: string): number =>
@@ -536,8 +558,6 @@ export const AnalyticsBoard = ({
   const grid = useRef<HTMLUListElement>(null);
   const [adding, setAdding] = useState(false);
   const [renaming, setRenaming] = useState<Widget | null>(null);
-  const [dragged, setDragged] = useState<string | null>(null);
-  const [drop, setDrop] = useState<Drop | null>(null);
   const [resize, setResize] = useState<Resize | null>(null);
   const today = todayIn(timeZone);
   const channelIds = channels.map(({ id }) => id);
@@ -559,9 +579,20 @@ export const AnalyticsBoard = ({
     });
   };
 
-  const endDrag = () => {
-    setDragged(null);
-    setDrop(null);
+  // A widget dropped elsewhere: the board takes the order the pointer
+  // left it in, which the others moved aside for as it went.
+  const handleDragEnd: DragDropEventHandlers["onDragEnd"] = (event) => {
+    const { source } = event.operation;
+
+    if (event.canceled || !isSortable(source)) {
+      return;
+    }
+
+    const { index, initialIndex } = source;
+
+    if (index !== initialIndex) {
+      update((current) => moveWidget(current, String(source.id), index));
+    }
   };
 
   const openSheet = () => {
@@ -693,7 +724,7 @@ export const AnalyticsBoard = ({
     );
   }
 
-  const card = (widget: Widget): ReactNode => {
+  const card = (widget: Widget, index: number): JSX.Element => {
     const name = widget.title ?? t("name", { kind: widget.kind });
     const own: Room = { height: heightOf(widget), width: widthOf(widget) };
     const room = resize?.id === widget.id ? resize.room : own;
@@ -701,10 +732,13 @@ export const AnalyticsBoard = ({
     const channelId = channelOf(widget, channelIds);
     const channel = channels.find(({ id }) => id === channelId);
     const periodText = t("period", { period });
-    const full = room.width === 4;
 
     return (
-      <WidgetCardView
+      <SortableWidget
+        key={widget.id}
+        id={widget.id}
+        index={index}
+        dragLabel={t("drag", { name })}
         name={name}
         width={room.width}
         height={room.height}
@@ -713,66 +747,6 @@ export const AnalyticsBoard = ({
           channel === undefined
             ? periodText
             : `${periodText} · ${channelName(channel)}`
-        }
-        dragging={dragged === widget.id}
-        dropSide={drop?.id === widget.id ? drop.side : null}
-        onDragOver={(event) => {
-          if (dragged === null || dragged === widget.id) {
-            return;
-          }
-
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-          setDrop({ id: widget.id, side: sideOf(event, full) });
-        }}
-        onDragLeave={(event) => {
-          const { relatedTarget } = event;
-
-          if (
-            !(relatedTarget instanceof Node) ||
-            !event.currentTarget.contains(relatedTarget)
-          ) {
-            setDrop(null);
-          }
-        }}
-        onDrop={(event) => {
-          event.preventDefault();
-
-          if (dragged !== null && dragged !== widget.id) {
-            const at = dropIndex(
-              board,
-              dragged,
-              widget.id,
-              sideOf(event, full)
-            );
-
-            update((current) => moveWidget(current, dragged, at));
-          }
-
-          endDrag();
-        }}
-        handle={
-          <span
-            aria-hidden="true"
-            draggable
-            title={t("drag", { name })}
-            onDragStart={(event) => {
-              const article = event.currentTarget.parentElement;
-
-              event.dataTransfer.effectAllowed = "move";
-              event.dataTransfer.setData("text/plain", widget.id);
-
-              if (article !== null) {
-                event.dataTransfer.setDragImage(article, 24, 24);
-              }
-
-              setDragged(widget.id);
-            }}
-            onDragEnd={endDrag}
-            className="text-muted-foreground hover:bg-muted bg-card absolute top-6 left-0 z-10 hidden -translate-x-1/2 cursor-grab rounded-sm border py-1 opacity-0 transition-opacity select-none group-hover/widget:opacity-100 active:cursor-grabbing sm:block"
-          >
-            <GripVerticalIcon className="size-4" />
-          </span>
         }
         resizer={
           <button
@@ -840,7 +814,7 @@ export const AnalyticsBoard = ({
           timeZone={timeZone}
           workspaceId={workspaceId}
         />
-      </WidgetCardView>
+      </SortableWidget>
     );
   };
 
@@ -848,18 +822,16 @@ export const AnalyticsBoard = ({
     <>
       {actions}
       {sheet}
-      <ul
-        ref={grid}
-        aria-label={t("boardLabel")}
-        className="grid auto-rows-(--widget-row) grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4"
-        style={{ "--widget-row": "20rem" }}
-      >
-        {board.widgets.map((widget) => (
-          <li key={widget.id} className="contents">
-            {card(widget)}
-          </li>
-        ))}
-      </ul>
+      <DragDropProvider onDragEnd={handleDragEnd}>
+        <ul
+          ref={grid}
+          aria-label={t("boardLabel")}
+          className="grid auto-rows-(--widget-row) grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4"
+          style={{ "--widget-row": "20rem" }}
+        >
+          {board.widgets.map((widget, index) => card(widget, index))}
+        </ul>
+      </DragDropProvider>
       {renaming === null ? null : (
         <RenameWidgetDialog
           open

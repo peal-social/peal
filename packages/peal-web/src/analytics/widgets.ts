@@ -98,6 +98,8 @@ interface KindDescription {
   /** The columns it starts with, and the fewest it reads in. */
   readonly width: WidgetWidth;
   readonly minWidth: WidgetWidth;
+  /** The rows it starts with. */
+  readonly height: WidgetHeight;
 }
 
 const report = (
@@ -107,6 +109,7 @@ const report = (
   sections: readonly WidgetSection[]
 ): KindDescription => ({
   channel,
+  height: 1,
   minWidth,
   period: "30",
   periods: reportPeriods,
@@ -115,13 +118,18 @@ const report = (
 });
 
 /**
- * What each kind of widget is: its width, its filters, where it is
- * offered. Every kind starts one row high.
+ * What each kind of widget is: its size, its filters, where it is
+ * offered. Every kind starts one row high but engagement over time,
+ * whose chart wants the room.
  */
 export const kinds: Readonly<Record<WidgetKind, KindDescription>> = {
-  activity: report(4, 2, "optional", ["suggested", "posts"]),
+  activity: {
+    ...report(4, 2, "optional", ["suggested", "posts"]),
+    height: 2,
+  },
   bestTimes: {
     channel: "required",
+    height: 1,
     minWidth: 2,
     period: "90",
     periods: bestTimesPeriods,
@@ -171,7 +179,10 @@ export type Board = typeof BoardSchema.Type;
 /** The longest name a widget may be given. */
 export const maxTitleLength = 60;
 
-/** The board a workspace's page starts with, and goes back to on reset. */
+/**
+ * The board a workspace's page starts with, and goes back to on reset:
+ * the few that matter most, as the rest are a choice in Add widgets.
+ */
 export const defaultBoard: Board = {
   version: 1,
   widgets: [
@@ -179,13 +190,6 @@ export const defaultBoard: Board = {
     { id: "top-posts", kind: "topPosts" },
     { id: "engagement", kind: "engagement" },
     { id: "activity", kind: "activity" },
-    { id: "posts", kind: "posts" },
-    { id: "impressions", kind: "impressions" },
-    { id: "channels", kind: "channels" },
-    { id: "comparison", kind: "comparison" },
-    { id: "best-times", kind: "bestTimes" },
-    { id: "views", kind: "views" },
-    { id: "export", kind: "export" },
   ],
 };
 
@@ -217,8 +221,9 @@ export const widthOf = (widget: Widget): WidgetWidth => {
   return own < minWidth ? minWidth : own;
 };
 
-/** The rows a widget spans. */
-export const heightOf = (widget: Widget): WidgetHeight => widget.height ?? 1;
+/** The rows a widget spans: its own, or its kind's. */
+export const heightOf = (widget: Widget): WidgetHeight =>
+  widget.height ?? kinds[widget.kind].height;
 
 /** A widget's size on the board. */
 export interface WidgetSize {
@@ -361,7 +366,7 @@ export const resizeWidget = (
     const sized: Widget =
       width === kinds[widget.kind].width ? widget : { ...widget, width };
 
-    return height === 1 ? sized : { ...sized, height };
+    return height === kinds[widget.kind].height ? sized : { ...sized, height };
   });
 
 /** The board with the widget showing one channel, or all with null. */

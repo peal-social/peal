@@ -131,6 +131,19 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     ).toBeVisible();
     await expect(browser).toHaveURL(`/${slug}/analytics`);
 
+    // The board starts with the few that matter: the rest are added
+    // from the sheet, at its end.
+    await expect(screen.getByRole("article", "Followers")).toBeVisible();
+    await expect(screen.getByRole("article", "Channels")).toBeHidden();
+
+    await screen.getByRole("button", "Add widgets").tap();
+    await screen.getByRole("button", "Add Channels").tap();
+    await screen.getByRole("button", "Add Export").tap();
+    await screen
+      .getByRole("dialog", "Add widgets")
+      .getByRole("button", "Close")
+      .tap();
+
     // Each channel on a line of the Channels widget.
     const totals = screen.getByRole(
       "list",
@@ -139,11 +152,6 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
 
     await expect(totals).toBeVisible();
     await expect(totals.getByText(/@pools@social\.example/u)).toBeVisible();
-    await expect(
-      screen.getByText(
-        "No post went out in this range yet on a platform Peal reads counts on."
-      )
-    ).toBeHidden();
 
     // And the same numbers as files.
     const exports = screen.getByRole("article", "Export");
@@ -164,18 +172,12 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     await expect(followers).toContainText("Last 7 days");
     await expect(exports).toContainText("Last 30 days");
 
-    // Widgets are added from the sheet, and the board stays as arranged.
-    await screen.getByRole("button", "Add widgets").tap();
-    await screen.getByRole("button", "Add Reach").tap();
-    await screen
-      .getByRole("dialog", "Add widgets")
-      .getByRole("button", "Close")
-      .tap();
-
-    await expect(screen.getByRole("article", "Reach")).toBeVisible();
-
+    // The board stays as arranged.
     await app.open(`/${slug}/analytics`);
-    await expect(screen.getByRole("article", "Reach")).toBeVisible();
+    await expect(screen.getByRole("article", "Export")).toBeVisible();
+    await expect(screen.getByRole("article", "Followers")).toContainText(
+      "Last 7 days"
+    );
   });
 
   test("reads a comment in the inbox and settles it", async ({

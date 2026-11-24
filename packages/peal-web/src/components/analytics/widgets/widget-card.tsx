@@ -2,7 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import { useId } from "react";
-import type { DragEventHandler, ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import type { WidgetHeight, WidgetWidth } from "#analytics/widgets.ts";
 
@@ -20,27 +20,22 @@ export const heightClasses: Readonly<Record<WidgetHeight, string>> = {
   2: "row-span-2",
 };
 
-/** Which side of a widget another one dragged over it would land on. */
-export type DropSide = "before" | "after";
-
 interface WidgetCardViewProps {
   readonly children: ReactNode;
-  /** The drag handle, at the card's start, shown on hover. */
+  /** The drag handle, at the card's start, shown on hover and focus. */
   readonly handle?: ReactNode;
   /** The resize handle, at the card's corner, shown on hover and focus. */
   readonly resizer?: ReactNode;
   /** The card's buttons, at the end of its header. */
   readonly actions?: ReactNode;
-  /** Where a widget being dragged would land, while one is over this. */
-  readonly dropSide?: DropSide | null;
+  /** While the person carries it: lifted, with a shadow. */
   readonly dragging?: boolean;
   /** While the person resizes it: what it shows is blurred until let go. */
   readonly resizing?: boolean;
   readonly height: WidgetHeight;
   readonly name: string;
-  readonly onDragOver?: DragEventHandler<HTMLElement>;
-  readonly onDragLeave?: DragEventHandler<HTMLElement>;
-  readonly onDrop?: DragEventHandler<HTMLElement>;
+  /** The element the board sorts, the grid's item. */
+  readonly ref?: Ref<HTMLLIElement>;
   /** The period, and the channel where it shows one. */
   readonly subtitle: string;
   readonly width: WidgetWidth;
@@ -55,13 +50,10 @@ export const WidgetCardView = ({
   actions,
   children,
   dragging = false,
-  dropSide = null,
   handle,
   height,
   name,
-  onDragLeave,
-  onDragOver,
-  onDrop,
+  ref,
   resizer,
   resizing = false,
   subtitle,
@@ -69,21 +61,17 @@ export const WidgetCardView = ({
 }: WidgetCardViewProps) => {
   const titleId = useId();
 
-  // The card is a drop target while another widget is dragged.
   return (
-    <div
+    <li
+      ref={ref}
       data-dragging={dragging ? "" : undefined}
-      data-drop={dropSide ?? undefined}
       data-resizing={resizing ? "" : undefined}
-      className={`group/widget data-[drop=after]:after:bg-brand data-[drop=before]:before:bg-brand relative flex min-h-0 min-w-0 data-[dragging]:opacity-50 data-[drop=after]:after:absolute data-[drop=after]:after:inset-y-0 data-[drop=after]:after:-right-3.5 data-[drop=after]:after:w-0.5 data-[drop=after]:after:rounded-full data-[drop=before]:before:absolute data-[drop=before]:before:inset-y-0 data-[drop=before]:before:-left-3.5 data-[drop=before]:before:w-0.5 data-[drop=before]:before:rounded-full ${widthClasses[width]} ${heightClasses[height]}`}
-      onDragLeave={onDragLeave}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
+      className={`group/widget relative flex min-h-0 min-w-0 ${widthClasses[width]} ${heightClasses[height]}`}
     >
       {handle}
       <article
         aria-labelledby={titleId}
-        className="bg-card group-data-[resizing]/widget:ring-brand flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden rounded-lg border p-6 transition-shadow group-data-[resizing]/widget:ring-2"
+        className="bg-card group-data-[resizing]/widget:ring-brand flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden rounded-lg border p-6 transition-shadow group-data-[dragging]/widget:shadow-lg group-data-[resizing]/widget:ring-2"
       >
         <header className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-col gap-0.5">
@@ -106,7 +94,7 @@ export const WidgetCardView = ({
         </div>
       </article>
       {resizer}
-    </div>
+    </li>
   );
 };
 

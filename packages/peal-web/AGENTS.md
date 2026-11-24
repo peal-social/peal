@@ -728,7 +728,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   widget's height allows (`room`). Resizing follows the pointer with
   pointer capture on the corner handle, reading the grid's computed
   columns and rows, and applies the size live while blurring the
-  card's content; the arrow keys do the same on the focused handle. The board is
+  card's content; the arrow keys do the same on the focused handle.
+  Moving is `@dnd-kit/react`'s sortable (`SortableWidget`, its handle
+  `handleRef`), which animates the others aside and takes the keyboard;
+  the board takes the order on drop (`isSortable`, `index`). The board is
   the person's, kept per workspace in `localStorage`
   (`#analytics/board-store.ts`, `peal.analytics.board.<workspace>`,
   decoded with Schema, the default board when it does not read), the

@@ -1356,8 +1356,9 @@ thing over a period of its own.
   keeps the person's order and leaves a gap rather than reorder what
   they placed. The board
   is the person's, kept in their browser for each workspace; a new
-  workspace starts with the default one, and **Reset layout** brings it
-  back.
+  workspace starts with the default one, the few that matter most
+  (Followers, Top posts, Engagement, and Engagement over time two rows
+  high), and **Reset layout** brings it back.
 - **`widget`** — A `card` (24 px inside). Its header holds the name
   (`card-title`) with one muted line under it, the period and, where it
   shows one, the channel ("This year · @peal.social"), and at its end two
@@ -1365,8 +1366,11 @@ thing over a period of its own.
   where the widget may show one channel, Channel; a 6 px `brand` dot on
   the button while either differs from the widget's own) and **…**
   (Duplicate, Rename, then Remove in destructive text). Remove and Reset layout say so in a toast with
-  **Undo**. A handle at the card's start edge, shown on hover, drags it;
-  a 2 px `brand` line marks where it lands. A handle at its bottom end
+  **Undo**. A handle at the card's start edge, shown on hover and focus,
+  picks it up: it follows the pointer in any direction, lifted with a
+  shadow, while the others glide aside (240 ms, easing out) to show
+  where it lands; Space picks it up from the keyboard, the arrows carry
+  it and Space puts it down. A handle at its bottom end
   corner, shown on hover and focus, resizes it by whole columns and rows
   as the pointer moves: the card takes a 2 px `brand` ring, what it
   shows blurs and fades until it is let go, and the board makes room as

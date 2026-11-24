@@ -226,6 +226,8 @@ describe(resizeWidget, () => {
   it("reads a size no narrower than the kind's", () => {
     expect(widthOf({ id: "x", kind: "activity", width: 1 })).toBe(2);
     expect(widthOf({ id: "x", kind: "activity" })).toBe(4);
-    expect(heightOf({ id: "x", kind: "activity" })).toBe(1);
+    expect(heightOf({ id: "x", kind: "activity" })).toBe(2);
+    expect(heightOf({ id: "x", kind: "followers" })).toBe(1);
+    expect(heightOf({ height: 1, id: "x", kind: "activity" })).toBe(1);
   });
 });
