@@ -138,9 +138,30 @@ const cases: readonly Case[] = [
     name: "a session that names something that is no workspace id",
   },
   {
+    expected: 400,
+    headers: (fixture) => ({
+      cookie: fixture.ownerCookies,
+      ...naming("  "),
+    }),
+    name: "a session whose header is blank, as one that names none",
+  },
+  {
     expected: 200,
     headers: (fixture) => bearer(fixture.key),
     name: "an API key that names no workspace",
+  },
+  {
+    expected: 200,
+    headers: (fixture) => ({ ...bearer(fixture.key), ...naming("") }),
+    name: "an API key whose header is empty, in its own workspace",
+  },
+  {
+    expected: 200,
+    headers: (fixture) => ({
+      ...bearer(fixture.key),
+      ...naming(` ${fixture.workspaceId} `),
+    }),
+    name: "an API key that names its own workspace between spaces",
   },
   {
     expected: 200,
@@ -266,6 +287,44 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         assert.include(refused.message, "Peal-Workspace");
       })
+    );
+
+    it.effect(
+      "keeps every workspace's answer, refusals too, out of shared caches, unless the endpoint says otherwise",
+      () =>
+        Effect.gen(function* cached() {
+          const app = yield* TestApp;
+          const fixture = yield* Matrix;
+
+          const read = yield* app.request("/api/v1/posts/tags", {
+            headers: bearer(fixture.key),
+          });
+
+          const required = yield* app.request("/api/v1/posts/tags", {
+            headers: { cookie: fixture.ownerCookies },
+          });
+
+          // The export says it itself.
+          const exported = yield* app.request(
+            "/api/v1/analytics/export?kind=posts&days=7&timeZone=Europe/Paris",
+            {
+              headers: {
+                ...bearer(fixture.partnerKey),
+                ...naming(fixture.customerId),
+              },
+            }
+          );
+
+          assert.strictEqual(read.status, 200);
+          assert.strictEqual(required.status, 400);
+          assert.strictEqual(exported.status, 200);
+          assert.deepStrictEqual(
+            [read, required, exported].map(({ headers }) =>
+              headers.get("cache-control")
+            ),
+            ["private, no-store", "private, no-store", "no-store"]
+          );
+        })
     );
 
     it.effect("acts in the workspace the header names", () =>

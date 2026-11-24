@@ -1,10 +1,10 @@
-import { assert, layer } from "@effect/vitest";
-import { Config, Effect, Layer, Schema } from "effect";
-import { SqlClient } from "effect/sql";
 // Staff giving a workspace a rate limit of its own (the rate card's 1,200
 // a minute on request) through the console's routes: recorded in the audit
 // log first, applied to its keys, removed again; refused on a server that
 // does not bill, where the setting is everyone's.
+import { assert, layer } from "@effect/vitest";
+import { Config, Effect, Layer, Schema } from "effect";
+import { SqlClient } from "effect/sql";
 import { forWorkspace } from "peal-contract";
 
 import {

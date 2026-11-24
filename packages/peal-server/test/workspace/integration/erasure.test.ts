@@ -1,13 +1,13 @@
-import { randomUUID } from "node:crypto";
-
-import { assert, layer } from "@effect/vitest";
-import { Effect, Layer, Schema } from "effect";
-import { SqlClient } from "effect/sql";
 // Every table the migrations create, and what deleting a workspace or closing
 // an account does to its rows: each table either names a workspace or a user
 // (then nothing of theirs is left, or the row stays without them), or names
 // nobody and stays on purpose, for a reason given here. A new table fails the
 // first test until it says which.
+import { randomUUID } from "node:crypto";
+
+import { assert, layer } from "@effect/vitest";
+import { Effect, Layer, Schema } from "effect";
+import { SqlClient } from "effect/sql";
 import { forWorkspace } from "peal-contract";
 
 import { BillingAccounts } from "#billing/application/billing-accounts.ts";

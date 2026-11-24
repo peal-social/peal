@@ -328,8 +328,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   with an idempotency key where there is one), never through a transform
   of the client: query atoms are keyed by a call's arguments, so two
   workspaces' queries stay apart. A link cannot carry that header: a file
-  of a workspace endpoint is fetched and saved (`downloadExport`,
-  `#analytics/export-download.ts`).
+  of a workspace endpoint is fetched through the API's client
+  (`fetchFrom`, so its refusals are read as every call's, the two-step
+  notice included) and saved from an anchor put in the document
+  (`downloadExport`, `#analytics/export-download.ts`).
 - Server Components read the signed-in user with `currentUser()` from
   `#auth/session.ts` (GET /api/me with the request's cookies, once per
   request); the header uses `currentUserOrNone()`, so pages stay up when the

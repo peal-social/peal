@@ -33,6 +33,7 @@ import {
 import type { SummaryRange } from "#analytics/api.ts";
 import { useBoard } from "#analytics/board-store.ts";
 import { downloadExport } from "#analytics/export-download.ts";
+import type { ExportOutcome } from "#analytics/export-download.ts";
 import { notFollowed } from "#analytics/not-followed.ts";
 import { todayIn } from "#analytics/report.ts";
 import {
@@ -498,13 +499,19 @@ const ExportWidget = ({
       busy={busy}
       onDownload={(kind) => {
         startDownload(async () => {
-          const saved = await downloadExport(
+          const outcome = await downloadExport(
             workspaceId,
             exportUrl(kind, range),
             `peal-analytics-${kind}.csv`
-          ).catch(() => false);
+          ).catch((): ExportOutcome => "Failed");
 
-          if (!saved) {
+          // A workspace that now requires two-step verification shows its
+          // notice in place of the page, as for every call.
+          if (outcome === "SignedOut") {
+            toast.error(t("signedOut"));
+          } else if (outcome === "Refused") {
+            toast.error(t("refused"));
+          } else if (outcome === "Failed") {
             toast.error(t("failed"));
           }
         });

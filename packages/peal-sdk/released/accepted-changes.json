@@ -307,5 +307,10 @@
     "change": "The approvals' writes, now under /api/v1/approvals (a comment, an approval, a request for changes, a review link), answer 413 payload_too_large to a body past 1 MiB, where they took 8 MiB under …/posts/{postId}",
     "kind": "behaviour",
     "reason": "They took the posts' larger limit only by living under /posts. A comment holds 2000 characters at most, and the other bodies are smaller still: no request a client sends them comes near 1 MiB."
+  },
+  {
+    "change": "The .NET SDK's constructor is PealClient(string token, string? workspace = null, ClientOptions? clientOptions = null): the client's options are its third parameter, so new PealClient(token, options) no longer compiles",
+    "kind": "sdk",
+    "reason": "The workspace a client acts in became a client option, Peal-Workspace, which the generator places before the client's options. Code that passed the options by position passes them by name (clientOptions: options), or gives the workspace first. Nothing changes on the wire. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
   }
 ]

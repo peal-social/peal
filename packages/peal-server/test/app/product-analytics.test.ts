@@ -1,10 +1,10 @@
+// Product analytics through the whole server, sending to a fake PostHog:
+// who each event is about, and that staff acting as someone send nothing.
 import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer, Option, Schema } from "effect";
 import { McpClient } from "effect/ai";
-// Product analytics through the whole server, sending to a fake PostHog:
-// who each event is about, and that staff acting as someone send nothing.
 import { forWorkspace } from "peal-contract";
 
 import { ErasureReplayServicesLive } from "#app/server.ts";

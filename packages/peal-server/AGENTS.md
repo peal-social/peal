@@ -287,14 +287,20 @@ and no socket, for tests.
   workspace's id), else from the credential's own workspace (an API key's,
   or the one an OAuth token is bound to: `ownWorkspaceOf`), else answers
   400 `WorkspaceRequired`: a session, the command line's token and a
-  partner key always send the header. It provides `CurrentMember` and puts
-  the workspace on the request's span (`peal.workspace_id`). A workspace
+  partner key always send the header; a blank one names nothing. It
+  provides `CurrentMember`, puts the workspace on the request's span
+  (`peal.workspace_id`) once the caller is let in, and gives every answer,
+  refusals included, `Cache-Control: private, no-store` unless the handler
+  set its own (`setAnswerHeaderUnlessAnswered`): every workspace shares an
+  endpoint's address, so no shared cache may keep one's answer. A workspace
   the caller does not belong to answers 404, as does a value that is no
   workspace id, a banned user 403, a key or a bound token naming another
   workspace 403. Membership and bans are read on every request
   (`MemberDirectory`), so they apply at once. `Authentication`'s rate
   limit, connection journal and impersonation guard read the same value,
-  unchecked, through `actingIn` (`#workspace/api/request-workspace.ts`).
+  unchecked, through `actingIn` (`#workspace/api/request-workspace.ts`), on
+  endpoints behind `WorkspaceAccess` only: elsewhere a header names nothing
+  they keep.
 - Put workspace groups under `/api/v1/…`, named and placed by their
   namespace as the contract's guide says (`posts.tags` under
   `/api/v1/posts/tags`), every endpoint taking

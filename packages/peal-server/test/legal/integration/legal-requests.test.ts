@@ -1,11 +1,11 @@
+// What the law has a host keep, through the app: the connections that make
+// content, what closing an account leaves, and the one way to read them, a
+// legal request staff answer, itself recorded.
 import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
-// What the law has a host keep, through the app: the connections that make
-// content, what closing an account leaves, and the one way to read them, a
-// legal request staff answer, itself recorded.
 import { forWorkspace } from "peal-contract";
 
 import { SqlLive } from "#shared/infrastructure/database.ts";

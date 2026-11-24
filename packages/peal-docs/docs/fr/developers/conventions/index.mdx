@@ -139,7 +139,7 @@ Les points d’accès d’un espace de travail sont sous `/api/v1`, et leurs che
 | Une clé partenaire                          | 400 `workspace_required`     | Tout espace de travail que possède son compte partenaire                         |
 | La session de l’application web             | 400 `workspace_required`     | Tout espace de travail auquel son utilisateur appartient                         |
 
-L’en-tête est facultatif pour une clé d’API : son premier appel est donc `POST /api/v1/posts`, avec la clé et rien d’autre. Un espace de travail auquel l’appelant n’appartient pas répond 404 `workspace_not_found`, comme une valeur qui n’est pas un identifiant d’espace de travail.
+L’en-tête est facultatif pour une clé d’API : son premier appel est donc `POST /api/v1/posts`, avec la clé et rien d’autre. Un espace de travail auquel l’appelant n’appartient pas répond 404 `workspace_not_found`, comme une valeur qui n’est pas un identifiant d’espace de travail. Un en-tête vide ne nomme aucun espace de travail, comme s’il n’était pas envoyé.
 
 Une clé partenaire nomme l’espace de travail du client à chaque requête qu’elle y envoie :
 

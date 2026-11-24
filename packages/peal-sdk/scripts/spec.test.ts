@@ -19,11 +19,30 @@ const PathsSchema = Schema.Record(
     Schema.String,
     Schema.Struct({
       parameters: Schema.optionalKey(
-        Schema.Array(Schema.Struct({ in: Schema.String, name: Schema.String }))
+        Schema.Array(
+          Schema.Struct({
+            in: Schema.String,
+            name: Schema.String,
+            required: Schema.optionalKey(Schema.Boolean),
+          })
+        )
       ),
     })
   )
 );
+
+// The headers some operation of a document requires, by name.
+const requiredHeadersOf = (document: Schema.JsonObject) =>
+  Object.values(Schema.decodeUnknownSync(PathsSchema)(document["paths"]))
+    .flatMap((item) => Object.values(item))
+    .flatMap(({ parameters = [] }) =>
+      parameters
+        .filter(
+          (parameter) =>
+            parameter.in === "header" && parameter.required === true
+        )
+        .map(({ name }) => name.toLowerCase())
+    );
 
 // The headers each operation of a document takes, by name.
 const headersOf = (document: Schema.JsonObject) =>
@@ -159,6 +178,8 @@ describe("the SDKs' document", () => {
       headersOf(contract).filter((names) => names.includes("peal-workspace"))
         .length
     ).toBeGreaterThan(100);
+    // Optional everywhere: the script stops on one that requires it.
+    expect(requiredHeadersOf(contract)).not.toContain("peal-workspace");
     expect(headersOf(sdks).flat()).not.toContain("peal-workspace");
     expect(sdks["x-fern-global-headers"]).toContainEqual({
       header: "Peal-Workspace",
