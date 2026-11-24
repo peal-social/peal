@@ -1,422 +1,63 @@
-import { Context, Duration, Effect, Layer, Schedule } from "effect";
-import { Entity } from "effect/cluster";
-import { Rpc } from "effect/rpc";
+import { Context, Effect, Layer, Schedule } from "effect";
 
-import {
-  AccountReadingSchema,
-  AccountRequestSchema,
-  MetricsBatchSchema,
-  MetricsReader,
-  MetricsReadFailureSchema,
-  MetricsRequestSchema,
-} from "#analytics/application/metrics-reader.ts";
+import { MetricsReader } from "#analytics/application/metrics-reader.ts";
 import type {
   MetricsBatch,
   MetricsReadFailure,
 } from "#analytics/application/metrics-reader.ts";
-import {
-  CommentsBatchSchema,
-  CommentSource,
-  CommentsReadFailureSchema,
-  CommentsRequestSchema,
-} from "#engagement/application/ports/comment-source.ts";
+import { ChannelGate } from "#channels/infrastructure/channel-gate.ts";
+import { CommentSource } from "#engagement/application/ports/comment-source.ts";
 import type {
   CommentsBatch,
   CommentsReadFailure,
 } from "#engagement/application/ports/comment-source.ts";
-import {
-  MessageSendOutcomeSchema,
-  MessageSendRequestSchema,
-  MessageSender,
-} from "#engagement/application/ports/message-sender.ts";
+import { MessageSender } from "#engagement/application/ports/message-sender.ts";
 import type {
   MessageSendOutcome,
   MessageSendRequest,
 } from "#engagement/application/ports/message-sender.ts";
-import {
-  MessageSource,
-  MessagesBatchSchema,
-  MessagesFollowOutcomeSchema,
-  MessagesFollowRequestSchema,
-  MessagesReadFailureSchema,
-  MessagesRequestSchema,
-} from "#engagement/application/ports/message-source.ts";
+import { MessageSource } from "#engagement/application/ports/message-source.ts";
 import type {
   MessagesBatch,
   MessagesFollowOutcome,
   MessagesFollowRequest,
   MessagesReadFailure,
+  MessagesRequestSchema,
 } from "#engagement/application/ports/message-source.ts";
-import {
-  PrivateReplyOutcomeSchema,
-  PrivateReplyRequestSchema,
-  PrivateReplySender,
-} from "#engagement/application/ports/private-reply-sender.ts";
+import { PrivateReplySender } from "#engagement/application/ports/private-reply-sender.ts";
 import type {
   PrivateReplyOutcome,
   PrivateReplyRequest,
 } from "#engagement/application/ports/private-reply-sender.ts";
-import {
-  ActionOutcomeSchema,
-  ModerationRequestSchema,
-  ReplySender,
-  SendOutcomeSchema,
-  SendRequestSchema,
-} from "#engagement/application/ports/reply-sender.ts";
+import { ReplySender } from "#engagement/application/ports/reply-sender.ts";
 import type {
   ActionOutcome,
   SendOutcome,
 } from "#engagement/application/ports/reply-sender.ts";
-import {
-  ReviewActionOutcomeSchema,
-  ReviewReplyCheckSchema,
-  ReviewReplyRequestSchema,
-  ReviewReplySender,
-  ReviewSendOutcomeSchema,
-  ReviewWithdrawalSchema,
-} from "#engagement/application/ports/review-reply-sender.ts";
+import { ReviewReplySender } from "#engagement/application/ports/review-reply-sender.ts";
 import type {
   ReviewActionOutcome,
   ReviewReplyCheck,
   ReviewReplyRequest,
   ReviewSendOutcome,
 } from "#engagement/application/ports/review-reply-sender.ts";
-import {
-  ReviewsBatchSchema,
-  ReviewSource,
-  ReviewsReadFailureSchema,
-  ReviewsRequestSchema,
-} from "#engagement/application/ports/review-source.ts";
+import { ReviewSource } from "#engagement/application/ports/review-source.ts";
 import type {
   ReviewsBatch,
   ReviewsReadFailure,
+  ReviewsRequestSchema,
 } from "#engagement/application/ports/review-source.ts";
-import {
-  FollowUpPublisher,
-  FollowUpRequestSchema,
-} from "#publishing/application/follow-up-publisher.ts";
-import {
-  EditOutcomeSchema,
-  EditRequestSchema,
-  LivePostClients,
-  RemovalFailureSchema,
-  RemovalOutcomeSchema,
-  RemovalRequestSchema,
-} from "#publishing/application/live-post-clients.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
+import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import type {
   EditOutcome,
   RemovalFailure,
   RemovalOutcome,
 } from "#publishing/application/live-post-clients.ts";
-import {
-  PlatformPublisher,
-  PublishRequestSchema,
-} from "#publishing/application/platform-publisher.ts";
+import { PlatformPublisher } from "#publishing/application/platform-publisher.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
-import { PublishFailureSchema } from "#shared/domain/publish-failure.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
-import { PublishResultSchema } from "#shared/domain/publish-result.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
-
-/**
- * One entity per channel (its id is the channel id), which makes every call
- * to the channel's platform account, one at a time: handlers run in turn, so
- * two posts due at once on one account go out one after the other, and a
- * later token refresh or rate-limit check never races a publish.
- *
- * Calls are volatile: nothing about them is stored in the cluster tables, so
- * post content never lands there. The job calling through the gate is
- * durable, and the publication journal covers a call cut short.
- *
- * A publish runs whole inside its gate: the media uploads, the wait while
- * the platform processes them, the token renewed on demand, the post and its
- * confirmation. `Resume` checks a call an earlier run left in flight.
- * `ReadMetrics` reads the counts of some of the channel's posts for
- * analytics, so reads take turns with publishing and share its rate limits;
- * each is bounded in time.
- * `ReadAccount` reads the account's own numbers the same way, once a day.
- * `ReadComments` reads the comments under some of its posts the same way,
- * and `SendReply`, `ResumeReply`, `WithdrawReply` and `ModerateComment` act
- * on them as the account, for engagement: their payloads are ids, and the
- * text of a reply stays in engagement's tables. `ReadReviews` reads a
- * location's reviews, and `SendReviewReply`, `ResumeReviewReply` and
- * `WithdrawReviewReply` answer them, the same way, and `ReadMessages`,
- * `SendMessage` and `ResumeMessage` read a channel's direct messages and
- * answer them, `SendPrivateReply` and `ResumePrivateReply` send the
- * author of a comment its one private reply, and `FollowMessages` and `UnfollowMessages` ask its
- * platform to tell the server of them, or to stop: their payloads are
- * ids, and no message's text travels through the cluster's tables. `RemoveLivePost` deletes a
- * post, or a part of one, that a member asked to unpublish, by the
- * platform's id for it: a removal never overlaps a publish on the channel.
- * `EditLivePost` replaces the text of a part a member asked to edit, by
- * the change's id and the platform's: the text never passes through the
- * gate, whose side reads it from the change.
- *
- * Calls run in the order they came, whichever context sent them. Each
- * collection (post counts, the account, comments, reviews, messages) has one call a channel
- * outstanding at most, so a publish waits for the reads that came before
- * it: one of each at most, each bounded, never for those after. Their
- * crons start on minutes of their own (`test/app/cron-schedules.test.ts`).
- */
-export const ChannelGate = Entity.make("ChannelGate", [
-  Rpc.make("Publish", {
-    error: PublishFailureSchema,
-    payload: { request: PublishRequestSchema },
-    success: PublishResultSchema,
-  }),
-  Rpc.make("Resume", {
-    error: PublishFailureSchema,
-    payload: { request: PublishRequestSchema },
-    success: PublishResultSchema,
-  }),
-  Rpc.make("ReadMetrics", {
-    error: MetricsReadFailureSchema,
-    payload: { request: MetricsRequestSchema },
-    success: MetricsBatchSchema,
-  }),
-  Rpc.make("ReadAccount", {
-    error: MetricsReadFailureSchema,
-    payload: { request: AccountRequestSchema },
-    success: AccountReadingSchema,
-  }),
-  Rpc.make("ReadComments", {
-    error: CommentsReadFailureSchema,
-    payload: { request: CommentsRequestSchema },
-    success: CommentsBatchSchema,
-  }),
-  Rpc.make("SendReply", {
-    payload: { request: SendRequestSchema },
-    success: SendOutcomeSchema,
-  }),
-  Rpc.make("ResumeReply", {
-    payload: { request: SendRequestSchema },
-    success: SendOutcomeSchema,
-  }),
-  Rpc.make("WithdrawReply", {
-    payload: { request: SendRequestSchema },
-    success: ActionOutcomeSchema,
-  }),
-  Rpc.make("ModerateComment", {
-    payload: { request: ModerationRequestSchema },
-    success: ActionOutcomeSchema,
-  }),
-  Rpc.make("ReadReviews", {
-    error: ReviewsReadFailureSchema,
-    payload: { request: ReviewsRequestSchema },
-    success: ReviewsBatchSchema,
-  }),
-  Rpc.make("SendReviewReply", {
-    payload: { request: ReviewReplyRequestSchema },
-    success: ReviewSendOutcomeSchema,
-  }),
-  Rpc.make("ResumeReviewReply", {
-    payload: { request: ReviewReplyRequestSchema },
-    success: ReviewSendOutcomeSchema,
-  }),
-  Rpc.make("CheckReviewReply", {
-    payload: { request: ReviewReplyRequestSchema },
-    success: ReviewReplyCheckSchema,
-  }),
-  Rpc.make("WithdrawReviewReply", {
-    payload: { request: ReviewWithdrawalSchema },
-    success: ReviewActionOutcomeSchema,
-  }),
-  Rpc.make("ReadMessages", {
-    error: MessagesReadFailureSchema,
-    payload: { request: MessagesRequestSchema },
-    success: MessagesBatchSchema,
-  }),
-  Rpc.make("FollowMessages", {
-    error: MessagesReadFailureSchema,
-    payload: { request: MessagesFollowRequestSchema },
-    success: MessagesFollowOutcomeSchema,
-  }),
-  Rpc.make("UnfollowMessages", {
-    error: MessagesReadFailureSchema,
-    payload: { request: MessagesFollowRequestSchema },
-    success: MessagesFollowOutcomeSchema,
-  }),
-  Rpc.make("SendMessage", {
-    payload: { request: MessageSendRequestSchema },
-    success: MessageSendOutcomeSchema,
-  }),
-  Rpc.make("ResumeMessage", {
-    payload: { request: MessageSendRequestSchema },
-    success: MessageSendOutcomeSchema,
-  }),
-  Rpc.make("SendPrivateReply", {
-    payload: { request: PrivateReplyRequestSchema },
-    success: PrivateReplyOutcomeSchema,
-  }),
-  Rpc.make("ResumePrivateReply", {
-    payload: { request: PrivateReplyRequestSchema },
-    success: PrivateReplyOutcomeSchema,
-  }),
-  Rpc.make("RemoveLivePost", {
-    error: RemovalFailureSchema,
-    payload: { request: RemovalRequestSchema },
-    success: RemovalOutcomeSchema,
-  }),
-  Rpc.make("EditLivePost", {
-    error: RemovalFailureSchema,
-    payload: { request: EditRequestSchema },
-    success: EditOutcomeSchema,
-  }),
-  Rpc.make("SendFollowUp", {
-    error: PublishFailureSchema,
-    payload: { request: FollowUpRequestSchema },
-    success: PublishResultSchema,
-  }),
-  Rpc.make("ResumeFollowUp", {
-    error: PublishFailureSchema,
-    payload: { request: FollowUpRequestSchema },
-    success: PublishResultSchema,
-  }),
-]);
-
-/**
- * Runs the gate with the platform adapters it is given: the publishers, and
- * analytics' readers. A bug in an adapter fails its own call instead of
- * restarting the entity, which would replay the call in flight.
- */
-export const ChannelGateLive = ChannelGate.toLayer(
-  Effect.gen(function* ChannelGateLive() {
-    const platforms = yield* PlatformPublisher;
-    const metrics = yield* MetricsReader;
-    const comments = yield* CommentSource;
-    const replies = yield* ReplySender;
-    const reviews = yield* ReviewSource;
-    const reviewReplies = yield* ReviewReplySender;
-    const messages = yield* MessageSource;
-    const messageSender = yield* MessageSender;
-    const privateReplies = yield* PrivateReplySender;
-    const live = yield* LivePostClients;
-    const followUps = yield* FollowUpPublisher;
-
-    return ChannelGate.of({
-      EditLivePost: ({ payload }) => live.edit(payload.request),
-      FollowMessages: ({ payload }) => messages.follow(payload.request),
-      UnfollowMessages: ({ payload }) => messages.unfollow(payload.request),
-      ModerateComment: ({ payload }) => replies.moderate(payload.request),
-      Publish: ({ payload }) => platforms.publish(payload.request),
-      ReadAccount: ({ payload }) => metrics.account(payload.request),
-      ReadComments: ({ payload }) => comments.read(payload.request),
-      ReadMessages: ({ payload }) => messages.read(payload.request),
-      ReadMetrics: ({ payload }) => metrics.read(payload.request),
-      CheckReviewReply: ({ payload }) => reviewReplies.check(payload.request),
-      ReadReviews: ({ payload }) => reviews.read(payload.request),
-      RemoveLivePost: ({ payload }) => live.remove(payload.request),
-      Resume: ({ payload }) => platforms.resume(payload.request),
-      ResumeFollowUp: ({ payload }) => followUps.resume(payload.request),
-      ResumeMessage: ({ payload }) => messageSender.resume(payload.request),
-      ResumePrivateReply: ({ payload }) =>
-        privateReplies.resume(payload.request),
-      ResumeReply: ({ payload }) => replies.resume(payload.request),
-      ResumeReviewReply: ({ payload }) => reviewReplies.resume(payload.request),
-      SendFollowUp: ({ payload }) => followUps.send(payload.request),
-      SendMessage: ({ payload }) => messageSender.send(payload.request),
-      SendPrivateReply: ({ payload }) => privateReplies.send(payload.request),
-      SendReply: ({ payload }) => replies.send(payload.request),
-      SendReviewReply: ({ payload }) => reviewReplies.send(payload.request),
-      WithdrawReply: ({ payload }) => replies.withdraw(payload.request),
-      WithdrawReviewReply: ({ payload }) =>
-        reviewReplies.withdraw(payload.request),
-    });
-  }),
-  { disableFatalDefects: true, maxIdleTime: Duration.minutes(10) }
-);
-
-/**
- * For gates that publish only, as in tests of publishing: every read
- * answers that the platform is unavailable, and reads nothing.
- */
-export const UnreadMetrics = Layer.succeed(
-  MetricsReader,
-  MetricsReader.of({
-    account: () => Effect.fail(new PlatformUnavailable()),
-    read: () => Effect.fail(new PlatformUnavailable()),
-  })
-);
-
-/** For gates that read no review and answer none: as UnreadComments. */
-export const UnreadReviews = Layer.mergeAll(
-  Layer.succeed(
-    ReviewSource,
-    ReviewSource.of({ read: () => Effect.fail(new PlatformUnavailable()) })
-  ),
-  Layer.succeed(
-    ReviewReplySender,
-    ReviewReplySender.of({
-      check: () => Effect.succeed({ _tag: "unknown" }),
-      resume: () =>
-        Effect.succeed({ _tag: "unconfirmed", reason: "interrupted" }),
-      send: () =>
-        Effect.succeed({ _tag: "failed", reason: "platformUnavailable" }),
-      withdraw: () =>
-        Effect.succeed({ _tag: "failed", reason: "platformUnavailable" }),
-    })
-  )
-);
-
-/**
- * For gates that read no direct message and send none, nor a private
- * reply: as UnreadComments.
- */
-export const UnreadMessages = Layer.mergeAll(
-  Layer.succeed(
-    MessageSource,
-    MessageSource.of({
-      follow: () => Effect.fail(new PlatformUnavailable()),
-      read: () => Effect.fail(new PlatformUnavailable()),
-      unfollow: () => Effect.fail(new PlatformUnavailable()),
-    })
-  ),
-  Layer.succeed(
-    MessageSender,
-    MessageSender.of({
-      resume: () =>
-        Effect.succeed({ _tag: "unconfirmed", reason: "interrupted" }),
-      send: () =>
-        Effect.succeed({ _tag: "failed", reason: "platformUnavailable" }),
-    })
-  ),
-  Layer.succeed(
-    PrivateReplySender,
-    PrivateReplySender.of({
-      resume: () =>
-        Effect.succeed({ _tag: "unconfirmed", reason: "interrupted" }),
-      send: () =>
-        Effect.succeed({ _tag: "failed", reason: "platformUnavailable" }),
-    })
-  )
-);
-
-/**
- * For gates that neither read comments, reviews and messages nor answer
- * them, as in tests of publishing: every read answers that the platform
- * is unavailable, and nothing is sent.
- */
-export const UnreadComments = Layer.mergeAll(
-  UnreadReviews,
-  UnreadMessages,
-  Layer.succeed(
-    CommentSource,
-    CommentSource.of({ read: () => Effect.fail(new PlatformUnavailable()) })
-  ),
-  Layer.succeed(
-    ReplySender,
-    ReplySender.of({
-      moderate: () =>
-        Effect.succeed({ _tag: "failed", reason: "platformUnavailable" }),
-      resume: () =>
-        Effect.succeed({ _tag: "unconfirmed", reason: "interrupted" }),
-      send: () =>
-        Effect.succeed({ _tag: "failed", reason: "platformUnavailable" }),
-      withdraw: () =>
-        Effect.succeed({ _tag: "failed", reason: "platformUnavailable" }),
-    })
-  )
-);
 
 // The gate did not take the call, so it was not sent: worth a few quick
 // retries before the platform counts as unavailable.

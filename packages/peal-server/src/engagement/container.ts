@@ -116,8 +116,8 @@ export const engagementWith = <ROut, E, R>(adapters: Layer.Layer<ROut, E, R>) =>
  * PEAL_INBOX_MESSAGES names, answered by SendMessageV1; with
  * EngagementRecords, for the workspace context's exports and erasures.
  * `gated` reads comments, reviews and messages and acts through the
- * channels' gates (GatedCommentSource, GatedReplySender, GatedReviews,
- * GatedMessages). Needs the database, a
+ * channels' gates (the channels context's GatedCommentSource,
+ * GatedReplySender, GatedReviews and GatedMessages). Needs the database, a
  * TransactionRunner, Ids, the workflow engine, ChannelAccess,
  * ChannelDirectory, PublishedTargets, Notify and WebhookEvents, which the composition root
  * provides.

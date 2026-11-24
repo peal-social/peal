@@ -35,7 +35,7 @@ them:
 | Context         | Holds                                                                                                                                                           |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `publishing`    | posts, their channels and media, schedules, attempts, the platform adapters, and what a workspace saves to write and file them (tags, signatures, channel sets) |
-| `channels`      | connected accounts, connect flows, encrypted tokens and their renewal                                                                                           |
+| `channels`      | connected accounts, connect flows, encrypted tokens and their renewal, the gates every platform call of a channel goes through                                  |
 | `media`         | uploads, storage, probing, alt text, files handed to platforms                                                                                                  |
 | `workspace`     | accounts, workspaces, members, roles, API keys, OAuth, partner accounts                                                                                         |
 | `notifications` | account emails, in-app notices, their emails, notification preferences                                                                                          |
@@ -77,7 +77,9 @@ and no socket, for tests.
 - Contexts talk through ports: an adapter in one context may call another
   context's `application` layer, never its domain or infrastructure.
   Publishing lists channels through `ListedWorkspaceChannels`, which calls the
-  channels context's `ListChannels`.
+  channels context's `ListChannels`. The other way, the channels context's
+  `GatedPlatformPublisher` implements publishing's `PlatformPublisher` by
+  sending each call through the channel's gate.
 - Domain and application code never touches `Date`, `crypto`, `process` or
   `Bun`: time comes from `DateTime` and `Clock` (tests use `TestClock`), ids
   and randomness from ports, configuration from `Config`.
@@ -353,7 +355,8 @@ and no socket, for tests.
   starts on a minute no other cron does: `test/app/cron-schedules.test.ts`
   reads every `ClusterCron.make` in `src/` and fails otherwise. A gate
   runs calls in the order they came, so a publish waits for one read of
-  each collection at most (`test/publishing/infrastructure/channel-gate.test.ts`).
+  each collection at most (`ChannelGate`, in the channels context:
+  `test/channels/infrastructure/channel-gate.test.ts`).
 - Register crons in `src/app/crons.ts`. Workflow tags, payloads, idempotency
   keys, activity and clock names, result schemas and cron names are persisted
   contract: add a payload field with a decoding default or a union member,

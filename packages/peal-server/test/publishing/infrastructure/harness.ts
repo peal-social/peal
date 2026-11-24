@@ -22,6 +22,7 @@ import {
 import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
+import { publishingWorkers } from "#app/publishing-workers.ts";
 import { AccountRules } from "#publishing/application/account-rules.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
 import { ChannelHealth } from "#publishing/application/channel-health.ts";
@@ -35,7 +36,6 @@ import type { SchedulePostRequest } from "#publishing/application/post-schedulin
 import { PublicationJournal } from "#publishing/application/publication-journal.ts";
 import { PublicationScheduler } from "#publishing/application/publication-scheduler.ts";
 import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
-import { publishingWorkers } from "#publishing/container.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import type { Post } from "#publishing/domain/post.ts";

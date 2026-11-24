@@ -2,8 +2,10 @@ import { Duration, Effect, Layer, Option } from "effect";
 import type { Scope } from "effect";
 import { MessageStorage } from "effect/cluster";
 
+import { publishingWorkers } from "#app/publishing-workers.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ListChannels } from "#channels/application/list-channels.ts";
+import { UnreadComments, UnreadMetrics } from "#channels/container.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
 import type { AttachableMedia } from "#publishing/application/attachable-media.ts";
@@ -22,11 +24,8 @@ import {
   FeedsUnused,
   FollowUpsUnused,
   publishingBehind,
-  publishingWorkers,
   RecyclingUnused,
-  UnreadComments,
 } from "#publishing/container.ts";
-import { UnreadMetrics } from "#publishing/infrastructure/channel-gate.ts";
 import { FakePlatformPublisher } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { ListedWorkspaceChannels } from "#publishing/infrastructure/listed-workspace-channels.ts";
 import type { MediaAssetId, WorkspaceId } from "#shared/domain/ids.ts";

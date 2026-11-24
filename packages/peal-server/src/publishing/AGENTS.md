@@ -506,12 +506,20 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `publishingBehind` give scheduling `PostMeter.unmetered`; the server's
   `PublishingLive` gives it `MeteredXPostsLive`.
 - Platform calls go through the `PlatformPublisher` port, one at a time per
-  channel through `ChannelGate`, whose calls are volatile: post content never
-  lands in the cluster tables. The gates run `RoutedPlatformPublisher`, which
-  reads the post, takes its text on the channel and hands it to the
-  platform's `PlatformClient`; tests use `FakePlatformPublisher`. A whole
-  publish runs inside the gate: uploads, processing waits, token renewal,
-  the post and its confirmation.
+  channel through the channels context's `ChannelGate`, whose calls are
+  volatile: post content never lands in the cluster tables. The channels
+  guide's "The channel gate" says how the gate runs and how its protocol
+  may change; publishing's infrastructure never imports it, and
+  `PublishingWorkersLive` takes the gated `PlatformPublisher`,
+  `LivePostClients` and `FollowUpPublisher` from the composition root
+  (`src/app/publishing-workers.ts`). The workflows take the gated ports,
+  never the direct adapters, which would publish without the channel's
+  order, and `src/app/publishing-workers.ts` is the one place that
+  provides them. The gates run `RoutedPlatformPublisher`
+  (`PlatformsLive`), which reads the post, takes its text on the channel
+  and hands it to the platform's `PlatformClient`; tests use
+  `FakePlatformPublisher`. A whole publish runs inside the gate: uploads,
+  processing waits, token renewal, the post and its confirmation.
 - A post's `shortenLinks` (`posts.shorten_links`, carried by `copyOf`,
   kept by an update only when the request names it) is decided when the
   post is made: a new post that does not say (`PostDrafts.create` and
@@ -538,7 +546,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
 - Platform adapters live in `publishing/infrastructure/platforms/<platform>/`
   (Mastodon, Bluesky, LinkedIn, X, TikTok, YouTube, Pinterest and Google
   Business Profile, and Threads, Instagram and Facebook Pages in `meta/`),
-  beside `ChannelGate`, and implement the steps of
+  and implement the steps of
   `publishing/application/publication-steps.ts`, which `sequenced` runs:
   `prepare` uploads the media (safe to repeat: media alone shows nowhere),
   `poll` waits while the platform processes it (15 minutes at most),

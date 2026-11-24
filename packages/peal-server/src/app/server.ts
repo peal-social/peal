@@ -39,6 +39,7 @@ import { MeterErrorsLive } from "#app/meter-errors/route.ts";
 import { ObservabilityLive } from "#app/observability.ts";
 import { PlatformEventsLive } from "#app/platform-events/route.ts";
 import { ProductAnalyticsLive } from "#app/product-analytics.ts";
+import { publishingWorkers } from "#app/publishing-workers.ts";
 import { countRequests } from "#app/request-metrics.ts";
 import { ShortLinkRedirectsLive } from "#app/short-links/redirects.ts";
 import { httpShutdownTimeout } from "#app/shutdown.ts";
@@ -81,7 +82,13 @@ import {
   ConnectLinkJournalLive,
   ConnectLinksApiLive,
   DataDeletionApiLive,
+  GatedCommentSource,
+  GatedMessages,
+  GatedMetricsReader,
+  GatedReplySender,
+  GatedReviews,
   TokenCipherLive,
+  UnreadComments,
 } from "#channels/container.ts";
 import {
   engagementLive,
@@ -110,18 +117,15 @@ import {
 } from "#notifications/container.ts";
 import {
   CapabilitiesApiLive,
-  GatedCommentSource,
   ChannelDefaultsApiLive,
   ChannelSetsApiLive,
-  GatedMetricsReader,
-  GatedReplySender,
-  GatedMessages,
-  GatedReviews,
-  UnreadComments,
+  FollowUpPlatformsLive,
+  LivePostPlatformsLive,
   LookupsApiLive,
   MediaInPostsLive,
   PostAttentionLive,
   PlatformQuotaLive,
+  PlatformsLive,
   PostsApiLive,
   ArticlesApiLive,
   ArticleWorkersLive,
@@ -134,7 +138,6 @@ import {
   SignaturesApiLive,
   TagsApiLive,
   TikTokApiLive,
-  publishingWorkersReading,
 } from "#publishing/container.ts";
 import {
   ReviewApiLive,
@@ -698,14 +701,18 @@ const HttpServerLive = Layer.unwrap(
 );
 
 // The durable jobs: workflows, cluster entities and crons. The channels'
-// gates publish, read analytics' counts with the platforms' readers, and
-// read and answer comments with engagement's.
+// gates publish, change live posts and carry follow-ups out with
+// publishing's platforms, read analytics' counts with the platforms'
+// readers, and read and answer comments with engagement's.
 const WorkersLive = Layer.mergeAll(
-  publishingWorkersReading(
+  publishingWorkers(
+    PlatformsLive,
     PlatformMetricsReaderLive,
     // YouTube's comment reads count their units in the server's ledger of
     // the project's day, which publishing keeps.
-    PlatformEngagementLive.pipe(Layer.provide(PlatformQuotaLive))
+    PlatformEngagementLive.pipe(Layer.provide(PlatformQuotaLive)),
+    LivePostPlatformsLive,
+    FollowUpPlatformsLive
   ),
   ArticleWorkersLive,
   NotificationsWorkersLive,
