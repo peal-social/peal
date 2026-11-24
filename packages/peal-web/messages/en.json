@@ -129,8 +129,6 @@
       "duplicated": "{name} duplicated.",
       "rename": "Rename widget",
       "remove": "Remove widget",
-      "moveEarlier": "Move earlier",
-      "moveLater": "Move later",
       "drag": "Drag to move {name}",
       "renameLabel": "Name",
       "renameHint": "Leave it empty to use the widget’s own name.",

@@ -428,7 +428,7 @@ const dropIndex = (
  * The analytics page: a board of widgets the person arranges, each with
  * its own period and channel, kept in their browser for the workspace.
  * **Add widgets** sits in the page's actions; a widget moves by dragging
- * its handle, or from its menu.
+ * its handle.
  */
 export const AnalyticsBoard = ({
   channels,
@@ -518,9 +518,7 @@ export const AnalyticsBoard = ({
     );
   }
 
-  const last = board.widgets.length - 1;
-
-  const card = (widget: Widget, index: number): ReactNode => {
+  const card = (widget: Widget): ReactNode => {
     const name = widget.title ?? t("name", { kind: widget.kind });
     const { size } = kinds[widget.kind];
     const period = periodOf(widget);
@@ -623,24 +621,6 @@ export const AnalyticsBoard = ({
               onRename={() => {
                 setRenaming(widget);
               }}
-              onMoveEarlier={
-                index === 0
-                  ? null
-                  : () => {
-                      update((current) =>
-                        moveWidget(current, widget.id, index - 1)
-                      );
-                    }
-              }
-              onMoveLater={
-                index === last
-                  ? null
-                  : () => {
-                      update((current) =>
-                        moveWidget(current, widget.id, index + 1)
-                      );
-                    }
-              }
               onRemove={() => {
                 undoable(t("removed", { name }), (current) =>
                   removeWidget(current, widget.id)
@@ -672,9 +652,9 @@ export const AnalyticsBoard = ({
         aria-label={t("boardLabel")}
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4"
       >
-        {board.widgets.map((widget, index) => (
+        {board.widgets.map((widget) => (
           <li key={widget.id} className="contents">
-            {card(widget, index)}
+            {card(widget)}
           </li>
         ))}
       </ul>

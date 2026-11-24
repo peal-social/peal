@@ -161,22 +161,17 @@ export const WidgetFilter = ({
 /** What a widget's menu does. */
 export interface WidgetMenuActions {
   readonly onDuplicate: () => void;
-  readonly onMoveEarlier: (() => void) | null;
-  readonly onMoveLater: (() => void) | null;
   readonly onRemove: () => void;
   readonly onRename: () => void;
 }
 
 /**
- * A widget's "…" menu: duplicate, rename, move it a place either way (the
- * keyboard's way to do what dragging does), and remove it, which Undo
- * takes back.
+ * A widget's "…" menu: duplicate, rename, and remove it, which Undo takes
+ * back.
  */
 export const WidgetMenu = ({
   name,
   onDuplicate,
-  onMoveEarlier,
-  onMoveLater,
   onRemove,
   onRename,
 }: WidgetMenuActions & { readonly name: string }) => {
@@ -201,21 +196,6 @@ export const WidgetMenu = ({
             {t("duplicate")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onRename}>{t("rename")}</DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem
-            disabled={onMoveEarlier === null}
-            onClick={onMoveEarlier ?? undefined}
-          >
-            {t("moveEarlier")}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={onMoveLater === null}
-            onClick={onMoveLater ?? undefined}
-          >
-            {t("moveLater")}
-          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={onRemove}>

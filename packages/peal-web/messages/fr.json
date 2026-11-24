@@ -129,8 +129,6 @@
       "duplicated": "{name} dupliqué.",
       "rename": "Renommer le widget",
       "remove": "Retirer le widget",
-      "moveEarlier": "Déplacer avant",
-      "moveLater": "Déplacer après",
       "drag": "Faire glisser pour déplacer {name}",
       "renameLabel": "Nom",
       "renameHint": "Laissez vide pour reprendre le nom du widget.",

@@ -1361,11 +1361,9 @@ thing over a period of its own.
   `icon-sm` ghost buttons: **Filter** (a popover with Period and,
   where the widget may show one channel, Channel; a 6 px `brand` dot on
   the button while either differs from the widget's own) and **…**
-  (Duplicate, Rename, Move earlier, Move later, then Remove in
-  destructive text). Remove and Reset layout say so in a toast with
+  (Duplicate, Rename, then Remove in destructive text). Remove and Reset layout say so in a toast with
   **Undo**. A handle at the card's start edge, shown on hover, drags it;
-  a 2 px `brand` line marks where it lands. The menu's moves are the
-  keyboard's way to do the same.
+  a 2 px `brand` line marks where it lands.
 - Under the header: the headline number (`headline`, tabular), one muted
   line with its change against the days before or what it gained, then
   what draws it: a line on a faint `brand` area with the first, middle
