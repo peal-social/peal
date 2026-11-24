@@ -185,10 +185,10 @@ if credential.APIKey != nil {
 ```
 
 ```ruby Ruby
-# Le SDK renvoie l’identifiant sous forme de hash.
+# Chaque sorte d’identifiant a sa propre classe.
 credential = peal.credential.get
 
-puts credential[:workspace][:id] if credential[:_tag] == "apiKey"
+puts credential.workspace.id if credential.is_a?(Peal::Types::CredentialAPIKey)
 
 ```
 
