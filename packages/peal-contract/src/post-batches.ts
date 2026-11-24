@@ -26,7 +26,7 @@ export const maxImportRows = 100;
 export const maxImportLength = 1_000_000;
 
 /**
- * Why one post of several was not made: what `send` would have answered
+ * Why one post of several was not made: what `create` would have answered
  * for it alone, with the same fields. `Forbidden` is a post that needs a
  * permission the others do not, as media:read for one that shows media.
  */

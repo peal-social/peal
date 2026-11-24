@@ -177,8 +177,8 @@ module Peal
       # `published` with its `permalink` or `failed` with its `failureReason`), or the post as it stands when the time
       # runs out, some targets still `pending` or `publishing`: it goes on publishing, and `GET
       # …/posts/{postId}/outcome` waits for the rest. The answer is 201 either way: the post was made. `shortenLinks:
-      # true` sends its links shortened where the server has short links (`shortLinks.status`), `false` as written; left
-      # out, the post takes the workspace's default (`byDefault`) when it is made, and keeps it. Needs post:schedule and
+      # true` sends its links shortened where the server has short links (`links.status`), `false` as written; left out,
+      # the post takes the workspace's default (`byDefault`) when it is made, and keeps it. Needs post:schedule and
       # channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
       #
       # @param request_options [Hash]
@@ -248,12 +248,12 @@ module Peal
         end
       end
 
-      # Creates and sends up to 50 posts in one request, each as `send` would: one post per item, each with its own
+      # Creates and sends up to 50 posts in one request, each as `create` would: one post per item, each with its own
       # channels, content, options and time, so the same content at several times, or at a time of its own on each
       # channel, is several items. Items are taken in order, one at a time, each on its own: one refused keeps none of
       # the others from being made, and nothing is undone. The answer is 200 whenever the request itself was read, even
       # if every item was refused: `items` says, for each by its place in the request, `created` with its post, or
-      # `refused` with what `send` would have answered for it alone (its content's violations, unknown channels or
+      # `refused` with what `create` would have answered for it alone (its content's violations, unknown channels or
       # media, a time gone by, the plan's limit, a duplicate). A request that cannot be read at all (malformed, no item,
       # more than 50) is 400, and makes nothing. The plan's limits hold across the request: once the month has no room,
       # the items left are refused. Each item is checked against the posts made before it, the request's earlier items
@@ -337,13 +337,13 @@ module Peal
       # leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries
       # an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is
       # unreadable, never guessed); unless every row is valid, nothing is made, and `rows` says which are `valid`,
-      # `refused` (with what `send` would have answered) or `unreadable` (with the cells at fault). `dryRun` stops there
-      # even when every row is valid. Otherwise the rows are then made in order as `bulk` makes its items, each
+      # `refused` (with what `create` would have answered) or `unreadable` (with the cells at fault). `dryRun` stops
+      # there even when every row is valid. Otherwise the rows are then made in order as `bulk` makes its items, each
       # `created` or, when something changed since the check or a row repeats an earlier one, `refused`. The answer is
       # 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An `Idempotency-Key` header
       # works as on `bulk`, by row. A file has no column for short links: each post takes the workspace's default
-      # (`shortLinks.status`'s `byDefault`). Needs post:schedule, post:read and channel:read, and media:read for rows
-      # with media; an OAuth client needs the scope workspace:publish.
+      # (`links.status`'s `byDefault`). Needs post:schedule, post:read and channel:read, and media:read for rows with
+      # media; an OAuth client needs the scope workspace:publish.
       #
       # @param request_options [Hash]
       # @param params [Peal::Posts::Types::PostImport]
@@ -394,16 +394,16 @@ module Peal
         end
       end
 
-      # Checks a post without making it, and changes nothing: send what `send` takes, or a draft (no `when`). It answers
-      # 200 whether or not the post would go through, with `valid` and everything that would refuse it, all at once: per
-      # channel, the text the channel receives, counted as its platform counts it against each of its limits, its
-      # hashtags, mentions, links and media, and every violation of the platform's rules (text, media formats, sizes,
-      # counts and durations, options) and of the account's own where its platform tells them; the channels and media
-      # that are not the workspace's; and, when `when` is given, whether the time can be kept (for `queue`, the slot it
-      # would take now, `queueSlot`, or why there is none, `queueNoRoom`: QueueNotFound when the queue is not the
-      # workspace's), whether the workspace's plan has room, and the channels that already have the same content from
-      # another post (`duplicates`, as DuplicatePost tells them; none with `allowDuplicate`). A post that is valid now
-      # can still be refused later: a channel disconnected, a plan's month filled meanwhile. Needs post:read and
+      # Checks a post without making it, and changes nothing: send what `create` takes, or a draft (no `when`). It
+      # answers 200 whether or not the post would go through, with `valid` and everything that would refuse it, all at
+      # once: per channel, the text the channel receives, counted as its platform counts it against each of its limits,
+      # its hashtags, mentions, links and media, and every violation of the platform's rules (text, media formats,
+      # sizes, counts and durations, options) and of the account's own where its platform tells them; the channels and
+      # media that are not the workspace's; and, when `when` is given, whether the time can be kept (for `queue`, the
+      # slot it would take now, `queueSlot`, or why there is none, `queueNoRoom`: QueueNotFound when the queue is not
+      # the workspace's), whether the workspace's plan has room, and the channels that already have the same content
+      # from another post (`duplicates`, as DuplicatePost tells them; none with `allowDuplicate`). A post that is valid
+      # now can still be refused later: a channel disconnected, a plan's month filled meanwhile. Needs post:read and
       # channel:read, and media:read when it shows media.
       #
       # @param request_options [Hash]
