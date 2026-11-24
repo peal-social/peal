@@ -147,7 +147,8 @@
       "channelGone": "A channel no longer connected",
       "average": "7-day average",
       "engagementShare": "Share of the engagement, by platform",
-      "resize": "Resize {name}"
+      "resizeWidth": "Widen or narrow {name}",
+      "resizeHeight": "Make {name} taller or shorter"
     }
   },
   "Ads": {

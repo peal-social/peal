@@ -38,6 +38,8 @@ interface WidgetCardViewProps {
   readonly ref?: Ref<HTMLLIElement>;
   /** The period, and the channel where it shows one. */
   readonly subtitle: string;
+  /** Its id on the board, which a resize reads every widget's place by. */
+  readonly widgetId?: string;
   readonly width: WidgetWidth;
 }
 
@@ -57,6 +59,7 @@ export const WidgetCardView = ({
   resizer,
   resizing = false,
   subtitle,
+  widgetId,
   width,
 }: WidgetCardViewProps) => {
   const titleId = useId();
@@ -64,14 +67,15 @@ export const WidgetCardView = ({
   return (
     <li
       ref={ref}
+      data-widget-id={widgetId}
       data-dragging={dragging ? "" : undefined}
       data-resizing={resizing ? "" : undefined}
-      className={`group/widget relative flex min-h-0 min-w-0 ${widthClasses[width]} ${heightClasses[height]}`}
+      className={`group/widget relative flex min-h-0 min-w-0 data-[resizing]:z-20 data-[resizing]:h-(--resize-height) data-[resizing]:w-(--resize-width) data-[resizing]:self-start data-[resizing]:justify-self-start ${widthClasses[width]} ${heightClasses[height]}`}
     >
       {handle}
       <article
         aria-labelledby={titleId}
-        className="bg-card group-data-[resizing]/widget:ring-brand flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden rounded-lg border p-6 transition-shadow group-data-[dragging]/widget:shadow-lg group-data-[resizing]/widget:ring-2"
+        className="bg-card group-data-[resizing]/widget:ring-brand flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden rounded-lg border p-6 transition-shadow group-data-[dragging]/widget:shadow-lg group-data-[resizing]/widget:shadow-lg group-data-[resizing]/widget:ring-2"
       >
         <header className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-col gap-0.5">

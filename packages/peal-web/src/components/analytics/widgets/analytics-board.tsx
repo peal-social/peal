@@ -21,6 +21,7 @@ import { Skeleton } from "peal-ui/components/skeleton";
 import { toast } from "peal-ui/components/toast";
 import { useRef, useState } from "react";
 import type { ComponentProps, KeyboardEvent, JSX, PointerEvent } from "react";
+import { flushSync } from "react-dom";
 
 import {
   analyticsChannel,
@@ -40,6 +41,8 @@ import {
   defaultBoard,
   duplicateWidget,
   heightOf,
+  kinds,
+  maxHeight,
   moveWidget,
   periodOf,
   periodRange,
@@ -125,6 +128,7 @@ const SortableWidget = ({
   return (
     <WidgetCardView
       {...card}
+      widgetId={id}
       ref={ref}
       dragging={isDragging}
       handle={
@@ -490,10 +494,72 @@ const WidgetBody = (
   return <DashboardData {...props} />;
 };
 
-interface Resize {
-  readonly id: string;
-  readonly room: Room;
+/** Which edge of a widget a resize pulls: its end edge, or its bottom. */
+type Edge = "width" | "height";
+
+// Where every widget was before a change of size, so each glides to
+// where it lands; and which one changed.
+interface Layout {
+  readonly changed: string;
+  readonly rects: ReadonlyMap<string, DOMRect>;
 }
+
+const settle = { duration: 260, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
+
+/** The widgets' boxes as laid out now, by id. */
+const rectsOf = (grid: HTMLElement): ReadonlyMap<string, DOMRect> =>
+  new Map(
+    [...grid.querySelectorAll<HTMLElement>("[data-widget-id]")].map((item) => [
+      item.dataset["widgetId"] ?? "",
+      item.getBoundingClientRect(),
+    ])
+  );
+
+/**
+ * Glides each widget from where it was to where it is: the one resized
+ * from the size it was let go at to the size it snapped to, the others
+ * from their old place. Nothing moves for a reader who asked for less
+ * motion.
+ */
+const glideFrom = (grid: HTMLElement, layout: Layout) => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  for (const item of grid.querySelectorAll<HTMLElement>("[data-widget-id]")) {
+    const id = item.dataset["widgetId"] ?? "";
+    const before = layout.rects.get(id);
+    const after = item.getBoundingClientRect();
+
+    if (before === undefined) {
+      continue;
+    }
+
+    const dx = before.left - after.left;
+    const dy = before.top - after.top;
+    const from = `translate(${String(dx)}px, ${String(dy)}px)`;
+
+    if (id === layout.changed) {
+      item.animate(
+        [
+          {
+            height: `${String(before.height)}px`,
+            transform: from,
+            width: `${String(before.width)}px`,
+          },
+          {
+            height: `${String(after.height)}px`,
+            transform: "none",
+            width: `${String(after.width)}px`,
+          },
+        ],
+        settle
+      );
+    } else if (dx !== 0 || dy !== 0) {
+      item.animate([{ transform: from }, { transform: "none" }], settle);
+    }
+  }
+};
 
 // A computed length in pixels ("24px"), or none.
 const pixels = (value: string): number =>
@@ -558,7 +624,27 @@ export const AnalyticsBoard = ({
   const grid = useRef<HTMLUListElement>(null);
   const [adding, setAdding] = useState(false);
   const [renaming, setRenaming] = useState<Widget | null>(null);
-  const [resize, setResize] = useState<Resize | null>(null);
+  // The widget being resized, while the pointer holds its edge.
+  const [resizing, setResizing] = useState<string | null>(null);
+
+  // A widget takes its new size: every widget's place is noted, the board
+  // lays out anew at once, and each glides there from where it was.
+  const commitSize = (widget: Widget, next: Room) => {
+    const container = grid.current;
+    const rects = container === null ? null : rectsOf(container);
+
+    flushSync(() => {
+      setResizing(null);
+      update((current) =>
+        resizeWidget(current, widget.id, next.width, next.height)
+      );
+    });
+
+    if (container !== null && rects !== null) {
+      glideFrom(container, { changed: widget.id, rects });
+    }
+  };
+
   const today = todayIn(timeZone);
   const channelIds = channels.map(({ id }) => id);
 
@@ -599,58 +685,86 @@ export const AnalyticsBoard = ({
     setAdding(true);
   };
 
-  // Resizing by pointer: the widget follows the pointer by whole columns
-  // and rows, its content blurred, and keeps the size once let go.
+  // Resizing by pointer, as an edge is pulled: the widget follows the
+  // pointer to the pixel over its neighbours, what it shows blurred, then
+  // snaps to whole columns and rows once let go, and the board makes room.
   const startResize = (
     event: PointerEvent<HTMLElement>,
     widget: Widget,
-    start: Room
+    edge: Edge
   ) => {
     const container = grid.current;
+    const handle = event.currentTarget;
+    const item = handle.closest<HTMLElement>("[data-widget-id]");
 
-    if (container === null) {
+    if (container === null || item === null) {
       return;
     }
 
     event.preventDefault();
-
-    const handle = event.currentTarget;
-    const card = handle.parentElement?.getBoundingClientRect();
-    const cell = cellOf(container);
-
-    if (card === undefined) {
-      return;
-    }
-
     handle.setPointerCapture(event.pointerId);
 
-    let room = start;
+    const cell = cellOf(container);
+    const box = item.getBoundingClientRect();
+    const bounds = container.getBoundingClientRect();
+    const least = kinds[widget.kind].minWidth;
+
+    const narrowest =
+      Math.min(least, cell.columns) * (cell.column + cell.gap) - cell.gap;
+
+    const widest = bounds.right - box.left;
+    const tallest = maxHeight * (cell.row + cell.rowGap) - cell.rowGap;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let { width } = box;
+    let { height } = box;
+    let frame = 0;
+
+    const paint = () => {
+      frame = 0;
+      item.style.setProperty("--resize-width", `${String(width)}px`);
+      item.style.setProperty("--resize-height", `${String(height)}px`);
+    };
 
     const move = (moved: globalThis.PointerEvent) => {
-      const next = sizeFor(
-        widget.kind,
-        Math.min(
-          cell.columns,
-          (moved.clientX - card.left + cell.gap) / (cell.column + cell.gap)
-        ),
-        (moved.clientY - card.top + cell.rowGap) / (cell.row + cell.rowGap)
-      );
+      if (edge === "width") {
+        width = Math.min(
+          widest,
+          Math.max(narrowest, box.width + moved.clientX - startX)
+        );
+      } else {
+        height = Math.min(
+          tallest,
+          Math.max(cell.row, box.height + moved.clientY - startY)
+        );
+      }
 
-      room = next;
-      setResize({ id: widget.id, room: next });
+      if (frame === 0) {
+        frame = requestAnimationFrame(paint);
+      }
     };
 
     const end = () => {
       handle.removeEventListener("pointermove", move);
       handle.removeEventListener("pointerup", end);
       handle.removeEventListener("pointercancel", end);
-      setResize(null);
-      update((current) =>
-        resizeWidget(current, widget.id, room.width, room.height)
+      cancelAnimationFrame(frame);
+      paint();
+      // The size it was let go at is noted before it snaps, so it glides.
+      commitSize(
+        widget,
+        sizeFor(
+          widget.kind,
+          (width + cell.gap) / (cell.column + cell.gap),
+          (height + cell.rowGap) / (cell.row + cell.rowGap)
+        )
       );
+      item.style.removeProperty("--resize-width");
+      item.style.removeProperty("--resize-height");
     };
 
-    setResize({ id: widget.id, room: start });
+    paint();
+    setResizing(widget.id);
     handle.addEventListener("pointermove", move);
     handle.addEventListener("pointerup", end);
     handle.addEventListener("pointercancel", end);
@@ -670,14 +784,9 @@ export const AnalyticsBoard = ({
 
     event.preventDefault();
 
-    const next = sizeFor(
-      widget.kind,
-      room.width + step[0],
-      room.height + step[1]
-    );
-
-    update((current) =>
-      resizeWidget(current, widget.id, next.width, next.height)
+    commitSize(
+      widget,
+      sizeFor(widget.kind, room.width + step[0], room.height + step[1])
     );
   };
 
@@ -727,7 +836,7 @@ export const AnalyticsBoard = ({
   const card = (widget: Widget, index: number): JSX.Element => {
     const name = widget.title ?? t("name", { kind: widget.kind });
     const own: Room = { height: heightOf(widget), width: widthOf(widget) };
-    const room = resize?.id === widget.id ? resize.room : own;
+    const room = own;
     const period = periodOf(widget);
     const channelId = channelOf(widget, channelIds);
     const channel = channels.find(({ id }) => id === channelId);
@@ -742,31 +851,55 @@ export const AnalyticsBoard = ({
         name={name}
         width={room.width}
         height={room.height}
-        resizing={resize?.id === widget.id}
+        resizing={resizing === widget.id}
         subtitle={
           channel === undefined
             ? periodText
             : `${periodText} · ${channelName(channel)}`
         }
         resizer={
-          <button
-            type="button"
-            aria-label={t("resize", { name })}
-            aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"
-            title={t("resize", { name })}
-            onPointerDown={(event) => {
-              startResize(event, widget, own);
-            }}
-            onKeyDown={(event) => {
-              keyResize(event, widget, own);
-            }}
-            className="focus-visible:ring-ring absolute right-1 bottom-1 z-10 hidden size-5 cursor-nwse-resize touch-none items-end justify-end rounded-sm opacity-0 outline-none group-hover/widget:opacity-100 group-data-[resizing]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 sm:flex"
-          >
-            <span
-              aria-hidden="true"
-              className="border-muted-foreground size-2.5 rounded-br-sm border-r-2 border-b-2"
-            />
-          </button>
+          <>
+            <button
+              type="button"
+              aria-label={t("resizeWidth", { name })}
+              aria-keyshortcuts="ArrowLeft ArrowRight"
+              title={t("resizeWidth", { name })}
+              onPointerDown={(event) => {
+                startResize(event, widget, "width");
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                  keyResize(event, widget, own);
+                }
+              }}
+              className="group/edge focus-visible:ring-ring absolute top-1/2 right-0 z-10 hidden h-12 w-3 translate-x-1/2 -translate-y-1/2 cursor-ew-resize touch-none items-center justify-center rounded-full opacity-0 outline-none group-hover/widget:opacity-100 group-data-[resizing]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 sm:flex"
+            >
+              <span
+                aria-hidden="true"
+                className="bg-border group-hover/edge:bg-muted-foreground h-8 w-1 rounded-full transition-colors"
+              />
+            </button>
+            <button
+              type="button"
+              aria-label={t("resizeHeight", { name })}
+              aria-keyshortcuts="ArrowUp ArrowDown"
+              title={t("resizeHeight", { name })}
+              onPointerDown={(event) => {
+                startResize(event, widget, "height");
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                  keyResize(event, widget, own);
+                }
+              }}
+              className="group/edge focus-visible:ring-ring absolute bottom-0 left-1/2 z-10 hidden h-3 w-12 -translate-x-1/2 translate-y-1/2 cursor-ns-resize touch-none items-center justify-center rounded-full opacity-0 outline-none group-hover/widget:opacity-100 group-data-[resizing]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 sm:flex"
+            >
+              <span
+                aria-hidden="true"
+                className="bg-border group-hover/edge:bg-muted-foreground h-1 w-8 rounded-full transition-colors"
+              />
+            </button>
+          </>
         }
         actions={
           <>

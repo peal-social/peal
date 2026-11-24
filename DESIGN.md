@@ -1370,11 +1370,14 @@ thing over a period of its own.
   picks it up: it follows the pointer in any direction, lifted with a
   shadow, while the others glide aside (240 ms, easing out) to show
   where it lands; Space picks it up from the keyboard, the arrows carry
-  it and Space puts it down. A handle at its bottom end
-  corner, shown on hover and focus, resizes it by whole columns and rows
-  as the pointer moves: the card takes a 2 px `brand` ring, what it
-  shows blurs and fades until it is let go, and the board makes room as
-  it grows. Focused, the handle takes the arrow keys.
+  it and Space puts it down. A pill centred on its end edge (width) and
+  one centred on its bottom edge (height), shown on hover and focus,
+  resize it: the card follows the pointer to the pixel, over its
+  neighbours, with a 2 px `brand` ring and a shadow, what it shows
+  blurred and its chart stretching; let go, it snaps to whole columns
+  and rows and glides there (260 ms, easing out) while the others glide
+  to their new places. Focused, a pill takes the arrow keys of its
+  edge. Nothing glides for a reader who asked for less motion.
 - Under the header: the headline number (`headline`, tabular), one muted
   line with its change against the days before or what it gained, then
   one chart, the one that fits what the widget shows, filling the card
