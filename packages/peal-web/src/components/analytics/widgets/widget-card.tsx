@@ -70,12 +70,12 @@ export const WidgetCardView = ({
       data-widget-id={widgetId}
       data-dragging={dragging ? "" : undefined}
       data-resizing={resizing ? "" : undefined}
-      className={`group/widget relative flex min-h-0 min-w-0 data-[resizing]:z-20 data-[resizing]:h-(--resize-height) data-[resizing]:w-(--resize-width) data-[resizing]:translate-x-(--resize-x) data-[resizing]:translate-y-(--resize-y) data-[resizing]:self-start data-[resizing]:justify-self-start ${widthClasses[width]} ${heightClasses[height]}`}
+      className={`group/widget data-[dnd-placeholder]:after:border-border data-[dnd-placeholder]:after:bg-muted/50 relative flex min-h-0 min-w-0 data-[dnd-placeholder]:after:visible data-[dnd-placeholder]:after:absolute data-[dnd-placeholder]:after:inset-0 data-[dnd-placeholder]:after:rounded-lg data-[dnd-placeholder]:after:border-2 data-[dnd-placeholder]:after:border-dashed data-[resizing]:z-20 data-[resizing]:h-(--resize-height) data-[resizing]:w-(--resize-width) data-[resizing]:translate-x-(--resize-x) data-[resizing]:translate-y-(--resize-y) data-[resizing]:self-start data-[resizing]:justify-self-start ${widthClasses[width]} ${heightClasses[height]}`}
     >
       {handle}
       <article
         aria-labelledby={titleId}
-        className="bg-card group-data-[resizing]/widget:ring-brand flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden rounded-lg border p-6 transition-shadow group-data-[dragging]/widget:shadow-lg group-data-[resizing]/widget:shadow-lg group-data-[resizing]/widget:ring-2"
+        className="bg-card group-data-[resizing]/widget:ring-brand flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden rounded-lg border p-6 transition duration-300 group-data-[dragging]/widget:scale-102 group-data-[dragging]/widget:shadow-xl group-data-[resizing]/widget:shadow-lg group-data-[resizing]/widget:ring-2"
       >
         <header className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-col gap-0.5">

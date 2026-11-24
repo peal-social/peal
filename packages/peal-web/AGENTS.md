@@ -736,7 +736,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   motion); the end and bottom pills alone take the arrow keys, the others staying out of the tab order.
   Moving is `@dnd-kit/react`'s sortable (`SortableWidget`, its handle
   `handleRef`), which animates the others aside and takes the keyboard;
-  the board takes the order on drop (`isSortable`, `index`). The board is
+  the board takes the order on drop (`isSortable`, `index`). `@dnd-kit/dom`'s
+  `Feedback` (`boardPlugins`) sets the drop's curve, the one `glide`
+  and `settle` share (`motion`); dnd-kit hides the placeholder it leaves,
+  so its slot is drawn by the placeholder's `::after`
+  (`data-[dnd-placeholder]:after:visible`). It ignores untrusted pointer
+  events: check a move in a browser with its keyboard (Space, arrows). The board is
   the person's, kept per workspace in `localStorage`
   (`#analytics/board-store.ts`, `peal.analytics.board.<workspace>`,
   decoded with Schema, the default board when it does not read), the

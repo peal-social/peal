@@ -17,6 +17,7 @@
   "dependencies": {
     "@better-auth/oauth-provider": "1.7.27",
     "@better-auth/stripe": "1.7.27",
+    "@dnd-kit/dom": "0.5.3",
     "@dnd-kit/react": "0.5.3",
     "@effect/atom-react": "4.1.5",
     "@marsidev/react-turnstile": "1.6.3",

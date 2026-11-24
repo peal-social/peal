@@ -1368,17 +1368,18 @@ thing over a period of its own.
   the button while either differs from the widget's own) and **…**
   (Duplicate, Rename, then Remove in destructive text). Remove and Reset layout say so in a toast with
   **Undo**. A handle at the card's start edge, shown on hover and focus,
-  picks it up: it follows the pointer in any direction, lifted with a
-  shadow, while the others glide aside (240 ms, easing out) to show
-  where it lands; Space picks it up from the keyboard, the arrows carry
+  picks it up: it follows the pointer in any direction, lifted (2 %
+  larger, a deep shadow), while the others glide aside and a dashed
+  `muted` slot shows where it lands; let go, it settles into the slot; Space picks it up from the keyboard, the arrows carry
   it and Space puts it down. Every edge and corner resizes it: a pill
   centred on each edge, shown on hover and focus, and the corners under
   the pointer alone; pulled from its start or top, its other side stays
   put: the card follows the pointer to the pixel, over its
   neighbours, with a 2 px `brand` ring and a shadow, what it shows
   blurred and its chart stretching; let go, it snaps to whole columns
-  and rows and glides there (260 ms, easing out) while the others glide
-  to their new places. Focused, the end and bottom pills take the
+  and rows and glides there while the others glide to their new places.
+  Every move of the board takes one curve, quick to start and long to
+  settle (320 ms, `cubic-bezier(0.22, 1, 0.36, 1)`). Focused, the end and bottom pills take the
   arrow keys of their edge, the card's two tab stops for its size. Nothing glides for a reader who asked for less motion.
 - Under the header: the headline number (`headline`, tabular), one muted
   line with its change against the days before or what it gained, then

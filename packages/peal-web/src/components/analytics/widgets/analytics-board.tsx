@@ -1,5 +1,6 @@
 "use client";
 
+import { defaultPreset, Feedback } from "@dnd-kit/dom";
 import { DragDropProvider } from "@dnd-kit/react";
 import type { DragDropEventHandlers } from "@dnd-kit/react";
 import { isSortable, useSortable } from "@dnd-kit/react/sortable";
@@ -97,8 +98,23 @@ import {
 
 const newId = (): string => crypto.randomUUID();
 
-// How a widget glides to its place as another moves through the board.
-const glide = { duration: 240, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
+// How widgets move: quick to start, long to settle, so a widget glides
+// into place rather than stops there. The same curve carries the others
+// aside as one passes, the one let go into its slot, and a resize to its
+// snap.
+const motion = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+const glide = { duration: 320, easing: motion };
+
+// The board's drag: a widget let go settles into its slot along the same
+// curve, from the keyboard too.
+const boardPlugins = [
+  ...defaultPreset.plugins,
+  Feedback.configure({
+    dropAnimation: { duration: 320, easing: motion },
+    keyboardTransition: { duration: 220, easing: motion },
+  }),
+];
 
 /**
  * A widget the board sorts: it follows the pointer in any direction from
@@ -565,7 +581,7 @@ interface Layout {
   readonly rects: ReadonlyMap<string, DOMRect>;
 }
 
-const settle = { duration: 260, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
+const settle = { duration: 320, easing: "cubic-bezier(0.22, 1, 0.36, 1)" };
 
 /** The widgets' boxes as laid out now, by id. */
 const rectsOf = (grid: HTMLElement): ReadonlyMap<string, DOMRect> =>
@@ -1049,7 +1065,7 @@ export const AnalyticsBoard = ({
     <>
       {actions}
       {sheet}
-      <DragDropProvider onDragEnd={handleDragEnd}>
+      <DragDropProvider plugins={boardPlugins} onDragEnd={handleDragEnd}>
         <ul
           ref={grid}
           aria-label={t("boardLabel")}
