@@ -98,10 +98,12 @@
   `accountNumbers`). A count is at most
   2^31 − 1 (`maxCount`), what its column holds: a server saying more fails
   to decode, rather than fail the run's insert.
-- Reads go through the `MetricsReader` port. `GatedMetricsReader` sends each
-  one, 25 posts at most, through the channel's `ChannelGate` (`ReadMetrics`),
-  whose handler runs the readers in `analytics/infrastructure/platforms/`:
-  reads take turns with publishing. `publishingWorkers` takes the readers;
+- Reads go through the `MetricsReader` port. The channels context's
+  `GatedMetricsReader` (`channels/infrastructure/gated-clients.ts`) sends
+  each one, 25 posts at most, through the channel's `ChannelGate`
+  (`ReadMetrics`), whose handler runs the readers in
+  `analytics/infrastructure/platforms/`: reads take turns with publishing.
+  `publishingWorkers` (`src/app/publishing-workers.ts`) takes the readers;
   publishing's tests get `UnreadMetrics`.
 - Mastodon reads one status at a time, with the channel's token from
   `ChannelAccess` when its scopes include `read:statuses` (asked since

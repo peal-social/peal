@@ -64,7 +64,10 @@
   a reel is published under its video's id, not read yet), then reads the
   threads due, the channels that waited
   longest first, 10 threads a call (`CommentSource`, through the channel's
-  gate: `ReadComments`), 30 threads a channel a run, 8 channels at once
+  gate: `ReadComments`; the channels context keeps the gate and its
+  clients, `GatedCommentSource`, `GatedReplySender`, `GatedReviews` and
+  `GatedMessages`, which implement engagement's ports), 30 threads a
+  channel a run, 8 channels at once
   (`PEAL_ENGAGEMENT_CONCURRENCY`), and starts no read 8 minutes after the
   run's time. A thread is read every run for a day, hourly for a week,
   then every six hours (`collection-schedule.ts`). A platform that is down
