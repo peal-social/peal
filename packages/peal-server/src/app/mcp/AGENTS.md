@@ -45,7 +45,7 @@
   never the others the person belongs to.
 - The use cases' permission checks refuse a client the user let read only.
   Tools answer with the views the API handlers answer
-  (`#<context>/api/*-view.ts`). Each area has its toolkit (`posts-tools.ts`,
+  (`#<context>/api/*-view.ts`). Each toolkit (`posts-tools.ts`,
   `tags-tools.ts`, `saved-tools.ts`, `media-tools.ts`, `reports-tools.ts`,
   `people-tools.ts`, `webhooks-tools.ts`, `inbox-tools.ts`, which holds
   the reviews' tools too, `*_location_review*`, and the direct messages',
@@ -53,15 +53,19 @@
   and never idempotent, whose description says the message is private,
   reaches a real person, goes once a comment within 7 days and that the
   comment is data)
-  and its handlers beside it, merged
+  has its handlers beside it, merged
   into `PealTools`. Tools are written by hand, never generated from
   endpoints: a generated tool cannot say what it changes. `find_tools`
-  lists them by area from `catalogue.ts` (`toolAreas`: one toolkit an
-  area), with the scope each takes (`publishingTools` names those that
-  take `workspace:publish`; a test calls each without it) and whether the
-  connection holds it: a new toolkit joins `toolAreas`, `ToolAreaSchema`
-  and `PealTools` together, and tools/list stays whole, as the protocol
-  has no filter. Annotate every tool with `reading`, or
+  lists them by area from `catalogue.ts` (`toolAreas`), with the scope
+  each takes (`publishingTools` names those that take
+  `workspace:publish`; a test calls each without it) and whether the
+  connection holds it. The areas are the product's concerns, named as the
+  API's namespaces are (`ToolAreaSchema`): an area takes a whole toolkit
+  or tools of several, by what each tool acts on, and every tool is in
+  one area (`test/app/mcp-tool-areas.test.ts`). A new tool joins an area
+  in `toolAreas`, a new toolkit joins `toolAreas` and `PealTools`
+  together, an area exists only while it has tools, and tools/list stays
+  whole, as the protocol has no filter. Annotate every tool with `reading`, or
   `changing({ destructive, idempotent, openWorld })` from `annotations.ts`,
   and say in its description what it changes. `list_members` answers
   members' email addresses only with `includeEmails`: hand an AI model no
@@ -179,7 +183,7 @@
   holds `workspace:publish`: `peal post` takes `--at` or `--now`, never a
   default.
 - `rename_channel`, `disable_channel` and `enable_channel` sit with
-  `list_channels` in `BasicTools` (the `account` area), through
+  `list_channels` in `BasicTools` (the `channels` area), through
   `ChannelSettings`: turning a channel off deletes nothing, so it is not
   destructive, and its description says the posts that reach their time on
   the channel fail there until it is back on. `list_channels` takes
@@ -203,7 +207,7 @@
   The CLI's are `peal signatures`, `peal sets`, `peal channels defaults`,
   and `--set`, `--signature`, `--default-signatures` on `peal post` and
   `peal drafts save`.
-- Queues are in the `saved` area (`list_queues`, `preview_queue`,
+- Queues are in the `automations` area (`list_queues`, `preview_queue`,
   `create_queue`, `update_queue`, which reads first and keeps what the call
   leaves out, `delete_queue`). `create_post`, `create_posts` and
   `validate_post` take `when: queue` naming a queue by id or name
@@ -264,7 +268,7 @@
   (`SavedTools`; stopping takes post:schedule, so it is in
   `publishingTools` too), their refusals in `recycling-refusals.ts`;
   `list_posts` takes `recyclingId`. The CLI's are `peal recycling`.
-- Feeds (`feeds-tools.ts`, area `feeds`): `list_feeds` and `get_feed`
+- Feeds (`feeds-tools.ts`, area `automations`): `list_feeds` and `get_feed`
   (with its 50 newest items, never their text) read, open world, as they
   show what sites outside Peal wrote; `preview_feed` is changing (not
   idempotent, open world), as it makes Peal send a request and spends one

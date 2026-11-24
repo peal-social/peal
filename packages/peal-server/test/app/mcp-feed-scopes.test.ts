@@ -2,15 +2,18 @@ import { describe, expect, it } from "@effect/vitest";
 
 import { toolCatalogue } from "#app/mcp/catalogue.ts";
 
-// The feeds' tools as the catalogue lists them: a feed of drafts takes the
-// scope that writes, as its use cases check; one on a queue takes
-// post:schedule as well, which each tool's description says.
+// The feeds' tools as the catalogue lists them, among the automations: a
+// feed of drafts takes the scope that writes, as its use cases check; one
+// on a queue takes post:schedule as well, which each tool's description
+// says.
 
 describe("the feeds' tools", () => {
   it("take workspace:write, the preview included, which spends a read", () => {
     const scopes = Object.fromEntries(
       toolCatalogue()
-        .filter(({ area }) => area === "feeds")
+        .filter(
+          ({ area, name }) => area === "automations" && /_feeds?$/u.test(name)
+        )
         .map(({ changes, name, scope }) => [name, [scope, changes]])
     );
 

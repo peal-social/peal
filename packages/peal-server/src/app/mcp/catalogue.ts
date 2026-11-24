@@ -27,28 +27,166 @@ interface ListedTool {
   readonly name: string;
 }
 
+// The tools of a toolkit that `names` gives, in that order: a toolkit
+// whose tools act on several of the product's concerns gives each area its
+// own.
+const pick = <Tools extends { readonly [Name in keyof Tools]: ListedTool }>(
+  tools: Tools,
+  names: readonly (keyof Tools)[]
+): readonly ListedTool[] => names.map((name) => tools[name]);
+
 /**
- * The tools by area: one toolkit an area. Tools are written by hand, each
- * with a description of what it changes, and none is generated from an
- * endpoint; as their number grows, `find_tools` lists them from here, so a
- * client chooses among summaries rather than read every description. A new
- * toolkit joins this map, `ToolAreaSchema` and `PealTools` together.
+ * The tools by area: the product's concerns, named as the API's namespaces
+ * are. An area lists a whole toolkit, or the tools it takes of several, by
+ * what each tool acts on; every tool is in one area. Tools are written by
+ * hand, each with a description of what it changes, and none is generated
+ * from an endpoint; as their number grows, `find_tools` lists them from
+ * here, so a client chooses among summaries rather than read every
+ * description. A new tool joins an area here, and a new toolkit joins this
+ * map and `PealTools` together; an area with no tool left leaves
+ * `ToolAreaSchema`.
  */
 export const toolAreas: Readonly<Record<ToolArea, readonly ListedTool[]>> = {
-  account: Object.values(BasicTools.tools),
   ads: Object.values(AdsTools.tools),
-  channels: Object.values(CapabilityTools.tools),
-  connect: Object.values(ConnectTools.tools),
-  feeds: Object.values(FeedTools.tools),
-  inbox: Object.values(InboxTools.tools),
+  analytics: pick(ReportTools.tools, [
+    "analytics_summary",
+    "analytics_dashboard",
+    "channel_analytics",
+    "best_times",
+    "post_analytics",
+  ]),
+  automations: [
+    ...pick(SavedTools.tools, [
+      "list_queues",
+      "preview_queue",
+      "create_queue",
+      "update_queue",
+      "delete_queue",
+    ]),
+    ...pick(PostTools.tools, ["reshuffle_queue", "recycle_post"]),
+    ...pick(SavedTools.tools, ["list_recycling_rules", "get_recycling_rule"]),
+    ...pick(PostTools.tools, [
+      "update_recycling_rule",
+      "resume_recycling_rule",
+    ]),
+    ...pick(SavedTools.tools, [
+      "stop_recycling_rule",
+      "list_follow_up_rules",
+      "get_follow_up_rule",
+      "start_follow_up_rule",
+      "update_follow_up_rule",
+      "stop_follow_up_rule",
+    ]),
+    ...Object.values(FeedTools.tools),
+    ...pick(InboxTools.tools, [
+      "list_comment_rules",
+      "start_comment_rule",
+      "update_comment_rule",
+      "stop_comment_rule",
+    ]),
+  ],
+  channels: [
+    ...pick(BasicTools.tools, [
+      "list_channels",
+      "rename_channel",
+      "disable_channel",
+      "enable_channel",
+    ]),
+    ...Object.values(CapabilityTools.tools),
+    ...pick(PostTools.tools, ["get_tiktok_creator"]),
+    ...pick(SavedTools.tools, [
+      "list_channel_sets",
+      "create_channel_set",
+      "update_channel_set",
+      "delete_channel_set",
+      "get_channel_defaults",
+      "set_channel_defaults",
+      "clear_channel_defaults",
+    ]),
+    ...pick(ConnectTools.tools, [
+      "list_connect_links",
+      "get_connect_link",
+      "create_connect_link",
+      "revoke_connect_link",
+    ]),
+  ],
+  inbox: pick(InboxTools.tools, [
+    "list_comment_threads",
+    "get_comment_thread",
+    "reply_to_comment",
+    "confirm_comment_reply",
+    "withdraw_comment_reply",
+    "mark_comment_answered",
+    "moderate_comment",
+    "list_location_reviews",
+    "get_location_reviews",
+    "reply_to_location_review",
+    "delete_location_review_reply",
+    "mark_location_review_answered",
+    "list_conversations",
+    "get_conversation",
+    "send_message",
+    "send_private_reply",
+  ]),
+  links: pick(ReportTools.tools, [
+    "get_short_link_status",
+    "list_short_links",
+    "get_short_link",
+  ]),
   media: Object.values(MediaTools.tools),
-  people: Object.values(PeopleTools.tools),
-  posts: Object.values(PostTools.tools),
-  reports: Object.values(ReportTools.tools),
+  posts: [
+    ...pick(PostTools.tools, [
+      "list_drafts",
+      "list_posts",
+      "get_post",
+      "list_post_attempts",
+      "create_draft",
+      "update_draft",
+      "duplicate_post",
+      "discard_draft",
+      "schedule_post",
+      "publish_post",
+      "reschedule_post",
+      "queue_post",
+      "create_post",
+      "create_posts",
+      "validate_post",
+      "await_post",
+      "unschedule_post",
+      "cancel_post",
+      "remove_post_target",
+      "repost_target",
+      "leave_out_rest",
+      "confirm_target",
+      "unpublish_post",
+      "edit_published_post",
+      "list_post_changes",
+    ]),
+    ...Object.values(TagTools.tools),
+    ...pick(SavedTools.tools, [
+      "list_signatures",
+      "create_signature",
+      "update_signature",
+      "delete_signature",
+    ]),
+  ],
   review: Object.values(ReviewTools.tools),
-  saved: Object.values(SavedTools.tools),
-  tags: Object.values(TagTools.tools),
   webhooks: Object.values(WebhookTools.tools),
+  workspace: [
+    ...pick(BasicTools.tools, [
+      "find_tools",
+      "whoami",
+      "list_workspaces",
+      "server_health",
+    ]),
+    ...Object.values(PeopleTools.tools),
+    ...pick(ReportTools.tools, ["get_billing", "get_usage", "list_activity"]),
+    ...pick(ConnectTools.tools, [
+      "get_partner_account",
+      "list_partner_workspaces",
+      "get_partner_usage",
+    ]),
+  ],
 };
 
 /**
