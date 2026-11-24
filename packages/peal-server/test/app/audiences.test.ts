@@ -62,8 +62,7 @@ const identifiers = (
 
 const lists = { app: appGroups, public: publicGroups, staff: staffGroups };
 
-// Each list's groups, compared by identity: two groups may not share an
-// identifier, which the next case checks too.
+// Each list's groups, compared by identity.
 const members = Object.entries(lists).map(
   ([name, list]) => [name, new Set<unknown>(list)] as const
 );
@@ -73,12 +72,29 @@ const isUnder = (path: string, prefix: string): boolean =>
   path === prefix || path.startsWith(`${prefix}/`);
 
 describe("the API's audiences", () => {
-  it("lists every group of the contract in exactly one of the three lists", () => {
+  it("lists each of the API's groups once, and the API is the three lists", () => {
+    // No identifier twice, which `.add` would keep once, silently: every
+    // group of `Api` is in one list, and `PublicApi` is the public one.
+    const listed = Object.values(lists).flatMap((list) => identifiers(list));
+
+    expect(listed.filter((id, at) => listed.indexOf(id) !== at)).toStrictEqual(
+      []
+    );
+    expect(Object.keys(Api.groups).toSorted()).toStrictEqual(listed.toSorted());
+    expect(Object.keys(PublicApi.groups)).toStrictEqual(
+      identifiers(publicGroups)
+    );
+  });
+
+  // A group the contract's index exports but no list holds is not in the
+  // API at all. The index exports most groups, not all: the case above is
+  // what covers every group of `Api`.
+  it("puts each group the contract's index exports in exactly one list", () => {
     const exported = Object.values(contract).filter((value) =>
       HttpApiGroup.isHttpApiGroup(value)
     );
 
-    expect(exported.length).toBeGreaterThan(50);
+    expect(exported.length).toBeGreaterThan(40);
 
     const unlisted = exported.flatMap((group) => {
       const where = members.flatMap(([name, list]) =>
@@ -91,18 +107,6 @@ describe("the API's audiences", () => {
     });
 
     expect(unlisted).toStrictEqual([]);
-
-    // No identifier twice, which `.add` would keep once, silently, and the
-    // whole API is the three lists, the public one the public API.
-    const listed = Object.values(lists).flatMap((list) => identifiers(list));
-
-    expect(listed.filter((id, at) => listed.indexOf(id) !== at)).toStrictEqual(
-      []
-    );
-    expect(Object.keys(Api.groups).toSorted()).toStrictEqual(listed.toSorted());
-    expect(Object.keys(PublicApi.groups)).toStrictEqual(
-      identifiers(publicGroups)
-    );
   });
 
   it("takes a bearer credential on every public operation but the health checks", () => {
