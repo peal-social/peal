@@ -679,7 +679,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Review links are made and ended with the scope that publishes,
           // as their use case checks post:approve.
           const reviewing = yield* reader.call("find_tools", FoundSchema, {
-            area: "review",
+            area: "approvals",
           });
 
           assert.deepStrictEqual(
@@ -695,18 +695,62 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             ]
           );
 
-          // So is what a workspace saves to write its posts with.
-          const saving = yield* reader.call("find_tools", FoundSchema, {
-            area: "saved",
+          // What acts on its own: a rule that publishes, or stops one that
+          // does, takes the scope that publishes, as its use case checks
+          // post:schedule.
+          const automations = yield* reader.call("find_tools", FoundSchema, {
+            area: "automations",
           });
 
           assert.deepStrictEqual(
-            saving.tools.map(({ name, scope }) => [name, scope]),
+            automations.tools.map(({ name, scope }) => [name, scope]),
             [
-              ["list_signatures", "workspace:read"],
-              ["create_signature", "workspace:write"],
-              ["update_signature", "workspace:write"],
-              ["delete_signature", "workspace:write"],
+              ["list_queues", "workspace:read"],
+              ["preview_queue", "workspace:read"],
+              ["create_queue", "workspace:write"],
+              ["update_queue", "workspace:write"],
+              ["delete_queue", "workspace:write"],
+              ["reshuffle_queue", "workspace:publish"],
+              ["recycle_post", "workspace:publish"],
+              ["list_recycling_rules", "workspace:read"],
+              ["get_recycling_rule", "workspace:read"],
+              ["update_recycling_rule", "workspace:publish"],
+              ["resume_recycling_rule", "workspace:publish"],
+              ["stop_recycling_rule", "workspace:publish"],
+              ["list_follow_up_rules", "workspace:read"],
+              ["get_follow_up_rule", "workspace:read"],
+              ["start_follow_up_rule", "workspace:publish"],
+              ["update_follow_up_rule", "workspace:publish"],
+              ["stop_follow_up_rule", "workspace:publish"],
+              ["list_feeds", "workspace:read"],
+              ["get_feed", "workspace:read"],
+              ["preview_feed", "workspace:write"],
+              ["create_feed", "workspace:write"],
+              ["update_feed", "workspace:write"],
+              ["delete_feed", "workspace:write"],
+              ["list_comment_rules", "workspace:read"],
+              ["start_comment_rule", "workspace:publish"],
+              ["update_comment_rule", "workspace:publish"],
+              ["stop_comment_rule", "workspace:publish"],
+            ]
+          );
+
+          // The channels, with what the workspace saves for them and the
+          // links that connect them.
+          const channels = yield* reader.call("find_tools", FoundSchema, {
+            area: "channels",
+          });
+
+          assert.deepStrictEqual(
+            channels.tools.map(({ name, scope }) => [name, scope]),
+            [
+              ["list_channels", "workspace:read"],
+              ["rename_channel", "workspace:write"],
+              ["disable_channel", "workspace:write"],
+              ["enable_channel", "workspace:write"],
+              ["get_channel_capabilities", "workspace:read"],
+              ["run_channel_lookup", "workspace:read"],
+              ["get_tiktok_creator", "workspace:read"],
               ["list_channel_sets", "workspace:read"],
               ["create_channel_set", "workspace:write"],
               ["update_channel_set", "workspace:write"],
@@ -714,34 +758,30 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
               ["get_channel_defaults", "workspace:read"],
               ["set_channel_defaults", "workspace:write"],
               ["clear_channel_defaults", "workspace:write"],
-              ["list_queues", "workspace:read"],
-              ["preview_queue", "workspace:read"],
-              ["create_queue", "workspace:write"],
-              ["update_queue", "workspace:write"],
-              ["delete_queue", "workspace:write"],
-              ["list_recycling_rules", "workspace:read"],
-              ["get_recycling_rule", "workspace:read"],
-              ["stop_recycling_rule", "workspace:publish"],
-              ["list_follow_up_rules", "workspace:read"],
-              ["get_follow_up_rule", "workspace:read"],
-              ["start_follow_up_rule", "workspace:publish"],
-              ["update_follow_up_rule", "workspace:publish"],
-              ["stop_follow_up_rule", "workspace:publish"],
-            ]
-          );
-
-          // Connect links and the partner account are an area of their own.
-          const connecting = yield* reader.call("find_tools", FoundSchema, {
-            area: "connect",
-          });
-
-          assert.deepStrictEqual(
-            connecting.tools.map(({ name, scope }) => [name, scope]),
-            [
               ["list_connect_links", "workspace:read"],
               ["get_connect_link", "workspace:read"],
               ["create_connect_link", "workspace:write"],
               ["revoke_connect_link", "workspace:write"],
+            ]
+          );
+
+          // The workspace: who the connection is, its people, its plan, its
+          // log and its partner account.
+          const workspace = yield* reader.call("find_tools", FoundSchema, {
+            area: "workspace",
+          });
+
+          assert.deepStrictEqual(
+            workspace.tools.map(({ name, scope }) => [name, scope]),
+            [
+              ["find_tools", "workspace:read"],
+              ["whoami", "workspace:read"],
+              ["list_workspaces", "workspace:read"],
+              ["server_health", "workspace:read"],
+              ["list_members", "workspace:read"],
+              ["get_billing", "workspace:read"],
+              ["get_usage", "workspace:read"],
+              ["list_activity", "workspace:read"],
               ["get_partner_account", "workspace:read"],
               ["list_partner_workspaces", "workspace:read"],
               ["get_partner_usage", "workspace:read"],
@@ -774,22 +814,18 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
               ["get_conversation", "workspace:read"],
               ["send_message", "workspace:publish"],
               ["send_private_reply", "workspace:publish"],
-              ["list_comment_rules", "workspace:read"],
-              ["start_comment_rule", "workspace:publish"],
-              ["update_comment_rule", "workspace:publish"],
-              ["stop_comment_rule", "workspace:publish"],
             ]
           );
 
-          // The numbers are reports, the dashboard and a channel's days
+          // The numbers are analytics, the dashboard and a channel's days
           // with the rest.
-          const reports = yield* reader.call("find_tools", FoundSchema, {
-            area: "reports",
+          const analytics = yield* reader.call("find_tools", FoundSchema, {
+            area: "analytics",
             query: "analytics",
           });
 
           assert.includeMembers(
-            reports.tools.map(({ name }) => name),
+            analytics.tools.map(({ name }) => name),
             ["analytics_dashboard", "channel_analytics", "post_analytics"]
           );
 
@@ -806,7 +842,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             })),
             [
               {
-                area: "connect",
+                area: "channels",
                 name: "revoke_connect_link",
                 scope: "workspace:write",
                 scopeGranted: true,
