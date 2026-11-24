@@ -710,17 +710,25 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   chosen in its Filter.
 - Charts use peal-ui's `chart` (recharts) and come with the same figures as
   a table, behind **Chart** and **Table** tabs; the chart itself is
-  `aria-hidden`. Write calendar days, such as a summary's, in UTC
+  `aria-hidden`. An analytics widget is the exception: one chart, no
+  tabs, its table `sr-only`. Write calendar days, such as a summary's, in UTC
   (`#analytics/report.ts` `dayDate`), and instants in the reader's zone.
 - The analytics page is a board of widgets (DESIGN.md, "Analytics
   board"; `components/analytics/widgets/`): `AnalyticsBoard` lays them
   out, `WidgetCardView` draws one, `widget-bodies.tsx` holds what each
   kind shows (views that take links and excerpts as components, so
   tests render them), `widget-controls.tsx` the Filter, the menu and
-  renaming, `add-widgets.tsx` the sheet. The kinds, their sizes,
-  periods and channel filter, the board's changes and each period's
-  days are `#analytics/widgets.ts` (pure, tested): a new kind goes
-  there, with its name and line in `Analytics.widgets`. The board is
+  renaming, `add-widgets.tsx` the sheet. The kinds, their widths
+  (starting and least), periods and channel filter, the board's
+  changes, sizes (`sizeFor` snaps a resize to whole columns and rows)
+  and each period's days are `#analytics/widgets.ts` (pure, tested): a
+  new kind goes there, with its name and line in `Analytics.widgets`.
+  The grid's rows are fixed (`--widget-row`), so every body fills its
+  card: charts take `flex-1` and stretch, lists show as many rows as the
+  widget's height allows (`room`). Resizing follows the pointer with
+  pointer capture on the corner handle, reading the grid's computed
+  columns and rows, and applies the size live while blurring the
+  card's content; the arrow keys do the same on the focused handle. The board is
   the person's, kept per workspace in `localStorage`
   (`#analytics/board-store.ts`, `peal.analytics.board.<workspace>`,
   decoded with Schema, the default board when it does not read), the
@@ -729,7 +737,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   one channel's series beside it when it shows one channel
   (`channelFigures`). Best times (`best-times-view.tsx`) takes one
   channel, over 30, 90 or 180 days, with the best hours, a weekday by
-  hour grid (`aria-hidden`) and the same figures as a table, in words
+  hour grid (`aria-hidden`; three best hours and no footnote one row
+  high, `compact`) and the same figures as a table (`BestTimesTable`,
+  `sr-only` in the widget), in words
   that say it is the channel's past, never a prediction, and that
   nothing is ranked under the floor (`Analytics.bestTimes`).
 - A post's page (`PostMetrics`) names the platforms this server counts

@@ -4,13 +4,20 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useId } from "react";
 import type { DragEventHandler, ReactNode } from "react";
 
-import type { WidgetSize } from "#analytics/widgets.ts";
+import type { WidgetHeight, WidgetWidth } from "#analytics/widgets.ts";
 
-/** Where a widget sits in the board's grid, by its size. */
-export const sizeClasses: Readonly<Record<WidgetSize, string>> = {
-  medium: "sm:col-span-2",
-  small: "col-span-1",
-  wide: "sm:col-span-2 xl:col-span-4",
+/** The columns a widget spans: all of a phone's, up to two, up to four. */
+export const widthClasses: Readonly<Record<WidgetWidth, string>> = {
+  1: "col-span-1",
+  2: "sm:col-span-2",
+  3: "sm:col-span-2 xl:col-span-3",
+  4: "sm:col-span-2 xl:col-span-4",
+};
+
+/** The rows a widget spans. */
+export const heightClasses: Readonly<Record<WidgetHeight, string>> = {
+  1: "row-span-1",
+  2: "row-span-2",
 };
 
 /** Which side of a widget another one dragged over it would land on. */
@@ -18,26 +25,31 @@ export type DropSide = "before" | "after";
 
 interface WidgetCardViewProps {
   readonly children: ReactNode;
-  /** The drag handle, at the card's start, shown on hover and focus. */
+  /** The drag handle, at the card's start, shown on hover. */
   readonly handle?: ReactNode;
+  /** The resize handle, at the card's corner, shown on hover and focus. */
+  readonly resizer?: ReactNode;
   /** The card's buttons, at the end of its header. */
   readonly actions?: ReactNode;
   /** Where a widget being dragged would land, while one is over this. */
   readonly dropSide?: DropSide | null;
   readonly dragging?: boolean;
+  /** While the person resizes it: what it shows is blurred until let go. */
+  readonly resizing?: boolean;
+  readonly height: WidgetHeight;
   readonly name: string;
   readonly onDragOver?: DragEventHandler<HTMLElement>;
   readonly onDragLeave?: DragEventHandler<HTMLElement>;
   readonly onDrop?: DragEventHandler<HTMLElement>;
-  readonly size: WidgetSize;
   /** The period, and the channel where it shows one. */
   readonly subtitle: string;
+  readonly width: WidgetWidth;
 }
 
 /**
  * One widget of the analytics board: a white card, hairline, its name and
  * period at the top, its filter and menu at the header's end, then what it
- * shows.
+ * shows, which fills the card at whatever size the person gave it.
  */
 export const WidgetCardView = ({
   actions,
@@ -45,22 +57,25 @@ export const WidgetCardView = ({
   dragging = false,
   dropSide = null,
   handle,
+  height,
   name,
   onDragLeave,
   onDragOver,
   onDrop,
-  size,
+  resizer,
+  resizing = false,
   subtitle,
+  width,
 }: WidgetCardViewProps) => {
   const titleId = useId();
 
-  // The card is a drop target while another widget is dragged: the
-  // keyboard moves widgets from their menu instead.
+  // The card is a drop target while another widget is dragged.
   return (
     <div
       data-dragging={dragging ? "" : undefined}
       data-drop={dropSide ?? undefined}
-      className={`group/widget data-[drop=after]:after:bg-brand data-[drop=before]:before:bg-brand relative flex min-w-0 data-[dragging]:opacity-50 data-[drop=after]:after:absolute data-[drop=after]:after:inset-y-0 data-[drop=after]:after:-right-3.5 data-[drop=after]:after:w-0.5 data-[drop=after]:after:rounded-full data-[drop=before]:before:absolute data-[drop=before]:before:inset-y-0 data-[drop=before]:before:-left-3.5 data-[drop=before]:before:w-0.5 data-[drop=before]:before:rounded-full ${sizeClasses[size]}`}
+      data-resizing={resizing ? "" : undefined}
+      className={`group/widget data-[drop=after]:after:bg-brand data-[drop=before]:before:bg-brand relative flex min-h-0 min-w-0 data-[dragging]:opacity-50 data-[drop=after]:after:absolute data-[drop=after]:after:inset-y-0 data-[drop=after]:after:-right-3.5 data-[drop=after]:after:w-0.5 data-[drop=after]:after:rounded-full data-[drop=before]:before:absolute data-[drop=before]:before:inset-y-0 data-[drop=before]:before:-left-3.5 data-[drop=before]:before:w-0.5 data-[drop=before]:before:rounded-full ${widthClasses[width]} ${heightClasses[height]}`}
       onDragLeave={onDragLeave}
       onDragOver={onDragOver}
       onDrop={onDrop}
@@ -68,7 +83,7 @@ export const WidgetCardView = ({
       {handle}
       <article
         aria-labelledby={titleId}
-        className="bg-card flex min-w-0 flex-1 flex-col gap-4 rounded-lg border p-6"
+        className="bg-card group-data-[resizing]/widget:ring-brand flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden rounded-lg border p-6 transition-shadow group-data-[resizing]/widget:ring-2"
       >
         <header className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-col gap-0.5">
@@ -86,8 +101,11 @@ export const WidgetCardView = ({
             </div>
           )}
         </header>
-        <div className="flex min-h-0 flex-1 flex-col gap-3">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col gap-3 transition group-data-[resizing]/widget:opacity-60 group-data-[resizing]/widget:blur-sm">
+          {children}
+        </div>
       </article>
+      {resizer}
     </div>
   );
 };

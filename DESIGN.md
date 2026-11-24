@@ -1349,9 +1349,12 @@ Analytics is a board of widgets the person arranges, each showing one
 thing over a period of its own.
 
 - **`widget-board`** — A grid four up from 1280 px, two up from 640
-  px, one on a phone, 24 px apart. A widget is `small` (one column),
-  `medium` (two) or `wide` (the whole row); the board keeps the person's
-  order and leaves a gap rather than reorder what they placed. The board
+  px, one on a phone, 24 px apart, its rows 320 px high. A widget spans
+  one to four columns and one or two rows (two columns at most from 640
+  px, one on a phone); each kind starts at its own width and reads in
+  no fewer columns than its least (a chart over days, two). The board
+  keeps the person's order and leaves a gap rather than reorder what
+  they placed. The board
   is the person's, kept in their browser for each workspace; a new
   workspace starts with the default one, and **Reset layout** brings it
   back.
@@ -1363,15 +1366,28 @@ thing over a period of its own.
   the button while either differs from the widget's own) and **…**
   (Duplicate, Rename, then Remove in destructive text). Remove and Reset layout say so in a toast with
   **Undo**. A handle at the card's start edge, shown on hover, drags it;
-  a 2 px `brand` line marks where it lands.
+  a 2 px `brand` line marks where it lands. A handle at its bottom end
+  corner, shown on hover and focus, resizes it by whole columns and rows
+  as the pointer moves: the card takes a 2 px `brand` ring, what it
+  shows blurs and fades until it is let go, and the board makes room as
+  it grows. Focused, the handle takes the arrow keys.
 - Under the header: the headline number (`headline`, tabular), one muted
   line with its change against the days before or what it gained, then
-  what draws it: a line on a faint `brand` area with the first, middle
-  and last days under it, bars by platform in `brand`, a table, or the
-  engagement chart with its **Chart** and **Table** tabs. A line is
-  `aria-hidden`, its figures a table screen readers take. A number a
-  platform does not give is a dash with "Not given by the platform"
-  under it, never zero.
+  one chart, the one that fits what the widget shows, filling the card
+  at any size, with no second view: a line on a faint `brand` area to
+  the card's edges for a count that moves (followers between their
+  lowest and highest, engagement and reach from zero); thin `brand`
+  columns for a count each day stands on (views); a ring of the
+  platforms with the total in it (posts); bars by platform (impressions,
+  clicks, saves); one bar cut into each platform's share (platforms);
+  stacked columns in one blue from deep to faint with the seven-day
+  average as an ink line over them (engagement over time); quiet rows
+  with the platform's mark (top posts, channels). The days under a chart
+  grow from three to nine as it widens; the pointer shows a day's
+  figures in a tooltip. Charts are `aria-hidden`, their figures a table
+  screen readers take. A widget loading shows a faint chart in `muted`.
+  A number a platform does not give is a dash with "Not given by the
+  platform" under it, never zero.
 - **Add widgets**, a small ghost button in the page's actions, opens a
   sheet from the right: a search field, then the kinds by section
   (Suggestions, Audience, Posts, Files), each a card with a drawing of

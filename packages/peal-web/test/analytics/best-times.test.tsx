@@ -47,8 +47,6 @@ describe(BestTimesView, () => {
 
     expect(html).toMatch(/Best hours.*Tuesday at 9:00/u);
     expect(html).toContain('data-best="true"');
-    expect(html).toContain('aria-label="Show the hours as"');
-
     const table = await render("en", <BestTimesTable found={found} />);
 
     expect(table).toMatch(/Friday at 18:00<\/th><td[^>]*>2<\/td><td[^>]*>–/u);

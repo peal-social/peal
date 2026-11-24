@@ -14,8 +14,12 @@ import {
   periodOf,
   periodRange,
   removeWidget,
+  heightOf,
   renameWidget,
   reportPeriods,
+  resizeWidget,
+  sizeFor,
+  widthOf,
   setChannel,
   setPeriod,
   sumOf,
@@ -181,5 +185,47 @@ describe(matches, () => {
     expect(matches("top POSTS", "Top posts", "The posts")).toBeTruthy();
     expect(matches("follow", "Top posts", "The posts")).toBeFalsy();
     expect(matches("  ", "Anything")).toBeTruthy();
+  });
+});
+
+describe(sizeFor, () => {
+  it("snaps to whole columns and rows, within the board", () => {
+    expect(sizeFor("followers", 2.4, 1.6)).toStrictEqual({
+      height: 2,
+      width: 2,
+    });
+    expect(sizeFor("followers", 9, 7)).toStrictEqual({ height: 2, width: 4 });
+    expect(sizeFor("followers", 0.2, 0.1)).toStrictEqual({
+      height: 1,
+      width: 1,
+    });
+  });
+
+  it("keeps a widget as wide as its kind reads in", () => {
+    expect(sizeFor("activity", 1, 1).width).toBe(2);
+    expect(sizeFor("bestTimes", 1, 1).width).toBe(2);
+  });
+});
+
+describe(resizeWidget, () => {
+  it("keeps only what differs from the kind's own size", () => {
+    const resized = resizeWidget(board, "a", 2, 2);
+
+    expect(resized.widgets[0]).toStrictEqual({
+      height: 2,
+      id: "a",
+      kind: "followers",
+      width: 2,
+    });
+    expect(resizeWidget(resized, "a", 1, 1).widgets[0]).toStrictEqual({
+      id: "a",
+      kind: "followers",
+    });
+  });
+
+  it("reads a size no narrower than the kind's", () => {
+    expect(widthOf({ id: "x", kind: "activity", width: 1 })).toBe(2);
+    expect(widthOf({ id: "x", kind: "activity" })).toBe(4);
+    expect(heightOf({ id: "x", kind: "activity" })).toBe(1);
   });
 });

@@ -131,16 +131,14 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     ).toBeVisible();
     await expect(browser).toHaveURL(`/${slug}/analytics`);
 
-    // The channel's latest counts, as a table anyone can read.
+    // Each channel on a line of the Channels widget.
     const totals = screen.getByRole(
-      "table",
+      "list",
       "The latest counts of the range’s posts, by channel"
     );
 
     await expect(totals).toBeVisible();
-    await expect(
-      totals.getByRole("rowheader", /@pools@social\.example/u)
-    ).toBeVisible();
+    await expect(totals.getByText(/@pools@social\.example/u)).toBeVisible();
     await expect(
       screen.getByText(
         "No post went out in this range yet on a platform Peal reads counts on."

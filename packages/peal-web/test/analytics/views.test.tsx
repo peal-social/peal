@@ -23,6 +23,7 @@ import {
   ComparisonBody,
   DayCountBody,
   ExportBody,
+  PostsRingBody,
   StatBody,
 } from "#components/analytics/widgets/widget-bodies.tsx";
 import { WidgetCardView } from "#components/analytics/widgets/widget-card.tsx";
@@ -445,11 +446,18 @@ const dashboard: AnalyticsDashboard = {
 
 const figures = workspaceFigures(dashboard);
 
+const room = { height: 1, width: 1 } as const;
+
 describe(WidgetCardView, () => {
   it("names the widget in a heading, with its period under it", async () => {
     const html = await render(
       "en",
-      <WidgetCardView name="Followers" size="small" subtitle="Last 30 days">
+      <WidgetCardView
+        name="Followers"
+        width={1}
+        height={2}
+        subtitle="Last 30 days"
+      >
         <p>body</p>
       </WidgetCardView>
     );
@@ -458,6 +466,7 @@ describe(WidgetCardView, () => {
     expect(html).toContain(">Followers</h2>");
     expect(html).toContain(">Last 30 days<");
     expect(html).toContain("col-span-1");
+    expect(html).toContain("row-span-2");
   });
 });
 
@@ -465,7 +474,12 @@ describe(DayCountBody, () => {
   it("shows followers with what they gained, and their line", async () => {
     const html = await render(
       "en",
-      <DayCountBody count="followers" figures={figures} name="Followers" />
+      <DayCountBody
+        room={room}
+        count="followers"
+        figures={figures}
+        name="Followers"
+      />
     );
 
     expect(html).toContain(">1,250<");
@@ -480,7 +494,12 @@ describe(DayCountBody, () => {
   it("shows the engagement against the period before", async () => {
     const html = await render(
       "en",
-      <DayCountBody count="engagement" figures={figures} name="Engagement" />
+      <DayCountBody
+        room={room}
+        count="engagement"
+        figures={figures}
+        name="Engagement"
+      />
     );
 
     // 14 interactions against 10: 4 more, 40%.
@@ -492,6 +511,7 @@ describe(DayCountBody, () => {
     const html = await render(
       "en",
       <DayCountBody
+        room={room}
         count="engagement"
         figures={{ ...figures, previousKept: false }}
         name="Engagement"
@@ -507,7 +527,12 @@ describe(DayCountBody, () => {
   it("adds up the accounts' views over the days", async () => {
     const html = await render(
       "en",
-      <DayCountBody count="views" figures={figures} name="Account views" />
+      <DayCountBody
+        room={room}
+        count="views"
+        figures={figures}
+        name="Account views"
+      />
     );
 
     expect(html).toContain(">420<");
@@ -518,6 +543,7 @@ describe(DayCountBody, () => {
     const html = await render(
       "fr",
       <DayCountBody
+        room={room}
         count="followers"
         figures={{
           ...figures,
@@ -533,22 +559,24 @@ describe(DayCountBody, () => {
   });
 });
 
-describe(StatBody, () => {
-  it("shows a total with its trend and each platform's share", async () => {
+describe(PostsRingBody, () => {
+  it("rings the posts by platform, the total in its middle", async () => {
     const html = await render(
       "en",
-      <StatBody count="posts" figures={figures} />
+      <PostsRingBody figures={figures} room={room} />
     );
 
     expect(html).toContain(">3<");
     expect(html).toContain("No change");
     expect(html).toContain("Mastodon");
   });
+});
 
+describe(StatBody, () => {
   it("says a count no platform gives, never zero, with no trend", async () => {
     const html = await render(
       "en",
-      <StatBody count="impressions" figures={figures} />
+      <StatBody room={room} count="impressions" figures={figures} />
     );
 
     expect(html).toContain("Not given by the platform");
@@ -559,7 +587,10 @@ describe(StatBody, () => {
 
 describe(ComparisonBody, () => {
   it("puts the range's totals beside the range before", async () => {
-    const html = await render("en", <ComparisonBody figures={figures} />);
+    const html = await render(
+      "en",
+      <ComparisonBody room={room} figures={figures} />
+    );
 
     expect(html).toContain("4 more (+40%)");
     // Unknown is written once in its tile, never as zero.
@@ -573,12 +604,13 @@ describe(ChannelsBody, () => {
   it("names each channel, one no longer connected too", async () => {
     const html = await render(
       "en",
-      <ChannelsBody channels={[channel]} dashboard={dashboard} />
+      <ChannelsBody room={room} channels={[channel]} dashboard={dashboard} />
     );
 
     expect(html).toContain("@alice@mastodon.test");
     expect(html).toContain("A channel no longer connected");
     expect(html).toContain(">1,250<");
+    expect(html).toContain(">+30<");
     expect(html).toContain(
       "The latest counts of the range’s posts, by channel"
     );

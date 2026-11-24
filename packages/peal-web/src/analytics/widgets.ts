@@ -41,10 +41,22 @@ export const WidgetKindSchema = Schema.Literals(widgetKinds);
 export type WidgetKind = typeof WidgetKindSchema.Type;
 
 /**
- * How much of the board's row a widget takes: a quarter, a half, or all
- * of it, on a wide screen; the whole row on a phone.
+ * How many of the board's four columns a widget spans on a wide screen
+ * (two on a tablet, one on a phone), and how many of its rows.
  */
-export type WidgetSize = "small" | "medium" | "wide";
+export const WidgetWidthSchema = Schema.Literals([1, 2, 3, 4]);
+
+export type WidgetWidth = typeof WidgetWidthSchema.Type;
+
+export const WidgetHeightSchema = Schema.Literals([1, 2]);
+
+export type WidgetHeight = typeof WidgetHeightSchema.Type;
+
+/** The board's columns on a wide screen. */
+export const boardColumns = 4;
+
+/** The rows a widget may span. */
+export const maxHeight = 2;
 
 /** The spans of days a widget may show. */
 export const PeriodSchema = Schema.Literals([
@@ -83,44 +95,52 @@ interface KindDescription {
   readonly period: Period;
   readonly periods: readonly Period[];
   readonly sections: readonly WidgetSection[];
-  readonly size: WidgetSize;
+  /** The columns it starts with, and the fewest it reads in. */
+  readonly width: WidgetWidth;
+  readonly minWidth: WidgetWidth;
 }
 
 const report = (
-  size: WidgetSize,
+  width: WidgetWidth,
+  minWidth: WidgetWidth,
   channel: KindDescription["channel"],
   sections: readonly WidgetSection[]
 ): KindDescription => ({
   channel,
+  minWidth,
   period: "30",
   periods: reportPeriods,
   sections,
-  size,
+  width,
 });
 
-/** What each kind of widget is: its size, its filters, where it is offered. */
+/**
+ * What each kind of widget is: its width, its filters, where it is
+ * offered. Every kind starts one row high.
+ */
 export const kinds: Readonly<Record<WidgetKind, KindDescription>> = {
-  activity: report("wide", "optional", ["suggested", "posts"]),
+  activity: report(4, 2, "optional", ["suggested", "posts"]),
   bestTimes: {
     channel: "required",
+    minWidth: 2,
     period: "90",
     periods: bestTimesPeriods,
     sections: ["posts"],
-    size: "medium",
+    width: 2,
   },
-  channels: report("medium", "none", ["audience"]),
-  clicks: report("small", "optional", ["posts"]),
-  comparison: report("wide", "none", ["suggested", "posts"]),
-  engagement: report("small", "optional", ["suggested", "posts"]),
-  export: report("small", "none", ["files"]),
-  followers: report("small", "optional", ["suggested", "audience"]),
-  impressions: report("small", "optional", ["posts"]),
-  platforms: report("medium", "none", ["audience"]),
-  posts: report("small", "optional", ["posts"]),
-  reach: report("small", "optional", ["posts"]),
-  saves: report("small", "optional", ["posts"]),
-  topPosts: report("medium", "none", ["suggested", "posts"]),
-  views: report("small", "optional", ["audience"]),
+  channels: report(2, 1, "none", ["audience"]),
+  clicks: report(1, 1, "optional", ["posts"]),
+  comparison: report(4, 2, "none", ["suggested", "posts"]),
+  engagement: report(1, 1, "optional", ["suggested", "posts"]),
+  export: report(1, 1, "none", ["files"]),
+  followers: report(1, 1, "optional", ["suggested", "audience"]),
+  impressions: report(1, 1, "optional", ["posts"]),
+  platforms: report(2, 1, "none", ["audience"]),
+  posts: report(1, 1, "optional", ["posts"]),
+  reach: report(1, 1, "optional", ["posts"]),
+  saves: report(1, 1, "optional", ["posts"]),
+  topPosts: report(2, 1, "none", ["suggested", "posts"]),
+  views: report(1, 1, "optional", ["audience"]),
 };
 
 /** One widget on the board. */
@@ -129,9 +149,13 @@ export const WidgetSchema = Schema.Struct({
   channelId: Schema.optionalKey(Schema.String),
   id: Schema.String,
   kind: WidgetKindSchema,
+  /** The rows it spans, when the person made it taller. */
+  height: Schema.optionalKey(WidgetHeightSchema),
   period: Schema.optionalKey(PeriodSchema),
   /** The name the person gave it, instead of its kind's. */
   title: Schema.optionalKey(Schema.String),
+  /** The columns it spans, when the person resized it. */
+  width: Schema.optionalKey(WidgetWidthSchema),
 });
 
 export type Widget = typeof WidgetSchema.Type;
@@ -184,6 +208,50 @@ export const boardText = (board: Board): string => JSON.stringify(board);
 /** Where the board of a workspace is kept, in the browser. */
 export const boardKey = (workspaceId: string): string =>
   `peal.analytics.board.${workspaceId}`;
+
+/** The columns a widget spans: its own, never fewer than its kind reads in. */
+export const widthOf = (widget: Widget): WidgetWidth => {
+  const { minWidth, width } = kinds[widget.kind];
+  const own = widget.width ?? width;
+
+  return own < minWidth ? minWidth : own;
+};
+
+/** The rows a widget spans. */
+export const heightOf = (widget: Widget): WidgetHeight => widget.height ?? 1;
+
+/** A widget's size on the board. */
+export interface WidgetSize {
+  readonly height: WidgetHeight;
+  readonly width: WidgetWidth;
+}
+
+const widths: readonly WidgetWidth[] = WidgetWidthSchema.literals;
+
+const heights: readonly WidgetHeight[] = WidgetHeightSchema.literals;
+
+/**
+ * The size a widget takes for `columns` and `rows`, as a resize asks
+ * them: within the board, and never narrower than its kind reads in.
+ */
+export const sizeFor = (
+  kind: WidgetKind,
+  columns: number,
+  rows: number
+): WidgetSize => ({
+  height:
+    heights.find((height) => height === Math.round(rows)) ??
+    (rows < 1 ? 1 : maxHeight),
+  width:
+    widths.find(
+      (width) =>
+        width ===
+        Math.max(
+          kinds[kind].minWidth,
+          Math.min(Math.round(columns), boardColumns)
+        )
+    ) ?? kinds[kind].width,
+});
 
 /** The period a widget shows: its own, or its kind's when it has none. */
 export const periodOf = (widget: Widget): Period => {
@@ -278,6 +346,23 @@ export const setPeriod = (board: Board, id: string, period: Period): Board =>
   replace(board, id, ({ period: _, ...widget }) =>
     period === kinds[widget.kind].period ? widget : { ...widget, period }
   );
+
+/**
+ * The board with the widget resized; a width or a height that is its
+ * kind's own is left out.
+ */
+export const resizeWidget = (
+  board: Board,
+  id: string,
+  width: WidgetWidth,
+  height: WidgetHeight
+): Board =>
+  replace(board, id, ({ height: _, width: __, ...widget }) => {
+    const sized: Widget =
+      width === kinds[widget.kind].width ? widget : { ...widget, width };
+
+    return height === 1 ? sized : { ...sized, height };
+  });
 
 /** The board with the widget showing one channel, or all with null. */
 export const setChannel = (

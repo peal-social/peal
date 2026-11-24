@@ -10,12 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "peal-ui/components/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "peal-ui/components/tabs";
 
 const weekdays = [
   "monday",
@@ -41,10 +35,10 @@ const shade = (posts: number, busiest: number) => {
   const share = posts / Math.max(busiest, 1);
 
   if (share > 0.66) {
-    return "bg-primary";
+    return "bg-brand";
   }
 
-  return share > 0.33 ? "bg-primary/60" : "bg-primary/30";
+  return share > 0.33 ? "bg-brand/60" : "bg-brand/30";
 };
 
 /** Each hour with a post: how many went live in it, and their median. */
@@ -87,15 +81,21 @@ export const BestTimesTable = ({ found }: { readonly found: BestTimes }) => {
 /**
  * When one channel's posts did best: the best hours, a weekday by hour
  * grid of how many posts went live in each (drawn for the eye alone), and
- * behind the Table tab the same figures as a table, which screen readers
- * read. Nothing is
+ * the hours to read: `BestTimesTable` gives the same figures as a table,
+ * which the page puts where screen readers read it. Nothing is
  * ranked where the platform gives no counts or the channel has too few
  * posts, and it says so.
  */
-export const BestTimesView = ({ found }: { readonly found: BestTimes }) => {
+export const BestTimesView = ({
+  compact = false,
+  found,
+}: {
+  /** In a widget one row high: three best hours, and no footnote. */
+  readonly compact?: boolean;
+  readonly found: BestTimes;
+}) => {
   const t = useTranslations("Analytics.bestTimes");
   const channels = useTranslations("ChannelsPage");
-  const chart = useTranslations("Analytics.chart");
   const best = new Set(found.best.map(keyOf));
   const byKey = new Map(found.buckets.map((bucket) => [keyOf(bucket), bucket]));
   const busiest = Math.max(0, ...found.buckets.map(({ posts }) => posts));
@@ -129,7 +129,7 @@ export const BestTimesView = ({ found }: { readonly found: BestTimes }) => {
             </p>
           ) : (
             <ol className="flex flex-wrap gap-2">
-              {found.best.map((bucket) => (
+              {found.best.slice(0, compact ? 3 : undefined).map((bucket) => (
                 <li key={keyOf(bucket)}>
                   <Badge variant="secondary">
                     {t("slot", { hour: bucket.hour, weekday: bucket.weekday })}
@@ -140,54 +140,43 @@ export const BestTimesView = ({ found }: { readonly found: BestTimes }) => {
           )}
         </div>
       ) : null}
-      <Tabs defaultValue="chart">
-        <TabsList aria-label={t("views")}>
-          <TabsTrigger value="chart">{chart("chart")}</TabsTrigger>
-          <TabsTrigger value="table">{chart("table")}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="chart">
-          <div aria-hidden className="overflow-x-auto">
-            <div className="grid min-w-xl grid-cols-[auto_repeat(24,minmax(0,1fr))] gap-0.5 text-xs">
-              <span />
-              {hours.map((hour) => (
-                <span key={hour} className="text-muted-foreground text-center">
-                  {hour % 6 === 0 ? hour : ""}
-                </span>
-              ))}
-              {weekdays.map((weekday) => (
-                <div key={weekday} className="contents">
-                  <span className="text-muted-foreground pe-2">
-                    {t("weekday", { weekday })}
-                  </span>
-                  {hours.map((hour) => {
-                    const bucket = byKey.get(keyOf({ hour, weekday }));
+      <div aria-hidden className="overflow-x-auto">
+        <div className="grid min-w-96 grid-cols-[auto_repeat(24,minmax(0,1fr))] gap-0.5 text-xs">
+          <span />
+          {hours.map((hour) => (
+            <span key={hour} className="text-muted-foreground text-center">
+              {hour % 6 === 0 ? hour : ""}
+            </span>
+          ))}
+          {weekdays.map((weekday) => (
+            <div key={weekday} className="contents">
+              <span className="text-muted-foreground pe-2">
+                {t("weekday", { weekday })}
+              </span>
+              {hours.map((hour) => {
+                const bucket = byKey.get(keyOf({ hour, weekday }));
 
-                    return (
-                      <span
-                        key={hour}
-                        data-best={
-                          best.has(keyOf({ hour, weekday })) || undefined
-                        }
-                        className={`data-best:ring-foreground h-4 rounded-sm data-best:ring-2 ${shade(bucket?.posts ?? 0, busiest)}`}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
+                return (
+                  <span
+                    key={hour}
+                    data-best={best.has(keyOf({ hour, weekday })) || undefined}
+                    className={`data-best:ring-foreground h-4 rounded-sm data-best:ring-2 ${shade(bucket?.posts ?? 0, busiest)}`}
+                  />
+                );
+              })}
             </div>
-          </div>
-        </TabsContent>
-        <TabsContent value="table">
-          <BestTimesTable found={found} />
-        </TabsContent>
-      </Tabs>
-      <p className="text-muted-foreground text-xs">
-        {t("footnote", {
-          from: found.from,
-          recent: found.recent,
-          to: found.to,
-        })}
-      </p>
+          ))}
+        </div>
+      </div>
+      {compact ? null : (
+        <p className="text-muted-foreground text-xs">
+          {t("footnote", {
+            from: found.from,
+            recent: found.recent,
+            to: found.to,
+          })}
+        </p>
+      )}
     </div>
   );
 };

@@ -93,7 +93,6 @@
       "notCounted": "{platform} ne donne ni j’aime, ni partages, ni réponses, ni citations : il n’y a rien à peser.",
       "notEnough": "{posts, plural, one {# publication} other {# publications}} sur la période : il en faut {minimum} pour classer ses heures.",
       "best": "Meilleures heures",
-      "views": "Afficher les heures en",
       "none": "Aucune heure n’a encore {minimum} publications.",
       "slot": "{weekday, select, monday {Lundi} tuesday {Mardi} wednesday {Mercredi} thursday {Jeudi} friday {Vendredi} saturday {Samedi} sunday {Dimanche} other {{weekday}}} à {hour} h",
       "weekday": "{weekday, select, monday {lun.} tuesday {mar.} wednesday {mer.} thursday {jeu.} friday {ven.} saturday {sam.} sunday {dim.} other {{weekday}}}",
@@ -145,7 +144,10 @@
       "emptyTitle": "Le tableau est vide",
       "emptyText": "Ajoutez des widgets pour voir ici vos abonnés, votre engagement et vos meilleures publications.",
       "noChannel": "Connectez un canal pour voir quand ses publications ont le mieux marché.",
-      "channelGone": "Un canal qui n’est plus connecté"
+      "channelGone": "Un canal qui n’est plus connecté",
+      "average": "Moyenne sur 7 jours",
+      "engagementShare": "Part de l’engagement, par plateforme",
+      "resize": "Redimensionner {name}"
     }
   },
   "Ads": {
