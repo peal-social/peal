@@ -7,11 +7,9 @@ import { ConfigProvider, Effect, Layer, Option } from "effect";
 import { MessageStorage, ShardingConfig } from "effect/cluster";
 import { Dns } from "effect/net";
 
+import { MediaInArticlesLive } from "#articles/container.ts";
 import { MediaLive } from "#media/container.ts";
-import {
-  MediaInArticlesLive,
-  MediaInPostsLive,
-} from "#publishing/container.ts";
+import { MediaInPostsLive } from "#publishing/container.ts";
 import { Actor } from "#shared/domain/access.ts";
 import type { Permission } from "#shared/domain/access.ts";
 import { UserIdSchema } from "#shared/domain/ids.ts";

@@ -119,7 +119,8 @@
   time asked, an hour, whether or not the bucket is served publicly), for
   the files of that one request alone; never log the link.
 - Deleting an asset asks the `MediaUsage` port first, which
-  `HoldersMediaUsage` backs with the articles' `MediaInArticles` and
+  `HoldersMediaUsage` backs with the articles context's `MediaInArticles`
+  (`#articles/application/media-in-articles.ts`) and
   publishing's `MediaInPosts` (the composition root provides
   `MediaInArticlesLive` and `MediaInPostsLive`), in one transaction:
   the articles that show it are held first (`MediaInArticles.hold`, their

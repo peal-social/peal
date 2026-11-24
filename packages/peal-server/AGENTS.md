@@ -10,6 +10,7 @@ change crosses several:
 | `legal`                 | [`src/legal/AGENTS.md`](src/legal/AGENTS.md)                                                         |
 | `channels`              | [`src/channels/AGENTS.md`](src/channels/AGENTS.md)                                                   |
 | `publishing`            | [`src/publishing/AGENTS.md`](src/publishing/AGENTS.md)                                               |
+| `articles`              | [`src/articles/AGENTS.md`](src/articles/AGENTS.md)                                                   |
 | publishing's feeds      | [`src/publishing/application/feeds/AGENTS.md`](src/publishing/application/feeds/AGENTS.md)           |
 | publishing's follow-ups | [`src/publishing/application/follow-ups/AGENTS.md`](src/publishing/application/follow-ups/AGENTS.md) |
 | publishing's recycling  | [`src/publishing/application/recycling/AGENTS.md`](src/publishing/application/recycling/AGENTS.md)   |
@@ -38,6 +39,7 @@ them:
 | Context         | Holds                                                                                                                                                           |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `publishing`    | posts, their channels and media, schedules, attempts, the platform adapters, and what a workspace saves to write and file them (tags, signatures, channel sets) |
+| `articles`      | articles for a workspace's websites, the sites' adapters, their job                                                                                             |
 | `channels`      | connected accounts, connect flows, encrypted tokens and their renewal, the gates every platform call of a channel goes through                                  |
 | `media`         | uploads, storage, probing, alt text, files handed to platforms                                                                                                  |
 | `workspace`     | accounts, workspaces, members, roles, API keys, OAuth, partner accounts                                                                                         |
@@ -379,7 +381,8 @@ and no socket, for tests.
   contract: add a payload field with a decoding default or a union member,
   never rename or remove one, and for a breaking change add a V2 beside V1 and
   drain it. Keep the fixtures in
-  `test/publishing/infrastructure/fixtures/persisted` and
+  `test/publishing/infrastructure/fixtures/persisted`,
+  `test/articles/infrastructure/fixtures/persisted` and
   `test/notifications/infrastructure/fixtures/persisted` decoding.
 - Tests build their cluster with `clusterOver`
   (`test/publishing/infrastructure/harness.ts`), whose own timers run once
@@ -392,7 +395,7 @@ and no socket, for tests.
   the real clock, which a loaded machine spends on its own. A job's long
   durable sleep (a retry's delay of minutes) is reached by moving the clock
   to the wake-up it stored (`untilWokenLater`,
-  `test/publishing/article-support.ts`), not a second a round.
+  `test/articles/article-support.ts`), not a second a round.
 - A test that starts jobs on the cluster's shared tables forgets them
   when it ends, however it ends (`forgettingJobs`,
   `test/app/cluster.test.ts`). A run killed part way still leaves its jobs
@@ -433,8 +436,12 @@ and no socket, for tests.
 - Each context keeps its tables in a Postgres schema named after it
   (`publishing`, `channels`, `media`, `notifications`, `assistant`,
   `analytics`, `billing`, `staff`, `legal`, `review`, `webhooks`, `engagement`, `ads`, `shortlinks`, `agent`; the
-  workspace context's are Better Auth's, in `auth`). Effect creates its
-  `cluster_*` tables in `public`; drizzle-kit never manages them.
+  workspace context's are Better Auth's, in `auth`). The articles
+  context's three tables stay in `publishing`, where they were made,
+  declared from the articles context on the one `pgSchema("publishing")`
+  of `#shared/infrastructure/publishing-schema.ts`, as drizzle-kit
+  refuses a schema name declared twice. Effect creates its `cluster_*`
+  tables in `public`; drizzle-kit never manages them.
 - Declare a context's tables in `src/<context>/infrastructure/schema.ts`, then
   run `nx run peal-server:db:generate`, which writes a migration folder under
   `packages/peal-server/drizzle/`. Commit the folder as drizzle-kit wrote it.

@@ -25,7 +25,6 @@ import { PublicationDecisionSchema } from "#publishing/domain/publication-policy
 import { RemovalDecisionSchema } from "#publishing/domain/removal-decision.ts";
 import { FakePlatform } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { ChangeLivePostV1 } from "#publishing/infrastructure/workflows/change-live-post.ts";
-import { PublishArticleV1 } from "#publishing/infrastructure/workflows/publish-article.ts";
 import { PublishTargetV2 } from "#publishing/infrastructure/workflows/publish-parts.ts";
 import {
   persistedWorkflowTags,
@@ -81,7 +80,6 @@ const workflows = [
   PublishTargetV1,
   PublishTargetV2,
   ChangeLivePostV1,
-  PublishArticleV1,
 ];
 
 // The result schema of each activity a job started now runs, by name

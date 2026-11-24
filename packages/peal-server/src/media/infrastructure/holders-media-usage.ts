@@ -1,9 +1,9 @@
 import { Effect, Layer } from "effect";
 
+import { MediaInArticles } from "#articles/application/media-in-articles.ts";
 import { MediaInUse } from "#media/application/media-in-use.ts";
 import { MediaUsage } from "#media/application/ports/media-usage.ts";
 import type { MediaAssetId } from "#media/domain/media-asset-id.ts";
-import { MediaInArticles } from "#publishing/application/media-in-articles.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { PostId, WorkspaceId } from "#shared/domain/ids.ts";

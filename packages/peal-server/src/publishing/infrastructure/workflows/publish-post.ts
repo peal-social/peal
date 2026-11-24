@@ -36,7 +36,6 @@ export const persistedWorkflowTags = [
   "PublishTargetV1",
   "PublishTargetV2",
   "ChangeLivePostV1",
-  "PublishArticleV1",
 ];
 
 /**

@@ -1,12 +1,10 @@
-import { Effect, Layer } from "effect";
+import { Layer } from "effect";
 import { Digest, Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
 import { AccountRules } from "#publishing/application/account-rules.ts";
 import { AccountStandings } from "#publishing/application/account-standings.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
-import { ArticleRecords } from "#publishing/application/article-records.ts";
-import { Articles } from "#publishing/application/articles.ts";
 import type { AttachableMedia } from "#publishing/application/attachable-media.ts";
 import { ChannelDefaults } from "#publishing/application/channel-defaults.ts";
 import { ChannelLookups } from "#publishing/application/channel-lookups.ts";
@@ -28,7 +26,6 @@ import { LivePostEdits } from "#publishing/application/live-post-edits.ts";
 import { LivePostEvents } from "#publishing/application/live-post-events.ts";
 import { LivePostHolds } from "#publishing/application/live-post-holds.ts";
 import { LiveTargetParts } from "#publishing/application/live-target-parts.ts";
-import { MediaInArticles } from "#publishing/application/media-in-articles.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { pacedLookups } from "#publishing/application/paced-lookups.ts";
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
@@ -63,15 +60,10 @@ import { AdsLivePostHolds } from "#publishing/infrastructure/ads-live-post-holds
 import { AnalyticsCountedPlatforms } from "#publishing/infrastructure/analytics-counted-platforms.ts";
 import { ChannelAccessCredentials } from "#publishing/infrastructure/channel-access-credentials.ts";
 import { ChannelAccessGrants } from "#publishing/infrastructure/channel-access-grants.ts";
-import { ChannelAccessSiteCredentials } from "#publishing/infrastructure/channel-access-site-credentials.ts";
 import {
   IdempotencyRetentionCron,
   QuotaRetentionCron,
 } from "#publishing/infrastructure/crons.ts";
-import {
-  DrizzleArticleJournal,
-  DrizzleArticleStore,
-} from "#publishing/infrastructure/drizzle-article-store.ts";
 import { DrizzleChannelDefaultsStore } from "#publishing/infrastructure/drizzle-channel-defaults-store.ts";
 import { DrizzleChannelSetStore } from "#publishing/infrastructure/drizzle-channel-set-store.ts";
 import { DrizzleContentFingerprints } from "#publishing/infrastructure/drizzle-content-fingerprints.ts";
@@ -103,11 +95,9 @@ import { NotifiedFollowUpNotices } from "#publishing/infrastructure/follow-ups/n
 import { PlatformRepostsLive } from "#publishing/infrastructure/follow-ups/platforms/platform-reposts-live.ts";
 import { WorkflowFollowUpJobs } from "#publishing/infrastructure/follow-ups/workflow-follow-up-jobs.ts";
 import { SendFollowUpV1Live } from "#publishing/infrastructure/follow-ups/workflows/send-follow-up.ts";
-import { LibraryArticleMedia } from "#publishing/infrastructure/library-article-media.ts";
 import { LibraryAttachableMedia } from "#publishing/infrastructure/library-attachable-media.ts";
 import { LibraryMediaForPublishing } from "#publishing/infrastructure/library-media-for-publishing.ts";
 import { ListedChannelConnections } from "#publishing/infrastructure/listed-channel-connections.ts";
-import { ListedSiteChannels } from "#publishing/infrastructure/listed-site-channels.ts";
 import { ListedWorkspaceChannels } from "#publishing/infrastructure/listed-workspace-channels.ts";
 import { LoggedChannelHealth } from "#publishing/infrastructure/logged-channel-health.ts";
 import { LoggedOperatorAlerts } from "#publishing/infrastructure/logged-operator-alerts.ts";
@@ -116,43 +106,31 @@ import { MeteredXPostsLive } from "#publishing/infrastructure/metered-x-posts.ts
 import { NamedPostOrigins } from "#publishing/infrastructure/named-post-origins.ts";
 import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified-publication-outcomes.ts";
 import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allowance.ts";
-import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
-import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashnode/hashnode-articles.ts";
 import { LivePostClientsLive } from "#publishing/infrastructure/platforms/live-post-clients-live.ts";
 import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platform-clients-live.ts";
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
 import { TikTokCreatorsLive } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
-import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
-import { PostingArticleGates } from "#publishing/infrastructure/posting-article-gates.ts";
 import { DrizzleRecyclingStore } from "#publishing/infrastructure/recycling/drizzle-recycling-store.ts";
 import { NotifiedRecyclingNotices } from "#publishing/infrastructure/recycling/notified-recycling-notices.ts";
 import { RecyclingCron } from "#publishing/infrastructure/recycling/recycling-cron.ts";
-import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
 import { ShortLinksLinkShortener } from "#publishing/infrastructure/shortlinks-link-shortener.ts";
 import { ShortLinksShortLinkDefaults } from "#publishing/infrastructure/shortlinks-short-link-defaults.ts";
-import { SqlArticleSendTurns } from "#publishing/infrastructure/sql-article-send-turns.ts";
 import { SqlPostAttentionReads } from "#publishing/infrastructure/sql-post-attention-reads.ts";
 import { ToldLivePostEvents } from "#publishing/infrastructure/told-live-post-events.ts";
 import { limitedUploads } from "#publishing/infrastructure/upload-slots.ts";
-import { WebhookArticleEvents } from "#publishing/infrastructure/webhook-article-events.ts";
 import {
   webhookOutcomes,
   WebhookPostEvents,
 } from "#publishing/infrastructure/webhook-post-events.ts";
-import { WorkflowArticleJobs } from "#publishing/infrastructure/workflow-article-jobs.ts";
 import { WorkflowLivePostJobs } from "#publishing/infrastructure/workflow-live-post-jobs.ts";
 import { WorkflowPublicationScheduler } from "#publishing/infrastructure/workflow-publication-scheduler.ts";
 import { ChangeLivePostV1Live } from "#publishing/infrastructure/workflows/change-live-post.ts";
-import { PublishArticleV1Live } from "#publishing/infrastructure/workflows/publish-article.ts";
 import { PublishTargetV2Live } from "#publishing/infrastructure/workflows/publish-parts.ts";
 import { PublishPostV1Live } from "#publishing/infrastructure/workflows/publish-post.ts";
 import { PublishTargetV1Live } from "#publishing/infrastructure/workflows/publish-target.ts";
 import { WorkspaceRecyclingActors } from "#publishing/infrastructure/workspace-recycling-actors.ts";
 import { XThreadsLive } from "#publishing/infrastructure/x-threads.ts";
-import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
-import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
-import { wordpressComHosts } from "#shared/infrastructure/platforms/wordpress-api.ts";
 
 // The use cases over their adapters, asking whatever ApprovalGate they are
 // given before a post is scheduled.
@@ -600,6 +578,20 @@ const UploadsLive = limitedUploads.pipe(
 );
 
 /**
+ * What articles go out under, from publishing: the library's ready files
+ * (AttachableMedia), the plan's room (PostAllowance), and the files as
+ * sites get them, on the server's one limiter of large uploads
+ * (MediaForPublishing, `UploadsLive`, the one this file provides). Needs
+ * what those need: MediaLibrary, MediaForPlatforms and the billing
+ * context's entitlements.
+ */
+export const PostingServicesLive = Layer.mergeAll(
+  LibraryAttachableMedia,
+  PlanPostAllowanceLive,
+  UploadsLive
+);
+
+/**
  * The platforms the gates publish to, Mastodon, Bluesky, LinkedIn, X,
  * Threads, Instagram, Facebook Pages, TikTok, YouTube and Pinterest, with
  * the tokens
@@ -695,92 +687,3 @@ export const PublishingCronsLive = Layer.mergeAll(
   FeedsCron,
   QuotaRetentionCron.pipe(Layer.provide(DrizzlePlatformQuota))
 );
-
-// The websites articles go to: WordPress sites, on WordPress.com too,
-// DEV and Hashnode, with the tokens the channels
-// context hands out and the files the media context does, over the
-// guarded public client.
-const SitePublisherLive = routedSitePublisher(
-  Effect.gen(function* siteAdapters() {
-    const wordpress = yield* wordpressSiteAdapter(wordpressComHosts);
-
-    return {
-      devto: yield* devtoSiteAdapter(devtoHosts),
-      hashnode: yield* hashnodeSiteAdapter(hashnodeHosts),
-      wordpress,
-      wordpressCom: wordpress,
-    };
-  })
-).pipe(
-  Layer.provide(
-    Layer.mergeAll(
-      ChannelAccessSiteCredentials,
-      UploadsLive,
-      DrizzleArticleStore,
-      DrizzleArticleJournal
-    )
-  ),
-  Layer.provide(OutboundGuard.layer),
-  Layer.provide(FetchHttpClient.layer)
-);
-
-// What articles go out under: the approval policy posts are held by,
-// which the composition root provides, and the workspace's plan.
-const ArticleGatesLive = PostingArticleGates.pipe(
-  Layer.provide(PlanPostAllowanceLive)
-);
-
-/**
- * The articles' use cases (`Articles`), for the handlers: on the channels
- * of websites the channels context lists, with the media its library
- * holds, sent by `PublishArticleV1` jobs, within the workspace's plan.
- * Needs the database, the workflow engine, a TransactionRunner, Ids, Dns,
- * ListChannels, ChannelAccess, MediaLibrary, MediaForPlatforms, the
- * billing context's entitlements and the ApprovalGate.
- */
-export const ArticlesLive = Layer.merge(
-  Articles.layer,
-  ArticleRecords.layer
-).pipe(
-  Layer.provide(
-    Layer.mergeAll(
-      DrizzleArticleStore,
-      DrizzleArticleJournal,
-      WorkflowArticleJobs,
-      ListedSiteChannels,
-      LibraryArticleMedia.pipe(Layer.provide(LibraryAttachableMedia)),
-      ArticleGatesLive,
-      SitePublisherLive
-    )
-  )
-);
-
-/**
- * The job that sends articles to their sites (`PublishArticleV1`), whose
- * endings the workspace's webhook endpoints hear. Needs the cluster and
- * what ArticlesLive needs, the ApprovalGate included, with WebhookEvents
- * and ChannelRepository.
- */
-export const ArticleWorkersLive = PublishArticleV1Live.pipe(
-  Layer.provide(
-    Layer.mergeAll(
-      SqlArticleSendTurns,
-      DrizzleArticleStore,
-      DrizzleArticleJournal,
-      WebhookArticleEvents,
-      ArticleGatesLive,
-      SitePublisherLive
-    )
-  )
-);
-
-/**
- * Which articles show a file of the library, for the media context to ask
- * before it deletes one (MediaInArticles), articles first in its
- * transaction. Needs the database (Drizzle).
- */
-export const MediaInArticlesLive = MediaInArticles.layer.pipe(
-  Layer.provide(DrizzleArticleStore)
-);
-
-export { ArticlesHandlers as ArticlesApiLive } from "#publishing/api/articles.ts";

@@ -15,21 +15,17 @@ import {
 } from "effect";
 import { SqlClient } from "effect/sql";
 
+import { Articles } from "#articles/application/articles.ts";
+import { MediaInArticles } from "#articles/application/media-in-articles.ts";
+import { DrizzleArticleStore } from "#articles/infrastructure/drizzle-article-store.ts";
 import { MediaUsage } from "#media/application/ports/media-usage.ts";
 import { HoldersMediaUsage } from "#media/infrastructure/holders-media-usage.ts";
-import { Articles } from "#publishing/application/articles.ts";
-import { MediaInArticles } from "#publishing/application/media-in-articles.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
-import { DrizzleArticleStore } from "#publishing/infrastructure/drizzle-article-store.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
+import { coverImage, siteChannel } from "#test/articles/article-server.ts";
+import { content, onArticles, writer } from "#test/articles/article-support.ts";
 import { fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import { freshWorkspace } from "#test/channels/support.ts";
-import { coverImage, siteChannel } from "#test/publishing/article-server.ts";
-import {
-  content,
-  onArticles,
-  writer,
-} from "#test/publishing/article-support.ts";
 
 // What Postgres answers a lock it could not take at once.
 const PostgresErrorSchema = Schema.Struct({ code: Schema.String });
