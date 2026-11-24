@@ -85,6 +85,11 @@ updates:
       ui-sdk:
         patterns:
           - "@ui-sdk/*"
+      # dnd-kit's React bindings and the DOM layer under them are released
+      # together, at the same version.
+      dnd-kit:
+        patterns:
+          - "@dnd-kit/*"
       # The AI SDK and its providers are released together.
       ai-sdk:
         patterns:

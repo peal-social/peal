@@ -67,9 +67,12 @@ export interface FilterMenuState {
 
 /**
  * The Filter menu's state, and F, which opens it on the list's page
- * (DESIGN.md, "Filters and display"): one per list.
+ * (DESIGN.md, "Filters and display"): one per list. A menu among many on
+ * a page, as each analytics widget's, takes no key (`shortcut: false`).
  */
-export const useFilterMenu = (): FilterMenuState => {
+export const useFilterMenu = ({
+  shortcut = true,
+}: { readonly shortcut?: boolean } = {}): FilterMenuState => {
   const t = useTranslations("Lists");
 
   const [menu, setMenu] = useState<{
@@ -82,7 +85,7 @@ export const useFilterMenu = (): FilterMenuState => {
   };
 
   useShortcut(
-    listKeys.filter,
+    shortcut ? listKeys.filter : null,
     () => {
       openAt(null);
     },
@@ -113,12 +116,24 @@ export const useFilterMenu = (): FilterMenuState => {
 export const FilterMenu = ({
   active,
   chosen,
+  label,
   onChoose,
   properties,
+  quiet = false,
+  shortcut = true,
   state,
 }: {
   /** Whether the button shows the list narrowed: by default, a value is chosen. */
   readonly active?: boolean;
+  /**
+   * The button's accessible name, "Filter" unless the menu filters one
+   * thing of many; its tooltip says "Filter" either way.
+   */
+  readonly label?: string;
+  /** Whether the button names F, the list's key for it. */
+  readonly shortcut?: boolean;
+  /** A ghost button, for a filter in a card's header rather than a toolbar. */
+  readonly quiet?: boolean;
   /** The values chosen for each property, by the property's id. */
   readonly chosen: Readonly<Record<string, readonly string[]>>;
   readonly onChoose: (property: string, values: readonly string[]) => void;
@@ -201,8 +216,11 @@ export const FilterMenu = ({
             <PopoverTrigger
               render={
                 <ListToolButton
-                  aria-label={t("filter")}
-                  aria-keyshortcuts={hint.ariaKeyshortcuts}
+                  quiet={quiet}
+                  aria-label={label ?? t("filter")}
+                  aria-keyshortcuts={
+                    shortcut ? hint.ariaKeyshortcuts : undefined
+                  }
                   active={
                     active ??
                     Object.values(chosen).some((values) => values.length > 0)
@@ -215,7 +233,8 @@ export const FilterMenu = ({
           <ListFilterIcon aria-hidden />
         </TooltipTrigger>
         <TooltipContent>
-          {t("filter")} {hint.text}
+          {t("filter")}
+          {shortcut ? ` ${hint.text}` : null}
         </TooltipContent>
       </Tooltip>
       <FilterMenuContent>

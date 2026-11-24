@@ -131,41 +131,52 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     ).toBeVisible();
     await expect(browser).toHaveURL(`/${slug}/analytics`);
 
-    // The channel's latest counts, as a table anyone can read.
+    // The board starts with the few that matter: the rest are added
+    // from the sheet, at its end.
+    await expect(screen.getByRole("article", "Followers")).toBeVisible();
+    await expect(screen.getByRole("article", "Channels")).toBeHidden();
+
+    await screen.getByRole("button", "Add widgets").tap();
+    await screen.getByRole("button", "Add Channels").tap();
+    await screen.getByRole("button", "Add Export").tap();
+    await screen
+      .getByRole("dialog", "Add widgets")
+      .getByRole("button", "Close")
+      .tap();
+
+    // Each channel on a line of the Channels widget.
     const totals = screen.getByRole(
-      "table",
+      "list",
       "The latest counts of the range’s posts, by channel"
     );
 
     await expect(totals).toBeVisible();
-    await expect(
-      totals.getByRole("rowheader", /@pools@social\.example/u)
-    ).toBeVisible();
-    await expect(
-      screen.getByText(
-        "No post went out in this range yet on a platform Peal reads counts on."
-      )
-    ).toBeHidden();
+    await expect(totals.getByText(/@pools@social\.example/u)).toBeVisible();
 
     // And the same numbers as files.
-    const exports = screen.getByRole("region", "Export");
+    const exports = screen.getByRole("article", "Export");
 
     await expect(exports.getByRole("link", "Posts of the range")).toBeVisible();
     await expect(
       exports.getByRole("link", "Accounts, day by day")
     ).toBeVisible();
 
-    // Period, in the header, keeps the days shown in the address.
-    await screen.getByRole("button", "Period: Last 30 days").tap();
-    await screen.getByRole("menuitemradio", "Last 7 days").tap();
+    // Each widget keeps a period of its own, chosen in its filter.
+    const followers = screen.getByRole("article", "Followers");
 
-    await expect(browser).toHaveURL(`/${slug}/analytics?period=7`);
-    await expect(
-      screen.getByRole("button", "Period: Last 7 days")
-    ).toBeVisible();
-    await expect(
-      screen.getByRole("heading", "Against the 7 days before")
-    ).toBeVisible();
+    await followers.getByRole("button", "Filter Followers").tap();
+    await screen.getByRole("option", "Period").tap();
+    await screen.getByRole("option", "Last 7 days").tap();
+
+    await expect(followers).toContainText("Last 7 days");
+    await expect(exports).toContainText("Last 30 days");
+
+    // The board stays as arranged.
+    await app.open(`/${slug}/analytics`);
+    await expect(screen.getByRole("article", "Export")).toBeVisible();
+    await expect(screen.getByRole("article", "Followers")).toContainText(
+      "Last 7 days"
+    );
   });
 
   test("reads a comment in the inbox and settles it", async ({

@@ -373,10 +373,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`components/viewer-time-zone.tsx`), in the locale layout, sets the
   browser's on the shared provider once the page has hydrated, so every
   page's dates follow it. `InTimeZone` (`components/notices/in-time-zone.tsx`)
-  sets a given zone on part of a page. Calendar and Analytics name the zone
-  they read in with `TimeZoneLine` (`components/lists/time-zone-line.tsx`,
-  `Lists.timeZoneLine`, tested), rendered after hydration: beside the
-  calendar's dates, and under the Period on Analytics.
+  sets a given zone on part of a page. The calendar names the zone it
+  reads in with `TimeZoneLine` (`components/lists/time-zone-line.tsx`,
+  `Lists.timeZoneLine`, tested), rendered after hydration, beside its
+  dates; Analytics shows no such line (the owner's call).
 - The support chat (DESIGN.md, "Support chat"): where `PEAL_CRISP_WEBSITE_ID`
   names a Crisp website (`#shell/support-chat.ts`, read per request), the
   workspace layout puts `SupportLauncher` in the bottom bar, which makes
@@ -704,20 +704,58 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   uploads in flight.
 - A span of days is chosen with `PeriodMenu` and `usePeriod`
   (`components/lists/period-menu.tsx`), never a select of a screen's own:
-  Analytics in `PageActions`, the billing usage history
-  and the partner's usage per customer in their card's header, each in
-  the address as `?period=` (the default left out); the best-times card
-  keeps its own under `?bestTimes=`.
+  the billing usage history and the partner's usage per customer in
+  their card's header, each in the address as `?period=` (the default
+  left out). An analytics widget keeps its own period in the board,
+  chosen in its Filter.
 - Charts use peal-ui's `chart` (recharts) and come with the same figures as
   a table, behind **Chart** and **Table** tabs; the chart itself is
-  `aria-hidden`. Write calendar days, such as a summary's, in UTC
+  `aria-hidden`. An analytics widget is the exception: one chart, no
+  tabs, its table `sr-only`. Write calendar days, such as a summary's, in UTC
   (`#analytics/report.ts` `dayDate`), and instants in the reader's zone.
-- The analytics page ends with `BestTimesCard`
-  (`components/analytics/best-times.tsx`, view in `best-times-view.tsx`):
-  one channel at a time, picked, over 30, 90 or 180 days, the best hours,
-  a weekday by hour grid (`aria-hidden`) and the same figures as a table,
-  in words that say it is the channel's past, never a prediction, and
-  that nothing is ranked under the floor (`Analytics.bestTimes`).
+- The analytics page is a board of widgets (DESIGN.md, "Analytics
+  board"; `components/analytics/widgets/`): `AnalyticsBoard` lays them
+  out, `WidgetCardView` draws one, `widget-bodies.tsx` holds what each
+  kind shows (views that take links and excerpts as components, so
+  tests render them), `widget-controls.tsx` the Filter, the menu and
+  renaming, `add-widgets.tsx` the sheet. The kinds, their widths
+  (starting and least), periods and channel filter, the board's
+  changes, sizes (`sizeFor` snaps a resize to whole columns and rows)
+  and each period's days are `#analytics/widgets.ts` (pure, tested): a
+  new kind goes there, with its name and line in `Analytics.widgets`.
+  The grid's rows are fixed (`--widget-row`), so every body fills its
+  card: charts take `flex-1` and stretch, lists show as many rows as the
+  widget's height allows (`room`). Resizing pulls any edge or corner (`pulls`:
+  the signs of the sides it moves; pulled from the start or top, the
+  card also moves by `--resize-x` and `--resize-y`, so its other side
+  stays) with pointer capture: the card follows the pointer to the pixel through
+  `--resize-width` and `--resize-height`, set once a frame outside
+  React, then the size snaps (`sizeFor`, from the grid's computed
+  columns and rows), committed in `flushSync` so every widget glides
+  from its noted place (`glideFrom`, Web Animations; none under reduced
+  motion); the end and bottom pills alone take the arrow keys, the others staying out of the tab order.
+  Moving is `@dnd-kit/react`'s sortable (`SortableWidget`, its handle
+  `handleRef`), which animates the others aside and takes the keyboard;
+  the board takes the order on drop (`isSortable`, `index`). `@dnd-kit/dom`'s
+  `Feedback` (`boardPlugins`) sets the drop's curve, the one `glide`
+  and `settle` share (`motion`); dnd-kit hides the placeholder it leaves,
+  so its slot is drawn by the placeholder's `::after`
+  (`data-[dnd-placeholder]:after:visible`), a skeleton with peal-ui's
+  `bg-shimmer`. It ignores untrusted pointer
+  events: check a move in a browser with its keyboard (Space, arrows). The board is
+  the person's, kept per workspace in `localStorage`
+  (`#analytics/board-store.ts`, `peal.analytics.board.<workspace>`,
+  decoded with Schema, the default board when it does not read), the
+  same in every tab through the storage event. A widget reads the
+  dashboard of its own range (queries of one range are shared), and
+  one channel's series beside it when it shows one channel
+  (`channelFigures`). Best times (`best-times-view.tsx`) takes one
+  channel, over 30, 90 or 180 days, with the best hours, a weekday by
+  hour grid (`aria-hidden`; three best hours and no footnote one row
+  high, `compact`) and the same figures as a table (`BestTimesTable`,
+  `sr-only` in the widget), in words
+  that say it is the channel's past, never a prediction, and that
+  nothing is ranked under the floor (`Analytics.bestTimes`).
 - A post's page (`PostMetrics`) names the platforms this server counts
   from its capabilities (`GET …/platforms/capabilities`,
   `analytics.perPost`: `countedOn`), never from the contract's

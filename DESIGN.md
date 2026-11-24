@@ -1184,19 +1184,19 @@ way, so a person who learns one screen knows them all.
   **Ordering** (what the list is sorted by) with a button that turns its
   direction, and where a screen has them, grouping and its other views
   (list, calendar).
-- **`period-menu`** — Wherever a screen shows a span of days (Analytics,
-  usage), **Period** chooses it: a small outline button (30 px)
+- **`period-menu`** — Wherever a screen shows a span of days (usage),
+  **Period** chooses it (an analytics widget chooses its own in its
+  Filter, see Analytics board): a small outline button (30 px)
   with a calendar icon and the span's name ("Last 30 days"), opening a
   menu (level 3) of the spans the screen offers, the chosen one ticked. It
   sits in the page's actions, or at the end of the header of the card it
-  governs. It lives in the address as `?period=` and a number of days; a
-  card with a span of its own beside the page's takes a key of its own
-  (`?bestTimes=`).
-- **Time zone** — A screen that places posts at times or counts by day
-  (Calendar, Analytics) says once which zone it reads them in:
-  one line in `{typography.caption}`, muted, at the end of the content's
-  first row (beside the dates the calendar names, under the Period on
-  Analytics): "Times are in your time zone, Europe/Paris." The zone is
+  governs. It lives in the address as `?period=` and a number of days.
+- **Time zone** — A screen that places posts at times (Calendar) says
+  once which zone it reads them in: one line in `{typography.caption}`,
+  muted, at the end of the content's first row, beside the dates the
+  calendar names: "Times are in your time zone, Europe/Paris." Analytics
+  says nothing of it, nor how often counts are read: its days are the
+  reader's, as every date in the app is. The zone is
   the browser's, so the line appears once the page has hydrated. It is
   not a description, and never sits in the panel's header.
 - What a list shows lives in the page's **address**: a reload, the back
@@ -1322,6 +1322,75 @@ them beside the one open, so the list stays where it was.
   follow it, so a link opens both. On a phone the list fills the panel;
   an item opens alone under the header, with a way back at its header's
   start.
+
+### Analytics board
+
+Analytics is a board of widgets the person arranges, each showing one
+thing over a period of its own.
+
+- **`widget-board`** — A grid four up from 1280 px, two up from 640
+  px, one on a phone, 24 px apart, its rows 320 px high. A widget spans
+  one to four columns and one or two rows (two columns at most from 640
+  px, one on a phone); each kind starts at its own width and reads in
+  no fewer columns than its least (a chart over days, two). The board
+  keeps the person's order and leaves a gap rather than reorder what
+  they placed. The board
+  is the person's, kept in their browser for each workspace; a new
+  workspace starts with the default one, the few that matter most
+  (Followers, Top posts, Engagement, and Engagement over time two rows
+  high), and **Reset layout** brings it back.
+- **`widget`** — A `card` (24 px inside). Its header holds the name
+  (`card-title`) with one muted line under it, the period and, where it
+  shows one, the channel ("This year · @peal.social"), and at its end two
+  `icon-sm` ghost buttons: **Filter**, the list's Filter menu for this
+  widget (a quiet `list-tool-button`: no border, no background, its icon
+  blue while the widget shows other than its own, its tooltip "Filter"; its menu searches the widget's properties, Period
+  and, where it may show one, Channel, each a page of its values, a
+  channel with its platform's mark) and the ghost **…**
+  (Duplicate, Rename, then Remove in destructive text). Remove and Reset layout say so in a toast with
+  **Undo**. A grip in the gap at the card's start edge, centred in it,
+  beside its name (no border, `muted-foreground`), shown on hover and
+  focus, picks it
+  up: it follows the pointer in any direction, lifted (2 %
+  larger, a deep shadow), while the others glide aside and a skeleton shows where it
+  lands: the slot in `muted`, no border, a light passing across it
+  (`bg-shimmer`, 1.6 s, the agent's `text-shimmer` for a block; still
+  under reduced motion); let go, it settles into the slot; Space picks it up from the keyboard, the arrows carry
+  it and Space puts it down. Every edge and corner resizes it: the
+  pointer finds each edge along its length and each corner, and only
+  the edge under it, focused or being pulled shows its pill (none
+  otherwise); pulled from its start or top, its other side stays
+  put: the card follows the pointer to the pixel, over its
+  neighbours, with a 2 px `brand` ring and a shadow, what it shows
+  blurred and its chart stretching; let go, it snaps to whole columns
+  and rows and glides there while the others glide to their new places.
+  Every move of the board takes one curve, quick to start and long to
+  settle (320 ms, `cubic-bezier(0.22, 1, 0.36, 1)`). Focused, the end and bottom pills take the
+  arrow keys of their edge, the card's two tab stops for its size. Nothing glides for a reader who asked for less motion.
+- Under the header: the headline number (`headline`, tabular), one muted
+  line with its change against the days before or what it gained, then
+  one chart, the one that fits what the widget shows, filling the card
+  at any size, with no second view: a line on a faint `brand` area to
+  the card's edges for a count that moves (followers between their
+  lowest and highest, engagement and reach from zero); thin `brand`
+  columns for a count each day stands on (views); a ring of the
+  platforms with the total in it (posts); bars by platform (impressions,
+  clicks, saves); one bar cut into each platform's share (platforms);
+  stacked columns in one blue from deep to faint with the seven-day
+  average as an ink line over them (engagement over time); quiet rows
+  with the platform's mark (top posts, channels). The days under a chart
+  grow from three to nine as it widens; the pointer shows a day's
+  figures in a tooltip. Charts are `aria-hidden`, their figures a table
+  screen readers take. A widget loading shows a faint chart in `muted`.
+  A number a platform does not give is a dash with "Not given by the
+  platform" under it, never zero.
+- **Add widgets**, a small ghost button in the page's actions, opens a
+  sheet from the right: a search field, then the kinds by section
+  (Suggestions, Audience, Posts, Files), each a card with a drawing of
+  what it shows (`brand` on `card`), its name and one line; choosing
+  one adds it at the board's end with a toast. **Reset layout** sits at
+  the sheet's foot. An empty board is the empty state, with **Add
+  widgets**.
 
 ### Settings
 

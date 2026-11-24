@@ -4,7 +4,10 @@ import type { BestTimes } from "peal-contract";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { BestTimesView } from "#components/analytics/best-times-view.tsx";
+import {
+  BestTimesTable,
+  BestTimesView,
+} from "#components/analytics/best-times-view.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
 const render = async (locale: "en" | "fr", view: ReactNode) =>
@@ -44,7 +47,9 @@ describe(BestTimesView, () => {
 
     expect(html).toMatch(/Best hours.*Tuesday at 9:00/u);
     expect(html).toContain('data-best="true"');
-    expect(html).toMatch(/Friday at 18:00<\/th><td[^>]*>2<\/td><td[^>]*>–/u);
+    const table = await render("en", <BestTimesTable found={found} />);
+
+    expect(table).toMatch(/Friday at 18:00<\/th><td[^>]*>2<\/td><td[^>]*>–/u);
     expect(html).toContain("1 post less than 48 hours old is left out");
   });
 
