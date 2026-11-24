@@ -112,9 +112,9 @@
   deleted (`GeneratedVideoUnusable`). `roomForVideo` checks the room for
   the largest video the assistant keeps beforehand. A slide video, which
   the workspace's own Shotstack account composes of its own files, is
-  stored the same way with `aiGenerated: false`. For it, `GeneratedMedia`
+  stored the same way, marked only when a file of it was. For it, `GeneratedMedia`
   also describes a ready file of the workspace (`describeSource`: its kind,
-  type and length) and hands out a presigned GET of one
+  type and length, and whether AI made it) and hands out a presigned GET of one
   (`sourceLink`, `MediaStorage.downloadUrl`: it stops working after the
   time asked, an hour, whether or not the bucket is served publicly), for
   the files of that one request alone; never log the link.

@@ -18,6 +18,7 @@ import type {
 } from "#assistant/application/ports/slideshow-store.ts";
 import { SlideshowFailed } from "#assistant/application/slideshow-failed.ts";
 import {
+  editGenerates,
   editMediaIdsOf,
   editWithLinks,
 } from "#assistant/domain/edit-render.ts";
@@ -168,12 +169,41 @@ export class RunSlideshow extends Context.Service<
         }
       );
 
-      // The video, from the service chosen now: the choice may have
-      // changed since the request.
-      const make = Effect.fn("RunSlideshow.make")(function* make({
+      // Whether the video holds something made by AI: a file it is made of
+      // that was, or what its edit has the service generate.
+      const holdsAi = Effect.fn("RunSlideshow.holdsAi")(function* holdsAi({
         plan,
         slideshow,
       }: ClaimedSlideshow) {
+        if ("edit" in plan && editGenerates(plan.edit)) {
+          return true;
+        }
+
+        const named =
+          "edit" in plan
+            ? editMediaIdsOf(plan.edit).flatMap((id) =>
+                Option.toArray(decodeAssetId(id))
+              )
+            : [
+                ...plan.slides.map(({ mediaId }) => mediaId),
+                ...Option.toArray(slideshow.voiceoverMediaId),
+              ];
+
+        const described = yield* Effect.all(
+          named.map((id) => media.describe(slideshow.workspaceId, id))
+        );
+
+        return described.some((file) =>
+          Option.exists(file, ({ aiGenerated }) => aiGenerated)
+        );
+      });
+
+      // The video, from the service chosen now: the choice may have
+      // changed since the request.
+      const make = Effect.fn("RunSlideshow.make")(function* make(
+        claimed: ClaimedSlideshow
+      ) {
+        const { plan, slideshow } = claimed;
         const { workspaceId } = slideshow;
 
         const use = yield* openCompositionUse(workspaceId).pipe(
@@ -201,9 +231,11 @@ export class RunSlideshow extends Context.Service<
             ? yield* editRequestOf(workspaceId, plan)
             : yield* slideRequestOf(slideshow, plan);
 
+        // Read before the render, as a file may be deleted during it.
+        const aiGenerated = yield* holdsAi(claimed);
         const bytes = yield* composer.compose(use.endpoint, request);
 
-        return yield* media.store(workspaceId, bytes);
+        return yield* media.store(workspaceId, bytes, { aiGenerated });
       });
 
       // A run that breaks (a bug, never the service's error, which the
