@@ -14,6 +14,7 @@ import {
 import type { ImageRequest, Member } from "peal-contract";
 import sharp from "sharp";
 
+import { MediaImagesHandlers } from "#assistant/api/images.ts";
 import { AssistantApiLive } from "#assistant/container.ts";
 import { MediaAssets } from "#media/application/ports/media-assets.ts";
 import { MediaStorage } from "#media/application/ports/media-storage.ts";
@@ -38,10 +39,12 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 // the WorkspaceAccess middleware would.
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["assistant"]).pipe(
+  HttpApiTest.groups(Api, ["assistant", "media.images"]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        AssistantApiLive.pipe(Layer.provideMerge(securityTest(member))),
+        Layer.merge(AssistantApiLive, MediaImagesHandlers).pipe(
+          Layer.provideMerge(securityTest(member))
+        ),
         HttpServer.layerServices
       )
     )
@@ -126,7 +129,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
         source: "server",
       });
 
-      const response = yield* client.assistant.generateImage({
+      const response = yield* client["media.images"].create({
         headers,
         payload: lighthouse,
         responseMode: "decoded-and-response",
@@ -157,8 +160,8 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
 
       yield* replying({ _tag: "image", bytes: yield* madePng });
 
-      const refused = yield* client.assistant
-        .generateImage({
+      const refused = yield* client["media.images"]
+        .create({
           headers: forWorkspace(workspaceId),
           payload: lighthouse,
         })
@@ -188,7 +191,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
           (reason) =>
             replying({ _tag: "failure", reason }).pipe(
               Effect.andThen(
-                client.assistant.generateImage({ headers, payload: lighthouse })
+                client["media.images"].create({ headers, payload: lighthouse })
               ),
               Effect.flip,
               Effect.map((refusal) =>
@@ -209,7 +212,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
 
       const keyRefused = yield* replying({ _tag: "keyRefused" }).pipe(
         Effect.andThen(
-          client.assistant.generateImage({ headers, payload: lighthouse })
+          client["media.images"].create({ headers, payload: lighthouse })
         ),
         Effect.flip
       );
@@ -223,8 +226,8 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
 
-      const refused = yield* client.assistant
-        .generateImage({
+      const refused = yield* client["media.images"]
+        .create({
           headers: forWorkspace(workspaceId),
           payload: lighthouse,
         })
@@ -246,8 +249,8 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
       yield* model.replyWith({ _tag: "held" });
 
       const waiting = yield* Effect.forEach([1, 2], () =>
-        client.assistant
-          .generateImage({ headers, payload: lighthouse })
+        client["media.images"]
+          .create({ headers, payload: lighthouse })
           .pipe(Effect.flip, Effect.forkChild)
       );
 
@@ -257,8 +260,8 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
       // rather than leave the test waiting.
       yield* model.replyWith({ _tag: "failure", reason: "refused" });
 
-      const refused = yield* client.assistant
-        .generateImage({ headers, payload: lighthouse })
+      const refused = yield* client["media.images"]
+        .create({ headers, payload: lighthouse })
         .pipe(Effect.flip);
 
       yield* model.release({ _tag: "failure", reason: "refused" });
@@ -282,7 +285,7 @@ layer(StoreTest, { timeout: "60 seconds" })("the image endpoint", (it) => {
         ].map((permissions) =>
           as(workspaceId, permissions).pipe(
             Effect.flatMap((client) =>
-              client.assistant.generateImage({ headers, payload: lighthouse })
+              client["media.images"].create({ headers, payload: lighthouse })
             ),
             Effect.flip
           )

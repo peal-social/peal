@@ -257,7 +257,7 @@ The staff context follows these rules too. What the law has a host keep is in
   `PermissionNotGrantable`, 403 `personRequired`), nor the direct
   messages' (`engagement:readMessages`, `engagement:message`) unless an
   owner in person gives them, as the owner's leave for an application;
-  partner keys never hold those. Keys are created only through `POST /api/v1/api-keys`:
+  partner keys never hold those. Keys are created only through `POST /api/v1/workspace/api-keys`:
   Better Auth's own key routes are disabled.
 - A key records its maker in Better Auth's `metadata` (`makerMetadata`,
   `{"createdBy": <user id>}`, read with `makerOf`), and the list names
@@ -271,7 +271,7 @@ The staff context follows these rules too. What the law has a host keep is in
   fails after leaves the keys gone, never the keys outliving their maker
   (`member-keys.ts`), and again in the after hooks, for a key made while
   the change ran; each key revoked is kept in the activity log as
-  `apiKeys.revoke` by whoever asked for the change.
+  `workspace.apiKeys.revoke` by whoever asked for the change.
   `WorkspacePeople.removeMembers` revokes in its transaction, and
   `AccountStore.deleteUser` in the closure's. Making a key checks, then
   inserts, so one made while its maker's standing changes can land past
@@ -286,7 +286,7 @@ The staff context follows these rules too. What the law has a host keep is in
   `partner_keys.created_by` is the member of the home workspace who made
   the key, and it stays only while they are a member whose role holds
   partner:manage. `ApiKeyMakers.settle` revokes them with the API keys
-  (`PartnerStore.removeKeysMadeBy`; kept as `partnerAccount.revokeKey`),
+  (`PartnerStore.removeKeysMadeBy`; kept as `partner.account.revokeKey`),
   closing the account deletes them, and `PartnerKeys.verify` refuses and
   revokes one past its maker's standing from the same read that finds
   the key (`keyByDigest` joins the maker's membership). A key with no
@@ -784,7 +784,7 @@ The staff context follows these rules too. What the law has a host keep is in
   new workspace group to it.
 - `PartnerHealth` (`forKey`, a partner key with `workspaces:read`;
   `forMember`, partner:read in the home workspace) answers
-  `GET /api/v1/partner/overview` and `/api/v1/partner-account/overview` of the home
+  `GET /api/v1/partner/overview` and `/api/v1/partner/account/overview` of the home
   workspace: a page of `PartnerWorkspaces.listingOf` (its order and
   cursor, the home workspace left out) with its sources
   (`OverviewSources`, which `ContextOverviewSourcesLive` backs at the

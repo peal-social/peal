@@ -59,7 +59,7 @@ export type SecureWorkspace = typeof SecureWorkspaceSchema.Type;
  * service's organization routes, under /api/auth; MembersApi and
  * InvitationsApi list its members and invite.
  */
-export class WorkspacesApi extends HttpApiGroup.make("workspaces")
+export class WorkspacesApi extends HttpApiGroup.make("workspace")
   .add(
     HttpApiEndpoint.delete("delete", "/", {
       error: [

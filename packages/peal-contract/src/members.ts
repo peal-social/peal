@@ -51,7 +51,7 @@ export type WorkspaceMember = typeof WorkspaceMemberSchema.Type;
  * member go through the sign-in service's organization routes, under
  * /api/auth.
  */
-export class MembersApi extends HttpApiGroup.make("members")
+export class MembersApi extends HttpApiGroup.make("workspace.members")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden],
@@ -68,4 +68,4 @@ export class MembersApi extends HttpApiGroup.make("members")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/members") {}
+  .prefix("/api/v1/workspace/members") {}

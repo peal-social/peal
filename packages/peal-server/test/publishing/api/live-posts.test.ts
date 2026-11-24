@@ -71,7 +71,7 @@ const sentOn = Effect.fn("test.sentOn")(function* sentOn(
   channelIds: readonly string[],
   text: string
 ) {
-  const post = yield* client.posts.send({
+  const post = yield* client.posts.create({
     headers: { ...forWorkspace(workspaceId) },
 
     payload: {
@@ -247,12 +247,12 @@ describe("the unpublishing endpoints", () => {
           );
 
           // Found among the removed posts, and not among the others.
-          const removed = yield* viewer.posts.search({
+          const removed = yield* viewer.posts.list({
             headers: forWorkspace(workspaceId),
             query: { removed: "true" },
           });
 
-          const kept = yield* viewer.posts.search({
+          const kept = yield* viewer.posts.list({
             headers: forWorkspace(workspaceId),
             query: { removed: "false" },
           });

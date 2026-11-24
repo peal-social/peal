@@ -40,7 +40,7 @@
   (publishing's `postOnChannel` `ownMedia`), a channel's own files, whose
   previews `shownMedia` reads with the rest.
 - A decision is for what its reviewer was shown. The link's page and a
-  post's review (`review.thread`, `get_post_review`, `peal review show`)
+  post's review (`approvals.get`, `get_post_review`, `peal review show`)
   answer the post with the request that waits, read request first, so the
   post shown is never older than the request; approving and asking for
   changes send back its id and `subjectHash` (`ShownRequest`, `asShown`),

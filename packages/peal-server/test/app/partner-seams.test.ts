@@ -305,10 +305,13 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.include(scope.message, "workspaces:write");
 
           // A permission inside a workspace its partner owns.
-          const unpermitted = yield* app.request(`/api/v1/connect-links`, {
-            body: { platform: "mastodon" },
-            headers: { ...bearer(reading.key), ...forWorkspace(customer.id) },
-          });
+          const unpermitted = yield* app.request(
+            `/api/v1/channels/connect-links`,
+            {
+              body: { platform: "mastodon" },
+              headers: { ...bearer(reading.key), ...forWorkspace(customer.id) },
+            }
+          );
 
           assert.strictEqual(unpermitted.status, 403);
 
@@ -429,7 +432,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             (
               [
                 ["posts.bulk", 200],
-                ["posts.create", 201],
+                ["posts.drafts.create", 201],
                 // The workspace's own making and renaming, by the partner.
                 ["partner.updateWorkspace", 200],
                 ["partner.createWorkspace", 201],
@@ -599,7 +602,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Kept in the workspace's log as the tool's call, by the key.
           const log = yield* app.request(
-            `/api/v1/activity?operation=mcp.create_draft`,
+            `/api/v1/workspace/activity?operation=mcp.create_draft`,
             { headers: { ...bearer(key), ...forWorkspace(customer.id) } }
           );
 

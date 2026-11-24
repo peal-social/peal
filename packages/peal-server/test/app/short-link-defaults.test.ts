@@ -34,7 +34,7 @@ const defaultOn = Effect.fn("defaultOn")(function* defaultOn(
 ) {
   const app = yield* TestApp;
 
-  const set = yield* app.request(`/api/v1/short-links/settings`, {
+  const set = yield* app.request(`/api/v1/links/settings`, {
     body: { byDefault: true },
     headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
     method: "PUT",
@@ -51,7 +51,7 @@ const madeWith = Effect.fn("madeWith")(function* madeWith(
 ) {
   const app = yield* TestApp;
 
-  const made = yield* app.request(`/api/v1/posts`, {
+  const made = yield* app.request(`/api/v1/posts/drafts`, {
     body: { ...draft, ...fields },
     headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
   });

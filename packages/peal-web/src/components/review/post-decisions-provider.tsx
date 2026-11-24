@@ -33,7 +33,7 @@ const unexpected: ReviewFailure = { _tag: "Unexpected" };
  * Decides on the posts of a list that wait for an approval, for a member
  * who may approve, through the calls a post's review makes: approves, or
  * sends back to draft with a comment, naming the approval read, from the
- * list of those that wait (`review.pending`, 100 at most) or, for a post
+ * list of those that wait (`approvals.list`, 100 at most) or, for a post
  * it leaves out, from the post's own review. Decisions from the rows and
  * from the choice run one after the other, and every other waits while
  * one runs. A plan's refusal opens the upgrade dialog.

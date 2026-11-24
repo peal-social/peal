@@ -89,7 +89,7 @@ export const PartnerHandlers = HttpApiBuilder.group(
     const activity = yield* ActivityJournal;
 
     return handlers.handleAll({
-      account: () =>
+      get: () =>
         Effect.gen(function* account() {
           const key = yield* currentKey;
 

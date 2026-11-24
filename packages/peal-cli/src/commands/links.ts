@@ -164,7 +164,7 @@ const create = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const created = yield* client.connectLinks
+    const created = yield* client["channels.connectLinks"]
       .create({
         headers: {},
         payload: {
@@ -224,7 +224,7 @@ const list = Command.make(
   Effect.fn("links.list")(function* list({ json, workspace: choice }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const links = yield* client.connectLinks
+    const links = yield* client["channels.connectLinks"]
       .list({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
@@ -265,7 +265,7 @@ const show = Command.make(
   Effect.fn("links.show")(function* show({ json, link, workspace: choice }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const found = yield* client.connectLinks
+    const found = yield* client["channels.connectLinks"]
       .get({ headers: {}, params: { linkId: link } })
       .pipe(Effect.mapError(explain(url)));
 
@@ -297,7 +297,7 @@ const revoke = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const revoked = yield* client.connectLinks
+    const revoked = yield* client["channels.connectLinks"]
       .revoke({ headers: {}, params: { linkId: link } })
       .pipe(Effect.mapError(explain(url)));
 

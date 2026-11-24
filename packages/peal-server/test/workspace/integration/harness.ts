@@ -449,7 +449,7 @@ export const apiKeyOf = Effect.fn("apiKeyOf")(function* apiKeyOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(`/api/v1/api-keys`, {
+  const reply = yield* app.request(`/api/v1/workspace/api-keys`, {
     body: { name: "ci", permissions },
     headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
   });

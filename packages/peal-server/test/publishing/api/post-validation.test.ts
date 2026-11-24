@@ -5,6 +5,7 @@ import { HttpApiTest } from "effect/http-api";
 import { Api, Forbidden, forWorkspace } from "peal-contract";
 import type { Member, PostContent } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { newId } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -22,10 +23,12 @@ const timeout = 60_000;
 const start = "2026-06-15T07:00:00Z";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["posts"]).pipe(
+  HttpApiTest.groups(Api, ["posts", "posts.drafts"]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        PostsHandlers.pipe(Layer.provideMerge(securityTest(member))),
+        Layer.merge(PostsHandlers, PostDraftsHandlers).pipe(
+          Layer.provideMerge(securityTest(member))
+        ),
         HttpServer.layerServices
       )
     )
@@ -338,7 +341,10 @@ describe("the validate endpoint", () => {
           assert.isNull(draft.schedule);
 
           // Nothing was made by any of it.
-          const drafts = yield* viewer.posts.drafts({ headers, query: {} });
+          const drafts = yield* viewer["posts.drafts"].list({
+            headers,
+            query: {},
+          });
 
           assert.deepStrictEqual(drafts.items, []);
 

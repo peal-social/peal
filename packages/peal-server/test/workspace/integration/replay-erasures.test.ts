@@ -432,7 +432,7 @@ layer(ReplayTest, { excludeTestServices: true, timeout: "180 seconds" })(
           const home = yield* workspaceOf(owner, "Suite");
 
           assert.strictEqual(
-            (yield* app.request(`/api/v1/partner-account`, {
+            (yield* app.request(`/api/v1/partner/account`, {
               body: { name: "Replay Suite" },
               headers: { cookie: owner.cookies, ...forWorkspace(home) },
             })).status,

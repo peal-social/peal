@@ -417,7 +417,7 @@ or application. Owners read it (`activity:read`).
 
 ```sh
 peal activity list --json
-peal activity list --operation posts.send --limit 20 --json
+peal activity list --operation posts.create --limit 20 --json
 ```
 
 ## Errors

@@ -34,7 +34,9 @@ export type NewChannelDefaults = typeof NewChannelDefaultsSchema.Type;
 const channel = { channelId: Schema.String };
 
 /** A channel's default options, which new posts take when they give none. */
-export class ChannelDefaultsApi extends HttpApiGroup.make("channelDefaults")
+export class ChannelDefaultsApi extends HttpApiGroup.make(
+  "channels.defaultOptions"
+)
   .add(
     HttpApiEndpoint.get("get", "/", {
       error: [Forbidden, ChannelNotFound],

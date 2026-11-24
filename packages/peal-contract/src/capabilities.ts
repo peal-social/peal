@@ -342,9 +342,9 @@ export const ChannelCapabilitiesSchema = Schema.Struct({
 export type ChannelCapabilities = typeof ChannelCapabilitiesSchema.Type;
 
 /** What posts may hold, by platform and by channel. */
-export class CapabilitiesApi extends HttpApiGroup.make("capabilities")
+export class CapabilitiesApi extends HttpApiGroup.make("channels.capabilities")
   .add(
-    HttpApiEndpoint.get("platforms", "/platforms/capabilities", {
+    HttpApiEndpoint.get("platforms", "/capabilities", {
       error: Forbidden,
       headers: workspaceHeaders,
 
@@ -356,7 +356,7 @@ export class CapabilitiesApi extends HttpApiGroup.make("capabilities")
         summary: "Describe every platform",
       })
     ),
-    HttpApiEndpoint.get("channel", "/channels/:channelId/capabilities", {
+    HttpApiEndpoint.get("get", "/:channelId/capabilities", {
       error: [Forbidden, ChannelNotFound],
       headers: workspaceHeaders,
       params: { channelId: Schema.String },
@@ -371,4 +371,4 @@ export class CapabilitiesApi extends HttpApiGroup.make("capabilities")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1") {}
+  .prefix("/api/v1/channels") {}

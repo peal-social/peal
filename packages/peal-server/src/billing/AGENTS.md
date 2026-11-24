@@ -63,7 +63,7 @@
   `test/billing/api/contract.test.ts`. The site's pricing page
   (`peal-site/src/pricing.ts`) and the docs' variables
   (`peal-docs/pricing-variables.ts`, `{{starter-month-en}}`…) read that
-  catalogue: never write a price by hand. `GET …/billing` answers it too.
+  catalogue: never write a price by hand. `GET …/workspace/billing` answers it too.
 - Before any change to the ladder, compare its monthly totals at 10, 20,
   100 and 1,000 accounts (`accountsMonthly`) with those of the
   per-account schedulers Peal is measured against. The comparison lives
@@ -226,7 +226,7 @@
   late start does not get the cap twice; and a meter in
   `unconfirmedMeters` bills nothing past its allowance at all. The cap's
   refusal is `spendCapReached`, never `ceilingReached`
-  (`refusalOf`), messages and ads included. `GET …/billing` tells a
+  (`refusalOf`), messages and ads included. `GET …/workspace/billing` tells a
   meter's `most` past its allowance only to the billing workspace: any
   other reads the allowance at most (`meterView`), as the rest is what
   the ceiling pays for. A past due subscription (`pastDue`) gets the
@@ -250,14 +250,14 @@
   meter events; ads are claimed in one claim a sync. Adding up a
   customer's unsent rows into one event is not done: its identifier would
   have to stay the same across retries while rows arrive.
-- `SpendCeilings.set` (`PUT …/billing/ceilings/:group`, in
+- `SpendCeilings.set` (`PUT …/workspace/billing/ceilings/:group`, in
   `billingActions`): billing:manage in person, on the billing workspace
   (`BilledElsewhere`), never on a server that does not bill; it may
   always be lowered, below what the month spent too; a group with a
   meter unconfirmed takes none (`CeilingNotOffered`, answered
   `SpendCeilingNotOffered` 409), as the billing page shows its form
   only once all are. The row names
-  nobody; the activity log keeps who. `GET …/billing` answers `meters`
+  nobody; the activity log keeps who. `GET …/workspace/billing` answers `meters`
   (`meterMonthsOf`, `shownMeters`, X's last), their
   money (`estimate`, in the total `estimate` too) to the billing
   workspace's members only, `priceConfirmed` false for
@@ -269,8 +269,8 @@
   the billing account's `x` ceiling ($25 by default) bounds it. Its
   reads are a switch per workspace (`XPassThrough`, `billing.x_usage_settings`:
   reads, set_at, no row is off; the activity log keeps who), set by
-  billing:manage in person (`PUT …/billing/x`, in `billingActions`) on any
-  workspace of the account, answered as `x` on `GET …/billing`, kept in
+  billing:manage in person (`PUT …/workspace/billing/x`, in `billingActions`) on any
+  workspace of the account, answered as `x` on `GET …/workspace/billing`, kept in
   the export (`xReads`) and erased with the workspace. A server that does
   not bill answers `BillingNotEnabled` and reads none of it. A claim
   whose X spend reaches 80% or 100% of the `x` ceiling
@@ -407,7 +407,7 @@
   past the day (each ends, the credit note of the unused part), one moved
   before its day (credited once, ended, no end left set), and a
   `refund.failed` sent from the dashboard (listed for staff).
-- `GET …/billing` answers `accounts` (the workspace's own and the
+- `GET …/workspace/billing` answers `accounts` (the workspace's own and the
   pooled count, and for the billing workspace's members only the month's
   account-days, `estimate` by `accountsCharge` of what was reported once
   it pays or of what the days would bill, `nextAccount` by the ladder),
@@ -512,7 +512,7 @@
   it schedules and publishes nothing (`PostAllowance.channels` and
   `.members`, at scheduling and again in `RoutedPlatformPublisher`); posts
   already scheduled fail when due as `planLimit` and are reposted
-  afterwards, never moved to drafts. `GET …/billing/standing`
+  afterwards, never moved to drafts. `GET …/workspace/billing/standing`
   (`WorkspaceStanding.of`) tells every member; views across workspaces
   ask `overPlanIn` instead, which names the workspaces of a set that must
   reduce in a few reads whatever their number (`ofEach`'s holders and
@@ -523,7 +523,7 @@
   a state and adds nothing, and a page would queue behind every
   connection. It must stay equal to `of` for every shape of workspace
   (`test/billing/integration/standing-across-workspaces.test.ts`): a new
-  limit that decides `mustReduce` joins it there; `POST …/billing/reduction`
+  limit that decides `mustReduce` joins it there; `POST …/workspace/billing/reduction`
   (`ReduceWorkspace`, in `billingActions`) keeps the channels and members a
   manager chose: the whole choice is checked first, members go before
   channels (`WorkspaceMembers.keepOnly`, `membersToRemove`: whoever chooses
@@ -628,7 +628,7 @@
   the standing, show the billing page or `get_billing`, or report usage:
   `AccountChannelAllowanceLive` and `AccountPlanHoldersLive` (the partner
   rule alone there) read one only when `BillingMode` bills, and
-  `…/billing` and `…/billing/standing` leave `account` out
+  `…/workspace/billing` and `…/workspace/billing/standing` leave `account` out
   (`accountShown`; optional for older servers too). Where it bills, the
   account's workspaces share its billing workspace's plan (`PlanHolders`,
   `AccountPlanHoldersLive`) and count their channels and media together
@@ -638,7 +638,7 @@
   holds the payer first (`ContextRecords.holdUser`).
 - Only the billing workspace orders (`BilledElsewhere`); a checkout
   refuses an order placed before the workspace stopped billing, and a
-  plan's refusal links the billing workspace's page. `GET …/billing`
+  plan's refusal links the billing workspace's page. `GET …/workspace/billing`
   answers `account` (`AccountViews`: the billing workspace named only to
   its members, an open offer only to its two people, and a partner's
   account counting only the workspaces the reader belongs to). Handing a
@@ -707,15 +707,15 @@
   that day; none where it could not be read); a read or a sink that fails
   is logged and never fails the run.
   The same run purges the rows past `usageRetentionDays` (400), whether the
-  snapshot went through or not. `UsageReports` answers `GET …/usage`
+  snapshot went through or not. `UsageReports` answers `GET …/workspace/usage`
   (billing:read, on a server that bills or not; 92 days at most, 30 by
   default; `sharedWith` from `PlanHolders`), `get_usage` and `peal
   usage`; the contract copies its constants, which
   `test/billing/api/contract.test.ts` keeps equal, as the privacy
   registry's `usageDays` (category `usage`) is kept by
   `data-processing.test.ts`. `UsageReports.ofPartner` (a member with
-  partner:read, `GET …/usage/partner`) and `ofPartnerKey` (a partner key
-  with `workspaces:read`, `GET /api/v1/partner/usage`, `PartnerUsageApi`,
+  partner:read, `GET …/workspace/usage/partner`) and `ofPartnerKey` (a partner key
+  with `workspaces:read`, `GET /api/v1/partner/customer-usage`, `PartnerUsageApi`,
   refused in the partner API's words from `#shared/api/partner-key.ts`)
   answer a partner's usage per customer: what the workspace context's
   `PartnerTenants` says it holds, through billing's port `PartnerTenancy`
@@ -745,7 +745,7 @@
   subscription's life wins (`lifecycleStage`). A failure answers the
   webhook an error, so Stripe sends it again. Active, trialing and past due
   subscriptions give their plan.
-- Ordering takes two steps. `POST …/billing/orders` (`PlaceOrder`) records
+- Ordering takes two steps. `POST …/workspace/billing/orders` (`PlaceOrder`) records
   the order in `billing.orders`: plan, interval or the trial, the member,
   and their request to start at once knowing their right to withdraw
   (`startNow: true`, the unticked box of the billing page;

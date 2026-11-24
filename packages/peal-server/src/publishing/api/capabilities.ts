@@ -13,12 +13,12 @@ import {
 
 export const CapabilitiesHandlers = HttpApiBuilder.group(
   Api,
-  "capabilities",
+  "channels.capabilities",
   Effect.fn(function* capabilitiesHandlers(handlers) {
     const capabilities = yield* PostingCapabilities;
 
     return handlers.handleAll({
-      channel: ({ params }) =>
+      get: ({ params }) =>
         Effect.gen(function* channel() {
           const actor = actorOf(yield* CurrentMember);
 

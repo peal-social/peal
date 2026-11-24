@@ -42,7 +42,7 @@ type RequestFailure = Effect.Error<
 
 export const SlideshowsHandlers = HttpApiBuilder.group(
   Api,
-  "slideshows",
+  "media.slideshows",
   Effect.fn(function* slideshowsHandlers(handlers) {
     const slideshows = yield* AssistantSlideshows;
     const paths = yield* UpgradePaths;

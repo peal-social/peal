@@ -64,7 +64,7 @@ const PixelsSchema = Schema.Int.check(Schema.isGreaterThan(0));
  * page) or an audio file of the workspace.
  */
 export const MediaSchema = Schema.Struct({
-  // Whether the writing assistant made the file (POST …/assistant/images).
+  // Whether the writing assistant made the file (POST …/media/images).
   // The file is stored as the provider gave it. Peal labels nothing on its
   // own: set the platform's AI label in the post's options (YouTube
   // containsSyntheticMedia, TikTok aiGenerated, X madeWithAi).

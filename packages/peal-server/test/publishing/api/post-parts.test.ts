@@ -10,6 +10,7 @@ import {
 } from "peal-contract";
 import type { PostContent } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { newId } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -33,10 +34,10 @@ const timeout = 60_000;
 const start = "2026-06-15T07:00:00Z";
 
 const clientIn = (workspaceId: WorkspaceId) =>
-  HttpApiTest.groups(Api, ["posts"]).pipe(
+  HttpApiTest.groups(Api, ["posts", "posts.drafts"]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        PostsHandlers.pipe(
+        Layer.merge(PostsHandlers, PostDraftsHandlers).pipe(
           Layer.provideMerge(
             securityTest(memberOf(workspaceId, permissionsFor("editor")))
           )
@@ -74,7 +75,7 @@ describe("the posts endpoints, for a post of several parts", () => {
           const mastodon = yield* connect(workspaceId, "mastodon");
           const client = yield* clientIn(workspaceId);
 
-          const created = yield* client.posts.create({
+          const created = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: { channelIds: [mastodon], content: thread },
           });
@@ -116,7 +117,7 @@ describe("the posts endpoints, for a post of several parts", () => {
           const client = yield* clientIn(workspaceId);
           const stray = "00000000-0000-7000-8000-00000000dead";
 
-          const refused = yield* client.posts
+          const refused = yield* client["posts.drafts"]
             .create({
               headers: forWorkspace(workspaceId),
               payload: {
@@ -159,7 +160,7 @@ describe("the posts endpoints, for a post of several parts", () => {
           const client = yield* clientIn(workspaceId);
 
           const refused = yield* client.posts
-            .send({
+            .create({
               headers: { ...forWorkspace(workspaceId) },
 
               payload: {
@@ -221,7 +222,7 @@ describe("the posts endpoints, for a post of several parts", () => {
           const mastodon = yield* connect(workspaceId, "mastodon");
           const client = yield* clientIn(workspaceId);
 
-          const sent = yield* client.posts.send({
+          const sent = yield* client.posts.create({
             headers: { ...forWorkspace(workspaceId) },
 
             payload: {

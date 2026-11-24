@@ -5,6 +5,7 @@ import { HttpApiTest } from "effect/http-api";
 import { Api, Forbidden, InvalidTimeRange, forWorkspace } from "peal-contract";
 import type { Member, PostContent, PostPage } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { newId } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -22,10 +23,12 @@ const timeout = 60_000;
 const start = "2026-06-15T07:00:00Z";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["posts"]).pipe(
+  HttpApiTest.groups(Api, ["posts", "posts.drafts"]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        PostsHandlers.pipe(Layer.provideMerge(securityTest(member))),
+        Layer.merge(PostsHandlers, PostDraftsHandlers).pipe(
+          Layer.provideMerge(securityTest(member))
+        ),
         HttpServer.layerServices
       )
     )
@@ -70,7 +73,7 @@ const studio = Effect.gen(function* studio() {
     at: string,
     channelIds: readonly [ChannelId, ...ChannelId[]]
   ) =>
-    client.posts.send({
+    client.posts.create({
       headers,
       payload: {
         channelIds,
@@ -83,7 +86,7 @@ const studio = Effect.gen(function* studio() {
   const first = yield* send(editor, "One", "2026-06-16T08:00:00Z", [mastodon]);
   const second = yield* send(editor, "Two", "2026-06-17T08:00:00Z", [bluesky]);
 
-  const draft = yield* editor.posts.create({
+  const draft = yield* editor["posts.drafts"].create({
     headers,
     payload: { channelIds: [mastodon], content: text("A draft") },
   });
@@ -93,7 +96,7 @@ const studio = Effect.gen(function* studio() {
     bluesky,
   ]);
 
-  const other = yield* editor.posts.create({
+  const other = yield* editor["posts.drafts"].create({
     headers,
     payload: { channelIds: [], content: text("Another draft") },
   });
@@ -124,7 +127,7 @@ describe("the search endpoint", () => {
           const made = yield* studio;
           const { editor, headers } = made;
 
-          const all = yield* editor.posts.search({ headers, query: {} });
+          const all = yield* editor.posts.list({ headers, query: {} });
 
           assert.deepStrictEqual(
             all.items.map(({ id }) => id),
@@ -159,16 +162,14 @@ describe("the search endpoint", () => {
           );
 
           assert.lengthOf(
-            (yield* viewer.posts.search({ headers, query: {} })).items,
+            (yield* viewer.posts.list({ headers, query: {} })).items,
             5
           );
 
           const nobody = yield* clientAs(memberOf(made.workspaceId, []));
 
           assert.instanceOf(
-            yield* nobody.posts
-              .search({ headers, query: {} })
-              .pipe(Effect.flip),
+            yield* nobody.posts.list({ headers, query: {} }).pipe(Effect.flip),
             Forbidden
           );
         })
@@ -186,10 +187,10 @@ describe("the search endpoint", () => {
           const { editor, headers } = made;
 
           const idsOf = (
-            query: Parameters<typeof editor.posts.search>[0]["query"]
+            query: Parameters<typeof editor.posts.list>[0]["query"]
           ) =>
             editor.posts
-              .search({ headers, query })
+              .list({ headers, query })
               .pipe(Effect.map((page) => page.items.map(({ id }) => id)));
 
           assert.deepStrictEqual(yield* idsOf({ status: "draft" }), [
@@ -241,7 +242,7 @@ describe("the search endpoint", () => {
           assert.deepStrictEqual(yield* idsOf({ channelId: "not-an-id" }), []);
 
           const backwards = yield* editor.posts
-            .search({
+            .list({
               headers,
               query: {
                 from: utc("2026-06-18T08:00:00Z"),
@@ -266,7 +267,7 @@ describe("the search endpoint", () => {
           const { editor, headers } = made;
 
           // By scheduled time: only the posts that have one.
-          const soonest = yield* editor.posts.search({
+          const soonest = yield* editor.posts.list({
             headers,
             query: { limit: 2, sort: "scheduledAsc" },
           });
@@ -278,7 +279,7 @@ describe("the search endpoint", () => {
           assert.isNotNull(soonest.nextCursor);
 
           // Meanwhile a post is made before the page's end, and one after.
-          const early = yield* editor.posts.send({
+          const early = yield* editor.posts.create({
             headers,
             payload: {
               channelIds: [made.mastodon],
@@ -292,7 +293,7 @@ describe("the search endpoint", () => {
             query: {},
           });
 
-          const late = yield* editor.posts.send({
+          const late = yield* editor.posts.create({
             headers,
             payload: {
               channelIds: [made.mastodon],
@@ -306,7 +307,7 @@ describe("the search endpoint", () => {
             query: {},
           });
 
-          const rest = yield* editor.posts.search({
+          const rest = yield* editor.posts.list({
             headers,
             query: {
               cursor: soonest.nextCursor ?? "",
@@ -328,7 +329,7 @@ describe("the search endpoint", () => {
             cursor?: string
           ): Effect.Effect<readonly string[], unknown> =>
             editor.posts
-              .search({
+              .list({
                 headers,
                 query:
                   cursor === undefined
@@ -360,7 +361,7 @@ describe("the search endpoint", () => {
             late.id,
           ]);
 
-          const latest = yield* editor.posts.search({
+          const latest = yield* editor.posts.list({
             headers,
             query: { limit: 1, sort: "scheduledDesc" },
           });
@@ -373,7 +374,7 @@ describe("the search endpoint", () => {
 
           // A cursor continues its own list only.
           const mixed = yield* editor.posts
-            .search({
+            .list({
               headers,
               query: { cursor: soonest.nextCursor ?? "", sort: "createdAsc" },
             })
@@ -382,7 +383,7 @@ describe("the search endpoint", () => {
           assert.strictEqual(mixed._tag, "BadRequest");
 
           const garbage = yield* editor.posts
-            .search({ headers, query: { cursor: "not a cursor" } })
+            .list({ headers, query: { cursor: "not a cursor" } })
             .pipe(Effect.flip);
 
           assert.strictEqual(garbage._tag, "BadRequest");

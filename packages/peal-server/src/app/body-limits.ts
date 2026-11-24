@@ -23,8 +23,10 @@ export const contentBodyLimit = ByteSize.mebibytes(8);
  */
 export const largestBodyLimit = contentBodyLimit;
 
+// The posts' tags and signatures live under /posts, and are names and short
+// texts: they keep the default.
 const contentPaths: readonly RegExp[] = [
-  /^\/api\/v1\/(?:posts|articles)(?:\/|$)/u,
+  /^\/api\/v1\/(?:posts(?!\/(?:tags|signatures)(?:\/|$))|articles)(?:\/|$)/u,
   /^\/api\/mcp$/u,
 ];
 

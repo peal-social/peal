@@ -184,7 +184,7 @@ export const studioInboxLive = (state: Ref.Ref<InboxState>) => {
       ),
     }));
 
-  return HttpApiBuilder.group(Api, "inbox", (handlers) =>
+  return HttpApiBuilder.group(Api, "inbox.comments", (handlers) =>
     handlers.handleAll({
       confirmReply: ({ params, payload }) =>
         Effect.gen(function* confirmReply() {

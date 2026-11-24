@@ -6,7 +6,7 @@ import { PealApi } from "#api/client.ts";
 
 /** The workspace's plan, its limits and its usage, with the visitor's cookies. */
 export const billingOf = Atom.family((workspaceId: string) =>
-  PealApi.query("billing", "get", {
+  PealApi.query("workspace.billing", "get", {
     headers: forWorkspace(workspaceId),
     reactivityKeys: [`billing:${workspaceId}`],
   })
@@ -16,29 +16,41 @@ export const billingOf = Atom.family((workspaceId: string) =>
 // its session cookie, so the API checks the page's origin: an order before
 // checkout, a cancellation, a withdrawal and what it would do.
 
-export const placeOrder = PealApi.mutation("billingActions", "order");
+export const placeOrder = PealApi.mutation("workspace.billingActions", "order");
 
-export const cancelSubscription = PealApi.mutation("billingActions", "cancel");
+export const cancelSubscription = PealApi.mutation(
+  "workspace.billingActions",
+  "cancel"
+);
 
 export const previewWithdrawal = PealApi.mutation(
-  "billingActions",
+  "workspace.billingActions",
   "withdrawal"
 );
 
-export const withdraw = PealApi.mutation("billingActions", "withdraw");
+export const withdraw = PealApi.mutation(
+  "workspace.billingActions",
+  "withdraw"
+);
 
 /** What the billing account spends past a group's allowances a month. */
-export const setSpendCeiling = PealApi.mutation("billingActions", "setCeiling");
+export const setSpendCeiling = PealApi.mutation(
+  "workspace.billingActions",
+  "setCeiling"
+);
 
 /** Whether the workspace reads its X channels at X's rates. */
-export const setXReads = PealApi.mutation("billingActions", "setXReads");
+export const setXReads = PealApi.mutation(
+  "workspace.billingActions",
+  "setXReads"
+);
 
 /** The workspace's usage over the UTC days from `from` to `to`. */
 export const usageOf = (
   workspaceId: string,
   period: { readonly from: CalendarDay; readonly to: CalendarDay }
 ) =>
-  PealApi.query("usage", "get", {
+  PealApi.query("workspace.usage", "get", {
     headers: forWorkspace(workspaceId),
     query: period,
     reactivityKeys: [`billing:${workspaceId}`],
@@ -48,16 +60,16 @@ export const usageOf = (
 // owner, who takes it over or declines; the payer may withdraw it.
 
 export const offerTransfer = PealApi.mutation(
-  "billingActions",
+  "workspace.billingActions",
   "offerTransfer"
 );
 
 export const acceptTransfer = PealApi.mutation(
-  "billingActions",
+  "workspace.billingActions",
   "acceptTransfer"
 );
 
 export const withdrawTransfer = PealApi.mutation(
-  "billingActions",
+  "workspace.billingActions",
   "withdrawTransfer"
 );

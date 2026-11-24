@@ -321,7 +321,7 @@ export const joined = Effect.fn("joined")(function* joined(
 
   const sent = yield* bodyOf(
     SentInvitationSchema,
-    yield* app.request(`/api/v1/invitations`, {
+    yield* app.request(`/api/v1/workspace/invitations`, {
       body: { email: person.email, role },
       headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
     })

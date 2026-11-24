@@ -133,14 +133,14 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const byKey = yield* bodyOf(
             ReportSchema,
-            yield* app.request(`/api/v1/partner/usage?${period}`, {
+            yield* app.request(`/api/v1/partner/customer-usage?${period}`, {
               headers: bearer(key),
             })
           );
 
           const byMember = yield* bodyOf(
             ReportSchema,
-            yield* app.request(`/api/v1/usage/partner?${period}`, {
+            yield* app.request(`/api/v1/workspace/usage/partner?${period}`, {
               headers: { cookie: owner.cookies, ...forWorkspace(home) },
             })
           );
@@ -217,7 +217,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // usage, which the channel allowance counts.
           const homeUsage = yield* bodyOf(
             WorkspaceUsageSchema,
-            yield* app.request(`/api/v1/usage`, {
+            yield* app.request(`/api/v1/workspace/usage`, {
               headers: { cookie: owner.cookies, ...forWorkspace(home) },
             })
           );
@@ -239,9 +239,12 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const paged = yield* bodyOf(
             ReportSchema,
-            yield* app.request(`/api/v1/partner/usage?${period}&limit=2`, {
-              headers: bearer(key),
-            })
+            yield* app.request(
+              `/api/v1/partner/customer-usage?${period}&limit=2`,
+              {
+                headers: bearer(key),
+              }
+            )
           );
 
           assert.deepStrictEqual(
@@ -253,7 +256,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const rest = yield* bodyOf(
             ReportSchema,
             yield* app.request(
-              `/api/v1/partner/usage?${period}&limit=2&before=${paged.workspaces.next ?? ""}`,
+              `/api/v1/partner/customer-usage?${period}&limit=2&before=${paged.workspaces.next ?? ""}`,
               { headers: bearer(key) }
             )
           );
@@ -279,7 +282,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const after = yield* bodyOf(
             ReportSchema,
-            yield* app.request(`/api/v1/partner/usage?${period}`, {
+            yield* app.request(`/api/v1/partner/customer-usage?${period}`, {
               headers: bearer(key),
             })
           );
@@ -314,7 +317,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             scopes: ["workspaces:write"],
           });
 
-          const missing = yield* app.request("/api/v1/partner/usage", {
+          const missing = yield* app.request("/api/v1/partner/customer-usage", {
             headers: bearer(unscoped.key),
           });
 
@@ -330,7 +333,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             .key;
 
           for (const headers of [{ cookie: owner.cookies }, bearer(reader)]) {
-            const reply = yield* app.request("/api/v1/partner/usage", {
+            const reply = yield* app.request("/api/v1/partner/customer-usage", {
               headers,
             });
 
@@ -339,15 +342,21 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The home workspace's route: a key given partner:read reads it,
           // one without is told which permission it lacks.
-          const allowed = yield* app.request(`/api/v1/usage/partner`, {
-            headers: { ...bearer(reader), ...forWorkspace(home) },
-          });
+          const allowed = yield* app.request(
+            `/api/v1/workspace/usage/partner`,
+            {
+              headers: { ...bearer(reader), ...forWorkspace(home) },
+            }
+          );
 
           assert.strictEqual(allowed.status, 200);
 
-          const refused = yield* app.request(`/api/v1/usage/partner`, {
-            headers: { ...bearer(billingOnly), ...forWorkspace(home) },
-          });
+          const refused = yield* app.request(
+            `/api/v1/workspace/usage/partner`,
+            {
+              headers: { ...bearer(billingOnly), ...forWorkspace(home) },
+            }
+          );
 
           assert.strictEqual(refused.status, 403);
           assert.deepInclude(refused.body, { permission: "partner:read" });

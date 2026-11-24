@@ -73,8 +73,8 @@ const list = Command.make(
   }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const page = yield* client.posts
-      .drafts({
+    const page = yield* client["posts.drafts"]
+      .list({
         headers: {},
         query: {
           ...Option.match(cursor, {
@@ -228,7 +228,7 @@ const save = Command.make(
           ...presets,
         }).pipe(
           Effect.flatMap((payload) =>
-            client.posts
+            client["posts.drafts"]
               .create({ headers: {}, payload })
               .pipe(Effect.mapError(explain(url)))
           )
@@ -309,8 +309,8 @@ const discard = Command.make(
   }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    yield* client.posts
-      .discard({ headers: {}, params: { postId } })
+    yield* client["posts.drafts"]
+      .delete({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* json

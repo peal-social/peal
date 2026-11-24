@@ -132,7 +132,7 @@ const known = (id: string) =>
 
 /** The inbox's direct messages group, answered from `state`. */
 export const studioMessagesLive = (state: Ref.Ref<MessagesState>) =>
-  HttpApiBuilder.group(Api, "inboxMessages", (handlers) =>
+  HttpApiBuilder.group(Api, "inbox.messages", (handlers) =>
     handlers.handleAll({
       confirmPrivateReply: ({ params, payload }) =>
         Effect.gen(function* confirmPrivateReply() {
@@ -213,7 +213,7 @@ export const studioMessagesLive = (state: Ref.Ref<MessagesState>) =>
 
           return made;
         }),
-      confirmMessage: ({ params, payload }) =>
+      confirm: ({ params, payload }) =>
         Effect.gen(function* confirmMessage() {
           yield* allowed("engagement:message");
 
@@ -267,12 +267,12 @@ export const studioMessagesLive = (state: Ref.Ref<MessagesState>) =>
               : { closesAt: null, open: true, personClosesAt: null },
           };
         }),
-      getMessageSettings: () =>
+      getSettings: () =>
         allowed("channel:connect").pipe(
           Effect.as({ applications: [], channels: [] })
         ),
-      setChannelMessages: () => Effect.fail(new Forbidden()),
-      setMessageApplication: () => Effect.fail(new Forbidden()),
+      setChannel: () => Effect.fail(new Forbidden()),
+      setApplication: () => Effect.fail(new Forbidden()),
       listConversations: () =>
         Effect.gen(function* listConversations() {
           yield* allowed("engagement:read");
@@ -282,7 +282,7 @@ export const studioMessagesLive = (state: Ref.Ref<MessagesState>) =>
             nextCursor: null,
           };
         }),
-      sendMessage: ({ params, payload }) =>
+      send: ({ params, payload }) =>
         Effect.gen(function* sendMessage() {
           yield* allowed("engagement:message");
           yield* known(params.conversationId);

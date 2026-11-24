@@ -137,8 +137,8 @@ const generate = Command.make(
   Effect.fn("media.generate")(function* generate(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const made = yield* client.assistant
-      .generateImage({
+    const made = yield* client["media.images"]
+      .create({
         headers: {},
         payload: { aspect: input.aspect, prompt: input.prompt },
       })

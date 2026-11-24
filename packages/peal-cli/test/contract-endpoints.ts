@@ -53,10 +53,10 @@ export const contractEndpoints = reflected();
 // packages/peal-sdk/scripts/spec.ts lists them (`ownSessionTags`): keep
 // both equal.
 const ownSessionGroups = new Set([
-  "account",
-  "billingActions",
-  "connectedApps",
-  "workspaces",
+  "me.account",
+  "me.connectedApps",
+  "workspace",
+  "workspace.billingActions",
 ]);
 
 // The group anyone calls, without credentials (`publicTag` there).

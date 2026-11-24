@@ -50,7 +50,7 @@ layer(SpanLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const byKey = spans.length;
 
-        const read = yield* app.request("/api/v1/tags", {
+        const read = yield* app.request("/api/v1/posts/tags", {
           headers: bearer(key),
         });
 
@@ -64,7 +64,7 @@ layer(SpanLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const bySession = spans.length;
 
-        const listed = yield* app.request("/api/v1/tags", {
+        const listed = yield* app.request("/api/v1/posts/tags", {
           headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
         });
 

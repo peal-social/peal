@@ -194,11 +194,11 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
           });
 
           // The activity log keeps who required it.
-          const log = yield* app.request(`/api/v1/activity`, {
+          const log = yield* app.request(`/api/v1/workspace/activity`, {
             headers: { cookie: cookies, ...forWorkspace(workspaceId) },
           });
 
-          assert.include(JSON.stringify(log.body), "workspaces.secure");
+          assert.include(JSON.stringify(log.body), "workspace.secure");
 
           // A key reads the policy, as any member does.
           const read = yield* bodyOf(
@@ -247,9 +247,12 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
           ]);
 
           // Whether each member has it on, to who manages members only.
-          const listedToEditor = yield* app.request(`/api/v1/members`, {
-            headers: { ...asPerson(member), ...forWorkspace(workspaceId) },
-          });
+          const listedToEditor = yield* app.request(
+            `/api/v1/workspace/members`,
+            {
+              headers: { ...asPerson(member), ...forWorkspace(workspaceId) },
+            }
+          );
 
           assert.notInclude(
             JSON.stringify(listedToEditor.body),
@@ -258,9 +261,12 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const ownerSession = (yield* enrolled(owner)).cookies;
 
-          const listedToOwner = yield* app.request(`/api/v1/members`, {
-            headers: { cookie: ownerSession, ...forWorkspace(workspaceId) },
-          });
+          const listedToOwner = yield* app.request(
+            `/api/v1/workspace/members`,
+            {
+              headers: { cookie: ownerSession, ...forWorkspace(workspaceId) },
+            }
+          );
 
           assert.include(
             JSON.stringify(listedToOwner.body),
@@ -439,7 +445,7 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), {
 
       assert.isNull(member.error);
 
-      const sent = yield* app.request(`/api/v1/invitations`, {
+      const sent = yield* app.request(`/api/v1/workspace/invitations`, {
         body: { email, role: "editor" },
         headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
       });

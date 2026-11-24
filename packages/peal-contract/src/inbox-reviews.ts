@@ -251,9 +251,9 @@ const where = `Peal reads reviews on Google Business Profile locations where the
  * Google Business Profile channels post as, and what members do about
  * them.
  */
-export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
+export class InboxReviewsApi extends HttpApiGroup.make("inbox.reviews")
   .add(
-    HttpApiEndpoint.get("listReviewThreads", "/threads", {
+    HttpApiEndpoint.get("listThreads", "/threads", {
       error: [Forbidden, HttpApiError.BadRequest],
       headers: workspaceHeaders,
 
@@ -275,7 +275,7 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
         summary: "List the locations' reviews",
       })
     ),
-    HttpApiEndpoint.get("getReviewThread", "/threads/:threadId", {
+    HttpApiEndpoint.get("getThread", "/threads/:threadId", {
       error: [Forbidden, InboxReviewThreadNotFound],
       headers: workspaceHeaders,
       params: thread,
@@ -286,7 +286,7 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
         summary: "Get a location's reviews",
       })
     ),
-    HttpApiEndpoint.put("replyToReview", "/:reviewId/reply", {
+    HttpApiEndpoint.put("reply", "/:reviewId/reply", {
       error: [
         Forbidden,
         InboxReviewNotFound,
@@ -312,7 +312,7 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
         summary: "Reply to a review",
       })
     ),
-    HttpApiEndpoint.delete("withdrawReviewReply", "/:reviewId/reply", {
+    HttpApiEndpoint.delete("withdrawReply", "/:reviewId/reply", {
       error: [
         Forbidden,
         InboxReviewNotFound,
@@ -328,7 +328,7 @@ export class InboxReviewsApi extends HttpApiGroup.make("inboxReviews")
         summary: "Delete a review's reply",
       })
     ),
-    HttpApiEndpoint.post("setReviewAnswered", "/:reviewId/answered", {
+    HttpApiEndpoint.post("setAnswered", "/:reviewId/answered", {
       error: [Forbidden, InboxReviewNotFound],
       headers: workspaceHeaders,
       params: review,

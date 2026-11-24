@@ -177,8 +177,8 @@ describe("the contract", () => {
     });
 
     expect(unscoped).toStrictEqual([]);
-    expect(scoped).toContain("apiKeys.list");
+    expect(scoped).toContain("workspace.apiKeys.list");
     expect(scoped).toContain("channels.disconnect");
-    expect(scoped).toContain("workspaces.delete");
+    expect(scoped).toContain("workspace.delete");
   });
 });

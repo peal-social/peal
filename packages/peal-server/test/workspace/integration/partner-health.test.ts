@@ -135,7 +135,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // The home workspace's owner reads the same figures.
           const asMember = yield* bodyOf(
             HealthJsonSchema,
-            yield* app.request(`/api/v1/partner-account/overview`, {
+            yield* app.request(`/api/v1/partner/account/overview`, {
               headers: { cookie: owner.cookies, ...forWorkspace(home) },
             })
           );
@@ -264,7 +264,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // A member of a workspace that is no partner's home.
           const notHome = yield* app.request(
-            `/api/v1/partner-account/overview`,
+            `/api/v1/partner/account/overview`,
             { headers: { cookie: stranger.cookies, ...forWorkspace(ordinary) } }
           );
 
@@ -276,7 +276,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Nor a stranger to the home workspace.
           const intruder = yield* app.request(
-            `/api/v1/partner-account/overview`,
+            `/api/v1/partner/account/overview`,
             {
               headers: {
                 cookie: stranger.cookies,
@@ -289,7 +289,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Nor a partner key in a home workspace's own route.
           const keyAtHome = yield* app.request(
-            `/api/v1/partner-account/overview`,
+            `/api/v1/partner/account/overview`,
             { headers: { ...bearer(alphaKey), ...forWorkspace(alpha.home) } }
           );
 
@@ -318,7 +318,7 @@ layer(HealthLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           yield* customerOf(key, "Member's customer", "member");
 
-          const path = `/api/v1/partner-account/overview`;
+          const path = `/api/v1/partner/account/overview`;
 
           const asOwner = yield* bodyOf(
             HealthJsonSchema,

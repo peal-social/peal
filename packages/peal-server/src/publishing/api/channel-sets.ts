@@ -69,7 +69,7 @@ export const channelSetDetailsFrom = ({
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const ChannelSetsHandlers = HttpApiBuilder.group(
   Api,
-  "channelSets",
+  "channels.sets",
   Effect.fn(function* channelSetsHandlers(handlers) {
     const sets = yield* ChannelSets;
 

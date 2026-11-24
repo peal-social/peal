@@ -207,7 +207,7 @@ const reportsOn = (entitlements: typeof UnmeteredTest) =>
 // The two copies of the report, served as the members or the key reach
 // them.
 const as = (member: Member) =>
-  HttpApiTest.groups(Api, ["usage", "partnerUsage"]).pipe(
+  HttpApiTest.groups(Api, ["workspace.usage", "partner.customerUsage"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         Layer.mergeAll(UsageApiLive, PartnerUsageApiLive).pipe(
@@ -309,7 +309,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
 
           const client = yield* asMember(permissionsFor("admin"));
 
-          const report = yield* client.usage.partner({
+          const report = yield* client["workspace.usage"].partner({
             headers: forWorkspace(home),
             query,
           });
@@ -435,7 +435,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
           // The next page, for the key, holds the second customer only.
           const keyed = yield* asPrincipal(partnerKey(["workspaces:read"]));
 
-          const next = yield* keyed.partnerUsage.get({
+          const next = yield* keyed["partner.customerUsage"].get({
             query: { ...query, before: cursor },
           });
 
@@ -465,7 +465,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
         Effect.gen(function* refuses() {
           const editor = yield* asMember(permissionsFor("editor"));
 
-          const refused = yield* editor.usage
+          const refused = yield* editor["workspace.usage"]
             .partner({ headers: forWorkspace(home), query })
             .pipe(Effect.flip);
 
@@ -477,7 +477,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
 
           const elsewhere = yield* asMember(permissionsFor("owner"), ordinary);
 
-          const none = yield* elsewhere.usage
+          const none = yield* elsewhere["workspace.usage"]
             .partner({ headers: forWorkspace(ordinary), query })
             .pipe(Effect.flip);
 
@@ -491,7 +491,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
         Effect.gen(function* keys() {
           const unscoped = yield* asPrincipal(partnerKey(["workspaces:write"]));
 
-          const missing = yield* unscoped.partnerUsage
+          const missing = yield* unscoped["partner.customerUsage"]
             .get({ query })
             .pipe(Effect.flip);
 
@@ -519,7 +519,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
           ] satisfies readonly Principal[]) {
             const client = yield* asPrincipal(principal);
 
-            const refused = yield* client.partnerUsage
+            const refused = yield* client["partner.customerUsage"]
               .get({ query })
               .pipe(Effect.flip);
 
@@ -541,7 +541,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
           const tooLong = { from: "2026-01-01", to: "2026-11-01" } as const;
           const editor = yield* asMember(permissionsFor("editor"));
 
-          const refused = yield* editor.usage
+          const refused = yield* editor["workspace.usage"]
             .partner({ headers: forWorkspace(home), query: tooLong })
             .pipe(Effect.flip);
 
@@ -549,7 +549,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
 
           const unscoped = yield* asPrincipal(partnerKey(["workspaces:write"]));
 
-          const missing = yield* unscoped.partnerUsage
+          const missing = yield* unscoped["partner.customerUsage"]
             .get({ query: tooLong })
             .pipe(Effect.flip);
 
@@ -563,13 +563,13 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
 
         const client = yield* asPrincipal(partnerKey(["workspaces:read"]));
 
-        const cursorRefused = yield* client.partnerUsage
+        const cursorRefused = yield* client["partner.customerUsage"]
           .get({ query: { ...query, before: "elsewhere" } })
           .pipe(Effect.flip);
 
         assert.strictEqual(cursorRefused._tag, "BadRequest");
 
-        const rangeRefused = yield* client.partnerUsage
+        const rangeRefused = yield* client["partner.customerUsage"]
           .get({ query: { from: "2026-01-01", to: "2026-11-01" } })
           .pipe(Effect.flip);
 
@@ -587,7 +587,7 @@ layer(reportsOn(UnmeteredTest))(
         yield* TestClock.setTime(DateTime.toEpochMillis(now));
 
         const client = yield* asPrincipal(partnerKey(["workspaces:read"]));
-        const report = yield* client.partnerUsage.get({ query });
+        const report = yield* client["partner.customerUsage"].get({ query });
 
         assert.isNull(report.plan);
         assert.isNull(report.allowances);

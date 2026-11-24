@@ -124,27 +124,27 @@ const CountSchema = Schema.Array(Schema.Struct({ rows: Schema.Number }));
 const reads = [
   "/api/v1/channels",
   "/api/v1/channels/platforms",
-  "/api/v1/posts?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z",
+  "/api/v1/posts/calendar?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z",
   "/api/v1/posts/drafts",
   "/api/v1/media",
   "/api/v1/webhooks",
-  "/api/v1/billing",
-  "/api/v1/usage",
+  "/api/v1/workspace/billing",
+  "/api/v1/workspace/usage",
   "/api/v1/assistant",
   "/api/v1/analytics/summary?from=2026-11-01&to=2026-11-07&timeZone=Europe/Paris",
-  "/api/v1/posts/search",
-  "/api/v1/platforms/capabilities",
+  "/api/v1/posts",
+  "/api/v1/channels/capabilities",
   "/api/v1/approvals",
-  "/api/v1/review/settings",
-  "/api/v1/connect-links",
-  "/api/v1/queues",
-  "/api/v1/recycling",
-  "/api/v1/feeds",
+  "/api/v1/approvals/settings",
+  "/api/v1/channels/connect-links",
+  "/api/v1/automations/queues",
+  "/api/v1/automations/recycling",
+  "/api/v1/automations/feeds",
   // The numbers and their exports, and the comments under its posts.
   "/api/v1/analytics/dashboard?days=7&timeZone=Europe/Paris",
   "/api/v1/analytics/export?kind=posts&days=7&timeZone=Europe/Paris",
   "/api/v1/analytics/export?kind=accounts&format=json&days=7&timeZone=Europe/Paris",
-  "/api/v1/inbox/threads",
+  "/api/v1/inbox/comments/threads",
 ];
 
 const SelfServiceLive = Layer.mergeAll(
@@ -169,7 +169,7 @@ layer(StaffOnlyLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const owner = yield* signedUpUnconfirmed("closed");
         const home = yield* workspaceOf(owner, "Closed");
 
-        const standing = yield* app.request(`/api/v1/partner-account`, {
+        const standing = yield* app.request(`/api/v1/partner/account`, {
           headers: { cookie: owner.cookies, ...forWorkspace(home) },
         });
 
@@ -179,7 +179,7 @@ layer(StaffOnlyLive, { excludeTestServices: true, timeout: "180 seconds" })(
           usage: null,
         });
 
-        const opened = yield* app.request(`/api/v1/partner-account`, {
+        const opened = yield* app.request(`/api/v1/partner/account`, {
           body: { name: "Closed Suite" },
           headers: { cookie: owner.cookies, ...forWorkspace(home) },
         });
@@ -256,7 +256,7 @@ layer(StaffOnlyLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The owner names it and creates its keys; the key's workspaces
           // show, to staff, whose they are.
-          const renamed = yield* app.request(`/api/v1/partner-account`, {
+          const renamed = yield* app.request(`/api/v1/partner/account`, {
             body: { name: "Granted Suite" },
             headers: { cookie: owner.cookies, ...forWorkspace(home) },
             method: "PATCH",
@@ -307,7 +307,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(partner.workspaceId, home);
 
           // Opening again answers the same account.
-          const again = yield* app.request(`/api/v1/partner-account`, {
+          const again = yield* app.request(`/api/v1/partner/account`, {
             body: { name: "Another name" },
             headers: { cookie: owner.cookies, ...forWorkspace(home) },
           });
@@ -317,7 +317,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             partner.id
           );
 
-          const changed = yield* app.request(`/api/v1/partner-account`, {
+          const changed = yield* app.request(`/api/v1/partner/account`, {
             body: {
               accentColor: "#166534",
               logoUrl: "https://cdn.example.test/logo.png",
@@ -359,7 +359,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             { accentColor: "#415EEEFF" },
             { accentColor: "rgb(65, 94, 238)" },
           ]) {
-            const refused = yield* app.request(`/api/v1/partner-account`, {
+            const refused = yield* app.request(`/api/v1/partner/account`, {
               body,
               headers: { cookie: owner.cookies, ...forWorkspace(home) },
               method: "PATCH",
@@ -375,13 +375,13 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "partner:manage",
           ]);
 
-          const read = yield* app.request(`/api/v1/partner-account`, {
+          const read = yield* app.request(`/api/v1/partner/account`, {
             headers: { ...bearer(key), ...forWorkspace(home) },
           });
 
           assert.strictEqual(read.status, 200);
 
-          const minted = yield* app.request(`/api/v1/partner-account/keys`, {
+          const minted = yield* app.request(`/api/v1/partner/account/keys`, {
             body: { name: "minted", permissions: [], scopes: everyScope },
             headers: { ...bearer(key), ...forWorkspace(home) },
           });
@@ -419,7 +419,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "organization:delete",
             "partner:manage",
           ]) {
-            const refused = yield* app.request(`/api/v1/partner-account/keys`, {
+            const refused = yield* app.request(`/api/v1/partner/account/keys`, {
               body: { name: "wide", permissions: [permission], scopes: [] },
               headers: { cookie: owner.cookies, ...forWorkspace(home) },
             });
@@ -438,7 +438,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [{ rows: 0 }]
           );
 
-          const listed = yield* app.request(`/api/v1/partner-account/keys`, {
+          const listed = yield* app.request(`/api/v1/partner/account/keys`, {
             headers: { cookie: owner.cookies, ...forWorkspace(home) },
           });
 
@@ -452,7 +452,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(before.status, 200);
 
           const revoked = yield* app.request(
-            `/api/v1/partner-account/keys/${created.partnerKey.id}`,
+            `/api/v1/partner/account/keys/${created.partnerKey.id}`,
             {
               headers: { cookie: owner.cookies, ...forWorkspace(home) },
               method: "DELETE",
@@ -693,7 +693,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The home workspace's people read the same list.
           const forPeople = yield* app.request(
-            `/api/v1/partner-account/workspaces`,
+            `/api/v1/partner/account/workspaces`,
             { headers: { cookie: owner.cookies, ...forWorkspace(home) } }
           );
 
@@ -737,7 +737,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Its channels count against its partner's plan, which its usage
           // says.
-          const usage = yield* app.request(`/api/v1/usage`, {
+          const usage = yield* app.request(`/api/v1/workspace/usage`, {
             headers: { ...bearer(alphaKey), ...forWorkspace(ofAlpha.id) },
           });
 
@@ -748,9 +748,12 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Its usage per customer lists its own workspaces, never another
           // partner's; a workspace that is no partner's home has none.
-          const perCustomer = yield* app.request("/api/v1/partner/usage", {
-            headers: bearer(alphaKey),
-          });
+          const perCustomer = yield* app.request(
+            "/api/v1/partner/customer-usage",
+            {
+              headers: bearer(alphaKey),
+            }
+          );
 
           assert.deepStrictEqual(
             (yield* bodyOf(
@@ -760,7 +763,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [alpha.home, ofAlpha.id]
           );
 
-          const noHome = yield* app.request(`/api/v1/usage/partner`, {
+          const noHome = yield* app.request(`/api/v1/workspace/usage/partner`, {
             headers: { cookie: stranger.cookies, ...forWorkspace(ordinary) },
           });
 
@@ -790,7 +793,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [ordinary, "WorkspaceNotFound"],
           ] as const) {
             const reply = yield* app.request(
-              `/api/v1/queues/0190f3a0-0000-7000-8000-00000000c0de/reshuffle`,
+              `/api/v1/automations/queues/0190f3a0-0000-7000-8000-00000000c0de/reshuffle`,
               {
                 headers: { ...bearer(alphaKey), ...forWorkspace(workspaceId) },
                 method: "POST",
@@ -834,11 +837,17 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
               ["transfer/acceptance", "POST"],
               ["transfer", "DELETE"],
             ] as const) {
-              const reply = yield* app.request(`/api/v1/billing/${path}`, {
-                body: { toUserId: alpha.owner.id },
-                headers: { ...bearer(alphaKey), ...forWorkspace(workspaceId) },
-                method,
-              });
+              const reply = yield* app.request(
+                `/api/v1/workspace/billing/${path}`,
+                {
+                  body: { toUserId: alpha.owner.id },
+                  headers: {
+                    ...bearer(alphaKey),
+                    ...forWorkspace(workspaceId),
+                  },
+                  method,
+                }
+              );
 
               assert.strictEqual(
                 reply.status,
@@ -888,7 +897,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
               "/api/v1/partner",
               "/api/v1/partner/workspaces",
               `/api/v1/partner/workspaces/${ofAlpha.id}`,
-              "/api/v1/partner/usage",
+              "/api/v1/partner/customer-usage",
               "/api/v1/partner/overview",
             ]) {
               const reply = yield* app.request(path, { headers });
@@ -921,11 +930,11 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // What belongs to people stays theirs: a partner key reads no
           // member, no invitation, no API key, and is nobody on /api/me.
           for (const path of [
-            "/api/v1/members",
-            "/api/v1/invitations",
-            "/api/v1/api-keys",
-            "/api/v1/partner-account",
-            "/api/v1/usage/partner",
+            "/api/v1/workspace/members",
+            "/api/v1/workspace/invitations",
+            "/api/v1/workspace/api-keys",
+            "/api/v1/partner/account",
+            "/api/v1/workspace/usage/partner",
             "/api/me",
           ]) {
             const reply = yield* app.request(path, {
@@ -976,7 +985,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
                   body: { name: "Sent together" },
                   headers: bearer(key),
                 }),
-                app.request(`/api/v1/partner-account`, {
+                app.request(`/api/v1/partner/account`, {
                   headers: { cookie: owner.cookies, ...forWorkspace(home) },
                   method: "DELETE",
                 }),
@@ -1047,7 +1056,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const threads = (key: string) =>
           app
-            .request(`/api/v1/inbox/threads`, {
+            .request(`/api/v1/inbox/comments/threads`, {
               headers: { ...bearer(key), ...forWorkspace(customer.id) },
             })
             .pipe(Effect.map(({ status }) => status));
@@ -1095,7 +1104,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
         // Its partner's usage per customer, by the same scope.
         const usage = yield* Effect.forEach([reading, blind], (key) =>
           app
-            .request("/api/v1/partner/usage", { headers: bearer(key) })
+            .request("/api/v1/partner/customer-usage", { headers: bearer(key) })
             .pipe(Effect.map(({ status }) => status))
         );
 
@@ -1134,7 +1143,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             owned: 1,
           });
 
-          const closing = yield* app.request(`/api/v1/partner-account`, {
+          const closing = yield* app.request(`/api/v1/partner/account`, {
             headers: { cookie: owner.cookies, ...forWorkspace(home) },
             method: "DELETE",
           });
@@ -1216,7 +1225,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           });
 
           // Owning none, the account closes, and its keys with it.
-          const closed = yield* app.request(`/api/v1/partner-account`, {
+          const closed = yield* app.request(`/api/v1/partner/account`, {
             headers: { cookie: owner.cookies, ...forWorkspace(home) },
             method: "DELETE",
           });
@@ -1239,10 +1248,10 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const { home, owner } = yield* partnerOf("links");
           const { key } = yield* keyOf(owner, home);
           const customer = yield* customerOf(key, "Linked customer", "cus_l1");
-          const base = "/api/v1/connect-links";
+          const base = "/api/v1/channels/connect-links";
           const inCustomer = forWorkspace(customer.id);
 
-          yield* app.request(`/api/v1/partner-account`, {
+          yield* app.request(`/api/v1/partner/account`, {
             body: {
               accentColor: "#415eee",
               logoUrl: "https://cdn.example.test/logo.png",
@@ -1448,7 +1457,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const member = yield* signedUpUnconfirmed("ordinary");
           const workspaceId = yield* workspaceOf(member, "Ordinary links");
-          const base = "/api/v1/connect-links";
+          const base = "/api/v1/channels/connect-links";
 
           const refused = yield* app.request(base, {
             body: {

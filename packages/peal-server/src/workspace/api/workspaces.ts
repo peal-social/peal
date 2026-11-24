@@ -36,7 +36,7 @@ const securityView = ({
 
 export const WorkspacesHandlers = HttpApiBuilder.group(
   Api,
-  "workspaces",
+  "workspace",
   Effect.fn(function* workspacesHandlers(handlers) {
     const deletion = yield* DeleteWorkspace;
     const security = yield* WorkspaceSecurity;

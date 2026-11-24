@@ -527,7 +527,7 @@ export type Withdrawal = typeof WithdrawalSchema.Type;
  * `referenceId` and `customerType: "organization"`), for members with
  * billing:manage; a checkout needs an order (`BillingActionsApi`).
  */
-export class BillingApi extends HttpApiGroup.make("billing")
+export class BillingApi extends HttpApiGroup.make("workspace.billing")
   .add(
     HttpApiEndpoint.get("get", "/", {
       error: Forbidden,
@@ -557,4 +557,4 @@ export class BillingApi extends HttpApiGroup.make("billing")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/billing") {}
+  .prefix("/api/v1/workspace/billing") {}

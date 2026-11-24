@@ -135,7 +135,7 @@ const create = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const made = yield* client.channelSets
+    const made = yield* client["channels.sets"]
       .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
@@ -220,7 +220,7 @@ const update = Command.make(
       options: withOptions(channelIds, givenOptions, set.options),
     });
 
-    const changed = yield* client.channelSets
+    const changed = yield* client["channels.sets"]
       .update({
         headers: {},
         params: { channelSetId: set.id },
@@ -268,7 +268,7 @@ const remove = Command.make(
     const { client, url, workspace } = session;
     const set = yield* findSet(session, given);
 
-    yield* client.channelSets
+    yield* client["channels.sets"]
       .delete({ headers: {}, params: { channelSetId: set.id } })
       .pipe(Effect.mapError(explain(url)));
 

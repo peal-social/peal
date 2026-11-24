@@ -82,9 +82,9 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
     ).pipe(Effect.andThen(world.record(studio, change)), Effect.as(rule));
 
   const groupLive = (studio: Studio) =>
-    HttpApiBuilder.group(Api, "inboxRules", (handlers) =>
+    HttpApiBuilder.group(Api, "automations.commentRules", (handlers) =>
       handlers.handleAll({
-        createCommentRule: ({ payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* world.allowed("engagement:reply");
             yield* inWorkspace((yield* CurrentMember).workspaceId);
@@ -148,7 +148,7 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
 
             return rule;
           }),
-        deleteCommentRule: ({ params }) =>
+        delete: ({ params }) =>
           Effect.gen(function* stop() {
             yield* world.allowed("engagement:reply");
             yield* inWorkspace((yield* CurrentMember).workspaceId);
@@ -161,14 +161,14 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               `inboxRules.delete ${rule.id}`
             );
           }),
-        getCommentRule: ({ params }) =>
+        get: ({ params }) =>
           Effect.gen(function* get() {
             yield* world.allowed("engagement:read");
             yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             return yield* ruleIn(studio, params.ruleId);
           }),
-        listCommentRules: ({ query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             yield* world.allowed("engagement:read");
             yield* inWorkspace((yield* CurrentMember).workspaceId);
@@ -183,7 +183,7 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               nextCursor: null,
             };
           }),
-        updateCommentRule: ({ params, payload }) =>
+        update: ({ params, payload }) =>
           Effect.gen(function* update() {
             yield* world.allowed("engagement:reply");
             yield* inWorkspace((yield* CurrentMember).workspaceId);

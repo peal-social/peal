@@ -696,7 +696,7 @@ const HandlersLive = Layer.mergeAll(
   WorkspacesHandlers
 ).pipe(Layer.provide(UseCasesLive));
 
-const groups = ["workspaces", "account", "connectedApps"] as const;
+const groups = ["workspace", "me.account", "me.connectedApps"] as const;
 
 const clientWith = <E, R>(
   security: Layer.Layer<Layer.Success<typeof anonymousSecurityTest>, E, R>
@@ -800,14 +800,14 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
         assert.strictEqual(
           yield* failureOf(
-            client.workspaces.delete({ headers, payload: { name: "Harbor" } })
+            client.workspace.delete({ headers, payload: { name: "Harbor" } })
           ),
           "WorkspaceNameMismatch"
         );
         assert.notInclude(yield* since, `eraseWorkspace:${harbour}`);
         assert.notInclude(yield* since, `forget:|${harbour}`);
 
-        yield* client.workspaces.delete({
+        yield* client.workspace.delete({
           headers,
           payload: { name: "Harbour" },
         });
@@ -924,7 +924,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           yield* as(impersonated, shared),
         ]) {
           assert.strictEqual(
-            yield* failureOf(client.workspaces.delete({ headers, payload })),
+            yield* failureOf(client.workspace.delete({ headers, payload })),
             "Forbidden"
           );
         }
@@ -934,7 +934,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         const anonymous = yield* clientWith(anonymousSecurityTest);
 
         assert.strictEqual(
-          yield* failureOf(anonymous.workspaces.delete({ headers, payload })),
+          yield* failureOf(anonymous.workspace.delete({ headers, payload })),
           "Unauthenticated"
         );
       })
@@ -946,7 +946,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
       assert.strictEqual(
         yield* failureOf(
-          client.workspaces.delete({
+          client.workspace.delete({
             headers: forWorkspace(busy),
             payload: { name: "Busy" },
           })
@@ -968,7 +968,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         // A name typed wrong cancels nothing, agreed or not.
         assert.strictEqual(
           yield* failureOf(
-            client.workspaces.delete({
+            client.workspace.delete({
               headers,
               payload: { cancelSubscriptions: true, name: "Subscribe" },
             })
@@ -977,7 +977,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         );
         assert.notInclude(yield* calls, `cancel:${subscribed}`);
 
-        const refused = yield* client.workspaces
+        const refused = yield* client.workspace
           .delete({ headers, payload: { name: "Subscribed" } })
           .pipe(Effect.flip);
 
@@ -989,7 +989,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         });
         assert.notInclude(yield* calls, `deleteWorkspace:${subscribed}`);
 
-        yield* client.workspaces.delete({
+        yield* client.workspace.delete({
           headers,
           payload: { cancelSubscriptions: true, name: "Subscribed" },
         });
@@ -1025,7 +1025,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
       Effect.gen(function* cancelledNotDeleted() {
         const client = yield* as(user(), cancelledThenBusy);
 
-        const failed = yield* client.workspaces
+        const failed = yield* client.workspace
           .delete({
             headers: forWorkspace(cancelledThenBusy),
             payload: { cancelSubscriptions: true, name: "Late" },
@@ -1051,7 +1051,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
         assert.strictEqual(
           yield* failureOf(
-            client.workspaces.delete({
+            client.workspace.delete({
               headers: forWorkspace(unreachable),
               payload: { name: "Unreachable" },
             })
@@ -1097,7 +1097,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         );
 
         const client = yield* as(user());
-        const { body, headers } = yield* client.account.export();
+        const { body, headers } = yield* client["me.account"].export();
 
         assert.strictEqual(
           headers["content-disposition"],
@@ -1251,7 +1251,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           ["peal-cli"]
         );
 
-        const fromTerminal = yield* (yield* as(oauth)).account.export();
+        const fromTerminal = yield* (yield* as(oauth))["me.account"].export();
 
         assert.strictEqual(fromTerminal.body.user.email, "ana@example.test");
         // Each copy is told to the account's address, with where it went.
@@ -1272,7 +1272,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           const refused = yield* as(principal);
 
           assert.strictEqual(
-            yield* failureOf(refused.account.export()),
+            yield* failureOf(refused["me.account"].export()),
             "Forbidden"
           );
         }
@@ -1285,7 +1285,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
       Effect.gen(function* closure() {
         const client = yield* as(user());
 
-        assert.deepStrictEqual(yield* client.account.closure(), {
+        assert.deepStrictEqual(yield* client["me.account"].closure(), {
           legalHold: { accountYears: 1, connectionYears: 1, identityYears: 5 },
         });
 
@@ -1299,7 +1299,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           const refused = yield* as(principal);
 
           assert.strictEqual(
-            yield* failureOf(refused.account.closure()),
+            yield* failureOf(refused["me.account"].closure()),
             "Forbidden"
           );
         }
@@ -1331,19 +1331,19 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
         assert.strictEqual(
           yield* failureOf(
-            client.account.delete({ payload: { password: "wrong" } })
+            client["me.account"].delete({ payload: { password: "wrong" } })
           ),
           "IncorrectPassword"
         );
 
         assert.strictEqual(
           yield* failureOf(
-            client.account.delete({ payload: { password: "too often" } })
+            client["me.account"].delete({ payload: { password: "too often" } })
           ),
           "TooManyPasswordAttempts"
         );
 
-        const lastOwner = yield* client.account
+        const lastOwner = yield* client["me.account"]
           .delete({ payload: { password: "correct horse" } })
           .pipe(Effect.flip);
 
@@ -1360,7 +1360,9 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
           assert.strictEqual(
             yield* failureOf(
-              refused.account.delete({ payload: { password: "correct horse" } })
+              refused["me.account"].delete({
+                payload: { password: "correct horse" },
+              })
             ),
             "Forbidden"
           );
@@ -1376,7 +1378,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           ])
         );
 
-        yield* client.account.delete({
+        yield* client["me.account"].delete({
           payload: { password: "correct horse" },
         });
 
@@ -1448,7 +1450,9 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
         assert.strictEqual(
           yield* failureOf(
-            client.account.delete({ payload: { password: "correct horse" } })
+            client["me.account"].delete({
+              payload: { password: "correct horse" },
+            })
           ),
           "WorkspaceSubscribed"
         );
@@ -1460,7 +1464,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         assert.notInclude(after, `hold:${userId}:ana@example.test`);
 
         // Told to, closing cancels the subscription with the workspace.
-        yield* client.account.delete({
+        yield* client["me.account"].delete({
           payload: { cancelSubscriptions: true, password: "correct horse" },
         });
 
@@ -1481,7 +1485,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
     () =>
       Effect.gen(function* apps() {
         const client = yield* as(user());
-        const listed = yield* client.connectedApps.list();
+        const listed = yield* client["me.connectedApps"].list();
 
         assert.deepStrictEqual(
           listed.map(({ clientId, name }) => ({ clientId, name })),
@@ -1490,12 +1494,14 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
         assert.strictEqual(
           yield* failureOf(
-            client.connectedApps.revoke({ params: { clientId: "unknown" } })
+            client["me.connectedApps"].revoke({
+              params: { clientId: "unknown" },
+            })
           ),
           "ConnectedAppNotFound"
         );
 
-        yield* client.connectedApps.revoke({
+        yield* client["me.connectedApps"].revoke({
           params: { clientId: "peal-cli" },
         });
 
@@ -1506,14 +1512,14 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         const fromTerminal = yield* as(oauth);
 
         assert.deepStrictEqual(
-          (yield* fromTerminal.connectedApps.list()).map(
+          (yield* fromTerminal["me.connectedApps"].list()).map(
             ({ clientId }) => clientId
           ),
           ["peal-cli"]
         );
         assert.strictEqual(
           yield* failureOf(
-            fromTerminal.connectedApps.revoke({
+            fromTerminal["me.connectedApps"].revoke({
               params: { clientId: "peal-cli" },
             })
           ),
@@ -1524,7 +1530,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           const refused = yield* as(principal);
 
           assert.strictEqual(
-            yield* failureOf(refused.connectedApps.list()),
+            yield* failureOf(refused["me.connectedApps"].list()),
             "Forbidden"
           );
         }

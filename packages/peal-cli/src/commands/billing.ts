@@ -177,11 +177,11 @@ export const billing = Command.make(
   Effect.fn("billing")(function* showBilling({ json, workspace: choice }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const found = yield* client.billing
+    const found = yield* client["workspace.billing"]
       .get({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
-    const standing = yield* client.billing
+    const standing = yield* client["workspace.billing"]
       .standing({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 

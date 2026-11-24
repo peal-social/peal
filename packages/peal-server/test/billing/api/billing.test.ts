@@ -149,7 +149,7 @@ const clientWith = <E, R>(
   security: Layer.Layer<Layer.Success<typeof anonymousSecurityTest>, E, R>,
   views: Layer.Layer<AccountViews> = AloneAccountViewsTest
 ) =>
-  HttpApiTest.groups(Api, ["billing"]).pipe(
+  HttpApiTest.groups(Api, ["workspace.billing"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         BillingApiLive.pipe(Layer.provideMerge(security), Layer.provide(views)),
@@ -182,7 +182,7 @@ layer(overviewOn(true))("the billing endpoint on a server that bills", (it) => {
         yield* TestClock.setTime(startedAt.epochMilliseconds);
 
         const client = yield* as(permissionsFor("admin"));
-        const billing = yield* client.billing.get({ headers });
+        const billing = yield* client["workspace.billing"].get({ headers });
 
         assert.isTrue(billing.enabled);
         assert.strictEqual(billing.plan, "pro");
@@ -260,24 +260,27 @@ layer(overviewOn(true))("the billing endpoint on a server that bills", (it) => {
     Effect.gen(function* stands() {
       const client = yield* as(permissionsFor("viewer"));
 
-      assert.deepStrictEqual(yield* client.billing.standing({ headers }), {
-        account: {
-          billingWorkspaceId: workspaceId,
-          billingWorkspaceName: null,
-          id: aloneAccountId,
-          otherWorkspaces: [],
-          partner: false,
-          payer: false,
-          transfer: null,
-          workspaces: 1,
-        },
-        graceUntil: null,
-        mustReduce: false,
-        over: [],
-        plan: "pro",
-        planWithRoom: null,
-        scheduledPosts: 12,
-      });
+      assert.deepStrictEqual(
+        yield* client["workspace.billing"].standing({ headers }),
+        {
+          account: {
+            billingWorkspaceId: workspaceId,
+            billingWorkspaceName: null,
+            id: aloneAccountId,
+            otherWorkspaces: [],
+            partner: false,
+            payer: false,
+            transfer: null,
+            workspaces: 1,
+          },
+          graceUntil: null,
+          mustReduce: false,
+          over: [],
+          plan: "pro",
+          planWithRoom: null,
+          scheduledPosts: 12,
+        }
+      );
     })
   );
 
@@ -285,7 +288,10 @@ layer(overviewOn(true))("the billing endpoint on a server that bills", (it) => {
     Effect.gen(function* forbidden() {
       for (const role of ["editor", "contributor", "viewer"]) {
         const client = yield* as(permissionsFor(role));
-        const refused = yield* Effect.flip(client.billing.get({ headers }));
+
+        const refused = yield* Effect.flip(
+          client["workspace.billing"].get({ headers })
+        );
 
         assert.instanceOf(refused, Forbidden, role);
       }
@@ -295,7 +301,10 @@ layer(overviewOn(true))("the billing endpoint on a server that bills", (it) => {
   it.effect("answer 401 without credentials", () =>
     Effect.gen(function* anonymous() {
       const client = yield* clientWith(anonymousSecurityTest);
-      const refused = yield* Effect.flip(client.billing.get({ headers }));
+
+      const refused = yield* Effect.flip(
+        client["workspace.billing"].get({ headers })
+      );
 
       assert.instanceOf(refused, Unauthenticated);
     })
@@ -319,7 +328,7 @@ layer(
         yield* TestClock.setTime(startedAt.epochMilliseconds);
 
         const client = yield* as(permissionsFor("owner"));
-        const billing = yield* client.billing.get({ headers });
+        const billing = yield* client["workspace.billing"].get({ headers });
 
         assert.strictEqual(billing.plan, "free");
         assert.isFalse(billing.paymentMethod);
@@ -370,7 +379,7 @@ layer(
         );
 
         const client = yield* as(permissionsFor("owner"));
-        const billing = yield* client.billing.get({ headers });
+        const billing = yield* client["workspace.billing"].get({ headers });
 
         assert.strictEqual(billing.accounts.accountDays, 100);
         assert.deepStrictEqual(billing.accounts.estimate, {
@@ -419,7 +428,7 @@ layer(
         yield* TestClock.setTime(startedAt.epochMilliseconds);
 
         const client = yield* as(permissionsFor("owner"));
-        const billing = yield* client.billing.get({ headers });
+        const billing = yield* client["workspace.billing"].get({ headers });
 
         // The partner's figures are its home workspace's members' only.
         assert.deepStrictEqual(billing.accounts, {
@@ -455,7 +464,7 @@ layer(
         yield* TestClock.setTime(startedAt.epochMilliseconds);
 
         const client = yield* as(permissionsFor("owner"));
-        const billing = yield* client.billing.get({ headers });
+        const billing = yield* client["workspace.billing"].get({ headers });
 
         // The plan it shares, and nothing of whose contract gives it.
         assert.strictEqual(billing.plan, "payAsYouGo");
@@ -492,7 +501,7 @@ layer(
       yield* TestClock.setTime(startedAt.epochMilliseconds);
 
       const client = yield* as(permissionsFor("owner"));
-      const billing = yield* client.billing.get({ headers });
+      const billing = yield* client["workspace.billing"].get({ headers });
 
       assert.strictEqual(billing.plan, "payAsYouGo");
       assert.strictEqual(billing.subscription?.status, "past_due");
@@ -522,7 +531,7 @@ layer(
       yield* TestClock.setTime(startedAt.epochMilliseconds);
 
       const client = yield* as(permissionsFor("owner"));
-      const billing = yield* client.billing.get({ headers });
+      const billing = yield* client["workspace.billing"].get({ headers });
 
       assert.strictEqual(billing.plan, "free");
       assert.isNull(billing.subscription);
@@ -542,7 +551,7 @@ layer(overviewOn(false))(
           Layer.mock(AccountViews, {})
         );
 
-        const billing = yield* client.billing.get({ headers });
+        const billing = yield* client["workspace.billing"].get({ headers });
 
         assert.isUndefined(billing.account);
 
@@ -584,7 +593,9 @@ layer(overviewOn(false))(
             Layer.mock(AccountViews, {})
           );
 
-          const standing = yield* client.billing.standing({ headers });
+          const standing = yield* client["workspace.billing"].standing({
+            headers,
+          });
 
           assert.isUndefined(standing.account);
           assert.isFalse(standing.mustReduce);

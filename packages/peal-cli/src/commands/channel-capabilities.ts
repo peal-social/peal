@@ -353,7 +353,7 @@ export const capabilities = Command.make(
     const { client, url } = yield* inWorkspace(choice);
 
     if (Option.isNone(channelId)) {
-      const platforms = yield* client.capabilities
+      const platforms = yield* client["channels.capabilities"]
         .platforms({ headers: {} })
         .pipe(Effect.mapError(explain(url)));
 
@@ -376,8 +376,8 @@ export const capabilities = Command.make(
       return;
     }
 
-    const described = yield* client.capabilities
-      .channel({
+    const described = yield* client["channels.capabilities"]
+      .get({
         headers: {},
         params: { channelId: channelId.value },
       })
@@ -506,7 +506,7 @@ export const lookupWith = (creatorLines: CreatorLines) =>
       const params = { channelId: given.channelId };
 
       if (Option.isNone(given.name)) {
-        const listed = yield* client.lookups
+        const listed = yield* client["channels.lookups"]
           .list({ headers: {}, params })
           .pipe(Effect.mapError(explain(url)));
 
@@ -562,7 +562,7 @@ export const lookupWith = (creatorLines: CreatorLines) =>
         }),
       };
 
-      const result = yield* client.lookups
+      const result = yield* client["channels.lookups"]
         .run({
           headers: {},
           params: { ...params, name: given.name.value },

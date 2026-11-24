@@ -33,7 +33,7 @@ const invalid = (field: PartnerDetailsInvalid["field"]) => () =>
 
 export const PartnerAccountHandlers = HttpApiBuilder.group(
   Api,
-  "partnerAccount",
+  "partner.account",
   Effect.fn(function* partnerAccountHandlers(handlers) {
     const accounts = yield* PartnerAccounts;
     const keys = yield* PartnerKeys;

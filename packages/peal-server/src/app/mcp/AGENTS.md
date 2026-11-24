@@ -150,7 +150,7 @@
   (`#billing/api/usage-view.ts`), with `from` and `to` as text days;
   `get_billing` stays as it is. The CLI's is `peal usage`.
   `get_partner_usage` (`connect-tools.ts`, reading, partner:read) answers
-  `GET …/usage/partner`'s view; a partner key on the MCP endpoint acts in
+  `GET …/workspace/usage/partner`'s view; a partner key on the MCP endpoint acts in
   one workspace and uses `get_usage` there.
 - `get_short_link_status`, `list_short_links` and `get_short_link`
   (`reports-tools.ts`) answer the short links endpoints' views

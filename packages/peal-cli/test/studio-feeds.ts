@@ -59,7 +59,7 @@ export const studioFeedsOf = (world: FeedsWorld) => {
     })).pipe(Effect.andThen(world.record(studio, change)), Effect.as(feed));
 
   const groupLive = (studio: Studio) =>
-    HttpApiBuilder.group(Api, "feeds", (handlers) =>
+    HttpApiBuilder.group(Api, "automations.feeds", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {

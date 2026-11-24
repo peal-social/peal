@@ -90,12 +90,12 @@ const filterOf = <A>(
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const InboxReviewsHandlers = HttpApiBuilder.group(
   Api,
-  "inboxReviews",
+  "inbox.reviews",
   Effect.fn(function* inboxReviewsHandlers(handlers) {
     const reviews = yield* EngagementReviews;
 
     return handlers.handleAll({
-      getReviewThread: ({ params }) =>
+      getThread: ({ params }) =>
         Effect.gen(function* getReviewThread() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -113,7 +113,7 @@ export const InboxReviewsHandlers = HttpApiBuilder.group(
             })
           );
         }),
-      listReviewThreads: ({ query }) =>
+      listThreads: ({ query }) =>
         Effect.gen(function* listReviewThreads() {
           const actor = actorOf(yield* CurrentMember);
           const channelId = yield* filterOf(query.channelId, decodeChannelId);
@@ -133,7 +133,7 @@ export const InboxReviewsHandlers = HttpApiBuilder.group(
               })
             );
         }),
-      replyToReview: ({ headers, params, payload }) =>
+      reply: ({ headers, params, payload }) =>
         Effect.gen(function* replyToReview() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -164,7 +164,7 @@ export const InboxReviewsHandlers = HttpApiBuilder.group(
               })
             );
         }),
-      setReviewAnswered: ({ params, payload }) =>
+      setAnswered: ({ params, payload }) =>
         Effect.gen(function* setReviewAnswered() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -184,7 +184,7 @@ export const InboxReviewsHandlers = HttpApiBuilder.group(
               })
             );
         }),
-      withdrawReviewReply: ({ params }) =>
+      withdrawReply: ({ params }) =>
         Effect.gen(function* withdrawReviewReply() {
           const actor = actorOf(yield* CurrentMember);
 

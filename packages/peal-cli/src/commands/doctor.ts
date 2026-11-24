@@ -345,7 +345,7 @@ const personChecks = (choice: Option.Option<string>, up: boolean) =>
     // As every command does, this renews an access token that ran out.
     const me = yield* accessToken.pipe(
       Effect.flatMap((token) => api.signedIn(token)),
-      Effect.flatMap((client) => client.session.me()),
+      Effect.flatMap((client) => client.me.get()),
       Effect.timeout(checkTimeout),
       Effect.option
     );

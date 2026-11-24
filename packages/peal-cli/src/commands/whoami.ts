@@ -78,7 +78,7 @@ const ofPerson = Effect.fn("whoami.ofPerson")(function* ofPerson(
   const url = display(api.baseUrl);
   const client = yield* api.signedIn(yield* accessToken);
 
-  const me = yield* client.session.me().pipe(
+  const me = yield* client.me.get().pipe(
     Effect.catchTags({
       // The sign-in was revoked, or its user banned.
       Forbidden: () => Effect.fail(new SignInExpired({ url })),

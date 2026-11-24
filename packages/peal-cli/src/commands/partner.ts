@@ -26,7 +26,7 @@ const show = Command.make(
   Effect.fn("partner.show")(function* show({ json, workspace: choice }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const standing = yield* client.partnerAccount
+    const standing = yield* client["partner.account"]
       .get({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
@@ -83,7 +83,7 @@ const keys = Command.make(
   Effect.fn("partner.keys")(function* keys({ json, workspace: choice }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const listed = yield* client.partnerAccount
+    const listed = yield* client["partner.account"]
       .listKeys({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
@@ -150,7 +150,7 @@ const workspaces = Command.make(
   }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const page = yield* client.partnerAccount
+    const page = yield* client["partner.account"]
       .listWorkspaces({
         headers: {},
         query: {
@@ -283,7 +283,7 @@ const usage = Command.make(
   Effect.fn("partner.usage")(function* showUsage(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const report = yield* client.usage
+    const report = yield* client["workspace.usage"]
       .partner({
         headers: {},
         query: {
@@ -404,7 +404,7 @@ const overview = Command.make(
   Effect.fn("partner.overview")(function* showOverview(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const page = yield* client.partnerAccount
+    const page = yield* client["partner.account"]
       .overview({
         headers: {},
         query: {

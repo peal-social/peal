@@ -109,7 +109,7 @@ layer(Layer.mergeAll(TestApp.layerWith(unconfirmedEmails)), {
         }
 
         const log = yield* app
-          .request(`/api/v1/activity`, {
+          .request(`/api/v1/workspace/activity`, {
             headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           })
           .pipe(Effect.flatMap((reply) => bodyOf(PageJsonSchema, reply)));

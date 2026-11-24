@@ -17,9 +17,9 @@ import {
 /**
  * What a partner account used, per customer, for its backend, with a
  * partner key: the same report its home workspace's people read at
- * `GET /api/v1/usage/partner`.
+ * `GET /api/v1/workspace/usage/partner`.
  */
-export class PartnerUsageApi extends HttpApiGroup.make("partnerUsage")
+export class PartnerUsageApi extends HttpApiGroup.make("partner.customerUsage")
   .add(
     HttpApiEndpoint.get("get", "/", {
       error: [Forbidden, InvalidDateRange, HttpApiError.BadRequest],
@@ -33,4 +33,4 @@ export class PartnerUsageApi extends HttpApiGroup.make("partnerUsage")
     )
   )
   .middleware(Authentication)
-  .prefix("/api/v1/partner/usage") {}
+  .prefix("/api/v1/partner/customer-usage") {}

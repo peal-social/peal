@@ -41,7 +41,7 @@ export type ConnectedApp = typeof ConnectedAppSchema.Type;
  * only the user, in their own session, revokes them: API keys, other OAuth
  * clients and staff impersonating the user get 403.
  */
-export class ConnectedAppsApi extends HttpApiGroup.make("connectedApps")
+export class ConnectedAppsApi extends HttpApiGroup.make("me.connectedApps")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden],

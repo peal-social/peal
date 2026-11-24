@@ -919,7 +919,7 @@ export const partRulesFor = (
 
 /** What a server's short addresses look like: its base, then a code. */
 export interface ShortAddresses {
-  /** The base, ending in `/`, as `shortLinks.status` answers it. */
+  /** The base, ending in `/`, as `links.status` answers it. */
   readonly base: string;
   /** How many characters a code has. */
   readonly codeLength: number;

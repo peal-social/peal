@@ -27,13 +27,7 @@ import { deprecated } from "./deprecation.ts";
 import { Forbidden } from "./forbidden.ts";
 import { ImageProviderAddressRefused } from "./image-provider-address-refused.ts";
 import { ImageProviderKeyRequired } from "./image-provider-key-required.ts";
-import { ImageProviderRefused } from "./image-provider-refused.ts";
-import { MediaImportBusy } from "./media-import-busy.ts";
-import { MediaStoreUnavailable } from "./media-store-unavailable.ts";
-import { MediaSchema } from "./media.ts";
-import { OwnImageLimitReached } from "./own-image-limit-reached.ts";
 import { OwnTextLimitReached } from "./own-text-limit-reached.ts";
-import { PlanLimitReached } from "./plan-limit-reached.ts";
 import { PlatformSchema } from "./platform.ts";
 import { maxPostTextLength } from "./post-text.ts";
 import { UnitPriceSchema } from "./rate-card.ts";
@@ -727,31 +721,6 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         description:
           "Asks the language model to rewrite, shorten or translate a post's text, to suggest hashtags for it, or to write a first post from a subject (`write`), and answers once the whole suggestion is checked. The text is sent to the model as data, never as instructions. When the workspace brought its own text provider (`source` `workspace` in the status), the text goes there, with the workspace's key, and the request costs none of the workspace's daily requests, on any plan, within a number of such requests a day (OwnTextLimitReached past it) and a few at once (TextProviderBusy past them); if that provider refuses, the answer is TextProviderRefused and the server's model is never asked instead. Otherwise, on a server that does not bill, each request counts toward the workspace's daily quota, unless the model's provider could not be reached (AssistantQuotaExceeded past it). On a server that bills, the server's model needs a payment method on the billing account (UsageAllowanceReached `paymentMethodRequired` without one, before anything is asked): each request counts toward the month's allowance across the account's workspaces (the status's `month`), then is billed at its price up to the ceiling the account set (UsageAllowanceReached `ceilingReached`); a request that brings no suggestion, a timeout included, is not counted. Needs assistant:use.",
         summary: "Suggest a change to a post's text",
-      })
-    ),
-    HttpApiEndpoint.post("generateImage", "/images", {
-      error: [
-        Forbidden,
-        AssistantUnavailable,
-        AssistantInputRejected,
-        AssistantQuotaExceeded,
-        UsageAllowanceReached,
-        AssistantFailed,
-        ImageProviderRefused,
-        OwnImageLimitReached,
-        PlanLimitReached,
-        MediaStoreUnavailable,
-        MediaImportBusy,
-      ],
-      headers: workspaceHeaders,
-
-      payload: ImageRequestSchema,
-      success: MediaSchema.pipe(HttpApiSchema.status(201)),
-    }).annotateMerge(
-      OpenApi.annotations({
-        description:
-          "Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked `aiGenerated` and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's `images.requestCost` of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached `paymentMethodRequired` without one, before anything is asked) and counts one of the month's images (`images.month`), billed past the allowance up to the account's ceiling (UsageAllowanceReached `ceilingReached`); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube `containsSyntheticMedia`, TikTok `aiGenerated`, X `madeWithAi`). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (`images.source`).",
-        summary: "Make an image into the media library",
       })
     ),
     HttpApiEndpoint.get("imageProvider", "/image-provider", {

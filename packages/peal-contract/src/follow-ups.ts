@@ -39,7 +39,7 @@ const rules = `A rule acts on the workspace's own posts only, from the channel's
  * Rules that follow the workspace's own posts up once they have enough
  * likes: a comment under the post and a repost of it, once.
  */
-export class FollowUpsApi extends HttpApiGroup.make("followUps")
+export class FollowUpsApi extends HttpApiGroup.make("automations.followUps")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
@@ -137,4 +137,4 @@ export class FollowUpsApi extends HttpApiGroup.make("followUps")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/follow-ups") {}
+  .prefix("/api/v1/automations/follow-ups") {}

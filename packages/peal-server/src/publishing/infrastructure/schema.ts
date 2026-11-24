@@ -378,7 +378,7 @@ export const uploadSessions = publishing.table("upload_sessions", {
 
 /**
  * The idempotency keys of the requests that made posts in one call
- * (`posts.send`), by workspace: the SHA-256 of the key its client chose and
+ * (`posts.create`), by workspace: the SHA-256 of the key its client chose and
  * of the request it came with, never either, and the post it made. A key
  * is free again 24 hours after `created_at`; the
  * `publishing.idempotency-retention` cron deletes those past it. Rows go

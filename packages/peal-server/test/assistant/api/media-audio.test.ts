@@ -5,6 +5,7 @@ import { HttpApiTest } from "effect/http-api";
 import { Api, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
+import { MediaTranscriptionsHandlers } from "#assistant/api/transcriptions.ts";
 import { AssistantApiLive, MediaAudioApiLive } from "#assistant/container.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { storedAudioId } from "#test/assistant/audio-support.ts";
@@ -25,12 +26,18 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 const syntheticKey = "sk_test_synthetic_audio_key";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["assistant", "mediaAudio"]).pipe(
+  HttpApiTest.groups(Api, [
+    "assistant",
+    "media.voiceovers",
+    "media.transcriptions",
+  ]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        Layer.merge(AssistantApiLive, MediaAudioApiLive).pipe(
-          Layer.provideMerge(securityTest(member))
-        ),
+        Layer.mergeAll(
+          AssistantApiLive,
+          MediaAudioApiLive,
+          MediaTranscriptionsHandlers
+        ).pipe(Layer.provideMerge(securityTest(member))),
         HttpServer.layerServices
       )
     )
@@ -57,8 +64,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         const editor = yield* as(workspaceId, "editor");
         const payload = { text: "A synthetic voice-over.", voice: "Rachel" };
 
-        const off = yield* editor.mediaAudio
-          .createVoiceover({ headers, payload })
+        const off = yield* editor["media.voiceovers"]
+          .create({ headers, payload })
           .pipe(Effect.flip);
 
         assert.deepInclude(off, {
@@ -142,7 +149,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           provider: null,
         });
 
-        const made = yield* editor.mediaAudio.createVoiceover({
+        const made = yield* editor["media.voiceovers"].create({
           headers,
           payload,
         });
@@ -153,8 +160,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           kind: "audio",
         });
 
-        const blank = yield* editor.mediaAudio
-          .createVoiceover({ headers, payload: { text: " " } })
+        const blank = yield* editor["media.voiceovers"]
+          .create({ headers, payload: { text: " " } })
           .pipe(Effect.flip);
 
         assert.deepInclude(blank, {
@@ -184,7 +191,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             payload: { model: "whisper-large-v3-turbo", provider: "groq" },
           });
 
-          const answered = yield* editor.mediaAudio.transcribe({
+          const answered = yield* editor["media.transcriptions"].create({
             headers,
             params: { mediaId: recordingId },
             payload: { saveAsDescription: true },
@@ -197,8 +204,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             text: "A synthetic transcript.",
           });
 
-          const tooLarge = yield* editor.mediaAudio
-            .transcribe({
+          const tooLarge = yield* editor["media.transcriptions"]
+            .create({
               headers,
               params: {
                 mediaId: "019a0000-0000-7000-8000-00000000a0d4",
@@ -207,8 +214,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             })
             .pipe(Effect.flip);
 
-          const missing = yield* editor.mediaAudio
-            .transcribe({
+          const missing = yield* editor["media.transcriptions"]
+            .create({
               headers,
               params: { mediaId: "not-an-id" },
               payload: {},
@@ -231,11 +238,11 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         const viewer = yield* as(workspaceId, "viewer");
 
         const refusals = yield* Effect.all([
-          viewer.mediaAudio
-            .createVoiceover({ headers, payload: { text: "Synthetic." } })
+          viewer["media.voiceovers"]
+            .create({ headers, payload: { text: "Synthetic." } })
             .pipe(Effect.flip),
-          viewer.mediaAudio
-            .transcribe({
+          viewer["media.transcriptions"]
+            .create({
               headers,
               params: { mediaId: recordingId },
               payload: {},

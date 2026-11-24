@@ -196,7 +196,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const asked = pending.find(({ postId }) => postId === first.id);
 
           const changes = yield* app.request(
-            `${base}/posts/${first.id}/request-changes`,
+            `${base}/approvals/${first.id}/request-changes`,
             {
               body: {
                 approvalId: asked?.id,
@@ -236,7 +236,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // Who decided is the member, by id: never what they wrote.
           assert.deepInclude(
             log.items.find(
-              ({ operation }) => operation === "review.requestChanges"
+              ({ operation }) => operation === "approvals.requestChanges"
             ),
             {
               actor: { _tag: "user", userId: owner.id },
@@ -247,14 +247,14 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           );
           assert.notInclude(JSON.stringify(log.items), "synthetic comment");
           assert.includeMembers(operations, [
-            "review.updateSettings",
-            "posts.send",
+            "approvals.updateSettings",
+            "posts.create",
             "posts.bulk",
             "posts.import",
           ]);
           // Neither the check nor the lookup asked to change anything.
           assert.notInclude(operations, "posts.validate");
-          assert.notInclude(operations, "lookups.run");
+          assert.notInclude(operations, "channels.lookups.run");
         })
     );
   }

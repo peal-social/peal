@@ -122,7 +122,7 @@ const exportData = Command.make(
       yield* checkFree(named.value);
     }
 
-    const { body, headers } = yield* client.account
+    const { body, headers } = yield* client["me.account"]
       .export()
       .pipe(
         Effect.mapError((failure) =>
@@ -185,7 +185,7 @@ const apps = Command.make(
 
     const { client, url } = yield* signedIn;
 
-    const found = yield* client.connectedApps
+    const found = yield* client["me.connectedApps"]
       .list()
       .pipe(
         Effect.mapError((failure) =>

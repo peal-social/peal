@@ -65,7 +65,7 @@ const logOf = Effect.fn("logOf")(function* logOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(`/api/v1/activity${query}`, {
+  const reply = yield* app.request(`/api/v1/workspace/activity${query}`, {
     headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
   });
 
@@ -182,7 +182,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 errorCode: "invalid_request",
                 impersonated: false,
                 objectIds: {},
-                operation: "posts.create",
+                operation: "posts.drafts.create",
                 requestId: "activity-test-0004",
                 status: 400,
                 via: "apiKey",
@@ -193,7 +193,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 errorCode: "post_not_found",
                 impersonated: false,
                 objectIds: { postId: unknownPost },
-                operation: "posts.discard",
+                operation: "posts.drafts.delete",
                 requestId: "activity-test-0003",
                 status: 404,
                 via: "apiKey",
@@ -204,7 +204,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 errorCode: "forbidden",
                 impersonated: false,
                 objectIds: {},
-                operation: "posts.create",
+                operation: "posts.drafts.create",
                 requestId: "activity-test-0002",
                 status: 403,
                 via: "apiKey",
@@ -215,7 +215,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 errorCode: null,
                 impersonated: false,
                 objectIds: {},
-                operation: "posts.create",
+                operation: "posts.drafts.create",
                 requestId: "activity-test-0001",
                 status: 201,
                 via: "apiKey",
@@ -226,7 +226,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 errorCode: null,
                 impersonated: false,
                 objectIds: {},
-                operation: "apiKeys.create",
+                operation: "workspace.apiKeys.create",
                 requestId: "issued",
                 status: 201,
                 via: "session",
@@ -237,7 +237,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
                 errorCode: null,
                 impersonated: false,
                 objectIds: {},
-                operation: "apiKeys.create",
+                operation: "workspace.apiKeys.create",
                 requestId: "issued",
                 status: 201,
                 via: "session",
@@ -249,7 +249,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const refusals = yield* logOf(
             owner,
             workspaceId,
-            `?operation=posts.create&actor=${reader.apiKey.id}`
+            `?operation=posts.drafts.create&actor=${reader.apiKey.id}`
           );
 
           assert.deepStrictEqual(
@@ -267,7 +267,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const owner = yield* signedUp("activity-owner");
           const admin = yield* signedUp("activity-admin");
           const workspaceId = yield* workspaceOf(owner, "Readers");
-          const path = `/api/v1/activity`;
+          const path = `/api/v1/workspace/activity`;
 
           yield* join(owner, workspaceId, admin, "admin");
 
@@ -299,7 +299,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(withKey.status, 200);
 
           // An admin cannot give a key what they do not hold.
-          const overreach = yield* app.request(`/api/v1/api-keys`, {
+          const overreach = yield* app.request(`/api/v1/workspace/api-keys`, {
             body: { name: "ci", permissions: ["activity:read"] },
             headers: { cookie: admin.cookies, ...forWorkspace(workspaceId) },
           });
@@ -314,8 +314,8 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.deepStrictEqual(
             log.items.map(({ operation, status }) => [operation, status]),
             [
-              ["apiKeys.create", overreach.status],
-              ["apiKeys.create", 201],
+              ["workspace.apiKeys.create", overreach.status],
+              ["workspace.apiKeys.create", 201],
               ["auth:/organization/accept-invitation", 200],
               ["auth:/organization/invite-member", 200],
             ]

@@ -99,7 +99,7 @@ export const studioRecyclingOf = (world: RecyclingWorld) => {
     );
 
   const groupLive = (studio: Studio) =>
-    HttpApiBuilder.group(Api, "recycling", (handlers) =>
+    HttpApiBuilder.group(Api, "automations.recycling", (handlers) =>
       handlers.handleAll({
         create: ({ payload }) =>
           Effect.gen(function* create() {

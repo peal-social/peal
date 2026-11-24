@@ -68,7 +68,7 @@ Create a draft. It answers 201 with the post, and its `id`:
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"channelIds": ["<channel-id>"], "content": {"text": "Our spring catalogue is out.", "media": [], "overrides": []}}' \
-  "$PEAL_API_URL/api/v1/posts"
+  "$PEAL_API_URL/api/v1/posts/drafts"
 ```
 
 `content.media` is a list of `{"mediaId": "...", "altText": "..."}`.
@@ -93,7 +93,7 @@ List drafts, and delete one:
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/drafts?limit=20"
 curl -sS -X DELETE -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/v1/posts/<post-id>"
+  "$PEAL_API_URL/api/v1/posts/drafts/<post-id>"
 ```
 
 A draft is not checked against the platforms.
@@ -112,7 +112,7 @@ curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: <key>" \
   -d '{"channelIds": ["<channel-id>"], "content": {"text": "Our spring catalogue is out.", "media": [], "overrides": []}, "when": {"_tag": "at", "at": "2026-11-20T09:00:00Z", "timeZone": "Europe/Paris"}}' \
-  "$PEAL_API_URL/api/v1/posts/send"
+  "$PEAL_API_URL/api/v1/posts"
 ```
 
 Within 24 hours, the same key with the same body answers the first post, and
@@ -150,7 +150,7 @@ curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/<post-id>/attempts"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/v1/posts?from=2026-11-01T00:00:00Z&to=2026-12-01T00:00:00Z"
+  "$PEAL_API_URL/api/v1/posts/calendar?from=2026-11-01T00:00:00Z&to=2026-12-01T00:00:00Z"
 ```
 
 Each entry of the post's `targets` has a `status`. For an `unconfirmed`
@@ -182,7 +182,7 @@ Counts and the activity log:
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/analytics/posts/<post-id>"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/v1/activity?limit=20"
+  "$PEAL_API_URL/api/v1/workspace/activity?limit=20"
 ```
 
 ## Errors and rate limits

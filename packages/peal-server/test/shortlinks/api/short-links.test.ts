@@ -42,7 +42,7 @@ const ShortLinksTest = ShortLinksLive.pipe(
 
 // A client of the endpoints acting as the member.
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["shortLinks"]).pipe(
+  HttpApiTest.groups(Api, ["links"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         ShortLinksApiLive.pipe(Layer.provideMerge(securityTest(member))),
@@ -68,7 +68,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
       const editor = yield* as("editor", workspaceId);
 
       assert.deepStrictEqual(
-        yield* editor.shortLinks.status({ headers: forWorkspace(workspaceId) }),
+        yield* editor.links.status({ headers: forWorkspace(workspaceId) }),
         {
           available: true,
           base,
@@ -77,7 +77,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         }
       );
 
-      const refused = yield* editor.shortLinks
+      const refused = yield* editor.links
         .setDefault({
           headers: forWorkspace(workspaceId),
           payload: { byDefault: true },
@@ -86,13 +86,13 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
 
       assert.strictEqual(refused._tag, "Forbidden");
 
-      yield* owner.shortLinks.setDefault({
+      yield* owner.links.setDefault({
         headers: forWorkspace(workspaceId),
         payload: { byDefault: true },
       });
 
       assert.isTrue(
-        (yield* editor.shortLinks.status({
+        (yield* editor.links.status({
           headers: forWorkspace(workspaceId),
         })).byDefault
       );
@@ -124,7 +124,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
 
         const owner = yield* as("owner", workspaceId);
 
-        const page = yield* owner.shortLinks.list({
+        const page = yield* owner.links.list({
           headers: forWorkspace(workspaceId),
           query: { from: "1890-05-01", postId, to: "1890-05-31" },
         });
@@ -157,7 +157,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
 
         assert(linkB !== undefined);
 
-        const one = yield* owner.shortLinks.get({
+        const one = yield* owner.links.get({
           headers: forWorkspace(workspaceId),
           params: { linkId: page.items[1]?.id ?? "" },
           query: { from: "1890-05-09", to: "1890-05-11" },
@@ -170,7 +170,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         ]);
         assert.strictEqual(one.link.clicks, 2);
 
-        const tooLong = yield* owner.shortLinks
+        const tooLong = yield* owner.links
           .list({
             headers: forWorkspace(workspaceId),
             query: { from: "1890-01-01", to: "1890-05-31" },
@@ -182,7 +182,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         // A filter that is not an id matches nothing, as the posts' search
         // answers it; a cursor that is not one stays refused.
         for (const query of [{ channelId: "nope" }, { postId: "nope" }]) {
-          const none = yield* owner.shortLinks.list({
+          const none = yield* owner.links.list({
             headers: forWorkspace(workspaceId),
             query: { ...query, from: "1890-05-01", to: "1890-05-31" },
           });
@@ -191,7 +191,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
           assert.isNull(none.nextCursor);
         }
 
-        const badCursor = yield* owner.shortLinks
+        const badCursor = yield* owner.links
           .list({
             headers: forWorkspace(workspaceId),
             query: { cursor: "nope" },
@@ -200,7 +200,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
 
         assert.strictEqual(badCursor._tag, "BadRequest");
 
-        const badRange = yield* owner.shortLinks
+        const badRange = yield* owner.links
           .list({
             headers: forWorkspace(workspaceId),
             query: { channelId: "nope", from: "1890-01-01", to: "1890-05-31" },
@@ -212,7 +212,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         // Another workspace's link is not found.
         const other = yield* as("owner", yield* freshWorkspace);
 
-        const missing = yield* other.shortLinks
+        const missing = yield* other.links
           .get({
             headers: forWorkspace(workspaceId),
             params: { linkId: linkB.id },
@@ -225,7 +225,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         // An API key granted posts but not analytics.
         const postsOnly = yield* clientAs(memberOf(workspaceId, ["post:read"]));
 
-        const denied = yield* postsOnly.shortLinks
+        const denied = yield* postsOnly.links
           .list({ headers: forWorkspace(workspaceId), query: {} })
           .pipe(Effect.flip);
 

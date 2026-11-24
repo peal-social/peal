@@ -19,6 +19,7 @@ import type { Member, QueueSlot } from "peal-contract";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ChannelSetsHandlers } from "#publishing/api/channel-sets.ts";
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { QueuesHandlers } from "#publishing/api/queues.ts";
 import { newId } from "#shared/application/ids.ts";
@@ -37,12 +38,20 @@ const timeout = 60_000;
 const start = "2026-06-15T07:00:00Z";
 
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["posts", "channelSets", "queues"]).pipe(
+  HttpApiTest.groups(Api, [
+    "posts",
+    "posts.drafts",
+    "channels.sets",
+    "automations.queues",
+  ]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        Layer.mergeAll(PostsHandlers, ChannelSetsHandlers, QueuesHandlers).pipe(
-          Layer.provideMerge(securityTest(member))
-        ),
+        Layer.mergeAll(
+          PostsHandlers,
+          PostDraftsHandlers,
+          ChannelSetsHandlers,
+          QueuesHandlers
+        ).pipe(Layer.provideMerge(securityTest(member))),
         HttpServer.layerServices
       )
     )
@@ -85,7 +94,7 @@ describe("queues", () => {
         Effect.gen(function* keeps() {
           const { editor, mastodon, headers, viewer } = yield* studio;
 
-          const made = yield* editor.queues.create({
+          const made = yield* editor["automations.queues"].create({
             headers,
             payload: {
               channelIds: [mastodon],
@@ -102,7 +111,7 @@ describe("queues", () => {
           assert.isNull(made.channelSetId);
           assert.strictEqual(made.timeZone, "Europe/Paris");
 
-          const taken = yield* editor.queues
+          const taken = yield* editor["automations.queues"]
             .create({
               headers,
               payload: { name: "WEEKDAYS", slots: [], timeZone: "UTC" },
@@ -111,7 +120,7 @@ describe("queues", () => {
 
           assert.instanceOf(taken, QueueNameTaken);
 
-          const byViewer = yield* viewer.queues
+          const byViewer = yield* viewer["automations.queues"]
             .create({
               headers,
               payload: { name: "Mine", slots: [], timeZone: "UTC" },
@@ -121,18 +130,20 @@ describe("queues", () => {
           assert.instanceOf(byViewer, Forbidden);
 
           // A reader reads them, and their coming slots.
-          const [listed] = yield* viewer.queues.list({ headers });
+          const [listed] = yield* viewer["automations.queues"].list({
+            headers,
+          });
 
           assert.strictEqual(listed?.id, made.id);
 
-          const got = yield* viewer.queues.get({
+          const got = yield* viewer["automations.queues"].get({
             headers,
             params: { queueId: made.id },
           });
 
           assert.deepStrictEqual(got, made);
 
-          const preview = yield* viewer.queues.slots({
+          const preview = yield* viewer["automations.queues"].slots({
             headers,
             params: { queueId: made.id },
             query: { count: 3 },
@@ -157,7 +168,7 @@ describe("queues", () => {
           );
           assert.isNull(preview.noRoom);
 
-          const renamed = yield* editor.queues.update({
+          const renamed = yield* editor["automations.queues"].update({
             headers,
             params: { queueId: made.id },
             payload: {
@@ -175,17 +186,20 @@ describe("queues", () => {
             DateTime.formatIso(made.createdAt)
           );
 
-          yield* editor.queues.delete({
+          yield* editor["automations.queues"].delete({
             headers,
             params: { queueId: made.id },
           });
 
-          const gone = yield* editor.queues
+          const gone = yield* editor["automations.queues"]
             .get({ headers, params: { queueId: made.id } })
             .pipe(Effect.flip);
 
           assert.instanceOf(gone, QueueNotFound);
-          assert.deepStrictEqual(yield* editor.queues.list({ headers }), []);
+          assert.deepStrictEqual(
+            yield* editor["automations.queues"].list({ headers }),
+            []
+          );
         })
       ),
     timeout
@@ -200,7 +214,7 @@ describe("queues", () => {
           const { editor, headers } = yield* studio;
 
           const queue = (name: string, isDefault = false) =>
-            editor.queues.create({
+            editor["automations.queues"].create({
               headers,
               payload: { isDefault, name, slots: [], timeZone: "UTC" },
             });
@@ -209,9 +223,9 @@ describe("queues", () => {
           const second = yield* queue("alpha");
           const third = yield* queue("Beta", true);
 
-          const order = (yield* editor.queues.list({ headers })).map(
-            ({ id, isDefault }) => [id, isDefault]
-          );
+          const order = (yield* editor["automations.queues"].list({
+            headers,
+          })).map(({ id, isDefault }) => [id, isDefault]);
 
           assert.deepStrictEqual(order, [
             [third.id, true],
@@ -220,12 +234,12 @@ describe("queues", () => {
           ]);
 
           // Deleting the default leaves none until another is made one.
-          yield* editor.queues.delete({
+          yield* editor["automations.queues"].delete({
             headers,
             params: { queueId: third.id },
           });
 
-          const left = yield* editor.queues.list({ headers });
+          const left = yield* editor["automations.queues"].list({ headers });
 
           assert.isTrue(left.every(({ isDefault }) => !isDefault));
         })
@@ -244,7 +258,7 @@ describe("queues", () => {
           yield* Effect.forEach(
             Array.from({ length: maxQueuesPerWorkspace }, (_, place) => place),
             (place) =>
-              editor.queues.create({
+              editor["automations.queues"].create({
                 headers,
                 payload: {
                   name: `Queue ${String(place)}`,
@@ -255,7 +269,7 @@ describe("queues", () => {
             { discard: true }
           );
 
-          const refused = yield* editor.queues
+          const refused = yield* editor["automations.queues"]
             .create({
               headers,
               payload: { name: "One more", slots: [], timeZone: "UTC" },
@@ -283,7 +297,7 @@ describe("queues", () => {
 
           const other = yield* studio;
 
-          const elsewhere = yield* editor.queues
+          const elsewhere = yield* editor["automations.queues"]
             .create({
               headers,
               payload: {
@@ -297,7 +311,7 @@ describe("queues", () => {
 
           assert.instanceOf(elsewhere, UnknownChannels);
 
-          const offset = yield* editor.queues
+          const offset = yield* editor["automations.queues"]
             .create({
               headers,
               payload: { name: "Offset", slots: [], timeZone: "+01:00" },
@@ -306,7 +320,7 @@ describe("queues", () => {
 
           assert.instanceOf(offset, InvalidTimeZone);
 
-          const noSet = yield* editor.queues
+          const noSet = yield* editor["automations.queues"]
             .create({
               headers,
               payload: {
@@ -320,12 +334,12 @@ describe("queues", () => {
 
           assert.instanceOf(noSet, ChannelSetNotFound);
 
-          const set = yield* editor.channelSets.create({
+          const set = yield* editor["channels.sets"].create({
             headers,
             payload: { channelIds: [bluesky], name: "Launch" },
           });
 
-          const queue = yield* editor.queues.create({
+          const queue = yield* editor["automations.queues"].create({
             headers,
             payload: {
               channelIds: [mastodon, bluesky],
@@ -342,13 +356,15 @@ describe("queues", () => {
             channels.remove(workspaceId, mastodon)
           );
 
-          const [listed] = yield* editor.queues.list({ headers });
+          const [listed] = yield* editor["automations.queues"].list({
+            headers,
+          });
 
           assert.deepStrictEqual(listed?.channelIds, [mastodon, bluesky]);
           assert.deepStrictEqual(listed?.unavailableChannelIds, [mastodon]);
 
           // Saved again, it takes connected channels only.
-          const stale = yield* editor.queues
+          const stale = yield* editor["automations.queues"]
             .update({
               headers,
               params: { queueId: queue.id },
@@ -364,12 +380,12 @@ describe("queues", () => {
           assert.instanceOf(stale, UnknownChannels);
 
           // A set deleted is taken off the queues that name it.
-          yield* editor.channelSets.delete({
+          yield* editor["channels.sets"].delete({
             headers,
             params: { channelSetId: set.id },
           });
 
-          const after = yield* editor.queues.get({
+          const after = yield* editor["automations.queues"].get({
             headers,
             params: { queueId: queue.id },
           });
@@ -388,12 +404,12 @@ describe("queues", () => {
         Effect.gen(function* empty() {
           const { editor, headers } = yield* studio;
 
-          const queue = yield* editor.queues.create({
+          const queue = yield* editor["automations.queues"].create({
             headers,
             payload: { name: "Empty", slots: [], timeZone: "UTC" },
           });
 
-          const preview = yield* editor.queues.slots({
+          const preview = yield* editor["automations.queues"].slots({
             headers,
             params: { queueId: queue.id },
             query: {},
@@ -405,7 +421,7 @@ describe("queues", () => {
             slots: [],
           });
 
-          const unknown = yield* editor.queues
+          const unknown = yield* editor["automations.queues"]
             .slots({ headers, params: { queueId: "not-a-queue" }, query: {} })
             .pipe(Effect.flip);
 
@@ -426,7 +442,7 @@ describe("posts added to a queue", () => {
           const { bluesky, editor, mastodon, headers, workspaceId } =
             yield* studio;
 
-          const queue = yield* editor.queues.create({
+          const queue = yield* editor["automations.queues"].create({
             headers,
             payload: {
               channelIds: [mastodon, bluesky],
@@ -457,7 +473,7 @@ describe("posts added to a queue", () => {
             channels.remove(workspaceId, bluesky)
           );
 
-          const sent = yield* editor.posts.send({
+          const sent = yield* editor.posts.create({
             headers,
             payload: { channelIds: [], content, when: { _tag: "queue" } },
             query: {},
@@ -484,7 +500,7 @@ describe("posts added to a queue", () => {
             "2026-06-15T07:30:00.000Z"
           );
 
-          const found = yield* editor.posts.search({
+          const found = yield* editor.posts.list({
             headers,
             query: { queueId: queue.id },
           });
@@ -495,7 +511,7 @@ describe("posts added to a queue", () => {
           );
 
           // A draft put on the queue takes the slot after.
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [mastodon],
@@ -518,13 +534,13 @@ describe("posts added to a queue", () => {
           );
 
           // A queue without slots has no room, and the check says why.
-          const empty = yield* editor.queues.create({
+          const empty = yield* editor["automations.queues"].create({
             headers,
             payload: { name: "Empty", slots: [], timeZone: "UTC" },
           });
 
           const noRoom = yield* editor.posts
-            .send({
+            .create({
               headers,
               payload: {
                 channelIds: [mastodon],
@@ -578,7 +594,7 @@ describe("posts added to a queue", () => {
 
           const linkedin = yield* connect(workspaceId, "linkedin");
 
-          const set = yield* editor.channelSets.create({
+          const set = yield* editor["channels.sets"].create({
             headers,
             payload: {
               channelIds: [linkedin],
@@ -592,7 +608,7 @@ describe("posts added to a queue", () => {
             },
           });
 
-          const queue = yield* editor.queues.create({
+          const queue = yield* editor["automations.queues"].create({
             headers,
             payload: {
               channelIds: [mastodon, bluesky],
@@ -610,7 +626,7 @@ describe("posts added to a queue", () => {
 
           const content = { media: [], overrides: [], text: "Evergreen." };
 
-          const draft = yield* editor.posts.create({
+          const draft = yield* editor["posts.drafts"].create({
             headers,
             payload: { channelIds: [], content },
           });
@@ -646,7 +662,7 @@ describe("posts added to a queue", () => {
           ]);
 
           // A queue that names a set and no channel of its own.
-          const setOnly = yield* editor.queues.create({
+          const setOnly = yield* editor["automations.queues"].create({
             headers,
             payload: {
               channelSetId: set.id,
@@ -656,7 +672,7 @@ describe("posts added to a queue", () => {
             },
           });
 
-          const other = yield* editor.posts.create({
+          const other = yield* editor["posts.drafts"].create({
             headers,
             payload: {
               channelIds: [],
@@ -690,7 +706,7 @@ describe("reshuffling a queue", () => {
         Effect.gen(function* reshuffled() {
           const { editor, mastodon, headers, viewer } = yield* studio;
 
-          const queue = yield* editor.queues.create({
+          const queue = yield* editor["automations.queues"].create({
             headers,
             payload: {
               channelIds: [mastodon],
@@ -701,7 +717,7 @@ describe("reshuffling a queue", () => {
           });
 
           const send = (text: string) =>
-            editor.posts.send({
+            editor.posts.create({
               headers,
               payload: {
                 channelIds: [],
@@ -716,7 +732,7 @@ describe("reshuffling a queue", () => {
           const second = yield* send("The second post.");
 
           // Tuesdays only, from now on.
-          yield* editor.queues.update({
+          yield* editor["automations.queues"].update({
             headers,
             params: { queueId: queue.id },
             payload: {
@@ -727,13 +743,13 @@ describe("reshuffling a queue", () => {
             },
           });
 
-          const byViewer = yield* viewer.queues
+          const byViewer = yield* viewer["automations.queues"]
             .reshuffle({ headers, params: { queueId: queue.id } })
             .pipe(Effect.flip);
 
           assert.instanceOf(byViewer, Forbidden);
 
-          const result = yield* editor.queues.reshuffle({
+          const result = yield* editor["automations.queues"].reshuffle({
             headers,
             params: { queueId: queue.id },
           });
@@ -762,7 +778,7 @@ describe("reshuffling a queue", () => {
             "2026-06-23T07:30:00.000Z",
           ]);
 
-          const again = yield* editor.queues.reshuffle({
+          const again = yield* editor["automations.queues"].reshuffle({
             headers,
             params: { queueId: queue.id },
           });
@@ -770,7 +786,7 @@ describe("reshuffling a queue", () => {
           assert.strictEqual(again.moved, 0);
           assert.strictEqual(again.unchanged, 2);
 
-          const unknown = yield* editor.queues
+          const unknown = yield* editor["automations.queues"]
             .reshuffle({
               headers,
               params: {
@@ -781,12 +797,12 @@ describe("reshuffling a queue", () => {
 
           assert.instanceOf(unknown, QueueNotFound);
 
-          const empty = yield* editor.queues.create({
+          const empty = yield* editor["automations.queues"].create({
             headers,
             payload: { name: "Empty", slots: [], timeZone: "Europe/Paris" },
           });
 
-          const noSlots = yield* editor.queues
+          const noSlots = yield* editor["automations.queues"]
             .reshuffle({ headers, params: { queueId: empty.id } })
             .pipe(Effect.flip);
 

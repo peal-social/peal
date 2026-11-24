@@ -49,7 +49,7 @@ export const invitationView = (invitation: Invitation): InvitationView => ({
 
 export const MembersHandlers = HttpApiBuilder.group(
   Api,
-  "members",
+  "workspace.members",
   Effect.fn(function* membersHandlers(handlers) {
     const members = yield* WorkspaceMembers;
 
@@ -72,7 +72,7 @@ export const MembersHandlers = HttpApiBuilder.group(
 
 export const InvitationsHandlers = HttpApiBuilder.group(
   Api,
-  "invitations",
+  "workspace.invitations",
   Effect.fn(function* invitationsHandlers(handlers) {
     const members = yield* WorkspaceMembers;
     const limitReached = yield* limitRefusal;

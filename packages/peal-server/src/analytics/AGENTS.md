@@ -80,7 +80,7 @@
   reader joins that list in the same change, or the reader is never asked.
   The list is what Peal can read, not what a server does: the web post
   page (`PostMetrics`) takes the platforms counted from the server's
-  capabilities (`GET …/platforms/capabilities`, `analytics.perPost`:
+  capabilities (`GET …/channels/capabilities`, `analytics.perPost`:
   `countedOn`), so X is named only where `X_ANALYTICS` is on, and falls
   back on the list when it may not read them.
 - `CollectMetrics` runs on the `analytics.collect-metrics` cron, hourly at

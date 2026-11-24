@@ -336,7 +336,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   decodes: persisted contract (`fixtures/persisted/posts/origins.json`).
   The post view shows it, the export holds it without who, `forgetAuthor`
   clears `scheduled_by`, and no adapter is handed any of it.
-- `PostScheduling.send` (`posts.send`, `create_post`, `peal post`) creates
+- `PostScheduling.send` (`posts.create`, `create_post`, `peal post`) creates
   and schedules in one call; "now" is the current instant, through every
   rule a later time goes through. With an `Idempotency-Key`
   (`IdempotencyKeys`, `publishing.idempotency_keys`: SHA-256 of the key and
@@ -460,7 +460,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   LinkedIn, Facebook Pages, Pinterest and X stay `unverified` for edits.
 - Every way of scheduling passes the `ApprovalGate` in the transaction that
   saves the post: `schedule`, `scheduleDraft`, `reschedule` and `send` (so
-  `posts.send`, `create_post`, `publish_post` and `peal post` too) ask
+  `posts.create`, `create_post`, `publish_post` and `peal post` too) ask
   `mayAsk`, then `throughGate` before `roomInMonth`. A held post takes its
   month's room and gets no job; `PostEvents.scheduled` is told only for a
   post that is scheduled (`announce`), and `HeldPosts.release` tells it once
@@ -1009,7 +1009,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   a violation of a later part names it by `part`, and each channel's
   preview lists the later parts with their own counts (`parts`), whether
   or not its platform takes any.
-- A post made in one call (`PostScheduling.send`: `posts.send`, bulk,
+- A post made in one call (`PostScheduling.send`: `posts.create`, bulk,
   import, `create_post`, `peal post`) is refused (`DuplicateContent`, 409
   `DuplicatePost`) when another post of the workspace sends the same content
   (`contentOn`: the channel's text, NFC and trimmed, and its media ids,
@@ -1026,7 +1026,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   publishing or finished, on a target pending, publishing, published or
   unconfirmed). It is apart from idempotency keys: a replay answers before
   it.
-- `PostOutcomes.await` (`posts.send?wait=`, `GET …/posts/:id/outcome`,
+- `PostOutcomes.await` (`posts.create?wait=`, `GET …/posts/:id/outcome`,
   `await_post`, `create_post`'s `waitSeconds`, `peal post --wait`) only
   reads the post again every half second, 60 seconds at most
   (`maxOutcomeWait`): no transaction or lock is held while a request waits,
@@ -1077,12 +1077,12 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   first `listed` that went out and the first planned), whatever else the
   workspace keeps (`weekStatements`, whose plans
   `post-attention.test.ts` reads among years of posts).
-- `PostSearch` (`posts.search`, `list_posts`, `peal posts list`) pages by
+- `PostSearch` (`posts.list`, `list_posts`, `peal posts list`) pages by
   keyset on `(scheduled_at, id)` or on `id`, which orders by creation
   (UUIDv7), never by offset; a cursor is opaque (`PostPositionSchema`) and
   continues its own sort only. Publishing stores no platform: the platform
   filter asks `WorkspaceChannels` about `PostRepository.channelsUsed`, so a
-  disconnected channel's posts are not found by platform. `posts.list` (a
+  disconnected channel's posts are not found by platform. `posts.calendar` (a
   range of 62 days) stays for calendars. Add a filter to `PostFilter`,
   `pageConditions`, the contract's query, `list_posts` and the CLI together.
 
@@ -1098,7 +1098,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
 ## Capabilities and lookups
 
 - Clients ask what a channel takes rather than learn each platform:
-  `GET …/platforms/capabilities` and `GET …/channels/:channelId/capabilities`
+  `GET …/channels/capabilities` and `GET …/channels/:channelId/capabilities`
   (`PostingCapabilities`, channel:read, API keys and read-only OAuth clients
   included) answer `capabilitiesOf`
   (`#publishing/domain/platform-capabilities.ts`): `platformRules` with

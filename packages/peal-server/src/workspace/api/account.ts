@@ -162,7 +162,7 @@ const fileNameOf = (exportedAt: DateTime.Utc): string =>
 
 export const AccountHandlers = HttpApiBuilder.group(
   Api,
-  "account",
+  "me.account",
   Effect.fn(function* accountHandlers(handlers) {
     const data = yield* AccountData;
     const closing = yield* CloseAccount;

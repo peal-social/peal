@@ -752,7 +752,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           headers: Readonly<Record<string, string>>,
           workspace = workspaceId
         ) =>
-          app.request(`/api/v1/posts/send`, {
+          app.request(`/api/v1/posts`, {
             body: {
               channelIds: ["0190f3a0-0000-7000-8000-00000000c0de"],
               content: { media: [], overrides: [], text: "Synthetic." },
@@ -820,7 +820,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
         assert.strictEqual(refusal(foreign.body).reason, "untrustedOrigin");
 
         // What only the person does, asked by a key.
-        const person = yield* app.request(`/api/v1/members`, {
+        const person = yield* app.request(`/api/v1/workspace/members`, {
           headers: {
             authorization: `Bearer ${key}`,
             ...forWorkspace(workspaceId),

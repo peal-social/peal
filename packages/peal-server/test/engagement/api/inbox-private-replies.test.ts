@@ -75,7 +75,7 @@ const worldWithComment = (): PrivateReplyWorld => {
 };
 
 const clientAs = (world: PrivateReplyWorld, member: Member) =>
-  HttpApiTest.groups(Api, ["inbox", "inboxMessages"]).pipe(
+  HttpApiTest.groups(Api, ["inbox.comments", "inbox.messages"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         Layer.mergeAll(InboxApiLive, InboxMessagesApiLive).pipe(
@@ -103,7 +103,7 @@ const at = <A, E, R>(effect: Effect.Effect<A, E, R>, when = soon) =>
 const sending = (member: Member, world: PrivateReplyWorld, text = "Hi") =>
   clientAs(world, member).pipe(
     Effect.flatMap((client) =>
-      client.inboxMessages.sendPrivateReply({
+      client["inbox.messages"].sendPrivateReply({
         headers,
         payload: { commentId: commentId(1), text },
       })
@@ -136,7 +136,7 @@ describe("the private replies' endpoints", () => {
             reply.id
           );
 
-          const shown = yield* client.inboxMessages.getPrivateReply({
+          const shown = yield* client["inbox.messages"].getPrivateReply({
             headers,
             params: { privateReplyId: reply.id },
           });
@@ -144,7 +144,7 @@ describe("the private replies' endpoints", () => {
           assert.deepStrictEqual(shown, reply);
 
           // Only an unconfirmed one is confirmed.
-          const conflict = yield* client.inboxMessages
+          const conflict = yield* client["inbox.messages"]
             .confirmPrivateReply({
               headers,
               params: { privateReplyId: reply.id },
@@ -155,7 +155,7 @@ describe("the private replies' endpoints", () => {
           assert.instanceOf(conflict, ReplyStatusConflict);
 
           // The thread shows it on its comment, and until when one may go.
-          const detail = yield* client.inbox.getThread({
+          const detail = yield* client["inbox.comments"].getThread({
             headers,
             params: { threadId: thread(1).id },
           });
@@ -170,7 +170,7 @@ describe("the private replies' endpoints", () => {
             DateTime.addDuration(writtenAt, privateReplyWindow)
           );
 
-          const abilities = yield* client.inbox.getAbilities({
+          const abilities = yield* client["inbox.comments"].getAbilities({
             headers,
             params: { channelId: channelId(1) },
           });
@@ -233,7 +233,7 @@ describe("the private replies' endpoints", () => {
           for (const member of [viewer, staff, application]) {
             const client = yield* clientAs(world, member);
 
-            const shown = yield* client.inboxMessages
+            const shown = yield* client["inbox.messages"]
               .getPrivateReply({
                 headers,
                 params: { privateReplyId: reply.id },
@@ -245,7 +245,7 @@ describe("the private replies' endpoints", () => {
 
           const detail = yield* clientAs(world, viewer).pipe(
             Effect.flatMap((client) =>
-              client.inbox.getThread({
+              client["inbox.comments"].getThread({
                 headers,
                 params: { threadId: thread(1).id },
               })
@@ -278,7 +278,7 @@ describe("the private replies' endpoints", () => {
         const detail = yield* at(
           clientAs(world, editor).pipe(
             Effect.flatMap((client) =>
-              client.inbox.getThread({
+              client["inbox.comments"].getThread({
                 headers,
                 params: { threadId: thread(1).id },
               })
@@ -299,7 +299,7 @@ describe("the private replies' endpoints", () => {
         const unknown = yield* at(
           clientAs(world, editor).pipe(
             Effect.flatMap((client) =>
-              client.inboxMessages.sendPrivateReply({
+              client["inbox.messages"].sendPrivateReply({
                 headers,
                 payload: { commentId: "not-an-id", text: "Hi" },
               })
@@ -329,7 +329,7 @@ describe("the private replies' endpoints", () => {
         const missing = yield* at(
           clientAs(world, editor).pipe(
             Effect.flatMap((client) =>
-              client.inboxMessages.getPrivateReply({
+              client["inbox.messages"].getPrivateReply({
                 headers,
                 params: { privateReplyId: "not-an-id" },
               })

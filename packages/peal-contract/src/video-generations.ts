@@ -145,7 +145,7 @@ export type VideoGenerations = typeof VideoGenerationsSchema.Type;
  * for videos, with its own key: a durable job each, which a request starts
  * and the workspace follows.
  */
-export class VideoGenerationsApi extends HttpApiGroup.make("videoGenerations")
+export class VideoGenerationsApi extends HttpApiGroup.make("media.videos")
   .add(
     HttpApiEndpoint.post("create", "/", {
       error: [

@@ -56,7 +56,7 @@ export type NewInvitation = typeof NewInvitationSchema.Type;
  * through the sign-in service's organization routes, under /api/auth, as
  * the invitee, from the link the invitation emailed.
  */
-export class InvitationsApi extends HttpApiGroup.make("invitations")
+export class InvitationsApi extends HttpApiGroup.make("workspace.invitations")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden],
@@ -104,4 +104,4 @@ export class InvitationsApi extends HttpApiGroup.make("invitations")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/invitations") {}
+  .prefix("/api/v1/workspace/invitations") {}

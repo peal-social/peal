@@ -213,7 +213,7 @@ export const partnerHealthDescription = `Answers, for each workspace the partner
  */
 export class PartnerApi extends HttpApiGroup.make("partner")
   .add(
-    HttpApiEndpoint.get("account", "/", {
+    HttpApiEndpoint.get("get", "/", {
       error: Forbidden,
       success: PartnerOverviewSchema,
     }).annotateMerge(

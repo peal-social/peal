@@ -154,7 +154,7 @@ const clientWith = Effect.fn("test.lookupsClient")(function* clientWith(
 ) {
   const asked = yield* Ref.make<readonly LookupQuery[]>([]);
 
-  const client = yield* HttpApiTest.groups(Api, ["lookups"]).pipe(
+  const client = yield* HttpApiTest.groups(Api, ["channels.lookups"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         LookupsHandlers.pipe(
@@ -235,7 +235,7 @@ describe("a channel's lookups endpoint", () => {
     Effect.gen(function* listed() {
       const { client } = yield* clientWith(viewer);
 
-      const described = yield* client.lookups.list({
+      const described = yield* client["channels.lookups"].list({
         headers: forWorkspace(workspaceId),
         params: youtube,
       });
@@ -267,7 +267,7 @@ describe("a channel's lookups endpoint", () => {
       );
 
       assert.deepStrictEqual(
-        yield* client.lookups.list({
+        yield* client["channels.lookups"].list({
           headers: forWorkspace(workspaceId),
           params: { channelId: onMastodon },
         }),
@@ -283,14 +283,14 @@ describe("a channel's lookups endpoint", () => {
         const { client } = yield* clientWith(viewer);
         const outside = yield* clientWith(stranger);
 
-        const unknown = yield* client.lookups
+        const unknown = yield* client["channels.lookups"]
           .list({
             headers: forWorkspace(workspaceId),
             params: { channelId: "not-an-id" },
           })
           .pipe(Effect.flip);
 
-        const refused = yield* outside.client.lookups
+        const refused = yield* outside.client["channels.lookups"]
           .list({ headers: forWorkspace(workspaceId), params: youtube })
           .pipe(Effect.flip);
 
@@ -305,13 +305,13 @@ describe("running a channel's lookup", () => {
     Effect.gen(function* ran() {
       const { asked, client } = yield* clientWith(viewer);
 
-      const categories = yield* client.lookups.run({
+      const categories = yield* client["channels.lookups"].run({
         headers: forWorkspace(workspaceId),
         params: { ...youtube, name: "youtubeVideoCategories" },
         payload: { regionCode: "FR" },
       });
 
-      const playlists = yield* client.lookups.run({
+      const playlists = yield* client["channels.lookups"].run({
         headers: forWorkspace(workspaceId),
         params: { ...youtube, name: "youtubePlaylists" },
         payload: {},
@@ -347,7 +347,7 @@ describe("running a channel's lookup", () => {
       Effect.gen(function* tiktokCreator() {
         const { client } = yield* clientWith(viewer);
 
-        const result = yield* client.lookups.run({
+        const result = yield* client["channels.lookups"].run({
           headers: forWorkspace(workspaceId),
           params: { channelId: onTikTok, name: "tiktokCreator" },
           payload: {},
@@ -385,18 +385,18 @@ describe("running a channel's lookup", () => {
         const { asked, client } = yield* clientWith(viewer);
         const params = { channelId: onPinterest };
 
-        const described = yield* client.lookups.list({
+        const described = yield* client["channels.lookups"].list({
           headers: forWorkspace(workspaceId),
           params,
         });
 
-        const boards = yield* client.lookups.run({
+        const boards = yield* client["channels.lookups"].run({
           headers: forWorkspace(workspaceId),
           params: { ...params, name: "pinterestBoards" },
           payload: { limit: 2 },
         });
 
-        const sections = yield* client.lookups.run({
+        const sections = yield* client["channels.lookups"].run({
           headers: forWorkspace(workspaceId),
           params: { ...params, name: "pinterestBoardSections" },
           payload: { boardId: "549755885001" },
@@ -460,7 +460,7 @@ describe("running a channel's lookup", () => {
       const errors = yield* Effect.forEach(
         [{}, { boardId: "not-digits" }],
         (payload) =>
-          client.lookups
+          client["channels.lookups"]
             .run({
               headers: forWorkspace(workspaceId),
               params: {
@@ -486,7 +486,7 @@ describe("running a channel's lookup", () => {
         const { asked, client } = yield* clientWith(viewer);
         const params = { channelId: onLinkedInPage };
 
-        const [described] = yield* client.lookups.list({
+        const [described] = yield* client["channels.lookups"].list({
           headers: forWorkspace(workspaceId),
           params,
         });
@@ -498,7 +498,7 @@ describe("running a channel's lookup", () => {
           [["vanityName", true]]
         );
 
-        const found = yield* client.lookups.run({
+        const found = yield* client["channels.lookups"].run({
           headers: forWorkspace(workspaceId),
           params: { ...params, name: "linkedinOrganizations" },
           payload: { vanityName: "example-bakery" },
@@ -519,14 +519,14 @@ describe("running a channel's lookup", () => {
         const params = { channelId: onLinkedInProfile };
 
         assert.deepStrictEqual(
-          yield* client.lookups.list({
+          yield* client["channels.lookups"].list({
             headers: forWorkspace(workspaceId),
             params,
           }),
           []
         );
 
-        const refused = yield* client.lookups
+        const refused = yield* client["channels.lookups"]
           .run({
             headers: forWorkspace(workspaceId),
             params: { ...params, name: "linkedinOrganizations" },
@@ -550,7 +550,7 @@ describe("running a channel's lookup", () => {
           { channelId: onMastodon, name: "tiktokCreator" },
         ],
         (params) =>
-          client.lookups
+          client["channels.lookups"]
             .run({
               headers: forWorkspace(workspaceId),
               params: { ...params },
@@ -571,7 +571,7 @@ describe("running a channel's lookup", () => {
     Effect.gen(function* invalid() {
       const { asked, client } = yield* clientWith(viewer);
 
-      const stray = yield* client.lookups
+      const stray = yield* client["channels.lookups"]
         .run({
           headers: forWorkspace(workspaceId),
           params: { ...youtube, name: "youtubePlaylists" },
@@ -579,7 +579,7 @@ describe("running a channel's lookup", () => {
         })
         .pipe(Effect.flip);
 
-      const creatorPaged = yield* client.lookups
+      const creatorPaged = yield* client["channels.lookups"]
         .run({
           headers: forWorkspace(workspaceId),
           params: { channelId: onTikTok, name: "tiktokCreator" },
@@ -608,7 +608,7 @@ describe("running a channel's lookup", () => {
         (failure) =>
           clientWith(viewer, failure).pipe(
             Effect.flatMap(({ client }) =>
-              client.lookups.run({
+              client["channels.lookups"].run({
                 headers: forWorkspace(workspaceId),
                 params: { ...youtube, name: "youtubePlaylists" },
                 payload: {},
@@ -634,7 +634,7 @@ describe("running a channel's lookup", () => {
     Effect.gen(function* refused() {
       const { asked, client } = yield* clientWith(stranger);
 
-      const error = yield* client.lookups
+      const error = yield* client["channels.lookups"]
         .run({
           headers: forWorkspace(workspaceId),
           params: { ...youtube, name: "youtubePlaylists" },

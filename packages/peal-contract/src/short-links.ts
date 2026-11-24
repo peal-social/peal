@@ -118,7 +118,7 @@ const period = `from \`from\` to \`to\` (UTC days, both included, at most ${maxS
  * The short links a workspace's posts went out with, and their clicks.
  * Off on a server whose operator set no base for them.
  */
-export class ShortLinksApi extends HttpApiGroup.make("shortLinks")
+export class ShortLinksApi extends HttpApiGroup.make("links")
   .add(
     HttpApiEndpoint.get("status", "/status", {
       error: [Forbidden],
@@ -192,4 +192,4 @@ export class ShortLinksApi extends HttpApiGroup.make("shortLinks")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/short-links") {}
+  .prefix("/api/v1/links") {}

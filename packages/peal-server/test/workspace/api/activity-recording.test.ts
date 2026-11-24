@@ -158,7 +158,7 @@ const failingJournal = ActivityJournal.of({
 
 const change = {
   named: { postId: "0195d2c0-0000-7000-8000-000000000001", workspaceId },
-  operation: "posts.discard",
+  operation: "posts.drafts.delete",
   principal: key,
   workspaceId,
 };
@@ -249,7 +249,7 @@ describe("recording a request", () => {
     () =>
       Effect.gen(function* deletion() {
         const kept = yield* Ref.make<readonly AnsweredChange[]>([]);
-        const deleting = { ...change, operation: "workspaces.delete" };
+        const deleting = { ...change, operation: "workspace.delete" };
 
         yield* Effect.succeed(HttpServerResponse.empty({ status: 204 })).pipe(
           recorded(journalOf(kept), deleting)

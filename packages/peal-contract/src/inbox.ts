@@ -454,7 +454,7 @@ const acting =
  * A workspace's inbox: the comments under its published posts, on the
  * platforms Peal reads them on, and what members do about them.
  */
-export class InboxApi extends HttpApiGroup.make("inbox")
+export class InboxApi extends HttpApiGroup.make("inbox.comments")
   .add(
     HttpApiEndpoint.get("listThreads", "/threads", {
       error: [Forbidden, HttpApiError.BadRequest],
@@ -501,7 +501,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
         summary: "Get a channel's inbox abilities",
       })
     ),
-    HttpApiEndpoint.post("reply", "/comments/:commentId/replies", {
+    HttpApiEndpoint.post("reply", "/:commentId/replies", {
       error: [
         Forbidden,
         InboxCommentNotFound,
@@ -529,7 +529,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
         summary: "Reply to a comment",
       })
     ),
-    HttpApiEndpoint.post("setAnswered", "/comments/:commentId/answered", {
+    HttpApiEndpoint.post("setAnswered", "/:commentId/answered", {
       error: [Forbidden, InboxCommentNotFound, InboxCommentGone],
       headers: workspaceHeaders,
       params: comment,
@@ -541,7 +541,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
         summary: "Mark a comment answered",
       })
     ),
-    HttpApiEndpoint.post("moderate", "/comments/:commentId/moderation", {
+    HttpApiEndpoint.post("moderate", "/:commentId/moderation", {
       error: [
         Forbidden,
         InboxCommentNotFound,
@@ -591,4 +591,4 @@ export class InboxApi extends HttpApiGroup.make("inbox")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/inbox") {}
+  .prefix("/api/v1/inbox/comments") {}

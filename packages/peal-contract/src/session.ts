@@ -62,9 +62,9 @@ export const MeSchema = Schema.Struct({
 
 export type Me = typeof MeSchema.Type;
 
-export class SessionApi extends HttpApiGroup.make("session")
+export class SessionApi extends HttpApiGroup.make("me")
   .add(
-    HttpApiEndpoint.get("me", "/api/me", {
+    HttpApiEndpoint.get("get", "/api/me", {
       error: [Forbidden, Unauthenticated],
       success: MeSchema,
     }).annotateMerge(

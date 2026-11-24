@@ -22,8 +22,8 @@ Nx projects live directly under `packages/`, but for the SDKs, which have one
 per language under `packages/peal-sdk/`, and the infrastructure, which has
 one per tool under `packages/peal-infra/`:
 
-- `peal-contract`: the HTTP API definition (`Api`: Effect `HttpApi` groups,
-  Schemas and the `Authentication` and `WorkspaceAccess` middlewares),
+- `peal-contract`: the HTTP API definition (`Api`: Effect `HttpApi` groups
+  named by namespace (`inbox.messages`), Schemas and the `Authentication` and `WorkspaceAccess` middlewares),
   `OAuthApi` for the Better Auth endpoints Peal's clients call, and
   `peal-contract/post-text`, the text rules clients count with. The server
   implements `Api`; the web app and the CLI derive typed clients from it, and

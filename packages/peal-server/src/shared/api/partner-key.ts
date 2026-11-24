@@ -4,7 +4,7 @@ import type { Principal } from "peal-contract";
 
 // What the partner API's endpoints answer about the key they take, in the
 // same words whichever context serves the endpoint: the workspace
-// context's `/api/v1/partner` and billing's `/api/v1/partner/usage`.
+// context's `/api/v1/partner` and billing's `/api/v1/partner/customer-usage`.
 
 /** A partner key, as the contract describes the principal behind it. */
 export type PartnerKeyCredential = Extract<

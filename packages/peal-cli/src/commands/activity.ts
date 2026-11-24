@@ -105,7 +105,7 @@ const list = Command.make(
   Effect.fn("activity.list")(function* list(input) {
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
-    const page = yield* client.activity
+    const page = yield* client["workspace.activity"]
       .list({
         headers: {},
         query: {

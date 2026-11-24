@@ -5,6 +5,7 @@ import { HttpApiTest } from "effect/http-api";
 import { Api, LastTargetLeft, forWorkspace } from "peal-contract";
 import type { PostContent } from "peal-contract";
 
+import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { DrizzleArticleStore } from "#publishing/infrastructure/drizzle-article-store.ts";
@@ -37,10 +38,10 @@ const later = { at: utc("2026-06-16T07:30:00Z"), timeZone: "Europe/Paris" };
 const freshWorkspace = newId(WorkspaceIdSchema);
 
 const editorIn = (workspaceId: WorkspaceId) =>
-  HttpApiTest.groups(Api, ["posts"]).pipe(
+  HttpApiTest.groups(Api, ["posts", "posts.drafts"]).pipe(
     Effect.provide(
       Layer.mergeAll(
-        PostsHandlers.pipe(
+        Layer.merge(PostsHandlers, PostDraftsHandlers).pipe(
           Layer.provideMerge(
             securityTest(memberOf(workspaceId, permissionsFor("editor")))
           )
@@ -82,7 +83,7 @@ describe("a post with media of its own on a channel", () => {
             text: "Five synthetic pictures",
           };
 
-          const draft = yield* client.posts.create({
+          const draft = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: { channelIds: [threads, bluesky], content },
           });
@@ -153,7 +154,7 @@ describe("a post with media of its own on a channel", () => {
           const client = yield* editorIn(workspaceId);
           const unknown = yield* newId(MediaAssetIdSchema);
 
-          const refused = yield* client.posts
+          const refused = yield* client["posts.drafts"]
             .create({
               headers: forWorkspace(workspaceId),
               payload: {
@@ -190,7 +191,7 @@ describe("a post with media of its own on a channel", () => {
           const client = yield* editorIn(workspaceId);
           const photo = yield* storeMedia(workspaceId);
 
-          const draft = yield* client.posts.create({
+          const draft = yield* client["posts.drafts"].create({
             headers: forWorkspace(workspaceId),
             payload: {
               channelIds: [bluesky],
@@ -248,7 +249,7 @@ describe("removing a channel from a scheduled post", () => {
           const mastodon = yield* connect(workspaceId, "mastodon");
           const client = yield* editorIn(workspaceId);
 
-          const post = yield* client.posts.send({
+          const post = yield* client.posts.create({
             headers: { ...forWorkspace(workspaceId) },
 
             payload: {
@@ -286,7 +287,7 @@ describe("removing a channel from a scheduled post", () => {
           // channel taken off it.
           const on = (channelId: string) =>
             client.posts
-              .search({
+              .list({
                 headers: forWorkspace(workspaceId),
                 query: { channelId },
               })

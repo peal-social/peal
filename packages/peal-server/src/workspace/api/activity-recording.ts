@@ -72,7 +72,7 @@ export const viaOf = (
 
 // The operations that, once done, leave no workspace to keep a log for:
 // its log went with it.
-const erasing: ReadonlySet<string> = new Set(["workspaces.delete"]);
+const erasing: ReadonlySet<string> = new Set(["workspace.delete"]);
 
 const erased = (operation: string, outcome: ChangeOutcome) =>
   erasing.has(operation) && outcome._tag === "answered" && outcome.status < 400;

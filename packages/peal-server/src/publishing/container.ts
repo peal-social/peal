@@ -557,6 +557,8 @@ export const PostAttentionLive = PostAttention.layer.pipe(
 // which the composition root brings.
 export { PostsHandlers as PostsApiLive } from "#publishing/api/posts.ts";
 
+export { PostDraftsHandlers as PostDraftsApiLive } from "#publishing/api/post-drafts.ts";
+
 // The workspace's signatures and channel sets, behind the same middleware.
 export { SignaturesHandlers as SignaturesApiLive } from "#publishing/api/signatures.ts";
 

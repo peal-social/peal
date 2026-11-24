@@ -162,7 +162,7 @@ const threads = Command.make(
   Effect.fn("inbox.threads")(function* threads(flags) {
     const { client, url, workspace } = yield* inWorkspace(flags.workspace);
 
-    const page = yield* client.inbox
+    const page = yield* client["inbox.comments"]
       .listThreads({
         headers: {},
         query: {
@@ -231,7 +231,7 @@ const thread = Command.make(
   Effect.fn("inbox.thread")(function* thread(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const detail = yield* client.inbox
+    const detail = yield* client["inbox.comments"]
       .getThread({
         headers: {},
         params: { threadId: flags.threadId },
@@ -327,7 +327,7 @@ const reply = Command.make(
 
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const sent = yield* client.inbox
+    const sent = yield* client["inbox.comments"]
       .reply({
         headers: Option.match(flags.idempotencyKey, {
           onNone: () => ({}),
@@ -384,7 +384,7 @@ const answered = Command.make(
   Effect.fn("inbox.answered")(function* answered(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const comment = yield* client.inbox
+    const comment = yield* client["inbox.comments"]
       .setAnswered({
         headers: {},
         params: { commentId: flags.commentId },
@@ -423,7 +423,7 @@ const moderate = Command.make(
   Effect.fn("inbox.moderate")(function* moderate(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const comment = yield* client.inbox
+    const comment = yield* client["inbox.comments"]
       .moderate({
         headers: {},
         params: { commentId: flags.commentId },
@@ -473,7 +473,7 @@ const confirm = Command.make(
       : Effect.void;
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const settled = yield* client.inbox
+    const settled = yield* client["inbox.comments"]
       .confirmReply({
         headers: {},
         params: { replyId: flags.replyId },
@@ -501,7 +501,7 @@ const withdraw = Command.make(
   Effect.fn("inbox.withdraw")(function* withdraw(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const withdrawn = yield* client.inbox
+    const withdrawn = yield* client["inbox.comments"]
       .withdrawReply({
         headers: {},
         params: { replyId: flags.replyId },
@@ -534,7 +534,7 @@ const abilities = Command.make(
   Effect.fn("inbox.abilities")(function* abilities(flags) {
     const { client, url } = yield* inWorkspace(flags.workspace);
 
-    const found = yield* client.inbox
+    const found = yield* client["inbox.comments"]
       .getAbilities({
         headers: {},
         params: { channelId: flags.channelId },

@@ -12,12 +12,12 @@ export const noticesKeys = ["notices"];
 export const preferencesKeys = ["notification-preferences"];
 
 /** How many of the user's notices are unread. */
-export const unreadNotices = PealApi.query("notices", "unread", {
+export const unreadNotices = PealApi.query("me.notices", "unread", {
   reactivityKeys: noticesKeys,
 });
 
 const pages = Atom.family((cursor: string) =>
-  PealApi.query("notices", "list", {
+  PealApi.query("me.notices", "list", {
     query: cursor === "" ? {} : { cursor },
     reactivityKeys: noticesKeys,
   })
@@ -27,18 +27,18 @@ const pages = Atom.family((cursor: string) =>
 export const noticePage = (cursor: Option.Option<string>) =>
   pages(Option.getOrElse(cursor, () => ""));
 
-export const markNoticesRead = PealApi.mutation("notices", "markRead");
+export const markNoticesRead = PealApi.mutation("me.notices", "markRead");
 
-export const markAllNoticesRead = PealApi.mutation("notices", "markAllRead");
+export const markAllNoticesRead = PealApi.mutation("me.notices", "markAllRead");
 
 /** Which notices the user also receives by email. */
 export const notificationPreferences = PealApi.query(
-  "notificationPreferences",
+  "me.notificationPreferences",
   "get",
   { reactivityKeys: preferencesKeys }
 );
 
 export const changeNotificationPreferences = PealApi.mutation(
-  "notificationPreferences",
+  "me.notificationPreferences",
   "update"
 );

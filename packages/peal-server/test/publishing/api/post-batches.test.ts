@@ -290,7 +290,7 @@ describe("the bulk endpoint", () => {
           assert.isAbove(twice.message.length, 10);
 
           // Two posts, however often the request is sent.
-          const listed = yield* editor.posts.list({
+          const listed = yield* editor.posts.calendar({
             headers,
             query: {
               from: utc("2026-06-16T00:00:00Z"),
@@ -493,7 +493,7 @@ describe("the import endpoint", () => {
             `Another synthetic post,${channel},2026-12-02T09:00:00Z,`,
           ].join("\n");
 
-          const scheduledIn = editor.posts.list({
+          const scheduledIn = editor.posts.calendar({
             headers,
             query: {
               from: utc("2026-12-01T00:00:00Z"),
@@ -609,7 +609,7 @@ describe("the import endpoint", () => {
             `Another synthetic post,${channel},2026-12-02T09:00:00Z,`,
           ].join("\n");
 
-          const scheduledIn = editor.posts.list({
+          const scheduledIn = editor.posts.calendar({
             headers,
             query: {
               from: utc("2026-12-01T00:00:00Z"),
@@ -719,7 +719,7 @@ describe("the import endpoint", () => {
             },
           });
 
-        const made = editor.posts.search({ headers, query: {} });
+        const made = editor.posts.list({ headers, query: {} });
 
         // The second row says what the first says, an hour later.
         const repeated = yield* importing([

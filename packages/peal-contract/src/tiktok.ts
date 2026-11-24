@@ -61,9 +61,9 @@ export const TikTokAccountSchema = Schema.Struct({
 export type TikTokAccount = typeof TikTokAccountSchema.Type;
 
 /** What TikTok channels tell about posting on them. */
-export class TikTokApi extends HttpApiGroup.make("tiktok")
+export class TikTokApi extends HttpApiGroup.make("channels.tiktokCreator")
   .add(
-    HttpApiEndpoint.get("creator", "/:channelId/tiktok-creator", {
+    HttpApiEndpoint.get("get", "/:channelId/tiktok-creator", {
       error: [
         Forbidden,
         ChannelNotFound,

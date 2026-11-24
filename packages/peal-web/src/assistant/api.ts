@@ -25,7 +25,7 @@ export const suggestChange = PealApi.mutation("assistant", "suggest");
  * Makes an image into the workspace's media library; send it with the
  * media list's reactivity key, so the library shows the new image.
  */
-export const generateImage = PealApi.mutation("assistant", "generateImage");
+export const generateImage = PealApi.mutation("media.images", "create");
 
 /** What lists a workspace's videos on their way, which asking for one refreshes. */
 export const videosKey = (workspaceId: string): string =>
@@ -33,7 +33,7 @@ export const videosKey = (workspaceId: string): string =>
 
 /** The videos the workspace asked for, newest first, with where each stands. */
 export const videoGenerations = Atom.family((workspaceId: string) =>
-  PealApi.query("videoGenerations", "list", {
+  PealApi.query("media.videos", "list", {
     headers: forWorkspace(workspaceId),
     query: {},
     reactivityKeys: [videosKey(workspaceId)],
@@ -45,7 +45,7 @@ export const videoGenerations = Atom.family((workspaceId: string) =>
  * the videos' reactivity key and the status's, so the library shows it on
  * its way and the count left changes.
  */
-export const generateVideo = PealApi.mutation("videoGenerations", "create");
+export const generateVideo = PealApi.mutation("media.videos", "create");
 
 /** Reads where one video stands, with its file once made. */
 export const readVideo = PealApi.runtime.fn<{
@@ -55,7 +55,7 @@ export const readVideo = PealApi.runtime.fn<{
   Effect.gen(function* read() {
     const client = yield* PealApi;
 
-    const job = yield* client.videoGenerations.get({
+    const job = yield* client["media.videos"].get({
       headers: forWorkspace(workspaceId),
       params: { generationId },
     });
@@ -78,7 +78,7 @@ export const slideshowsKey = (workspaceId: string): string =>
 
 /** The slide videos the workspace asked for, newest first, with where each stands. */
 export const slideshows = Atom.family((workspaceId: string) =>
-  PealApi.query("slideshows", "list", {
+  PealApi.query("media.slideshows", "list", {
     headers: forWorkspace(workspaceId),
     query: {},
     reactivityKeys: [slideshowsKey(workspaceId)],
@@ -89,25 +89,28 @@ export const slideshows = Atom.family((workspaceId: string) =>
  * Asks for a slide video, which the workspace's Shotstack account composes
  * in a durable job; send it with the slide videos' reactivity key.
  */
-export const createSlideshow = PealApi.mutation("slideshows", "create");
+export const createSlideshow = PealApi.mutation("media.slideshows", "create");
 
 /**
  * Renders the editor's document through the same job as a slide video;
  * send it with the slide videos' reactivity key.
  */
-export const renderEdit = PealApi.mutation("slideshows", "createFromEdit");
+export const renderEdit = PealApi.mutation(
+  "media.slideshows",
+  "createFromEdit"
+);
 
 /**
  * Makes a voice-over into the workspace's media library; send it with the
  * media list's reactivity key, so the library shows it.
  */
-export const createVoiceover = PealApi.mutation(
-  "mediaAudio",
-  "createVoiceover"
-);
+export const createVoiceover = PealApi.mutation("media.voiceovers", "create");
 
 /**
  * Transcribes a file of the library; send it with the media list's
  * reactivity key when the transcript is saved as its description.
  */
-export const transcribeMedia = PealApi.mutation("mediaAudio", "transcribe");
+export const transcribeMedia = PealApi.mutation(
+  "media.transcriptions",
+  "create"
+);

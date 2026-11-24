@@ -87,7 +87,7 @@ const MatrixLive = Layer.effect(
 
 const bearer = (key: string) => ({ authorization: `Bearer ${key}` });
 
-const apiKeys = "/api/v1/api-keys";
+const apiKeys = "/api/v1/workspace/api-keys";
 
 const channels = "/api/v1/channels";
 

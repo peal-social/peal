@@ -190,7 +190,7 @@ const logSuite = (
           const owner = actorIn(workspaceId, permissionsFor("owner"));
 
           const made = yield* Effect.forEach(
-            ["posts.create", "posts.update", "posts.schedule"],
+            ["posts.drafts.create", "posts.update", "posts.schedule"],
             (operation) =>
               log.record(changeBy(workspaceId, userId, { operation }))
           );
@@ -260,7 +260,7 @@ const logSuite = (
         assert.deepStrictEqual(
           yield* idsOf({
             actorId: Option.some(ana),
-            operation: Option.some("posts.create"),
+            operation: Option.some("posts.drafts.create"),
           }),
           []
         );

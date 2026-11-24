@@ -185,13 +185,13 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           // A viewer may not handle the workspace's API keys.
-          const listed = yield* app.request(`/api/v1/api-keys`, {
+          const listed = yield* app.request(`/api/v1/workspace/api-keys`, {
             headers: { cookie: cookies, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(listed.status, 403);
 
-          const created = yield* app.request(`/api/v1/api-keys`, {
+          const created = yield* app.request(`/api/v1/workspace/api-keys`, {
             body: { name: "mine", permissions: ["post:read"] },
             headers: { cookie: cookies, ...forWorkspace(workspaceId) },
           });
@@ -428,7 +428,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const app = yield* TestApp;
         const owner = yield* signedUp("lin");
         const workspaceId = yield* workspaceOf(owner, "Lab");
-        const path = `/api/v1/api-keys`;
+        const path = `/api/v1/workspace/api-keys`;
         const asOwner = { cookie: owner.cookies };
 
         const created = yield* app.request(path, {
@@ -561,7 +561,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         assert.lengthOf(keys, 0);
 
-        const after = yield* app.request(`/api/v1/api-keys`, {
+        const after = yield* app.request(`/api/v1/workspace/api-keys`, {
           headers: {
             authorization: `Bearer ${key}`,
             ...forWorkspace(workspaceId),
@@ -583,7 +583,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         // Gone without Better Auth, so its key is left behind.
         yield* sql`DELETE FROM auth.organization WHERE id = ${workspaceId}`;
 
-        const after = yield* app.request(`/api/v1/api-keys`, {
+        const after = yield* app.request(`/api/v1/workspace/api-keys`, {
           headers: {
             authorization: `Bearer ${key}`,
             ...forWorkspace(workspaceId),
@@ -604,14 +604,17 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const { apiKey } = yield* apiKeyOf(owner, second, ["post:read"]);
 
         // The owner revokes it through the wrong workspace: nothing happens.
-        const revoked = yield* app.request(`/api/v1/api-keys/${apiKey.id}`, {
-          headers: { cookie: owner.cookies, ...forWorkspace(first) },
-          method: "DELETE",
-        });
+        const revoked = yield* app.request(
+          `/api/v1/workspace/api-keys/${apiKey.id}`,
+          {
+            headers: { cookie: owner.cookies, ...forWorkspace(first) },
+            method: "DELETE",
+          }
+        );
 
         assert.strictEqual(revoked.status, 404);
 
-        const listed = yield* app.request(`/api/v1/api-keys`, {
+        const listed = yield* app.request(`/api/v1/workspace/api-keys`, {
           headers: { cookie: owner.cookies, ...forWorkspace(second) },
         });
 

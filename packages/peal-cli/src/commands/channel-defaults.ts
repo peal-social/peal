@@ -25,7 +25,7 @@ const show = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const defaults = yield* client.channelDefaults
+    const defaults = yield* client["channels.defaultOptions"]
       .get({ headers: {}, params: { channelId } })
       .pipe(Effect.mapError(explain(url)));
 
@@ -77,7 +77,7 @@ const set = Command.make(
 
     const { client, url } = yield* inWorkspace(choice);
 
-    const kept = yield* client.channelDefaults
+    const kept = yield* client["channels.defaultOptions"]
       .set({
         headers: {},
         params: { channelId },
@@ -111,7 +111,7 @@ const clear = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    yield* client.channelDefaults
+    yield* client["channels.defaultOptions"]
       .clear({ headers: {}, params: { channelId } })
       .pipe(Effect.mapError(explain(url)));
 

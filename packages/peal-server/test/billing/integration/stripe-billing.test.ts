@@ -167,7 +167,7 @@ const billingOf = Effect.fn("billingOf")(function* billingOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(`/api/v1/billing`, {
+  const reply = yield* app.request(`/api/v1/workspace/billing`, {
     headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
   });
 
@@ -320,7 +320,7 @@ const ordered = Effect.fn("ordered")(function* ordered(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(`/api/v1/billing/orders`, {
+  const reply = yield* app.request(`/api/v1/workspace/billing/orders`, {
     body: { ...order, startNow: true },
     headers: { cookie: person.cookies, ...forWorkspace(workspaceId) },
   });
@@ -727,7 +727,7 @@ layer(BillingIntegration, {
           workspaceId,
         });
 
-        const keys = yield* app.request(`/api/v1/api-keys`, {
+        const keys = yield* app.request(`/api/v1/workspace/api-keys`, {
           headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
         });
 
@@ -1125,7 +1125,7 @@ layer(BillingIntegration, {
             );
 
             const keepOnly = (who: typeof first) =>
-              postIn(who, workspaceId, "/api/v1/billing/reduction", {
+              postIn(who, workspaceId, "/api/v1/workspace/billing/reduction", {
                 keepChannelIds: [],
                 keepMemberIds: [who.id],
               });
@@ -1232,7 +1232,7 @@ layer(BillingIntegration, {
         const app = yield* TestApp;
         const owner = yield* signedUp("orderer");
         const workspaceId = yield* workspaceOf(owner, "Orders");
-        const ordersRoute = `/api/v1/billing/orders`;
+        const ordersRoute = `/api/v1/workspace/billing/orders`;
 
         // The box left unticked.
         const unticked = yield* postIn(owner, workspaceId, ordersRoute, {
@@ -1307,7 +1307,7 @@ layer(BillingIntegration, {
         const second = yield* workspaceOf(owner, "Ceilings, again");
 
         const put = (person: Person, workspace: string, group: string) =>
-          app.request(`/api/v1/billing/ceilings/${group}`, {
+          app.request(`/api/v1/workspace/billing/ceilings/${group}`, {
             body: { cents: 500 },
             headers: { cookie: person.cookies, ...forWorkspace(workspace) },
             method: "PUT",
@@ -1344,14 +1344,17 @@ layer(BillingIntegration, {
           "billing:manage",
         ]);
 
-        const byKey = yield* app.request(`/api/v1/billing/ceilings/x`, {
-          body: { cents: 500 },
-          headers: {
-            authorization: `Bearer ${key}`,
-            ...forWorkspace(workspaceId),
-          },
-          method: "PUT",
-        });
+        const byKey = yield* app.request(
+          `/api/v1/workspace/billing/ceilings/x`,
+          {
+            body: { cents: 500 },
+            headers: {
+              authorization: `Bearer ${key}`,
+              ...forWorkspace(workspaceId),
+            },
+            method: "PUT",
+          }
+        );
 
         assert.strictEqual(byKey.status, 403);
       })
@@ -1368,7 +1371,7 @@ layer(BillingIntegration, {
         const second = yield* workspaceOf(owner, "X reads, again");
 
         const put = (person: Person, workspace: string, reads: boolean) =>
-          app.request(`/api/v1/billing/x`, {
+          app.request(`/api/v1/workspace/billing/x`, {
             body: { reads },
             headers: { cookie: person.cookies, ...forWorkspace(workspace) },
             method: "PUT",
@@ -1404,7 +1407,7 @@ layer(BillingIntegration, {
           "billing:manage",
         ]);
 
-        const byKey = yield* app.request(`/api/v1/billing/x`, {
+        const byKey = yield* app.request(`/api/v1/workspace/billing/x`, {
           body: { reads: false },
           headers: {
             authorization: `Bearer ${key}`,
@@ -1422,7 +1425,7 @@ layer(BillingIntegration, {
         // Who switched it is the activity log's, the row names nobody.
         const logged = yield* sql<{
           readonly operation: string;
-        }>`SELECT operation FROM activity.events WHERE workspace_id = ${workspaceId} AND operation = 'billingActions.setXReads'`;
+        }>`SELECT operation FROM activity.events WHERE workspace_id = ${workspaceId} AND operation = 'workspace.billingActions.setXReads'`;
 
         assert.isAtLeast(logged.length, 2);
       })
@@ -1443,7 +1446,7 @@ layer(BillingIntegration, {
         const refused = yield* postIn(
           owner,
           workspaceId,
-          "/api/v1/billing/orders",
+          "/api/v1/workspace/billing/orders",
           { interval: "month", plan: "pro", startNow: true, trial: true }
         );
 
@@ -1506,7 +1509,7 @@ layer(BillingIntegration, {
           delivery.customerId
         );
 
-        const ordersRoute = `/api/v1/billing/orders`;
+        const ordersRoute = `/api/v1/workspace/billing/orders`;
 
         const legacy = yield* postIn(owner, workspaceId, ordersRoute, {
           interval: "month",
@@ -1780,7 +1783,7 @@ layer(BillingIntegration, {
           delivery.customerId
         );
 
-        const cancellation = `/api/v1/billing/cancellation`;
+        const cancellation = `/api/v1/workspace/billing/cancellation`;
         const nothing = yield* postIn(owner, workspaceId, cancellation, {});
 
         assert.strictEqual(nothing.status, 409);
@@ -1800,8 +1803,11 @@ layer(BillingIntegration, {
           403
         );
         assert.strictEqual(
-          (yield* postIn(editor, workspaceId, "/api/v1/billing/withdrawal"))
-            .status,
+          (yield* postIn(
+            editor,
+            workspaceId,
+            "/api/v1/workspace/billing/withdrawal"
+          )).status,
           403
         );
       })
@@ -1829,9 +1835,12 @@ layer(BillingIntegration, {
           200
         );
 
-        const preview = yield* app.request(`/api/v1/billing/withdrawal`, {
-          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
-        });
+        const preview = yield* app.request(
+          `/api/v1/workspace/billing/withdrawal`,
+          {
+            headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+          }
+        );
 
         // stripe-mock's invoices hold nothing paid: nothing to refund.
         assert.strictEqual(preview.status, 200);
@@ -1860,7 +1869,7 @@ layer(BillingIntegration, {
         const expired = yield* postIn(
           other.owner,
           other.workspaceId,
-          "/api/v1/billing/withdrawal"
+          "/api/v1/workspace/billing/withdrawal"
         );
 
         assert.strictEqual(expired.status, 409);
@@ -2187,7 +2196,7 @@ layer(BillingIntegration, {
         const offered = yield* postIn(
           payer,
           workspaceId,
-          "/api/v1/billing/transfer",
+          "/api/v1/workspace/billing/transfer",
           { toUserId: other.id }
         );
 
@@ -2222,7 +2231,7 @@ layer(BillingIntegration, {
         const taken = yield* postIn(
           other,
           workspaceId,
-          "/api/v1/billing/transfer/acceptance"
+          "/api/v1/workspace/billing/transfer/acceptance"
         );
 
         assert.strictEqual(taken.status, 200);
@@ -2296,7 +2305,7 @@ layer(BillingIntegration, {
 
         const standingWithAccount = (cookies: string) =>
           app
-            .request(`/api/v1/billing/standing`, {
+            .request(`/api/v1/workspace/billing/standing`, {
               headers: { cookie: cookies, ...forWorkspace(workspaceId) },
             })
             .pipe(
@@ -2393,7 +2402,7 @@ layer(BillingIntegration, {
             readonly members: readonly string[];
           }
         ) =>
-          postIn(person, workspaceId, "/api/v1/billing/reduction", {
+          postIn(person, workspaceId, "/api/v1/workspace/billing/reduction", {
             keepChannelIds: keep.channels,
             keepMemberIds: keep.members,
           });
@@ -2450,7 +2459,7 @@ layer(BillingIntegration, {
 
         // Every member still reaches the workspace.
         assert.strictEqual(
-          (yield* app.request(`/api/v1/billing/standing`, {
+          (yield* app.request(`/api/v1/workspace/billing/standing`, {
             headers: {
               cookie: guests[1]?.cookies ?? "",
               ...forWorkspace(workspaceId),

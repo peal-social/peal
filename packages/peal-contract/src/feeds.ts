@@ -334,7 +334,7 @@ const making = `Every ${String(feedCheckIntervalMinutes)} minutes or so, each it
  * Web feeds (RSS 2.0, Atom 1.0, JSON Feed 1.1) a workspace follows, whose
  * new items become drafts or posts on a queue.
  */
-export class FeedsApi extends HttpApiGroup.make("feeds")
+export class FeedsApi extends HttpApiGroup.make("automations.feeds")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
@@ -455,4 +455,4 @@ export class FeedsApi extends HttpApiGroup.make("feeds")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/feeds") {}
+  .prefix("/api/v1/automations/feeds") {}

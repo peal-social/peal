@@ -24,12 +24,12 @@ const unreachable = (failure: { readonly _tag: string }) =>
 
 export const TikTokHandlers = HttpApiBuilder.group(
   Api,
-  "tiktok",
+  "channels.tiktokCreator",
   Effect.fn(function* tiktokHandlers(handlers) {
     const info = yield* TikTokCreatorInfo;
 
     return handlers.handleAll({
-      creator: ({ params }) =>
+      get: ({ params }) =>
         Effect.gen(function* creator() {
           const actor = actorOf(yield* CurrentMember);
 

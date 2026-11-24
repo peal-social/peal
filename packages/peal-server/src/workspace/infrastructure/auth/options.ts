@@ -583,7 +583,7 @@ export const makeAuth = ({
           transaction: true,
         })(options)
       ),
-    // API keys go through Peal's own API only (/api/v1/api-keys):
+    // API keys go through Peal's own API only (/api/v1/workspace/api-keys):
     // their permissions are the server's to set, and staff impersonating a
     // member may not see or revoke them, which Better Auth's routes ignore.
     //

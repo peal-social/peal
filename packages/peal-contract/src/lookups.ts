@@ -166,7 +166,7 @@ export type LookupResult = typeof LookupResultSchema.Type;
 const channel = { channelId: Schema.String };
 
 /** What platforms tell about a channel's account. */
-export class LookupsApi extends HttpApiGroup.make("lookups")
+export class LookupsApi extends HttpApiGroup.make("channels.lookups")
   .add(
     HttpApiEndpoint.get("list", "/:channelId/lookups", {
       error: [Forbidden, ChannelNotFound],

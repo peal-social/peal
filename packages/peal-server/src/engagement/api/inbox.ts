@@ -113,7 +113,7 @@ const filterOf = <A>(
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const InboxHandlers = HttpApiBuilder.group(
   Api,
-  "inbox",
+  "inbox.comments",
   Effect.fn(function* inboxHandlers(handlers) {
     const inbox = yield* EngagementInbox;
     const replies = yield* EngagementReplies;

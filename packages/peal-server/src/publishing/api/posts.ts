@@ -4,7 +4,6 @@ import {
   Api,
   ChannelSetNotFound,
   CurrentMember,
-  defaultDraftPageSize,
   DuplicatePost,
   duplicateWindowHours,
   IdempotencyKeyReused,
@@ -12,17 +11,11 @@ import {
   InvalidTimeRange,
   LastTargetLeft,
   LivePostNotChangeable,
-  PostContentInvalid,
-  PostNotFound,
-  PostStatusConflict,
   QueueHasNoRoom,
   QueueNotFound,
   ScheduleInPast,
   SignatureNotFound,
   TargetStatusConflict,
-  UnknownChannels,
-  UnknownMedia,
-  UnknownTags,
 } from "peal-contract";
 import type {
   BulkPostResult,
@@ -44,9 +37,7 @@ import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { PostSearch } from "#publishing/application/post-search.ts";
 import { PostTags } from "#publishing/application/post-tags.ts";
 import type { DuplicateContent } from "#publishing/domain/duplicate-content.ts";
-import type { InvalidPostTransition } from "#publishing/domain/invalid-post-transition.ts";
 import type { InvalidTargetTransition } from "#publishing/domain/invalid-target-transition.ts";
-import type { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import { readImport } from "#publishing/domain/post-import.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { changesNothing } from "#shared/api/change-mark.ts";
@@ -62,13 +53,22 @@ import type { ReadPost } from "./post-batch.ts";
 import { checkRequestFrom } from "./post-check-input.ts";
 import { validationOf } from "./post-check-view.ts";
 import {
+  conflict,
+  contentInvalid,
+  notFound,
+  setNotFound,
+  signatureNotFound,
+  unknownChannels,
+  unknownMedia,
+  unknownTags,
+} from "./post-failures.ts";
+import {
   channelIdsFrom,
   contentFrom,
   draftTagsFrom,
   optionsFrom,
   presetsFrom,
   postIdFrom,
-  postIdOption,
   queueIdOf,
   scheduleFrom,
   sendRequestFrom,
@@ -80,30 +80,6 @@ import { pageView, searchRequestFrom } from "./post-search.ts";
 import { attemptView, postView } from "./post-view.ts";
 
 // How the use cases' failures answer. A database failure is a server error.
-
-const notFound = () => Effect.fail(new PostNotFound());
-
-const conflict = ({ from }: InvalidPostTransition) =>
-  Effect.fail(new PostStatusConflict({ status: from }));
-
-const contentInvalid = ({ violations }: PostContentRejected) =>
-  Effect.fail(new PostContentInvalid({ violations }));
-
-const unknownChannels = ({
-  channelIds,
-}: {
-  readonly channelIds: readonly string[];
-}) => Effect.fail(new UnknownChannels({ channelIds }));
-
-const unknownMedia = ({ mediaIds }: { readonly mediaIds: readonly string[] }) =>
-  Effect.fail(new UnknownMedia({ mediaIds }));
-
-const unknownTags = ({ tagIds }: { readonly tagIds: readonly string[] }) =>
-  Effect.fail(new UnknownTags({ tagIds }));
-
-const setNotFound = () => Effect.fail(new ChannelSetNotFound());
-
-const signatureNotFound = () => Effect.fail(new SignatureNotFound());
 
 const inPast = () => Effect.fail(new ScheduleInPast());
 
@@ -272,83 +248,6 @@ export const PostsHandlers = HttpApiBuilder.group(
             .pipe(Effect.catchTags(followUpFailures));
 
           return postView(confirmed);
-        }),
-      create: ({ payload }) =>
-        Effect.gen(function* create() {
-          const actor = actorOf(yield* CurrentMember);
-          const channelIds = yield* channelIdsFrom(payload.channelIds);
-          const content = yield* contentFrom(payload.content);
-          const options = yield* optionsFrom(payload.options ?? []);
-          const filed = yield* draftTagsFrom(payload.tagIds);
-          const asked = yield* presetsFrom(payload);
-
-          const created = yield* drafts
-            .create(actor, {
-              channelIds,
-              content,
-              options,
-              presets: asked,
-              shortenLinks: payload.shortenLinks,
-              ...filed,
-            })
-            .pipe(
-              Effect.catchTags({
-                ChannelSetNotFound: setNotFound,
-                DatabaseError: Effect.die,
-                MissingPermission: forbidden,
-                PostContentRejected: contentInvalid,
-                SignatureNotFound: signatureNotFound,
-                UnknownChannels: unknownChannels,
-                UnknownMedia: unknownMedia,
-                UnknownTags: unknownTags,
-              })
-            );
-
-          return postView(created);
-        }),
-      discard: ({ params }) =>
-        Effect.gen(function* discard() {
-          const actor = actorOf(yield* CurrentMember);
-          const postId = yield* postIdFrom(params.postId);
-
-          yield* drafts.discard(actor, postId).pipe(
-            Effect.catchTags({
-              DatabaseError: Effect.die,
-              InvalidPostTransition: conflict,
-              MissingPermission: forbidden,
-              PostNotFound: notFound,
-            })
-          );
-        }),
-      drafts: ({ query }) =>
-        Effect.gen(function* listDrafts() {
-          const actor = actorOf(yield* CurrentMember);
-
-          // A cursor is the id of the last draft of the page before.
-          const after = Option.fromUndefinedOr(query.cursor).pipe(
-            Option.map(postIdOption)
-          );
-
-          if (Option.isSome(after) && Option.isNone(after.value)) {
-            return yield* new HttpApiError.BadRequest();
-          }
-
-          const page = yield* queries
-            .listDrafts(actor, {
-              after: Option.flatten(after),
-              limit: query.limit ?? defaultDraftPageSize,
-            })
-            .pipe(
-              Effect.catchTags({
-                DatabaseError: Effect.die,
-                MissingPermission: forbidden,
-              })
-            );
-
-          return {
-            items: page.items.map(postView),
-            nextCursor: Option.getOrNull(page.next),
-          };
         }),
       duplicate: ({ params }) =>
         Effect.gen(function* duplicatePost() {
@@ -636,7 +535,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             ),
           };
         }),
-      list: ({ query }) =>
+      calendar: ({ query }) =>
         Effect.gen(function* list() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -755,7 +654,7 @@ export const PostsHandlers = HttpApiBuilder.group(
 
           return postView(scheduled);
         }),
-      search: ({ query }) =>
+      list: ({ query }) =>
         Effect.gen(function* search() {
           const actor = actorOf(yield* CurrentMember);
           const { removed, ...filters } = query;
@@ -777,7 +676,7 @@ export const PostsHandlers = HttpApiBuilder.group(
 
           return pageView(page);
         }),
-      send: ({ headers, payload, query }) =>
+      create: ({ headers, payload, query }) =>
         Effect.gen(function* send() {
           const actor = actorOf(yield* CurrentMember);
 
@@ -815,7 +714,7 @@ export const PostsHandlers = HttpApiBuilder.group(
 
           return postView(awaited);
         }),
-      tag: ({ params, payload }) =>
+      setTags: ({ params, payload }) =>
         Effect.gen(function* tag() {
           const actor = actorOf(yield* CurrentMember);
           const postId = yield* postIdFrom(params.postId);

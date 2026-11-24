@@ -22,7 +22,7 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 // A client of the activity endpoint whose every request acts as the
 // member, as the WorkspaceAccess middleware would hand them to the handler.
 const clientAs = (member: Member) =>
-  HttpApiTest.groups(Api, ["activity"]).pipe(
+  HttpApiTest.groups(Api, ["workspace.activity"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         ActivityHandlers.pipe(Layer.provideMerge(securityTest(member))),
@@ -71,7 +71,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
         })
       );
 
-      const page = yield* client.activity.list({
+      const page = yield* client["workspace.activity"].list({
         headers: forWorkspace(workspaceId),
         query: {},
       });
@@ -134,7 +134,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
 
       const made = yield* Effect.forEach(
         [
-          changeBy(workspaceId, ana, { operation: "posts.create" }),
+          changeBy(workspaceId, ana, { operation: "posts.drafts.create" }),
           changeBy(workspaceId, ben, { operation: "posts.schedule" }),
           changeBy(workspaceId, ana, { operation: "posts.schedule" }),
         ],
@@ -143,7 +143,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
 
       const newest = made.map(({ id }) => id).toReversed();
 
-      const first = yield* client.activity.list({
+      const first = yield* client["workspace.activity"].list({
         headers,
         query: { limit: 2 },
       });
@@ -154,7 +154,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       );
       assert.strictEqual(first.nextCursor, newest[1]);
 
-      const second = yield* client.activity.list({
+      const second = yield* client["workspace.activity"].list({
         headers,
         query: { cursor: first.nextCursor ?? "", limit: 2 },
       });
@@ -165,7 +165,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       );
       assert.isNull(second.nextCursor);
 
-      const scheduledByAna = yield* client.activity.list({
+      const scheduledByAna = yield* client["workspace.activity"].list({
         headers,
         query: { actor: ana, operation: "posts.schedule" },
       });
@@ -176,7 +176,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
       );
 
       // A cursor that is no event's id is the caller's mistake.
-      const refused = yield* client.activity
+      const refused = yield* client["workspace.activity"]
         .list({ headers, query: { cursor: "not-a-cursor" } })
         .pipe(Effect.flip);
 
@@ -197,7 +197,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
         { discard: true }
       );
 
-      const page = yield* client.activity.list({
+      const page = yield* client["workspace.activity"].list({
         headers: forWorkspace(workspaceId),
         query: {},
       });
@@ -216,7 +216,7 @@ layer(ActivityTest)("the activity endpoint", (it) => {
           memberOf(workspaceId, permissionsFor(role))
         );
 
-        const refused = yield* client.activity
+        const refused = yield* client["workspace.activity"]
           .list({ headers: forWorkspace(workspaceId), query: {} })
           .pipe(Effect.flip);
 

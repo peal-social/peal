@@ -298,8 +298,8 @@ const tiktok = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const account = yield* client.tiktok
-      .creator({ headers: {}, params: { channelId } })
+    const account = yield* client["channels.tiktokCreator"]
+      .get({ headers: {}, params: { channelId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {

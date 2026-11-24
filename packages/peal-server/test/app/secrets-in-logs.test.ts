@@ -243,7 +243,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const { key } = yield* keyOf(owner, home);
           const customer = yield* customerOf(key, "Secrets", "cus_secret_1");
 
-          const created = yield* app.request(`/api/v1/connect-links`, {
+          const created = yield* app.request(`/api/v1/channels/connect-links`, {
             body: { platform: "mastodon" },
             headers: { ...bearer(key), ...forWorkspace(customer.id) },
           });
@@ -1346,7 +1346,7 @@ layer(ImagesTest, { excludeTestServices: true, timeout: "180 seconds" })(
         const owner = yield* signedUp("secrets-images");
         const workspaceId = yield* workspaceOf(owner, "Images");
         const headers = { cookie: owner.cookies };
-        const path = `/api/v1/assistant/images`;
+        const path = `/api/v1/media/images`;
 
         const made = yield* app.request(path, {
           body: { aspect: "square", prompt: `A lighthouse. ${inPrompt}` },

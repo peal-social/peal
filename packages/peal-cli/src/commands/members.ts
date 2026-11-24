@@ -16,7 +16,7 @@ const list = Command.make(
 
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const members = yield* client.members
+    const members = yield* client["workspace.members"]
       .list({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 

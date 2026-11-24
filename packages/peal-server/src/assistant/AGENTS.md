@@ -399,7 +399,7 @@
   (`speechOffers`, `transcriptionAddresses`, from the catalogue's
   `aiSpeechProviders` and `aiTranscriptionProviders`, kept equal by the
   contract test). `AssistantAudio` (the `mediaAudio` endpoints, `POST
-  …/media/voiceovers` and `POST …/media/{mediaId}/transcription`) runs
+  …/media/voiceovers` and `POST …/media/{mediaId}/transcriptions`) runs
   in the request, Peal sending the request, waiting and keeping the
   result, no job and nothing rendered on the server. A voice-over needs
   `assistant:use` and `media:upload`, refuses staff acting as a member,

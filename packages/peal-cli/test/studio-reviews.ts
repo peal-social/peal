@@ -123,9 +123,9 @@ export const studioReviewsLive = (state: Ref.Ref<ReviewsState>) => {
       ),
     }));
 
-  return HttpApiBuilder.group(Api, "inboxReviews", (handlers) =>
+  return HttpApiBuilder.group(Api, "inbox.reviews", (handlers) =>
     handlers.handleAll({
-      getReviewThread: ({ params }) =>
+      getThread: ({ params }) =>
         Effect.gen(function* getReviewThread() {
           yield* allowed("engagement:read");
 
@@ -143,11 +143,11 @@ export const studioReviewsLive = (state: Ref.Ref<ReviewsState>) => {
             thread,
           };
         }),
-      listReviewThreads: () =>
+      listThreads: () =>
         allowed("engagement:read").pipe(
           Effect.as({ items: [thread], nextCursor: null })
         ),
-      replyToReview: ({ params, payload }) =>
+      reply: ({ params, payload }) =>
         Effect.gen(function* replyToReview() {
           yield* allowed("engagement:reply");
 
@@ -192,7 +192,7 @@ export const studioReviewsLive = (state: Ref.Ref<ReviewsState>) => {
 
           return made;
         }),
-      setReviewAnswered: ({ params, payload }) =>
+      setAnswered: ({ params, payload }) =>
         Effect.gen(function* setReviewAnswered() {
           yield* allowed("engagement:reply");
 
@@ -209,7 +209,7 @@ export const studioReviewsLive = (state: Ref.Ref<ReviewsState>) => {
 
           return marked;
         }),
-      withdrawReviewReply: ({ params }) =>
+      withdrawReply: ({ params }) =>
         Effect.gen(function* withdrawReviewReply() {
           yield* allowed("engagement:reply");
 

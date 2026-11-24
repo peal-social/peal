@@ -446,7 +446,7 @@ layer(
         const created = yield* eventsMatching(
           (event) =>
             event.event === "api_operation" &&
-            event.properties["operation"] === "posts.create" &&
+            event.properties["operation"] === "posts.drafts.create" &&
             event.properties["workspace_id"] === workspaceId,
           3
         );
@@ -501,7 +501,7 @@ layer(
         const created = yield* eventsMatching(
           (event) =>
             event.event === "api_operation" &&
-            event.properties["operation"] === "posts.create" &&
+            event.properties["operation"] === "posts.drafts.create" &&
             event.properties["workspace_id"] === workspaceId,
           2
         );

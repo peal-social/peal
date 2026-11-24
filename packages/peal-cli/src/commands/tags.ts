@@ -94,7 +94,7 @@ const create = Command.make(
     const payload = yield* checkTag({ colour, name: name.trim() });
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const made = yield* client.tags
+    const made = yield* client["posts.tags"]
       .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
@@ -163,7 +163,7 @@ const update = Command.make(
       }),
     });
 
-    const changed = yield* client.tags
+    const changed = yield* client["posts.tags"]
       .update({ headers: {}, params: { tagId: tag.id }, payload })
       .pipe(Effect.mapError(explain(url)));
 
@@ -195,7 +195,7 @@ const remove = Command.make(
     const { client, url, workspace } = session;
     const tag = yield* findTag(session, given);
 
-    yield* client.tags
+    yield* client["posts.tags"]
       .delete({ headers: {}, params: { tagId: tag.id } })
       .pipe(Effect.mapError(explain(url)));
 

@@ -31,7 +31,7 @@ const HandlersLive = Layer.mergeAll(
   NotificationPreferencesApiLive
 );
 
-const groups = ["notices", "notificationPreferences"] as const;
+const groups = ["me.notices", "me.notificationPreferences"] as const;
 
 const clientWith = <E, R>(
   security: Layer.Layer<Layer.Success<typeof anonymousSecurityTest>, E, R>
@@ -116,7 +116,7 @@ layer(NoticesTest)("the notices endpoints", (it) => {
 
       const client = yield* clientAs(user(userId), workspaceId);
 
-      const page = yield* client.notices.list({ query: {} });
+      const page = yield* client["me.notices"].list({ query: {} });
 
       assert.deepStrictEqual(
         page.items.map(({ event, readAt, workspaceId: inWorkspace }) => ({
@@ -148,12 +148,12 @@ layer(NoticesTest)("the notices endpoints", (it) => {
       );
       assert.isNull(page.nextCursor);
 
-      const first = yield* client.notices.list({ query: { limit: 1 } });
+      const first = yield* client["me.notices"].list({ query: { limit: 1 } });
 
       assert.lengthOf(first.items, 1);
       assert.isString(first.nextCursor);
 
-      const rest = yield* client.notices.list({
+      const rest = yield* client["me.notices"].list({
         query: { cursor: first.nextCursor ?? "" },
       });
 
@@ -171,30 +171,34 @@ layer(NoticesTest)("the notices endpoints", (it) => {
       const client = yield* clientAs(user(userId), workspaceId);
       const otherClient = yield* clientAs(user(other.userId), workspaceId);
 
-      assert.deepStrictEqual(yield* client.notices.unread(), { unread: 2 });
+      assert.deepStrictEqual(yield* client["me.notices"].unread(), {
+        unread: 2,
+      });
 
-      const { items } = yield* client.notices.list({ query: {} });
-      const theirs = (yield* otherClient.notices.list({ query: {} })).items;
+      const { items } = yield* client["me.notices"].list({ query: {} });
+
+      const theirs = (yield* otherClient["me.notices"].list({ query: {} }))
+        .items;
 
       // Ids that are not notices, or someone else's, change nothing.
       assert.deepStrictEqual(
-        yield* client.notices.markRead({
+        yield* client["me.notices"].markRead({
           payload: {
             ids: [items[0]?.id ?? "", "not-a-notice", theirs[0]?.id ?? ""],
           },
         }),
         { unread: 1 }
       );
-      assert.deepStrictEqual(yield* otherClient.notices.unread(), {
+      assert.deepStrictEqual(yield* otherClient["me.notices"].unread(), {
         unread: 2,
       });
 
-      const listed = yield* client.notices.list({ query: {} });
+      const listed = yield* client["me.notices"].list({ query: {} });
 
       assert.isNotNull(listed.items[0]?.readAt);
       assert.isNull(listed.items[1]?.readAt);
 
-      assert.deepStrictEqual(yield* client.notices.markAllRead(), {
+      assert.deepStrictEqual(yield* client["me.notices"].markAllRead(), {
         unread: 0,
       });
     })
@@ -206,7 +210,7 @@ layer(NoticesTest)("the notices endpoints", (it) => {
       const client = yield* clientAs(user(userId), workspaceId);
 
       const failure = yield* Effect.flip(
-        client.notices.list({ query: { cursor: "studio" } })
+        client["me.notices"].list({ query: { cursor: "studio" } })
       );
 
       assert.instanceOf(failure, HttpApiError.BadRequest);
@@ -223,14 +227,17 @@ layer(NoticesTest)("the notices endpoints", (it) => {
         workspaceId
       );
 
-      assert.lengthOf((yield* client.notices.list({ query: {} })).items, 2);
+      assert.lengthOf(
+        (yield* client["me.notices"].list({ query: {} })).items,
+        2
+      );
       assert.instanceOf(
-        yield* Effect.flip(client.notices.markAllRead()),
+        yield* Effect.flip(client["me.notices"].markAllRead()),
         Forbidden
       );
       assert.instanceOf(
         yield* Effect.flip(
-          client.notificationPreferences.update({
+          client["me.notificationPreferences"].update({
             payload: { email: { postFailed: false } },
           })
         ),
@@ -265,15 +272,21 @@ layer(NoticesTest)("the notices endpoints", (it) => {
       );
 
       assert.instanceOf(
-        yield* Effect.flip(key.notices.list({ query: {} })),
+        yield* Effect.flip(key["me.notices"].list({ query: {} })),
         Forbidden
       );
-      assert.instanceOf(yield* Effect.flip(key.notices.unread()), Forbidden);
       assert.instanceOf(
-        yield* Effect.flip(key.notificationPreferences.get()),
+        yield* Effect.flip(key["me.notices"].unread()),
         Forbidden
       );
-      assert.instanceOf(yield* Effect.flip(bound.notices.unread()), Forbidden);
+      assert.instanceOf(
+        yield* Effect.flip(key["me.notificationPreferences"].get()),
+        Forbidden
+      );
+      assert.instanceOf(
+        yield* Effect.flip(bound["me.notices"].unread()),
+        Forbidden
+      );
     })
   );
 
@@ -284,9 +297,12 @@ layer(NoticesTest)("the notices endpoints", (it) => {
 
       yield* TestDirectory.use((directory) => directory.ban(userId));
 
-      assert.instanceOf(yield* Effect.flip(client.notices.unread()), Forbidden);
       assert.instanceOf(
-        yield* Effect.flip(client.notificationPreferences.get()),
+        yield* Effect.flip(client["me.notices"].unread()),
+        Forbidden
+      );
+      assert.instanceOf(
+        yield* Effect.flip(client["me.notificationPreferences"].get()),
         Forbidden
       );
     })
@@ -297,11 +313,11 @@ layer(NoticesTest)("the notices endpoints", (it) => {
       const client = yield* clientWith(anonymousSecurityTest);
 
       assert.instanceOf(
-        yield* Effect.flip(client.notices.unread()),
+        yield* Effect.flip(client["me.notices"].unread()),
         Unauthenticated
       );
       assert.instanceOf(
-        yield* Effect.flip(client.notificationPreferences.get()),
+        yield* Effect.flip(client["me.notificationPreferences"].get()),
         Unauthenticated
       );
     })
@@ -315,29 +331,32 @@ layer(NoticesTest)("the notification preferences endpoints", (it) => {
       const userId = yield* freshUser;
       const client = yield* clientAs(user(userId), workspaceId);
 
-      assert.deepStrictEqual(yield* client.notificationPreferences.get(), {
-        email: {
-          automations: true,
-          channelReconnect: true,
-          comments: false,
-          feedStopped: true,
-          postFailed: true,
-          postPublished: false,
-          postReview: true,
-          postUnconfirmed: true,
-          recyclingEnded: true,
-          webhookFailing: true,
-          weeklyDigest: false,
-        },
-        everyPost: false,
-      });
+      assert.deepStrictEqual(
+        yield* client["me.notificationPreferences"].get(),
+        {
+          email: {
+            automations: true,
+            channelReconnect: true,
+            comments: false,
+            feedStopped: true,
+            postFailed: true,
+            postPublished: false,
+            postReview: true,
+            postUnconfirmed: true,
+            recyclingEnded: true,
+            webhookFailing: true,
+            weeklyDigest: false,
+          },
+          everyPost: false,
+        }
+      );
 
-      yield* client.notificationPreferences.update({
+      yield* client["me.notificationPreferences"].update({
         payload: { email: { postPublished: true } },
       });
 
       assert.deepStrictEqual(
-        yield* client.notificationPreferences.update({
+        yield* client["me.notificationPreferences"].update({
           payload: { email: { postFailed: false } },
         }),
         {
@@ -358,12 +377,12 @@ layer(NoticesTest)("the notification preferences endpoints", (it) => {
         }
       );
       assert.deepStrictEqual(
-        (yield* client.notificationPreferences.get()).email.postPublished,
+        (yield* client["me.notificationPreferences"].get()).email.postPublished,
         true
       );
 
       // Following every post leaves the emails as they are.
-      const following = yield* client.notificationPreferences.update({
+      const following = yield* client["me.notificationPreferences"].update({
         payload: { everyPost: true },
       });
 
@@ -372,16 +391,16 @@ layer(NoticesTest)("the notification preferences endpoints", (it) => {
       assert.isTrue(following.email.postPublished);
 
       // Rules acting by themselves are turned off as any other email.
-      yield* client.notificationPreferences.update({
+      yield* client["me.notificationPreferences"].update({
         payload: { email: { automations: false } },
       });
 
       assert.isFalse(
-        (yield* client.notificationPreferences.get()).email.automations
+        (yield* client["me.notificationPreferences"].get()).email.automations
       );
 
       // The weekly digest is asked for, and stopped, as any other email.
-      const digest = yield* client.notificationPreferences.update({
+      const digest = yield* client["me.notificationPreferences"].update({
         payload: { email: { weeklyDigest: true } },
       });
 
@@ -389,7 +408,7 @@ layer(NoticesTest)("the notification preferences endpoints", (it) => {
       assert.isTrue(digest.email.postPublished);
 
       assert.isFalse(
-        (yield* client.notificationPreferences.update({
+        (yield* client["me.notificationPreferences"].update({
           payload: { email: { weeklyDigest: false } },
         })).email.weeklyDigest
       );

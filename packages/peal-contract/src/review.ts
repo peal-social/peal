@@ -410,9 +410,9 @@ const post = { postId: Schema.String };
  * wait, each post's comments and decisions, and the links that show a post
  * to people without an account.
  */
-export class ReviewApi extends HttpApiGroup.make("review")
+export class ReviewApi extends HttpApiGroup.make("approvals")
   .add(
-    HttpApiEndpoint.get("settings", "/review/settings", {
+    HttpApiEndpoint.get("settings", "/settings", {
       error: [Forbidden],
       headers: workspaceHeaders,
 
@@ -424,7 +424,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "Get the review settings",
       })
     ),
-    HttpApiEndpoint.put("updateSettings", "/review/settings", {
+    HttpApiEndpoint.put("updateSettings", "/settings", {
       error: [Forbidden],
       headers: workspaceHeaders,
 
@@ -437,7 +437,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "Update the review settings",
       })
     ),
-    HttpApiEndpoint.get("pending", "/approvals", {
+    HttpApiEndpoint.get("list", "/", {
       error: [Forbidden],
       headers: workspaceHeaders,
 
@@ -449,7 +449,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "List pending approvals",
       })
     ),
-    HttpApiEndpoint.get("thread", "/posts/:postId/review", {
+    HttpApiEndpoint.get("get", "/:postId", {
       error: [Forbidden, PostNotFound],
       headers: workspaceHeaders,
       params: post,
@@ -461,7 +461,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "Get a post's review",
       })
     ),
-    HttpApiEndpoint.post("comment", "/posts/:postId/comments", {
+    HttpApiEndpoint.post("comment", "/:postId/comments", {
       error: [Forbidden, PostNotFound, CommentInvalid],
       headers: workspaceHeaders,
       params: post,
@@ -473,7 +473,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "Comment on a post",
       })
     ),
-    HttpApiEndpoint.patch("resolve", "/posts/:postId/comments/:commentId", {
+    HttpApiEndpoint.patch("resolve", "/:postId/comments/:commentId", {
       error: [Forbidden, PostNotFound, CommentNotFound, CommentInvalid],
       headers: workspaceHeaders,
       params: { ...post, commentId: Schema.String },
@@ -486,7 +486,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "Resolve a thread",
       })
     ),
-    HttpApiEndpoint.post("approve", "/posts/:postId/approve", {
+    HttpApiEndpoint.post("approve", "/:postId/approve", {
       error: [
         Forbidden,
         PostNotFound,
@@ -505,7 +505,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "Approve a post",
       })
     ),
-    HttpApiEndpoint.post("requestChanges", "/posts/:postId/request-changes", {
+    HttpApiEndpoint.post("requestChanges", "/:postId/request-changes", {
       error: [
         Forbidden,
         PostNotFound,
@@ -524,7 +524,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "Request changes to a post",
       })
     ),
-    HttpApiEndpoint.get("links", "/posts/:postId/review-links", {
+    HttpApiEndpoint.get("listLinks", "/:postId/links", {
       error: [Forbidden, PostNotFound],
       headers: workspaceHeaders,
       params: post,
@@ -536,7 +536,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "List a post's review links",
       })
     ),
-    HttpApiEndpoint.post("createLink", "/posts/:postId/review-links", {
+    HttpApiEndpoint.post("createLink", "/:postId/links", {
       error: [Forbidden, PostNotFound, PostNotReviewable, TooManyReviewLinks],
       headers: workspaceHeaders,
       params: post,
@@ -548,7 +548,7 @@ export class ReviewApi extends HttpApiGroup.make("review")
         summary: "Create a review link",
       })
     ),
-    HttpApiEndpoint.delete("revokeLink", "/review-links/:linkId", {
+    HttpApiEndpoint.delete("revokeLink", "/links/:linkId", {
       error: [Forbidden, ReviewLinkNotFound],
       headers: workspaceHeaders,
       params: { linkId: Schema.String },
@@ -563,4 +563,4 @@ export class ReviewApi extends HttpApiGroup.make("review")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1") {}
+  .prefix("/api/v1/approvals") {}

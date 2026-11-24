@@ -28,7 +28,7 @@ export const reviewsChanged = (workspaceId: string, threadId: string) => [
  * first: one page of the most, as a workspace has few locations.
  */
 export const reviewLocations = Atom.family((workspaceId: string) =>
-  PealApi.query("inboxReviews", "listReviewThreads", {
+  PealApi.query("inbox.reviews", "listThreads", {
     headers: forWorkspace(workspaceId),
     query: { limit: maxInboxPageSize },
     reactivityKeys: locationsChanged(workspaceId),
@@ -38,7 +38,7 @@ export const reviewLocations = Atom.family((workspaceId: string) =>
 const locations = Atom.family((key: string) => {
   const [workspaceId = "", threadId = ""] = key.split("/");
 
-  return PealApi.query("inboxReviews", "getReviewThread", {
+  return PealApi.query("inbox.reviews", "getThread", {
     headers: forWorkspace(workspaceId),
     params: { threadId },
     reactivityKeys: locationChanged(threadId),
@@ -49,14 +49,14 @@ const locations = Atom.family((key: string) => {
 export const reviewLocation = (workspaceId: string, threadId: string) =>
   locations(`${workspaceId}/${threadId}`);
 
-export const replyToReview = PealApi.mutation("inboxReviews", "replyToReview");
+export const replyToReview = PealApi.mutation("inbox.reviews", "reply");
 
 export const setReviewAnswered = PealApi.mutation(
-  "inboxReviews",
-  "setReviewAnswered"
+  "inbox.reviews",
+  "setAnswered"
 );
 
 export const withdrawReviewReply = PealApi.mutation(
-  "inboxReviews",
-  "withdrawReviewReply"
+  "inbox.reviews",
+  "withdrawReply"
 );

@@ -64,8 +64,8 @@ const list = Command.make(
   Effect.fn("approvals.list")(function* list({ json, workspace: choice }) {
     const { client, url, workspace } = yield* inWorkspace(choice);
 
-    const waiting = yield* client.review
-      .pending({ headers: {} })
+    const waiting = yield* client.approvals
+      .list({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -120,7 +120,7 @@ const approve = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const outcome = yield* client.review
+    const outcome = yield* client.approvals
       .approve({
         headers: {},
         params: { postId },
@@ -172,7 +172,7 @@ const requestChanges = Command.make(
   }) {
     const { client, url } = yield* inWorkspace(choice);
 
-    const outcome = yield* client.review
+    const outcome = yield* client.approvals
       .requestChanges({
         headers: {},
         params: { postId },
@@ -216,9 +216,9 @@ const policy = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const settings = yield* Option.match(set, {
-      onNone: () => client.review.settings({ headers: {} }),
+      onNone: () => client.approvals.settings({ headers: {} }),
       onSome: (chosen) =>
-        client.review.updateSettings({
+        client.approvals.updateSettings({
           headers: {},
           payload: { approvalPolicy: chosen },
         }),

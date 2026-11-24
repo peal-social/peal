@@ -31,7 +31,7 @@ export const tagIdFrom = (raw: string) =>
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const TagsHandlers = HttpApiBuilder.group(
   Api,
-  "tags",
+  "posts.tags",
   Effect.fn(function* tagsHandlers(handlers) {
     const tags = yield* PostTags;
 

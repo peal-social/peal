@@ -571,7 +571,7 @@
   holds its address connect an account of one platform, or of each of
   several (`platforms`, in their order), to a workspace (those they pick,
   when the sign-in reached several, as a member's picker lets them), and
-  nothing else, without a session: `POST …/connect-links`
+  nothing else, without a session: `POST …/channels/connect-links`
   (channel:connect) answers the address once, and only the SHA-256 of its
   token is kept. It works once a platform, for a sign-in that connects an
   account there: `connectedThrough` keeps the platform and its channels

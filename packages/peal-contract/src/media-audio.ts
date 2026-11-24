@@ -16,11 +16,9 @@ import { AudioProviderFailed } from "./audio-provider-failed.ts";
 import { AudioUnavailable } from "./audio-unavailable.ts";
 import { Authentication } from "./authentication.ts";
 import { Forbidden } from "./forbidden.ts";
-import { MediaNotFound } from "./media-not-found.ts";
 import { MediaStoreUnavailable } from "./media-store-unavailable.ts";
 import { MediaSchema } from "./media.ts";
 import { PlanLimitReached } from "./plan-limit-reached.ts";
-import { TranscriptionRejected } from "./transcription-rejected.ts";
 import { VoiceNotOffered } from "./voice-not-offered.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
 import { workspaceHeaders } from "./workspace-header.ts";
@@ -84,14 +82,13 @@ export const TranscriptSchema = Schema.Struct({
 export type Transcript = typeof TranscriptSchema.Type;
 
 /**
- * Audio for the workspace's media library from the providers it chose,
- * with its own keys: voice-overs made from a text, and transcripts of its
- * audio and videos. Peal only sends the request, waits, and keeps the
- * result.
+ * Voice-overs for the workspace's media library, made from a text by the
+ * provider it chose, with its own key. Peal only sends the request, waits,
+ * and keeps the result. Transcripts are `MediaTranscriptionsApi`'s.
  */
-export class MediaAudioApi extends HttpApiGroup.make("mediaAudio")
+export class MediaAudioApi extends HttpApiGroup.make("media.voiceovers")
   .add(
-    HttpApiEndpoint.post("createVoiceover", "/voiceovers", {
+    HttpApiEndpoint.post("create", "/", {
       error: [
         Forbidden,
         AudioUnavailable,
@@ -111,28 +108,8 @@ export class MediaAudioApi extends HttpApiGroup.make("mediaAudio")
         description: `Asks the provider the workspace chose for voice-overs (\`PUT .../assistant/models/speech\`) to speak the text, in \`voice\` when given, and answers with the audio as a new file of the media library, marked \`aiGenerated\`, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. ${voiceoversPerDay} a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.`,
         summary: "Make a voice-over into the media library",
       })
-    ),
-    HttpApiEndpoint.post("transcribe", "/:mediaId/transcription", {
-      error: [
-        Forbidden,
-        MediaNotFound,
-        TranscriptionRejected,
-        AudioUnavailable,
-        AudioAllowanceReached,
-        AudioProviderFailed,
-        MediaStoreUnavailable,
-      ],
-      headers: workspaceHeaders,
-      params: { mediaId: Schema.String },
-      payload: TranscriptionRequestSchema,
-      success: TranscriptSchema,
-    }).annotateMerge(
-      OpenApi.annotations({
-        description: `Sends a ready audio or video file of the media library, of at most ${maxTranscriptionBytes} bytes, to the provider the workspace chose for transcripts (\`PUT .../assistant/models/transcription\`), and answers with what is said in it. With \`saveAsDescription\`, the transcript becomes the file's description when it fits one (\`descriptionSaved\`). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. ${transcriptionsPerDay} a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.`,
-        summary: "Transcribe a file of the media library",
-      })
     )
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/v1/media") {}
+  .prefix("/api/v1/media/voiceovers") {}
