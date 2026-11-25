@@ -1341,8 +1341,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   to the API: the layout's own answer decides. Staff acting as someone,
   someone signed out, and every page outside the app (sign-in, review
   links, connect links, OAuth, the staff console) keep next-intl's order.
-  The plain frame shows no language switcher to someone the account's
-  language decides for.
+  So does a page of the app whose address `nextPathOf` refuses (a `%`, a
+  raw `//` in its query, a character outside ASCII): it is never sent
+  on, and keeps the address's language. The plain frame shows no
+  language switcher to someone the account's language decides for.
 - Folders in `peal-web` import each other through `#…` (package.json
   `imports`); `#messages/*` points at the catalogues.
 - The page is `connect/link` (`components/connect-link/`), which reads
