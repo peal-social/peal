@@ -19,6 +19,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY patches patches
 COPY packages/peal-contract/package.json packages/peal-contract/
+COPY packages/peal-emails/package.json packages/peal-emails/
 COPY packages/peal-server/package.json packages/peal-server/
 
 RUN --mount=type=cache,target=/root/.bun/install/cache \
@@ -44,9 +45,16 @@ COPY --from=dependencies /cc-runtime/ /
 COPY --from=mwader/static-ffmpeg:9.0.2-1@sha256:f5d100184884eb3e82b0eb14bb5ebf98da99826ac824989720297fb9ef21c822 /ffprobe /usr/local/bin/ffprobe
 COPY --from=dependencies /app/node_modules node_modules
 COPY --from=dependencies /app/packages/peal-contract/node_modules packages/peal-contract/node_modules
+COPY --from=dependencies /app/packages/peal-emails/node_modules packages/peal-emails/node_modules
 COPY --from=dependencies /app/packages/peal-server/node_modules packages/peal-server/node_modules
 COPY packages/peal-contract/package.json packages/peal-contract/
 COPY packages/peal-contract/src packages/peal-contract/src
+# The emails' templates are TSX, which Bun reads with the runtime their
+# tsconfig.json names, as in development.
+COPY tsconfig.base.json ./
+COPY packages/peal-emails/package.json packages/peal-emails/
+COPY packages/peal-emails/tsconfig.json packages/peal-emails/
+COPY packages/peal-emails/src packages/peal-emails/src
 COPY packages/peal-server/package.json packages/peal-server/
 COPY packages/peal-server/src packages/peal-server/src
 # The migrations the server applies when it starts.

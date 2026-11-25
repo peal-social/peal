@@ -10,7 +10,9 @@ under Development stack.
   check, and use synthetic credentials.
   `packages/peal-docker/test/compose.test.ts` enforces these rules, and checks
   that the server image uses the Bun in `.bun-version`, runs as nonroot, ships
-  ffprobe, and pins every image it builds on or copies from by digest.
+  ffprobe and every workspace package the server depends on (its manifest,
+  its modules and its `src`; `peal-emails` with its `tsconfig.json`, as Bun
+  reads its TSX), and pins every image it builds on or copies from by digest.
 - Mount no image (`type: image`): Docker mounts the image when it creates
   the container and not again after its daemon restarts (a reboot, an engine
   upgrade), so the container restarts on an empty folder. A binary an image
