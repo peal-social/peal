@@ -173,7 +173,7 @@ describe(PostMetricsView, () => {
     });
 
     expect(html).toContain(
-      "No longer read. Peal reads a post&#x27;s counts for 30 days after it goes live."
+      "No longer read. Peal reads a post’s counts for 30 days after it goes live."
     );
   });
 
@@ -259,7 +259,7 @@ describe(PostMetricsView, () => {
 
     expect(html).toContain(">Alice Example on linkedin</h3>");
     expect(html).toContain(
-      "LinkedIn gives Peal no counts for a profile&#x27;s posts."
+      "LinkedIn gives Peal no counts for a profile’s posts."
     );
   });
 
@@ -269,7 +269,7 @@ describe(PostMetricsView, () => {
       targets: [target("t5", "c5", { publishedAt: ago(Duration.minutes(5)) })],
     });
 
-    expect(html).toContain("This server doesn&#x27;t read counts on X.");
+    expect(html).toContain("This server doesn’t read counts on X.");
   });
 
   it("says a story has no counts", async () => {

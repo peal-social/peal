@@ -293,7 +293,7 @@ describe(PostDetail, () => {
 
     expect(figures).toContain(">Ada Example on LinkedIn</h3>");
     expect(figures).toContain(
-      "LinkedIn gives Peal no counts for a profile&#x27;s posts."
+      "LinkedIn gives Peal no counts for a profile’s posts."
     );
   });
 
@@ -371,7 +371,7 @@ describe(PostDetail, () => {
       })
     );
 
-    expect(figures).toContain("You can&#x27;t see this post&#x27;s counts.");
+    expect(figures).toContain("You can’t see this post’s counts.");
     expect(figures).not.toContain(">Try again<");
   });
 
