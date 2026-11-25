@@ -162,8 +162,21 @@ A client that has none of the three workspace permissions above can do nothing. 
 The endpoint has these limits:
 
 - A Peal instance serves MCP clients only when its address is HTTPS, or `localhost` for development. Anywhere else, the endpoint refuses every request.
-- The endpoint refuses requests sent from web pages (with an `Origin` header). Connect a client that runs on your computer or on a server.
+- The endpoint refuses requests sent from web pages (with an `Origin` header) with status 403, whatever their credential. Connect a client that runs on your computer or on a server.
 - A connection may send {{api-with-en}} requests a minute ({{api-without-en}} on a billing account without a payment method), counted together with the requests the same key or application sends to the API. Past that, the endpoint answers 429 with a `Retry-After` header ([Rate limits](/developers/conventions/rate-limits#rate-limits)).
 - Every answer carries an `X-Request-Id` header. Quote it when you ask for help ([Requests and answers](/developers/conventions#requests)).
+
+## When a request is refused [#refusals]
+
+When the endpoint refuses a request before any tool runs, it answers a JSON-RPC error with the HTTP status. The error's `message` says what happened and what to do, and never repeats the credential it was sent.
+
+| Status | When                                                                                                  | What the client does                                                             |
+| ------ | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 401    | No credential was sent                                                                                | Signs in: the `WWW-Authenticate` header says where                               |
+| 401    | The key or token was refused: unknown, revoked or expired. The header carries `error="invalid_token"` | Renews its token or signs in again. An agent that sent a key needs a new one     |
+| 403    | The token allows nothing in a workspace. The header carries `error="insufficient_scope"`              | Signs in again and asks for at least `workspace:read`                            |
+| 403    | You no longer belong to the workspace, or it requires two-step verification                           | Connects again and picks another workspace, or you turn two-step verification on |
+| 403    | The request has an `Origin` header                                                                    | Sends it from the client itself                                                  |
+| 404    | The session isn't one of this connection's, or it ended                                               | Opens a new session                                                              |
 
 To see and disconnect the clients you allowed, go to **Security and access**, under **Settings** in the web app. `peal account apps` lists them from the [command line](/developers/cli/workspace#account). Leaving the workspace stops every client that acts in it.
