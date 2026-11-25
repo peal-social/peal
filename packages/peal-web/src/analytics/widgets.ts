@@ -7,6 +7,8 @@ import type {
   Platform,
 } from "peal-contract";
 
+import { personKeyOf } from "#auth/person-storage.ts";
+import type { KeptFor } from "#auth/person-storage.ts";
 import { addDays, dateKey } from "#posts/zoned-time.ts";
 import type { CalendarDate } from "#posts/zoned-time.ts";
 
@@ -209,9 +211,12 @@ export const boardFrom = (stored: string | null): Board =>
 /** The board as it is kept. */
 export const boardText = (board: Board): string => JSON.stringify(board);
 
-/** Where the board of a workspace is kept, in the browser. */
-export const boardKey = (workspaceId: string): string =>
-  `peal.analytics.board.${workspaceId}`;
+/**
+ * Where the person's board of a workspace is kept, in the browser: theirs
+ * alone, as others may sign in on the same browser.
+ */
+export const boardKey = (owner: KeptFor): string =>
+  personKeyOf("analytics-board", owner);
 
 /** The columns a widget spans: its own, never fewer than its kind reads in. */
 export const widthOf = (widget: Widget): WidgetWidth => {

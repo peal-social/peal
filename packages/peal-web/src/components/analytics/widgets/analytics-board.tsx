@@ -717,22 +717,25 @@ const cellOf = (grid: HTMLElement) => {
 
 /**
  * The analytics page: a board of widgets the person arranges, each with
- * its own period, channel and size, kept in their browser for the
- * workspace. **Add widgets** sits in the page's actions; a widget moves
- * by dragging its handle, and resizes from its corner, by pointer or
- * with the arrow keys.
+ * its own period, channel and size, kept in their browser for them and
+ * the workspace (`useBoard`). **Add widgets** sits in the page's actions;
+ * a widget moves by dragging its handle, and resizes from its corner, by
+ * pointer or with the arrow keys.
  */
 export const AnalyticsBoard = ({
   channels,
   timeZone,
+  userId,
   workspaceId,
 }: {
   readonly channels: readonly SocialChannel[];
   readonly timeZone: string;
+  /** The signed-in person: the browser keeps each person's board apart. */
+  readonly userId: string;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("Analytics.widgets");
-  const [board, update] = useBoard(workspaceId);
+  const [board, update] = useBoard({ userId, workspaceId });
   const offerUndo = useOfferUndo();
   const grid = useRef<HTMLUListElement>(null);
   const [adding, setAdding] = useState(false);

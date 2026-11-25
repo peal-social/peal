@@ -1,12 +1,12 @@
 import { Option } from "effect";
 
-// What the browser keeps of a person's unfinished work in a workspace
-// (the Studio's draft, the agent panel's tabs) is keyed by the person and
-// the workspace, `peal.<kind>.<userId>.<workspaceId>`: on a shared
-// computer, the next member of the same workspace loads none of it, and
-// the person finds their own again once back. Keys an older page named by
-// the workspace alone are never read, and dropped as found. Deleting the
-// account forgets all of the person's (`forgetPersonKeys`).
+// What the browser keeps of a person's work in a workspace (the Studio's
+// draft, the agent panel's tabs, the analytics board) is keyed by the
+// person and the workspace, `peal.<kind>.<userId>.<workspaceId>`: on a
+// shared computer, the next member of the same workspace loads none of
+// it, and the person finds their own again once back. Keys an older page
+// named by the workspace alone are never read, and dropped as found.
+// Deleting the account forgets all of the person's (`forgetPersonKeys`).
 
 /** What a page reads and writes of the browser's `localStorage`. */
 export type PersonStorage = Pick<
@@ -15,9 +15,25 @@ export type PersonStorage = Pick<
 >;
 
 /** What the browser keeps per person and workspace. */
-export type KeptKind = "agent-panel" | "studio-draft";
+export type KeptKind = "agent-panel" | "analytics-board" | "studio-draft";
 
-const keptKinds: readonly KeptKind[] = ["agent-panel", "studio-draft"];
+/**
+ * Where an older page kept each kind under the workspace alone, which
+ * anyone signed in to it would have loaded.
+ */
+const workspaceKeys: Readonly<
+  Record<KeptKind, (workspaceId: string) => string>
+> = {
+  "agent-panel": (workspaceId) => `peal.agent-panel.${workspaceId}`,
+  "analytics-board": (workspaceId) => `peal.analytics.board.${workspaceId}`,
+  "studio-draft": (workspaceId) => `peal.studio-draft.${workspaceId}`,
+};
+
+const keptKinds: readonly KeptKind[] = [
+  "agent-panel",
+  "analytics-board",
+  "studio-draft",
+];
 
 /** Whose work it is, and in which workspace. */
 export interface KeptFor {
@@ -55,7 +71,7 @@ export const dropWorkspaceKey = (
   workspaceId: string
 ): void => {
   try {
-    storage.removeItem(`peal.${kind}.${workspaceId}`);
+    storage.removeItem(workspaceKeys[kind](workspaceId));
   } catch {
     // Storage is closed to the page: nothing to drop.
   }
