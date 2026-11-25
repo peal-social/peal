@@ -1,39 +1,27 @@
-// Reads a release tag, sdk-<language>-v<version>:
-// `bun scripts/release.ts sdk-python-v0.1.0`. It refuses a tag whose version
-// is not the one scripts/languages.ts gives the language, so a tag never
-// publishes a package whose manifest says another version. In GitHub
-// Actions, it hands the language and the version to the next steps.
+// Reads a release tag, sdk-<language>-v<release>:
+// `bun scripts/release.ts sdk-python-v0.4.0-beta.1`. It refuses a tag whose
+// release is not the one scripts/languages.ts gives the language
+// (scripts/release-tag.ts). In GitHub Actions, it hands the language, the
+// version as its registry spells it (0.4.0b1 for PyPI) and npm's dist-tag to
+// the next steps.
 import { appendFile } from "node:fs/promises";
 
-import { languageNamed } from "./languages.ts";
+import { languages, prereleasesAreLatest } from "./languages.ts";
+import { releaseOf } from "./release-tag.ts";
 
-const tag = Bun.argv[2] ?? "";
-
-const parts =
-  /^sdk-(?<language>[a-z]+)-v(?<version>\d+\.\d+\.\d+(?:-[\d.A-Za-z-]+)?)$/u.exec(
-    tag
-  )?.groups;
-
-const { language: name, version } = parts ?? {};
-
-if (name === undefined || version === undefined) {
-  throw new Error(
-    `A release tag reads sdk-<language>-v<version>, not "${tag}".`
-  );
-}
-
-const language = languageNamed(name);
-
-if (language.version !== version) {
-  throw new Error(
-    `${tag} releases ${language.name} ${version}, but scripts/languages.ts gives it ${language.version}: change it there, regenerate, and tag that commit.`
-  );
-}
+const { language, npmTag, version } = releaseOf(
+  Bun.argv[2] ?? "",
+  languages,
+  prereleasesAreLatest
+);
 
 const outputs = process.env["GITHUB_OUTPUT"];
 
 if (outputs !== undefined) {
-  await appendFile(outputs, `language=${language.name}\nversion=${version}\n`);
+  await appendFile(
+    outputs,
+    `language=${language}\nversion=${version}\nnpm-tag=${npmTag}\n`
+  );
 }
 
-process.stdout.write(`${language.name} ${version}\n`);
+process.stdout.write(`${language} ${version} (npm: ${npmTag})\n`);

@@ -3,5 +3,5 @@
   "generatorName": "fernapi/fern-ruby-sdk",
   "generatorVersion": "1.45.4",
   "generatorConfig": {},
-  "requestedVersion": "0.3.0"
+  "requestedVersion": "0.4.0.beta.1"
 }
