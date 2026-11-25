@@ -3,6 +3,8 @@ import { FetchHttpClient } from "effect/http";
 
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
 import { TikTokCreators } from "#publishing/application/tiktok-creators.ts";
+import { readRefusedCode } from "#publishing/domain/own-refusals.ts";
+import { hostNotAllowedCode } from "#publishing/infrastructure/platforms/platform-exchange.ts";
 import type { BadRequest } from "#shared/domain/bad-request.ts";
 import { storableLine } from "#shared/domain/platform-text.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
@@ -17,14 +19,21 @@ import { tiktokMediaUrlConfig } from "./tiktok-settings.ts";
 const codeLength = 64;
 
 // TikTok answered and refused to tell the creator's settings (an app it has
-// not audited, a request it could not read), or the outbound guard refused
-// its host: the read has no answer, as when TikTok is down, and nothing of
-// the channel is wrong. Logged by its code, never TikTok's message, which
+// not audited, a request it could not read), or Peal's outbound guard
+// refused its host: the read has no answer, and nothing of the channel is
+// wrong. Unlike an outage it may come back the same each time, which
+// `readRefusedCode` says. Logged by its code, never TikTok's message, which
 // may quote what was sent.
 const refusedRead = ({ code }: BadRequest) =>
-  Effect.logWarning("TikTok refused to read a creator's settings").pipe(
+  Effect.logWarning(
+    code === hostNotAllowedCode
+      ? "Peal's outbound guard refused TikTok's host"
+      : "TikTok refused to read a creator's settings"
+  ).pipe(
     Effect.annotateLogs({ code: storableLine(code, codeLength) }),
-    Effect.andThen(Effect.fail(new PlatformUnavailable()))
+    Effect.andThen(
+      Effect.fail(new PlatformUnavailable({ code: readRefusedCode }))
+    )
   );
 
 /**
@@ -32,7 +41,8 @@ const refusedRead = ({ code }: BadRequest) =>
  * PlatformCredentials, renewed once if TikTok refuses it. `pullFrom` is the
  * verified prefix photos are pulled from, if the server has one. A
  * `BadRequest` is the channels context's alone (the channel disconnected or
- * turned off): TikTok's refusals of the read are `PlatformUnavailable`.
+ * turned off): TikTok's refusals of the read are `PlatformUnavailable`
+ * with `readRefusedCode`.
  */
 export const tiktokCreatorsWith = (settings: {
   readonly apiUrl: URL;

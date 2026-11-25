@@ -59,6 +59,15 @@ export const channelRefusalOf = (code: string): ChannelRefusal => {
 };
 
 /**
+ * The code of a `PlatformUnavailable` for a read that got an answer and no
+ * data: the platform refused it, or Peal's outbound guard refused the
+ * platform's host. Unlike an outage, it may come back the same each time
+ * (an app the platform has not audited) until the server's operator reads
+ * the logs, which name the refusal's own code. Never stored.
+ */
+export const readRefusedCode = "readRefused";
+
+/**
  * The codes adapters give a platform's refusal that has a failure reason of
  * its own, rather than `contentRejected`. They are stored in the
  * publication journal too, so never change one.

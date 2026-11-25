@@ -13,12 +13,17 @@ import { FetchHttpClient } from "effect/http";
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
 import { TikTokCreators } from "#publishing/application/tiktok-creators.ts";
 import type { CreatorFailure } from "#publishing/application/tiktok-creators.ts";
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
+import {
+  ownRefusalCodes,
+  readRefusedCode,
+} from "#publishing/domain/own-refusals.ts";
 import { tiktokCreatorsWith } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
+import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
+import { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
 import {
   fakeTikTokApi,
@@ -57,6 +62,8 @@ interface Logged {
 const onTikTok = Effect.fn("test.creatorsOnTikTok")(function* onTikTok(
   options: {
     readonly answers?: readonly PlatformAnswer[];
+    /** The outbound guard requests pass: every host by default. */
+    readonly guard?: Layer.Layer<OutboundGuard>;
     readonly tokens?: readonly string[];
   } = {}
 ) {
@@ -80,7 +87,7 @@ const onTikTok = Effect.fn("test.creatorsOnTikTok")(function* onTikTok(
         Layer.mergeAll(
           Layer.succeedContext(credentials),
           FetchHttpClient.layer,
-          OpenOutboundGuard
+          options.guard ?? OpenOutboundGuard
         )
       )
     )
@@ -184,7 +191,7 @@ describe("TikTok's creators, read for the composer and the lookups", () => {
   );
 
   it.effect(
-    "takes TikTok's refusal of the read for TikTok's doing, never the channel's, and logs its code",
+    "takes TikTok's refusal of the read for one TikTok may repeat, never the channel's, and logs its code",
     () =>
       Effect.gen(function* refused() {
         for (const [answer, code] of [
@@ -193,20 +200,74 @@ describe("TikTok's creators, read for the composer and the lookups", () => {
             "appNotAudited",
           ],
           [refusal("invalid_params", 400), "invalid_params"],
-          // A code that is no identifier is never logged as TikTok wrote
-          // it: the status names the refusal instead.
-          [refusal("invalid\u0000params\uD800", 403), "http403"],
         ] as const) {
           const { logs, read } = yield* onTikTok({ answers: [answer] });
 
           assert.deepStrictEqual(
             yield* failureOf(read),
-            new PlatformUnavailable()
+            new PlatformUnavailable({ code: readRefusedCode })
           );
           assert.deepStrictEqual(logs, [
             { code, message: ["TikTok refused to read a creator's settings"] },
           ]);
         }
+      })
+  );
+
+  it.effect(
+    "never logs a code TikTok wrote that is no identifier: the answer's reading names the refusal by its status first",
+    () =>
+      Effect.gen(function* unreadableCode() {
+        // codeOf, which reads TikTok's refusal, replaces such a code with
+        // the status before the adapter sees it; storableLine there is the
+        // last guard, which this cannot reach.
+        const { logs, read } = yield* onTikTok({
+          answers: [refusal("invalid\u0000params\uD800", 403)],
+        });
+
+        assert.deepStrictEqual(
+          yield* failureOf(read),
+          new PlatformUnavailable({ code: readRefusedCode })
+        );
+        assert.deepStrictEqual(logs, [
+          {
+            code: "http403",
+            message: ["TikTok refused to read a creator's settings"],
+          },
+        ]);
+      })
+  );
+
+  it.effect(
+    "tells the outbound guard's refusal of TikTok's host apart from TikTok's",
+    () =>
+      Effect.gen(function* guarded() {
+        const { logs, read, tiktok } = yield* onTikTok({
+          guard: Layer.succeed(
+            OutboundGuard,
+            OutboundGuard.of({
+              check: (url) =>
+                Effect.fail(
+                  new OutboundRequestRefused({
+                    host: url.host,
+                    reason: "notPublic",
+                  })
+                ),
+            })
+          ),
+        });
+
+        assert.deepStrictEqual(
+          yield* failureOf(read),
+          new PlatformUnavailable({ code: readRefusedCode })
+        );
+        assert.deepStrictEqual(logs, [
+          {
+            code: "hostNotAllowed",
+            message: ["Peal's outbound guard refused TikTok's host"],
+          },
+        ]);
+        assert.deepStrictEqual(tiktok.requests(), []);
       })
   );
 

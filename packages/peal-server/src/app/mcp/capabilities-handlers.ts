@@ -7,7 +7,10 @@ import { channelCapabilitiesView } from "#publishing/api/capabilities-view.ts";
 import { lookupResultView } from "#publishing/api/lookup-view.ts";
 import { ChannelLookups } from "#publishing/application/channel-lookups.ts";
 import { PostingCapabilities } from "#publishing/application/posting-capabilities.ts";
-import { channelRefusalOf } from "#publishing/domain/own-refusals.ts";
+import {
+  channelRefusalOf,
+  readRefusedCode,
+} from "#publishing/domain/own-refusals.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import type { RateLimited } from "#shared/domain/rate-limited.ts";
 
@@ -28,6 +31,12 @@ const turnedOff = () =>
 
 const unanswered = () =>
   refuse("The platform did not answer: try again in a few minutes.");
+
+// A refusal that may come back the same each time: an agent must not loop.
+const repeated = () =>
+  refuse(
+    "The platform refused this lookup, or this server would not reach it: trying again may not help. If it keeps failing, the server's operator must look at the server's logs."
+  );
 
 const slowDown = ({ retryAfter }: RateLimited) =>
   refuse(
@@ -69,7 +78,7 @@ export const CapabilityToolsLive = CapabilityTools.toLayer(
               Match.value(channelRefusalOf(code)).pipe(
                 Match.when("disabled", turnedOff),
                 Match.when("disconnected", notAChannel),
-                Match.when("other", unanswered),
+                Match.when("other", repeated),
                 Match.exhaustive
               ),
             DatabaseError: Effect.die,
@@ -78,7 +87,8 @@ export const CapabilityToolsLive = CapabilityTools.toLayer(
                 `The lookup ${name} does not take this input: get_channel_capabilities lists the fields it takes, and the values each allows. A cursor must be one a page before answered.`
               ),
             MissingPermission: notAllowed("ask a channel's platform"),
-            PlatformUnavailable: unanswered,
+            PlatformUnavailable: ({ code }) =>
+              code === readRefusedCode ? repeated() : unanswered(),
             RateLimited: slowDown,
             TokenExpired: reconnect,
             UnknownChannels: notAChannel,

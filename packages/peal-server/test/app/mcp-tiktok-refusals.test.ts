@@ -3,7 +3,10 @@ import { Duration } from "effect";
 
 import { tiktokCreatorRefusalText } from "#app/mcp/tiktok-refusals.ts";
 import { UnknownChannels } from "#publishing/application/unknown-channels.ts";
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
+import {
+  ownRefusalCodes,
+  readRefusedCode,
+} from "#publishing/domain/own-refusals.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
@@ -39,15 +42,22 @@ describe(tiktokCreatorRefusalText, () => {
     );
   });
 
-  it("tells TikTok unavailable apart from TikTok asking to slow down", () => {
+  it("tells TikTok unavailable apart from a refusal it may repeat, and from TikTok asking to slow down", () => {
     expect(tiktokCreatorRefusalText(new PlatformUnavailable())).toBe(
-      "TikTok did not answer, or refused to tell the creator's settings: try again in a few minutes."
+      "TikTok did not answer: try again in a few minutes."
     );
+
+    const repeated =
+      "TikTok refused to tell this creator's settings, or this server would not reach TikTok: trying again may not help. If it keeps failing, the server's operator must look at the server's logs.";
+
+    expect(
+      tiktokCreatorRefusalText(
+        new PlatformUnavailable({ code: readRefusedCode })
+      )
+    ).toBe(repeated);
     expect(
       tiktokCreatorRefusalText(new BadRequest({ code: "hostNotAllowed" }))
-    ).toBe(
-      "TikTok did not answer, or refused to tell the creator's settings: try again in a few minutes."
-    );
+    ).toBe(repeated);
     expect(
       tiktokCreatorRefusalText(
         new RateLimited({ retryAfter: Duration.millis(29_500) })

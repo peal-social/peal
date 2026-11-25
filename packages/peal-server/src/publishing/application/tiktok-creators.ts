@@ -12,8 +12,10 @@ import type { TokenExpired } from "#shared/domain/token-expired.ts";
  * Why a creator's settings could not be read: the channel is disconnected
  * or turned off (`BadRequest` with a code of
  * `#publishing/domain/own-refusals.ts`), must be reconnected
- * (`TokenExpired`), TikTok did not answer or refused the read
- * (`PlatformUnavailable`), or it asked to slow down (`RateLimited`). A
+ * (`TokenExpired`), TikTok did not answer (`PlatformUnavailable`) or
+ * refused the read (`PlatformUnavailable` with `readRefusedCode`, which
+ * may come back the same each time), or it asked to slow down
+ * (`RateLimited`). A
  * refusal of TikTok's is never a `BadRequest`, which would say the channel
  * is gone.
  */
