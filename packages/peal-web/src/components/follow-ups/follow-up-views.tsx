@@ -13,7 +13,7 @@ import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ReactNode } from "react";
 
-import type { FollowUpDraft } from "#follow-ups/rules.ts";
+import type { FollowUpDraft, FollowUpOffer } from "#follow-ups/rules.ts";
 
 // The views of follow-up rules: a rule with what it did, the line a post
 // shows, and the form that starts one, whatever fetched them. Their state
@@ -211,11 +211,15 @@ export const FollowsUpLineView = ({
   );
 };
 
-/** The form that starts a rule on a post. */
+/**
+ * The form that starts a rule on a post: a comment and a repost where the
+ * post's platforms take them (`offer`), each alone where only it acts.
+ */
 export const FollowUpFormView = ({
   busy,
   draft,
   error,
+  offer,
   onCancel,
   onChange,
   onSubmit,
@@ -223,6 +227,8 @@ export const FollowUpFormView = ({
   readonly busy: boolean;
   readonly draft: FollowUpDraft;
   readonly error: string | null;
+  /** What the post's platforms take, as the server says. */
+  readonly offer: Exclude<FollowUpOffer, "none">;
   readonly onCancel: () => void;
   readonly onChange: (draft: FollowUpDraft) => void;
   readonly onSubmit: () => void;
@@ -240,7 +246,9 @@ export const FollowUpFormView = ({
         onSubmit();
       }}
     >
-      <p className="text-muted-foreground text-sm">{t("form.description")}</p>
+      <p className="text-muted-foreground text-sm">
+        {t("form.description", { offered: offer })}
+      </p>
       <div className="flex flex-col gap-1">
         <Label htmlFor={likesId}>{t("form.likes")}</Label>
         <Input
@@ -253,28 +261,36 @@ export const FollowUpFormView = ({
           }}
         />
       </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor={commentId}>{t("form.comment")}</Label>
-        <Textarea
-          id={commentId}
-          value={draft.comment}
-          maxLength={maxFollowUpCommentLength}
-          onChange={(event) => {
-            onChange({ ...draft, comment: event.target.value });
-          }}
-        />
-        <p className="text-muted-foreground text-xs">{t("form.commentHelp")}</p>
-      </div>
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id={repostId}
-          checked={draft.repost}
-          onCheckedChange={(checked) => {
-            onChange({ ...draft, repost: checked === true });
-          }}
-        />
-        <Label htmlFor={repostId}>{t("form.repost")}</Label>
-      </div>
+      {offer === "repost" ? null : (
+        <div className="flex flex-col gap-1">
+          <Label htmlFor={commentId}>{t("form.comment")}</Label>
+          <Textarea
+            id={commentId}
+            value={draft.comment}
+            maxLength={maxFollowUpCommentLength}
+            onChange={(event) => {
+              onChange({ ...draft, comment: event.target.value });
+            }}
+          />
+          <p className="text-muted-foreground text-xs">
+            {t("form.commentHelp")}
+          </p>
+        </div>
+      )}
+      {offer === "comment" ? null : (
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id={repostId}
+            checked={draft.repost}
+            onCheckedChange={(checked) => {
+              onChange({ ...draft, repost: checked === true });
+            }}
+          />
+          <Label htmlFor={repostId}>
+            {t("form.repost", { offered: offer })}
+          </Label>
+        </div>
+      )}
       <p className="text-muted-foreground text-xs">{t("form.public")}</p>
       {error === null ? null : (
         <p role="alert" className="text-destructive text-sm">

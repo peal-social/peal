@@ -5351,16 +5351,16 @@
     "stopConfirm": "The rule sends nothing more: what it is waiting to send is given up, and what it sent stays on the platforms.",
     "stopped": "The rule is stopped.",
     "form": {
-      "description": "Once the post has the likes on a channel, Peal publishes what you write here under it, from that channel’s account, and reposts it if you ask, once.",
+      "description": "{offered, select, comment {Once the post has the likes on a channel, Peal publishes what you write here under it, from that channel’s account, once. Its channels’ platforms take no repost from Peal.} repost {Once the post has the likes on a channel, Peal reposts it from that channel’s account, once. Its channels’ platforms take no comment from Peal.} other {Once the post has the likes on a channel, Peal publishes what you write here under it, from that channel’s account, and reposts it if you ask, once.}}",
       "likes": "Likes",
       "comment": "Comment",
       "commentHelp": "Up to each platform’s length: 300 characters on Bluesky, 500 on Mastodon, 280 on X.",
-      "repost": "Repost the post too",
+      "repost": "{offered, select, repost {Repost the post} other {Repost the post too}}",
       "public": "It goes out in public, by itself, without anyone being asked: if the workspace asks for approvals, it waits for one.",
       "start": "Start",
       "cancel": "Cancel",
       "likesInvalid": "Likes are a whole number, from 1 to 1,000,000.",
-      "nothing": "Write a comment, ask for a repost, or both."
+      "nothing": "{offered, select, comment {Write a comment.} repost {Tick Repost the post.} other {Write a comment, ask for a repost, or both.}}"
     },
     "errors": {
       "notPossible": "{reason, select, noAction {Write a comment, ask for a repost, or both.} emptyComment {The comment is empty.} postCancelled {The post was cancelled.} noChannel {The rule acts on no channel of the workspace.} windowPassed {Nothing of the post is left to publish, and no channel it went out on can still be followed up: its seven days passed, it failed, or no channel there can carry the rule.} alreadyFollowedUp {Another rule already follows this post up this way: stop it first.} other {None of the post’s channels can carry this, or the comment is too long for one of them.}}",

@@ -151,6 +151,7 @@ const ExistingPost = ({
           workspaceId={workspaceId}
         />
         <PostFollowUp
+          channels={channels}
           permissions={permissions}
           post={post}
           workspaceId={workspaceId}
@@ -204,6 +205,7 @@ const ExistingPost = ({
           workspaceId={workspaceId}
         />
         <PostFollowUp
+          channels={channels}
           permissions={permissions}
           post={post}
           workspaceId={workspaceId}

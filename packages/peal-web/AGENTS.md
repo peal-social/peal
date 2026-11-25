@@ -532,7 +532,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   opened it for), views in `components/follow-ups/follow-up-views.tsx`,
   atoms in `#follow-ups/atoms.ts`, the form's request in
   `#follow-ups/rules.ts`. `PostFollowUp`, on a post's page, shows the
-  post's rule or offers Follow up to a member with post:schedule.
+  post's rule or offers Follow up to a member with post:schedule, only
+  where a channel the post is on its way to or live on is on a platform
+  where `automations.followUps.platforms` says a comment or a repost acts
+  (`followUpOfferOn`); its form shows the comment, the repost or both, as
+  that answer says.
   Refusals are explained from the `FollowUps.errors` catalogue
   (`#follow-ups/follow-up-error.ts`); what a channel carries reads the
   API's words (`FollowUps.carries`), never a list of platforms of the

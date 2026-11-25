@@ -5351,16 +5351,16 @@
     "stopConfirm": "La règle n’envoie plus rien : ce qu’elle attendait d’envoyer est abandonné, et ce qu’elle a envoyé reste sur les plateformes.",
     "stopped": "La règle est arrêtée.",
     "form": {
-      "description": "Quand la publication a les mentions J’aime sur un canal, Peal publie ce que vous écrivez ici dessous, depuis le compte de ce canal, et la repartage si vous le demandez, une fois.",
+      "description": "{offered, select, comment {Quand la publication a les mentions J’aime sur un canal, Peal publie ce que vous écrivez ici dessous, depuis le compte de ce canal, une fois. Les plateformes de ses canaux ne prennent pas de repartage de Peal.} repost {Quand la publication a les mentions J’aime sur un canal, Peal la repartage depuis le compte de ce canal, une fois. Les plateformes de ses canaux ne prennent pas de commentaire de Peal.} other {Quand la publication a les mentions J’aime sur un canal, Peal publie ce que vous écrivez ici dessous, depuis le compte de ce canal, et la repartage si vous le demandez, une fois.}}",
       "likes": "Mentions J’aime",
       "comment": "Commentaire",
       "commentHelp": "Dans la longueur de chaque plateforme : 300 caractères sur Bluesky, 500 sur Mastodon, 280 sur X.",
-      "repost": "Repartager aussi la publication",
+      "repost": "{offered, select, repost {Repartager la publication} other {Repartager aussi la publication}}",
       "public": "Elle part en public, d’elle-même, sans que personne ne soit sollicité : si l’espace de travail demande des approbations, elle en attend une.",
       "start": "Lancer",
       "cancel": "Annuler",
       "likesInvalid": "Les mentions J’aime sont un nombre entier, de 1 à 1 000 000.",
-      "nothing": "Écrivez un commentaire, demandez un repartage, ou les deux."
+      "nothing": "{offered, select, comment {Écrivez un commentaire.} repost {Cochez Repartager la publication.} other {Écrivez un commentaire, demandez un repartage, ou les deux.}}"
     },
     "errors": {
       "notPossible": "{reason, select, noAction {Écrivez un commentaire, demandez un repartage, ou les deux.} emptyComment {Le commentaire est vide.} postCancelled {La publication a été annulée.} noChannel {La règle n’agit sur aucun canal de l’espace de travail.} windowPassed {La publication n’a plus rien à mettre en ligne, et aucun canal où elle est partie ne peut encore être relancé : ses sept jours sont passés, elle a échoué, ou aucun de ces canaux ne peut porter la règle.} alreadyFollowedUp {Une autre règle relance déjà cette publication ainsi : arrêtez-la d’abord.} other {Aucun canal de la publication ne peut porter ceci, ou le commentaire est trop long pour l’un d’eux.}}",
