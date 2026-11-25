@@ -78,11 +78,31 @@ export const namedWorkspace = (
 export const keyTakesAnId = (wanted: string) =>
   `With an API key (${apiKeyVariable}), --workspace and PEAL_WORKSPACE take the workspace's id, not its slug (${wanted}): a key cannot look workspaces up. Leave it out to act in the key's own workspace.`;
 
-/** What a partner key's run that names no workspace is told. */
-export const partnerKeyNamesOne = `A partner key belongs to no workspace: name one of its partner's workspaces by its id, with --workspace or PEAL_WORKSPACE. GET /api/v1/partner/workspaces lists them.`;
+/**
+ * Why a credential that names no workspace has none to act in, and what
+ * to do: a partner key, or a token bound to none, names one; a token
+ * bound to a workspace its person has left may do nothing until its
+ * application is connected again.
+ */
+export const noWorkspaceOf = (credential: Credential) => {
+  if (credential._tag === "partnerKey") {
+    return {
+      code: "workspace_id_required",
+      reason: `A partner key belongs to no workspace: name one of its partner's workspaces by its id, with --workspace or PEAL_WORKSPACE. GET /api/v1/partner/workspaces lists them.`,
+    };
+  }
 
-/** What a token's run that names no workspace is told, when it has none. */
-export const tokenNamesOne = `The token in ${apiKeyVariable} belongs to no workspace: name one by its id, with --workspace or PEAL_WORKSPACE.`;
+  return credential._tag === "user" &&
+    credential.application?.binding._tag === "left"
+    ? {
+        code: "refused",
+        reason: `The token in ${apiKeyVariable} was bound to a workspace its person has left since: it may do nothing anywhere until its application is connected again.`,
+      }
+    : {
+        code: "workspace_id_required",
+        reason: `The token in ${apiKeyVariable} belongs to no workspace: name one by its id, with --workspace or PEAL_WORKSPACE.`,
+      };
+};
 
 /**
  * The workspace a credential belongs to, which the server acts in when a
@@ -110,16 +130,7 @@ const ownWorkspace = (
   credential: Credential
 ): Effect.Effect<Workspace, Refused> =>
   Option.match(ownWorkspaceOf(credential), {
-    onNone: () =>
-      Effect.fail(
-        new Refused({
-          code: "workspace_id_required",
-          reason:
-            credential._tag === "partnerKey"
-              ? partnerKeyNamesOne
-              : tokenNamesOne,
-        })
-      ),
+    onNone: () => Effect.fail(new Refused(noWorkspaceOf(credential))),
     onSome: ({ id, name }) => Effect.succeed({ id, name, slug: id }),
   });
 

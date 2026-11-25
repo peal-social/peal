@@ -1,5 +1,8 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import { assert, describe, it } from "@effect/vitest";
-import { Effect, Ref, Schema } from "effect";
+import { Effect, Fiber, Ref, Schema } from "effect";
+import { TestClock } from "effect/testing";
 
 import { draftingKey, filesLayer, partnerKey, signedIn } from "./signed-in.ts";
 import {
@@ -10,6 +13,7 @@ import {
   shopId,
   studioId,
 } from "./studio.ts";
+import type { StudioKey } from "./studio.ts";
 import { output } from "./support.ts";
 
 // A run nobody attends: PEAL_API_KEY in the environment, and no sign-in.
@@ -21,6 +25,66 @@ const key = {
 };
 
 const inStudio = ["--workspace", studioId];
+
+/** A synthetic key of the studio that makes videos. */
+const videoKey: StudioKey = {
+  ...draftingKey,
+  id: "6a9c3d4e-5f7b-4c8d-9e0f-2a3b4c5d6e7f",
+  key: "peal_test_synthetic_video_key",
+  permissions: ["assistant:use", "media:read", "media:upload"],
+};
+
+// Synthetic tokens of an application, in PEAL_API_KEY: bound to the
+// studio, bound to it before its person left, and bound to none.
+const boundToken: StudioKey = {
+  ...draftingKey,
+  binding: {
+    _tag: "bound",
+    id: studioId,
+    name: "Studio",
+    permissions: ["channel:read"],
+    refused: null,
+  },
+  id: "7b0d4e5f-6a8c-4d9e-8f1a-3b4c5d6e7f8a",
+  key: "peal_test_synthetic_bound_token",
+};
+
+const leftToken: StudioKey = {
+  ...draftingKey,
+  binding: { _tag: "left", id: studioId },
+  id: "8c1e5f6a-7b9d-4e0f-9a2b-4c5d6e7f8a9b",
+  key: "peal_test_synthetic_left_token",
+};
+
+const unboundToken: StudioKey = {
+  ...draftingKey,
+  binding: { _tag: "unbound" },
+  id: "9d2f6a7b-8c0e-4f1a-8b3c-5d6e7f8a9b0c",
+  key: "peal_test_synthetic_unbound_token",
+};
+
+// Lets the command reach its next sleep, then wakes it: the in-memory
+// server answers on the event loop, which the test clock does not drive.
+const elapse = Effect.gen(function* elapse() {
+  yield* Effect.promise(async () => {
+    await delay(10);
+  });
+  yield* TestClock.adjust("5 seconds");
+});
+
+// Wakes the command until it ends, as many times as it sleeps.
+const joined = <A, E>(fiber: Fiber.Fiber<A, E>) =>
+  Effect.gen(function* joining() {
+    for (
+      let round = 0;
+      round < 20 && fiber.pollUnsafe() === undefined;
+      round += 1
+    ) {
+      yield* elapse;
+    }
+
+    return yield* Fiber.join(fiber);
+  });
 
 const headless = (signIn = false) =>
   signedIn({ keys: [draftingKey], signIn }).pipe(
@@ -164,6 +228,111 @@ describe("an API key in PEAL_API_KEY", () => {
           "Drafts of Studio"
         );
       }
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
+    "asks who it is once a run, and names no workspace on its requests",
+    () =>
+      Effect.gen(function* once() {
+        const session = yield* headless();
+
+        yield* session.printed(["drafts", "list"]);
+
+        const listed = yield* Ref.get(session.studio.state);
+
+        assert.strictEqual(listed.credentialChecks, 1);
+        assert.isAbove(listed.workspaceHeaders.length, 0);
+        assert.deepStrictEqual([...new Set(listed.workspaceHeaders)], [null]);
+
+        // A workspace named by its id goes in the header, with no check.
+        yield* session.printed(["drafts", "list", ...inStudio]);
+
+        const named = yield* Ref.get(session.studio.state);
+
+        assert.strictEqual(named.credentialChecks, 1);
+        assert.deepStrictEqual(
+          [
+            ...new Set(
+              named.workspaceHeaders.slice(listed.workspaceHeaders.length)
+            ),
+          ],
+          [studioId]
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("asks who it is once while it polls", () =>
+    Effect.gen(function* polls() {
+      const signed = yield* signedIn({ keys: [videoKey], signIn: false });
+      const session = signed.withEnv({ ...key, PEAL_API_KEY: videoKey.key });
+
+      const running = yield* session
+        .printed([
+          "media",
+          "video",
+          "generate",
+          "--prompt",
+          "A synthetic wave",
+          "--wait",
+        ])
+        .pipe(Effect.forkChild);
+
+      const printed = yield* joined(running);
+
+      assert.include(printed, "in Studio: waiting for it.");
+      assert.include(printed, "is ready as media");
+
+      const { credentialChecks, workspaceHeaders } = yield* Ref.get(
+        signed.studio.state
+      );
+
+      // It asked for the video, then read it until it was ready.
+      assert.strictEqual(credentialChecks, 1);
+      assert.isAtLeast(workspaceHeaders.length, 3);
+      assert.deepStrictEqual([...new Set(workspaceHeaders)], [null]);
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("is an application's token, which acts where it is bound to", () =>
+    Effect.gen(function* tokens() {
+      const session = yield* signedIn({
+        keys: [boundToken, leftToken, unboundToken],
+        signIn: false,
+      });
+
+      const using = (token: StudioKey) =>
+        session.withEnv({ ...key, PEAL_API_KEY: token.key });
+
+      assert.include(
+        yield* using(boundToken).printed(["channels", "list"]),
+        "Channels of Studio"
+      );
+
+      const left = yield* using(leftToken).refused(["channels", "list"]);
+
+      assert.include(
+        left,
+        "was bound to a workspace its person has left since: it may do nothing anywhere until its application is connected again."
+      );
+      assert.notInclude(left, "name one by its id");
+      assert.strictEqual(
+        failureOf(
+          yield* using(leftToken).refused(["channels", "list", "--json"])
+        ).error.code,
+        "refused"
+      );
+
+      assert.include(
+        yield* using(unboundToken).refused(["channels", "list"]),
+        "belongs to no workspace: name one by its id, with --workspace or PEAL_WORKSPACE."
+      );
+      assert.strictEqual(
+        failureOf(
+          yield* using(unboundToken).refused(["channels", "list", "--json"])
+        ).error.code,
+        "workspace_id_required"
+      );
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 

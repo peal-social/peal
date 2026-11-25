@@ -90,6 +90,7 @@ import {
   WebhookEndpointNotFound,
   WebhooksNotConfigured,
   WebhookUrlRefused,
+  TooManyRequests,
   WorkspaceAccess,
   workspaceHeader,
   WorkspaceNotFound,
@@ -100,6 +101,7 @@ import type {
   AiProviderConnection,
   Channel,
   Credential,
+  CredentialBinding,
   CustomerHealth,
   ImageProvider,
   TextProvider,
@@ -1365,6 +1367,13 @@ export interface StudioState {
   readonly ads: AdsWorld;
   readonly approvals: readonly ApprovalRequest[];
   readonly changes: readonly string[];
+  /** How many times a credential asked the server who it is. */
+  readonly credentialChecks: number;
+  /**
+   * The `Peal-Workspace` header of each request to a workspace's
+   * endpoints, in order, as it was sent (null when it was not).
+   */
+  readonly workspaceHeaders: readonly (string | null)[];
   /** The studio's channels as they are now: named, turned off or on. */
   readonly channels: readonly SocialChannel[];
   /** The workspace's channel sets, oldest first. */
@@ -1446,6 +1455,14 @@ export interface StudioKey {
   /** The secret a request sends as its bearer token. */
   readonly key: string;
   /**
+   * For an application's OAuth token rather than a key, the workspace it
+   * is bound to, or the one its person has left since, as
+   * `credential.get` says it.
+   */
+  readonly binding?: CredentialBinding;
+  /** How the server refuses this credential's check, when it does. */
+  readonly checkRefused?: "forbidden" | "tooManyRequests";
+  /**
    * The partner whose key this is, for a partner key, which acts in the
    * partner's customers; none for a workspace's own key.
    */
@@ -1474,6 +1491,35 @@ const personRequired = new Forbidden({
     "Only a person signed in to Peal does this, in the web app: not an API key, an application acting for them, or staff acting as them.",
   reason: "personRequired",
   requestId: refusedRequestId,
+});
+
+// The id the studio knows a credential by: a key's, or an application's.
+const credentialIdOf = (principal: Principal): string | undefined => {
+  if (principal._tag === "apiKey") {
+    return principal.apiKeyId;
+  }
+
+  return principal._tag === "partnerKey"
+    ? principal.partnerKeyId
+    : principal.oauth?.clientId;
+};
+
+// What the server answers a credential of a suspended account.
+const suspendedAccount = new Forbidden({
+  code: "forbidden",
+  message: "This account is suspended.",
+  reason: "suspended",
+  requestId: refusedRequestId,
+});
+
+// What the server answers a credential that sent too many requests.
+const limitedKey = new TooManyRequests({
+  code: "too_many_requests",
+  limit: 60,
+  message: "Too many requests.",
+  requestId: refusedRequestId,
+  retryAfterSeconds: 42,
+  windowSeconds: 60,
 });
 
 const wrongWorkspace = new Forbidden({
@@ -1518,6 +1564,7 @@ export const makeStudio = (
       approvals: [approval],
       changes: [],
       channelSets,
+      credentialChecks: 0,
       channels,
       comments: [comment],
       connectLinks: [usedLink],
@@ -1546,6 +1593,7 @@ export const makeStudio = (
       tags,
       slideshows: [],
       videos: [],
+      workspaceHeaders: [],
       webhooks,
     }),
     whileExporting: Ref.make<Effect.Effect<void>>(Effect.void),
@@ -3367,7 +3415,28 @@ export const studioGroupsLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "credential", (handlers) =>
       handlers.handleAll({
         get: () =>
-          CurrentPrincipal.pipe(
+          Effect.gen(function* checked() {
+            const principal = yield* CurrentPrincipal;
+
+            yield* Ref.update(studio.state, (current) => ({
+              ...current,
+              credentialChecks: current.credentialChecks + 1,
+            }));
+
+            const refusal = studio.keys.find(
+              ({ id }) => id === credentialIdOf(principal)
+            )?.checkRefused;
+
+            if (refusal === "forbidden") {
+              return yield* suspendedAccount;
+            }
+
+            if (refusal === "tooManyRequests") {
+              return yield* limitedKey;
+            }
+
+            return principal;
+          }).pipe(
             Effect.map((principal): Credential => {
               // A partner key names its partner, and none of its
               // workspaces.
@@ -3384,6 +3453,25 @@ export const studioGroupsLive = (studio: Studio) =>
                   permissions: principal.permissions,
                   scopes: principal.scopes,
                   start: "peal_synthetic",
+                };
+              }
+
+              // An application's token says what it is bound to.
+              const token = studio.keys.find(
+                ({ id }) =>
+                  principal._tag === "user" && id === principal.oauth?.clientId
+              );
+
+              if (token?.binding !== undefined) {
+                return {
+                  _tag: "user",
+                  application: {
+                    binding: token.binding,
+                    clientId: token.id,
+                    scopes: ["workspace:read"],
+                  },
+                  impersonatedBy: null,
+                  userId: studio.me.user.id,
                 };
               }
 
@@ -7086,6 +7174,14 @@ export const studioAccessLive = (studio: Studio) =>
       Effect.gen(function* member() {
         const principal = yield* CurrentPrincipal;
         const request = yield* HttpServerRequest.HttpServerRequest;
+
+        yield* Ref.update(studio.state, (current) => ({
+          ...current,
+          workspaceHeaders: [
+            ...current.workspaceHeaders,
+            request.headers[workspaceHeader] ?? null,
+          ],
+        }));
 
         // A blank header names nothing, as on the server.
         const named = Option.fromUndefinedOr(

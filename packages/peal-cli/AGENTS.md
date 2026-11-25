@@ -51,7 +51,12 @@
   `WorkspaceRequired`), and its handlers read it from `CurrentMember`,
   never the path; `signedIn` (`test/signed-in.ts`) signs the command line in to it.
   A `StudioKey` with a `partnerId` is a partner key (`partnerKey`), which
-  acts in the studio partner's customers, as `credential.get` says.
+  acts in the studio partner's customers, as `credential.get` says; one
+  with a `binding` is an application's token, bound, unbound or left;
+  `checkRefused` makes its `credential.get` answer 403 or 429.
+  `StudioState.credentialChecks` counts the `credential.get` calls and
+  `workspaceHeaders` keeps the `Peal-Workspace` each workspace request
+  sent (null when none), so tests pin what a run sends.
 - An agent or a script runs headless with `PEAL_API_KEY` (`src/api-key.ts`;
   the environment only, never a flag, which shell history keeps): the key
   is the bearer token, wins over a saved sign-in, stays `Redacted`, and
@@ -63,7 +68,11 @@
   cannot read `/api/me` (`workspace_id_required` for a slug), and goes in
   the header, so another one is the server's to refuse (`wrongWorkspace`).
   A partner key, or a token in `PEAL_API_KEY`, that belongs to no
-  workspace names one (`workspace_id_required` otherwise). What only a person does (`login`, `account`,
+  workspace names one (`workspace_id_required` otherwise); a token bound
+  to a workspace its person left is refused (`refused`) until its
+  application connects again (`noWorkspaceOf`). Each run is a process of
+  its own, so the lookup costs one request per command: the docs and the
+  skill say that `PEAL_WORKSPACE` set to the key's id saves it. What only a person does (`login`, `account`,
   members and invitations) says so without asking the server; `peal
   whoami` with a key reads `credential.get` instead of `/api/me`, and
   prints the key's name, start, workspace, permissions and expiry, never
@@ -225,7 +234,8 @@
   where it came from, health, readiness, the API's latest release, which
   credential is used and whether it works, the publish scope, the workspace
   commands will act in, which for a key that names none is its own, from
-  `credential.get`, the MCP endpoint's address), exits with 1 when a
+  `credential.get`, whose failure (401, 403, 429, a timeout) fails the
+  check with its cause, the MCP endpoint's address), exits with 1 when a
   check fails, and is the first thing the skill tells an agent to run.
 - No command manages two-step verification, which is a person's, in the
   web app. A workspace that requires it refuses a sign-in whose account

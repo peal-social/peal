@@ -19,9 +19,8 @@ import {
   isWorkspaceId,
   keyTakesAnId,
   namedWorkspace,
+  noWorkspaceOf,
   ownWorkspaceOf,
-  partnerKeyNamesOne,
-  tokenNamesOne,
   workspaceFlag,
 } from "#workspace.ts";
 
@@ -391,11 +390,16 @@ const personChecks = (choice: Option.Option<string>, up: boolean) =>
     ];
   });
 
-const ownOrNone =
-  "Check that the id is the key's own workspace's, or leave it out to act there.";
+// What to do when the server refuses the key in a workspace: check the id
+// the run named, or, when it named none, the key itself.
+const checkTheKey = (named: boolean) =>
+  named
+    ? "Check that the id is the key's own workspace's, or leave it out to act there."
+    : "An owner or an admin of the key's workspace checks it in the web app's settings, or creates another.";
 
-// Whether the key reads the workspace its client acts in.
-const accessOf = (client: HttpApiClient.ForApi<typeof Api>) =>
+// Whether the key reads the workspace its client acts in, the one the run
+// named or, when it named none, the key's own.
+const accessOf = (client: HttpApiClient.ForApi<typeof Api>, named: boolean) =>
   client.channels.list({ headers: {} }).pipe(
     Effect.timeout(checkTimeout),
     Effect.map((channels) =>
@@ -416,7 +420,7 @@ const accessOf = (client: HttpApiClient.ForApi<typeof Api>) =>
             : failing(
                 "access",
                 `The server takes the key, and refuses it here: ${message ?? "it belongs to another workspace, or lacks a permission"}`,
-                ownOrNone
+                checkTheKey(named)
               )
         ),
       Unauthenticated: () =>
@@ -432,7 +436,7 @@ const accessOf = (client: HttpApiClient.ForApi<typeof Api>) =>
           failing(
             "access",
             "The server knows no such workspace for this key.",
-            ownOrNone
+            checkTheKey(named)
           )
         ),
     }),
@@ -445,22 +449,28 @@ const accessOf = (client: HttpApiClient.ForApi<typeof Api>) =>
     )
   );
 
+// What the doctor saw of a credential with no workspace of its own.
+const noWorkspaceLine = (credential: Credential): string => {
+  if (credential._tag === "partnerKey") {
+    return "A partner key is used, and no workspace is named.";
+  }
+
+  return credential._tag === "user" &&
+    credential.application?.binding._tag === "left"
+    ? `The token in ${apiKeyVariable} is bound to a workspace its person has left.`
+    : `The token in ${apiKeyVariable} belongs to no workspace, and none is named.`;
+};
+
 // The workspace a key acts in when the run names none: its own, which the
 // credential check names. A partner key belongs to none.
 const ownWorkspaceCheck = (credential: Credential): Check =>
   Option.match(ownWorkspaceOf(credential), {
     onNone: () =>
-      credential._tag === "partnerKey"
-        ? failing(
-            "workspace",
-            "A partner key is used, and no workspace is named.",
-            partnerKeyNamesOne
-          )
-        : failing(
-            "workspace",
-            `The token in ${apiKeyVariable} belongs to no workspace, and none is named.`,
-            tokenNamesOne
-          ),
+      failing(
+        "workspace",
+        noWorkspaceLine(credential),
+        noWorkspaceOf(credential).reason
+      ),
     onSome: ({ id, name }) =>
       ok(
         "workspace",
@@ -553,7 +563,7 @@ const keyChecks = (
         .withApiKey(key, wanted.value)
         .pipe(Effect.orDie);
 
-      return checks(yield* accessOf(client), workspace);
+      return checks(yield* accessOf(client, true), workspace);
     }
 
     if (Option.isSome(unsent)) {
@@ -567,25 +577,57 @@ const keyChecks = (
     // credential check names.
     const client = yield* api.withApiKey(key).pipe(Effect.orDie);
 
-    const own = yield* client.credential
-      .get()
-      .pipe(Effect.timeout(checkTimeout), Effect.option);
+    // A lookup that fails leaves the workspace unchecked, which fails the
+    // check: the run would act in a workspace nobody confirmed.
+    const looked = yield* client.credential.get().pipe(
+      Effect.timeout(checkTimeout),
+      Effect.map(ownWorkspaceCheck),
+      Effect.catchTags({
+        Forbidden: ({ message }) =>
+          Effect.succeed(
+            failing(
+              "workspace",
+              `The server refused to say whose key it is (403): ${message ?? "the account may be suspended"}`,
+              "An owner or an admin of the workspace sees why in the web app."
+            )
+          ),
+        TimeoutError: () =>
+          Effect.succeed(
+            failing(
+              "workspace",
+              `The server did not say within ${String(Duration.toSeconds(checkTimeout))} seconds whose key it is.`,
+              "Try again shortly."
+            )
+          ),
+        TooManyRequests: ({ retryAfterSeconds }) =>
+          Effect.succeed(
+            failing(
+              "workspace",
+              `The server limits the key's requests (429), and did not say whose key it is.`,
+              `Try again in ${String(retryAfterSeconds)} seconds. Setting PEAL_WORKSPACE to the key's workspace id saves one request per command.`
+            )
+          ),
+        Unauthenticated: () =>
+          Effect.succeed(
+            failing(
+              "workspace",
+              "The server refused the key (401): it was revoked, it expired, or it is another server's.",
+              "An owner or an admin of the workspace creates a key, in the web app's settings."
+            )
+          ),
+      }),
+      Effect.orElseSucceed(() =>
+        failing(
+          "workspace",
+          "The server did not answer whose key it is as expected.",
+          "Try again shortly."
+        )
+      )
+    );
 
-    if (Option.isNone(own)) {
-      return checks(
-        yield* accessOf(client),
-        skipped("workspace", "the server did not say whose key it is")
-      );
-    }
-
-    const workspace = ownWorkspaceCheck(own.value);
-
-    return workspace.status === "ok"
-      ? checks(yield* accessOf(client), workspace)
-      : checks(
-          skipped("access", "the workspace's id is needed to try the key"),
-          workspace
-        );
+    return looked.status === "ok"
+      ? checks(yield* accessOf(client, false), looked)
+      : checks(skipped("access", "the key's workspace is not known"), looked);
   });
 
 const mcpCheck = mcpEndpoint.pipe(
