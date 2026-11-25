@@ -59,7 +59,10 @@ const jsonRpcError = (
 // The token works, but its user can no longer act in its workspace. Signing
 // in again would not help, so there is no challenge.
 const closed = () =>
-  jsonRpcError(403, "The workspace this token is bound to is not open to you");
+  jsonRpcError(
+    403,
+    "The workspace this connection acts in is no longer open to its user, who left it or lost access to it. Signing in again does not change that: connect again and pick a workspace the user belongs to."
+  );
 
 /**
  * What a credential refused its workspace is told: a partner key, that no
@@ -182,7 +185,7 @@ export const mcpAuthentication = ({
           if (Option.isNone(body)) {
             return jsonRpcError(
               413,
-              "The request's body is larger than this endpoint takes."
+              "The request's body is larger than this endpoint takes, so nothing was done. Send less in one request."
             );
           }
 

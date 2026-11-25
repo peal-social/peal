@@ -92,6 +92,7 @@ import type { Person } from "#test/workspace/integration/harness.ts";
 import {
   authorize,
   connect,
+  mcpResource,
   registeredClient,
   toolNamed,
 } from "./mcp-support.ts";
@@ -1182,27 +1183,33 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // keeps none of them.
           const app = yield* TestApp;
 
-          const batch = yield* app.request("/api/mcp", {
-            body: JSON.stringify(
-              Array.from({ length: 5 }, (_, id) => ({
-                id,
-                jsonrpc: "2.0",
-                method: "tools/call",
-                params: {
-                  arguments: { postId: created.id },
-                  name: "discard_draft",
-                },
-              }))
-            ),
-            headers: {
-              accept: "application/json, text/event-stream",
-              authorization: `Bearer ${fixture.draftingKey}`,
-              "content-type": "application/json",
-            },
-            method: "POST",
-          });
+          // As an MCP client sends it: with no Origin header.
+          const batch = yield* Effect.promise(
+            async () =>
+              await app.handler(
+                new Request(mcpResource, {
+                  body: JSON.stringify(
+                    Array.from({ length: 5 }, (_, id) => ({
+                      id,
+                      jsonrpc: "2.0",
+                      method: "tools/call",
+                      params: {
+                        arguments: { postId: created.id },
+                        name: "discard_draft",
+                      },
+                    }))
+                  ),
+                  headers: {
+                    accept: "application/json, text/event-stream",
+                    authorization: `Bearer ${fixture.draftingKey}`,
+                    "content-type": "application/json",
+                  },
+                  method: "POST",
+                })
+              )
+          );
 
-          assert.isAtLeast(batch.status, 400);
+          assert.strictEqual(batch.status, 400);
 
           const after =
             yield* sql`SELECT operation, error_code FROM activity.events WHERE workspace_id = ${fixture.workspaceId} AND operation = 'mcp.discard_draft'`.pipe(
