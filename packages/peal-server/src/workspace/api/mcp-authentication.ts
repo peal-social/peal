@@ -98,12 +98,12 @@ const refusalOf = (principal: Principal, denied: AccessDenied) =>
  *
  * A request that calls one of `contentTools`, those that create, change or
  * delete content, is kept in the ConnectionJournal once answered without
- * an error, as the API's writes to posts and media are.
+ * an error, as the API's writes to content are.
  */
 export const mcpAuthentication = ({
   contentTools,
 }: {
-  /** The tools that create, change or delete posts and media. */
+  /** The tools that create, change or delete content. */
   readonly contentTools: ReadonlySet<string>;
 }) =>
   HttpRouter.middleware<{

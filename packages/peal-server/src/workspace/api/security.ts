@@ -23,7 +23,7 @@ import type { Member } from "peal-contract";
 
 import { setAnswerHeaderUnlessAnswered } from "#shared/api/answer-headers.ts";
 import {
-  changedNothing,
+  changedNoContent,
   ChangeMark,
   makeChangeMark,
 } from "#shared/api/change-mark.ts";
@@ -88,20 +88,41 @@ const objectIdsOf = (
     Object.entries(params).filter(([name]) => name !== "workspaceId")
   );
 
-// The groups whose writes create, change or delete content, comments and
-// approvals included, the replies sent in public from the inbox (a comment
-// rule's own included) and the direct messages sent from it: the law has Peal keep each such connection
-// a year (ConnectionJournal). A group is named whole, and matched whole:
-// `posts` holds none of `posts.tags`, nor `media` any of `media.images`.
+// The groups whose writes create, change or delete content: posts,
+// articles and signatures, comments and approvals, the replies sent in
+// public from the inbox (a comment rule's own included) and the direct
+// messages sent from it, the feeds and rules that publish for the
+// workspace, the media library's files, uploaded or made by the assistant,
+// and their descriptions, a transcript's included. The law has Peal keep
+// each such connection a year (ConnectionJournal). A group is named whole,
+// and matched whole: `posts` holds none of `posts.tags`, nor `media` any
+// of `media.images`.
 export const contentGroups: ReadonlySet<string> = new Set([
   "approvals",
+  "articles",
   "automations.commentRules",
+  "automations.feeds",
+  "automations.followUps",
+  "automations.recycling",
   "inbox.comments",
   "inbox.messages",
   "inbox.reviews",
   "media",
+  "media.images",
+  "media.slideshows",
+  "media.transcriptions",
+  "media.videos",
+  "media.voiceovers",
   "posts",
   "posts.drafts",
+  "posts.signatures",
+]);
+
+// The writes that change content in a group whose other writes do not,
+// by operation (`group.endpoint`): reshuffling a queue moves its posts'
+// times, as rescheduling a post does, while its timetable touches none.
+export const contentOperations: ReadonlySet<string> = new Set([
+  "automations.queues.reshuffle",
 ]);
 
 // The requests sent as writes that make nothing: checking a post reads it
@@ -111,6 +132,8 @@ export const contentGroups: ReadonlySet<string> = new Set([
 const checksOnly: ReadonlySet<string> = new Set([
   // A quote checks a boost as making it would, and reserves nothing.
   "ads.quoteBoost",
+  // A feed's preview reads the address and answers: it keeps nothing.
+  "automations.feeds.preview",
   // A lookup reads the platform, and answers: its input comes in a body.
   "channels.lookups.run",
   "posts.validate",
@@ -124,10 +147,15 @@ export const changesContent = (
   method: string,
   group: { readonly identifier: string },
   endpoint: { readonly identifier: string }
-) =>
-  !safeMethods.has(method) &&
-  contentGroups.has(group.identifier) &&
-  !checksOnly.has(`${group.identifier}.${endpoint.identifier}`);
+) => {
+  const operation = `${group.identifier}.${endpoint.identifier}`;
+
+  return (
+    !safeMethods.has(method) &&
+    (contentGroups.has(group.identifier) || contentOperations.has(operation)) &&
+    !checksOnly.has(operation)
+  );
+};
 
 /**
  * Whether a request, by its method, to an operation of a workspace
@@ -199,8 +227,8 @@ export const contentChangeOf = (
 
 /**
  * Keeps the connection of a request that changed content, once its handler
- * answered without an error, unless it said it changed nothing (a dry
- * run). A failure to keep it is logged: the change was made, and the
+ * answered without an error, unless it said it changed no content (a
+ * transcript not saved) or nothing (a dry run). A failure to keep it is logged: the change was made, and the
  * client is told so.
  */
 export const journalled =
@@ -208,7 +236,7 @@ export const journalled =
   (response: HttpServerResponse.HttpServerResponse) =>
     response.status >= 400
       ? Effect.succeed(response)
-      : changedNothing.pipe(
+      : changedNoContent.pipe(
           Effect.flatMap((nothing) =>
             nothing
               ? Effect.void
@@ -239,9 +267,9 @@ export const journalled =
  * tokens never act for staff: OAuth tokens carry no impersonation, and
  * staff acting as someone may not grant a client access or create a key.
  *
- * A write to posts or media that succeeds is kept in the ConnectionJournal,
- * whatever authenticated it: the address and protocol it came over, never
- * what it carried.
+ * A write to content (`contentGroups`) that succeeds is kept in the
+ * ConnectionJournal, whatever authenticated it: the address and protocol
+ * it came over, never what it carried.
  *
  * A bearer credential's requests are counted (RequestLimits): each answer
  * says where it stands, and one past the limit is a 429.

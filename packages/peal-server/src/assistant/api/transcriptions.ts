@@ -10,12 +10,14 @@ import {
 import { AssistantAudio } from "#assistant/application/assistant-audio.ts";
 import { maxTranscriptionBytes } from "#assistant/domain/audio-limits.ts";
 import { actorOf } from "#shared/api/actor.ts";
+import { changesNoContent } from "#shared/api/change-mark.ts";
 
 import { audioFailures } from "./audio-failures.ts";
 
 /**
  * Transcripts, from the provider the workspace chose for them: each
- * refusal of the use case as the contract's error.
+ * refusal of the use case as the contract's error. A transcript saved as
+ * the file's description changes content, as describing the file does.
  */
 export const MediaTranscriptionsHandlers = HttpApiBuilder.group(
   Api,
@@ -28,7 +30,7 @@ export const MediaTranscriptionsHandlers = HttpApiBuilder.group(
         Effect.gen(function* transcribe() {
           const actor = actorOf(yield* CurrentMember);
 
-          return yield* audio
+          const transcript = yield* audio
             .transcribe(actor, params.mediaId, {
               saveAsDescription: payload.saveAsDescription ?? false,
             })
@@ -45,6 +47,14 @@ export const MediaTranscriptionsHandlers = HttpApiBuilder.group(
                   ),
               })
             );
+
+          // A transcript only read changes no content: the connection
+          // journal leaves it out, and the activity log still keeps it.
+          if (!transcript.descriptionSaved) {
+            yield* changesNoContent;
+          }
+
+          return transcript;
         }),
     });
   })
