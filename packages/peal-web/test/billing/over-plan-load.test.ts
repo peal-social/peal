@@ -49,14 +49,11 @@ describe(overPlanLoadOf, () => {
     ["the channels", failed, read],
     ["the members", read, failed],
     ["either, still loading the other", failed, unread],
-  ] as const)(
-    "says the browser could not read %s",
-    (_, channels, members) => {
-      expect(
-        overPlanLoadOf({ canManage: true, channels, hydrated: true, members })
-      ).toBe("failed");
-    }
-  );
+  ] as const)("says the browser could not read %s", (_, channels, members) => {
+    expect(
+      overPlanLoadOf({ canManage: true, channels, hydrated: true, members })
+    ).toBe("failed");
+  });
 
   it.each([
     ["before hydration", false, unread],

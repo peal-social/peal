@@ -214,7 +214,11 @@ const renderOf = async (locale: "en" | "fr", node: ReactNode) => {
 
   return {
     html: renderToStaticMarkup(
-      <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
+      <NextIntlClientProvider
+        locale={locale}
+        messages={messages}
+        timeZone="UTC"
+      >
         {node}
       </NextIntlClientProvider>
     ),
