@@ -138,6 +138,9 @@ export const config = {
   // The relay, /api/*, the discovery documents, and pages: not Next's own files nor
   // anything else with a dot, such as favicon.ico, but any path with an
   // encoded slash or backslash, or a semicolon, which the proxy refuses.
+  // The pages' exclusions are whole segments: a workspace's slug may
+  // start with `api` (`/api-team/posts`), and never holds a dot
+  // (peal-contract/workspace-slug). Tested with Next's own compiler.
   matcher: [
     "/pulse/:path*",
     "/api/:path*",
@@ -145,7 +148,7 @@ export const config = {
     "/llms.txt",
     "/.well-known/oauth-authorization-server/:path*",
     "/.well-known/oauth-protected-resource/:path*",
-    "/((?!api|_next|.*\\..*).*)",
+    "/((?!(?:api|_next)(?:/|$)|.*\\..*).*)",
     "/(.*(?:%2[fF]|%5[cC]|%3[bB]|;).*)",
   ],
 };

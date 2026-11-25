@@ -7,14 +7,69 @@
 // which hold a dot, is for the end-to-end tests to show
 // (peal-e2e/tests/path-spellings.e2e.ts): only Next's build reads the matcher.
 import { describe, expect, it } from "@effect/vitest";
+import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import { NextRequest } from "next/server";
 
-import proxy from "../src/proxy.ts";
+import proxy, { config } from "../src/proxy.ts";
 
 const origin = "http://localhost:3001";
 
 const answerTo = async (path: string) =>
   await proxy(new NextRequest(`${origin}${path}`));
+
+// Whether the proxy runs on a path at all, from its matcher as Next's
+// build compiles it.
+const runsOn = (path: string): boolean =>
+  unstable_doesMiddlewareMatch({
+    config: { matcher: [...config.matcher] },
+    url: `${origin}${path}`,
+  });
+
+describe("the proxy's matcher", () => {
+  // A workspace's slug may start with `api` ("API Team" is `api-team`),
+  // and never holds a dot nor starts with `_`
+  // (peal-contract/workspace-slug).
+  it.each([
+    "/api-team/posts",
+    "/fr/api-team/posts",
+    "/en/api-team",
+    "/apiary",
+    "/synthetic-studio/posts",
+    "/fr/synthetic-studio/posts",
+    "/",
+    "/fr",
+    "/api",
+    "/api/v1/posts",
+    "/.well-known/oauth-authorization-server",
+    "/.well-known/oauth-protected-resource/api/mcp",
+    "/.well-known/api-catalog",
+    "/llms.txt",
+    "/pulse/e/",
+    "/en/admin;x/users",
+  ])("runs the proxy on %s", (path) => {
+    expect(runsOn(path)).toBeTruthy();
+  });
+
+  // Next's own files, and anything else with a dot, are files.
+  it.each([
+    "/_next/static/x.js",
+    "/_next/static/chunks/x",
+    "/_next/image",
+    "/favicon.ico",
+    "/.well-known/change-password",
+    "/.well-known/security.txt",
+  ])("leaves %s to Next", (path) => {
+    expect(runsOn(path)).toBeFalsy();
+  });
+
+  it("routes a workspace whose slug starts with api as a page", async () => {
+    const answer = await answerTo("/api-team/posts");
+
+    expect(answer.headers.get("x-middleware-rewrite")).toBe(
+      `${origin}/en/api-team/posts`
+    );
+  });
+});
 
 describe("the proxy", () => {
   it.each([
