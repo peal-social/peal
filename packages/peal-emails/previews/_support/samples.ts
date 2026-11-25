@@ -4,6 +4,7 @@ import { english } from "../../src/catalog/english.ts";
 import type { AccountEmail } from "../../src/emails/account.ts";
 import type { WeeklyDigestEmail } from "../../src/emails/digest-content.ts";
 import type { NoticeChannel, NoticeEvent } from "../../src/emails/notice.ts";
+import type { WelcomeEmail } from "../../src/emails/welcome.ts";
 import type { Locale } from "../../src/locale.ts";
 
 // Every email with made-up values, which the previews show and the tests
@@ -41,6 +42,13 @@ const contractRequest = {
   to: "camille@example.test",
   url: `${app}/contract-request?token=synthetic`,
 } as const;
+
+/** The welcome, in `locale`. */
+export const welcomeSample = (locale: Locale): WelcomeEmail => ({
+  locale,
+  signer: "Camille Synthetic",
+  url: locale === "fr" ? `${app}/fr` : `${app}/`,
+});
 
 /** Each account email, in `locale`, by name. */
 export const accountSamples = (locale: Locale) => {

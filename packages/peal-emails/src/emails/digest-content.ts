@@ -310,8 +310,11 @@ export const digestText = (
         content.intro,
         ...content.parts.map((part) => partText(content, part)),
       ],
+      closing: [
+        `${content.why.before}${content.preferences} (${content.preferencesUrl})${content.why.after}`,
+        catalogs[locale].layout.signature,
+      ],
       identity,
-      ignore: `${content.why.before}${content.preferences} (${content.preferencesUrl})${content.why.after}`,
       url: content.url,
     },
     locale

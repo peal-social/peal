@@ -728,6 +728,18 @@ export const french: EmailCatalog = {
   },
   withinFreePlan:
     "Il ne dépasse en rien ce que permet l’offre gratuite, et garde son contenu.",
+  welcome: {
+    action: "Programmer une publication",
+    api: "Si vous venez pour l’API, créez une clé dans les paramètres et envoyez votre première requête.",
+    firstStep:
+      "Pour voir comment Peal fonctionne, programmez une publication. Connectez un compte social si ce n’est pas déjà fait, écrivez quelques lignes et choisissez une heure. Peal la publie à ce moment-là.",
+    greeting:
+      "Bonjour, je m’appelle {signer} et je m’occupe de Peal. Votre compte est prêt, et c’est un plaisir de vous accueillir.",
+    once: "Vous ne recevez cet e-mail qu’une fois, parce que vous avez créé un compte Peal.",
+    reply:
+      "Si quelque chose ne marche pas, ou si vous ne trouvez pas comment faire ce que vous voulez, répondez à cet e-mail. Il m’arrive directement, et je vous répondrai.",
+    subject: "Bienvenue sur Peal",
+  },
   workspaceDeleted: {
     action: "Ouvrir mes espaces de travail",
     body: "L’espace de travail {workspaceName} a été supprimé à votre demande, avec tout son contenu : ses canaux, publications, médias, statistiques, membres et clés d’API.",

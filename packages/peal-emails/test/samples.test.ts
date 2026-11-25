@@ -10,6 +10,7 @@ import {
   noticeSamples,
   noticeUrl,
   reasonSamples,
+  welcomeSample,
   workspaceName,
 } from "../previews/_support/samples.ts";
 import {
@@ -17,6 +18,7 @@ import {
   renderNoticeEmail,
   renderWeeklyDigest,
   renderAccountEmail,
+  renderWelcomeEmail,
 } from "../src/index.ts";
 import type {
   AccountEmail,
@@ -42,7 +44,8 @@ interface Sample {
 // What an email weighs at most: far from where Gmail clips it.
 const messageKilobytes = 20;
 
-// The glow moves in the first emails someone gets, and in the digest.
+// The glow moves in the first emails someone gets, the welcome among them,
+// and in the digest.
 const moving: ReadonlySet<string> = new Set([
   "Invitation",
   "VerifyEmail",
@@ -70,6 +73,14 @@ const samplesIn = (locale: Locale): readonly Sample[] => [
       ),
     url: noticeUrl,
   })),
+  {
+    kilobytes: messageKilobytes,
+    moves: true,
+    name: "welcome",
+    render: async (on = letterhead) =>
+      await renderWelcomeEmail(welcomeSample(locale), on),
+    url: welcomeSample(locale).url,
+  },
   {
     kilobytes: 40,
     moves: true,
@@ -324,6 +335,12 @@ describe.each(["en", "fr"] as const)("every email, in %s", (locale) => {
       expect(/https?:\/\/\S+/u.exec(text)?.[0]).toBe(email.url);
     }
   );
+
+  it("the welcome has its link as the first address of its text", async () => {
+    const { text } = await renderWelcomeEmail(welcomeSample(locale), stated);
+
+    expect(/https?:\/\/\S+/u.exec(text)?.[0]).toBe(welcomeSample(locale).url);
+  });
 
   it.each(samplesIn(locale))(
     '$name never breaks "e-mail" over two lines where it is read',

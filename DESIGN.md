@@ -1994,11 +1994,15 @@ with 32 px of gutter, 20 px on a phone.
   The pixel glow in its band layout, 80 px high, closes the card. Where
   the server states who sends, that is one muted line under the card, on
   the canvas.
-- **Motion.** The header's glow moves in three emails: the weekly digest,
-  an address's confirmation and an invitation. It twinkles as the site's
-  does, once, for 4.8 s, a frame every 130 ms, and ends on the still it
-  started from. Every other email has the same art, still, and so has
-  every foot. A mail client that reports reduced motion shows the still.
+- **Welcome.** The one email a person signs, on the same card. Its button
+  is the first step. Under it, the body says where else to start, asks for
+  a reply, and ends on the signer's name, with no picture of them. Its foot
+  says only why it came.
+- **Motion.** The header's glow moves in four emails: the weekly digest,
+  an address's confirmation, an invitation and the welcome. It twinkles as
+  the site's does, once, for 4.8 s, a frame every 130 ms, and ends on the
+  still it started from. Every other email has the same art, still, and so
+  has every foot. A mail client that reports reduced motion shows the still.
 - **Images.** All decoration: the mark, the header's glow and the foot's.
   An email whose header moves loads a fourth, the still behind it. Every
   reader gets the same files from the same addresses, which carry nothing

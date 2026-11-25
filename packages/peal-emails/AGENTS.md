@@ -7,9 +7,10 @@ what comes back; the package sends nothing, reads no setting and knows no
 transport.
 
 - `src/index.ts` is the only export: `renderAccountEmail`,
-  `renderNoticeEmail` and `renderWeeklyDigest`, each the subject, the HTML
-  and the text of one email, and `emailAssets`, the pictures they show. The
-  sources are consumed as they are, with no build, as `peal-contract`'s are.
+  `renderNoticeEmail`, `renderWeeklyDigest` and `renderWelcomeEmail`, each
+  the subject, the HTML and the text of one email, and `emailAssets`, the
+  pictures they show. The sources are consumed as they are, with no build,
+  as `peal-contract`'s are.
 - Each render takes the server's `Letterhead`: where it serves
   `emailAssets`, and the line that says who sends, if the operator states
   one, which ends the HTML (under the card) and the text.
@@ -20,7 +21,13 @@ transport.
 - `src/emails/` makes an email of what happened. `account.ts` and `notice.ts`
   resolve a catalogue's words into a `MessageContent`, plain text, which the
   one template, `message.tsx`, and the text part are both written from;
-  `digest-content.ts` and `weekly-digest.tsx` do the same for the digest.
+  `digest-content.ts` and `weekly-digest.tsx` do the same for the digest, and
+  `welcome.ts` and `welcome-letter.tsx` for the welcome.
+- The welcome is the one email a person signs: on the same card, its body
+  ends on the signer's name, its foot says only why it came, and it shows no
+  picture of them. The signer is the operator's, so the catalogues name
+  nobody and claim nothing that only Peal's own servers make true. It is a
+  service message: no price, offer or programme goes in it.
 - Load what rendering needs when the package loads, never with the first
   email: the server imports it as it starts, so an install that lacks a
   part of it stops the server there. React Email's `render` loads
@@ -39,8 +46,9 @@ transport.
   phone's gutters, reduced motion). A class that changes a cell's padding
   goes on the cell (`tdClassName` on `Section` and `Container`): on the
   table, it would add to it.
-- The header's glow moves in the digest, the address's confirmation and the
-  invitation (`accountMotion`), and is still in every other email. A moving
+- The header's glow moves in the digest, the address's confirmation, the
+  invitation (`accountMotion`) and the welcome, and is still in every other
+  email. A moving
   one carries both pictures, the still hidden by the block that holds it:
   Outlook's Word engine ignores `display: none` on a picture.
 - A word that must stay on one line ("e-mail") is kept so by `unbroken`, in

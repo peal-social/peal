@@ -1,4 +1,5 @@
 import type { EmailMessages } from "../catalog/email-catalog.ts";
+import { catalogs } from "../catalog/index.ts";
 import { fill } from "../format.ts";
 import type { Locale } from "../locale.ts";
 import { textPart } from "./text-part.ts";
@@ -52,8 +53,8 @@ export const messageText = (
         content.body,
         ...(content.highlight === undefined ? [] : [content.highlight]),
       ],
+      closing: [content.ignore, catalogs[locale].layout.signature],
       identity,
-      ignore: content.ignore,
       url: content.url,
     },
     locale

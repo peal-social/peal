@@ -385,6 +385,20 @@ export interface EmailCatalog {
     readonly one: string;
     readonly other: string;
   };
+  /**
+   * The welcome, which `{signer}` signs, once the account's address is
+   * confirmed. `greeting` and `firstStep` come before the button, `api` and
+   * `reply` after it; `once` says why it came.
+   */
+  readonly welcome: {
+    readonly action: string;
+    readonly api: string;
+    readonly firstStep: string;
+    readonly greeting: string;
+    readonly once: string;
+    readonly reply: string;
+    readonly subject: string;
+  };
   /** The workspace `{workspaceName}` was deleted by its owner. */
   readonly workspaceDeleted: EmailMessages;
   /**

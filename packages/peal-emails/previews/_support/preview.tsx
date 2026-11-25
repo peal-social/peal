@@ -5,6 +5,8 @@ import { digestContent } from "../../src/emails/digest-content.ts";
 import { MessageEmail } from "../../src/emails/message.tsx";
 import { noticeContent } from "../../src/emails/notice.ts";
 import { WeeklyDigest } from "../../src/emails/weekly-digest.tsx";
+import { Welcome } from "../../src/emails/welcome-letter.tsx";
+import { welcomeContent } from "../../src/emails/welcome.ts";
 import type { Letterhead } from "../../src/letterhead.ts";
 import type { Locale } from "../../src/locale.ts";
 import {
@@ -13,6 +15,7 @@ import {
   identity,
   noticeSamples,
   noticeUrl,
+  welcomeSample,
   workspaceName,
 } from "./samples.ts";
 
@@ -59,6 +62,17 @@ export const noticePreview = (name: keyof typeof noticeSamples): Preview => {
   );
 
   return NoticePreview;
+};
+
+/** The preview of the welcome's sample. */
+export const welcomePreview = (): Preview => {
+  const content = welcomeContent(welcomeSample(locale));
+
+  const WelcomePreview: Preview = () => (
+    <Welcome content={content} letterhead={letterhead} locale={locale} />
+  );
+
+  return WelcomePreview;
 };
 
 /** The preview of the weekly digest's sample. */
