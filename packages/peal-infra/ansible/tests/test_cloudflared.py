@@ -63,6 +63,15 @@ def _rules(rendered: Path, environment: str) -> list[dict[str, Any]]:
     return yaml.safe_load((rendered / environment / "cloudflared.yml").read_text())["ingress"]
 
 
+def _go_pattern(pattern: str) -> str:
+    """A rule's path as Go's regexp reads it: there `$` matches at the end
+    of the path alone, where Python's matches before a trailing newline too
+    (/api/client-errors%0a). The rules hold `$` only as an anchor, never
+    escaped or in a class, which the assertion keeps true."""
+    assert "\\$" not in pattern and not re.search(r"\[[^\]]*\$", pattern), pattern
+    return pattern.replace("$", r"\Z")
+
+
 def _match(rules: list[dict[str, Any]], host: str, path: str) -> int:
     """The index of the rule cloudflared serves a request with
     (Ingress.FindMatchingRule): the first whose host name and path match."""
@@ -72,7 +81,7 @@ def _match(rules: list[dict[str, Any]], host: str, path: str) -> int:
         path = unquote(path)
     for index, rule in enumerate(rules):
         if rule.get("hostname", host) == host and (
-            "path" not in rule or re.search(rule["path"], path)
+            "path" not in rule or re.search(_go_pattern(rule["path"]), path)
         ):
             return index
     return len(rules) - 1
@@ -253,15 +262,19 @@ def _pulumi_client_errors_path() -> str:
     return f"/{found.group(1)}"
 
 
-@pytest.mark.parametrize("suffix", ["", "/"])
-def test_sandbox_lets_the_web_apps_error_reports_through(rendered: Path, suffix: str) -> None:
+# The web app's error reports, at the path Pulumi's Bypass application
+# opens at the edge, with and without a trailing slash.
+SANDBOX_CLIENT_ERRORS = [_pulumi_client_errors_path() + suffix for suffix in ("", "/")]
+
+
+@pytest.mark.parametrize("path", SANDBOX_CLIENT_ERRORS)
+def test_sandbox_lets_the_web_apps_error_reports_through(rendered: Path, path: str) -> None:
     """Browsers send their error reports without cookies, so without
     Access's (packages/peal-web, src/errors/browser.ts): the path Pulumi's
     Bypass application opens at the edge reaches the server with no token
     here, and nothing under it or beside it does (SANDBOX_GUARDED)."""
     settings = _settings("peal-sandbox")
     rules = _rules(rendered, "peal-sandbox")
-    path = _pulumi_client_errors_path() + suffix
     rule = rules[_match(rules, settings["peal_hostnames"]["app"], path)]
 
     assert rule["service"] == f"http://127.0.0.1:{settings['peal_ports']['server']}", rule
@@ -338,6 +351,7 @@ SANDBOX_GUARDED = [
     "/api/client-errors/..;/me",
     "/api/client-errors%2F..%2Fme",
     "/API/client-errors",
+    "/api/client-errors%0a",
     "/.well-known/oauth-authorization-server",
 ]
 
@@ -374,7 +388,7 @@ def test_matching_agrees_with_cloudflared(rendered: Path, environment: str) -> N
     requests = [
         (host, path)
         for host in [*settings["peal_hostnames"].values(), settings["peal_short_link_hostname"]]
-        for path in [*SANDBOX_GUARDED, *SANDBOX_OPEN, SHORT_CODE, *SHORT_REFUSED]
+        for path in [*SANDBOX_GUARDED, *SANDBOX_OPEN, *SANDBOX_CLIENT_ERRORS, SHORT_CODE, *SHORT_REFUSED]
     ]
 
     for host, path in requests:
