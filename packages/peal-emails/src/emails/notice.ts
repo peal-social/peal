@@ -1,25 +1,245 @@
+import type { DateTime } from "effect";
 import { Match, Option } from "effect";
 
-import { nameForMail } from "#shared/domain/display-name.ts";
-import type { Locale } from "#shared/domain/locale.ts";
-
-import type { EmailCatalog, EmailMessages } from "./email-catalog.ts";
-import {
-  catalogs,
-  escapeHtml,
-  fill,
-  instantIn,
-  keep,
-  layout,
-  moneyIn,
-} from "./email-layout.ts";
-import type { RenderedEmail } from "./email-layout.ts";
+import type { EmailCatalog, EmailMessages } from "../catalog/email-catalog.ts";
+import { catalogs } from "../catalog/index.ts";
 import type {
-  NoticeChannel,
-  NoticeEvent,
-  NoticeExcess,
-  NoticeRates,
-} from "./notice-event.ts";
+  AutomationStopReason,
+  FeedStopReason,
+  FollowUpNotSentReason,
+  Meter,
+  PaidPlan,
+  PostFailureReason,
+  RecyclingEndReason,
+  ReviewParty,
+  SlideshowNoticeReason,
+  VideoNoticeReason,
+} from "../catalog/vocabulary.ts";
+import { fill, instantIn, moneyIn } from "../format.ts";
+import type { Locale } from "../locale.ts";
+import { nameForMail } from "../names.ts";
+import type { MessageContent, Money } from "./message-content.ts";
+import { resolved } from "./message-content.ts";
+
+/** The account a notice is about, as it was when the notice was made. */
+export interface NoticeChannel {
+  readonly handle: string;
+  readonly platform: string;
+}
+
+/** A workspace holds `used` of something a plan allows `allowed` of. */
+export interface NoticeExcess {
+  readonly allowed: number;
+  readonly limit: "channels" | "mediaStorage" | "members";
+  readonly used: number;
+}
+
+/** Per-account pricing's rates: the accounts free, then each band's price. */
+export interface NoticeRates {
+  readonly bands: readonly {
+    readonly monthly: number;
+    readonly upTo: number | null;
+  }[];
+  readonly currency: string;
+  readonly freeAccounts: number;
+}
+
+interface PostOn {
+  /** None when it was disconnected before the notice was made. */
+  readonly channel: Option.Option<NoticeChannel>;
+  readonly postId: string;
+}
+
+interface OfRule {
+  readonly ruleId: string;
+}
+
+/**
+ * What happened in a workspace, as the server's notices keep it: what each
+ * event means, and why it is told, is written there
+ * (`notifications/domain/notice-event.ts`).
+ */
+export type NoticeEvent =
+  | (PostOn & {
+      readonly _tag: "PostPublished";
+      readonly permalink: Option.Option<string>;
+    })
+  | (PostOn & {
+      readonly _tag: "PostFailed";
+      readonly notSent?: "firstComment" | "laterParts";
+      readonly reason: PostFailureReason;
+    })
+  | (PostOn & { readonly _tag: "PostUnconfirmed" })
+  | {
+      readonly _tag: "PostApprovalRequested";
+      readonly postId: string;
+      readonly scheduledAt: DateTime.Utc;
+    }
+  | {
+      readonly _tag: "PostApproved";
+      readonly by: ReviewParty;
+      readonly late: boolean;
+      readonly postId: string;
+    }
+  | {
+      readonly _tag: "PostChangesRequested";
+      readonly by: ReviewParty;
+      readonly postId: string;
+    }
+  | {
+      readonly _tag: "PostCommented";
+      readonly by: ReviewParty;
+      readonly postId: string;
+    }
+  | {
+      readonly _tag: "CommentsReceived";
+      readonly count: number;
+      readonly postId: string;
+      readonly threadId: string;
+    }
+  | {
+      readonly _tag: "MessagesReceived";
+      readonly channel: NoticeChannel;
+      readonly conversationId: string;
+      readonly count: number;
+    }
+  | {
+      readonly _tag: "ChannelReconnectRequired";
+      readonly channel: NoticeChannel;
+    }
+  | {
+      readonly _tag: "MessagesTurnedOff";
+      readonly channel: NoticeChannel;
+    }
+  | {
+      readonly _tag: "ChannelReconnectSoon";
+      readonly channel: NoticeChannel;
+      readonly expiresAt: DateTime.Utc;
+    }
+  | {
+      readonly _tag: "SubscriptionStarted";
+      readonly interval: "month" | "year";
+      readonly plan: PaidPlan;
+      readonly price: Money;
+      readonly rates?: NoticeRates;
+      readonly reference?: string;
+      readonly startedAt: DateTime.Utc;
+      readonly trialEnd: Option.Option<DateTime.Utc>;
+    }
+  | {
+      readonly _tag: "TrialEnding";
+      readonly endsAt: DateTime.Utc;
+      readonly over: readonly NoticeExcess[];
+      readonly plan: PaidPlan;
+    }
+  | {
+      readonly _tag: "PaymentMethodNeeded";
+      readonly accounts: number;
+      readonly allowed: number;
+      readonly graceUntil: DateTime.Utc;
+    }
+  | {
+      readonly _tag: "PlansRetiring";
+      readonly endsAt: DateTime.Utc;
+      readonly plan: PaidPlan;
+    }
+  | {
+      readonly _tag: "SubscriptionCancelled";
+      readonly endsAt: DateTime.Utc;
+      readonly plan: PaidPlan;
+    }
+  | {
+      readonly _tag: "AllowanceReached";
+      readonly allowed: number;
+      readonly meter: Meter;
+      readonly resetsAt: DateTime.Utc;
+    }
+  | {
+      readonly _tag: "XSpendCeiling";
+      readonly ceiling: number;
+      readonly percent: number;
+      readonly resetsAt: DateTime.Utc;
+    }
+  | {
+      readonly _tag: "SubscriptionRenewing";
+      readonly plan: PaidPlan;
+      readonly price: Money;
+      readonly reference?: string;
+      readonly renewsAt: DateTime.Utc;
+    }
+  | {
+      readonly _tag: "SubscriptionWithdrawn";
+      readonly plan: PaidPlan;
+      readonly refunded: Money;
+      readonly withdrawnAt: DateTime.Utc;
+    }
+  | {
+      readonly _tag: "WebhookEndpointDisabled";
+      readonly endpointId: string;
+      readonly host: string;
+      readonly reason: "failing" | "gone";
+    }
+  | {
+      readonly _tag: "WebhookDeliveriesFailing";
+      readonly endpointId: string;
+      readonly host: string;
+    }
+  | (OfRule & {
+      readonly _tag: "RecyclingEnded";
+      readonly reason: RecyclingEndReason;
+      readonly sourcePostId: string;
+    })
+  | {
+      readonly _tag: "FeedStopped";
+      readonly feedId: string;
+      readonly reason: FeedStopReason;
+    }
+  | (OfRule & {
+      readonly _tag: "FollowUpsNotSent";
+      readonly count: number;
+      readonly reasons: readonly FollowUpNotSentReason[];
+    })
+  | (OfRule & {
+      readonly _tag: "CommentRuleStopped";
+      readonly reason: AutomationStopReason;
+    })
+  | (OfRule & {
+      readonly _tag: "FollowUpRuleStopped";
+      readonly reason: AutomationStopReason;
+    })
+  | {
+      readonly _tag: "VideoGenerationEnded";
+      readonly generationId: string;
+      readonly mediaId: Option.Option<string>;
+      readonly outcome: "failed" | "succeeded";
+      readonly reason: Option.Option<VideoNoticeReason>;
+    }
+  | {
+      readonly _tag: "SlideshowEnded";
+      readonly mediaId: Option.Option<string>;
+      readonly outcome: "failed" | "succeeded";
+      readonly reason: Option.Option<SlideshowNoticeReason>;
+      readonly slideshowId: string;
+    }
+  | {
+      readonly _tag: "AdConnectionReconnectRequired";
+      readonly network: string;
+    }
+  | {
+      readonly _tag: "AdBoostChanged";
+      readonly boostId: string;
+      readonly budget: Money;
+      readonly budgetDigits: 0 | 2;
+      readonly change:
+        | "budgetReached"
+        | "ended"
+        | "failed"
+        | "started"
+        | "unconfirmed";
+      readonly endsAt: DateTime.Utc;
+      readonly postId: string;
+      readonly reason: Option.Option<string>;
+    };
 
 /** A notice for one reader, as an email. */
 export interface NoticeEmail {
@@ -46,8 +266,7 @@ const channelPhrase = (
         new Map([
           ["handle", known.handle],
           ["platform", platformName(catalog, known)],
-        ]),
-        keep
+        ])
       ),
   });
 
@@ -88,16 +307,11 @@ const standingIn = (
       new Map([
         ["allowed", amount(limit, allowed)],
         ["used", amount(limit, used)],
-      ]),
-      keep
+      ])
     )
   );
 
-  return fill(
-    catalog.overFreePlan,
-    new Map([["over", listed.join(", ")]]),
-    keep
-  );
+  return fill(catalog.overFreePlan, new Map([["over", listed.join(", ")]]));
 };
 
 // Per-account pricing's ladder, a part a band, in the reader's words.
@@ -112,11 +326,7 @@ const ratesIn = (
   for (const { monthly, upTo } of bands) {
     if (monthly === 0 && upTo !== null) {
       parts.push(
-        fill(
-          catalog.rates.free,
-          new Map([["count", String(freeAccounts)]]),
-          keep
-        )
+        fill(catalog.rates.free, new Map([["count", String(freeAccounts)]]))
       );
     } else {
       const price = moneyIn({ amount: monthly, currency }, locale);
@@ -128,8 +338,7 @@ const ratesIn = (
               new Map([
                 ["from", String(from)],
                 ["price", price],
-              ]),
-              keep
+              ])
             )
           : fill(
               catalog.rates.band,
@@ -137,8 +346,7 @@ const ratesIn = (
                 ["from", String(from)],
                 ["price", price],
                 ["to", String(upTo)],
-              ]),
-              keep
+              ])
             )
       );
     }
@@ -159,18 +367,18 @@ const numbered = (
     ? messages
     : { ...messages, body: `${messages.body} ${catalog.contractNumber}` };
 
-interface Content {
+interface Words {
   /** What the email sets apart in a box, if anything. */
   readonly highlight?: string;
   readonly messages: EmailMessages;
   readonly values: readonly (readonly [string, string])[];
 }
 
-const contentOf = (
+const wordsOf = (
   event: NoticeEvent,
   catalog: EmailCatalog,
   locale: Locale
-): Content =>
+): Words =>
   Match.valueTags(event, {
     AdBoostChanged: ({
       budget,
@@ -178,7 +386,7 @@ const contentOf = (
       change,
       endsAt,
       reason,
-    }): Content => ({
+    }): Words => ({
       messages: {
         budgetReached: catalog.adBoostBudgetReached,
         ended: catalog.adBoostEnded,
@@ -211,18 +419,18 @@ const contentOf = (
         ],
       ],
     }),
-    AdConnectionReconnectRequired: (): Content => ({
+    AdConnectionReconnectRequired: (): Words => ({
       messages: catalog.adConnectionReconnect,
       values: [],
     }),
-    ChannelReconnectRequired: ({ channel }): Content => ({
+    ChannelReconnectRequired: ({ channel }): Words => ({
       messages: catalog.channelReconnectRequired,
       values: [
         ["handle", channel.handle],
         ["platform", platformName(catalog, channel)],
       ],
     }),
-    ChannelReconnectSoon: ({ channel, expiresAt }): Content => ({
+    ChannelReconnectSoon: ({ channel, expiresAt }): Words => ({
       messages: catalog.channelReconnectSoon,
       values: [
         ["expiresAt", instantIn(expiresAt, locale)],
@@ -230,11 +438,11 @@ const contentOf = (
         ["platform", platformName(catalog, channel)],
       ],
     }),
-    CommentsReceived: ({ count }): Content => ({
+    CommentsReceived: ({ count }): Words => ({
       messages: catalog.commentsReceived,
       values: [["count", String(count)]],
     }),
-    MessagesReceived: ({ channel, count }): Content => ({
+    MessagesReceived: ({ channel, count }): Words => ({
       messages: catalog.messagesReceived,
       values: [
         ["count", String(count)],
@@ -242,18 +450,18 @@ const contentOf = (
         ["platform", platformName(catalog, channel)],
       ],
     }),
-    MessagesTurnedOff: ({ channel }): Content => ({
+    MessagesTurnedOff: ({ channel }): Words => ({
       messages: catalog.messagesTurnedOff,
       values: [
         ["handle", channel.handle],
         ["platform", platformName(catalog, channel)],
       ],
     }),
-    FeedStopped: ({ reason }): Content => ({
+    FeedStopped: ({ reason }): Words => ({
       messages: catalog.feedStopped,
       values: [["reason", catalog.feedStopReasons[reason]]],
     }),
-    FollowUpsNotSent: ({ count, reasons }): Content => {
+    FollowUpsNotSent: ({ count, reasons }): Words => {
       const one = count === 1;
       const words = catalog.followUpNotSentReasons[one ? "one" : "other"];
 
@@ -268,15 +476,15 @@ const contentOf = (
         ],
       };
     },
-    FollowUpRuleStopped: ({ reason }): Content => ({
+    FollowUpRuleStopped: ({ reason }): Words => ({
       messages: catalog.followUpRuleStopped,
       values: [["reason", catalog.followUpRuleStopReasons[reason]]],
     }),
-    CommentRuleStopped: ({ reason }): Content => ({
+    CommentRuleStopped: ({ reason }): Words => ({
       messages: catalog.commentRuleStopped,
       values: [["reason", catalog.commentRuleStopReasons[reason]]],
     }),
-    VideoGenerationEnded: ({ outcome, reason }): Content =>
+    VideoGenerationEnded: ({ outcome, reason }): Words =>
       outcome === "succeeded"
         ? { messages: catalog.videoGenerated, values: [] }
         : {
@@ -290,7 +498,7 @@ const contentOf = (
               ],
             ],
           },
-    SlideshowEnded: ({ outcome, reason }): Content =>
+    SlideshowEnded: ({ outcome, reason }): Words =>
       outcome === "succeeded"
         ? { messages: catalog.slideshowComposed, values: [] }
         : {
@@ -304,23 +512,23 @@ const contentOf = (
               ],
             ],
           },
-    PostApprovalRequested: ({ scheduledAt }): Content => ({
+    PostApprovalRequested: ({ scheduledAt }): Words => ({
       messages: catalog.postApprovalRequested,
       values: [["scheduledAt", instantIn(scheduledAt, locale)]],
     }),
-    PostApproved: ({ by, late }): Content => ({
+    PostApproved: ({ by, late }): Words => ({
       messages: late ? catalog.postApprovedLate : catalog.postApproved,
       values: [["by", catalog.reviewParties[by]]],
     }),
-    PostChangesRequested: ({ by }): Content => ({
+    PostChangesRequested: ({ by }): Words => ({
       messages: catalog.postChangesRequested,
       values: [["by", catalog.reviewParties[by]]],
     }),
-    PostCommented: ({ by }): Content => ({
+    PostCommented: ({ by }): Words => ({
       messages: catalog.postCommented,
       values: [["by", catalog.reviewParties[by]]],
     }),
-    PostFailed: ({ channel, notSent, reason }): Content => ({
+    PostFailed: ({ channel, notSent, reason }): Words => ({
       messages: {
         firstComment: catalog.firstCommentFailed,
         laterParts: catalog.laterPartsFailed,
@@ -331,26 +539,26 @@ const contentOf = (
         ["reason", catalog.failureReasons[reason]],
       ],
     }),
-    PostPublished: ({ channel }): Content => ({
+    PostPublished: ({ channel }): Words => ({
       messages: catalog.postPublished,
       values: [["channel", channelPhrase(catalog, channel)]],
     }),
-    PostUnconfirmed: ({ channel }): Content => ({
+    PostUnconfirmed: ({ channel }): Words => ({
       messages: catalog.postUnconfirmed,
       values: [["channel", channelPhrase(catalog, channel)]],
     }),
-    RecyclingEnded: ({ reason }): Content => ({
+    RecyclingEnded: ({ reason }): Words => ({
       messages: catalog.recyclingEnded,
       values: [["reason", catalog.recyclingEndReasons[reason]]],
     }),
-    SubscriptionCancelled: ({ endsAt, plan }): Content => ({
+    SubscriptionCancelled: ({ endsAt, plan }): Words => ({
       messages: catalog.subscriptionCancelled,
       values: [
         ["endsAt", instantIn(endsAt, locale)],
         ["plan", catalog.plans[plan]],
       ],
     }),
-    SubscriptionRenewing: ({ plan, price, reference, renewsAt }): Content => ({
+    SubscriptionRenewing: ({ plan, price, reference, renewsAt }): Words => ({
       highlight: catalog.renewalDeadline,
       messages: numbered(catalog.subscriptionRenewing, catalog, reference),
       values: [
@@ -368,10 +576,10 @@ const contentOf = (
       reference,
       startedAt,
       trialEnd,
-    }): Content =>
+    }): Words =>
       rates === undefined
         ? Option.match(trialEnd, {
-            onNone: (): Content => ({
+            onNone: (): Words => ({
               messages: numbered(
                 catalog.subscriptionStarted,
                 catalog,
@@ -385,7 +593,7 @@ const contentOf = (
                 ["startedAt", instantIn(startedAt, locale)],
               ],
             }),
-            onSome: (endsAt): Content => ({
+            onSome: (endsAt): Words => ({
               messages: numbered(catalog.trialStarted, catalog, reference),
               values: [
                 ["reference", reference ?? ""],
@@ -404,7 +612,7 @@ const contentOf = (
               ["startedAt", instantIn(startedAt, locale)],
             ],
           },
-    PaymentMethodNeeded: ({ accounts, allowed, graceUntil }): Content => ({
+    PaymentMethodNeeded: ({ accounts, allowed, graceUntil }): Words => ({
       messages: catalog.paymentMethodNeeded,
       values: [
         ["accounts", String(accounts)],
@@ -412,14 +620,14 @@ const contentOf = (
         ["graceUntil", instantIn(graceUntil, locale)],
       ],
     }),
-    PlansRetiring: ({ endsAt, plan }): Content => ({
+    PlansRetiring: ({ endsAt, plan }): Words => ({
       messages: catalog.plansRetiring,
       values: [
         ["endsAt", instantIn(endsAt, locale)],
         ["plan", catalog.plans[plan]],
       ],
     }),
-    AllowanceReached: ({ allowed, meter, resetsAt }): Content => ({
+    AllowanceReached: ({ allowed, meter, resetsAt }): Words => ({
       messages: catalog.allowanceReached,
       values: [
         ["allowed", new Intl.NumberFormat(locale).format(allowed)],
@@ -427,7 +635,7 @@ const contentOf = (
         ["resetsAt", instantIn(resetsAt, locale)],
       ],
     }),
-    XSpendCeiling: ({ ceiling, percent, resetsAt }): Content => ({
+    XSpendCeiling: ({ ceiling, percent, resetsAt }): Words => ({
       messages:
         percent >= 100 ? catalog.xCeilingReached : catalog.xCeilingNearing,
       values: [
@@ -436,7 +644,7 @@ const contentOf = (
         ["resetsAt", instantIn(resetsAt, locale)],
       ],
     }),
-    SubscriptionWithdrawn: ({ plan, refunded, withdrawnAt }): Content => ({
+    SubscriptionWithdrawn: ({ plan, refunded, withdrawnAt }): Words => ({
       messages: catalog.subscriptionWithdrawn,
       values: [
         ["plan", catalog.plans[plan]],
@@ -444,7 +652,7 @@ const contentOf = (
         ["withdrawnAt", instantIn(withdrawnAt, locale)],
       ],
     }),
-    TrialEnding: ({ endsAt, over, plan }): Content => ({
+    TrialEnding: ({ endsAt, over, plan }): Words => ({
       messages: catalog.trialEnding,
       values: [
         ["endsAt", instantIn(endsAt, locale)],
@@ -452,11 +660,11 @@ const contentOf = (
         ["standing", standingIn(catalog, over, locale)],
       ],
     }),
-    WebhookDeliveriesFailing: ({ host }): Content => ({
+    WebhookDeliveriesFailing: ({ host }): Words => ({
       messages: catalog.webhookDeliveriesFailing,
       values: [["host", host]],
     }),
-    WebhookEndpointDisabled: ({ host, reason }): Content => ({
+    WebhookEndpointDisabled: ({ host, reason }): Words => ({
       messages: catalog.webhookEndpointDisabled,
       values: [
         ["host", host],
@@ -465,15 +673,15 @@ const contentOf = (
     }),
   });
 
-/** A notice, in its reader's language. */
-export const renderNoticeEmail = (email: NoticeEmail): RenderedEmail => {
+/** A notice's content, in its reader's language. */
+export const noticeContent = (email: NoticeEmail): MessageContent => {
   const catalog = catalogs[email.locale];
 
   const {
     highlight,
     messages,
     values: own,
-  } = contentOf(email.event, catalog, email.locale);
+  } = wordsOf(email.event, catalog, email.locale);
 
   const values: ReadonlyMap<string, string> = new Map([
     ...own,
@@ -483,39 +691,9 @@ export const renderNoticeEmail = (email: NoticeEmail): RenderedEmail => {
     ],
   ]);
 
-  const inHtml = (template: string) => fill(template, values, escapeHtml);
-  const inText = (template: string) => fill(template, values, keep);
+  const content = resolved(messages, values, email.url);
 
-  const parts = {
-    action: inHtml(messages.action),
-    body: inHtml(messages.body),
-    ignore: inHtml(messages.ignore),
-    linkFallback: escapeHtml(catalog.layout.linkFallback),
-    locale: email.locale,
-    signature: escapeHtml(catalog.layout.signature),
-    url: escapeHtml(email.url),
-  };
-
-  return {
-    html: layout(
-      highlight === undefined
-        ? parts
-        : { ...parts, highlight: inHtml(highlight) }
-    ),
-    subject: inText(messages.subject),
-    text: [
-      inText(messages.body),
-      ...(highlight === undefined ? [] : [inText(highlight)]),
-      fill(
-        catalog.layout.textLink,
-        new Map([
-          ["action", inText(messages.action)],
-          ["url", email.url],
-        ]),
-        keep
-      ),
-      inText(messages.ignore),
-      catalog.layout.signature,
-    ].join("\n\n"),
-  };
+  return highlight === undefined
+    ? content
+    : { ...content, highlight: fill(highlight, values) };
 };

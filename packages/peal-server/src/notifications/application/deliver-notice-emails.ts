@@ -9,10 +9,10 @@ import {
   defaultPreferences,
   wantsEmail,
 } from "#notifications/domain/notification-preferences.ts";
-import { renderNoticeEmail } from "#notifications/domain/render-notice-email.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 
 import { AppLinks } from "./app-links.ts";
+import { EmailRenderer } from "./email-renderer.ts";
 import { Mailer } from "./mailer.ts";
 import { NoticeLog } from "./notice-log.ts";
 import type { Recipient } from "./notice-recipients.ts";
@@ -59,6 +59,7 @@ export class DeliverNoticeEmails extends Context.Service<
       const mailer = yield* Mailer;
       const preferences = yield* PreferenceStore;
       const recipients = yield* NoticeRecipients;
+      const renderer = yield* EmailRenderer;
       const store = yield* NoticeStore;
 
       const settle = (notice: Notice, outcome: EmailOutcome) =>
@@ -72,23 +73,26 @@ export class DeliverNoticeEmails extends Context.Service<
         recipient: Recipient,
         workspaceName: string
       ) =>
-        mailer
-          .send({
-            ...renderNoticeEmail({
-              event: notice.event,
-              locale: recipient.locale,
-              url: links.url(
-                pageOf(notice.event, notice.workspaceId),
-                recipient.locale
-              ),
-              workspaceName,
-            }),
-            // The same for every try, so a transport that deduplicates sends
-            // it once.
-            idempotencyKey: `notice:${notice.id}`,
-            to: recipient.email,
+        renderer
+          .notice({
+            event: notice.event,
+            locale: recipient.locale,
+            url: links.url(
+              pageOf(notice.event, notice.workspaceId),
+              recipient.locale
+            ),
+            workspaceName,
           })
           .pipe(
+            Effect.flatMap((rendered) =>
+              mailer.send({
+                ...rendered,
+                // The same for every try, so a transport that deduplicates
+                // sends it once.
+                idempotencyKey: `notice:${notice.id}`,
+                to: recipient.email,
+              })
+            ),
             Effect.matchEffect({
               onFailure: (failure) =>
                 failure.retryable

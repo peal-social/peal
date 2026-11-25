@@ -17,6 +17,7 @@ import { HmacDigestLinks } from "#notifications/infrastructure/hmac-digest-links
 import { mailSettingsConfig } from "#notifications/infrastructure/mail-settings.ts";
 import type { MailSettings } from "#notifications/infrastructure/mail-settings.ts";
 import { PublicAppLinks } from "#notifications/infrastructure/public-app-links.ts";
+import { ReactEmailRenderer } from "#notifications/infrastructure/react-email-renderer.ts";
 import { resendMailer } from "#notifications/infrastructure/resend-mailer.ts";
 import { smtpMailer } from "#notifications/infrastructure/smtp-mailer.ts";
 import { WorkflowNoticeDelivery } from "#notifications/infrastructure/workflow-notice-delivery.ts";
@@ -39,17 +40,17 @@ export const MailerLive = Layer.unwrap(
 );
 
 /**
- * The notifications context: account emails, and those to the visitors of
- * review links, sent through MailerLive, which it shares with the notices
- * below.
+ * The notifications context: account emails, sent through MailerLive, which
+ * it shares with the notices below.
  */
 export const NotificationsLive = SendAuthEmail.layer.pipe(
   Layer.provideMerge(MailerLive),
-  Layer.provide(IdsLive)
+  Layer.provide([ReactEmailRenderer, IdsLive])
 );
 
 // The adapters behind the notices' ports.
 const NoticeAdaptersLive = Layer.mergeAll(
+  ReactEmailRenderer,
   DrizzleNoticeLog,
   HmacDigestLinks,
   DrizzleNoticeStore,
@@ -90,6 +91,7 @@ export const NoticesLive = Layer.mergeAll(
 export const WeeklyDigestsLive = SendWeeklyDigests.layer.pipe(
   Layer.provide(
     Layer.mergeAll(
+      ReactEmailRenderer,
       DrizzlePreferenceStore,
       PublicAppLinks,
       ContextDigestSources,

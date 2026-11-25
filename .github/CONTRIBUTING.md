@@ -156,6 +156,7 @@ SDKs derive their clients from it.
 | [`peal-server`](../packages/peal-server)     | The Effect server on Bun: bounded contexts, Better Auth, MCP, durable jobs   |
 | [`peal-web`](../packages/peal-web)           | The web app: Next.js App Router, next-intl, Tiptap                           |
 | [`peal-ui`](../packages/peal-ui)             | The design system: shadcn/ui's look on ui-sdk, Tailwind CSS v4, as sources   |
+| [`peal-emails`](../packages/peal-emails)     | The emails the server sends, their words and previews, with React Email      |
 | [`peal-cli`](../packages/peal-cli)           | The `peal` command line, signing in with OAuth                               |
 | [`peal-sdk`](../packages/peal-sdk)           | The API's clients in eight languages, generated from the contract            |
 | [`peal-docs`](../packages/peal-docs)         | The documentation, with the API reference from the contract's OpenAPI        |
@@ -270,6 +271,7 @@ The apps you run from source listen on these ports:
 | Marketing site    | <http://localhost:4321> | `bun nx run peal-site:dev`   |
 | Docs              | <http://localhost:4322> | `bun nx run peal-docs:dev`   |
 | Blog              | <http://localhost:4324> | `bun nx run peal-blog:dev`   |
+| Emails' previews  | <http://localhost:4325> | `bun nx run peal-emails:dev` |
 
 ## Develop
 

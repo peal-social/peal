@@ -8,6 +8,7 @@ const roots = [
   "packages/peal-docker",
   "packages/peal-docs",
   "packages/peal-e2e",
+  "packages/peal-emails",
   "packages/peal-infra/ansible",
   "packages/peal-infra/pulumi",
   "packages/peal-sdk",
@@ -57,6 +58,16 @@ describe("the CI plan", () => {
         roots,
       })
     ).toEqual({ ...none, ansible: true, e2e: true, server: true });
+  });
+
+  it("runs the server's tests and the end-to-end run for a change to the emails, which the server renders", () => {
+    expect(
+      plan({
+        affected: ["peal-emails", "peal-server", "peal-e2e"],
+        files: ["packages/peal-emails/src/catalog/english.ts"],
+        roots,
+      })
+    ).toEqual({ ...none, e2e: true, server: true });
   });
 
   it("runs the SDKs for a contract change, which the project graph does not link", () => {

@@ -151,6 +151,44 @@ describe("the sandbox at Cloudflare", () => {
     ]);
   });
 
+  it("lets the web app's error reports through, at their one path alone", async () => {
+    await valueOf(pulumi.output(result.accessAud));
+
+    const applications = ofType(
+      "cloudflare:index/zeroTrustAccessApplication:ZeroTrustAccessApplication"
+    );
+
+    const reports = applications.find(
+      (application) => application.name === "access-client-errors"
+    );
+
+    // Browsers send them without cookies, so without Access's: the Bypass
+    // policy alone, on the app's host name and that path alone.
+    expect(reports?.inputs).toStrictEqual({
+      accountId: "account-synthetic",
+      destinations: [
+        { type: "public", uri: "sandbox.example.test/api/client-errors" },
+      ],
+      domain: "sandbox.example.test/api/client-errors",
+      name: "Peal sandbox client errors",
+      policies: [{ id: "callbacks-policy", precedence: 1 }],
+      sessionDuration: "24h",
+      type: "self_hosted",
+    });
+
+    // No other application names the path, and the outside services'
+    // application keeps its own.
+    const naming = applications.filter((application) =>
+      input(application, "destinations", DestinationsSchema).some(
+        (destination) => destination.uri.includes("client-errors")
+      )
+    );
+
+    expect(naming.map((application) => application.name)).toStrictEqual([
+      "access-client-errors",
+    ]);
+  });
+
   it("lets the uptime server's checks into the app, the site and the docs alone", async () => {
     await valueOf(pulumi.output(result.accessAud));
 

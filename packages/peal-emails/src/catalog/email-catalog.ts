@@ -1,20 +1,19 @@
-import type { Meter } from "#shared/domain/meter.ts";
-import type { PaidPlan } from "#shared/domain/plan.ts";
-
-import type { TwoStepChange } from "./auth-email.ts";
 import type {
-  SlideshowNoticeReason,
-  VideoNoticeReason,
   AutomationStopReason,
   FeedStopReason,
   FollowUpNotSentReason,
+  Meter,
+  PaidPlan,
   PostFailureReason,
   RecyclingEndReason,
-} from "./notice-event.ts";
+  SlideshowNoticeReason,
+  TwoStepChange,
+  VideoNoticeReason,
+} from "./vocabulary.ts";
 
 /**
  * The words of each email in one language. `{name}` stands for a value the
- * email fills in, HTML-escaped where it appears in HTML.
+ * email fills in.
  */
 export interface EmailCatalog {
   /** An account was deleted with its data, as its owner asked. */

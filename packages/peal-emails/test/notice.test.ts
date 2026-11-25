@@ -1,30 +1,22 @@
-import { describe, expect, it } from "@effect/vitest";
-import { DateTime, Option } from "effect";
+import { DateTime, Option, Struct } from "effect";
+import { describe, expect, it } from "vitest";
 
-import type {
-  NoticeChannel,
-  NoticeEvent,
-} from "#notifications/domain/notice-event.ts";
-import {
-  AutomationStopReasonSchema,
-  FollowUpNotSentReasonSchema,
-  PostFailureReasonSchema,
-} from "#notifications/domain/notice-event.ts";
-import { renderNoticeEmail } from "#notifications/domain/render-notice-email.ts";
-import { PostIdSchema, Uuid7Schema } from "#shared/domain/ids.ts";
-import type { Locale } from "#shared/domain/locale.ts";
+import { english as words } from "../src/catalog/english.ts";
+import { renderNoticeEmail } from "../src/index.ts";
+import type { Locale, NoticeChannel, NoticeEvent } from "../src/index.ts";
+import { subjectOf, textOf } from "./support.ts";
 
 const url = "https://app.example.test/app/0b1c/posts/0190";
 
-const postId = PostIdSchema.make("00000000-0000-7000-8000-000000000001");
+const postId = "00000000-0000-7000-8000-000000000001";
 
 const mastodon: Option.Option<NoticeChannel> = Option.some({
   handle: "@alice@social.example",
   platform: "mastodon",
 });
 
-const render = (event: NoticeEvent, locale: Locale) =>
-  renderNoticeEmail({ event, locale, url, workspaceName: "Studio Nord" });
+const render = async (event: NoticeEvent, locale: Locale) =>
+  await renderNoticeEmail({ event, locale, url, workspaceName: "Studio Nord" });
 
 const locales: readonly Locale[] = ["en", "fr"];
 
@@ -36,15 +28,15 @@ describe(renderNoticeEmail, () => {
     withdrawnAt: DateTime.makeUnsafe("2026-11-04T08:15:00Z"),
   };
 
-  it("sends members whose channel's messages were turned off to the inbox's own steps", () => {
+  it("sends members whose channel's messages were turned off to the inbox's own steps", async () => {
     const bluesky = { handle: "@studio.example", platform: "bluesky" } as const;
 
-    const english = render(
+    const english = await render(
       { _tag: "MessagesTurnedOff", channel: bluesky },
       "en"
     );
 
-    const french = render(
+    const french = await render(
       { _tag: "MessagesTurnedOff", channel: bluesky },
       "fr"
     );
@@ -58,9 +50,9 @@ describe(renderNoticeEmail, () => {
     expect(`${english.text}${french.text}`).not.toMatch(/\{\w+\}/u);
   });
 
-  const ruleId = Uuid7Schema.make("00000000-0000-7000-8000-00000000f001");
+  const ruleId = "00000000-0000-7000-8000-00000000f001";
 
-  it("tells follow-ups that did not go out, how many and why, in both languages", () => {
+  it("tells follow-ups that did not go out, how many and why, in both languages", async () => {
     const event: NoticeEvent = {
       _tag: "FollowUpsNotSent",
       count: 3,
@@ -68,8 +60,8 @@ describe(renderNoticeEmail, () => {
       ruleId,
     };
 
-    const english = render(event, "en");
-    const french = render(event, "fr");
+    const english = await render(event, "en");
+    const french = await render(event, "fr");
 
     expect(english.subject).toBe("Follow-ups did not go out");
     expect(english.text).toContain(
@@ -81,7 +73,7 @@ describe(renderNoticeEmail, () => {
     );
   });
 
-  it("tells one follow-up that did not go out in the singular, in both languages", () => {
+  it("tells one follow-up that did not go out in the singular, in both languages", async () => {
     const event: NoticeEvent = {
       _tag: "FollowUpsNotSent",
       count: 1,
@@ -89,8 +81,8 @@ describe(renderNoticeEmail, () => {
       ruleId,
     };
 
-    const english = render(event, "en");
-    const french = render(event, "fr");
+    const english = await render(event, "en");
+    const french = await render(event, "fr");
 
     expect(english.subject).toBe("A follow-up did not go out");
     expect(english.text).toContain(
@@ -102,13 +94,13 @@ describe(renderNoticeEmail, () => {
     );
   });
 
-  it("tells a rule that stopped by itself, why, in both languages", () => {
-    const english = render(
+  it("tells a rule that stopped by itself, why, in both languages", async () => {
+    const english = await render(
       { _tag: "FollowUpRuleStopped", reason: "channelGone", ruleId },
       "en"
     );
 
-    const french = render(
+    const french = await render(
       { _tag: "CommentRuleStopped", reason: "starterGone", ruleId },
       "fr"
     );
@@ -125,15 +117,17 @@ describe(renderNoticeEmail, () => {
     );
   });
 
-  it("words every reason of the rules that act by themselves in every language", () => {
+  it("words every reason of the rules that act by themselves in every language", async () => {
     const events: readonly NoticeEvent[] = [
-      ...FollowUpNotSentReasonSchema.literals.map((reason): NoticeEvent => ({
-        _tag: "FollowUpsNotSent",
-        count: 1,
-        reasons: [reason],
-        ruleId,
-      })),
-      ...AutomationStopReasonSchema.literals.flatMap(
+      ...Struct.keys(words.followUpNotSentReasons.one).map(
+        (reason): NoticeEvent => ({
+          _tag: "FollowUpsNotSent",
+          count: 1,
+          reasons: [reason],
+          ruleId,
+        })
+      ),
+      ...Struct.keys(words.followUpRuleStopReasons).flatMap(
         (reason): readonly NoticeEvent[] => [
           { _tag: "FollowUpRuleStopped", reason, ruleId },
           { _tag: "CommentRuleStopped", reason, ruleId },
@@ -141,19 +135,21 @@ describe(renderNoticeEmail, () => {
       ),
     ];
 
-    for (const event of events) {
-      for (const locale of locales) {
-        const email = render(event, locale);
+    const emails = await Promise.all(
+      events.flatMap((event) =>
+        locales.map(async (locale) => await render(event, locale))
+      )
+    );
 
-        expect(email.subject).not.toMatch(/\{\w+\}/u);
-        expect(email.text).not.toMatch(/\{\w+\}/u);
-        expect(email.text).not.toContain("undefined");
-      }
+    for (const { subject, text } of emails) {
+      expect(subject).not.toMatch(/\{\w+\}/u);
+      expect(text).not.toMatch(/\{\w+\}/u);
+      expect(text).not.toContain("undefined");
     }
   });
 
-  it("acknowledges a withdrawal with its date, time and refund", () => {
-    const english = render(withdrawn, "en");
+  it("acknowledges a withdrawal with its date, time and refund", async () => {
+    const english = await render(withdrawn, "en");
 
     expect(english.subject).toBe(
       "Withdrawal received: your Starter subscription has ended"
@@ -162,8 +158,8 @@ describe(renderNoticeEmail, () => {
     expect(english.text).toContain("€8.10 is refunded");
   });
 
-  it("acknowledges a withdrawal in French", () => {
-    const french = render(withdrawn, "fr");
+  it("acknowledges a withdrawal in French", async () => {
+    const french = await render(withdrawn, "fr");
 
     expect(french.subject).toBe(
       "Rétractation reçue : votre abonnement Starter a pris fin"
@@ -172,8 +168,8 @@ describe(renderNoticeEmail, () => {
     expect(french.text).toContain("8,10\u00A0€ vous est remboursé");
   });
 
-  it("confirms a subscription with its price and the right to withdraw", () => {
-    const email = render(
+  it("confirms a subscription with its price and the right to withdraw", async () => {
+    const email = await render(
       {
         _tag: "SubscriptionStarted",
         interval: "month",
@@ -190,8 +186,8 @@ describe(renderNoticeEmail, () => {
     expect(email.text).toContain("Withdraw from contract here");
   });
 
-  it("reminds a yearly renewal with what it will charge, VAT included", () => {
-    const email = render(
+  it("reminds a yearly renewal with what it will charge, VAT included", async () => {
+    const email = await render(
       {
         _tag: "SubscriptionRenewing",
         plan: "business",
@@ -216,8 +212,8 @@ describe(renderNoticeEmail, () => {
     expect(email.text).toContain("Résilier votre contrat");
   });
 
-  it("gives the contract's number with the confirmation and the reminder", () => {
-    const started = render(
+  it("gives the contract's number with the confirmation and the reminder", async () => {
+    const started = await render(
       {
         _tag: "SubscriptionStarted",
         interval: "month",
@@ -233,7 +229,7 @@ describe(renderNoticeEmail, () => {
     expect(started.text).toContain("Contract number: 7K3M-9QXD-42TN");
     expect(started.text).toContain("at the foot of every page");
 
-    const renewing = render(
+    const renewing = await render(
       {
         _tag: "SubscriptionRenewing",
         plan: "business",
@@ -247,7 +243,7 @@ describe(renderNoticeEmail, () => {
     expect(renewing.text).toContain("Numéro de contrat : 7K3M-9QXD-42TN");
   });
 
-  it("lists what a trial's end leaves beyond the free plan", () => {
+  it("lists what a trial's end leaves beyond the free plan", async () => {
     const ending = {
       _tag: "TrialEnding",
       endsAt: DateTime.makeUnsafe("2026-11-23T10:00:00Z"),
@@ -259,14 +255,14 @@ describe(renderNoticeEmail, () => {
       plan: "pro",
     } as const;
 
-    expect(render(ending, "en").text).toContain(
+    await expect(textOf(render(ending, "en"))).resolves.toContain(
       "Today it holds more than the free plan allows: 8 channels (3 allowed), 5 members (2 allowed), 1.2 GB of media (500 MB allowed). From that day, nothing is scheduled or published until it is back within the free plan: posts already scheduled fail when due, and can be posted again afterwards. Add a payment method, or choose which accounts stay, on the billing page."
     );
-    expect(render(ending, "fr").text).toContain(
+    await expect(textOf(render(ending, "fr"))).resolves.toContain(
       "Aujourd’hui, il dépasse ce que permet l’offre gratuite : 8 canaux (3 permis), 5 membres (2 permis), 1,2\u202FGo de médias (500\u202FMo permis). À partir de ce jour, rien n’est programmé ni publié tant qu’il n’est pas revenu dans l’offre gratuite : les publications déjà programmées échouent à leur échéance, et peuvent être republiées ensuite. Ajoutez un moyen de paiement, ou choisissez les comptes qui restent, sur la page de facturation."
     );
 
-    const within = render({ ...ending, over: [] }, "en").text;
+    const within = await textOf(render({ ...ending, over: [] }, "en"));
 
     expect(within).toContain(
       "It holds nothing beyond what the free plan allows, and keeps its content."
@@ -274,7 +270,7 @@ describe(renderNoticeEmail, () => {
     expect(within).not.toContain("Today it holds more");
   });
 
-  it("confirms per-account pricing with its rates, charging nothing now", () => {
+  it("confirms per-account pricing with its rates, charging nothing now", async () => {
     const started = {
       _tag: "SubscriptionStarted",
       interval: "month",
@@ -295,7 +291,7 @@ describe(renderNoticeEmail, () => {
       trialEnd: Option.none(),
     } as const;
 
-    const english = render(started, "en");
+    const english = await render(started, "en");
 
     expect(english.subject).toBe("Per-account pricing has started");
     expect(english.text).toContain(
@@ -303,12 +299,12 @@ describe(renderNoticeEmail, () => {
     );
     expect(english.text).toContain("Nothing is charged now");
     expect(english.text).toContain("Contract number: 7K3M-9QXD-42TN");
-    expect(render(started, "fr").text).toContain(
+    await expect(textOf(render(started, "fr"))).resolves.toContain(
       "comptes 1 à 2 gratuits, comptes 3 à 10 à 5,00\u00A0$US par mois chacun"
     );
   });
 
-  it("asks for a payment method before the grace's day", () => {
+  it("asks for a payment method before the grace's day", async () => {
     const needed = {
       _tag: "PaymentMethodNeeded",
       accounts: 5,
@@ -316,70 +312,74 @@ describe(renderNoticeEmail, () => {
       graceUntil: DateTime.makeUnsafe("2027-01-31T00:00:00Z"),
     } as const;
 
-    expect(render(needed, "en").subject).toBe(
+    await expect(subjectOf(render(needed, "en"))).resolves.toBe(
       "Add a payment method to Studio Nord before January 31, 2027 at 12:00 AM UTC"
     );
-    expect(render(needed, "en").text).toContain(
+    await expect(textOf(render(needed, "en"))).resolves.toContain(
       "Studio Nord holds 5 connected accounts, more than the 2 the free tier includes"
     );
-    expect(render(needed, "fr").text).toContain(
+    await expect(textOf(render(needed, "fr"))).resolves.toContain(
       "Studio Nord compte 5 comptes connectés, plus que les 2 de l’offre gratuite"
     );
   });
 
-  it("tells a legacy plan's retirement, with its last day, in both languages", () => {
+  it("tells a legacy plan's retirement, with its last day, in both languages", async () => {
     const retiring = {
       _tag: "PlansRetiring",
       endsAt: DateTime.makeUnsafe("2027-01-01T00:00:00Z"),
       plan: "starter",
     } as const;
 
-    expect(render(retiring, "en").subject).toBe(
+    await expect(subjectOf(render(retiring, "en"))).resolves.toBe(
       "The Starter plan of Studio Nord ends on January 1, 2027 at 12:00 AM UTC"
     );
-    expect(render(retiring, "en").text).toContain(
+    await expect(textOf(render(retiring, "en"))).resolves.toContain(
       "nothing after that day is charged: the unused part of what was paid for beyond it is refunded to the payment method it was paid with"
     );
-    expect(render(retiring, "en").text).not.toContain(
+    await expect(textOf(render(retiring, "en"))).resolves.not.toContain(
       "nothing more is charged"
     );
-    expect(render(retiring, "fr").text).toContain(
+    await expect(textOf(render(retiring, "fr"))).resolves.toContain(
       "rien n’est facturé au-delà de ce jour"
     );
-    expect(render(retiring, "fr").subject).toBe(
+    await expect(subjectOf(render(retiring, "fr"))).resolves.toBe(
       "La formule Starter de Studio Nord prend fin le 1 janvier 2027 à 00:00 UTC"
     );
   });
 
-  it("tells a trial's end and a cancellation's", () => {
-    expect(
-      render(
-        {
-          _tag: "TrialEnding",
-          endsAt: DateTime.makeUnsafe("2026-11-23T10:00:00Z"),
-          over: [],
-          plan: "pro",
-        },
-        "en"
-      ).subject
-    ).toBe("Your Pro trial ends on November 23, 2026 at 10:00 AM UTC");
+  it("tells a trial's end and a cancellation's", async () => {
+    await expect(
+      subjectOf(
+        render(
+          {
+            _tag: "TrialEnding",
+            endsAt: DateTime.makeUnsafe("2026-11-23T10:00:00Z"),
+            over: [],
+            plan: "pro",
+          },
+          "en"
+        )
+      )
+    ).resolves.toBe("Your Pro trial ends on November 23, 2026 at 10:00 AM UTC");
 
-    expect(
-      render(
-        {
-          _tag: "SubscriptionCancelled",
-          endsAt: DateTime.makeUnsafe("2026-12-01T00:00:00Z"),
-          plan: "agency",
-        },
-        "fr"
-      ).subject
-    ).toBe(
+    await expect(
+      subjectOf(
+        render(
+          {
+            _tag: "SubscriptionCancelled",
+            endsAt: DateTime.makeUnsafe("2026-12-01T00:00:00Z"),
+            plan: "agency",
+          },
+          "fr"
+        )
+      )
+    ).resolves.toBe(
       "Votre abonnement Agency est résilié : il prend fin le 1 décembre 2026 à 00:00 UTC"
     );
   });
 
-  it("tells that a webhook endpoint was turned off, by its host and why", () => {
-    const failing = render(
+  it("tells that a webhook endpoint was turned off, by its host and why", async () => {
+    const failing = await render(
       {
         _tag: "WebhookEndpointDisabled",
         endpointId: "00000000-0000-7000-8000-000000000051",
@@ -397,7 +397,7 @@ describe(renderNoticeEmail, () => {
     );
     expect(failing.text).toContain(url);
 
-    const gone = render(
+    const gone = await render(
       {
         _tag: "WebhookEndpointDisabled",
         endpointId: "00000000-0000-7000-8000-000000000051",
@@ -415,8 +415,8 @@ describe(renderNoticeEmail, () => {
     );
   });
 
-  it("asks to reconnect a channel, in English", () => {
-    const email = render(
+  it("asks to reconnect a channel, in English", async () => {
+    const email = await render(
       {
         _tag: "ChannelReconnectRequired",
         channel: { handle: "@alice@social.example", platform: "mastodon" },
@@ -432,8 +432,8 @@ describe(renderNoticeEmail, () => {
     expect(email.html).toContain(`href="${url}"`);
   });
 
-  it("gives the expiry in the reader's language, in UTC", () => {
-    const email = render(
+  it("gives the expiry in the reader's language, in UTC", async () => {
+    const email = await render(
       {
         _tag: "ChannelReconnectSoon",
         channel: { handle: "@bob.test", platform: "bluesky" },
@@ -445,7 +445,7 @@ describe(renderNoticeEmail, () => {
     expect(email.subject).toBe(
       "Reconnectez @bob.test sur Bluesky avant le 1 décembre 2026 à 09:30 UTC"
     );
-    expect(email.html).toContain('<html lang="fr">');
+    expect(email.html).toMatch(/<html [^>]*lang="fr"/u);
   });
 
   const published: NoticeEvent = {
@@ -455,8 +455,8 @@ describe(renderNoticeEmail, () => {
     postId,
   };
 
-  it("tells a published post, in English", () => {
-    const english = render(published, "en");
+  it("tells a published post, in English", async () => {
+    const english = await render(published, "en");
 
     expect(english.subject).toBe(
       "Published on Mastodon (@alice@social.example)"
@@ -467,15 +467,15 @@ describe(renderNoticeEmail, () => {
     expect(english.text).toContain(`See the post: ${url}`);
   });
 
-  it("tells a published post, in French", () => {
-    const french = render(published, "fr");
+  it("tells a published post, in French", async () => {
+    const french = await render(published, "fr");
 
     expect(french.subject).toBe("Publié sur Mastodon (@alice@social.example)");
     expect(french.text).toContain(`Voir la publication\u00A0: ${url}`);
-    expect(french.html).toContain('<html lang="fr">');
+    expect(french.html).toMatch(/<html [^>]*lang="fr"/u);
   });
 
-  it("says why a post failed, in each language", () => {
+  it("says why a post failed, in each language", async () => {
     const event: NoticeEvent = {
       _tag: "PostFailed",
       channel: mastodon,
@@ -483,15 +483,15 @@ describe(renderNoticeEmail, () => {
       reason: "tokenExpired",
     };
 
-    expect(render(event, "en").text).toContain(
+    await expect(textOf(render(event, "en"))).resolves.toContain(
       "A post of Studio Nord did not go out on Mastodon (@alice@social.example): the account’s authorization stopped working. Reconnect it, then post again."
     );
-    expect(render(event, "fr").text).toContain(
+    await expect(textOf(render(event, "fr"))).resolves.toContain(
       "Une publication de Studio Nord n’est pas partie sur Mastodon (@alice@social.example)\u00A0: l’autorisation du compte ne fonctionne plus."
     );
   });
 
-  it("says the post went out when only its first comment did not", () => {
+  it("says the post went out when only its first comment did not", async () => {
     const event: NoticeEvent = {
       _tag: "PostFailed",
       channel: mastodon,
@@ -500,8 +500,8 @@ describe(renderNoticeEmail, () => {
       reason: "contentRejected",
     };
 
-    const english = render(event, "en");
-    const french = render(event, "fr");
+    const english = await render(event, "en");
+    const french = await render(event, "fr");
 
     expect(english.subject).toBe(
       "A first comment did not go out on Mastodon (@alice@social.example)"
@@ -514,7 +514,7 @@ describe(renderNoticeEmail, () => {
     );
   });
 
-  it("says the post went out when only its later parts did not", () => {
+  it("says the post went out when only its later parts did not", async () => {
     const event: NoticeEvent = {
       _tag: "PostFailed",
       channel: mastodon,
@@ -523,17 +523,17 @@ describe(renderNoticeEmail, () => {
       reason: "contentRejected",
     };
 
-    expect(render(event, "en").text).toContain(
+    await expect(textOf(render(event, "en"))).resolves.toContain(
       "A post of Studio Nord is live on Mastodon (@alice@social.example), but the parts after its first did not go out:"
     );
-    expect(render(event, "fr").text).toContain(
+    await expect(textOf(render(event, "fr"))).resolves.toContain(
       "Une publication de Studio Nord est en ligne sur Mastodon (@alice@social.example), mais les parties après la première ne sont pas parties\u00A0:"
     );
   });
 
   // Nothing in Peal turns a channel back on, and reconnecting leaves it off:
   // a new channel for the account is what members can make.
-  it("says what members can do with a channel turned off", () => {
+  it("says what members can do with a channel turned off", async () => {
     const event: NoticeEvent = {
       _tag: "PostFailed",
       channel: mastodon,
@@ -541,38 +541,43 @@ describe(renderNoticeEmail, () => {
       reason: "channelDisabled",
     };
 
-    expect(render(event, "en").text).toContain(
+    await expect(textOf(render(event, "en"))).resolves.toContain(
       "its channel was turned off before it went out. Turn the channel back on, then schedule it in a new post."
     );
-    expect(render(event, "fr").text).toContain(
+    await expect(textOf(render(event, "fr"))).resolves.toContain(
       "son canal a été désactivé avant son départ. Réactivez le canal, puis programmez-la dans une nouvelle publication."
     );
   });
 
-  it("words every failure in every language", () => {
-    for (const reason of PostFailureReasonSchema.literals) {
-      for (const locale of locales) {
-        const email = render(
-          { _tag: "PostFailed", channel: mastodon, postId, reason },
-          locale
-        );
+  it("words every failure in every language", async () => {
+    const emails = await Promise.all(
+      Struct.keys(words.failureReasons).flatMap((reason) =>
+        locales.map(
+          async (locale) =>
+            await render(
+              { _tag: "PostFailed", channel: mastodon, postId, reason },
+              locale
+            )
+        )
+      )
+    );
 
-        // Every placeholder is filled.
-        expect(email.subject).not.toMatch(/\{\w+\}/u);
-        expect(email.text).not.toMatch(/\{\w+\}/u);
-      }
+    // Every placeholder is filled.
+    for (const { subject, text } of emails) {
+      expect(subject).not.toMatch(/\{\w+\}/u);
+      expect(text).not.toMatch(/\{\w+\}/u);
     }
   });
 
-  it("asks to check the platform before reposting an unconfirmed post", () => {
+  it("asks to check the platform before reposting an unconfirmed post", async () => {
     const event: NoticeEvent = {
       _tag: "PostUnconfirmed",
       channel: mastodon,
       postId,
     };
 
-    const english = render(event, "en");
-    const french = render(event, "fr");
+    const english = await render(event, "en");
+    const french = await render(event, "fr");
 
     expect(english.subject).toBe(
       "Check Mastodon (@alice@social.example): a post may have gone out"
@@ -588,23 +593,23 @@ describe(renderNoticeEmail, () => {
     );
   });
 
-  it("names a channel disconnected since as such", () => {
+  it("names a channel disconnected since as such", async () => {
     const event: NoticeEvent = {
       _tag: "PostUnconfirmed",
       channel: Option.none(),
       postId,
     };
 
-    expect(render(event, "en").subject).toBe(
+    await expect(subjectOf(render(event, "en"))).resolves.toBe(
       "Check a disconnected channel: a post may have gone out"
     );
-    expect(render(event, "fr").subject).toBe(
+    await expect(subjectOf(render(event, "fr"))).resolves.toBe(
       "Vérifiez un canal déconnecté\u00A0: une publication est peut-être partie"
     );
   });
 
-  it("escapes names in HTML and keeps them in the text", () => {
-    const email = renderNoticeEmail({
+  it("escapes names in HTML and keeps them in the text", async () => {
+    const email = await renderNoticeEmail({
       event: {
         _tag: "PostPublished",
         channel: Option.some({ handle: "@a<b>", platform: "x" }),
