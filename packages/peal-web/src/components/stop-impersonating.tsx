@@ -3,25 +3,31 @@
 import { useTranslations } from "next-intl";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { authClient } from "#auth/client.ts";
-import { useRouter } from "#i18n/navigation.ts";
+import { tellOtherTabs } from "#auth/session-news.ts";
+import { useLoadAnew } from "#auth/use-load-anew.ts";
 
 // Ends the impersonation: Better Auth deletes its session and signs the
-// staff member's own back in, then the console opens the account's page.
+// staff member's own back in, then the console opens the account's page,
+// loaded anew (`useLoadAnew`), so nothing the tab held while acting as
+// the account stays; the other tabs of the app load anew too.
 export const StopImpersonating = ({ userId }: { readonly userId: string }) => {
   const t = useTranslations("Impersonation");
-  const router = useRouter();
+  const loadAnew = useLoadAnew();
   const [isPending, startTransition] = useTransition();
+  const [leaving, setLeaving] = useState(false);
+  const busy = isPending || leaving;
 
   const handleStop = () => {
     startTransition(async () => {
       const result = await authClient.admin.stopImpersonating();
 
       if (result.error === null) {
-        router.push(`/admin/users/${userId}`);
-        router.refresh();
+        tellOtherTabs({ kind: "signedIn" });
+        setLeaving(true);
+        loadAnew(`/admin/users/${userId}`);
       } else {
         toast.error(t("stopFailed"));
       }
@@ -31,11 +37,11 @@ export const StopImpersonating = ({ userId }: { readonly userId: string }) => {
   return (
     <Button
       size="sm"
-      disabled={isPending}
+      disabled={busy}
       focusableWhenDisabled
       onClick={handleStop}
     >
-      {isPending ? t("stopping") : t("stop")}
+      {busy ? t("stopping") : t("stop")}
     </Button>
   );
 };
