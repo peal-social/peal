@@ -4,8 +4,6 @@ import { useFormatter, useTranslations } from "next-intl";
 import type { MetricsSnapshot } from "peal-contract";
 import {
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "peal-ui/components/chart";
@@ -29,20 +27,66 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import { readingRows } from "#analytics/report.ts";
 import type { EngagementKey } from "#analytics/report.ts";
-import { engagementColors } from "#components/analytics/engagement-chart.tsx";
 
 interface ReadingsChartProps {
-  /** Names the channel, for the table's caption. */
-  readonly handle: string;
+  /** Names the channel and its platform, for the table's caption. */
+  readonly channel: string;
   readonly snapshots: readonly MetricsSnapshot[];
 }
+
+/**
+ * How each count's line is drawn. A line must be seen, so each colour is
+ * 3:1 or more on white (DESIGN.md, Colors): blue 5.2:1, deep blue 10.5:1,
+ * muted grey 5.3:1, ink 19.8:1. Three are dashed, each its own way, so no
+ * line is told apart by its colour alone.
+ */
+export const readingLines: Readonly<
+  Record<EngagementKey, { readonly color: string; readonly dash: string }>
+> = {
+  likes: { color: "var(--chart-1)", dash: "none" },
+  quotes: { color: "var(--foreground)", dash: "8 3 2 3" },
+  replies: { color: "var(--chart-5)", dash: "2 3" },
+  reposts: { color: "var(--chart-4)", dash: "6 3" },
+};
+
+// The chart's legend: each line's colour and dash beside its name, as the
+// chart draws them.
+const ReadingsLegend = ({
+  keys,
+  label,
+}: {
+  readonly keys: readonly EngagementKey[];
+  readonly label: (key: EngagementKey) => string;
+}) => (
+  <div
+    aria-hidden="true"
+    className="flex flex-wrap items-center justify-center gap-4 pt-3 text-xs"
+  >
+    {keys.map((key) => (
+      <div key={key} className="flex items-center gap-1.5">
+        <svg width="16" height="4" viewBox="0 0 16 4">
+          <line
+            x1="0"
+            y1="2"
+            x2="16"
+            y2="2"
+            stroke={readingLines[key].color}
+            strokeDasharray={readingLines[key].dash}
+            strokeWidth="2"
+          />
+        </svg>
+        {label(key)}
+      </div>
+    ))}
+  </div>
+);
 
 /**
  * A post's counts on one channel each time they were read, as lines, with
  * the same figures as a table: the chart is hidden from screen readers,
  * whose users take the table. Times are in the page's provider zone.
  */
-export const ReadingsChart = ({ handle, snapshots }: ReadingsChartProps) => {
+export const ReadingsChart = ({ channel, snapshots }: ReadingsChartProps) => {
   const t = useTranslations("Analytics");
   const format = useFormatter();
   const rows = readingRows(snapshots);
@@ -56,7 +100,7 @@ export const ReadingsChart = ({ handle, snapshots }: ReadingsChartProps) => {
   const config: ChartConfig = Object.fromEntries(
     keys.map((key) => [
       key,
-      { color: engagementColors[key], label: t("metric", { metric: key }) },
+      { color: readingLines[key].color, label: t("metric", { metric: key }) },
     ])
   );
 
@@ -110,23 +154,27 @@ export const ReadingsChart = ({ handle, snapshots }: ReadingsChartProps) => {
                 />
               }
             />
-            <ChartLegend content={<ChartLegendContent />} />
             {keys.map((key) => (
               <Line
                 key={key}
                 dataKey={key}
                 dot={false}
-                stroke={engagementColors[key]}
+                stroke={readingLines[key].color}
+                strokeDasharray={readingLines[key].dash}
                 strokeWidth={2}
                 type="monotone"
               />
             ))}
           </LineChart>
         </ChartContainer>
+        <ReadingsLegend
+          keys={keys}
+          label={(key) => t("metric", { metric: key })}
+        />
       </TabsContent>
       <TabsContent value="table">
         <Table>
-          <TableCaption>{t("post.tableCaption", { handle })}</TableCaption>
+          <TableCaption>{t("post.tableCaption", { channel })}</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead scope="col">{t("post.readAtColumn")}</TableHead>

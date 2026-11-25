@@ -1003,6 +1003,7 @@ export const PostDetail = ({
       metrics={
         published && permissions.includes("analytics:read") ? (
           <PostMetrics
+            channelName={channelNamed}
             channels={channels}
             post={post}
             workspaceId={workspaceId}

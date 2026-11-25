@@ -776,13 +776,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - A post's counts (`PostMetrics`) show on its page in `PostDetail`, after
   its channels, to members with analytics:read once it is live on a
   channel: the composer never shows them, as a post it opens has gone
-  live nowhere. Each channel analytics follows has its counts and when
-  they were read; one Peal reads that analytics does not follow yet says
-  its counts are to come. It names the platforms this server counts
+  live nowhere. Each channel the post went out on is a row, named as its
+  card is (`channelNamed`), whose state is `countsRowsOf`
+  (`#analytics/post-counts.ts`, tested): its counts and when they were
+  read, or why there are none. Counts are promised only within
+  `firstReadWithin` of going live, never on a story; why reads ended
+  comes from what the page holds (the window, `removedAt`, a channel
+  gone), as the contract says only that they did. The readings chart
+  draws its lines in colours of 3:1 or more, three of them dashed
+  (`readingLines`), never lavender or yellow. It names the platforms this server counts
   from its capabilities (`GET …/channels/capabilities`,
   `analytics.perPost`: `countedOn`), never from the contract's
   `countedPlatforms` alone: X is counted only where `X_ANALYTICS` is on.
-  It falls back on the list when it may not read the capabilities.
+  When it may not read the capabilities, it promises no count, and names
+  as uncounted only the platforms Peal has no reader for.
 - The composer's parts are `FollowUpParts` (`components/posts/
   follow-up-parts.tsx`, state in `#posts/parts.ts`): each part its own
   text, media and wait, checked against each selected channel as a post

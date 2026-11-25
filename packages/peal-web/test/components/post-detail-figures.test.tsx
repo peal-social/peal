@@ -1,10 +1,12 @@
 import { RegistryProvider } from "@effect/atom-react";
 import { describe, expect, it } from "@effect/vitest";
-import { DateTime } from "effect";
+import { DateTime, Duration } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { NextIntlClientProvider } from "next-intl";
+import { Forbidden, InvalidRequest } from "peal-contract";
 import type {
   Permission,
+  Platform,
   Post,
   PostAnalytics,
   PostTarget,
@@ -22,9 +24,11 @@ import { workspaceTags } from "#tags/atoms.ts";
 
 // A published post's own page, as a member opens it from the posts list,
 // the calendar or a notification: the figures each platform reported for
-// it, channel by channel, beside how it went out.
+// it, channel by channel, beside how it went out. The page reads the clock,
+// so the post's times are set from it; exact dates are the view's tests'.
 
-const utc = (iso: string) => DateTime.makeUnsafe(iso);
+const ago = (duration: Duration.Duration) =>
+  DateTime.subtractDuration(DateTime.nowUnsafe(), duration);
 
 const workspaceId = "019ab000-0000-7000-8000-0000000000a1";
 const postId = "019ab000-0000-7000-8000-000000000001";
@@ -93,9 +97,13 @@ const target = (
   ...fields,
 });
 
-const published = (id: string, channelId: string) =>
+const published = (
+  id: string,
+  channelId: string,
+  wentOut: Duration.Duration = Duration.days(1)
+) =>
   target(id, channelId, {
-    publishedAt: utc("2026-11-23T11:00:00Z"),
+    publishedAt: ago(wentOut),
     status: "published",
   });
 
@@ -120,7 +128,7 @@ const postOn = (
   outcome,
   queueId: null,
   recyclingId: null,
-  schedule: { at: utc("2026-11-23T11:00:00Z"), timeZone: "Europe/Paris" },
+  schedule: { at: ago(Duration.days(1)), timeZone: "Europe/Paris" },
   scheduledBy: null,
   scheduledVia: null,
   shortenLinks: false,
@@ -129,51 +137,32 @@ const postOn = (
   targets,
 });
 
-// What analytics read of the Mastodon target: three readings, the last a
-// day after it went out, and no longer read.
+const metrics = {
+  clicks: null,
+  impressions: null,
+  likes: 42,
+  quotes: 1,
+  reach: null,
+  replies: 5,
+  reposts: 9,
+  saves: null,
+};
+
+// What analytics read of the Mastodon target, a day after it went out:
+// two readings, and still read.
 const read: TargetMetrics = {
   channelId: mastodon.id,
-  collecting: false,
-  lastCollectedAt: utc("2026-11-24T11:00:00Z"),
-  latest: {
-    clicks: null,
-    impressions: null,
-    likes: 42,
-    quotes: 1,
-    reach: null,
-    replies: 5,
-    reposts: 9,
-    saves: null,
-  },
+  collecting: true,
+  lastCollectedAt: ago(Duration.hours(1)),
+  latest: metrics,
   permalink: "https://social.example/@fieldnotes/113000000000000001",
-  publishedAt: utc("2026-11-23T11:00:00Z"),
+  publishedAt: ago(Duration.days(1)),
   snapshots: [
     {
-      collectedAt: utc("2026-11-23T12:00:00Z"),
-      metrics: {
-        clicks: null,
-        impressions: null,
-        likes: 8,
-        quotes: 0,
-        reach: null,
-        replies: 1,
-        reposts: 2,
-        saves: null,
-      },
+      collectedAt: ago(Duration.hours(23)),
+      metrics: { ...metrics, likes: 8, quotes: 0, replies: 1, reposts: 2 },
     },
-    {
-      collectedAt: utc("2026-11-24T11:00:00Z"),
-      metrics: {
-        clicks: null,
-        impressions: null,
-        likes: 42,
-        quotes: 1,
-        reach: null,
-        replies: 5,
-        reposts: 9,
-        saves: null,
-      },
-    },
+    { collectedAt: ago(Duration.hours(1)), metrics },
   ],
   targetId: "019ab000-0000-7000-8000-0000000000b1",
 };
@@ -184,28 +173,35 @@ const everyRole: readonly Permission[] = [
   "post:read",
 ];
 
+// This server's capabilities: counts on Mastodon, Bluesky and LinkedIn
+// pages.
+const capabilitiesOf = (platforms: readonly Platform[]) =>
+  platforms.map((platform) => ({
+    analytics: { accountNumbers: [], perPost: true, postCounts: [] },
+    platform,
+  }));
+
 const render = async ({
-  analytics,
+  analytics = AsyncResult.success({ postId, targets: [read] }),
+  capabilities = AsyncResult.success(
+    capabilitiesOf(["mastodon", "bluesky", "linkedin"])
+  ),
   locale = "en",
   permissions = everyRole,
   post,
 }: {
-  readonly analytics: PostAnalytics;
+  readonly analytics?: AsyncResult.AsyncResult<PostAnalytics, unknown>;
+  readonly capabilities?: AsyncResult.AsyncResult<unknown, unknown>;
   readonly locale?: "en" | "fr";
   readonly permissions?: readonly Permission[];
   readonly post: Post;
 }) =>
   renderToStaticMarkup(
-    // Everything the page reads, already answered, so nothing is fetched;
-    // the capabilities could not be read, so the page names every
-    // platform Peal has a reader for.
+    // Everything the page reads, already answered, so nothing is fetched.
     <RegistryProvider
       initialValues={[
-        [postAnalytics(workspaceId, postId), AsyncResult.success(analytics)],
-        [
-          platformCapabilities(workspaceId),
-          AsyncResult.fail({ _tag: "Forbidden" }),
-        ],
+        [postAnalytics(workspaceId, postId), analytics],
+        [platformCapabilities(workspaceId), capabilities],
         [postAttempts(workspaceId, postId), AsyncResult.success([])],
         [workspaceTags(workspaceId), AsyncResult.success([])],
         [workspaceQueues(workspaceId), AsyncResult.success([])],
@@ -238,83 +234,53 @@ const figuresOf = (html: string): string => {
     : html.slice(start, html.indexOf("</section>", start));
 };
 
+const onMastodon = postOn([published(read.targetId, mastodon.id)], "published");
+
 describe(PostDetail, () => {
   it("shows the figures each platform reported for a published post", async () => {
-    const html = await render({
-      analytics: { postId, targets: [read] },
-      post: postOn([published(read.targetId, mastodon.id)], "published"),
-    });
-
-    const figures = figuresOf(html);
+    const figures = figuresOf(await render({ post: onMastodon }));
 
     expect(figures).toContain(">How it did<");
-    expect(figures).toContain("@fieldnotes@social.example");
+    expect(figures).toContain(">@fieldnotes@social.example on Mastodon</h3>");
     expect(figures).toContain(">Likes<");
     expect(figures).toContain(">42<");
   });
 
   it("leaves out a figure the platform does not give, never as 0", async () => {
-    const figures = figuresOf(
-      await render({
-        analytics: { postId, targets: [read] },
-        post: postOn([published(read.targetId, mastodon.id)], "published"),
-      })
-    );
+    const figures = figuresOf(await render({ post: onMastodon }));
 
     expect(figures).toContain(">Reposts<");
     expect(figures).toContain(">9<");
     expect(figures).not.toContain(">Impressions<");
   });
 
-  it("says when the figures were read, and when they are no longer", async () => {
+  it("says counts come on a channel the post went out on minutes ago", async () => {
     const figures = figuresOf(
       await render({
-        analytics: { postId, targets: [read] },
-        post: postOn([published(read.targetId, mastodon.id)], "published"),
-      })
-    );
-
-    expect(figures).toMatch(/Read Nov 24, 2026/u);
-    expect(figures).toContain(
-      "No longer read: posts are followed for 30 days."
-    );
-  });
-
-  it("says when the figures come, before the first read", async () => {
-    const figures = figuresOf(
-      await render({
-        analytics: { postId, targets: [] },
-        post: postOn([published(read.targetId, mastodon.id)], "published"),
-      })
-    );
-
-    expect(figures).toContain(">How it did<");
-    expect(figures).toContain("within the hour after a post goes live");
-  });
-
-  it("names a channel published since the last read as not read yet", async () => {
-    const figures = figuresOf(
-      await render({
-        analytics: { postId, targets: [read] },
         post: postOn(
           [
             published(read.targetId, mastodon.id),
-            published("019ab000-0000-7000-8000-0000000000b2", bluesky.id),
+            published(
+              "019ab000-0000-7000-8000-0000000000b2",
+              bluesky.id,
+              Duration.minutes(5)
+            ),
           ],
           "published"
         ),
       })
     );
 
-    expect(figures).toContain(">42<");
-    expect(figures).toContain("fieldnotes.bsky.example");
-    expect(figures).toContain("Not read yet");
+    expect(figures).toContain(">fieldnotes.bsky.example on Bluesky</h3>");
+    expect(figures).toContain(
+      "Counts come within the hour after the post goes live."
+    );
+    expect(figures).not.toContain("30 days");
   });
 
-  it("says a platform reports no figures for the post", async () => {
+  it("says on the channel's own row that its platform gives no counts", async () => {
     const figures = figuresOf(
       await render({
-        analytics: { postId, targets: [read] },
         post: postOn(
           [
             published(read.targetId, mastodon.id),
@@ -325,13 +291,14 @@ describe(PostDetail, () => {
       })
     );
 
-    expect(figures).toContain(">42<");
-    expect(figures).toContain("Counts are not available on LinkedIn profiles:");
+    expect(figures).toContain(">Ada Example on LinkedIn</h3>");
+    expect(figures).toContain(
+      "LinkedIn gives Peal no counts for a profile&#x27;s posts."
+    );
   });
 
   it("shows a partly published post's figures, and the failure where it failed", async () => {
     const html = await render({
-      analytics: { postId, targets: [read] },
       post: postOn(
         [published(read.targetId, mastodon.id), failed],
         "partiallyPublished"
@@ -349,7 +316,7 @@ describe(PostDetail, () => {
 
   it("shows no figures where the post went out nowhere: its failure is what shows", async () => {
     const html = await render({
-      analytics: { postId, targets: [] },
+      analytics: AsyncResult.success({ postId, targets: [] }),
       post: postOn([failed], "failed"),
     });
 
@@ -360,26 +327,75 @@ describe(PostDetail, () => {
 
   it("shows no figures to a member who may not read analytics", async () => {
     const html = await render({
-      analytics: { postId, targets: [read] },
       permissions: ["channel:read", "post:read"],
-      post: postOn([published(read.targetId, mastodon.id)], "published"),
+      post: onMastodon,
     });
 
     expect(html).not.toContain("How it did");
     expect(html).not.toContain(">42<");
   });
 
-  it("shows them in the reader's language", async () => {
+  it("holds a row's place for each channel while the figures load", async () => {
     const figures = figuresOf(
       await render({
-        analytics: { postId, targets: [read] },
-        locale: "fr",
-        post: postOn([published(read.targetId, mastodon.id)], "published"),
+        analytics: AsyncResult.initial(true),
+        post: onMastodon,
       })
     );
 
-    expect(figures).toContain("@fieldnotes@social.example");
+    expect(figures).toContain('aria-busy="true"');
+    expect(figures).toContain("Loading the post’s counts…");
+    // The read row's chart has its place already.
+    expect(figures).toContain("h-64");
+  });
+
+  it("offers to try again when the figures could not be loaded", async () => {
+    const figures = figuresOf(
+      await render({
+        analytics: AsyncResult.fail(new InvalidRequest({ issues: [] })),
+        post: onMastodon,
+      })
+    );
+
+    expect(figures).toContain("The post’s counts could not be loaded.");
+    expect(figures).toContain(">Try again<");
+  });
+
+  it("says a refusal without offering to try again", async () => {
+    const figures = figuresOf(
+      await render({
+        analytics: AsyncResult.fail(
+          new Forbidden({ permission: "analytics:read" })
+        ),
+        post: onMastodon,
+      })
+    );
+
+    expect(figures).toContain("You can&#x27;t see this post&#x27;s counts.");
+    expect(figures).not.toContain(">Try again<");
+  });
+
+  it("promises no count when the server's capabilities could not be read", async () => {
+    const figures = figuresOf(
+      await render({
+        analytics: AsyncResult.success({ postId, targets: [] }),
+        capabilities: AsyncResult.fail(new Forbidden({})),
+        post: postOn(
+          [published(read.targetId, mastodon.id, Duration.minutes(5))],
+          "published"
+        ),
+      })
+    );
+
+    expect(figures).toContain("No counts have been read yet.");
+    expect(figures).not.toContain("within the hour");
+  });
+
+  it("shows them in the reader's language", async () => {
+    const figures = figuresOf(await render({ locale: "fr", post: onMastodon }));
+
+    expect(figures).toContain(">Ce qu’elle a donné<");
+    expect(figures).toContain(">@fieldnotes@social.example sur Mastodon</h3>");
     expect(figures).toContain(">42<");
-    expect(figures).toContain("Relevée le 24 nov. 2026");
   });
 });
