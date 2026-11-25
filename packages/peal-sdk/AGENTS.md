@@ -122,9 +122,30 @@
   its tsconfig expects (TypeScript 7 removed its module resolution). Rust's
   crate uses rustls, which needs no OpenSSL. Go's module is
   `github.com/peal-social/peal/packages/peal-sdk/go`.
-- Each SDK is released alone, by a tag `sdk-<language>-v<version>` on a
-  commit whose `scripts/languages.ts` gives that version
-  (`scripts/release.ts` refuses another). `sdk-release.yml` builds it from
+- Each SDK is released alone, by a tag `sdk-<language>-v<release>` on a
+  commit whose `scripts/languages.ts` gives that release
+  (`scripts/release-tag.ts` refuses another). A release is SemVer, a
+  numbered `alpha`, `beta` or `rc` for a prerelease (`0.4.0-beta.1`), in
+  the tag and in `languages.ts`; each language's `version`, which the
+  generator writes and the registry gets, is its registry's spelling of it
+  (`scripts/versions.ts`, tested): PEP 440's normal form for PyPI
+  (`0.4.0b1`), dots for RubyGems (`0.4.0.beta.1`, as a hyphen would become
+  `.pre.`), SemVer for the others. The .NET project sets its assembly's
+  versions to the package's, which the compiler refuses for a prerelease
+  (CS7034): `Peal.Custom.props` gives them the release alone (`0.4.0`),
+  and the package keeps `0.4.0-beta.1`. npm refuses a prerelease without a
+  dist-tag: `release.ts` gives `latest` while `prereleasesAreLatest` holds
+  (the beta line is the only one that speaks the live API), `next` after.
+  The SDKs stay on `0.4.0-beta.N` until general availability; the
+  README's "Release day" is the order of the first beta's release and how
+  each registry retires 0.1 to 0.3. Go's `go.mod` keeps
+  `retract [v0.1.0, v0.3.1]` (`finish.ts`): Go reads retractions from the
+  highest release's go.mod, never a prerelease's, so the retraction-only
+  v0.3.1 tag carries them until a release above it does. The install line
+  of each README (`finish.ts`), the docs' SDKs page and quickstart and the
+  table of `README.md` come from `scripts/install.ts`, one exact version
+  each, and `scripts/install.test.ts` fails on a page that shows another:
+  a version bump changes the docs in the same change. `sdk-release.yml` builds it from
   that commit and publishes it in the `sdk-release` environment: trusted
   publishing (OIDC) for npm, PyPI, RubyGems, NuGet and crates.io, no token
   stored; Maven Central's portal token and signing key from secrets (the

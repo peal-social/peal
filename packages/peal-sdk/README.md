@@ -145,6 +145,135 @@ read-only copy of [`php`](php): `sdk-php-mirror.yml` updates it whenever
 not the repository: each update waits for the environment's reviewers, and
 the environment lets `main` deploy beside the `sdk-*` tags.
 
+## Release day: 0.4.0-beta.1
+
+Releases 0.1 to 0.3 call the API as it was before `/api/v1`, and the SDKs
+send their requests to production by default: nothing of 0.4.0-beta.1 is
+published before production answers the new API. Follow these steps in
+order, on one day.
+
+### 1. Production first
+
+Release production (`packages/peal-infra/ansible`'s README), then check it
+answers the new API with a workspace API key:
+
+```sh
+curl -sS https://app.peal.social/api/health
+curl -sS https://app.peal.social/api/v1/credential -H "Authorization: Bearer $PEAL_API_KEY"
+```
+
+The second answers the key's credential (`"_tag": "apiKey"`). Stop here if
+it does not.
+
+### 2. Record the release
+
+From a branch of `main`, with the day's date (2026-12-08 stands for it):
+
+```sh
+bun nx run peal-sdk:spec
+cd packages/peal-sdk
+bun scripts/compat.ts --release --date 2026-12-08 --title "The API under /api/v1, as the SDKs' 0.4.0-beta.1 call it"
+```
+
+It adds the day to the API's changelog (`peal-contract`'s
+`api-changelog.json`), makes `openapi.json` the released document and
+empties `released/accepted-changes.json`. The latest entry's day is the
+API's version, which every SDK sends in `Peal-Version`, so regenerate and
+check again: `bun run sdk:generate`, `bun run sdk:build`, `bun run sdk:test`,
+`bun run test`. Change the docs that name the release the SDKs were
+generated from ("their release 0.3.0 today" in
+`developers/conventions/versioning.mdx`, and the changelog's line in
+`developers/cli/index.mdx`'s sample output, in English and French). Merge
+it. Production keeps answering the old version, and counts the SDKs' new
+one as `unknown` in `peal.api.versions`, until its next release: release
+production again once it is merged.
+
+### 3. Tag each SDK
+
+Tag the merge commit of step 2, three tags per push at most (GitHub starts
+no workflow for a push of more). Each tag starts one run of `SDK release`,
+whose publishing job waits for the `sdk-release` environment's reviewer:
+
+```sh
+git fetch origin
+commit=$(git rev-parse origin/main)
+for language in node python go; do git tag "sdk-$language-v0.4.0-beta.1" "$commit"; done
+git push origin sdk-node-v0.4.0-beta.1 sdk-python-v0.4.0-beta.1 sdk-go-v0.4.0-beta.1
+# once those three runs are green:
+for language in rust dotnet ruby; do git tag "sdk-$language-v0.4.0-beta.1" "$commit"; done
+git push origin sdk-rust-v0.4.0-beta.1 sdk-dotnet-v0.4.0-beta.1 sdk-ruby-v0.4.0-beta.1
+# then, with the SDK PHP mirror's run for that commit approved and green:
+for language in java php; do git tag "sdk-$language-v0.4.0-beta.1" "$commit"; done
+git push origin sdk-java-v0.4.0-beta.1 sdk-php-v0.4.0-beta.1
+```
+
+| Tag                        | What its run does                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| `sdk-node-v0.4.0-beta.1`   | `npm publish --provenance --tag latest`: `npm install peal-sdk` then gets the beta                 |
+| `sdk-python-v0.4.0-beta.1` | Uploads the wheel and the source of `peal-sdk` 0.4.0b1 to PyPI                                     |
+| `sdk-go-v0.4.0-beta.1`     | Pushes the tag `packages/peal-sdk/go/v0.4.0-beta.1`, then asks Go's module proxy for it            |
+| `sdk-rust-v0.4.0-beta.1`   | `cargo publish` of `peal-sdk` 0.4.0-beta.1                                                         |
+| `sdk-dotnet-v0.4.0-beta.1` | Pushes `Peal.0.4.0-beta.1.nupkg` to NuGet                                                          |
+| `sdk-ruby-v0.4.0-beta.1`   | Pushes `peal-0.4.0.beta.1.gem` to RubyGems                                                         |
+| `sdk-java-v0.4.0-beta.1`   | Signs and deploys `social.peal:peal:0.4.0-beta.1` to Maven Central, waiting until Central shows it |
+| `sdk-php-v0.4.0-beta.1`    | Pushes the tag `v0.4.0-beta.1` to `peal-social/peal-php`, which Packagist reads                    |
+
+Go first, as its retraction (step 5) needs its tag. Java last: Central's
+publishing is the slowest, and a version there can never change.
+
+### 4. Check each registry
+
+Each must show 0.4.0-beta.1 in its spelling (NuGet and the Go proxy can
+take minutes):
+
+```sh
+npm view peal-sdk dist-tags                    # latest: '0.4.0-beta.1'
+curl -s https://pypi.org/pypi/peal-sdk/0.4.0b1/json | jq -r .info.version
+curl -s https://proxy.golang.org/github.com/peal-social/peal/packages/peal-sdk/go/@v/v0.4.0-beta.1.info
+gem list peal --remote --exact --prerelease    # peal (0.4.0.beta.1)
+curl -s https://repo1.maven.org/maven2/social/peal/peal/maven-metadata.xml
+curl -s https://repo.packagist.org/p2/peal-social/peal.json | jq -r '.packages["peal-social/peal"][].version'
+curl -s https://api.nuget.org/v3-flatcontainer/peal/index.json
+curl -s -A peal-release-check https://crates.io/api/v1/crates/peal-sdk/versions | jq -r '.versions[].num'
+```
+
+Then, in an empty folder per language, run the install command of the
+table at the top and the docs' first example (`credential.get`, on the SDKs
+page) with `PEAL_API_KEY` set: each prints the key's credential.
+
+### 5. Retire 0.1 to 0.3
+
+With every registry showing the beta, retire the old releases. The message,
+wherever a registry takes one:
+
+```text
+Calls an API that is gone. Install 0.4.0-beta.1 or later: https://docs.peal.social/developers/sdks
+```
+
+| Registry      | Action                                                                                                                                                                                                                         | What it does                                                                                                                                                                                                                                                                                                                                              | Undo                                                                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| npm           | `npm login`, then `npm deprecate 'peal-sdk@<0.4.0-beta.1' "<message>"` (the range takes `0.0.0-stage` too)                                                                                                                     | Deprecates: every install of those versions prints the message. Nothing is removed. Unpublishing is not used: past 72 hours it needs no dependents, under 300 downloads a week and one owner, and a version number unpublished can never be used again                                                                                                    | `npm deprecate 'peal-sdk@<0.4.0-beta.1' ""`                                                                                                         |
+| PyPI          | On pypi.org, Manage project, Releases: for 0.1.0, 0.2.0 and 0.3.0, Options, Yank, with the message as the reason                                                                                                               | Yanks: installers skip them unless pinned with `==`. A plain `pip install peal-sdk` then stops with "Could not find a version that satisfies the requirement" and lists 0.4.0b1; `uv add peal-sdk` installs 0.4.0b1                                                                                                                                       | PEP 592 says a yank may be rescinded; PyPI's yanking page does not describe it: unverified                                                          |
+| RubyGems      | `gem yank peal --version 0.3.0`, then 0.2.0 and 0.1.0, with a key that may yank (and the one-time code)                                                                                                                        | Removes each version from installs and the index. Takes no message. A plain `gem install peal` then finds nothing ("Could not find a valid gem"), as RubyGems skips prereleases without `--pre` or a version                                                                                                                                              | None documented, and a yanked version number can never be pushed again                                                                              |
+| NuGet         | On nuget.org, Manage package, `Peal`: in Listing, unlist 0.1.0, 0.2.0 and 0.3.0; in Deprecation, select them, reason Legacy, the message as the custom message                                                                 | Unlisted versions leave search, and `dotnet add package Peal` then fails with "There are no stable versions available, 0.4.0-beta.1 is the best available. Consider adding the --prerelease option". A project naming one still restores it. NuGet shows the message on nuget.org only                                                                    | List them again in Listing; removing a deprecation is not described in NuGet's page: unverified                                                     |
+| crates.io     | `cargo login` with a token that may yank, then `cargo yank peal-sdk --version 0.1.0`, 0.2.0 and 0.3.0                                                                                                                          | Yanks: no new project gets them, and lock files that hold one keep working. Takes no message. `cargo add peal-sdk` then adds 0.4.0-beta.1, the latest version left                                                                                                                                                                                        | `cargo yank peal-sdk --version 0.3.0 --undo`                                                                                                        |
+| Maven Central | Nothing: Central's FAQ says a released component cannot be altered, and names no way to remove or deprecate one                                                                                                                | 0.1.0 to 0.3.1 stay. Maven and Gradle builds name a version, so nobody gets one without asking for it                                                                                                                                                                                                                                                     | Not applicable                                                                                                                                      |
+| Go            | `git tag packages/peal-sdk/go/v0.3.1 'sdk-go-v0.4.0-beta.1^{commit}'` and `git push origin packages/peal-sdk/go/v0.3.1`, then fetch `https://proxy.golang.org/github.com/peal-social/peal/packages/peal-sdk/go/@v/v0.3.1.info` | v0.3.1, on the beta's commit, is the highest release, so Go reads its go.mod's `retract [v0.1.0, v0.3.1]` (which `scripts/finish.ts` writes): `go get` and `@latest` skip v0.1.0 to v0.3.1 and pick v0.4.0-beta.1, and a module that requires one warns with the directive's comment. The proxy keeps every version forever                               | A later release whose go.mod drops the directive (Go reads retractions from the latest release): not tested                                         |
+| Packagist     | `git push git@github.com:peal-social/peal-php.git --delete refs/tags/v0.1.0 refs/tags/v0.2.0 refs/tags/v0.3.0`, then Update on the package's page                                                                              | Composer knows the versions from the mirror's tags. With `v0.4.0-beta.1` alone, a plain `composer require peal-social/peal` stops with "Could not find a version of package peal-social/peal matching your minimum-stability (stable)". Packagist does not document dropping a deleted tag's version: check `repo.packagist.org/p2/peal-social/peal.json` | Push the tags again at their commits (v0.1.0 `bf123982f1c2`, v0.2.0 `22a9c05eb3ad`, v0.3.0 `f3acbdeb43c2`), or split them again from `sdk-php-v0.x` |
+
+Installs from a lock file that names a yanked or deleted version may fail on
+RubyGems and Packagist: those releases call an API that is gone anyway.
+
+For Go, check what a new module gets:
+
+```sh
+GOPROXY=https://proxy.golang.org go list -m github.com/peal-social/peal/packages/peal-sdk/go@latest
+GOPROXY=https://proxy.golang.org go list -m -retracted -versions github.com/peal-social/peal/packages/peal-sdk/go
+```
+
+The first gives v0.4.0-beta.1, the second lists v0.1.0 to v0.3.1 as
+retracted.
+
 ## License
 
 The SDKs are licensed under the [Apache License 2.0](LICENSE), with the
