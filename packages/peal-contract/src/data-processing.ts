@@ -1013,8 +1013,8 @@ export const processingRegister: readonly ProcessingCategory[] = [
       fr: `${years(p.legalConnections.years).fr} à compter de chaque connexion, que le compte soit fermé ou non`,
     },
     source: {
-      en: "Your requests that create, change or delete posts or media",
-      fr: "Vos requêtes qui créent, modifient ou suppriment des publications ou des médias",
+      en: "Your requests that create, change or delete content: posts, articles, comments, messages, approvals, the rules that publish for you, and media files, uploaded or made by the assistant",
+      fr: "Vos requêtes qui créent, modifient ou suppriment un contenu : publications, articles, commentaires, messages, approbations, les règles qui publient pour vous, et fichiers de médias, envoyés ou créés par l’assistant",
     },
   },
   {
