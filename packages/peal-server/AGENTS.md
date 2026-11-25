@@ -310,7 +310,17 @@ and no socket, for tests.
   `DatabaseUnavailable` (503).
 - `Authentication` tries a bearer token (an OAuth access token issued for
   `PUBLIC_URL/api`, or a workspace API key starting with `peal_`), then the
-  session cookie, and provides `CurrentPrincipal`. A cookie request that
+  session cookie, and provides `CurrentPrincipal`. Effect tries the next
+  scheme whenever one fails, so the session scheme refuses (401) a request
+  that presents a token (`Bearer`, or `DPoP`, which the API never took, in
+  any case), which reaching it means was refused: a key that stops working
+  never acts as the session sent beside it. An `Authorization` header that
+  presents none (empty, a scheme with no token, a proxy's `Basic`,
+  `Negotiate`, `NTLM` or `Digest` sign-in) leaves the cookie to decide. A
+  proxy must not pass its own bearer token upstream: the self-hosting docs
+  say so. This rule is `Authentication`'s: Better Auth's own routes under
+  `/api/auth` take the session cookie alone and ignore `Authorization`, and
+  the staff console (`StaffAccess`) reads the session alone. A cookie request that
   changes something needs an `Origin` of `PUBLIC_URL` or `TRUSTED_ORIGINS`,
   and reads the session fresh from the database.
 - A request's workspace never comes from its path. `WorkspaceAccess`
