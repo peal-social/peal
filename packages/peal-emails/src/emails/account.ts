@@ -6,6 +6,7 @@ import type {
   ContractRequestOutcome,
   TwoStepChange,
 } from "../catalog/vocabulary.ts";
+import type { HeaderMotion } from "../components/email-header.tsx";
 import { fill, instantIn, moneyIn } from "../format.ts";
 import type { Locale } from "../locale.ts";
 import { nameForMail } from "../names.ts";
@@ -291,6 +292,16 @@ const wordsOf = (email: AccountEmail, catalog: EmailCatalog): Words =>
       ]),
     }),
   });
+
+// The first emails someone gets from Peal: the header's glow moves in them.
+const welcoming: ReadonlySet<AccountEmail["_tag"]> = new Set([
+  "Invitation",
+  "VerifyEmail",
+]);
+
+/** Whether an account email's header moves: still in most (DESIGN.md, Email). */
+export const accountMotion = ({ _tag }: AccountEmail): HeaderMotion =>
+  welcoming.has(_tag) ? "once" : "still";
 
 /** An account email's content, in its reader's language. */
 export const accountContent = (email: AccountEmail): MessageContent => {

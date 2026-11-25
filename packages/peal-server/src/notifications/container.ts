@@ -39,18 +39,23 @@ export const MailerLive = Layer.unwrap(
   })
 );
 
+// Writes emails, with the server's letterhead.
+const EmailRendererLive = ReactEmailRenderer.pipe(
+  Layer.provide(PublicAppLinks)
+);
+
 /**
  * The notifications context: account emails, sent through MailerLive, which
  * it shares with the notices below.
  */
 export const NotificationsLive = SendAuthEmail.layer.pipe(
   Layer.provideMerge(MailerLive),
-  Layer.provide([ReactEmailRenderer, IdsLive])
+  Layer.provide([EmailRendererLive, IdsLive])
 );
 
 // The adapters behind the notices' ports.
 const NoticeAdaptersLive = Layer.mergeAll(
-  ReactEmailRenderer,
+  EmailRendererLive,
   DrizzleNoticeLog,
   HmacDigestLinks,
   DrizzleNoticeStore,
@@ -91,7 +96,7 @@ export const NoticesLive = Layer.mergeAll(
 export const WeeklyDigestsLive = SendWeeklyDigests.layer.pipe(
   Layer.provide(
     Layer.mergeAll(
-      ReactEmailRenderer,
+      EmailRendererLive,
       DrizzlePreferenceStore,
       PublicAppLinks,
       ContextDigestSources,

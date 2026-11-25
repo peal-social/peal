@@ -3,7 +3,7 @@ import { Text } from "react-email";
 
 import { bodyText, colors, radii } from "./theme.ts";
 
-/** What an email sets apart in a box under its body. */
+/** What an email sets apart under its body: DESIGN.md's `email-callout`. */
 export const Highlight = ({
   children,
 }: {
@@ -12,9 +12,9 @@ export const Highlight = ({
   <Text
     style={{
       ...bodyText,
-      border: `2px solid ${colors.ink}`,
+      backgroundColor: colors.quiet,
       borderRadius: radii.control,
-      fontWeight: 600,
+      fontWeight: 500,
       margin: "0 0 24px",
       padding: "12px 16px",
     }}

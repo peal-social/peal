@@ -3,22 +3,13 @@ import { Text } from "react-email";
 
 import { colors, smallText } from "./theme.ts";
 
-/** What an email says last: why it came, who signs it. */
+/** Small, muted text: an email's foot, a digest's figures. */
 export const FinePrint = ({
   children,
-  last = false,
 }: {
   readonly children: ReactNode;
-  /** Whether nothing follows it. */
-  readonly last?: boolean;
 }): ReactElement => (
-  <Text
-    style={{
-      ...smallText,
-      color: colors.muted,
-      margin: last ? 0 : "0 0 24px",
-    }}
-  >
+  <Text style={{ ...smallText, color: colors.muted, margin: "0 0 16px" }}>
     {children}
   </Text>
 );

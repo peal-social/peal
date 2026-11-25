@@ -14,6 +14,8 @@ export type {
 
 export type { WeeklyDigestEmail } from "./emails/digest-content.ts";
 
+export type { Letterhead } from "./letterhead.ts";
+
 export type { Locale } from "./locale.ts";
 
 export {

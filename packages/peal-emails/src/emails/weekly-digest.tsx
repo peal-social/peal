@@ -1,39 +1,37 @@
 import type { ReactElement } from "react";
-import { Link, Section, Text } from "react-email";
+import { Link, Text } from "react-email";
 
 import { catalogs } from "../catalog/index.ts";
 import { ActionLink } from "../components/action-link.tsx";
 import { EmailFrame } from "../components/email-frame.tsx";
+import { Eyebrow } from "../components/eyebrow.tsx";
 import { FinePrint } from "../components/fine-print.tsx";
+import { ListRows } from "../components/list-rows.tsx";
+import { Panel } from "../components/panel.tsx";
 import { Paragraph } from "../components/paragraph.tsx";
-import {
-  bodyText,
-  colors,
-  linkStyle,
-  radii,
-  smallText,
-} from "../components/theme.ts";
+import { StatRows } from "../components/stat-rows.tsx";
+import { colors, linkStyle, smallText } from "../components/theme.ts";
+import { Title } from "../components/title.tsx";
+import type { Letterhead } from "../letterhead.ts";
 import type { Locale } from "../locale.ts";
-import type { DigestContent, DigestPart } from "./digest-content.ts";
+import { digestPreview } from "./digest-content.ts";
+import type {
+  DigestContent,
+  DigestList,
+  DigestPart,
+} from "./digest-content.ts";
 
-const DigestList = ({
+const DigestPosts = ({
   heading,
-  lines,
+  list: { more, rows },
 }: {
   readonly heading: string;
-  readonly lines: readonly string[];
+  readonly list: DigestList;
 }): ReactElement | null =>
-  lines.length === 0 ? null : (
+  rows.length === 0 ? null : (
     <>
-      <Text style={{ ...bodyText, fontWeight: 600, margin: "0 0 4px" }}>
-        {heading}
-      </Text>
-      <ul style={{ ...bodyText, margin: "0 0 12px", paddingLeft: "20px" }}>
-        {/* Two lines may read alike; none moves. */}
-        {lines.map((line, position) => (
-          <li key={`${position}`}>{line}</li>
-        ))}
-      </ul>
+      <Eyebrow>{heading}</Eyebrow>
+      <ListRows more={more} rows={rows} />
     </>
   );
 
@@ -44,55 +42,55 @@ const DigestWorkspacePart = ({
   readonly content: DigestContent;
   readonly part: DigestPart;
 }): ReactElement => (
-  <Section
-    style={{
-      border: `1px solid ${colors.rule}`,
-      borderRadius: radii.control,
-      margin: "0 0 24px",
-      padding: "16px",
-    }}
-  >
-    <Text
-      style={{
-        ...bodyText,
-        fontSize: "18px",
-        fontWeight: 600,
-        margin: "0 0 8px",
-      }}
-    >
-      {part.name}
-    </Text>
-    <Text style={{ ...bodyText, margin: "0 0 12px" }}>{part.counts}</Text>
+  <Panel>
+    <Title level={2}>{part.name}</Title>
+    <StatRows rows={part.counts} />
     {part.figures.map((figure) => (
-      <Text
-        key={figure}
-        style={{ ...smallText, color: colors.muted, margin: "0 0 12px" }}
-      >
-        {figure}
-      </Text>
+      <FinePrint key={figure}>{figure}</FinePrint>
     ))}
-    <DigestList heading={content.wentOutHeading} lines={part.wentOut} />
-    <DigestList heading={content.plannedHeading} lines={part.planned} />
-    <Text style={{ ...smallText, margin: 0 }}>
-      <Link href={part.calendarUrl} style={linkStyle(colors.ink)}>
+    <DigestPosts heading={content.wentOutHeading} list={part.wentOut} />
+    <DigestPosts heading={content.plannedHeading} list={part.planned} />
+    <Text style={{ ...smallText, margin: "0 0 16px" }}>
+      <Link href={part.calendarUrl} style={linkStyle(colors.brandText)}>
         {part.calendar}
       </Link>
     </Text>
-  </Section>
+  </Panel>
 );
 
 /** The weekly digest's template. */
 export const WeeklyDigest = ({
   content,
+  letterhead,
   locale,
 }: {
   readonly content: DigestContent;
+  readonly letterhead: Letterhead;
   readonly locale: Locale;
 }): ReactElement => {
   const { layout } = catalogs[locale];
 
   return (
-    <EmailFrame locale={locale}>
+    <EmailFrame
+      footer={
+        <>
+          <FinePrint>
+            {content.why.before}
+            <Link href={content.preferencesUrl} style={linkStyle(colors.muted)}>
+              {content.preferences}
+            </Link>
+            {content.why.after}
+          </FinePrint>
+          <FinePrint>{layout.signature}</FinePrint>
+        </>
+      }
+      letterhead={letterhead}
+      locale={locale}
+      motion="once"
+      preview={digestPreview(content)}
+      subject={content.subject}
+    >
+      <Title>{content.title}</Title>
       <Paragraph>{content.intro}</Paragraph>
       {content.parts.map((part) => (
         <DigestWorkspacePart
@@ -106,14 +104,6 @@ export const WeeklyDigest = ({
         fallback={layout.linkFallback}
         url={content.url}
       />
-      <FinePrint>
-        {content.why.before}
-        <Link href={content.preferencesUrl} style={linkStyle(colors.muted)}>
-          {content.preferences}
-        </Link>
-        {content.why.after}
-      </FinePrint>
-      <FinePrint last>{layout.signature}</FinePrint>
     </EmailFrame>
   );
 };
