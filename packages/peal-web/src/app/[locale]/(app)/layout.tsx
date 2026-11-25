@@ -12,6 +12,14 @@ import { WorkspaceAddresses } from "#components/shell/workspace-addresses.tsx";
 // behind a dynamic import, is never downloaded. Signed in, the pages name
 // their person to the tab (`TabPerson`), whose answer to the other tabs'
 // news depends on it.
+//
+// A signed-in person reads the app in the language their account keeps,
+// whatever the address or the browser's cookie says: a page opened in
+// another is sent to the same page in theirs, its query kept, before
+// anything of it renders. The layouts below do it (`toAccountLanguage`),
+// as only they know the page from their route's params. Signed out, or
+// for staff acting as someone, the address decides, then the cookie, then
+// the browser, as on every other page.
 const AppLayout = async ({ children }: LayoutProps<"/[locale]">) => {
   const me = await currentUserOrNone();
 

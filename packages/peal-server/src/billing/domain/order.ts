@@ -20,7 +20,7 @@ export type OrderId = typeof OrderIdSchema.Type;
  * `Billing.consent`). Change it with the words, so each order records what
  * was shown.
  */
-export const consentVersion = "2026-11-13";
+export const consentVersion = "2026-11-25";
 
 /**
  * What a member ordered on the billing page, before Stripe's checkout: a

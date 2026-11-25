@@ -66,25 +66,27 @@ export const signUpReturn = (
 };
 
 /**
- * The sign-in page's: on to `next` once signed in, as the password's
- * sign-in goes (the language follows), and a refusal back to the page.
+ * The sign-in page's: back to the page, marked, once signed in as after a
+ * refusal (which brings an `?error=`), as only then does the account's
+ * language show. Signed in, the page sends on to `next` where the
+ * password's sign-in goes, in the same language (`landingAddressOf`).
  * Where anyone may sign up, an address with no account gets one there
- * too, and goes on to `next` as well.
+ * too, and comes back the same way.
  */
 export const signInReturn = (
   next: string,
   localized: (href: string) => string,
   signUpOffered: boolean
 ): ProviderReturn => {
-  const errorPath = localized(marked("/login", { next }));
+  const back = localized(marked("/login", { next }));
 
   if (!signUpOffered) {
-    return { errorPath, next };
+    return { errorPath: back, next: back };
   }
 
   return {
-    errorPath,
-    next,
-    signUp: { invitationId: null, newUserPath: next },
+    errorPath: back,
+    next: back,
+    signUp: { invitationId: null, newUserPath: back },
   };
 };

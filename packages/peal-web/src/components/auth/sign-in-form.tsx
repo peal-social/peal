@@ -10,7 +10,7 @@ import type { SubmitEvent } from "react";
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";
 import type { AuthErrorKey } from "#auth/errors.ts";
-import { landingAddress } from "#auth/next-path.ts";
+import { landingAddressOf } from "#auth/next-path.ts";
 import { isOAuthRedirect } from "#auth/oauth-redirect.ts";
 import { tellOtherTabs } from "#auth/session-news.ts";
 import { expectSignIn } from "#auth/sign-in-arrival.ts";
@@ -83,19 +83,15 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
   const [leaving, setLeaving] = useState(false);
 
   // Once signed in: on to `next`, in the language the account keeps, which
-  // may not be this page's, loaded anew rather than in place. A session
-  // that ended elsewhere (expired, revoked) brought the tab here in place,
-  // with what it held for the last person: the new one starts afresh.
+  // may not be this page's (`landingAddressOf`, where a provider's
+  // sign-in lands too), loaded anew rather than in place. A session that
+  // ended elsewhere (expired, revoked) brought the tab here in place, with
+  // what it held for the last person: the new one starts afresh.
   const goNext = (answer: SignedInAnswer) => {
     tellTabsSignedIn(answer);
     setLeaving(true);
     loadAnew(
-      landingAddress(
-        next,
-        Option.getOrUndefined(localeOf(answer)),
-        locale,
-        (href, landing) => getPathname({ href, locale: landing })
-      )
+      landingAddressOf(next, Option.getOrUndefined(localeOf(answer)), locale)
     );
   };
 

@@ -70,6 +70,16 @@ describe("the CI plan", () => {
     ).toEqual({ ...none, e2e: true, server: true });
   });
 
+  it("runs Ansible's tests too for a picture the emails show, which the tunnel's test reads", () => {
+    expect(
+      plan({
+        affected: ["peal-emails", "peal-server", "peal-e2e"],
+        files: ["packages/peal-emails/src/assets/header.png"],
+        roots,
+      })
+    ).toEqual({ ...none, ansible: true, e2e: true, server: true });
+  });
+
   it("runs the SDKs for a contract change, which the project graph does not link", () => {
     expect(
       plan({

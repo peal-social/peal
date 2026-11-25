@@ -6,6 +6,7 @@ import { credentials, expect } from "e2e";
 
 import { confirmedAccount } from "./support/accounts.ts";
 import { seedChannel } from "./support/channels.ts";
+import { settled } from "./support/settled.ts";
 import { openedWorkspace } from "./support/workspaces.ts";
 
 // Every error the page reports: what it writes with console.error, and the
@@ -26,20 +27,6 @@ const errorsKept = `(() => {
   addEventListener("unhandledrejection", (event) => {
     errors.push(String(event.reason));
   });
-})()`;
-
-// Whether the page's main region has hydrated (React has taken its
-// element over) and holds nothing still loading: what a page reads in the
-// browser shows only after hydration, so a page that has its data has
-// hydrated, and reported any mismatch.
-const settled = `(() => {
-  const main = document.querySelector("main");
-
-  return (
-    main !== null &&
-    Object.keys(main).some((key) => key.startsWith("__reactFiber$")) &&
-    main.querySelector('[aria-busy="true"]') === null
-  );
 })()`;
 
 // A workspace's main pages, which a new workspace opens with nothing in it.

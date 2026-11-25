@@ -49,7 +49,7 @@ export type LegacyPaidPlan = Exclude<PaidPlan, "payAsYouGo">;
  * the server records consent to its own, and refuses another. The
  * server's `consentVersion` (`billing/domain/order.ts`) is kept equal.
  */
-export const orderConsentVersion = "2026-11-13";
+export const orderConsentVersion = "2026-11-25";
 
 /**
  * The plans an order may name. Only `payAsYouGo` is sold: the others are

@@ -15,6 +15,8 @@ use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Peal\Automations\FollowUps\Requests\NewFollowUpRule;
 use Peal\Types\FollowUpRule;
+use Peal\Types\PlatformFollowUps;
+use Peal\Core\Json\JsonDecoder;
 use Peal\Automations\FollowUps\Requests\FollowUpRuleChange;
 
 class FollowUpsClient
@@ -168,6 +170,58 @@ class FollowUpsClient
                     return null;
                 }
                 return FollowUpRule::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+     *
+     * Example:
+     * ```php
+     * $client->automations->followUps->platforms();
+     * ```
+     *
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?array<PlatformFollowUps>
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function platforms(?array $options = null): ?array
+    {
+        $options = array_merge($this->options, $options ?? []);
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/v1/automations/follow-ups/platforms",
+                    method: HttpMethod::GET,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return JsonDecoder::decodeArray($json, [PlatformFollowUps::class]); // @phpstan-ignore-line
             }
         } catch (JsonException $e) {
             throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

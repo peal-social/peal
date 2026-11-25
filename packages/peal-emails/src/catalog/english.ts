@@ -109,7 +109,7 @@ export const english: EmailCatalog = {
     subject: "Direct messages of {handle} turned off",
   },
   contractNumber:
-    "Contract number: {reference}. Give it in Cancel your contract or Withdraw from contract here, at the foot of every page, and your request is applied at once, without signing in.",
+    "Contract number: {reference}. Give it in Cancel your contract or Withdraw from contract here, at the foot of every page of the website, and your request is applied at once, without signing in.",
   contractRequest: {
     actions: { confirm: "Apply my request", open: "Open Peal" },
     content:
@@ -120,7 +120,7 @@ export const english: EmailCatalog = {
       "You receive this email because this address was given in the form to cancel a contract or withdraw from one on Peal. Keep it: it is your record of the date. If you did not send the request, ignore this email, and tell whoever runs this Peal server if it happens again.",
     outcomes: {
       business:
-        "It could not be applied: the contract was concluded by a business, with a verified VAT number, which has no right to withdraw. The contract can be cancelled instead, with Cancel your contract, at the foot of every page.",
+        "It could not be applied: the contract was concluded by a business, with a verified VAT number, which has no right to withdraw. The contract can be cancelled instead, with Cancel your contract, at the foot of every page of the website.",
       cancelled:
         "It is applied. The contract ends on {effectiveAt}. Until then the workspace keeps its plan; it then moves to the free plan, with its content, and nothing more is charged.",
       cancelledLater:
@@ -128,7 +128,7 @@ export const english: EmailCatalog = {
       confirm:
         "This address manages a contract’s billing on Peal, but the request does not give the contract number, so we must make sure it comes from you: follow the link below, within 30 days, and choose the contract. The request is then applied as of {receivedAt}, the date that counts. Nothing changes until then.",
       expired:
-        "It could not be applied: the 14 days to withdraw were over when your statement came. The contract can be cancelled instead, with Cancel your contract, at the foot of every page.",
+        "It could not be applied: the 14 days to withdraw were over when your statement came. The contract can be cancelled instead, with Cancel your contract, at the foot of every page of the website.",
       notSubscribed:
         "It could not be applied: the contract has no subscription to withdraw from.",
       nothingToCancel:
@@ -517,14 +517,14 @@ export const english: EmailCatalog = {
   },
   subscriptionRenewing: {
     action: "Open billing",
-    body: "The yearly {plan} plan of {workspaceName} renews on {renewsAt} for {price}, VAT included. You are free not to renew it: until the date below, cancel the contract on the billing page, or with Cancel your contract, at the foot of every page, without signing in. It then ends on {renewsAt} and nothing more is charged.",
+    body: "The yearly {plan} plan of {workspaceName} renews on {renewsAt} for {price}, VAT included. You are free not to renew it: until the date below, cancel the contract on the billing page, or with Cancel your contract, at the foot of every page of the website, without signing in. It then ends on {renewsAt} and nothing more is charged.",
     ignore:
       "You receive this email because you manage billing for {workspaceName} on Peal. Billing emails are always sent: keep this one, it is your record.",
     subject: "Your yearly {plan} plan renews on {renewsAt}",
   },
   subscriptionStarted: {
     action: "Open billing",
-    body: "Thank you: {workspaceName} is subscribed to {plan} since {startedAt}, for {price} a {interval}, VAT included, renewed until cancelled. You asked for it to start at once: as a consumer you may still withdraw within 14 days, with Withdraw from contract here, at the foot of every page and on the billing page, and then pay only for the days used. You can cancel at any time with Cancel your contract, in the same places. The terms of service apply; they hold the model withdrawal form.",
+    body: "Thank you: {workspaceName} is subscribed to {plan} since {startedAt}, for {price} a {interval}, VAT included, renewed until cancelled. You asked for it to start at once: as a consumer you may still withdraw within 14 days, with Withdraw from contract here, at the foot of every page of the website and on the billing page, and then pay only for the days used. You can cancel at any time with Cancel your contract, in the same places. The terms of service apply; they hold the model withdrawal form.",
     ignore:
       "You receive this email because you manage billing for {workspaceName} on Peal. Billing emails are always sent: keep this one, it is your record.",
     subject: "Your {plan} subscription has started",
@@ -545,7 +545,7 @@ export const english: EmailCatalog = {
   },
   perAccountStarted: {
     action: "Open billing",
-    body: "Thank you: {workspaceName} is on per-account pricing since {startedAt}: {rates}, excluding tax, counted by the day each account is connected; each use past its monthly allowance is billed at the rate card's price. Nothing is charged now: an invoice follows each month, for the month past, renewed until cancelled. You asked for it to start at once: as a consumer you may still withdraw within 14 days, with Withdraw from contract here, at the foot of every page and on the billing page, and then pay only for what was used. You can cancel at any time with Cancel your contract, in the same places. The terms of service apply; they hold the model withdrawal form.",
+    body: "Thank you: {workspaceName} is on per-account pricing since {startedAt}: {rates}, excluding tax, counted by the day each account is connected; each use past its monthly allowance is billed at the rate card's price. Nothing is charged now: an invoice follows each month, for the month past, renewed until cancelled. You asked for it to start at once: as a consumer you may still withdraw within 14 days, with Withdraw from contract here, at the foot of every page of the website and on the billing page, and then pay only for what was used. You can cancel at any time with Cancel your contract, in the same places. The terms of service apply; they hold the model withdrawal form.",
     ignore:
       "You receive this email because you manage billing for {workspaceName} on Peal. Billing emails are always sent: keep this one, it is your record.",
     subject: "Per-account pricing has started",
@@ -599,7 +599,7 @@ export const english: EmailCatalog = {
   },
   trialStarted: {
     action: "Open billing",
-    body: "{workspaceName} is trying {plan} since {startedAt}, until {endsAt}. Nothing is charged, and no payment method was asked for. Unless someone orders {plan} ({price} excluding VAT a month) before then, the workspace moves back to the free plan when the trial ends. You can end the trial at any time from the billing page, or with Cancel your contract, at the foot of every page.",
+    body: "{workspaceName} is trying {plan} since {startedAt}, until {endsAt}. Nothing is charged, and no payment method was asked for. Unless someone orders {plan} ({price} excluding VAT a month) before then, the workspace moves back to the free plan when the trial ends. You can end the trial at any time from the billing page, or with Cancel your contract, at the foot of every page of the website.",
     ignore:
       "You receive this email because you manage billing for {workspaceName} on Peal. Billing emails are always sent: keep this one, it is your record.",
     subject: "Your {plan} trial has started: it ends on {endsAt}",
@@ -701,6 +701,7 @@ export const english: EmailCatalog = {
     plannedHeading: "Planned",
     preferences: "your notification preferences",
     subject: "Your week on Peal: {from} to {to}",
+    title: "Your week on Peal",
     wentOutHeading: "Went out",
   },
   withinFreePlan:

@@ -22,6 +22,11 @@
   up through the API with `confirmedAccount`, and `makeStaff`
   (`tests/support/accounts.ts`) gives one the staff role in the database, as
   self-hosters do; it signs in again afterwards.
+- Signed in, the app's pages are in the account's language, whatever the
+  address: `/fr/…` opens in English for an English account. A journey
+  that reads them in French chooses French in the preferences, as
+  `first-post.e2e.ts` does, or sets the account's language in the
+  database (`setAccountLanguage`), as `upgrade-prompt.e2e.ts` does.
 - The run's server bills, against a stand-in for Stripe that lists Peal's
   meters and prices, the rate card's and the legacy plans', from the
   contract, by lookup key when asked (`scripts/stripe.ts`), as the server
@@ -125,6 +130,13 @@
 - A toast's text is also in the page's live region, which keeps it after
   the toast has gone: find a toast inside the `region` "Notifications",
   as the journeys find "Post cancelled.".
+- `tests/first-post.e2e.ts` opens the Drafts tab from **Posts** and
+  counts the requests for its list with `browser.route`, read once the
+  tab has settled as `page-loads.e2e.ts` reads a page
+  (`tests/support/settled.ts`), the route removed in a `finally`: one,
+  as the web app's registry holds what a render reads until its commit
+  (`#api/registry.ts`). It then reads the calendar again after
+  each change, which a query kept past its last reader would miss.
 - `tests/composer-comforts.e2e.ts` seeds three channels, selects them all
   and none, ticks one by pointer and by Space and scrolls the wheel, the
   document staying the window's height and unscrolled throughout (the
@@ -160,7 +172,8 @@
   console: an init script, registered once, keeps what the page writes
   with `console.error` and the errors nothing caught, where React's
   hydration error (#418) arrives. The runner gives a test no console of
-  the page, so read it this way. Each page is read once it has settled:
+  the page, so read it this way. Each page is read once it has settled
+  (`settled`, `tests/support/settled.ts`):
   React has taken over its `main` and nothing in it is `aria-busy`, which
   a page that reads its data in the browser reaches only after hydration
   (never `networkidle`, which a page that keeps a connection open never

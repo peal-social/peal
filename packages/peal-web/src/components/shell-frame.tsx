@@ -18,23 +18,18 @@ const ignoreChanges = () => constVoid;
 /**
  * The frame around a page. People who come through a connect link have no
  * Peal account and are not shown Peal's app: their pages get `hosted`, a
- * plain footer, in place of the app's header and footer. The callback page
+ * plain footer, in place of the app's header. The callback page
  * is both a member's and theirs: it shows neither frame until the browser
  * says which it is.
  */
 export const ShellFrame = ({
   children,
-  footer,
   header,
   hosted,
-  signIn,
 }: {
   readonly children: ReactNode;
-  readonly footer: ReactNode;
   readonly header: ReactNode;
   readonly hosted: ReactNode;
-  /** The sign-in pages' foot, under the page with no header above it. */
-  readonly signIn: ReactNode;
 }): ReactNode => {
   const pathname = usePathname();
 
@@ -51,12 +46,9 @@ export const ShellFrame = ({
 
   if (frame === "signIn") {
     return (
-      <>
-        <main className="flex flex-1 flex-col justify-center px-4">
-          {children}
-        </main>
-        {signIn}
-      </>
+      <main className="flex flex-1 flex-col justify-center px-4">
+        {children}
+      </main>
     );
   }
 
@@ -66,7 +58,6 @@ export const ShellFrame = ({
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
         {children}
       </main>
-      {frame === "app" ? footer : null}
       {frame === "hosted" ? hosted : null}
     </>
   );

@@ -28,7 +28,15 @@ follow-up through `application/follow-ups/follow-up-publisher.ts`.
   a repost rule on a channel without it says `reconnect`, and the
   reconnect with `reposts=true` asks it, as chat's; analytics' coverage):
   `FollowUpNotPossible` refuses a rule no channel can carry, or whose
-  comment is too long for one that could. `FollowUps.arm` arms a target
+  comment is too long for one that could.
+  `GET …/automations/follow-ups/platforms` (`FollowUpRules.platforms`,
+  `FollowUpChannels.platforms`, `followUpsOnPlatforms` in
+  `domain/follow-ups/platform-follow-ups.ts`) answers it for every
+  platform, kind by kind, with the server's own reasons (`turnedOff`,
+  `notCounted`) and never a channel's (`reconnect`, `textTooLong`), its
+  words narrowed to those a platform can be answered (a test keeps the
+  contract's equal): the web app offers **Follow up** from it.
+  `FollowUps.arm` arms a target
   in the transaction that settles it (`armedOutcomes`, around
   `PublicationOutcomes.settled`), and `armPublished` a post already out
   when its rule starts or a change gives it a kind. The `publishing.follow-ups` cron (every ten

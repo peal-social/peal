@@ -18,8 +18,13 @@ const secretPathPrefixes = [
 // No server span for these: the HTTP tracer records `url.full`, the
 // visitor's browser and address. A short link's redirect would keep what
 // the privacy register says Peal never keeps (counted in
-// `peal.shortlinks.redirects` instead); the others would keep their token.
-const untracedPrefixes = ["/api/l/", ...secretPathPrefixes];
+// `peal.shortlinks.redirects` instead), and a picture's would record that
+// someone opened an email; the others would keep their token.
+const untracedPrefixes = [
+  "/api/l/",
+  "/api/email-assets/",
+  ...secretPathPrefixes,
+];
 
 const pathOf = (url: string) => url.split(/[?#]/u, 1)[0] ?? url;
 

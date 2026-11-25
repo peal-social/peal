@@ -11,8 +11,11 @@
   package that does not load stops the server as it starts, where a
   release's health check sees it: failing later, it would lose account
   emails, and `DeliverNoticeV1` keeps a defect as its result, so its
-  notices' emails would stay lost once fixed. Account emails go through
-  `SendAuthEmail`. A test that moves `TestClock` while an email is being
+  notices' emails would stay lost once fixed. It reads the letterhead every
+  email carries as the server starts: where the server serves their
+  pictures, `/api/email-assets` at `PUBLIC_URL` (`src/app/email-assets/`),
+  and who sends, `PEAL_MAIL_IDENTITY` (one line, optional). Account emails
+  go through `SendAuthEmail`. A test that moves `TestClock` while an email is being
   written provides a renderer that answers at once
   (`send-auth-email.test.ts`), as rendering waits on promises.
 - A new notice, or a new reason of one, needs its member in

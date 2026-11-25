@@ -417,6 +417,8 @@ export interface EmailCatalog {
     readonly plannedHeading: string;
     readonly preferences: string;
     readonly subject: string;
+    /** The email's heading: the subject without its dates. */
+    readonly title: string;
     readonly wentOutHeading: string;
   };
 }

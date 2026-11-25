@@ -33,6 +33,7 @@ import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.t
 import { FeedsUnused } from "#publishing/container.ts";
 import { FollowUpRuleIdSchema } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
 import type { FollowUp } from "#publishing/domain/follow-ups/follow-up.ts";
+import { followUpsOnPlatforms } from "#publishing/domain/follow-ups/platform-follow-ups.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import { DrizzleFollowUpStore } from "#publishing/infrastructure/follow-ups/drizzle-follow-up-store.ts";
 import { newId } from "#shared/application/ids.ts";
@@ -164,6 +165,10 @@ const GrantingChannels = Layer.succeed(
           )
         )
       ),
+    platforms: followUpsOnPlatforms({
+      counts: () => true,
+      takesParts: () => true,
+    }),
   })
 );
 

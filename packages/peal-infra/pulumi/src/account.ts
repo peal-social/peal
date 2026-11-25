@@ -117,8 +117,9 @@ export class PealAccount extends pulumi.ComponentResource {
     // The paths that outside services call, open to everyone on an
     // environment otherwise behind Access (peal_access_bypass_paths). The
     // same policy also opens the blog's media files in production
-    // (access-blog-media) and the web app's error reports on the sandbox
-    // (access-client-errors): narrowing it closes those too.
+    // (access-blog-media), and the web app's error reports and the emails'
+    // pictures on the sandbox (access-client-errors, access-email-assets):
+    // narrowing it closes those too.
     const publicCallbacksPolicy = new cloudflare.ZeroTrustAccessPolicy(
       "public-callbacks",
       {

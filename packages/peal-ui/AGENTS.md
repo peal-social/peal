@@ -101,3 +101,17 @@ same on all three:
   under 4 kB, its styles included). `conversationCookieSeconds` is the
   registry's `supportCookie`, which a test compares.
 - `sideEffects` lists `support/launcher.ts` and `support/start.ts`.
+
+## The pixel glow and the emails' art
+
+- `src/lib/pixel-glow.ts` is the pixel glow's geometry (DESIGN.md, "Pixel
+  glow"), pure: `components/pixel-glow.tsx` draws it on a canvas, and
+  `scripts/email-art` draws the emails' header, foot and mark from it, the
+  app's `icon.svg` and `tokens.css` into `packages/peal-emails/src/assets/`.
+  It writes there by path: an import between the two packages would make
+  every change of the design system one of the server's.
+- After a change to any of them, run `bun nx run peal-ui:email-art` and
+  commit the files. `test/email-art.test.ts` compares the committed bytes
+  with fresh ones, which is why the script writes GIF, PNG and deflate
+  itself: what `node:zlib` or an image library writes changes with the
+  processor or the version. It allows `header.gif` 200 kB, each PNG 4 kB.

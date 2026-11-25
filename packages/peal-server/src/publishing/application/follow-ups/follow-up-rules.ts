@@ -31,6 +31,7 @@ import type {
   FollowUpScope,
 } from "#publishing/domain/follow-ups/follow-up-rule.ts";
 import type { FollowUp } from "#publishing/domain/follow-ups/follow-up.ts";
+import type { PlatformFollowUps } from "#publishing/domain/follow-ups/platform-follow-ups.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
@@ -174,6 +175,13 @@ export class FollowUpRules extends Context.Service<
       actor: Actor,
       ruleId: FollowUpRuleId
     ) => Effect.Effect<ListedFollowUpRule, Refused | FollowUpRuleNotFound>;
+    /**
+     * Where a rule may act on this server, every platform in Peal's
+     * order, before any channel's standing (`FollowUpChannels.platforms`).
+     */
+    readonly platforms: (
+      actor: Actor
+    ) => Effect.Effect<readonly PlatformFollowUps[], MissingPermission>;
     readonly start: (
       actor: Actor,
       request: StartFollowUpRequest
@@ -352,6 +360,14 @@ export class FollowUpRules extends Context.Service<
 
         return yield* listed(actor, yield* found(actor, ruleId, false));
       });
+
+      const platforms = Effect.fn("FollowUpRules.platforms")(
+        function* platforms(actor: Actor) {
+          yield* Effect.fromResult(authorize(actor, "post:read"));
+
+          return channels.platforms;
+        }
+      );
 
       const start = Effect.fn("FollowUpRules.start")(function* start(
         actor: Actor,
@@ -573,7 +589,15 @@ export class FollowUpRules extends Context.Service<
         );
       });
 
-      return FollowUpRules.of({ approve, change, get, list, start, stop });
+      return FollowUpRules.of({
+        approve,
+        change,
+        get,
+        list,
+        platforms,
+        start,
+        stop,
+      });
     })
   );
 }

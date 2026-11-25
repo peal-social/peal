@@ -116,6 +116,54 @@ export const ChannelFollowUpsSchema = Schema.Struct({
 
 export type ChannelFollowUps = typeof ChannelFollowUpsSchema.Type;
 
+/**
+ * Whether a rule's comment goes out on a platform, on this server:
+ * `available`; `noApi`, `review`, `notBuilt` or `notAllowed` by the
+ * platform, as `FollowUpAbility` says; `turnedOff` where this server
+ * sends no later part there (X without its threads); `notCounted` where
+ * Peal counts no likes there. No channel's own standing.
+ */
+export const PlatformFollowUpCommentSchema = Schema.Literals([
+  "available",
+  "noApi",
+  "review",
+  "notBuilt",
+  "notAllowed",
+  "turnedOff",
+  "notCounted",
+]).annotate({ identifier: "PlatformFollowUpComment" });
+
+export type PlatformFollowUpComment = typeof PlatformFollowUpCommentSchema.Type;
+
+/**
+ * Whether a rule's repost goes out on a platform, on this server:
+ * `available`; `noApi`, `notBuilt` or `notAllowed` by the platform;
+ * `notCounted` where Peal counts no likes there. No channel's own
+ * standing.
+ */
+export const PlatformFollowUpRepostSchema = Schema.Literals([
+  "available",
+  "noApi",
+  "notBuilt",
+  "notAllowed",
+  "notCounted",
+]).annotate({ identifier: "PlatformFollowUpRepost" });
+
+export type PlatformFollowUpRepost = typeof PlatformFollowUpRepostSchema.Type;
+
+/**
+ * What a rule can carry on a platform, on this server, kind by kind,
+ * before any channel's own standing. A channel there may still need to be
+ * connected again (a Bluesky repost), or take a shorter comment.
+ */
+export const PlatformFollowUpsSchema = Schema.Struct({
+  comment: PlatformFollowUpCommentSchema,
+  platform: PlatformSchema,
+  repost: PlatformFollowUpRepostSchema,
+}).annotate({ identifier: "PlatformFollowUps" });
+
+export type PlatformFollowUps = typeof PlatformFollowUpsSchema.Type;
+
 /** Why a rule was refused, as FollowUpNotPossible says. */
 export const FollowUpRefusalSchema = Schema.Literals([
   "noAction",

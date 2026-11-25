@@ -19,7 +19,8 @@ describe("the query parameters the tracer redacts", () => {
 
 // The paths the HTTP tracer leaves out: what their address holds is a
 // visitor's (a short link's redirect) or a capability (the digest's
-// unsubscribe token), which `url.full` would keep in the traces.
+// unsubscribe token), which `url.full` would keep in the traces, or the
+// request itself says something of a reader (an email's picture).
 describe(isUntraced, () => {
   it("leaves out short links and the digest's unsubscribe links", () => {
     expect(isUntraced("/api/l/abc123")).toBeTruthy();
@@ -36,6 +37,11 @@ describe(isUntraced, () => {
     ).toBeTruthy();
     // The reset itself carries its token in its body.
     expect(isUntraced("/api/auth/reset-password")).toBeFalsy();
+  });
+
+  it("leaves out the emails' pictures, whose requests would say an email was opened", () => {
+    expect(isUntraced("/api/email-assets/header.png")).toBeTruthy();
+    expect(isUntraced("/api/email-assets/mark.png?x=1")).toBeTruthy();
   });
 
   it("traces everything else", () => {

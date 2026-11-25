@@ -58,6 +58,17 @@ def test_the_web_app_links_the_legal_pages(rendered: Path, environment: str) -> 
 
 
 @pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_peals_emails_say_who_sends_them_by_name_alone(rendered: Path, environment: str) -> None:
+    """The software states nobody by default (PEAL_MAIL_IDENTITY)."""
+    assert _host_env(rendered, environment)["PEAL_MAIL_IDENTITY"] == "Peal SAS"
+
+
+def test_a_server_that_states_nobody_is_given_no_line(rendered_with: Callable[..., Path]) -> None:
+    for environment in ENVIRONMENTS:
+        assert "PEAL_MAIL_IDENTITY" not in _host_env(rendered_with(peal_mail_identity=""), environment)
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
 def test_peals_servers_keep_what_french_law_has_a_host_keep(rendered: Path, environment: str) -> None:
     """The software keeps nothing by default; Peal, a host established in
     France, must (loi n° 2004-575, art. 6, V, A)."""

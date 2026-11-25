@@ -6,7 +6,7 @@ import { english } from "../src/catalog/english.ts";
 import { french } from "../src/catalog/french.ts";
 import { renderAccountEmail } from "../src/index.ts";
 import type { AccountEmail } from "../src/index.ts";
-import { subjectOf, textOf } from "./support.ts";
+import { accountEmail, subjectOf, textOf } from "./support.ts";
 
 const url =
   "https://app.example.test/api/auth/verify-email?token=abc&callbackURL=%2F";
@@ -43,7 +43,7 @@ const deleted = async (
   legalHold: typeof identification | typeof connectionsOnly | null
 ) =>
   await textOf(
-    renderAccountEmail({
+    accountEmail({
       _tag: "AccountDeleted",
       legalHold,
       locale,
@@ -58,7 +58,7 @@ const cancellationAcknowledged = async (
   locale: "en" | "fr",
   outcome: "cancelled" | "confirm" | "review"
 ) =>
-  await renderAccountEmail({
+  await accountEmail({
     _tag: "ContractRequestAcknowledged",
     contract: "Studio Nord",
     desiredAt: null,
@@ -77,7 +77,7 @@ const cancellationAcknowledged = async (
 // A withdrawal's acknowledgement in English, which named no contract.
 const withdrawalAcknowledged = async (outcome: "expired" | "withdrawn") =>
   await textOf(
-    renderAccountEmail({
+    accountEmail({
       _tag: "ContractRequestAcknowledged",
       contract: "",
       desiredAt: null,
@@ -97,7 +97,7 @@ const withdrawalAcknowledged = async (outcome: "expired" | "withdrawn") =>
 
 describe(renderAccountEmail, () => {
   it("writes a verification email in English", async () => {
-    const email = await renderAccountEmail({
+    const email = await accountEmail({
       _tag: "VerifyEmail",
       locale: "en",
       to: "ada@example.test",
@@ -123,7 +123,7 @@ describe(renderAccountEmail, () => {
     } as const;
 
     const unpaid = await textOf(
-      renderAccountEmail({
+      accountEmail({
         ...base,
         desiredAt: null,
         effectiveAt: at("2026-11-10T08:05:00.000Z"),
@@ -133,7 +133,7 @@ describe(renderAccountEmail, () => {
     );
 
     const later = await textOf(
-      renderAccountEmail({
+      accountEmail({
         ...base,
         desiredAt: at("2027-02-15T00:00:00.000Z"),
         effectiveAt: at("2027-02-15T00:00:00.000Z"),
@@ -143,7 +143,7 @@ describe(renderAccountEmail, () => {
     );
 
     const laterInFrench = await textOf(
-      renderAccountEmail({
+      accountEmail({
         ...base,
         desiredAt: at("2027-02-15T00:00:00.000Z"),
         effectiveAt: at("2027-02-15T00:00:00.000Z"),
@@ -212,7 +212,7 @@ describe(renderAccountEmail, () => {
   });
 
   it("writes a password reset email in French", async () => {
-    const email = await renderAccountEmail({
+    const email = await accountEmail({
       _tag: "ResetPassword",
       locale: "fr",
       to: "ada@example.test",
@@ -225,7 +225,7 @@ describe(renderAccountEmail, () => {
   });
 
   it("confirms an account's deletion in its language, linking to Peal", async () => {
-    const inEnglish = await renderAccountEmail({
+    const inEnglish = await accountEmail({
       _tag: "AccountDeleted",
       legalHold: null,
       locale: "en",
@@ -234,7 +234,7 @@ describe(renderAccountEmail, () => {
       url: "https://app.example.test",
     });
 
-    const inFrench = await renderAccountEmail({
+    const inFrench = await accountEmail({
       _tag: "AccountDeleted",
       legalHold: null,
       locale: "fr",
@@ -279,7 +279,7 @@ describe(renderAccountEmail, () => {
   });
 
   it("says when deleting cancelled subscriptions, and that nothing more is charged", async () => {
-    const account = await renderAccountEmail({
+    const account = await accountEmail({
       _tag: "AccountDeleted",
       legalHold: null,
       locale: "en",
@@ -291,7 +291,7 @@ describe(renderAccountEmail, () => {
     expect(account.text).toContain("nothing more is charged");
     await expect(
       textOf(
-        renderAccountEmail({
+        accountEmail({
           _tag: "AccountDeleted",
           legalHold: null,
           locale: "en",
@@ -302,7 +302,7 @@ describe(renderAccountEmail, () => {
       )
     ).resolves.not.toContain("nothing more is charged");
 
-    const workspace = await renderAccountEmail({
+    const workspace = await accountEmail({
       _tag: "WorkspaceDeleted",
       locale: "fr",
       subscriptionsCancelled: 1,
@@ -319,7 +319,7 @@ describe(renderAccountEmail, () => {
   });
 
   it("tells the account a copy of its data was taken, and from where", async () => {
-    const web = await renderAccountEmail({
+    const web = await accountEmail({
       _tag: "DataExported",
       locale: "en",
       to: "ada@example.test",
@@ -327,7 +327,7 @@ describe(renderAccountEmail, () => {
       via: "web",
     });
 
-    const terminal = await renderAccountEmail({
+    const terminal = await accountEmail({
       _tag: "DataExported",
       locale: "fr",
       to: "ada@example.test",
@@ -342,15 +342,15 @@ describe(renderAccountEmail, () => {
 
   it("names the role an invitation offers, with French elision", async () => {
     await expect(
-      textOf(renderAccountEmail(invitation("en", "editor")))
+      textOf(accountEmail(invitation("en", "editor")))
     ).resolves.toContain("on Peal as an editor.");
     await expect(
-      textOf(renderAccountEmail(invitation("fr", "editor")))
+      textOf(accountEmail(invitation("fr", "editor")))
     ).resolves.toContain("sur Peal en tant qu’éditeur.");
   });
 
   it("escapes names in HTML and keeps them in the text and subject", async () => {
-    const email = await renderAccountEmail(invitation("en", "viewer"));
+    const email = await accountEmail(invitation("en", "viewer"));
 
     expect(email.subject).toBe(
       'Ada <Admin> & Co invited you to Studio "Nord" on Peal'
@@ -368,7 +368,7 @@ describe(renderAccountEmail, () => {
   ] as const)(
     "leaves out, in %s, names that read as hosts or addresses, which a mail client would link",
     async (locale, said) => {
-      const email = await renderAccountEmail({
+      const email = await accountEmail({
         _tag: "Invitation",
         inviterName: "admin@evil.social",
         locale,
@@ -435,7 +435,7 @@ const twoStep = async (
   kind: Extract<AccountEmail, { _tag: "TwoStepChanged" }>["kind"],
   recoveryCodesLeft: number | null = null
 ) =>
-  await renderAccountEmail({
+  await accountEmail({
     _tag: "TwoStepChanged",
     kind,
     locale,

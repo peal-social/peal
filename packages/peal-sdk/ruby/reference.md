@@ -12059,6 +12059,60 @@ client.automations.follow_ups.create(likes: 1)
 </dl>
 </details>
 
+<details><summary><code>client.automations.follow_ups.<a href="/lib/peal/automations/follow_ups/client.rb">platforms</a>() -> Internal::Types::Array[Peal::Types::PlatformFollowUps]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```ruby
+client.automations.follow_ups.platforms
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `Peal::Automations::FollowUps::RequestOptions` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.automations.follow_ups.<a href="/lib/peal/automations/follow_ups/client.rb">get</a>(rule_id:) -> Peal::Types::FollowUpRule</code></summary>
 <dl>
 <dd>

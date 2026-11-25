@@ -120,7 +120,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   through their own boxes, but other absolutely positioned or `sr-only`
   content in it resolves against the pane, or the window, and neither
   scrolls nor clips with it: give that scroller `relative` when adding
-  such content there), the contract functions closing its content, and a bottom bar
+  such content there), and a bottom bar
   across the window: the account menu at its start (`AccountMenuView`),
   Help (**Docs** at `PEAL_DOCS_URL`, **Support** at `PEAL_CONTACT_URL`
   when set, the shortcut sheet) and the agent's place (`AgentDock`) at
@@ -128,13 +128,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   gives a workspace's pages `WorkspaceShell`, whose `SidebarView` holds,
   in its head, the workspace switcher, Search (the command menu) and New
   post, then the mode's pages, a section's pages under a way back,
-  and Settings; the bottom bar holds, beside the account, `ModeSwitch`
+  and Settings (but while its own pages show); the bottom bar holds, beside the account, `ModeSwitch`
   (the open mode, and **Switch** on hover, whose menu offers PealCreative
   and PealAPI);
   `(app)/(setup)/layout.tsx` gives the setup page `SetupFrame`
   (`components/setup/`): no sidebar and no bottom bar, the way back to
   the workspace `/` would open when the person has one, who is signed in
-  and Sign out, and the contract functions at its foot. Someone signed
+  and Sign out. Someone signed
   out or not a member gets the app's `PlainFrame`; a member who must
   first turn on two-step verification gets it too, with the notice and
   the security and access page's own controls to turn it on (`TwoStepTurnOnHere`, as
@@ -335,7 +335,22 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`headers: forWorkspace(workspaceId)`, from `peal-contract`, merged
   with an idempotency key where there is one), never through a transform
   of the client: query atoms are keyed by a call's arguments, so two
-  workspaces' queries stay apart. A deletion passes the key that lists
+  workspaces' queries stay apart. The app's registry is the library's
+  (`RegistryProvider`, which keeps and disposes of it), read through
+  `renderRegistry` (`#api/registry.ts`, tested), which
+  `AppRegistryProvider` puts inside it: a query a render reads, never
+  read nor subscribed to before, is held until something subscribes to
+  it, as that render's commit does, or `renderHoldMs` (ten seconds) when
+  nothing does, and a refusal is let go as soon as it comes: Next's
+  router renders the page it opens, its requests sent, before it commits
+  it, and the registry's own task, which drops what nothing subscribes
+  to, ran in between and cancelled each request, which the commit sent
+  again. A node once subscribed to is never held: a query goes with its
+  last reader, so a page opened again reads it afresh, which the
+  pages count on: give the registry no idle time (`defaultIdleTTL`) and a
+  query no `timeToLive`, which would show a page opened again what it
+  read before (the calendar without a post scheduled again, a list's
+  earlier refusal). A deletion passes the key that lists
   its kind again alone (`postListsChanged`, `articleListChanged`,
   `queueListChanged`, `feedListChanged`; a media's usage reads
   `mediaUsageKeys`), never one a query of the deleted item reads: the
@@ -386,8 +401,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   other failure keeps **Try again**). Revoking a session needs no fresh one.
   Invitations go through `invite` (`#settings/invite.ts`): Better Auth's
   client types roles from its own defaults. Sign-in opens `next` in the
-  language the account keeps (`landingLocale`), which account settings save
-  with `updateUser`. `next` is a page of the app or nothing (`nextPathOf`,
+  language the account keeps (`landingOf`), which account settings save
+  with `updateUser`: a page of the app always, another unless its path
+  names a language, which goes to the router without its prefix (the
+  router adds one, so `/fr/fr/…` never). A provider's sign-in lands the
+  same: it comes back to the sign-in page, marked (`signInReturn`), as
+  only then is the account's language known, and the page, signed in and
+  with no `?error=`, sends on to `landingAddressOf`, its language named.
+  `next` is a page of the app or nothing (`nextPathOf`,
   `#auth/next-path.ts`, tested): never a path the server answers (`/api`,
   where a short link redirects anywhere, `/.well-known`), a route handler
   of the app (`/pulse`, `/emoji-data`), a path with a dot, a `%`, a
@@ -446,18 +467,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   from another device, by staff or by a password changed elsewhere)
   brings the tab to `/login` in place, with what it held: every sign-in
   therefore ends with a full load. The sign-in form, password or second
-  step, loads the validated `next` (`landingAddress`, `#auth/next-path.ts`:
-  in the account's language, or as it is when it names its own) and
-  tells the other tabs who signed in, as does a sign-up on a server that
-  asks for no confirmation (`signedInAtSignUp`), which signs the browser
-  in at once. A sign-in whose answer names nobody (a provider's, which
-  leaves for the provider first and may be refused or left there; one
-  during an OAuth authorization, which Better Auth's client follows by
-  setting `location.href`) never tells the other tabs before anyone is
-  signed in: it marks the tab (`expectSignIn`,
-  `#auth/sign-in-arrival.ts`, in `sessionStorage`), and the next page
-  rendered for a signed-in person takes the mark once (`TabPerson`) and
-  tells them who. The confirmation page reads the session once the
+  step, loads the validated `next` anew (`landingAddressOf`,
+  `#auth/next-path.ts`, where a provider's sign-in lands too, its
+  language named) and tells the other tabs who signed in, as does a
+  sign-up on a server that asks for no confirmation (`signedInAtSignUp`),
+  which signs the browser in at once. A sign-in whose answer names nobody
+  (a provider's, which leaves for the provider first and may be refused
+  or left there, and comes back through the sign-in page,
+  `from=provider`, which the server sends on; one during an OAuth
+  authorization, which Better Auth's client follows by setting
+  `location.href`) never tells the other tabs before anyone is signed in:
+  it marks the tab (`expectSignIn`, `#auth/sign-in-arrival.ts`, in
+  `sessionStorage`), and the next page rendered for a signed-in person
+  takes the mark once (`TabPerson`) and tells them who. The confirmation page reads the session once the
   emailed link signed the new account in, and tells them who. Starting
   and stopping impersonation (`UserActions`, `StopImpersonating`) load
   the next page anew and tell the other tabs the person the session is
@@ -607,7 +629,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   opened it for), views in `components/follow-ups/follow-up-views.tsx`,
   atoms in `#follow-ups/atoms.ts`, the form's request in
   `#follow-ups/rules.ts`. `PostFollowUp`, on a post's page, shows the
-  post's rule or offers Follow up to a member with post:schedule.
+  post's rule or offers Follow up to a member with post:schedule, only
+  where a channel the post is on its way to or live on is on a platform
+  where `automations.followUps.platforms` says a comment or a repost acts
+  (`followUpOfferOn`); its form shows the comment, the repost or both, as
+  that answer says.
   Refusals are explained from the `FollowUps.errors` catalogue
   (`#follow-ups/follow-up-error.ts`); what a channel carries reads the
   API's words (`FollowUps.carries`), never a list of platforms of the
@@ -1335,8 +1361,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   loads no measurement nor support chat (both live under `(app)`).
 - The sign-in pages (sign-in, sign-up, forgot and reset password,
   verify email) have a frame of their own (`frameOf` answers `signIn`:
-  no header, the contract functions alone at the foot, no language
-  switcher) and draw `AuthCard`, DESIGN.md's `sign-in` column. The sign-in
+  no header, no language switcher) and draw `AuthCard`, DESIGN.md's `sign-in` column. The sign-in
   and sign-up pages offer the ways in through `SignInChoices` (its view
   `SignInChoicesView`): the server's sign-in providers
   (`signUpSettings().providers`, `GET /api/captcha`'s `signInProviders`)
@@ -1393,6 +1418,27 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   building sentences in code.
 - English has no prefix (`/`) and French is under `/fr`. Navigate with the
   helpers in `src/i18n/navigation.ts`, not `next/link`.
+- A page's language: next-intl's proxy takes the address's, then its
+  `NEXT_LOCALE` cookie's, then the browser's. On the signed-in app's
+  pages (`isAppPath`) the account's language wins over both: the
+  `(setup)` and `[workspaceId]` layouts, from the `/api/me` they read
+  anyway, send a page shown in another to the same path and query in the
+  account's (`toAccountLanguage`; `accountLanguageAddress`,
+  `#i18n/account-language.ts`, tested), from the address the proxy hands
+  every page (`x-peal-page`; layouts have no other). The browser can send
+  that header too, where the proxy does not run: it is taken only when
+  its language and first segment are the route's own params, so it lives
+  in the layouts that receive them, not in `(app)`'s, which receives the
+  language alone. English is sent to as `/en/…`, and the proxy sets the cookie to
+  English there for every request, the router's included, so the address
+  without a language does not open in the cookie's again. No new request
+  to the API: the layout's own answer decides. Staff acting as someone,
+  someone signed out, and every page outside the app (sign-in, review
+  links, connect links, OAuth, the staff console) keep next-intl's order.
+  So does a page of the app whose address `nextPathOf` refuses (a `%`, a
+  raw `//` in its query, a character outside ASCII): it is never sent
+  on, and keeps the address's language. The plain frame shows no
+  language switcher to someone the account's language decides for.
 - Folders in `peal-web` import each other through `#…` (package.json
   `imports`); `#messages/*` points at the catalogues.
 - The page is `connect/link` (`components/connect-link/`), which reads

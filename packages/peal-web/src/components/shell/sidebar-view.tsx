@@ -242,7 +242,8 @@ const SwitcherButton = ({ className, ...props }: ComponentProps<"button">) => (
  * The workspace's sidebar (DESIGN.md, "The frame"): its head (the
  * workspace switcher, then `tools`: Search and New post), the mode switch
  * with Peal's mark, the mode's pages in groups, or the open section's
- * pages under a way back, and Settings at its foot.
+ * pages under a way back, and Settings at its foot (but while its own
+ * pages show).
  */
 export const SidebarView = ({
   className,
@@ -418,20 +419,22 @@ export const SidebarView = ({
         )}
       </nav>
 
-      <div className="px-2.5 pb-2">
-        <LinkTo
-          href={navigation.settings.href}
-          className={itemClass}
-          {...(navigation.settings.current
-            ? { "aria-current": "page" as const }
-            : {})}
-          onClick={followed(navigation.settings)}
-        >
-          <SlidersHorizontalIcon aria-hidden />
-          <span className="flex-1">{t("sections.settings")}</span>
-          <ChevronRightIcon aria-hidden className="text-muted-foreground" />
-        </LinkTo>
-      </div>
+      {section === "settings" ? null : (
+        <div className="px-2.5 pb-2">
+          <LinkTo
+            href={navigation.settings.href}
+            className={itemClass}
+            {...(navigation.settings.current
+              ? { "aria-current": "page" as const }
+              : {})}
+            onClick={followed(navigation.settings)}
+          >
+            <SlidersHorizontalIcon aria-hidden />
+            <span className="flex-1">{t("sections.settings")}</span>
+            <ChevronRightIcon aria-hidden className="text-muted-foreground" />
+          </LinkTo>
+        </div>
+      )}
     </div>
   );
 };
