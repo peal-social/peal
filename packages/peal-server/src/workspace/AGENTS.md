@@ -395,7 +395,10 @@ The staff context follows these rules too. What the law has a host keep is in
   idempotency key per workspace and subscription), at once,
   `prorate: false` and `invoice_now: false`. `DeleteWorkspace` checks the
   typed name before it. Then the erasure's transaction erases posts first,
-  which refuse while one goes out, and billing last, which asks Stripe again
+  which refuse while one goes out, then articles (posts before articles
+  is the order every transaction that locks both takes, deleting a
+  library file included: a new path that locks both follows it), and
+  billing last, which asks Stripe again
   and refuses while anything still bills, as a checkout completed in between
   would. `DeleteWorkspace` and `CloseAccount` answer `WorkspaceSubscribed`
   (409) with each subscription's workspace, plan and `paidUntil`, which the

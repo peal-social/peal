@@ -191,13 +191,18 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `infrastructure/schema.ts` on the kernel's one schema object
   (`#shared/infrastructure/publishing-schema.ts`): drizzle-kit refuses a
   schema name declared twice.
-- Deleting a library file asks articles first: media's
-  `HoldersMediaUsage` calls `MediaInArticles.hold`, which locks the
-  articles that show it in media's transaction, until it ends, then asks
-  publishing's `MediaInPosts`; only then do the articles that may still be
-  sent let the file go (`letGo`). `hold` opens no transaction: never call
-  it outside one (`test/media/infrastructure/holders-media-usage.test.ts`
-  proves the order).
+- A transaction that locks a workspace's posts and its articles locks the
+  posts first, then the articles, as erasing a workspace does (posts,
+  then `ArticleRecords`); a new code path that locks both follows that
+  order, so no two of them deadlock. Deleting a library file does too:
+  media's `HoldersMediaUsage` holds the posts (publishing's
+  `MediaInPosts.hold`), then calls `MediaInArticles.hold`, which locks the
+  articles that show it in media's transaction, until it ends; only once
+  neither keeps the file do the articles that may still be sent let it go
+  (`letGo`). `hold` opens no transaction: never call it outside one
+  (`test/media/infrastructure/holders-media-usage.test.ts` proves the
+  order, and that a file deleted while its workspace is erased waits
+  instead of deadlocking).
 - Persisted contract: the workflow `PublishArticleV1` (its tag in
   `persistedArticleWorkflowTags`), the JSON of `articles.state` and
   `article_calls.outcome`, the advisory lock namespace
