@@ -200,8 +200,12 @@
   again with the password then a code, and requires it of its workspace.
 - `tests/sessions.e2e.ts` reads the account's sessions, moves their
   sign-in time two days back in the database (`ageSessions`) and clears
-  the browser's cookie cache of the session (`peal.session_data`), then
-  signs in again from the page and is brought back to the list. Another
+  the browser's cookie cache of the session (`peal.session_data`). While
+  the list is hidden, it signs out another device's session (signed in
+  through the API, `signedInElsewhere`, its token cookie alone, read back
+  with `sessionLives`) with **Sign out everywhere else**, a second tab of
+  the browser keeping its mark and its address; it then signs in again
+  from the page and is brought back to the list. Another
   account then signs out from the account menu and back in: a mark set
   on the page (`window.pealSamePage`) is gone at the sign-in page and
   again on the workspace, as each loads anew.
