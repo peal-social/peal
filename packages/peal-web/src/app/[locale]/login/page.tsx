@@ -1,12 +1,14 @@
 import { Effect, Option } from "effect";
 import { getLocale, getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
 import { signUpSettings } from "#auth/captcha.ts";
 import { providerErrorKey } from "#auth/errors.ts";
 import { lastSignIn } from "#auth/last-sign-in-cookie.ts";
-import { nextPathOf } from "#auth/next-path.ts";
+import { landingAddressOf, nextPathOf } from "#auth/next-path.ts";
 import { cameFromProvider, signInReturn } from "#auth/provider-return.ts";
+import { currentUserOrNone } from "#auth/session.ts";
 import { offersSignUp } from "#auth/sign-up-mode.ts";
 import {
   dpaUrlConfig,
@@ -27,11 +29,24 @@ import { getPathname, Link } from "#i18n/navigation.ts";
 // provider's sign-in makes the account an unknown address lacks, under the
 // sign-up page's terms line, which shows here too. A provider's
 // refusal comes back here as ?error=<code>, which only names a message,
-// with ?from=provider; the authorization server's comes without it.
+// with ?from=provider; the authorization server's comes without it. A
+// provider's sign-in that succeeded comes back marked too, without an
+// error: signed in, the page sends on to `next` where the password's
+// sign-in goes, in the account's language (`landingAddressOf`).
 const SignInPage = async ({ searchParams }: PageProps<"/[locale]/login">) => {
   await connection();
 
   const { error, from, next } = await searchParams;
+  const locale = await getLocale();
+  const nextPath = Option.getOrElse(nextPathOf(next), () => "/");
+
+  if (cameFromProvider(from) && error === undefined) {
+    const me = await currentUserOrNone();
+
+    if (Option.isSome(me)) {
+      redirect(landingAddressOf(nextPath, me.value.user.locale, locale));
+    }
+  }
 
   const [{ mode, providers }, last, termsUrl, privacyUrl, dpaUrl] =
     await Promise.all([
@@ -43,8 +58,6 @@ const SignInPage = async ({ searchParams }: PageProps<"/[locale]/login">) => {
     ]);
 
   const t = await getTranslations("SignInPage");
-  const locale = await getLocale();
-  const nextPath = Option.getOrElse(nextPathOf(next), () => "/");
 
   const signUpOffered = offersSignUp(mode);
 

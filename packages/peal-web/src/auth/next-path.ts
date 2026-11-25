@@ -2,6 +2,7 @@ import { Option, Schema } from "effect";
 import type { Locale } from "next-intl";
 
 import { routing } from "#i18n/routing.ts";
+import { isAppPath } from "#shell/workspace-path.ts";
 
 // A page's path: segments of letters, digits and the few marks a page's
 // address holds, with no dot (the proxy takes a path with one for a file,
@@ -71,19 +72,85 @@ const decodeLocale = Schema.decodeUnknownOption(
   Schema.Literals(routing.locales)
 );
 
-// A path that opens in a language of its own: /fr, /fr/posts, /fr?x.
+// The language a path opens in of its own: /fr, /fr/posts, /fr?x, in any
+// case, as next-intl reads it.
 const localePrefix = new RegExp(
-  `^/(?:${routing.locales.join("|")})(?:[/?#]|$)`,
-  "u"
+  `^/(${routing.locales.join("|")})(?=[/?#]|$)`,
+  "iu"
 );
 
+/** The language a page's address names (`/fr/…`), if any. */
+export const languageOf = (address: string): Option.Option<Locale> =>
+  decodeLocale(localePrefix.exec(address)?.[1]?.toLowerCase());
+
 /**
- * The language to open `next` in once signed in: the one the account keeps,
- * so the app speaks it whichever page the person signed in from, unless the
- * path names a language itself.
+ * A page's address without the language it names: `/fr/posts?x` is
+ * `/posts?x`, `/fr?x` is `/?x`, `/fr` is `/`.
  */
-export const landingLocale = (
+export const withoutLanguage = (address: string): string => {
+  const rest = address.replace(localePrefix, "");
+
+  return rest.startsWith("/") ? rest : `/${rest}`;
+};
+
+/**
+ * A page's address in a language, which it names, English too (`/en/…`),
+ * whatever it named before: `/fr/posts?x` in English is `/en/posts?x`,
+ * `/?x` in French `/fr?x`, `/` `/fr`.
+ */
+export const inLanguage = (locale: Locale, address: string): string => {
+  const rest = withoutLanguage(address);
+
+  return `/${locale}${rest === "/" || rest.startsWith("/?") ? rest.slice(1) : rest}`;
+};
+
+/** Where sign-in goes: a path without a language, and the one to open it in. */
+export interface Landing {
+  readonly href: string;
+  readonly locale: Option.Option<Locale>;
+}
+
+/**
+ * Where to go once signed in, from `next`: the path without the language
+ * it names, which next-intl's router prefixes itself, in the language to
+ * open it in. A page of the signed-in app opens in the one the account
+ * keeps, whatever the path names, as the app is in it everywhere
+ * (#i18n/account-language.ts); another page in the language its path
+ * names, else in the account's. None: the router's own, the page's.
+ */
+export const landingOf = (
   next: string,
   accountLocale: string | null | undefined
-): Option.Option<Locale> =>
-  localePrefix.test(next) ? Option.none() : decodeLocale(accountLocale);
+): Landing => {
+  const href = withoutLanguage(next);
+  const named = languageOf(next);
+  const account = decodeLocale(accountLocale);
+
+  return {
+    href,
+    locale: isAppPath(href)
+      ? Option.orElse(account, () => named)
+      : Option.orElse(named, () => account),
+  };
+};
+
+/**
+ * Where a provider's sign-in lands, as the server sends it on from the
+ * sign-in page it comes back to (`signInReturn`): the address `landingOf`
+ * gives, its language named, else the sign-in page's, so both ways to
+ * sign in open the same page in the same language. English is named
+ * (`/en/…`), so next-intl sets the language cookie to it as it drops the
+ * prefix, and the address without one does not open in the cookie's.
+ */
+export const landingAddressOf = (
+  next: string,
+  accountLocale: string | null | undefined,
+  pageLocale: Locale
+): string => {
+  const { href, locale } = landingOf(next, accountLocale);
+
+  return inLanguage(
+    Option.getOrElse(locale, () => pageLocale),
+    href
+  );
+};

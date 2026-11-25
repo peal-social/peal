@@ -5,14 +5,22 @@ import { activeWorkspaceOf } from "#auth/active-workspace.ts";
 import { currentUserOrNone } from "#auth/session.ts";
 import { PlainFrame } from "#components/app-shell.tsx";
 import { SetupFrame } from "#components/setup/setup-frame.tsx";
-import { homeWorkspaceOf, workspacePath } from "#shell/workspace-path.ts";
+import { toAccountLanguage } from "#i18n/to-account-language.ts";
+import {
+  createWorkspacePath,
+  homeWorkspaceOf,
+  workspacePath,
+} from "#shell/workspace-path.ts";
 
 // Around the setup page, at `/` and `/create`: its own frame, without the
 // app's sidebar or bottom bar, with the way back to the workspace `/`
 // would open, when the person has one. Someone signed out gets the app's
-// plain frame, and the page sends them to sign in.
-const SetupLayout = async ({ children }: LayoutProps<"/[locale]">) => {
-  const me = await currentUserOrNone();
+// plain frame, and the page sends them to sign in. A page shown in another
+// language than the account's goes to it first (`toAccountLanguage`).
+const SetupLayout = async ({ children, params }: LayoutProps<"/[locale]">) => {
+  const [{ locale }, me] = await Promise.all([params, currentUserOrNone()]);
+
+  await toAccountLanguage(me, locale, ["", createWorkspacePath.slice(1)]);
 
   if (Option.isNone(me)) {
     return <PlainFrame>{children}</PlainFrame>;

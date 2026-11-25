@@ -6,6 +6,7 @@ import { credentials, expect } from "e2e";
 import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
 import { seedVideo } from "./support/media.ts";
+import { settled } from "./support/settled.ts";
 import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // One new member's first steps, in order, in one browser: each test starts
@@ -146,6 +147,53 @@ describe("a new member's first post", { serial: true }, () => {
     await expect(browser).toHaveURL(
       new RegExp(`/${slug}/posts/[0-9a-f-]+$`, "u")
     );
+  });
+
+  test("asks for the Drafts tab's list once when the tab opens", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    await app.open(`/${slug}/posts`);
+    await expect(
+      screen.getByRole("main").getByRole("link", text)
+    ).toBeVisible();
+
+    // Every request for the drafts, a cancelled one included: the router
+    // renders the tab before it commits it, and the list was asked for two
+    // or three times while the registry dropped what nothing subscribed to.
+    const drafts = /\/api\/v1\/posts\?(?:[^#]*&)?status=draft(?:&|$)/u;
+    let asked = 0;
+
+    await browser.route(drafts, async (route) => {
+      asked += 1;
+      await route.continue();
+    });
+
+    try {
+      const answered = browser.waitForResponse(drafts);
+
+      await screen.getByRole("link", "Drafts").tap();
+      await expect(browser).toHaveURL(`/${slug}/posts?status=draft`);
+
+      const response = await answered;
+
+      expect(response.status).toBe(200);
+
+      // Read once the tab has settled, with its list in: a request sent
+      // again, with the commit or after the first answer, is counted.
+      await expect
+        .poll(async () => await browser.evaluate<boolean>(settled), {
+          timeout: 20_000,
+        })
+        .toBe(true);
+      await expect(
+        screen.getByRole("main").getByRole("link", text)
+      ).toBeVisible();
+      expect(asked).toBe(1);
+    } finally {
+      await browser.unroute(drafts);
+    }
   });
 
   test("finds it under the Drafts tab of Posts", async ({
@@ -346,38 +394,53 @@ describe("a new member's first post", { serial: true }, () => {
     ).toBeVisible();
   });
 
-  test("reads the calendar in French", async ({ app, browser, screen }) => {
-    // The frame has no language switcher: the address names the language
-    // the browser reads, and the account page the one the account keeps.
-    await app.open(`/fr/${slug}/calendar`);
+  test("opens a French address in the account's English", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    // Signed in, the account's language wins over the address's: a link
+    // to a French page opens the same page in English, its query kept.
+    await app.open(`/fr/${slug}/calendar?view=month`);
 
-    await expect(screen.getByRole("heading", "Calendrier")).toBeVisible();
+    await expect(browser).toHaveURL(`/${slug}/calendar?view=month`);
+    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
     await expect(
-      screen.getByRole("navigation", "Vues").getByRole("link", "Semaine")
+      screen.getByRole("navigation", "Views").getByRole("link", "Month")
     ).toHaveAttribute("aria-current", "page");
-    await expect(browser).toHaveURL(`/fr/${slug}/calendar`);
   });
 
-  test("keeps French in the account settings", async ({ browser, screen }) => {
-    await screen.getByRole("button", `Compte de ${name}`).tap();
-    await screen.getByRole("menuitem", "Paramètres du compte").tap();
+  test("chooses French in the preferences, which the app then keeps", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    await screen.getByRole("button", `Account of ${name}`).tap();
+    await screen.getByRole("menuitem", "Account settings").tap();
 
     await expect(
-      screen.getByRole("heading", "Profil", { level: 1 })
+      screen.getByRole("heading", "Profile", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL(`/fr/${slug}/settings/account`);
+    await expect(browser).toHaveURL(`/${slug}/settings/account`);
 
-    // The account still keeps English, which it signed up in: choosing
-    // French among the preferences saves it at once.
+    // The account keeps English, which it signed up in: choosing French
+    // among the preferences saves it, and the page follows at once.
     await screen
-      .getByRole("navigation", "Espace de travail")
-      .getByRole("link", "Préférences")
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Preferences")
       .tap();
-    await expect(browser).toHaveURL(`/fr/${slug}/settings/account/preferences`);
-    await screen.getByRole("combobox", "Langue").tap();
+    await expect(browser).toHaveURL(`/${slug}/settings/account/preferences`);
+    await screen.getByRole("combobox", "Language").tap();
     await screen.getByRole("option", "Français").tap();
 
-    await expect(screen.getByText("Langue enregistrée.")).toBeVisible();
+    await expect(browser).toHaveURL(`/fr/${slug}/settings/account/preferences`);
+    await expect(screen.getByRole("combobox", "Langue")).toBeVisible();
+
+    // An English address opens in French now.
+    await app.open(`/${slug}/calendar`);
+
+    await expect(browser).toHaveURL(`/fr/${slug}/calendar`);
+    await expect(screen.getByRole("heading", "Calendrier")).toBeVisible();
   });
 
   test("signs out", async ({ app, browser, screen }) => {
