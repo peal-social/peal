@@ -19,9 +19,8 @@ const kept = {
  * outside the contract and without credentials, as mail clients and the
  * proxies of mail services fetch it. The name is looked up among those
  * peal-emails lists, which it read as it loaded, and nowhere else; any
- * other answers 404. Every reader of every email asks for the same
- * address, its query is not read, and the request is never traced
- * (`untracedPrefixes`).
+ * other answers 404. Every reader asks for the same addresses, their query
+ * is not read, and the request is never traced (`untracedPrefixes`).
  */
 export const EmailAssetsLive = HttpRouter.use((router) =>
   router.add(

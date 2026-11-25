@@ -1992,9 +1992,10 @@ with 32 px of gutter, 20 px on a phone.
   does, once, for 4.8 s, a frame every 130 ms, and ends on the still it
   started from. Every other email has the same art, still, and so has
   every foot. A mail client that reports reduced motion shows the still.
-- **Images.** Three, all decoration: the mark and the two glows. Every
+- **Images.** All decoration: the mark, the header's glow and the foot's.
+  An email whose header moves loads a fourth, the still behind it. Every
   reader gets the same files from the same addresses, which carry nothing
-  about the reader or the email.
+  about the reader, and nothing of the email but whether its header moves.
 
 ## Writing
 
