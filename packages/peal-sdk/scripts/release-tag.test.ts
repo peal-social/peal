@@ -65,6 +65,19 @@ describe("a release tag", () => {
     }
   );
 
+  it.each([true, false])(
+    "refuses a release that is not SemVer's alpha, beta or rc, with prereleasesAreLatest %p",
+    (prereleasesAreLatest) => {
+      const unchecked = [
+        { name: "node", release: "0.4.0-pre.1", version: "0.4.0-pre.1" },
+      ];
+
+      expect(() =>
+        releaseOf("sdk-node-v0.4.0-pre.1", unchecked, prereleasesAreLatest)
+      ).toThrow(/SemVer/u);
+    }
+  );
+
   it("refuses a language there is none of", () => {
     expect(() => releaseOf("sdk-cobol-v0.4.0", released, true)).toThrow(
       /Name a language/u

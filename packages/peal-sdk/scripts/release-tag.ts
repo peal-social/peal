@@ -50,9 +50,12 @@ export const releaseOf = (
     );
   }
 
+  // Read whatever npm's dist-tag: a release that is not SemVer's stops here.
+  const prerelease = isPrerelease(release);
+
   return {
     language: language.name,
-    npmTag: prereleasesAreLatest || !isPrerelease(release) ? "latest" : "next",
+    npmTag: prereleasesAreLatest || !prerelease ? "latest" : "next",
     version: language.version,
   };
 };
