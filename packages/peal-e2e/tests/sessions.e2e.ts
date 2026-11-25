@@ -8,13 +8,18 @@ import { openedWorkspace } from "./support/workspaces.ts";
 
 // A member reads their sessions on the account's security page, then comes
 // back to it signed in for longer than Better Auth lists sessions to: the
-// page says so and signs them in again, after which the list shows. The
-// module loads again for each attempt, so a retry signs up under a new
-// address.
+// page says so and signs them in again, after which the list shows.
+// Another member signs out from the account menu and back in, each step
+// on a page loaded anew, as signing out and in always is. The module
+// loads again for each attempt, so a retry signs up under a new address.
 const run = randomUUID();
 
 const address = () =>
   credentials.user("member").username.replace("@", `+${run}-sessions@`);
+
+// The account that signs out from the account menu, its own.
+const signingOutAddress = () =>
+  credentials.user("member").username.replace("@", `+${run}-sign-out@`);
 
 // The account this journey signs up through the API, whose password it
 // must know: synthetic, like its address.
@@ -69,5 +74,46 @@ describe("the sessions list", () => {
     await expect(screen.getByText("This session")).toBeVisible({
       timeout: 15_000,
     });
+  });
+
+  test("signs out from the account menu, and the next sign-in starts a page of its own", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    const email = signingOutAddress();
+
+    await confirmedAccount(app.baseUrl, {
+      email,
+      name: "Sam Example",
+      password,
+    });
+
+    await browser.clearCookies();
+    await app.open("/login");
+    await screen.getByLabel("Email").fill(email);
+    await screen.getByLabel("Password").fill(password);
+    await screen.getByRole("main").getByRole("button", "Sign in").tap();
+
+    const { slug } = await openedWorkspace(browser);
+
+    // A mark on this page, as the agent's chats and drafts live in it: a
+    // page loaded anew has none.
+    await browser.evaluate("window.pealSamePage = true");
+
+    await screen.getByRole("button", "Account of Sam Example").tap();
+    await screen.getByRole("menuitem", "Sign out").tap();
+    await expect(browser).toHaveURL(/\/login/u, { timeout: 30_000 });
+    expect(await browser.evaluate("'pealSamePage' in window")).toBe(false);
+
+    await browser.evaluate("window.pealSamePage = true");
+    await screen.getByLabel("Email").fill(email);
+    await screen.getByLabel("Password").fill(password);
+    await screen.getByRole("main").getByRole("button", "Sign in").tap();
+
+    await expect(browser).toHaveURL(new RegExp(`/${slug}$`, "u"), {
+      timeout: 30_000,
+    });
+    expect(await browser.evaluate("'pealSamePage' in window")).toBe(false);
   });
 });

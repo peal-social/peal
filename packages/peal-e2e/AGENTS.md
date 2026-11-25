@@ -188,7 +188,10 @@
 - `tests/sessions.e2e.ts` reads the account's sessions, moves their
   sign-in time two days back in the database (`ageSessions`) and clears
   the browser's cookie cache of the session (`peal.session_data`), then
-  signs in again from the page and is brought back to the list.
+  signs in again from the page and is brought back to the list. Another
+  account then signs out from the account menu and back in: a mark set
+  on the page (`window.pealSamePage`) is gone at the sign-in page and
+  again on the workspace, as each loads anew.
 - CI's `e2e` jobs run beside the others when a change can reach the pages
   (`scripts/ci-plan.ts`), each with its own Postgres and Mailpit and
   SeaweedFS from `compose.yaml`: Chromium's suite in three shards
