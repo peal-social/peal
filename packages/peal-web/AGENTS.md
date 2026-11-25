@@ -112,7 +112,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   draw: a sidebar on the page's background (in a `Sheet` on a
   phone; its links close it through `useCloseMenu`), the page in a white
   panel under a 48 px header (the breadcrumb, the page's `h1`, its
-  actions), the contract functions closing its content, and a bottom bar
+  actions; the panel scrolls, never the document, and each scrolling pane
+  is `relative`, so `sr-only` text and hidden inputs scroll and clip with
+  it), the contract functions closing its content, and a bottom bar
   across the window: the account menu at its start (`AccountMenuView`),
   Help (**Docs** at `PEAL_DOCS_URL`, **Support** at `PEAL_CONTACT_URL`
   when set, the shortcut sheet) and the agent's place (`AgentDock`) at

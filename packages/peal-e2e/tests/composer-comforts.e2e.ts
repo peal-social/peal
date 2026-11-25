@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { describe, test } from "@e2e-dev/web";
 import { credentials, expect } from "e2e";
+import { Schema } from "effect";
 
 import { seedPerAccountSubscription } from "./support/billing.ts";
 import { seedChannel } from "./support/channels.ts";
@@ -30,6 +31,15 @@ const guest = () =>
   credentials.user("member").username.replace("@", `+${run}-comforts-guest@`);
 
 const password = () => credentials.user("member").password;
+
+// The document's height, how far it is scrolled, and the window's height.
+const DocumentSchema = Schema.Struct({
+  height: Schema.Number,
+  scrolled: Schema.Number,
+  window: Schema.Number,
+});
+
+const documentOf = `(() => ({ height: document.scrollingElement.scrollHeight, scrolled: document.scrollingElement.scrollTop, window: innerHeight }))()`;
 
 let workspaceId = "";
 let slug = "";
@@ -86,6 +96,38 @@ describe("the composer's comforts", { serial: true }, () => {
         await expect(screen.getByRole("checkbox", handle)).not.toBeChecked();
       })
     );
+  });
+
+  test("ticks a channel by pointer and by key without moving the frame", async ({
+    browser,
+    screen,
+  }) => {
+    // The composer is longer than the window: its panel scrolls, the
+    // document never does. A checkbox's hidden input laid out against the
+    // window, not the panel, made the document taller than the window, and
+    // the frame scrolled up with it.
+    const stays = async () => {
+      const { height, scrolled, window } = Schema.decodeUnknownSync(
+        DocumentSchema
+      )(await browser.evaluate(documentOf));
+
+      expect({ height, scrolled }).toEqual({ height: window, scrolled: 0 });
+    };
+
+    const channel = screen.getByRole("checkbox", handles[2]);
+
+    await stays();
+    await channel.tap();
+    await expect(channel).toBeChecked();
+    await stays();
+
+    await channel.press("Space");
+    await expect(channel).not.toBeChecked();
+    await stays();
+
+    await browser.mouse.move(640, 400);
+    await browser.mouse.wheel(0, 3000);
+    await stays();
   });
 
   test("inserts an emoji where the text was being written", async ({
