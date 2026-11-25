@@ -1,0 +1,116 @@
+---
+title: Automating with n8n
+description: "Install Peal's n8n nodes, connect them to your workspace, then post, upload media and start workflows from Peal's events."
+sidebar:
+  icon: workflow
+---
+
+With Peal's community nodes for [n8n](https://n8n.io), a workflow can publish, schedule and queue posts on the workspace's channels, upload the images and videos that go with them, and start when something happens in Peal. The package is `n8n-nodes-peal`, and its source is at [github.com/peal-social/peal-n8n](https://github.com/peal-social/peal-n8n).
+
+It has two nodes:
+
+| Node             | What it does                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| **Peal**         | Posts, media and channels, through the [HTTP API](/developers). An AI agent in n8n may use it as a tool. |
+| **Peal Trigger** | Starts a workflow on a [webhook event](/developers/webhooks), such as a post published or failed         |
+
+## Install the nodes [#install]
+
+In n8n, install the package once for the instance:
+
+<Steps>
+  <Step title="Open Settings, then Community nodes">
+    The page lists the packages the instance has.
+  </Step>
+  <Step title="Click Install">Enter `n8n-nodes-peal` and confirm.</Step>
+  <Step title="Add a node">
+    Search for **Peal** in a workflow's nodes panel.
+  </Step>
+</Steps>
+
+On a self-hosted n8n, an owner installs it the same way, or from the command line as [n8n's guide](https://docs.n8n.io/integrations/community-nodes/installation/) says.
+
+## Connect your workspace [#credential]
+
+The nodes act in one workspace, with one of its [API keys](/api-quickstart#key):
+
+<Steps>
+  <Step title="Create a key">
+    In the app, open the workspace's **Settings**, then **API keys**. Peal shows
+    the key once.
+  </Step>
+  <Step title="Create a Peal API credential in n8n">
+    Paste the key in **API Key**.
+  </Step>
+  <Step title="Leave the server as it is">
+    **Server** is `https://app.peal.social`. On a server you run yourself, enter
+    its address.
+  </Step>
+</Steps>
+
+n8n tests the credential by asking `GET /api/v1/credential` who the key is. Give the key the permissions your workflows use:
+
+| To                                                                     | The key needs                    |
+| ---------------------------------------------------------------------- | -------------------------------- |
+| Pick or list channels                                                  | `channel:read`                   |
+| Save drafts                                                            | `post:create`, `channel:read`    |
+| Publish, schedule or queue a post, reschedule, unschedule or cancel it | `post:schedule`, `channel:read`  |
+| Get and list posts, and wait for their outcome                         | `post:read`                      |
+| Read a post's counts                                                   | `analytics:read`                 |
+| Upload or import media, and show it in posts                           | `media:upload`, `media:read`     |
+| Delete media                                                           | `media:delete`                   |
+| Use the trigger                                                        | `webhook:manage`, `webhook:read` |
+
+## Post from a workflow [#post]
+
+The **Peal** node's **Post** resource has these operations:
+
+| Operation         | What it does                                                          |
+| ----------------- | --------------------------------------------------------------------- |
+| **Create**        | Publishes a post now, schedules it, queues it, or saves it as a draft |
+| **Get**           | Gets a post and the state of each of its channels                     |
+| **Get Many**      | Lists posts by status, outcome, channel or scheduled time             |
+| **Get Outcome**   | Waits up to 60 seconds until a post has its result on every channel   |
+| **Get Analytics** | Gets a post's counts on each channel it went live on                  |
+| **Reschedule**    | Moves a scheduled post to another time, or schedules a draft          |
+| **Unschedule**    | Takes a scheduled post back to draft                                  |
+| **Cancel**        | Cancels a draft or a scheduled post                                   |
+
+**Create** takes the channels, the text and **Publish**: **Now**, **At a Time**, **In the Next Queue Slot** or **Save as Draft**. Its additional fields add media, another text for some channels, follow-ups such as the next posts of a thread, tags, channel sets and signatures. For a post published now, **Wait for Result** keeps the request open up to 60 seconds, so the node answers with each channel's result.
+
+Peal checks the post against each platform's limits as it does for any post ([Posting through the API](/developers/posting)). When it refuses one, the node's error carries Peal's explanation.
+
+### Pick the time [#time]
+
+A date from n8n's date picker has no offset. The node reads it in the **Time Zone** field, or in the workflow's time zone when the field is empty. A date with an offset, such as `2026-12-01T09:30:00+01:00` or the expression `$now.plus({ days: 1 })`, is that instant. Peal keeps the time zone with the post, so 09:00 in Paris stays 09:00 when the clocks change.
+
+## Add images and videos [#media]
+
+The **Media** resource brings files into the workspace's library:
+
+| Operation                         | What it does                                                         |
+| --------------------------------- | -------------------------------------------------------------------- |
+| **Upload**                        | Uploads a file from the item's binary data, such as an HTTP download |
+| **Import From URL**               | Has Peal fetch a public image or video                               |
+| **Get**, **Get Many**, **Delete** | Read and remove files of the library                                 |
+
+Each file's `id` goes into the **Media** field of a post's **Create** operation. Peal takes JPEG, PNG, GIF and WebP images, MP4 and QuickTime videos, and PDF documents. A large video goes up in parts, one after the other.
+
+## Start a workflow from Peal [#trigger]
+
+The **Peal Trigger** node starts a workflow on the events you choose, every event of [the webhook list](/developers/webhooks/events#events). Choose channels to hear only their events.
+
+When you activate the workflow, the trigger creates a webhook endpoint in the workspace, and it deletes it when you deactivate the workflow. It verifies each delivery's signature with the endpoint's secret ([Verify a delivery](/developers/webhooks/requests#verify)), and answers 401 to one it can't verify.
+
+<Callout type="warning" title="Peal calls public HTTPS addresses only">
+  A self-hosted n8n must be reachable from the internet, with `WEBHOOK_URL` set
+  to its public address. Each active workflow with a trigger takes one of the
+  workspace's 10 webhook endpoints, and n8n's test listening takes one while it
+  runs.
+</Callout>
+
+An event names what happened and carries no post text. Add a **Peal** node with **Get** to read the post the event names.
+
+## Use it from an AI agent [#agents]
+
+n8n's **AI Agent** node can call the **Peal** node as a tool: add it under the agent's tools, and the agent fills its fields from the conversation. The key's permissions decide what the agent may do, as with any API key. A key without `post:schedule` saves drafts and never publishes ([Posting from an AI agent](/developers/agents)).

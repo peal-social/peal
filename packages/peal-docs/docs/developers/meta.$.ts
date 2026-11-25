@@ -12,6 +12,7 @@ export default defineMeta({
     "cli",
     "mcp",
     "agents",
+    "n8n",
     "embedding",
   ],
 });

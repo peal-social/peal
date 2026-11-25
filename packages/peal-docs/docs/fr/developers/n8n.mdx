@@ -1,0 +1,118 @@
+---
+title: Automatiser avec n8n
+description: "Installer les nœuds n8n de Peal, les relier à votre espace de travail, puis publier, envoyer des médias et lancer des workflows sur les événements de Peal."
+sidebar:
+  icon: workflow
+---
+
+Avec les nœuds communautaires de Peal pour [n8n](https://n8n.io), un workflow peut publier, programmer et mettre en file des publications sur les canaux de l’espace de travail, envoyer les images et les vidéos qui les accompagnent, et démarrer quand quelque chose se passe dans Peal. Le paquet s’appelle `n8n-nodes-peal`, et son code est sur [github.com/peal-social/peal-n8n](https://github.com/peal-social/peal-n8n).
+
+Il contient deux nœuds :
+
+| Nœud             | Ce qu’il fait                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Peal**         | Les publications, les médias et les canaux, par l’[API HTTP](/developers). Un agent IA dans n8n peut s’en servir comme outil. |
+| **Peal Trigger** | Démarre un workflow sur un [événement de webhook](/developers/webhooks), comme une publication publiée ou en échec            |
+
+## Installer les nœuds [#install]
+
+Dans n8n, installez le paquet une fois pour l’instance :
+
+<Steps>
+  <Step title="Ouvrez Settings, puis Community nodes">
+    La page liste les paquets de l’instance.
+  </Step>
+  <Step title="Cliquez sur Install">
+    Saisissez `n8n-nodes-peal` et confirmez.
+  </Step>
+  <Step title="Ajoutez un nœud">
+    Cherchez **Peal** dans le panneau des nœuds d’un workflow.
+  </Step>
+</Steps>
+
+Sur un n8n auto-hébergé, un propriétaire l’installe de la même façon, ou en ligne de commande comme le dit [le guide de n8n](https://docs.n8n.io/integrations/community-nodes/installation/).
+
+## Relier votre espace de travail [#credential]
+
+Les nœuds agissent dans un espace de travail, avec l’une de ses [clés d’API](/api-quickstart#key) :
+
+<Steps>
+  <Step title="Créez une clé">
+    Dans l’application, ouvrez les **Paramètres** de l’espace de travail, puis
+    **Clés d’API**. Peal n’affiche la clé qu’une fois.
+  </Step>
+  <Step title="Créez un identifiant Peal API dans n8n">
+    Collez la clé dans **API Key**.
+  </Step>
+  <Step title="Laissez le serveur tel quel">
+    **Server** vaut `https://app.peal.social`. Sur un serveur que vous hébergez,
+    saisissez son adresse.
+  </Step>
+</Steps>
+
+n8n teste l’identifiant en demandant à `GET /api/v1/credential` qui est la clé. Donnez à la clé les permissions dont vos workflows ont besoin :
+
+| Pour                                                                                                 | La clé a besoin de               |
+| ---------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Choisir ou lister des canaux                                                                         | `channel:read`                   |
+| Enregistrer des brouillons                                                                           | `post:create`, `channel:read`    |
+| Publier, programmer ou mettre en file une publication, la reprogrammer, la déprogrammer ou l’annuler | `post:schedule`, `channel:read`  |
+| Lire et lister des publications, et attendre leur résultat                                           | `post:read`                      |
+| Lire les chiffres d’une publication                                                                  | `analytics:read`                 |
+| Envoyer ou importer des médias, et les montrer dans des publications                                 | `media:upload`, `media:read`     |
+| Supprimer des médias                                                                                 | `media:delete`                   |
+| Utiliser le déclencheur                                                                              | `webhook:manage`, `webhook:read` |
+
+## Publier depuis un workflow [#post]
+
+La ressource **Post** du nœud **Peal** propose ces opérations :
+
+| Opération         | Ce qu’elle fait                                                                                 |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| **Create**        | Publie une publication tout de suite, la programme, la met en file ou l’enregistre en brouillon |
+| **Get**           | Lit une publication et l’état de chacun de ses canaux                                           |
+| **Get Many**      | Liste les publications par statut, résultat, canal ou heure programmée                          |
+| **Get Outcome**   | Attend jusqu’à 60 secondes qu’une publication ait son résultat sur chaque canal                 |
+| **Get Analytics** | Lit les chiffres d’une publication sur chaque canal où elle est en ligne                        |
+| **Reschedule**    | Déplace une publication programmée à une autre heure, ou programme un brouillon                 |
+| **Unschedule**    | Remet une publication programmée en brouillon                                                   |
+| **Cancel**        | Annule un brouillon ou une publication programmée                                               |
+
+**Create** prend les canaux, le texte et **Publish** : **Now**, **At a Time**, **In the Next Queue Slot** ou **Save as Draft**. Ses champs supplémentaires ajoutent des médias, un autre texte pour certains canaux, des suites comme les publications suivantes d’un fil, des étiquettes, des ensembles de canaux et des signatures. Pour une publication publiée tout de suite, **Wait for Result** garde la requête ouverte jusqu’à 60 secondes, et le nœud répond avec le résultat de chaque canal.
+
+Peal vérifie la publication selon les limites de chaque plateforme, comme pour toute publication ([Publier par l’API](/developers/posting)). Quand il en refuse une, l’erreur du nœud reprend l’explication de Peal.
+
+### Choisir l’heure [#time]
+
+Une date du sélecteur de n8n n’a pas de décalage. Le nœud la lit dans le champ **Time Zone**, ou dans le fuseau du workflow quand ce champ est vide. Une date avec un décalage, comme `2026-12-01T09:30:00+01:00` ou l’expression `$now.plus({ days: 1 })`, est cet instant. Peal garde le fuseau avec la publication, si bien que 09:00 à Paris reste 09:00 au changement d’heure.
+
+## Ajouter des images et des vidéos [#media]
+
+La ressource **Media** fait entrer des fichiers dans la bibliothèque de l’espace de travail :
+
+| Opération                         | Ce qu’elle fait                                                                          |
+| --------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Upload**                        | Envoie un fichier depuis les données binaires de l’élément, comme un téléchargement HTTP |
+| **Import From URL**               | Fait récupérer par Peal une image ou une vidéo publique                                  |
+| **Get**, **Get Many**, **Delete** | Lisent et retirent des fichiers de la bibliothèque                                       |
+
+L’`id` de chaque fichier va dans le champ **Media** de l’opération **Create** d’une publication. Peal prend les images JPEG, PNG, GIF et WebP, les vidéos MP4 et QuickTime, et les documents PDF. Une grande vidéo part en plusieurs morceaux, l’un après l’autre.
+
+## Démarrer un workflow depuis Peal [#trigger]
+
+Le nœud **Peal Trigger** démarre un workflow sur les événements que vous choisissez, parmi tous ceux de [la liste des webhooks](/developers/webhooks/events#events). Choisissez des canaux pour n’entendre que leurs événements.
+
+Quand vous activez le workflow, le déclencheur crée un point d’accès de webhook dans l’espace de travail, et il le supprime quand vous désactivez le workflow. Il vérifie la signature de chaque livraison avec le secret du point d’accès ([Vérifier une livraison](/developers/webhooks/requests#verify)), et répond 401 à celle qu’il ne peut pas vérifier.
+
+<Callout type="warning" title="Peal n’appelle que des adresses HTTPS publiques">
+  Un n8n auto-hébergé doit être joignable depuis internet, avec `WEBHOOK_URL`
+  réglé sur son adresse publique. Chaque workflow actif avec un déclencheur
+  prend l’un des 10 points d’accès de webhook de l’espace de travail, et
+  l’écoute de test de n8n en prend un tant qu’elle dure.
+</Callout>
+
+Un événement dit ce qui s’est passé et ne contient aucun texte de publication. Ajoutez un nœud **Peal** avec **Get** pour lire la publication que l’événement nomme.
+
+## Utiliser les nœuds depuis un agent IA [#agents]
+
+Le nœud **AI Agent** de n8n peut appeler le nœud **Peal** comme outil : ajoutez-le aux outils de l’agent, et l’agent remplit ses champs d’après la conversation. Les permissions de la clé décident de ce que l’agent peut faire, comme pour toute clé d’API. Une clé sans `post:schedule` enregistre des brouillons et ne publie jamais ([Publier depuis un agent IA](/developers/agents)).
