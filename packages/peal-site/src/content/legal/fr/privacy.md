@@ -6,7 +6,7 @@ draft: false
 
 Date d’entrée en vigueur : 13 novembre 2026
 
-Dernière mise à jour : 23 novembre 2026
+Dernière mise à jour : 25 novembre 2026
 
 ## En bref
 
@@ -164,6 +164,8 @@ Seulement une fois que vous l’autorisez sur le site : les mêmes événements 
 ### Communications
 
 Les messages que vous nous envoyez et les e-mails que nous vous envoyons.
+
+Nos e-mails affichent trois images, le logo et deux décors, que votre application ou votre service de messagerie va chercher sur app.peal.social. Leurs adresses sont les mêmes pour tout le monde et ne disent rien de vous ni de l’e-mail, et nous ne nous en servons pas pour savoir si vous l’avez ouvert.
 
 ### Commentaires sur vos publications, et personnes qui ne sont pas utilisatrices
 
@@ -531,6 +533,7 @@ Nous prévenons par e-mail les titulaires de compte au moins 30 jours avant qu�
 
 Modifications depuis la première publication de cette politique :
 
+- 25 novembre 2026 : les images qu’affichent nos e-mails, que votre application ou votre service de messagerie va chercher sur app.peal.social, et dont nous ne nous servons pas pour savoir si vous avez ouvert un e-mail.
 - 23 novembre 2026 : un résumé en haut de la page et quelques lignes en clair après chaque section, qui ne changent rien à ce que dit la politique ; la liste de nos prestataires passe sur la page des sous-traitants ; l’accord de traitement des données qui s’applique entre une organisation et nous ; notre numéro d’immatriculation.
 - 22 novembre 2026 : une discussion d’assistance, avec Crisp, sur ce site, la documentation, le blog et l’application, qui ne se charge qu’une fois que vous l’ouvrez ; ses discussions sont conservées 3 ans après leur dernier message.
 - 20 novembre 2026 : l’application garde le moyen de votre dernière connexion sur un navigateur dans le cookie `peal.last-sign-in` pendant 30 jours, pour que sa page de connexion le propose en premier.
