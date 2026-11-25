@@ -3964,7 +3964,7 @@
     },
     "language": {
       "title": "Langue",
-      "description": "La langue dans laquelle Peal vous écrit : cette application, sur tous vos appareils, et vos e-mails.",
+      "description": "La langue dans laquelle Peal vous écrit : cette application, sur tous vos appareils, et vos e-mails. Vos autres onglets ouverts suivent quand vous les rechargez.",
       "label": "Langue",
       "option": "{locale, select, en {English} fr {Français} other {{locale}}}",
       "save": "Enregistrer la langue",

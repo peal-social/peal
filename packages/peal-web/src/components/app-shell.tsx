@@ -12,8 +12,8 @@ import { Link } from "#i18n/navigation.ts";
 
 // The app's header: the product name, the language switcher and the
 // account menu. A page of the signed-in app shown to someone signed in
-// has no switcher: their account's language decides it (the `(app)`
-// layout), so another would only come back.
+// has no switcher: their account's language decides it
+// (`toAccountLanguage`), so another would only come back.
 export const AppHeader = ({
   languageSwitcher = true,
 }: {
