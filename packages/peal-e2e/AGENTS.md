@@ -126,7 +126,10 @@
   the toast has gone: find a toast inside the `region` "Notifications",
   as the journeys find "Post cancelled.".
 - `tests/composer-comforts.e2e.ts` seeds three channels, selects them all
-  and none, inserts an emoji from the picker, reads the previews, opens
+  and none, ticks one by pointer and by Space and scrolls the wheel, the
+  document staying the window's height and unscrolled throughout (the
+  composer's panel scrolls, never the frame), inserts an emoji from the
+  picker, reads the previews, opens
   **Publish now** and leaves it ("Not now": nothing goes out), finds the
   saved draft among **Posts**, filters it out by status (the Filter
   menu's Cancelled, which no tab shows) and back with **Clear**, then

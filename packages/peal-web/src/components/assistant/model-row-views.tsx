@@ -100,6 +100,7 @@ const ModelControl = ({
     <>
       {suggested.length === 0 ? null : (
         <Select
+          className="w-full sm:w-48"
           value={typed ? otherModel : (model ?? otherModel)}
           disabled={busy}
           onValueChange={(value: string | null) => {
@@ -115,10 +116,7 @@ const ModelControl = ({
             }
           }}
         >
-          <SelectTrigger
-            aria-label={t("model", { use })}
-            className="w-full sm:w-48"
-          >
+          <SelectTrigger aria-label={t("model", { use })} className="w-full">
             <SelectValue>
               {typed ? t("otherModel") : (model ?? t("otherModel"))}
             </SelectValue>
@@ -197,16 +195,14 @@ export const ModelRowView = ({
       </div>
       <SettingsRowControl>
         <Select
+          className="w-full sm:w-48"
           value={chosen.provider ?? unset}
           disabled={busy}
           onValueChange={(value: string | null) => {
             onProvider(providers.find((each) => each === value) ?? null);
           }}
         >
-          <SelectTrigger
-            aria-label={t("provider", { use })}
-            className="w-full sm:w-48"
-          >
+          <SelectTrigger aria-label={t("provider", { use })} className="w-full">
             <SelectValueIcon />
             <SelectValue>
               {chosen.provider === null ? unsetLabel : nameOf(chosen.provider)}

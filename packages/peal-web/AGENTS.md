@@ -112,7 +112,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   draw: a sidebar on the page's background (in a `Sheet` on a
   phone; its links close it through `useCloseMenu`), the page in a white
   panel under a 48 px header (the breadcrumb, the page's `h1`, its
-  actions), the contract functions closing its content, and a bottom bar
+  actions; the panel scrolls, never the document, and each scrolling pane
+  is `relative`, so `sr-only` text and hidden inputs scroll and clip with
+  it. A scroller of its own that is not positioned, inside a pane (the
+  tags field, the media picker, the assistant's preview) or beside them
+  (the sidebar), keeps a checkbox's, a switch's and a select's input
+  through their own boxes, but other absolutely positioned or `sr-only`
+  content in it resolves against the pane, or the window, and neither
+  scrolls nor clips with it: give that scroller `relative` when adding
+  such content there), the contract functions closing its content, and a bottom bar
   across the window: the account menu at its start (`AccountMenuView`),
   Help (**Docs** at `PEAL_DOCS_URL`, **Support** at `PEAL_CONTACT_URL`
   when set, the shortcut sheet) and the agent's place (`AgentDock`) at
