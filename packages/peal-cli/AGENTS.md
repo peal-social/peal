@@ -160,9 +160,10 @@
   `start` takes `--post` or `--channel`, one of them, and `--comment`,
   `--repost` or both, refused before any request otherwise. The studio
   answers it from `test/studio-follow-ups.ts`.
-- `peal inbox rules` (`commands/inbox-rules.ts`: list, show, start,
-  update, pause, resume, stop) keeps the comment rules, from
-  `test/studio-inbox-rules.ts` in tests.
+- `peal inbox rules` (`commands/inbox-rules.ts`: list, platforms, show,
+  start, update, pause, resume, stop) keeps the comment rules, from
+  `test/studio-inbox-rules.ts` in tests; `platforms` says where they
+  answer on the server (`automations.commentRules.platforms`).
 - `peal inbox messages` (`commands/inbox-messages.ts`: list, show, send,
   read, confirm) reads the conversations of the workspace's Mastodon and
   Bluesky channels and answers one privately; `send` takes

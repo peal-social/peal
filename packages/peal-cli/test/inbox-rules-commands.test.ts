@@ -11,6 +11,35 @@ const inStudio = ["--workspace", "studio"];
 const ruleId = "0190f3a0-0000-7000-8000-0000000c0001";
 
 describe("peal inbox rules", () => {
+  it.effect(
+    "lists where rules answer, and whether a private message goes",
+    () =>
+      Effect.gen(function* platforms() {
+        const session = yield* signedIn();
+
+        const printed = yield* session.printed([
+          "inbox",
+          "rules",
+          "platforms",
+          ...inStudio,
+        ]);
+
+        assert.include(printed, "  mastodon: answers");
+        assert.include(printed, "  instagram: answers, with a private message");
+        assert.include(printed, "  bluesky: no rule (notAllowed)");
+        assert.include(
+          yield* session.printed([
+            "inbox",
+            "rules",
+            "platforms",
+            "--json",
+            ...inStudio,
+          ]),
+          '"reply": "notAllowed"'
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
   it.effect("starts a rule on a channel, lists, pauses and stops it", () =>
     Effect.gen(function* lifecycle() {
       const session = yield* signedIn();

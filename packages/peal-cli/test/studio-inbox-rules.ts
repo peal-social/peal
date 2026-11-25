@@ -183,13 +183,29 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               nextCursor: null,
             };
           }),
-        // No command reads where rules answer: the web app's form does.
+        // As a server that reads Instagram's comments and messages.
         platforms: () =>
           Effect.gen(function* platforms() {
             yield* world.allowed("engagement:read");
             yield* inWorkspace((yield* CurrentMember).workspaceId);
 
-            return [];
+            return [
+              {
+                platform: "bluesky",
+                privateReply: "noApi",
+                reply: "notAllowed",
+              },
+              {
+                platform: "mastodon",
+                privateReply: "noApi",
+                reply: "available",
+              },
+              {
+                platform: "instagram",
+                privateReply: "available",
+                reply: "available",
+              },
+            ] as const;
           }),
         update: ({ params, payload }) =>
           Effect.gen(function* update() {
