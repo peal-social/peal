@@ -672,6 +672,29 @@ describe("server.Dockerfile", () => {
     ).toStrictEqual([]);
   });
 
+  // Bun reads the emails' TSX with the runtime their tsconfig.json names,
+  // which extends the workspace's.
+  it("ships the tsconfig the emails' templates are read with", () => {
+    const copies = instructionsOf(read("..", "server.Dockerfile"))("COPY");
+
+    const { compilerOptions, extends: base } = Schema.decodeUnknownSync(
+      Schema.fromJsonString(
+        Schema.Struct({
+          compilerOptions: Schema.Struct({ jsx: Schema.String }),
+          extends: Schema.String,
+        })
+      )
+    )(read("..", "..", "peal-emails", "tsconfig.json"));
+
+    expect(compilerOptions.jsx).toBe("react-jsx");
+    expect(base).toBe("../../tsconfig.base.json");
+
+    expect(copies).toContain(
+      "packages/peal-emails/tsconfig.json packages/peal-emails/"
+    );
+    expect(copies).toContain("tsconfig.base.json ./");
+  });
+
   it("ships ffprobe, which probes videos", () => {
     expect(
       instructionsOf(read("..", "server.Dockerfile"))("COPY").some((copy) =>
