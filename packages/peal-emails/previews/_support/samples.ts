@@ -238,7 +238,7 @@ export const noticeSamples = {
   channelReconnectRequired: { _tag: "ChannelReconnectRequired", channel },
   channelReconnectSoon: {
     _tag: "ChannelReconnectSoon",
-    channel: { handle: "@studio.example", platform: "bluesky" },
+    channel: { handle: "@studio.example.test", platform: "bluesky" },
     expiresAt: at("2026-12-01T09:30:00Z"),
   },
   commentRuleStopped: {
@@ -323,7 +323,7 @@ export const noticeSamples = {
   postPublished: {
     _tag: "PostPublished",
     channel: Option.some(channel),
-    permalink: Option.some("https://social.example/@studio/1"),
+    permalink: Option.some("https://social.example.test/@studio/1"),
     postId,
   },
   postUnconfirmed: {
