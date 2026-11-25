@@ -9,11 +9,13 @@ import { letterhead } from "./support.ts";
 const wordsOf = (html: string): readonly string[] =>
   html
     .slice(html.indexOf("<h1"))
-    .replaceAll(/<!--.*?-->/gsu, "")
-    .replaceAll(/<\/(?:a|h1|p)>/gu, "\n")
-    .replaceAll(/<[^>]*>/gu, "")
-    .split("\n")
-    .map((line) => line.trim())
+    .split(/<\/(?:a|h1|p)>/u)
+    .map((part) =>
+      part
+        .split(/<!--.*?-->|<[^>]*>/su)
+        .join("")
+        .trim()
+    )
     .filter((line) => line !== "");
 
 describe("the welcome", () => {
