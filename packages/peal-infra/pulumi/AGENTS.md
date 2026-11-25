@@ -50,7 +50,9 @@ credentials and how to adopt what exists.
   `tests/test_cloudflared.py` in the same change. The web app's error
   reports, which browsers send without cookies, have their own Bypass
   application, `access-client-errors`, on `/api/client-errors` alone
-  (`clientErrorsPath`, which that test reads).
+  (`clientErrorsPath`, which that test reads), and so have the pictures
+  emails show, which mail services fetch: `access-email-assets`, on
+  `/api/email-assets` alone (`emailAssetsPath`, which it reads too).
 - Production is public but for its admin, Grafana and SSH: no Access
   application covers its app, site, docs or short links. Its admin
   application's paths (`adminPaths`) are the Ansible project's

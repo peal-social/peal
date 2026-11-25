@@ -145,6 +145,10 @@ peal_mail_credentials: [RESEND_API_KEY, SMTP_URL]
 # (PEAL_LEGAL_RETENTION). Both environments are Peal's, and keep it.
 peal_legal_retention: true
 
+# Who sends Peal's emails, one line under each (PEAL_MAIL_IDENTITY): the
+# company's name alone. Empty: no line.
+peal_mail_identity: Peal SAS
+
 # The hosts of object stores other than Cloudflare R2 whose buckets the
 # owner checked are in the EU: nothing in such a store's endpoint says where
 # it keeps them, so peal_runtime refuses one that is not listed here. R2's
@@ -210,7 +214,10 @@ peal_access_paths:
 # The web app's error reports go to /api/client-errors too, which browsers
 # send without cookies, so without Access's, and which the server takes
 # without a credential, counted per address (the Pulumi project's
-# clientErrorsPath, its application access-client-errors).
+# clientErrorsPath, its application access-client-errors). And mail clients
+# and the proxies of mail services fetch the pictures emails show from
+# /api/email-assets/, without signing in: the GIF and PNG files under it,
+# and nothing else (emailAssetsPath, access-email-assets).
 peal_access_bypass_paths:
   - path: ^/+api/+channels/+oauth/
     to: server
@@ -223,4 +230,6 @@ peal_access_bypass_paths:
   - path: ^/+api/+platform-events/+meta/+(facebook|instagram)/*$
     to: server
   - path: ^/+api/+client-errors/*$
+    to: server
+  - path: ^/+api/+email-assets/+[a-z0-9-]+\.(gif|png)$
     to: server
