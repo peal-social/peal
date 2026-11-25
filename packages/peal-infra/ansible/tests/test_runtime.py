@@ -81,6 +81,24 @@ def test_a_server_without_a_persons_address_sends_all_from_one(
 
 
 @pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_peals_servers_welcome_new_accounts(rendered: Path, environment: str) -> None:
+    host_env = _host_env(rendered, environment)
+
+    assert host_env["PEAL_MAIL_WELCOME_SIGNER"] == settings(environment)["peal_mail_welcome_signer"]
+    # What the server takes: one line of 60 characters at most.
+    assert 0 < len(host_env["PEAL_MAIL_WELCOME_SIGNER"]) <= 60
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_a_server_whose_welcome_nobody_signs_sends_none(
+    rendered_with: Callable[..., Path], environment: str
+) -> None:
+    host_env = _host_env(rendered_with(peal_mail_welcome_signer=""), environment)
+
+    assert "PEAL_MAIL_WELCOME_SIGNER" not in host_env
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
 def test_peals_emails_say_who_sends_them_in_the_readers_language(rendered: Path, environment: str) -> None:
     """The software states nobody by default (PEAL_MAIL_IDENTITY)."""
     host_env = _host_env(rendered, environment)

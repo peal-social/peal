@@ -30,6 +30,7 @@ peal_access_everything: true
 
 peal_mail_from: Peal Sandbox <notifications@peal.social>
 peal_mail_personal_from: Maxime at Peal Sandbox <maxime@peal.social>
+peal_mail_welcome_signer: Maxime
 
 peal_backup_path: /sandbox
 

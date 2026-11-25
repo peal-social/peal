@@ -148,6 +148,9 @@ peal_legal_retention: true
 # The sender of the emails a person signs (PEAL_MAIL_PERSONAL_FROM), which
 # each environment's group gives. Empty: they leave from peal_mail_from.
 peal_mail_personal_from: ""
+# Who signs the welcome of a new account (PEAL_MAIL_WELCOME_SIGNER), which
+# each environment's group gives. Empty: no welcome is sent.
+peal_mail_welcome_signer: ""
 
 # Who sends Peal's emails, one line under each (PEAL_MAIL_IDENTITY), and the
 # same for French readers (PEAL_MAIL_IDENTITY_FR): the company's name and
