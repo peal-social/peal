@@ -7,13 +7,13 @@ module Peal
     class PostWarning < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::PostWarningChannelsDropped }, key: "CHANNELS_DROPPED"
+      member -> { Peal::Types::PostWarningChannelsDropped }, key: "channelsDropped"
 
-      member -> { Peal::Types::PostWarningQueueChannelsDropped }, key: "QUEUE_CHANNELS_DROPPED"
+      member -> { Peal::Types::PostWarningQueueChannelsDropped }, key: "queueChannelsDropped"
 
-      member -> { Peal::Types::PostWarningXNotBilled }, key: "X_NOT_BILLED"
+      member -> { Peal::Types::PostWarningXNotBilled }, key: "xNotBilled"
     end
   end
 end

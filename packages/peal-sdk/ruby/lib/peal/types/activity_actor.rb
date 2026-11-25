@@ -7,11 +7,11 @@ module Peal
     class ActivityActor < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ActivityActorUser }, key: "USER"
+      member -> { Peal::Types::ActivityActorUser }, key: "user"
 
-      member -> { Peal::Types::ActivityActorAPIKey }, key: "API_KEY"
+      member -> { Peal::Types::ActivityActorAPIKey }, key: "apiKey"
     end
   end
 end

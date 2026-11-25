@@ -7,13 +7,13 @@ module Peal
     class TooManyRequestsErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::OwnTextLimitReachedEncoded }, key: "OWN_TEXT_LIMIT_REACHED"
+      member -> { Peal::Types::OwnTextLimitReachedEncoded }, key: "OwnTextLimitReached"
 
-      member -> { Peal::Types::TextProviderBusyEncoded }, key: "TEXT_PROVIDER_BUSY"
+      member -> { Peal::Types::TextProviderBusyEncoded }, key: "TextProviderBusy"
 
-      member -> { Peal::Types::TooManyRequestsEncoded }, key: "TOO_MANY_REQUESTS"
+      member -> { Peal::Types::TooManyRequestsEncoded }, key: "TooManyRequests"
     end
   end
 end

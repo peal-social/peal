@@ -7,19 +7,19 @@ module Peal
     class LookupResult < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::LookupResultYoutubeVideoCategories }, key: "YOUTUBE_VIDEO_CATEGORIES"
+      member -> { Peal::Types::LookupResultYoutubeVideoCategories }, key: "youtubeVideoCategories"
 
-      member -> { Peal::Types::LookupResultYoutubePlaylists }, key: "YOUTUBE_PLAYLISTS"
+      member -> { Peal::Types::LookupResultYoutubePlaylists }, key: "youtubePlaylists"
 
-      member -> { Peal::Types::LookupResultTiktokCreator }, key: "TIKTOK_CREATOR"
+      member -> { Peal::Types::LookupResultTiktokCreator }, key: "tiktokCreator"
 
-      member -> { Peal::Types::LookupResultPinterestBoards }, key: "PINTEREST_BOARDS"
+      member -> { Peal::Types::LookupResultPinterestBoards }, key: "pinterestBoards"
 
-      member -> { Peal::Types::LookupResultPinterestBoardSections }, key: "PINTEREST_BOARD_SECTIONS"
+      member -> { Peal::Types::LookupResultPinterestBoardSections }, key: "pinterestBoardSections"
 
-      member -> { Peal::Types::LookupResultLinkedinOrganizations }, key: "LINKEDIN_ORGANIZATIONS"
+      member -> { Peal::Types::LookupResultLinkedinOrganizations }, key: "linkedinOrganizations"
     end
   end
 end

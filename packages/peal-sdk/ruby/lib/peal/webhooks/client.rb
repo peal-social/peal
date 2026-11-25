@@ -200,7 +200,7 @@ module Peal
           base_url: request_options[:base_url],
           method: "POST",
           path: "api/v1/webhooks/deliveries/redeliver",
-          body: Peal::Types::WebhookRedeliveryRequest.new(params).to_h,
+          body: Peal::Types::WebhookRedeliveryRequest.coerce(params).to_h,
           request_options: request_options,
           max_retries: 0
         )

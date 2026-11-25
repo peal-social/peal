@@ -7,11 +7,11 @@ module Peal
     class ForbiddenErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ForbiddenEncoded }, key: "FORBIDDEN"
+      member -> { Peal::Types::ForbiddenEncoded }, key: "Forbidden"
 
-      member -> { Peal::Types::PartnerAccountsClosedEncoded }, key: "PARTNER_ACCOUNTS_CLOSED"
+      member -> { Peal::Types::PartnerAccountsClosedEncoded }, key: "PartnerAccountsClosed"
     end
   end
 end

@@ -7,11 +7,11 @@ module Peal
     class PaymentRequiredErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::CompositionNeedsPaymentEncoded }, key: "COMPOSITION_NEEDS_PAYMENT"
+      member -> { Peal::Types::CompositionNeedsPaymentEncoded }, key: "CompositionNeedsPayment"
 
-      member -> { Peal::Types::PlanLimitReachedEncoded }, key: "PLAN_LIMIT_REACHED"
+      member -> { Peal::Types::PlanLimitReachedEncoded }, key: "PlanLimitReached"
     end
   end
 end

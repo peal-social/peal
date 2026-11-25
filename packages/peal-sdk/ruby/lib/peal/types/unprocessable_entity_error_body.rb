@@ -7,11 +7,11 @@ module Peal
     class UnprocessableEntityErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::AiCapabilityNotOfferedEncoded }, key: "AI_CAPABILITY_NOT_OFFERED"
+      member -> { Peal::Types::AiCapabilityNotOfferedEncoded }, key: "AiCapabilityNotOffered"
 
-      member -> { Peal::Types::AiModelRequiredEncoded }, key: "AI_MODEL_REQUIRED"
+      member -> { Peal::Types::AiModelRequiredEncoded }, key: "AiModelRequired"
     end
   end
 end

@@ -7,19 +7,19 @@ module Peal
     class ArticleState < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ArticleStateDraft }, key: "DRAFT"
+      member -> { Peal::Types::ArticleStateDraft }, key: "draft"
 
-      member -> { Peal::Types::ArticleStateScheduled }, key: "SCHEDULED"
+      member -> { Peal::Types::ArticleStateScheduled }, key: "scheduled"
 
-      member -> { Peal::Types::ArticleStatePublishing }, key: "PUBLISHING"
+      member -> { Peal::Types::ArticleStatePublishing }, key: "publishing"
 
-      member -> { Peal::Types::ArticleStatePublished }, key: "PUBLISHED"
+      member -> { Peal::Types::ArticleStatePublished }, key: "published"
 
-      member -> { Peal::Types::ArticleStateFailed }, key: "FAILED"
+      member -> { Peal::Types::ArticleStateFailed }, key: "failed"
 
-      member -> { Peal::Types::ArticleStateUnconfirmed }, key: "UNCONFIRMED"
+      member -> { Peal::Types::ArticleStateUnconfirmed }, key: "unconfirmed"
     end
   end
 end

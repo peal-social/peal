@@ -7,83 +7,83 @@ module Peal
     class ContentViolation < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ContentViolationNoChannels }, key: "NO_CHANNELS"
+      member -> { Peal::Types::ContentViolationNoChannels }, key: "noChannels"
 
-      member -> { Peal::Types::ContentViolationOverrideWithoutChannel }, key: "OVERRIDE_WITHOUT_CHANNEL"
+      member -> { Peal::Types::ContentViolationOverrideWithoutChannel }, key: "overrideWithoutChannel"
 
-      member -> { Peal::Types::ContentViolationOptionsWithoutChannel }, key: "OPTIONS_WITHOUT_CHANNEL"
+      member -> { Peal::Types::ContentViolationOptionsWithoutChannel }, key: "optionsWithoutChannel"
 
-      member -> { Peal::Types::ContentViolationOptionsForOtherPlatform }, key: "OPTIONS_FOR_OTHER_PLATFORM"
+      member -> { Peal::Types::ContentViolationOptionsForOtherPlatform }, key: "optionsForOtherPlatform"
 
-      member -> { Peal::Types::ContentViolationOptionMissing }, key: "OPTION_MISSING"
+      member -> { Peal::Types::ContentViolationOptionMissing }, key: "optionMissing"
 
-      member -> { Peal::Types::ContentViolationOptionTooLong }, key: "OPTION_TOO_LONG"
+      member -> { Peal::Types::ContentViolationOptionTooLong }, key: "optionTooLong"
 
-      member -> { Peal::Types::ContentViolationOptionInvalid }, key: "OPTION_INVALID"
+      member -> { Peal::Types::ContentViolationOptionInvalid }, key: "optionInvalid"
 
-      member -> { Peal::Types::ContentViolationEmpty }, key: "EMPTY"
+      member -> { Peal::Types::ContentViolationEmpty }, key: "empty"
 
-      member -> { Peal::Types::ContentViolationTextTooLong }, key: "TEXT_TOO_LONG"
+      member -> { Peal::Types::ContentViolationTextTooLong }, key: "textTooLong"
 
-      member -> { Peal::Types::ContentViolationForbiddenCharacters }, key: "FORBIDDEN_CHARACTERS"
+      member -> { Peal::Types::ContentViolationForbiddenCharacters }, key: "forbiddenCharacters"
 
-      member -> { Peal::Types::ContentViolationTooManyMedia }, key: "TOO_MANY_MEDIA"
+      member -> { Peal::Types::ContentViolationTooManyMedia }, key: "tooManyMedia"
 
-      member -> { Peal::Types::ContentViolationTooManyParts }, key: "TOO_MANY_PARTS"
+      member -> { Peal::Types::ContentViolationTooManyParts }, key: "tooManyParts"
 
-      member -> { Peal::Types::ContentViolationPartsNeedReconnect }, key: "PARTS_NEED_RECONNECT"
+      member -> { Peal::Types::ContentViolationPartsNeedReconnect }, key: "partsNeedReconnect"
 
-      member -> { Peal::Types::ContentViolationCommentsTurnedOff }, key: "COMMENTS_TURNED_OFF"
+      member -> { Peal::Types::ContentViolationCommentsTurnedOff }, key: "commentsTurnedOff"
 
-      member -> { Peal::Types::ContentViolationPollNotSupported }, key: "POLL_NOT_SUPPORTED"
+      member -> { Peal::Types::ContentViolationPollNotSupported }, key: "pollNotSupported"
 
-      member -> { Peal::Types::ContentViolationPollChoiceCount }, key: "POLL_CHOICE_COUNT"
+      member -> { Peal::Types::ContentViolationPollChoiceCount }, key: "pollChoiceCount"
 
-      member -> { Peal::Types::ContentViolationPollChoiceLength }, key: "POLL_CHOICE_LENGTH"
+      member -> { Peal::Types::ContentViolationPollChoiceLength }, key: "pollChoiceLength"
 
-      member -> { Peal::Types::ContentViolationPollChoiceRepeated }, key: "POLL_CHOICE_REPEATED"
+      member -> { Peal::Types::ContentViolationPollChoiceRepeated }, key: "pollChoiceRepeated"
 
-      member -> { Peal::Types::ContentViolationPollDurationOutOfRange }, key: "POLL_DURATION_OUT_OF_RANGE"
+      member -> { Peal::Types::ContentViolationPollDurationOutOfRange }, key: "pollDurationOutOfRange"
 
-      member -> { Peal::Types::ContentViolationPollMultipleChoice }, key: "POLL_MULTIPLE_CHOICE"
+      member -> { Peal::Types::ContentViolationPollMultipleChoice }, key: "pollMultipleChoice"
 
-      member -> { Peal::Types::ContentViolationPollWithMedia }, key: "POLL_WITH_MEDIA"
+      member -> { Peal::Types::ContentViolationPollWithMedia }, key: "pollWithMedia"
 
-      member -> { Peal::Types::ContentViolationMediaRequired }, key: "MEDIA_REQUIRED"
+      member -> { Peal::Types::ContentViolationMediaRequired }, key: "mediaRequired"
 
-      member -> { Peal::Types::ContentViolationTooManyHashtags }, key: "TOO_MANY_HASHTAGS"
+      member -> { Peal::Types::ContentViolationTooManyHashtags }, key: "tooManyHashtags"
 
-      member -> { Peal::Types::ContentViolationTooManyMentions }, key: "TOO_MANY_MENTIONS"
+      member -> { Peal::Types::ContentViolationTooManyMentions }, key: "tooManyMentions"
 
-      member -> { Peal::Types::ContentViolationTooManyLinks }, key: "TOO_MANY_LINKS"
+      member -> { Peal::Types::ContentViolationTooManyLinks }, key: "tooManyLinks"
 
-      member -> { Peal::Types::ContentViolationTooManyVideos }, key: "TOO_MANY_VIDEOS"
+      member -> { Peal::Types::ContentViolationTooManyVideos }, key: "tooManyVideos"
 
-      member -> { Peal::Types::ContentViolationMixedMedia }, key: "MIXED_MEDIA"
+      member -> { Peal::Types::ContentViolationMixedMedia }, key: "mixedMedia"
 
-      member -> { Peal::Types::ContentViolationMediaTypeUnsupported }, key: "MEDIA_TYPE_UNSUPPORTED"
+      member -> { Peal::Types::ContentViolationMediaTypeUnsupported }, key: "mediaTypeUnsupported"
 
-      member -> { Peal::Types::ContentViolationMediaTooLarge }, key: "MEDIA_TOO_LARGE"
+      member -> { Peal::Types::ContentViolationMediaTooLarge }, key: "mediaTooLarge"
 
-      member -> { Peal::Types::ContentViolationMediaTooSmall }, key: "MEDIA_TOO_SMALL"
+      member -> { Peal::Types::ContentViolationMediaTooSmall }, key: "mediaTooSmall"
 
-      member -> { Peal::Types::ContentViolationVideoTooLong }, key: "VIDEO_TOO_LONG"
+      member -> { Peal::Types::ContentViolationVideoTooLong }, key: "videoTooLong"
 
-      member -> { Peal::Types::ContentViolationVideoTooShort }, key: "VIDEO_TOO_SHORT"
+      member -> { Peal::Types::ContentViolationVideoTooShort }, key: "videoTooShort"
 
-      member -> { Peal::Types::ContentViolationTooManyPixels }, key: "TOO_MANY_PIXELS"
+      member -> { Peal::Types::ContentViolationTooManyPixels }, key: "tooManyPixels"
 
-      member -> { Peal::Types::ContentViolationSideOutOfRange }, key: "SIDE_OUT_OF_RANGE"
+      member -> { Peal::Types::ContentViolationSideOutOfRange }, key: "sideOutOfRange"
 
-      member -> { Peal::Types::ContentViolationSideSumTooLarge }, key: "SIDE_SUM_TOO_LARGE"
+      member -> { Peal::Types::ContentViolationSideSumTooLarge }, key: "sideSumTooLarge"
 
-      member -> { Peal::Types::ContentViolationMediaTotalTooLarge }, key: "MEDIA_TOTAL_TOO_LARGE"
+      member -> { Peal::Types::ContentViolationMediaTotalTooLarge }, key: "mediaTotalTooLarge"
 
-      member -> { Peal::Types::ContentViolationAspectRatioUnsupported }, key: "ASPECT_RATIO_UNSUPPORTED"
+      member -> { Peal::Types::ContentViolationAspectRatioUnsupported }, key: "aspectRatioUnsupported"
 
-      member -> { Peal::Types::ContentViolationAltTextTooLong }, key: "ALT_TEXT_TOO_LONG"
+      member -> { Peal::Types::ContentViolationAltTextTooLong }, key: "altTextTooLong"
     end
   end
 end

@@ -7,11 +7,11 @@ module Peal
     class TargetConfirmation < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::TargetConfirmationPublished }, key: "PUBLISHED"
+      member -> { Peal::Types::TargetConfirmationPublished }, key: "published"
 
-      member -> { Peal::Types::TargetConfirmationNotPublished }, key: "NOT_PUBLISHED"
+      member -> { Peal::Types::TargetConfirmationNotPublished }, key: "notPublished"
     end
   end
 end

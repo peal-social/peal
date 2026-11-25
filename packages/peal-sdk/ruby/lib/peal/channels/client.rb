@@ -298,7 +298,7 @@ module Peal
           base_url: request_options[:base_url],
           method: "POST",
           path: "api/v1/channels/chats",
-          body: Peal::Types::ConnectChat.new(params).to_h,
+          body: Peal::Types::ConnectChat.coerce(params).to_h,
           request_options: request_options,
           max_retries: 0
         )

@@ -7,17 +7,17 @@ module Peal
     class AssistantAction < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::AssistantActionRewrite }, key: "REWRITE"
+      member -> { Peal::Types::AssistantActionRewrite }, key: "rewrite"
 
-      member -> { Peal::Types::AssistantActionShorten }, key: "SHORTEN"
+      member -> { Peal::Types::AssistantActionShorten }, key: "shorten"
 
-      member -> { Peal::Types::AssistantActionTranslate }, key: "TRANSLATE"
+      member -> { Peal::Types::AssistantActionTranslate }, key: "translate"
 
-      member -> { Peal::Types::AssistantActionHashtags }, key: "HASHTAGS"
+      member -> { Peal::Types::AssistantActionHashtags }, key: "hashtags"
 
-      member -> { Peal::Types::AssistantActionWrite }, key: "WRITE"
+      member -> { Peal::Types::AssistantActionWrite }, key: "write"
     end
   end
 end

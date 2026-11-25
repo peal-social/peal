@@ -7,13 +7,13 @@ module Peal
     class PostTiming < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::PostTimingNow }, key: "NOW"
+      member -> { Peal::Types::PostTimingNow }, key: "now"
 
-      member -> { Peal::Types::PostTimingAt }, key: "AT"
+      member -> { Peal::Types::PostTimingAt }, key: "at"
 
-      member -> { Peal::Types::PostTimingQueue }, key: "QUEUE"
+      member -> { Peal::Types::PostTimingQueue }, key: "queue"
     end
   end
 end

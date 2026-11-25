@@ -7,11 +7,11 @@ module Peal
     class BulkPostResult < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::BulkPostResultCreated }, key: "CREATED"
+      member -> { Peal::Types::BulkPostResultCreated }, key: "created"
 
-      member -> { Peal::Types::BulkPostResultRefused }, key: "REFUSED"
+      member -> { Peal::Types::BulkPostResultRefused }, key: "refused"
     end
   end
 end

@@ -7,15 +7,15 @@ module Peal
     class ImportRowResult < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ImportRowResultCreated }, key: "CREATED"
+      member -> { Peal::Types::ImportRowResultCreated }, key: "created"
 
-      member -> { Peal::Types::ImportRowResultValid }, key: "VALID"
+      member -> { Peal::Types::ImportRowResultValid }, key: "valid"
 
-      member -> { Peal::Types::ImportRowResultRefused }, key: "REFUSED"
+      member -> { Peal::Types::ImportRowResultRefused }, key: "refused"
 
-      member -> { Peal::Types::ImportRowResultUnreadable }, key: "UNREADABLE"
+      member -> { Peal::Types::ImportRowResultUnreadable }, key: "unreadable"
     end
   end
 end

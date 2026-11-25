@@ -7,19 +7,19 @@ module Peal
     class AccountRestriction < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::AccountRestrictionOptionValues }, key: "OPTION_VALUES"
+      member -> { Peal::Types::AccountRestrictionOptionValues }, key: "optionValues"
 
-      member -> { Peal::Types::AccountRestrictionOptionFixed }, key: "OPTION_FIXED"
+      member -> { Peal::Types::AccountRestrictionOptionFixed }, key: "optionFixed"
 
-      member -> { Peal::Types::AccountRestrictionVideoDuration }, key: "VIDEO_DURATION"
+      member -> { Peal::Types::AccountRestrictionVideoDuration }, key: "videoDuration"
 
-      member -> { Peal::Types::AccountRestrictionMediaTypesRefused }, key: "MEDIA_TYPES_REFUSED"
+      member -> { Peal::Types::AccountRestrictionMediaTypesRefused }, key: "mediaTypesRefused"
 
-      member -> { Peal::Types::AccountRestrictionOptionNeedsReconnect }, key: "OPTION_NEEDS_RECONNECT"
+      member -> { Peal::Types::AccountRestrictionOptionNeedsReconnect }, key: "optionNeedsReconnect"
 
-      member -> { Peal::Types::AccountRestrictionPartsNeedReconnect }, key: "PARTS_NEED_RECONNECT"
+      member -> { Peal::Types::AccountRestrictionPartsNeedReconnect }, key: "partsNeedReconnect"
     end
   end
 end

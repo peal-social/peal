@@ -188,10 +188,10 @@ require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
-# The SDK answers the credential as a hash.
+# Each kind of credential is a class of its own.
 credential = peal.credential.get
 
-puts credential[:workspace][:id] if credential[:_tag] == "apiKey"
+puts credential.workspace.id if credential.is_a?(Peal::Types::CredentialAPIKey)
 ```
 
 ```java Java
@@ -461,10 +461,9 @@ require "securerandom"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
-# 1. Where it can go: the channels that can post. The SDK answers a
-# channel's status as a hash.
+# 1. Where it can go: the channels that can post.
 channels = peal.channels.list
-channel_ids = channels.select { |channel| channel.status[:_tag] == "active" }.map(&:id)
+channel_ids = channels.select { |channel| channel.status.is_a?(Peal::Types::ChannelStatusActive) }.map(&:id)
 
 # 2. An image that's already online. The server fetches it itself.
 image = peal.media.import_from_url(

@@ -7,11 +7,11 @@ module Peal
     class NotFoundErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::PartnerNotFoundEncoded }, key: "PARTNER_NOT_FOUND"
+      member -> { Peal::Types::PartnerNotFoundEncoded }, key: "PartnerNotFound"
 
-      member -> { Peal::Types::WorkspaceNotFoundEncoded }, key: "WORKSPACE_NOT_FOUND"
+      member -> { Peal::Types::WorkspaceNotFoundEncoded }, key: "WorkspaceNotFound"
     end
   end
 end

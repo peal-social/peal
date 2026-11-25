@@ -7,13 +7,13 @@ module Peal
     class ConflictErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::ChannelAccountTakenEncoded }, key: "CHANNEL_ACCOUNT_TAKEN"
+      member -> { Peal::Types::ChannelAccountTakenEncoded }, key: "ChannelAccountTaken"
 
-      member -> { Peal::Types::IdempotencyKeyReusedEncoded }, key: "IDEMPOTENCY_KEY_REUSED"
+      member -> { Peal::Types::IdempotencyKeyReusedEncoded }, key: "IdempotencyKeyReused"
 
-      member -> { Peal::Types::WorkspaceBusyEncoded }, key: "WORKSPACE_BUSY"
+      member -> { Peal::Types::WorkspaceBusyEncoded }, key: "WorkspaceBusy"
     end
   end
 end

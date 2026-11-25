@@ -7,11 +7,11 @@ module Peal
     class ServiceUnavailableErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::BillingUnavailableEncoded }, key: "BILLING_UNAVAILABLE"
+      member -> { Peal::Types::BillingUnavailableEncoded }, key: "BillingUnavailable"
 
-      member -> { Peal::Types::MediaStoreUnavailableEncoded }, key: "MEDIA_STORE_UNAVAILABLE"
+      member -> { Peal::Types::MediaStoreUnavailableEncoded }, key: "MediaStoreUnavailable"
     end
   end
 end

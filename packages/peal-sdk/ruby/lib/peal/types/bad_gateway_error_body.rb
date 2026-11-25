@@ -7,11 +7,11 @@ module Peal
     class BadGatewayErrorBody < Internal::Types::Model
       extend Peal::Internal::Types::Union
 
-      discriminant :type
+      discriminant :_tag
 
-      member -> { Peal::Types::TextProviderRefusedEncoded }, key: "TEXT_PROVIDER_REFUSED"
+      member -> { Peal::Types::TextProviderRefusedEncoded }, key: "TextProviderRefused"
 
-      member -> { Peal::Types::AssistantFailedEncoded }, key: "ASSISTANT_FAILED"
+      member -> { Peal::Types::AssistantFailedEncoded }, key: "AssistantFailed"
     end
   end
 end
