@@ -1,8 +1,10 @@
-// The connection of each write to an article, to a rule that publishes a
-// follow-up or repeats a post, or to a file the assistant makes into the
-// media library is kept as a post's is: once the request is answered
-// without an error, whatever signed it in, and never for one refused or
-// failed. Each operation is the contract's own, read by reflection, sent
+// The connection of each write that joined the journal (to an article, a
+// signature, a feed, a rule that publishes a follow-up or repeats a post, a
+// queue's reshuffle, a file the assistant makes into the media library, a
+// transcript saved as a description) is kept as a post's is: once the
+// request is answered without an error, whatever signed it in, and never
+// for one refused or failed, nor for one whose handler said it changed no
+// content. Each operation is the contract's own, read by reflection, sent
 // through the API's Authentication with what it needs faked.
 import { assert, describe, it } from "@effect/vitest";
 import { Effect, Layer, Option, Redacted, Ref } from "effect";
@@ -11,7 +13,9 @@ import { HttpApi } from "effect/http-api";
 import type { HttpApiEndpoint, HttpApiGroup } from "effect/http-api";
 import { Api, Authentication, workspaceHeader } from "peal-contract";
 
+import { changesNoContent, changesNothing } from "#shared/api/change-mark.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { AuthenticationLive } from "#workspace/api/security.ts";
 import { Authenticate } from "#workspace/application/authenticate.ts";
 import { BrowserSessions } from "#workspace/application/browser-sessions.ts";
@@ -32,10 +36,14 @@ const joined = [
   "articles.unschedule",
   "articles.update",
   "articles.updateOnSite",
+  "automations.feeds.create",
+  "automations.feeds.delete",
+  "automations.feeds.update",
   "automations.followUps.approve",
   "automations.followUps.create",
   "automations.followUps.delete",
   "automations.followUps.update",
+  "automations.queues.reshuffle",
   "automations.recycling.create",
   "automations.recycling.delete",
   "automations.recycling.resume",
@@ -43,8 +51,12 @@ const joined = [
   "media.images.create",
   "media.slideshows.create",
   "media.slideshows.createFromEdit",
+  "media.transcriptions.create",
   "media.videos.create",
   "media.voiceovers.create",
+  "posts.signatures.create",
+  "posts.signatures.delete",
+  "posts.signatures.update",
 ];
 
 interface Operation {
@@ -68,8 +80,13 @@ HttpApi.reflect(Api, {
   },
 });
 
+// The key's own workspace, and another one a request may name.
 const workspaceId = WorkspaceIdSchema.make(
   "0195d2c0-0000-7000-8000-0000000000b1"
+);
+
+const elsewhere = WorkspaceIdSchema.make(
+  "0195d2c0-0000-7000-8000-0000000000b3"
 );
 
 const userId = UserIdSchema.make("0195d2c0-0000-7000-8000-0000000000b2");
@@ -143,26 +160,35 @@ const authenticationKeeping = (kept: Ref.Ref<readonly ContentChange[]>) =>
 
 type Access = ContentChange["access"];
 
-// What the handler does: answer, answer a refusal (an error the API
-// encoded), or fail.
-type Outcome = "answered" | "failed" | "refused";
+// What the handler does: answer; answer, having said the request changed
+// no content (a transcript not saved) or nothing at all (a dry run);
+// answer a refusal (an error the API encoded); or fail.
+const answer = (status: number) =>
+  Effect.succeed(HttpServerResponse.empty({ status }));
 
-const handlerFor = (outcome: Outcome) => {
-  if (outcome === "failed") {
-    return Effect.die(new Error("A synthetic failure of the handler"));
-  }
-
-  return Effect.succeed(
-    HttpServerResponse.empty({ status: outcome === "answered" ? 201 : 409 })
-  );
+const handlers = {
+  answered: answer(201),
+  failed: Effect.die(new Error("A synthetic failure of the handler")),
+  noContent: changesNoContent.pipe(Effect.andThen(answer(200))),
+  nothing: changesNothing.pipe(Effect.andThen(answer(200))),
+  refused: answer(409),
 };
 
+type Outcome = keyof typeof handlers;
+
+const handlerFor = (outcome: Outcome) => handlers[outcome];
+
+// The workspace a key acts in by default: its own, so it names none.
+const namedBy = (access: Access | "nobody"): Option.Option<WorkspaceId> =>
+  access === "apiKey" ? Option.none() : Option.some(workspaceId);
+
 // A request to the operation through Authentication, signed in as `access`
-// says, or with no credential at all.
+// says, or with no credential at all, naming the workspace `named` gives.
 const send = (
   { endpoint, group }: Operation,
   access: Access | "nobody",
-  outcome: Outcome
+  outcome: Outcome,
+  named: Option.Option<WorkspaceId> = namedBy(access)
 ) =>
   Effect.gen(function* sending() {
     const kept = yield* Ref.make<readonly ContentChange[]>([]);
@@ -173,13 +199,17 @@ const send = (
 
     const sent = {
       origin: "http://localhost:3001",
-      [workspaceHeader]: workspaceId,
       "x-forwarded-for": "203.0.113.9",
     };
 
+    const naming = Option.match(named, {
+      onNone: () => sent,
+      onSome: (id) => ({ ...sent, [workspaceHeader]: id }),
+    });
+
     // Only a session sends cookies.
     const headers =
-      access === "session" ? { ...sent, cookie: sessionCookie } : sent;
+      access === "session" ? { ...naming, cookie: sessionCookie } : naming;
 
     const request = HttpServerRequest.fromWeb(
       new Request(`http://localhost:3001${endpoint.path}`, {
@@ -216,10 +246,25 @@ const send = (
       Effect.exit
     );
 
-    return yield* Ref.get(kept);
+    return (yield* Ref.get(kept)).map((change) => ({
+      access: change.access,
+      apiKeyId: Option.getOrNull(change.apiKeyId),
+      userId: Option.getOrNull(change.userId),
+      workspaceId: Option.getOrNull(change.workspaceId),
+    }));
   });
 
 const accesses: readonly Access[] = ["session", "apiKey", "oauth"];
+
+// The one connection an answered write keeps, in `kept`'s workspace.
+const keptAs = (access: Access, kept: WorkspaceId) => [
+  {
+    access,
+    apiKeyId: access === "apiKey" ? "synthetic-key" : null,
+    userId: access === "apiKey" ? null : userId,
+    workspaceId: kept,
+  },
+];
 
 describe("the connections kept of the writes that joined the journal", () => {
   it("finds every one of them in the contract", () => {
@@ -235,23 +280,9 @@ describe("the connections kept of the writes that joined the journal", () => {
       Effect.gen(function* answered() {
         for (const operation of operations) {
           for (const access of accesses) {
-            const changes = yield* send(operation, access, "answered");
-
             assert.deepStrictEqual(
-              changes.map((change) => ({
-                access: change.access,
-                apiKeyId: Option.getOrNull(change.apiKeyId),
-                userId: Option.getOrNull(change.userId),
-                workspaceId: Option.getOrNull(change.workspaceId),
-              })),
-              [
-                {
-                  access,
-                  apiKeyId: access === "apiKey" ? "synthetic-key" : null,
-                  userId: access === "apiKey" ? null : userId,
-                  workspaceId,
-                },
-              ],
+              yield* send(operation, access, "answered"),
+              keptAs(access, workspaceId),
               `${operation.name} through ${access}`
             );
           }
@@ -259,25 +290,65 @@ describe("the connections kept of the writes that joined the journal", () => {
       })
   );
 
-  it.effect("keeps none for a write refused, failed or not signed in", () =>
-    Effect.gen(function* notKept() {
-      for (const operation of operations) {
-        for (const access of accesses) {
-          for (const outcome of ["refused", "failed"] as const) {
+  it.effect(
+    "keeps a key's own workspace, and the workspace a person's request names",
+    () =>
+      Effect.gen(function* workspaces() {
+        for (const operation of operations) {
+          // A key acts in its own workspace, whatever the request names.
+          assert.deepStrictEqual(
+            yield* send(
+              operation,
+              "apiKey",
+              "answered",
+              Option.some(elsewhere)
+            ),
+            keptAs("apiKey", workspaceId),
+            `${operation.name} through a key naming another workspace`
+          );
+
+          for (const access of ["session", "oauth"] as const) {
             assert.deepStrictEqual(
-              yield* send(operation, access, outcome),
-              [],
-              `${operation.name} ${outcome} through ${access}`
+              yield* send(
+                operation,
+                access,
+                "answered",
+                Option.some(elsewhere)
+              ),
+              keptAs(access, elsewhere),
+              `${operation.name} through ${access} naming another workspace`
             );
           }
         }
+      })
+  );
 
-        assert.deepStrictEqual(
-          yield* send(operation, "nobody", "answered"),
-          [],
-          `${operation.name} without a credential`
-        );
-      }
-    })
+  it.effect(
+    "keeps none for a write refused, failed, that changed no content or not signed in",
+    () =>
+      Effect.gen(function* notKept() {
+        for (const operation of operations) {
+          for (const access of accesses) {
+            for (const outcome of [
+              "refused",
+              "failed",
+              "noContent",
+              "nothing",
+            ] as const) {
+              assert.deepStrictEqual(
+                yield* send(operation, access, outcome),
+                [],
+                `${operation.name} ${outcome} through ${access}`
+              );
+            }
+          }
+
+          assert.deepStrictEqual(
+            yield* send(operation, "nobody", "answered"),
+            [],
+            `${operation.name} without a credential`
+          );
+        }
+      })
   );
 });

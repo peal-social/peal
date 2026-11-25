@@ -9,6 +9,7 @@ import {
   asksForChange,
   changesContent,
   contentGroups,
+  contentOperations,
 } from "#workspace/api/security.ts";
 
 interface Write {
@@ -46,8 +47,9 @@ HttpApi.reflect(Api, {
 
 // Every write whose connection is kept, by operation, method and path: the
 // fifty of posts, media, comments, messages and approvals, and since then
-// the writes to articles, the rules that publish a follow-up or repeat a
-// post, and the files the assistant makes into the media library.
+// the writes to articles, signatures, feeds, the rules that publish a
+// follow-up or repeat a post, a queue's reshuffle, the files the assistant
+// makes into the media library and a transcript saved as a description.
 const journalled = [
   "approvals.approve POST /api/v1/approvals/:postId/approve",
   "approvals.comment POST /api/v1/approvals/:postId/comments",
@@ -67,10 +69,14 @@ const journalled = [
   "automations.commentRules.create POST /api/v1/automations/comment-rules",
   "automations.commentRules.delete DELETE /api/v1/automations/comment-rules/:ruleId",
   "automations.commentRules.update PATCH /api/v1/automations/comment-rules/:ruleId",
+  "automations.feeds.create POST /api/v1/automations/feeds",
+  "automations.feeds.delete DELETE /api/v1/automations/feeds/:feedId",
+  "automations.feeds.update PATCH /api/v1/automations/feeds/:feedId",
   "automations.followUps.approve POST /api/v1/automations/follow-ups/:ruleId/approve",
   "automations.followUps.create POST /api/v1/automations/follow-ups",
   "automations.followUps.delete DELETE /api/v1/automations/follow-ups/:ruleId",
   "automations.followUps.update PATCH /api/v1/automations/follow-ups/:ruleId",
+  "automations.queues.reshuffle POST /api/v1/automations/queues/:queueId/reshuffle",
   "automations.recycling.create POST /api/v1/automations/recycling",
   "automations.recycling.delete DELETE /api/v1/automations/recycling/:ruleId",
   "automations.recycling.resume POST /api/v1/automations/recycling/:ruleId/resume",
@@ -98,6 +104,7 @@ const journalled = [
   "media.importFromUrl POST /api/v1/media/import",
   "media.slideshows.create POST /api/v1/media/slideshows",
   "media.slideshows.createFromEdit POST /api/v1/media/slideshows/edits",
+  "media.transcriptions.create POST /api/v1/media/:mediaId/transcriptions",
   "media.videos.create POST /api/v1/media/videos/generations",
   "media.voiceovers.create POST /api/v1/media/voiceovers",
   "posts.bulk POST /api/v1/posts/bulk",
@@ -116,6 +123,9 @@ const journalled = [
   "posts.reschedule POST /api/v1/posts/:postId/reschedule",
   "posts.schedule POST /api/v1/posts/:postId/schedule",
   "posts.setTags PUT /api/v1/posts/:postId/tags",
+  "posts.signatures.create POST /api/v1/posts/signatures",
+  "posts.signatures.delete DELETE /api/v1/posts/signatures/:signatureId",
+  "posts.signatures.update PUT /api/v1/posts/signatures/:signatureId",
   "posts.unpublish POST /api/v1/posts/:postId/unpublish",
   "posts.unpublishTarget POST /api/v1/posts/:postId/targets/:targetId/unpublish",
   "posts.unschedule POST /api/v1/posts/:postId/unschedule",
@@ -139,6 +149,7 @@ describe("the writes kept", () => {
       "approvals",
       "articles",
       "automations.commentRules",
+      "automations.feeds",
       "automations.followUps",
       "automations.recycling",
       "inbox.comments",
@@ -147,17 +158,46 @@ describe("the writes kept", () => {
       "media",
       "media.images",
       "media.slideshows",
+      "media.transcriptions",
       "media.videos",
       "media.voiceovers",
       "posts",
       "posts.drafts",
+      "posts.signatures",
     ]);
     expect(
       [...contentGroups].filter((name) => !identifiers.has(name))
     ).toStrictEqual([]);
   });
 
-  it("journals the connection of the seventy-one writes that change content", () => {
+  it("names single operations only in groups it does not keep whole", () => {
+    const groupOf = new Map<string, string>();
+
+    HttpApi.reflect(Api, {
+      onEndpoint: ({ endpoint, group }) => {
+        groupOf.set(
+          `${group.identifier}.${endpoint.identifier}`,
+          group.identifier
+        );
+      },
+      onGroup: () => {
+        // Only endpoints matter.
+      },
+    });
+
+    expect([...contentOperations].toSorted()).toStrictEqual([
+      "automations.queues.reshuffle",
+    ]);
+    expect(
+      [...contentOperations].filter((operation) => {
+        const group = groupOf.get(operation);
+
+        return group === undefined || contentGroups.has(group);
+      })
+    ).toStrictEqual([]);
+  });
+
+  it("journals the connection of the seventy-nine writes that change content", () => {
     expect(
       writes
         .flatMap(({ journalled: kept, route }) => (kept ? [route] : []))
@@ -165,9 +205,9 @@ describe("the writes kept", () => {
     ).toStrictEqual(journalled);
   });
 
-  it("logs every workspace write but the three checks, the journalled ones among them", () => {
+  it("logs every workspace write but the four checks, the journalled ones among them", () => {
     expect(writes.filter((write) => write.inWorkspace)).toHaveLength(158);
-    expect(writes.filter((write) => write.logged)).toHaveLength(155);
+    expect(writes.filter((write) => write.logged)).toHaveLength(154);
     expect(
       writes.filter((write) => write.journalled && !write.logged)
     ).toStrictEqual([]);
@@ -176,6 +216,7 @@ describe("the writes kept", () => {
   it("neither journals nor logs a check", () => {
     for (const check of [
       "ads.quoteBoost POST",
+      "automations.feeds.preview POST",
       "channels.lookups.run POST",
       "posts.validate POST",
     ]) {
