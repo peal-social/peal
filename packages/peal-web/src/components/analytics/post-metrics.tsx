@@ -1,39 +1,32 @@
 "use client";
 
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
-import { DateTime } from "effect";
+import { Cause, DateTime, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useFormatter, useTranslations } from "next-intl";
-import { countedPlatforms } from "peal-contract";
+import { Forbidden, postCountsReadForDays } from "peal-contract";
 import type {
-  SocialChannel,
   Platform,
   PlatformCapabilities,
   Post,
   PostAnalytics,
+  PostTarget,
+  SocialChannel,
 } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 
 import { platformCapabilities, postAnalytics } from "#analytics/api.ts";
-import { channelName } from "#channels/channel-name.ts";
+import {
+  channelsRevisionOf,
+  countsRowsOf,
+  likelyCharted,
+} from "#analytics/post-counts.ts";
+import type { CountsRow, EndReason } from "#analytics/post-counts.ts";
 import { MetricList } from "#components/analytics/metric-list.tsx";
 import { ReadingsChart } from "#components/analytics/readings-chart.tsx";
 import { InTimeZone } from "#components/notices/in-time-zone.tsx";
 import { browserTimeZone } from "#posts/zoned-time.ts";
-
-interface PostMetricsViewProps {
-  readonly analytics: PostAnalytics;
-  readonly channels: readonly SocialChannel[];
-  /**
-   * The platforms this server reads counts on, as its capabilities say
-   * (`countedOn`): X only where its operator turned X reads on. Left out,
-   * every platform Peal has a reader for.
-   */
-  readonly counted?: readonly Platform[];
-  /** The channels the post went live on. */
-  readonly publishedOn: readonly string[];
-}
 
 /**
  * The platforms a server reads each post's counts on, from its
@@ -46,139 +39,163 @@ export const countedOn = (
     analytics.perPost ? [platform] : []
   );
 
-/**
- * What a post's channels counted: each one's latest counts, when they were
- * read, and how they went over time. Before the first read, says when the
- * counts come, and for the platforms Peal reads no counts on, that it has
- * none.
- */
-export const PostMetricsView = ({
-  analytics,
-  channels,
-  counted: countedHere = countedPlatforms,
-  publishedOn,
-}: PostMetricsViewProps) => {
+/** Names a channel as the post's page does: its name and its platform. */
+export type ChannelNamer = (channelId: string | undefined) => string;
+
+interface PostMetricsViewProps {
+  readonly analytics: PostAnalytics;
+  readonly channelName: ChannelNamer;
+  readonly channels: readonly SocialChannel[];
+  /**
+   * The platforms this server reads counts on, as its capabilities say
+   * (`countedOn`): X only where its operator turned X reads on. Undefined
+   * when they could not be read: then no count is promised.
+   */
+  readonly counted: readonly Platform[] | undefined;
+  readonly now: DateTime.Utc;
+  /** The post's targets, in its order. */
+  readonly targets: readonly PostTarget[];
+}
+
+const CountsRowView = ({
+  channelName,
+  row,
+}: {
+  readonly channelName: ChannelNamer;
+  readonly row: CountsRow;
+}) => {
   const t = useTranslations("Analytics");
   const tPosts = useTranslations("Posts");
   const format = useFormatter();
+  const { state } = row;
+  const name = channelName(row.channelId);
 
-  // On LinkedIn, Peal reads the counts of company pages only.
-  const isCounted = ({ connection, platform }: SocialChannel) =>
-    countedHere.includes(platform) &&
-    (platform !== "linkedin" || connection === "linkedinPage");
+  const endedText = (reason: EndReason) =>
+    t("post.ended", { days: postCountsReadForDays, reason });
 
-  // The channels the post went live on, where they are still known.
-  const publishedChannels = publishedOn.map((channelId) =>
-    channels.find(({ id }) => id === channelId)
-  );
+  const aside =
+    state._tag === "read" && state.tracked.lastCollectedAt !== null
+      ? t("post.readAt", {
+          at: format.dateTime(DateTime.toDate(state.tracked.lastCollectedAt), {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }),
+        })
+      : null;
 
-  const uncounted = [
-    ...new Set(
-      publishedChannels.flatMap((channel) =>
-        channel === undefined || isCounted(channel) ? [] : [channel.platform]
-      )
-    ),
-  ];
+  // The row's one line of words, if it has one.
+  const note = (() => {
+    if (state._tag === "read") {
+      if (state.ended !== undefined) {
+        return endedText(state.ended);
+      }
 
-  // The platforms Peal reads counts on, as the reader's language lists them.
-  const counted = format.list(
-    countedHere.map((platform) =>
-      t("post.countedName", {
-        name: tPosts("platform", { platform }),
-        platform,
-      })
-    ),
-    { type: "conjunction" }
-  );
+      return state.paused === undefined
+        ? null
+        : t("post.paused", { status: state.paused });
+    }
 
-  const note =
-    uncounted.length === 0 ? null : (
-      <p className="text-muted-foreground text-sm">
-        {t("post.uncounted", {
-          counted,
-          platforms: format.list(
-            uncounted.map((platform) =>
-              t("post.uncountedName", {
-                name: tPosts("platform", { platform }),
-                platform,
-              })
-            ),
-            { type: "conjunction" }
-          ),
-        })}
-      </p>
-    );
+    if (state._tag === "ended") {
+      return endedText(state.reason);
+    }
 
-  if (analytics.targets.length === 0) {
-    // Counts may still come from a channel Peal reads, or one since
-    // disconnected, which it can no longer tell.
-    const mayCome = publishedChannels.some(
-      (channel) => channel === undefined || isCounted(channel)
-    );
+    if (state._tag === "paused") {
+      return t("post.paused", { status: state.status });
+    }
 
-    return (
-      <div className="flex flex-col gap-2">
-        {mayCome || note === null ? (
-          <p className="text-muted-foreground text-sm">
-            {t("post.notYet", { counted })}
-          </p>
-        ) : null}
-        {note}
-      </div>
-    );
-  }
+    if (state._tag === "uncounted") {
+      return t("post.uncounted", {
+        name: tPosts("platform", { platform: state.platform }),
+        platform: state.platform,
+      });
+    }
+
+    return t(`post.${state._tag}`);
+  })();
 
   return (
-    <div className="flex flex-col gap-6">
-      <ul className="flex flex-col gap-6">
-        {analytics.targets.map((target) => {
-          const channel = channels.find(({ id }) => id === target.channelId);
-
-          const handle =
-            channel === undefined
-              ? tPosts("disconnectedChannel")
-              : channelName(channel);
-
-          return (
-            <li key={target.targetId} className="flex flex-col gap-2">
-              <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
-                <span className="font-medium">{handle}</span>
-                <span className="text-muted-foreground">
-                  {target.lastCollectedAt === null
-                    ? t("post.notRead")
-                    : t("post.readAt", {
-                        at: format.dateTime(
-                          DateTime.toDate(target.lastCollectedAt),
-                          { dateStyle: "medium", timeStyle: "short" }
-                        ),
-                      })}
-                </span>
-              </div>
-              {target.latest === null ? (
-                <p className="text-muted-foreground text-sm">
-                  {t("post.notYet", { counted })}
-                </p>
-              ) : (
-                <MetricList counts={target.latest} />
-              )}
-              {target.snapshots.length > 1 ? (
-                <ReadingsChart handle={handle} snapshots={target.snapshots} />
-              ) : null}
-              {target.collecting ? null : (
-                <p className="text-muted-foreground text-sm">
-                  {t("post.stopped")}
-                </p>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      {note}
-    </div>
+    <li className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-medium">{name}</h3>
+        {aside === null ? null : (
+          <span className="text-muted-foreground text-sm">{aside}</span>
+        )}
+      </div>
+      {state._tag === "read" && state.tracked.latest !== null ? (
+        <MetricList counts={state.tracked.latest} />
+      ) : null}
+      {state._tag === "read" && state.tracked.snapshots.length > 1 ? (
+        <ReadingsChart channel={name} snapshots={state.tracked.snapshots} />
+      ) : null}
+      {note === null ? null : (
+        <p className="text-muted-foreground text-sm">{note}</p>
+      )}
+    </li>
   );
 };
 
+/**
+ * What each channel the post went out on counted: its latest counts,
+ * when they were read and how they went over time; or why there are none,
+ * and whether some are to come.
+ */
+export const PostMetricsView = ({
+  analytics,
+  channelName,
+  channels,
+  counted,
+  now,
+  targets,
+}: PostMetricsViewProps) => {
+  const rows = countsRowsOf({ analytics, channels, counted, now, targets });
+
+  return rows.length === 0 ? null : (
+    <ul className="flex flex-col gap-6">
+      {rows.map((row) => (
+        <CountsRowView key={row.targetId} channelName={channelName} row={row} />
+      ))}
+    </ul>
+  );
+};
+
+const isForbidden = Schema.is(Forbidden);
+
+// One placeholder a channel, shaped as the row it stands in for.
+const CountsSkeleton = ({
+  channels,
+  label,
+  now,
+  targets,
+}: {
+  readonly channels: readonly SocialChannel[];
+  readonly label: string;
+  readonly now: DateTime.Utc;
+  readonly targets: readonly PostTarget[];
+}) => (
+  <div aria-busy="true" className="flex flex-col gap-6">
+    <span className="sr-only">{label}</span>
+    {targets.flatMap((target) =>
+      target.status === "published"
+        ? [
+            <div key={target.id} className="flex flex-col gap-2">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-5 w-64" />
+              {likelyCharted(
+                target,
+                channels.find(({ id }) => id === target.channelId),
+                now
+              ) ? (
+                <Skeleton className="h-64 w-full" />
+              ) : null}
+            </div>,
+          ]
+        : []
+    )}
+  </div>
+);
+
 interface PostMetricsProps {
+  readonly channelName: ChannelNamer;
   readonly channels: readonly SocialChannel[];
   readonly post: Post;
   readonly workspaceId: string;
@@ -186,17 +203,26 @@ interface PostMetricsProps {
 
 /**
  * The post's analytics, on its page, once it went live on a channel. It
- * renders in the browser, in the reader's time zone.
+ * renders in the browser, in the reader's time zone, and reads the counts
+ * again whenever the post's channels change (`channelsRevisionOf`).
  */
 export const PostMetrics = ({
+  channelName,
   channels,
   post,
   workspaceId,
 }: PostMetricsProps) => {
   const t = useTranslations("Analytics");
-  const query = postAnalytics(workspaceId, post.id);
+
+  const query = postAnalytics(
+    workspaceId,
+    post.id,
+    channelsRevisionOf(post.targets)
+  );
+
   const result = useAtomValue(query);
   const retry = useAtomRefresh(query);
+  const now = DateTime.nowUnsafe();
 
   // Which platforms this server counts: its capabilities say, X included
   // only where the operator turned its reads on.
@@ -204,7 +230,15 @@ export const PostMetrics = ({
 
   const body = (() => {
     if (AsyncResult.isFailure(result)) {
-      return (
+      const forbidden = Cause.findErrorOption(result.cause).pipe(
+        Option.exists(isForbidden)
+      );
+
+      return forbidden ? (
+        <p className="text-sm" role="alert">
+          {t("post.forbidden")}
+        </p>
+      ) : (
         <div className="flex flex-col items-start gap-3" role="alert">
           <p className="text-sm">{t("post.loadFailed")}</p>
           <Button variant="outline" size="sm" onClick={retry}>
@@ -216,13 +250,15 @@ export const PostMetrics = ({
 
     // Wait for the capabilities too, so the page never names a platform
     // as counted and then takes it back. When they cannot be read, the
-    // page says what Peal has a reader for.
+    // page promises no count.
     if (!AsyncResult.isSuccess(result) || AsyncResult.isInitial(capabilities)) {
       return (
-        <div aria-busy="true">
-          <span className="sr-only">{t("post.loading")}</span>
-          <Skeleton className="h-16 w-full" />
-        </div>
+        <CountsSkeleton
+          channels={channels}
+          label={t("post.loading")}
+          now={now}
+          targets={post.targets}
+        />
       );
     }
 
@@ -230,15 +266,15 @@ export const PostMetrics = ({
       <InTimeZone timeZone={browserTimeZone()}>
         <PostMetricsView
           analytics={result.value}
+          channelName={channelName}
           channels={channels}
           counted={
             AsyncResult.isSuccess(capabilities)
               ? countedOn(capabilities.value)
-              : countedPlatforms
+              : undefined
           }
-          publishedOn={post.targets.flatMap(({ channelId, status }) =>
-            status === "published" ? [channelId] : []
-          )}
+          now={now}
+          targets={post.targets}
         />
       </InTimeZone>
     );
