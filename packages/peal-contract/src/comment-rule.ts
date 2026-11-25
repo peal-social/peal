@@ -96,6 +96,23 @@ export const ChannelCommentRuleSchema = Schema.Struct({
 }).annotate({ identifier: "ChannelCommentRule" });
 
 /**
+ * What a rule can carry on a platform, on this server, before any
+ * channel's own standing: its `reply` (`available`; `noApi` or
+ * `notAllowed` by the platform; `unsupported` where this server does not
+ * read the platform's comments) and its private reply (`available`;
+ * `noApi` but on Instagram and Facebook Pages; `unsupported` where this
+ * server does not read the platform's comments or messages). A channel
+ * there may still need to be connected again, or its messages turned on.
+ */
+export const PlatformCommentRuleSchema = Schema.Struct({
+  platform: PlatformSchema,
+  privateReply: CommentRulePrivateAbilitySchema,
+  reply: CommentRuleAbilitySchema,
+}).annotate({ identifier: "PlatformCommentRule" });
+
+export type PlatformCommentRule = typeof PlatformCommentRuleSchema.Type;
+
+/**
  * What came of a comment a rule matched: `claimed` while its reply is
  * made, `replied` (`replyId`, as the inbox shows it), `samePerson` (the
  * rule answered its author already), `refused` (the inbox's refusal, as

@@ -260,6 +260,7 @@ export {
   maxKeywords,
   maxRuleRepliesPerDay,
   NewCommentRuleSchema,
+  PlatformCommentRuleSchema,
 } from "./comment-rule.ts";
 
 export type {
@@ -271,6 +272,7 @@ export type {
   CommentRuleRefusal,
   CommentRuleStatus,
   NewCommentRule,
+  PlatformCommentRule,
 } from "./comment-rule.ts";
 
 export { CommentRuleEnded } from "./comment-rule-ended.ts";

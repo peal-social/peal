@@ -23,6 +23,7 @@ import {
   maxChannelRepliesPerDay,
   maxRuleRepliesPerDay,
   claimLifetime,
+  ruleSupportOn,
   startCommentRule,
   withoutPrivateReply,
 } from "#engagement/domain/comment-rule.ts";
@@ -32,6 +33,7 @@ import type {
   CommentRuleOrigin,
   CommentRuleScope,
   CommentRuleStatus,
+  PlatformRuleSupport,
   PrivateCode,
 } from "#engagement/domain/comment-rule.ts";
 import { abilitiesOf } from "#engagement/domain/engagement-abilities.ts";
@@ -42,6 +44,7 @@ import {
 import { privateReplyWindow } from "#engagement/domain/private-reply.ts";
 import { maxReplyLength } from "#engagement/domain/reply-text.ts";
 import type { Reply } from "#engagement/domain/reply.ts";
+import { CurrentInboxMessages } from "#shared/application/current-inbox-messages.ts";
 import { CurrentInboxPlatforms } from "#shared/application/current-inbox-platforms.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
@@ -357,6 +360,13 @@ export class CommentRules extends Context.Service<
       actor: Actor,
       ruleId: CommentRuleId
     ) => Effect.Effect<ListedCommentRule, Refused | CommentRuleNotFound>;
+    /**
+     * Where a rule may answer on this server, every platform in Peal's
+     * order, before any channel's standing (`ruleSupportOn`).
+     */
+    readonly platforms: (
+      actor: Actor
+    ) => Effect.Effect<readonly PlatformRuleSupport[], MissingPermission>;
     readonly start: (
       actor: Actor,
       request: StartCommentRuleRequest
@@ -400,6 +410,7 @@ export class CommentRules extends Context.Service<
       const comments = yield* EngagementStore;
       const ruleNotices = yield* CommentRuleNotices;
       const inbox = yield* CurrentInboxPlatforms;
+      const messages = yield* CurrentInboxMessages;
       const ids = yield* Ids;
       const { transaction } = yield* TransactionRunner;
 
@@ -595,6 +606,14 @@ export class CommentRules extends Context.Service<
         return yield* Effect.forEach((rule: CommentRule) =>
           listed(actor, rule)
         )(rules);
+      });
+
+      const platforms = Effect.fn("CommentRules.platforms")(function* platforms(
+        actor: Actor
+      ) {
+        yield* Effect.fromResult(authorize(actor, "engagement:read"));
+
+        return ruleSupportOn(inbox, messages);
       });
 
       const get = Effect.fn("CommentRules.get")(function* get(
@@ -1261,7 +1280,15 @@ export class CommentRules extends Context.Service<
         return run;
       }).pipe(Effect.withSpan("CommentRules.runDue"));
 
-      return CommentRules.of({ change, get, list, runDue, start, stop });
+      return CommentRules.of({
+        change,
+        get,
+        list,
+        platforms,
+        runDue,
+        start,
+        stop,
+      });
     })
   );
 }

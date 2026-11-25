@@ -183,6 +183,14 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               nextCursor: null,
             };
           }),
+        // No command reads where rules answer: the web app's form does.
+        platforms: () =>
+          Effect.gen(function* platforms() {
+            yield* world.allowed("engagement:read");
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
+
+            return [];
+          }),
         update: ({ params, payload }) =>
           Effect.gen(function* update() {
             yield* world.allowed("engagement:reply");

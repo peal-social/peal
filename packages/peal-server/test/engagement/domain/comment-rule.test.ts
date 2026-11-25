@@ -8,9 +8,13 @@ import {
   endCommentRule,
   isMatch,
   keywordsOf,
+  ruleSupportOn,
   startCommentRule,
 } from "#engagement/domain/comment-rule.ts";
 import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
+import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
+import { platforms } from "#shared/domain/platform.ts";
 
 const now = DateTime.makeUnsafe("2026-07-06T07:00:00Z");
 
@@ -116,5 +120,55 @@ describe("a comment rule", () => {
     expect(endCommentRule(given, "stopped", now).privateReply).toStrictEqual(
       given.privateReply
     );
+  });
+});
+
+// What a rule carries on each platform, on a server reading those.
+const byPlatform = (
+  inbox: InboxPlatforms,
+  messages: InboxMessagePlatforms = new Set()
+) =>
+  new Map(
+    ruleSupportOn(inbox, messages).map(({ platform, ...support }) => [
+      platform,
+      support,
+    ])
+  );
+
+describe("where comment rules answer", () => {
+  it("names every platform once, in Peal's order", () => {
+    expect(
+      ruleSupportOn(new Set(), new Set()).map(({ platform }) => platform)
+    ).toStrictEqual(platforms);
+  });
+
+  it("answers where the platform lets an app answer by itself", () => {
+    const plain = byPlatform(new Set());
+
+    expect(plain.get("mastodon")).toStrictEqual({
+      privateReply: "noApi",
+      reply: "available",
+    });
+    expect(plain.get("bluesky")?.reply).toBe("notAllowed");
+    expect(plain.get("threads")?.reply).toBe("noApi");
+    expect(byPlatform(new Set(["youtube"])).get("youtube")?.reply).toBe(
+      "notAllowed"
+    );
+  });
+
+  it("answers on Facebook and Instagram where the server reads their comments, privately where it reads their messages", () => {
+    expect(byPlatform(new Set()).get("instagram")).toStrictEqual({
+      privateReply: "unsupported",
+      reply: "unsupported",
+    });
+    expect(byPlatform(new Set(["facebook"])).get("facebook")).toStrictEqual({
+      privateReply: "unsupported",
+      reply: "available",
+    });
+    expect(
+      byPlatform(new Set(["instagram"]), new Set(["instagram"])).get(
+        "instagram"
+      )
+    ).toStrictEqual({ privateReply: "available", reply: "available" });
   });
 });

@@ -186,6 +186,9 @@ const coverage = {
   "automations.commentRules.delete": by("inbox rules stop"),
   "automations.commentRules.get": by("inbox rules show"),
   "automations.commentRules.list": by("inbox rules list"),
+  "automations.commentRules.platforms": exempt(
+    "Only the web app's rule form reads where rules answer, to offer the channels that can have one; peal inbox rules start is refused with each channel's reason where it cannot."
+  ),
   "automations.commentRules.update": by("inbox rules update"),
   "inbox.reviews.listThreads": by("inbox reviews list"),
   "inbox.reviews.reply": exempt(
