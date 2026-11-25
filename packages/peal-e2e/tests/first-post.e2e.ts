@@ -6,6 +6,7 @@ import { credentials, expect } from "e2e";
 import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
 import { seedVideo } from "./support/media.ts";
+import { settled } from "./support/settled.ts";
 import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // One new member's first steps, in order, in one browser: each test starts
@@ -146,6 +147,53 @@ describe("a new member's first post", { serial: true }, () => {
     await expect(browser).toHaveURL(
       new RegExp(`/${slug}/posts/[0-9a-f-]+$`, "u")
     );
+  });
+
+  test("asks for the Drafts tab's list once when the tab opens", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    await app.open(`/${slug}/posts`);
+    await expect(
+      screen.getByRole("main").getByRole("link", text)
+    ).toBeVisible();
+
+    // Every request for the drafts, a cancelled one included: the router
+    // renders the tab before it commits it, and the list was asked for two
+    // or three times while the registry dropped what nothing subscribed to.
+    const drafts = /\/api\/v1\/posts\?(?:[^#]*&)?status=draft(?:&|$)/u;
+    let asked = 0;
+
+    await browser.route(drafts, async (route) => {
+      asked += 1;
+      await route.continue();
+    });
+
+    try {
+      const answered = browser.waitForResponse(drafts);
+
+      await screen.getByRole("link", "Drafts").tap();
+      await expect(browser).toHaveURL(`/${slug}/posts?status=draft`);
+
+      const response = await answered;
+
+      expect(response.status).toBe(200);
+
+      // Read once the tab has settled, with its list in: a request sent
+      // again, with the commit or after the first answer, is counted.
+      await expect
+        .poll(async () => await browser.evaluate<boolean>(settled), {
+          timeout: 20_000,
+        })
+        .toBe(true);
+      await expect(
+        screen.getByRole("main").getByRole("link", text)
+      ).toBeVisible();
+      expect(asked).toBe(1);
+    } finally {
+      await browser.unroute(drafts);
+    }
   });
 
   test("finds it under the Drafts tab of Posts", async ({
