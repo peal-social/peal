@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useTimeZone, useTranslations } from "next-intl";
 import type { MetricsSnapshot } from "peal-contract";
 import {
   ChartContainer,
@@ -25,8 +25,11 @@ import {
 } from "peal-ui/components/tabs";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
+import { readingTicksOf } from "#analytics/reading-ticks.ts";
+import type { TickLabel } from "#analytics/reading-ticks.ts";
 import { readingRows } from "#analytics/report.ts";
 import type { EngagementKey } from "#analytics/report.ts";
+import { useTimeOptions } from "#i18n/hour-cycle.ts";
 
 interface ReadingsChartProps {
   /** Names the channel and its platform, for the table's caption. */
@@ -89,6 +92,8 @@ const ReadingsLegend = ({
 export const ReadingsChart = ({ channel, snapshots }: ReadingsChartProps) => {
   const t = useTranslations("Analytics");
   const format = useFormatter();
+  const timeZone = useTimeZone();
+  const timeOptions = useTimeOptions();
   const rows = readingRows(snapshots);
 
   const keys: readonly EngagementKey[] = snapshots.some(
@@ -103,6 +108,37 @@ export const ReadingsChart = ({ channel, snapshots }: ReadingsChartProps) => {
       { color: readingLines[key].color, label: t("metric", { metric: key }) },
     ])
   );
+
+  // The axis marks days, or hours with the day where it changes.
+  const ticks = readingTicksOf(
+    rows[0]?.at ?? 0,
+    rows.at(-1)?.at ?? 0,
+    timeZone ?? "UTC"
+  );
+
+  const labels = new Map<number, TickLabel>(
+    ticks.map(({ at, label }) => [at, label])
+  );
+
+  const tick = (at: number) => {
+    const label = labels.get(at) ?? "day";
+    const day = { day: "numeric", month: "short" } as const;
+
+    const time = {
+      hour: "numeric",
+      minute: "2-digit",
+      ...timeOptions,
+    } as const;
+
+    if (label === "day") {
+      return format.dateTime(new Date(at), day);
+    }
+
+    return format.dateTime(
+      new Date(at),
+      label === "time" ? time : { ...day, ...time }
+    );
+  };
 
   const when = (at: string | number | undefined) =>
     format.dateTime(new Date(Number(at)), {
@@ -130,12 +166,8 @@ export const ReadingsChart = ({ channel, snapshots }: ReadingsChartProps) => {
               domain={["dataMin", "dataMax"]}
               minTickGap={24}
               scale="time"
-              tickFormatter={(at: number) =>
-                format.dateTime(new Date(at), {
-                  day: "numeric",
-                  month: "short",
-                })
-              }
+              tickFormatter={tick}
+              ticks={ticks.map(({ at }) => at)}
               tickLine={false}
               type="number"
             />
