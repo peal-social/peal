@@ -135,17 +135,22 @@
   (CS7034): `Peal.Custom.props` gives them the release alone (`0.4.0`),
   and the package keeps `0.4.0-beta.1`. npm refuses a prerelease without a
   dist-tag: `release.ts` gives `latest` while `prereleasesAreLatest` holds
-  (the beta line is the only one that speaks the live API), `next` after.
-  The SDKs stay on `0.4.0-beta.N` until general availability; the
-  README's "Release day" is the order of the first beta's release and how
-  each registry retires 0.1 to 0.3. Go's `go.mod` keeps
-  `retract [v0.1.0, v0.3.1]` (`finish.ts`): Go reads retractions from the
-  highest release's go.mod, never a prerelease's, so the retraction-only
-  v0.3.1 tag carries them until a release above it does. The install line
-  of each README (`finish.ts`), the docs' SDKs page and quickstart and the
-  table of `README.md` come from `scripts/install.ts`, one exact version
-  each, and `scripts/install.test.ts` fails on a page that shows another:
-  a version bump changes the docs in the same change. `sdk-release.yml` builds it from
+  (the beta line is the only one that speaks the live API), `next` after:
+  the change that makes the SDKs 0.4.0 sets it to false. The SDKs stay on
+  `0.4.0-beta.N` until general availability; the README's "Release day" is
+  the order of the first beta's release and how each registry retires 0.1
+  to 0.3. Go's `go.mod` keeps a `retract` block (`finish.ts`),
+  `[v0.1.0, v0.3.0]` and `v0.3.1` ("Contains retractions only."), in the
+  form Go's module reference shows: Go reads retractions from the highest
+  release's go.mod, never a prerelease's, so the retraction-only v0.3.1 tag
+  carries them until a release above it does. The install line of each
+  README (`finish.ts`), the docs' SDKs page and quickstart and the table of
+  `README.md` come from `scripts/install.ts`, one exact version each, and
+  `scripts/install.test.ts` fails on a page that shows another, or prints a
+  version of Peal's other than the current ones: a version bump changes the
+  docs in the same change. A note in the generated READMEs is packed into
+  the packages and read for as long as a version lives: word it so it stays
+  true before and after the release it ships in. `sdk-release.yml` builds it from
   that commit and publishes it in the `sdk-release` environment: trusted
   publishing (OIDC) for npm, PyPI, RubyGems, NuGet and crates.io, no token
   stored; Maven Central's portal token and signing key from secrets (the
