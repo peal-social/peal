@@ -4,7 +4,9 @@
 package social.peal.resources.automations.commentrules;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,6 +43,7 @@ import social.peal.resources.automations.commentrules.requests.ListCommentRulesR
 import social.peal.resources.automations.commentrules.requests.NewCommentRule;
 import social.peal.types.CommentRule;
 import social.peal.types.CommentRulePage;
+import social.peal.types.PlatformCommentRule;
 import social.peal.types.UnauthenticatedEncoded;
 
 public class AsyncRawCommentRulesClient {
@@ -271,6 +274,116 @@ public class AsyncRawCommentRulesClient {
                                 return;
                             case 422:
                                 future.completeExceptionally(new UnprocessableEntityError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 429:
+                                future.completeExceptionally(new TooManyRequestsError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                        }
+                    } catch (JsonProcessingException ignored) {
+                        // unable to map error response, throwing generic error
+                    }
+                    Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+                    future.completeExceptionally(new PealClientApiException(
+                            "Error with status code " + response.code(), response.code(), errorBody, response));
+                    return;
+                } catch (JsonProcessingException e) {
+                    future.completeExceptionally(
+                            new PealClientException("Failed to deserialize response: " + e.getMessage(), e));
+                } catch (IOException e) {
+                    future.completeExceptionally(new PealClientException("Network error executing HTTP request", e));
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(new PealClientException("Network error executing HTTP request", e));
+            }
+        });
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                okhttpCall.cancel();
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its <code>privateReply</code> is <code>unsupported</code> there, though the platform's is <code>available</code>); <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<List<PlatformCommentRule>>> platforms() {
+        return platforms(null);
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its <code>privateReply</code> is <code>unsupported</code> there, though the platform's is <code>available</code>); <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<List<PlatformCommentRule>>> platforms(
+            RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/v1/automations/comment-rules/platforms");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("GET", null)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        if (requestOptions != null && requestOptions.getMaxRetries().isPresent()) {
+            okhttpRequest = okhttpRequest
+                    .newBuilder()
+                    .tag(
+                            RetryInterceptor.MaxRetriesOverride.class,
+                            new RetryInterceptor.MaxRetriesOverride(
+                                    requestOptions.getMaxRetries().get()))
+                    .build();
+        }
+        CompletableFuture<PealClientHttpResponse<List<PlatformCommentRule>>> future = new CompletableFuture<>();
+        RetryInterceptor.AsyncCall okhttpCall = RetryInterceptor.newAsyncCall(client, okhttpRequest);
+        okhttpCall.enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                try (ResponseBody responseBody = response.body()) {
+                    String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+                    if (response.isSuccessful()) {
+                        future.complete(new PealClientHttpResponse<>(
+                                ObjectMappers.JSON_MAPPER.readValue(
+                                        responseBodyString, new TypeReference<List<PlatformCommentRule>>() {}),
+                                response));
+                        return;
+                    }
+                    try {
+                        switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 401:
+                                future.completeExceptionally(new UnauthorizedError(
+                                        ObjectMappers.JSON_MAPPER.readValue(
+                                                responseBodyString, UnauthenticatedEncoded.class),
+                                        response));
+                                return;
+                            case 403:
+                                future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
                                         response));
                                 return;

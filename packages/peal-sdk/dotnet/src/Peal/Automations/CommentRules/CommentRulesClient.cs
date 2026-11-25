@@ -345,6 +345,158 @@ public partial class CommentRulesClient : ICommentRulesClient
         }
     }
 
+    private async Task<WithRawResponse<IEnumerable<PlatformCommentRule>>> PlatformsAsyncCore(
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var _queryString = new Peal.Core.QueryStringBuilder.Builder(capacity: 0)
+            .MergeAdditional(options?.AdditionalQueryParameters)
+            .Build();
+        var _headers = await new Peal.Core.HeadersBuilder.Builder()
+            .Add(_client.Options.Headers)
+            .Add(_client.Options.AdditionalHeaders)
+            .Add(options?.AdditionalHeaders)
+            .BuildAsync()
+            .ConfigureAwait(false);
+        var response = await _client
+            .SendRequestAsync(
+                new JsonRequest
+                {
+                    Method = HttpMethod.Get,
+                    Path = "api/v1/automations/comment-rules/platforms",
+                    QueryString = _queryString,
+                    Headers = _headers,
+                    Options = options,
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+        if (response.StatusCode is >= 200 and < 400)
+        {
+            var responseBody = await response
+                .Raw.Content.ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+            try
+            {
+                var responseData = JsonUtils.Deserialize<IEnumerable<PlatformCommentRule>>(
+                    responseBody
+                )!;
+                return new WithRawResponse<IEnumerable<PlatformCommentRule>>()
+                {
+                    Data = responseData,
+                    RawResponse = new Peal.RawResponse()
+                    {
+                        StatusCode = response.Raw.StatusCode,
+                        Url = response.Raw.RequestMessage?.RequestUri ?? new Uri("about:blank"),
+                        Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                    },
+                };
+            }
+            catch (JsonException e)
+            {
+                throw new PealClientApiException(
+                    "Failed to deserialize response",
+                    response.StatusCode,
+                    responseBody,
+                    e,
+                    rawResponse: new Peal.RawResponse()
+                    {
+                        StatusCode = response.Raw.StatusCode,
+                        Url = response.Raw.RequestMessage?.RequestUri ?? new Uri("about:blank"),
+                        Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                    }
+                );
+            }
+        }
+        {
+            var responseBody = await response
+                .Raw.Content.ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+            try
+            {
+                switch (response.StatusCode)
+                {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 401:
+                        throw new UnauthorizedError(
+                            JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 403:
+                        throw new ForbiddenError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 404:
+                        throw new NotFoundError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 429:
+                        throw new TooManyRequestsError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                }
+            }
+            catch (JsonException)
+            {
+                // unable to map error response, throwing generic error
+            }
+            throw new PealClientApiException(
+                $"Error with status code {response.StatusCode}",
+                response.StatusCode,
+                responseBody,
+                rawResponse: new Peal.RawResponse()
+                {
+                    StatusCode = response.Raw.StatusCode,
+                    Url = response.Raw.RequestMessage?.RequestUri ?? new Uri("about:blank"),
+                    Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                }
+            );
+        }
+    }
+
     private async Task<WithRawResponse<CommentRule>> GetAsyncCore(
         GetCommentRulesRequest request,
         RequestOptions? options = null,
@@ -845,6 +997,22 @@ public partial class CommentRulesClient : ICommentRulesClient
     {
         return new WithRawResponseTask<CommentRule>(
             CreateAsyncCore(request, options, cancellationToken)
+        );
+    }
+
+    /// <summary>
+    /// Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.
+    /// </summary>
+    /// <example><code>
+    /// await client.Automations.CommentRules.PlatformsAsync();
+    /// </code></example>
+    public WithRawResponseTask<IEnumerable<PlatformCommentRule>> PlatformsAsync(
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return new WithRawResponseTask<IEnumerable<PlatformCommentRule>>(
+            PlatformsAsyncCore(options, cancellationToken)
         );
     }
 

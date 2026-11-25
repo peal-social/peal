@@ -34,7 +34,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { withChannel } from "#channel-sets/selection.ts";
-import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { SavedItemErrorAlert } from "#components/settings/saved-item-error.tsx";
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
 import { slotsInWeek, withoutSlot, withSlot } from "#queues/slots.ts";
@@ -171,7 +171,7 @@ export const QueueFieldsView = ({
   readonly zones: readonly string[];
 }) => {
   const t = useTranslations("Queues");
-  const tPosts = useTranslations("Posts");
+  const channelLabel = useChannelLabel();
   const slotText = useSlotText();
   const nameId = `${idPrefix}-queue-name`;
   const zoneId = `${idPrefix}-queue-zone`;
@@ -292,14 +292,7 @@ export const QueueFieldsView = ({
                       });
                     }}
                   />
-                  <Label htmlFor={id}>
-                    {tPosts("Composer.channelDetail", {
-                      handle: channelName(channel),
-                      platform: tPosts("platform", {
-                        platform: channel.platform,
-                      }),
-                    })}
-                  </Label>
+                  <Label htmlFor={id}>{channelLabel(channel)}</Label>
                 </li>
               );
             })}
@@ -447,7 +440,7 @@ export const QueueItemView = ({
   readonly upcoming: ReactNode;
 }) => {
   const t = useTranslations("Queues");
-  const tPosts = useTranslations("Posts");
+  const channelLabel = useChannelLabel();
   const slotText = useSlotText();
 
   const connected = channels.filter(({ id }) => queue.channelIds.includes(id));
@@ -479,14 +472,7 @@ export const QueueItemView = ({
               className="text-muted-foreground flex flex-col gap-1 text-sm"
             >
               {connected.map((channel) => (
-                <li key={channel.id}>
-                  {tPosts("Composer.channelDetail", {
-                    handle: channelName(channel),
-                    platform: tPosts("platform", {
-                      platform: channel.platform,
-                    }),
-                  })}
-                </li>
+                <li key={channel.id}>{channelLabel(channel)}</li>
               ))}
             </ul>
           )}

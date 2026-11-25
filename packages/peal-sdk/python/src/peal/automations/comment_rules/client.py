@@ -7,6 +7,7 @@ from ...core.request_options import RequestOptions
 from ...types.comment_rule import CommentRule
 from ...types.comment_rule_page import CommentRulePage
 from ...types.comment_rule_status import CommentRuleStatus
+from ...types.platform_comment_rule import PlatformCommentRule
 from .raw_client import AsyncRawCommentRulesClient, RawCommentRulesClient
 
 # this is used as the default value for optional parameters
@@ -122,6 +123,33 @@ class CommentRulesClient:
             private_reply=private_reply,
             request_options=request_options,
         )
+        return _response.data
+
+    def platforms(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[PlatformCommentRule]:
+        """
+        Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[PlatformCommentRule]
+            Success
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            workspace="YOUR_WORKSPACE",
+            token="YOUR_TOKEN",
+        )
+        client.automations.comment_rules.platforms()
+        """
+        _response = self._raw_client.platforms(request_options=request_options)
         return _response.data
 
     def get(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> CommentRule:
@@ -368,6 +396,43 @@ class AsyncCommentRulesClient:
             private_reply=private_reply,
             request_options=request_options,
         )
+        return _response.data
+
+    async def platforms(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.List[PlatformCommentRule]:
+        """
+        Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[PlatformCommentRule]
+            Success
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.automations.comment_rules.platforms()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.platforms(request_options=request_options)
         return _response.data
 
     async def get(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> CommentRule:

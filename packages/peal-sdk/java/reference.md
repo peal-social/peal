@@ -10058,6 +10058,45 @@ client.automations().commentRules().create(
 </dl>
 </details>
 
+<details><summary><code>client.automations.commentRules.platforms() -> List&amp;lt;PlatformCommentRule&amp;gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.automations().commentRules().platforms();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.automations.commentRules.get(ruleId) -> CommentRule</code></summary>
 <dl>
 <dd>

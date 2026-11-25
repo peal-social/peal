@@ -574,7 +574,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   alone: `channelName` wherever one line names it (the workspace's name
   with the handle beside it, "Client A (@handle)"), `channelTitle` where
   the handle is written beside anyway (the channels page, the composer's
-  picker). The name is Peal's (`Channel.label`, `RenameChannel`,
+  picker). A picker (a select's option, a Filter menu's value and its
+  chip, a box to tick) names a channel with `useChannelLabel`
+  (`components/channels/channel-label.ts`): `channelName` and the
+  platform, "Client A (@clienta) on Instagram", so two channels of one
+  name read apart and a search finds them by platform; a Filter menu's
+  value also takes the platform's mark (`PlatformMark`), as Analytics'
+  widgets do. The comment rules' form offers only the channels that are
+  on, on a platform where `automations.commentRules.platforms` says rules
+  answer (`ruleChannelsOf`), and its private message where that answer
+  says so (`carriesPrivately`); with none, it names each channel there
+  that is off or must be connected again, with its fix on the Channels
+  page (`heldChannelsOf`), else one line says where rules answer. The
+  form waits for both answers (`ruleFormStateOf`). The name is Peal's (`Channel.label`, `RenameChannel`,
   `labelUpdateOf`) and never hides the handle. The text tabs still show
   the handle alone. `ChannelPower` turns a channel off, after a
   confirmation, and back on: every string about a channel that is off

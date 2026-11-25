@@ -39,7 +39,7 @@ import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
 
-import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { InTimeZone } from "#components/notices/in-time-zone.tsx";
 import {
@@ -89,11 +89,14 @@ import type { ChannelChoice } from "./webhook-views.tsx";
 
 // The workspace's channels, as the endpoint form offers them; none while
 // they load, or for a member who may not read them.
-const useChannelChoices = (workspaceId: string): readonly ChannelChoice[] =>
-  Option.getOrElse(
+const useChannelChoices = (workspaceId: string): readonly ChannelChoice[] => {
+  const channelLabel = useChannelLabel();
+
+  return Option.getOrElse(
     AsyncResult.value(useAtomValue(workspaceChannels(workspaceId))),
     (): readonly SocialChannel[] => []
-  ).map((channel) => ({ id: channel.id, label: channelName(channel) }));
+  ).map((channel) => ({ id: channel.id, label: channelLabel(channel) }));
+};
 
 const failedOnly: LogFilter = {
   ...anyDelivery,

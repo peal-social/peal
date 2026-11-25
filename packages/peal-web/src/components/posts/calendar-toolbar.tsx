@@ -23,7 +23,8 @@ import {
 import { TagDot } from "peal-ui/components/tag";
 import type { ComponentType, ReactNode } from "react";
 
-import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
+import { PlatformMark } from "#components/channels/platform-mark.tsx";
 import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import type { FilterProperty } from "#components/lists/filter-menu.tsx";
 import { isFiltering, noFilter } from "#posts/calendar-filter.ts";
@@ -97,6 +98,7 @@ export const CalendarToolbar = ({
   const t = useTranslations("Posts.Calendar");
   const list = useTranslations("Posts.List");
   const lists = useTranslations("Lists");
+  const channelLabel = useChannelLabel();
   const menu = useFilterMenu();
 
   const properties: (FilterProperty & { readonly id: CalendarProperty })[] = [
@@ -110,7 +112,8 @@ export const CalendarToolbar = ({
             multiple: true,
             values: channels.map((channel) => ({
               id: channel.id,
-              label: channelName(channel),
+              label: channelLabel(channel),
+              mark: <PlatformMark platform={channel.platform} />,
             })),
           },
         ]),

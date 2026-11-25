@@ -15,6 +15,8 @@ use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Peal\Automations\CommentRules\Requests\NewCommentRule;
 use Peal\Types\CommentRule;
+use Peal\Types\PlatformCommentRule;
+use Peal\Core\Json\JsonDecoder;
 use Peal\Automations\CommentRules\Requests\CommentRuleChange;
 
 class CommentRulesClient
@@ -168,6 +170,58 @@ class CommentRulesClient
                     return null;
                 }
                 return CommentRule::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new PealException(message: $e->getMessage(), previous: $e);
+        }
+        throw new PealApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.
+     *
+     * Example:
+     * ```php
+     * $client->automations->commentRules->platforms();
+     * ```
+     *
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?array<PlatformCommentRule>
+     * @throws PealException
+     * @throws PealApiException
+     */
+    public function platforms(?array $options = null): ?array
+    {
+        $options = array_merge($this->options, $options ?? []);
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "api/v1/automations/comment-rules/platforms",
+                    method: HttpMethod::GET,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return JsonDecoder::decodeArray($json, [PlatformCommentRule::class]); // @phpstan-ignore-line
             }
         } catch (JsonException $e) {
             throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

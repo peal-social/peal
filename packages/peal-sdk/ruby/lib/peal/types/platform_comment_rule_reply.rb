@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+require_relative "../../peal"
+
+module Peal
+  module Types
+    module PlatformCommentRuleReply
+      extend Peal::Internal::Types::Enum
+
+      AVAILABLE = "available"
+      NO_API = "noApi"
+      NOT_ALLOWED = "notAllowed"
+      UNSUPPORTED = "unsupported"
+    end
+  end
+end

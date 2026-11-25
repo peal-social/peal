@@ -39,6 +39,8 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { channelsOf } from "#channels/channels-api.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
+import { PlatformMark } from "#components/channels/platform-mark.tsx";
 import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { PageActions } from "#components/shell/frame-view.tsx";
@@ -63,7 +65,7 @@ import {
   ThreadRowView,
 } from "./inbox-rows.tsx";
 import type { InboxRowLink } from "./inbox-rows.tsx";
-import { CollectionNote, useChannelName } from "./inbox-views.tsx";
+import { CollectionNote } from "./inbox-views.tsx";
 
 // How often a list is read again while its tab is visible.
 const refreshEvery = 60_000;
@@ -390,7 +392,7 @@ export const InboxList = ({
 }) => {
   const t = useTranslations("InboxList");
   const lists = useTranslations("Lists");
-  const channelName = useChannelName();
+  const channelLabel = useChannelLabel();
   const hydrated = useHydrated();
   const workspaceHref = useWorkspaceHref();
   const router = useRouter();
@@ -467,7 +469,8 @@ export const InboxList = ({
             label: t("channel"),
             values: readable.map((channel) => ({
               id: channel.id,
-              label: channelName(channel),
+              label: channelLabel(channel),
+              mark: <PlatformMark platform={channel.platform} />,
             })),
           },
         ]
@@ -576,7 +579,7 @@ export const InboxList = ({
                   join={lists("is")}
                   property={t("channel")}
                   removeLabel={lists("remove", { property: t("channel") })}
-                  value={channelName(chosen)}
+                  value={channelLabel(chosen)}
                   onEdit={() => {
                     menu.openAt("channel");
                   }}

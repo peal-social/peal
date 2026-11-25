@@ -156,6 +156,62 @@ export class CommentRulesClient {
     }
 
     /**
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.
+     *
+     * @param {CommentRulesClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link Peal.BadRequestError}
+     * @throws {@link Peal.UnauthorizedError}
+     * @throws {@link Peal.ForbiddenError}
+     * @throws {@link Peal.NotFoundError}
+     * @throws {@link Peal.TooManyRequestsError}
+     * @throws {@link errors.PealError}
+     * @throws {@link errors.PealTimeoutError}
+     *
+     * @example
+     *     await client.automations.commentRules.platforms()
+     */
+    public platforms(requestOptions?: CommentRulesClient.RequestOptions): core.HttpResponsePromise<Peal.PlatformCommentRule[]> {
+        return core.HttpResponsePromise.fromPromise(this.__platforms(requestOptions));
+    }
+
+    private async __platforms(requestOptions?: CommentRulesClient.RequestOptions): Promise<core.WithRawResponse<Peal.PlatformCommentRule[]>> {
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
+        const _response = await core.fetcher({
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/automations/comment-rules/platforms"),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging
+        });
+        if (_response.ok) {
+            return { data: _response.body as Peal.PlatformCommentRule[], rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
+                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
+                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
+                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
+                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
+                default: throw new errors.PealError({
+                    statusCode: _response.error.statusCode,
+                    body: _response.error.body,
+                    rawResponse: _response.rawResponse
+                });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/automations/comment-rules/platforms");
+    }
+
+    /**
      * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
      *
      * @param {Peal.automations.GetCommentRulesRequest} request

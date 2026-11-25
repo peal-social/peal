@@ -397,7 +397,12 @@
   `commentRuleSupport`, from each platform's pages: Bluesky (its bot
   guidance), X, LinkedIn and YouTube are `notAllowed`, refused when the
   rule starts (`CommentRuleNotPossible`, each channel with its reason)
-  and skipped at every run, whatever the inbox may do there. A channel
+  and skipped at every run, whatever the inbox may do there.
+  `GET …/automations/comment-rules/platforms` (`CommentRules.platforms`,
+  `ruleSupportOn`) answers it for every platform, with whether this
+  server reads its comments and, for a private reply, its messages,
+  before any channel's standing: the web app's form offers its channels
+  from it. A channel
   disconnected ends its rules `channelGone` (`EngagementRecords.channelGone`). Either end by itself (`channelGone`, and `starterGone`, which the run writes in a transaction under the rule's lock) tells `CommentRuleStopped` through `CommentRuleNotices` (`NotifiedCommentRuleNotices`, key `comment-rule:<id>:stopped`) in the transaction that ends it, to the starter for `channelGone`, to every member who may answer comments and the starter for `starterGone`, so `DrizzleEngagementRecords` needs the port: tests give it `CommentRuleNotices.none`.
   The account export holds the rules with the comments each looked at,
   by id.

@@ -4982,6 +4982,38 @@
       }
     },
     {
+      "id": "414be0a9-f507-4fa2-8f5e-b8daf2d0d631",
+      "name": "List where comment rules answer - default",
+      "request": {
+        "urlPathTemplate": "/api/v1/automations/comment-rules/platforms",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "[\n  {\n    \"platform\": \"x\",\n    \"privateReply\": \"available\",\n    \"reply\": \"available\"\n  }\n]",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "414be0a9-f507-4fa2-8f5e-b8daf2d0d631",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
       "id": "12254617-d93b-4fe8-b9da-9822a2ae9240",
       "name": "Get a comment rule - default",
       "request": {
@@ -8819,6 +8851,6 @@
     }
   ],
   "meta": {
-    "total": 257
+    "total": 258
   }
 }

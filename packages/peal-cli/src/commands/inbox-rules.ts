@@ -1,12 +1,17 @@
-import { Console, Effect, Option } from "effect";
+import { Console, Effect, Option, Schema } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import {
   CommentRulePageSchema,
   CommentRuleSchema,
   CommentRuleStatusSchema,
   maxKeywords,
+  PlatformCommentRuleSchema,
 } from "peal-contract";
-import type { CommentRule, CommentRuleChange } from "peal-contract";
+import type {
+  CommentRule,
+  CommentRuleChange,
+  PlatformCommentRule,
+} from "peal-contract";
 
 import { explain } from "#explain.ts";
 import { jsonFlag, printJson, printNothing } from "#json.ts";
@@ -143,6 +148,37 @@ const list = Command.make(
 ).pipe(
   Command.withDescription(
     "List the workspace's comment rules: where each answers, its keywords and where it is."
+  )
+);
+
+// A platform's line: whether a rule answers there, and privately too.
+const platformLine = ({ platform, privateReply, reply }: PlatformCommentRule) =>
+  reply === "available"
+    ? `  ${platform}: answers${privateReply === "available" ? ", with a private message" : ""}`
+    : `  ${platform}: no rule (${reply})`;
+
+const platforms = Command.make(
+  "platforms",
+  { json: jsonFlag, workspace: workspaceFlag },
+  Effect.fn("inboxRules.platforms")(function* platforms(input) {
+    const { client, url } = yield* inWorkspace(input.workspace);
+
+    const answered = yield* client["automations.commentRules"]
+      .platforms({ headers: {} })
+      .pipe(Effect.mapError(explain(url)));
+
+    return yield* input.json
+      ? printJson(Schema.Array(PlatformCommentRuleSchema), answered)
+      : Console.log(
+          [
+            "Where comment rules answer on this server:",
+            ...answered.map(platformLine),
+          ].join("\n")
+        );
+  })
+).pipe(
+  Command.withDescription(
+    "List where comment rules answer on this server, and where they send a private message too. A channel there may still need connecting again."
   )
 );
 
@@ -371,5 +407,14 @@ export const rules = Command.make("rules").pipe(
   Command.withDescription(
     "Rules that answer comments holding a keyword, by themselves, in public, as the channel's account, and, with a private reply, privately to each comment's author once on Instagram and Facebook Pages. They never like or follow anyone, nor write to anyone who did not comment."
   ),
-  Command.withSubcommands([list, show, start, update, pause, resume, stop])
+  Command.withSubcommands([
+    list,
+    platforms,
+    show,
+    start,
+    update,
+    pause,
+    resume,
+    stop,
+  ])
 );

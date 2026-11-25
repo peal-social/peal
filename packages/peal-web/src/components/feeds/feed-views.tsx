@@ -26,7 +26,7 @@ import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ReactNode } from "react";
 
-import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 
 /** What the form holds while a member writes a feed. */
 export interface FeedDraft {
@@ -193,7 +193,7 @@ export const FeedFieldsView = ({
   readonly queues: readonly Queue[];
 }) => {
   const t = useTranslations("Feeds");
-  const tPosts = useTranslations("Posts");
+  const channelLabel = useChannelLabel();
   const prefix = useId();
   const urlId = `${prefix}-url`;
   const templateId = `${prefix}-template`;
@@ -332,14 +332,7 @@ export const FeedFieldsView = ({
                       });
                     }}
                   />
-                  <Label htmlFor={id}>
-                    {tPosts("Composer.channelDetail", {
-                      handle: channelName(channel),
-                      platform: tPosts("platform", {
-                        platform: channel.platform,
-                      }),
-                    })}
-                  </Label>
+                  <Label htmlFor={id}>{channelLabel(channel)}</Label>
                 </li>
               );
             })}

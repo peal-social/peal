@@ -313,6 +313,7 @@ const ChannelJobsTest = Layer.mergeAll(
       change: () => Effect.die("No comment rule changes here"),
       get: () => Effect.die("No comment rule is read here"),
       list: () => Effect.succeed([]),
+      platforms: () => Effect.succeed([]),
       runDue: Effect.succeed({
         ended: 0,
         looked: 0,
