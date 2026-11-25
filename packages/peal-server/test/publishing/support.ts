@@ -2,6 +2,7 @@ import { Effect, Layer, Option } from "effect";
 
 import { ChannelUsage } from "#channels/application/channel-usage.ts";
 import { AttachableMedia } from "#publishing/application/attachable-media.ts";
+import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { PostOrigins } from "#publishing/application/post-origins.ts";
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
@@ -10,6 +11,7 @@ import { MediaFile } from "#publishing/domain/media-file.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
 import { TextOverride } from "#publishing/domain/text-override.ts";
 import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allowance.ts";
+import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { Actor } from "#shared/domain/access.ts";
 import type { Permission } from "#shared/domain/access.ts";
 import { UserIdSchema } from "#shared/domain/ids.ts";
@@ -179,3 +181,23 @@ export const contentOf = (
 
 /** What synthetic posts say. */
 export const syntheticContent = contentOf("A synthetic post for tests.");
+
+/**
+ * What the library is told when it asks the posts to let a file go, as it
+ * asks: the posts that keep it, and, only when none does, what letting it
+ * go came to, in one transaction.
+ */
+export const askedToLetGo = (workspaceId: WorkspaceId, mediaId: MediaAssetId) =>
+  TransactionRunner.use(({ transaction }) =>
+    transaction(
+      MediaInPosts.use((posts) => posts.hold(workspaceId, mediaId)).pipe(
+        Effect.flatMap(({ letGo, scheduled }) =>
+          scheduled.length > 0
+            ? Effect.succeed({ letGo: Option.none(), scheduled })
+            : letGo.pipe(
+                Effect.map((done) => ({ letGo: Option.some(done), scheduled }))
+              )
+        )
+      )
+    )
+  );

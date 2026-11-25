@@ -127,7 +127,9 @@ export const ContextRecordsLive = Layer.effect(
           yield* posts
             .eraseWorkspace(workspaceId)
             .pipe(Effect.catchTag("PostsPublishing", busy));
-          // Articles too, whose jobs would send to its websites.
+          // Articles too, whose jobs would send to its websites: after the
+          // posts, as every transaction that locks both takes them
+          // (deleting a library file does), so none deadlocks with this.
           yield* articles
             .eraseWorkspace(workspaceId)
             .pipe(Effect.catchTag("ArticlesSending", busy));
