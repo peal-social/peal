@@ -22,7 +22,6 @@ import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { useRefreshWhileVisible } from "#notices/use-refresh-while-visible.ts";
 import { workspaceChannels, workspacePost } from "#posts/api.ts";
-import { postViewPath } from "#posts/post-list-filter.ts";
 import { isDue } from "#posts/publish-now.ts";
 import { useMounted } from "#posts/use-mounted.ts";
 import { reviewSettings } from "#review/api.ts";
@@ -235,7 +234,6 @@ export const ComposerScreen = ({
   userId,
   workspaceId,
 }: ComposerScreenProps) => {
-  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.Composer");
   const mounted = useMounted();
   const query = workspaceChannels(workspaceId);
@@ -273,23 +271,7 @@ export const ComposerScreen = ({
     );
   })();
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-4">
-        <Link
-          href={workspaceHref(workspaceId, "/calendar")}
-          className="text-muted-foreground text-sm underline-offset-4 hover:underline"
-        >
-          {t("backToCalendar")}
-        </Link>
-        <Link
-          href={workspaceHref(workspaceId, postViewPath("drafts"))}
-          className="text-muted-foreground text-sm underline-offset-4 hover:underline"
-        >
-          {t("backToDrafts")}
-        </Link>
-      </div>
-      {body}
-    </div>
-  );
+  // The way back is the breadcrumb's Posts (DESIGN.md, "The frame"),
+  // whatever the post is: never a link of the page's own.
+  return body;
 };

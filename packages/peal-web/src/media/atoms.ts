@@ -49,6 +49,14 @@ export const libraryChanged = PealApi.runtime.fn<string>()((workspaceId) =>
 /** Deletes media, then lists the workspace's media again. */
 export const deleteMedia = PealApi.mutation("media", "delete");
 
+/**
+ * What a media's usage is read again for: the posts, which take and drop
+ * it. Never the library's key, which its deletion refreshes while the
+ * dialog that read the usage is still open: the deleted media's usage
+ * would be asked for again and found gone.
+ */
+export const mediaUsageKeys: readonly string[] = ["posts"];
+
 /** Which posts show the media: what deleting it would do to them. */
 export const mediaUsage = Atom.family((key: string) => {
   const [workspaceId = "", mediaId = ""] = key.split("/");
@@ -56,7 +64,7 @@ export const mediaUsage = Atom.family((key: string) => {
   return PealApi.query("media", "usage", {
     headers: forWorkspace(workspaceId),
     params: { mediaId },
-    reactivityKeys: [mediaKey(workspaceId)],
+    reactivityKeys: mediaUsageKeys,
   });
 });
 

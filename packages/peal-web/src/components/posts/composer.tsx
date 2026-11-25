@@ -86,6 +86,7 @@ import type { ByChannel, ChannelMedia } from "#posts/channel-media.ts";
 import { connectedTargets } from "#posts/channel-selection.ts";
 import { fitOn, fits } from "#posts/character-count.ts";
 import { capabilitiesOf } from "#posts/composer-capabilities.ts";
+import { composerTitleOf } from "#posts/composer-title.ts";
 import { mediaFitOn, mediaFits, showsAltText } from "#posts/media-fit.ts";
 import type { AttachedMedia } from "#posts/media-fit.ts";
 import { oneAtATime } from "#posts/one-at-a-time.ts";
@@ -201,22 +202,6 @@ const ownMediaBlock = (
           { type: "conjunction" }
         ),
       });
-
-const titleOf = (t: Translate, post: Post | undefined) => {
-  if (post === undefined) {
-    return t("newTitle");
-  }
-
-  if (post.status === "draft") {
-    return t("editTitle");
-  }
-
-  if (post.status === "awaitingApproval") {
-    return t("awaitingTitle");
-  }
-
-  return post.status === "scheduled" ? t("scheduledTitle") : t("closedTitle");
-};
 
 const noticeOf = (
   t: Translate,
@@ -846,7 +831,7 @@ export const Composer = ({
 
   return (
     <Card>
-      <PageTitle>{titleOf(t, post)}</PageTitle>
+      <PageTitle>{t(composerTitleOf(post, postId !== undefined))}</PageTitle>
       {post === undefined ? null : (
         <CardHeader>
           <div className="flex gap-2">

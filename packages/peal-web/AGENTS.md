@@ -335,8 +335,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`headers: forWorkspace(workspaceId)`, from `peal-contract`, merged
   with an idempotency key where there is one), never through a transform
   of the client: query atoms are keyed by a call's arguments, so two
-  workspaces' queries stay apart. A link cannot carry that header: a file
-  of a workspace endpoint is fetched through the API's client
+  workspaces' queries stay apart. A deletion passes the key that lists
+  its kind again alone (`postListsChanged`, `articleListChanged`,
+  `queueListChanged`, `feedListChanged`; a media's usage reads
+  `mediaUsageKeys`), never one a query of the deleted item reads: the
+  page still reads it when the answer lands, and would ask for it and get
+  a 404 (`test/api/deletions.test.ts`). A link cannot carry that header:
+  a file of a workspace endpoint is fetched through the API's client
   (`fetchFrom`, so its refusals are read as every call's, the two-step
   notice included) and saved from an anchor put in the document
   (`downloadExport`, `#analytics/export-download.ts`).

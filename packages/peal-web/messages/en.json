@@ -1615,8 +1615,6 @@
       "loading": "Loading the post…",
       "loadFailed": "The post could not be loaded.",
       "retry": "Try again",
-      "backToCalendar": "Back to the calendar",
-      "backToDrafts": "Back to the drafts",
       "channelsLegend": "Channels",
       "channelsLoading": "Loading the channels…",
       "channelsFailed": "The channels could not be loaded.",

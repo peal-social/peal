@@ -1615,8 +1615,6 @@
       "loading": "Chargement de la publication…",
       "loadFailed": "La publication n’a pas pu être chargée.",
       "retry": "Réessayer",
-      "backToCalendar": "Retour au calendrier",
-      "backToDrafts": "Retour aux brouillons",
       "channelsLegend": "Canaux",
       "channelsLoading": "Chargement des canaux…",
       "channelsFailed": "Les canaux n’ont pas pu être chargés.",

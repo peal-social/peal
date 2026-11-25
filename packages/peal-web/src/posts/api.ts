@@ -12,8 +12,20 @@ import type { PostListFilters } from "./post-list-filter.ts";
 
 // The queries and mutations of the composer and the calendar. A mutation
 // passes `reactivityKeys: postsKeys`, which refreshes every posts query.
+// Discarding a draft passes `postListsChanged`, which reads the lists of
+// posts again alone: the draft's page, still open when the answer lands,
+// would ask for the post and find it gone.
 
 export const postsKeys = ["posts"];
+
+/** What reads the lists of posts again, and no post of its own. */
+export const postListsChanged: readonly string[] = ["post-lists"];
+
+/** What a list of posts is read again for. */
+export const postListKeys: readonly string[] = [
+  ...postsKeys,
+  ...postListsChanged,
+];
 
 /**
  * The channels connected to the workspace that take posts: a website's
@@ -183,7 +195,7 @@ export const scheduledPosts = (
   PealApi.query("posts", "calendar", {
     headers: forWorkspace(workspaceId),
     query: { from, to },
-    reactivityKeys: postsKeys,
+    reactivityKeys: postListKeys,
   });
 
 /** What a post's attempts were, refreshed with the other posts queries. */
@@ -217,7 +229,7 @@ const searchPages = Atom.family((key: string) => {
   return PealApi.query("posts", "list", {
     headers: forWorkspace(workspaceId),
     query: searchOf(filtersOf(query), query.get("cursor") ?? undefined),
-    reactivityKeys: postsKeys,
+    reactivityKeys: postListKeys,
   });
 });
 
@@ -263,6 +275,16 @@ export const unschedulePost = PealApi.mutation("posts", "unschedule");
 export const removePostTarget = PealApi.mutation("posts", "removeTarget");
 
 export const discardPost = PealApi.mutation("posts.drafts", "delete");
+
+/**
+ * The request that discards a draft: it reads the lists of posts again,
+ * never the post, which its page still reads when the answer lands.
+ */
+export const discardRequestOf = (workspaceId: string, postId: string) => ({
+  headers: forWorkspace(workspaceId),
+  params: { postId },
+  reactivityKeys: postListsChanged,
+});
 
 /** Makes a new draft that says what a post says, whatever its status. */
 export const duplicatePost = PealApi.mutation("posts", "duplicate");
