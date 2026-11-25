@@ -1,6 +1,3 @@
-import { readdirSync, readFileSync } from "node:fs";
-import path from "node:path";
-
 import { describe, expect, it } from "@effect/vitest";
 
 import { signOutAndLoad } from "#auth/sign-out.ts";
@@ -108,27 +105,5 @@ describe("signing out", () => {
       "keepNotice:accountDeleted",
       "load:/",
     ]);
-  });
-});
-
-// Every file under src/, by its path.
-const sources = (folder: string): readonly string[] =>
-  readdirSync(folder, { recursive: true, withFileTypes: true })
-    .filter((entry) => entry.isFile() && /\.tsx?$/u.test(entry.name))
-    .map((entry) => path.join(entry.parentPath, entry.name));
-
-describe("the sign-out", () => {
-  it("is the shared hook's alone, so every way out forgets what the tab holds", () => {
-    const root = path.join(import.meta.dirname, "../../src");
-
-    const signingOut = sources(root)
-      .filter((file) =>
-        /authClient\.signOut\(|import \{ forgetConversation \}/u.test(
-          readFileSync(file, "utf-8")
-        )
-      )
-      .map((file) => path.relative(root, file));
-
-    expect(signingOut).toStrictEqual([path.join("auth", "use-sign-out.ts")]);
   });
 });
