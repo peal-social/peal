@@ -419,7 +419,10 @@ copy run without Pulumi, and for what Pulumi does in their place.
    domain: the blog never holds the server's key. Open and click tracking
    stay off for the domain: the privacy policy says Peal does not know who
    opened an email from its images. Each email ends on
-   `peal_mail_identity` (`PEAL_MAIL_IDENTITY`), the company's name alone.
+   `peal_mail_identity` (`PEAL_MAIL_IDENTITY`), or, for French readers, on
+   `peal_mail_identity_fr` (`PEAL_MAIL_IDENTITY_FR`): the company's name and
+   form, its registered office and its registration, as the site's terms
+   and privacy policy give them. Change them together.
 7. **The platforms' apps**, a set of its own for each environment
    ([The platforms' apps](#the-platforms-apps)).
 

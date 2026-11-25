@@ -40,6 +40,7 @@ peal_runtime_host_settings: >-
        'PEAL_OTLP_HTTP_PORT': peal_ports.otlp_http,
      }
      | combine({'PEAL_MAIL_IDENTITY': peal_mail_identity} if peal_mail_identity else {})
+     | combine({'PEAL_MAIL_IDENTITY_FR': peal_mail_identity_fr} if peal_mail_identity_fr else {})
      | combine({'PEAL_SHORT_LINK_BASE': 'https://' ~ peal_short_link_hostname ~ '/'}
                if peal_short_link_hostname else {})
      | combine({'PEAL_ERASURE_LEDGER_BUCKET': peal_erasure_ledger_bucket}

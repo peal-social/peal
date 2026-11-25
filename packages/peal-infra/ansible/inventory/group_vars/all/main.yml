@@ -145,9 +145,18 @@ peal_mail_credentials: [RESEND_API_KEY, SMTP_URL]
 # (PEAL_LEGAL_RETENTION). Both environments are Peal's, and keep it.
 peal_legal_retention: true
 
-# Who sends Peal's emails, one line under each (PEAL_MAIL_IDENTITY): the
-# company's name alone. Empty: no line.
-peal_mail_identity: Peal SAS
+# Who sends Peal's emails, one line under each (PEAL_MAIL_IDENTITY), and the
+# same for French readers (PEAL_MAIL_IDENTITY_FR): the company's name and
+# form, its registered office and its registration, as the site's legal pages
+# give them. Empty: no line, or the one line for every reader. \u00a0 is the
+# no-break space French writes before a colon.
+peal_mail_identity: >-
+  Peal SAS, a French société par actions simplifiée.
+  Registered office: 15 rue Paul Verlaine, 85710 La Garnache, France.
+  RCS La Roche-sur-Yon 133 102 822.
+peal_mail_identity_fr: "Peal SAS.
+  Siège social\u00a0: 15 rue Paul Verlaine, 85710 La Garnache, France.
+  RCS La Roche-sur-Yon 133 102 822."
 
 # The hosts of object stores other than Cloudflare R2 whose buckets the
 # owner checked are in the EU: nothing in such a store's endpoint says where

@@ -9,6 +9,7 @@ import type { Letterhead } from "peal-emails";
 import { AppLinks } from "#notifications/application/app-links.ts";
 import { EmailRenderer } from "#notifications/application/email-renderer.ts";
 import { mailIdentityConfig } from "#notifications/infrastructure/mail-settings.ts";
+import type { Locale } from "#shared/domain/locale.ts";
 
 /**
  * Writes emails with peal-emails, which the server loads as it starts: an
@@ -18,26 +19,36 @@ import { mailIdentityConfig } from "#notifications/infrastructure/mail-settings.
  * file does not compile until it does.
  *
  * Every email carries the server's letterhead: where it serves their
- * pictures (`#app/email-assets/route.ts`), and who sends, where
- * `PEAL_MAIL_IDENTITY` states it.
+ * pictures (`#app/email-assets/route.ts`), and who sends, in the reader's
+ * language, where `PEAL_MAIL_IDENTITY` and `PEAL_MAIL_IDENTITY_FR` state it.
  */
 export const ReactEmailRenderer = Layer.effect(
   EmailRenderer,
   Effect.gen(function* ReactEmailRenderer() {
     const links = yield* AppLinks;
 
-    const letterhead: Letterhead = {
+    const identity = yield* mailIdentityConfig;
+
+    const letterheadIn = (locale: Locale): Letterhead => ({
       assetsUrl: links.api("/api/email-assets"),
-      identity: Option.getOrNull(yield* mailIdentityConfig),
-    };
+      identity: Option.getOrNull(identity[locale]),
+    });
 
     return EmailRenderer.of({
       account: (email) =>
-        Effect.promise(async () => await renderAccountEmail(email, letterhead)),
+        Effect.promise(
+          async () =>
+            await renderAccountEmail(email, letterheadIn(email.locale))
+        ),
       notice: (email) =>
-        Effect.promise(async () => await renderNoticeEmail(email, letterhead)),
+        Effect.promise(
+          async () => await renderNoticeEmail(email, letterheadIn(email.locale))
+        ),
       weeklyDigest: (email) =>
-        Effect.promise(async () => await renderWeeklyDigest(email, letterhead)),
+        Effect.promise(
+          async () =>
+            await renderWeeklyDigest(email, letterheadIn(email.locale))
+        ),
     });
   })
 );

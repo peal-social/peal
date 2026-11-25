@@ -1,5 +1,6 @@
 import { Config, Option, Redacted, Schema } from "effect";
 
+import type { Locale } from "#shared/domain/locale.ts";
 import { requiredInProduction } from "#shared/infrastructure/environment.ts";
 
 /** How email leaves Peal: Resend's API, or an SMTP server. */
@@ -57,15 +58,33 @@ const IdentitySchema = Schema.Trim.check(
   )
 );
 
+const identityLine = (name: string) =>
+  Config.schema(IdentitySchema, name).pipe(
+    Config.option,
+    Config.map(Option.filter((identity) => identity !== ""))
+  );
+
+/** Who sends, as the operator states it to the readers of each language. */
+export type MailIdentity = Readonly<Record<Locale, Option.Option<string>>>;
+
 /**
- * `PEAL_MAIL_IDENTITY`: who sends the emails, as the operator states it
- * under each, on one line and in the same words for every reader; none
- * when unset or empty. Read when the server starts, so a value that is not
- * one line stops it there.
+ * Who sends the emails, as the operator states it under each, on one line:
+ *
+ * - `PEAL_MAIL_IDENTITY` for every reader; none when unset or empty.
+ * - `PEAL_MAIL_IDENTITY_FR` for French readers, who otherwise get that line.
+ *   A later language adds its own, the same name with its code.
+ *
+ * Read when the server starts, so a value that is not one line stops it
+ * there.
  */
-export const mailIdentityConfig = Config.schema(
-  IdentitySchema,
-  "PEAL_MAIL_IDENTITY"
-).pipe(Config.option, Config.map(Option.filter((identity) => identity !== "")));
+export const mailIdentityConfig = Config.all({
+  everyone: identityLine("PEAL_MAIL_IDENTITY"),
+  french: identityLine("PEAL_MAIL_IDENTITY_FR"),
+}).pipe(
+  Config.map(({ everyone, french }): MailIdentity => ({
+    en: everyone,
+    fr: Option.orElse(french, () => everyone),
+  }))
+);
 
 export type MailSettings = Config.Success<typeof mailSettingsConfig>;

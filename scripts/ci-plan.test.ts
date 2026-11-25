@@ -80,6 +80,16 @@ describe("the CI plan", () => {
     ).toEqual({ ...none, ansible: true, e2e: true, server: true });
   });
 
+  it("runs Ansible's tests too for a legal page, whose company the emails name", () => {
+    expect(
+      plan({
+        affected: ["peal-site", "peal-e2e"],
+        files: ["packages/peal-site/src/content/legal/en/terms.md"],
+        roots,
+      })
+    ).toEqual({ ...none, ansible: true, e2e: true });
+  });
+
   it("runs the SDKs for a contract change, which the project graph does not link", () => {
     expect(
       plan({

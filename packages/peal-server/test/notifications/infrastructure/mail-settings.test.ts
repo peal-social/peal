@@ -70,18 +70,49 @@ describe("the mail settings", () => {
 const identityFrom = (env: Record<string, string>) =>
   mailIdentityConfig.parse(ConfigProvider.fromEnv({ env }));
 
+const english = "Synthetic Studio, registered office: 1 Example St";
+const french = "Synthetic Studio, siège social : 1 Example St";
+
 describe("who sends, as the operator states it", () => {
   it.effect.each([
-    { env: {}, stated: Option.none() },
-    { env: { PEAL_MAIL_IDENTITY: "" }, stated: Option.none() },
-    { env: { PEAL_MAIL_IDENTITY: "   " }, stated: Option.none() },
+    { env: {}, stated: { en: Option.none(), fr: Option.none() } },
+    {
+      env: { PEAL_MAIL_IDENTITY: "", PEAL_MAIL_IDENTITY_FR: "" },
+      stated: { en: Option.none(), fr: Option.none() },
+    },
+    {
+      env: { PEAL_MAIL_IDENTITY: "   " },
+      stated: { en: Option.none(), fr: Option.none() },
+    },
     {
       env: { PEAL_MAIL_IDENTITY: " Synthetic Studio SAS · 1 Example St " },
-      stated: Option.some("Synthetic Studio SAS · 1 Example St"),
+      stated: {
+        en: Option.some("Synthetic Studio SAS · 1 Example St"),
+        fr: Option.some("Synthetic Studio SAS · 1 Example St"),
+      },
     },
     {
       env: { PEAL_MAIL_IDENTITY: "x".repeat(maxIdentityLength) },
-      stated: Option.some("x".repeat(maxIdentityLength)),
+      stated: {
+        en: Option.some("x".repeat(maxIdentityLength)),
+        fr: Option.some("x".repeat(maxIdentityLength)),
+      },
+    },
+    {
+      env: { PEAL_MAIL_IDENTITY: english, PEAL_MAIL_IDENTITY_FR: french },
+      stated: { en: Option.some(english), fr: Option.some(french) },
+    },
+    {
+      env: { PEAL_MAIL_IDENTITY_FR: french },
+      stated: { en: Option.none(), fr: Option.some(french) },
+    },
+    {
+      env: { PEAL_MAIL_IDENTITY: english, PEAL_MAIL_IDENTITY_FR: "" },
+      stated: { en: Option.some(english), fr: Option.some(english) },
+    },
+    {
+      env: { PEAL_MAIL_IDENTITY: english, PEAL_MAIL_IDENTITY_FR: " " },
+      stated: { en: Option.some(english), fr: Option.some(english) },
     },
   ])("is read from $env", ({ env, stated }) =>
     Effect.gen(function* read() {
@@ -89,18 +120,22 @@ describe("who sends, as the operator states it", () => {
     })
   );
 
-  it.effect.each([
-    { value: "Synthetic Studio SAS\n1 Example St", what: "two lines" },
-    { value: "Synthetic Studio\u2028SAS", what: "a line separator" },
-    { value: "Synthetic\u0007Studio", what: "a control character" },
-    { value: "x".repeat(maxIdentityLength + 1), what: "too long a line" },
-  ])("refuses $what", ({ value }) =>
+  it.effect.each(
+    ["PEAL_MAIL_IDENTITY", "PEAL_MAIL_IDENTITY_FR"].flatMap((name) => [
+      { name, value: "Synthetic Studio SAS\n1 Example St", what: "two lines" },
+      { name, value: "Synthetic Studio\u2028SAS", what: "a line separator" },
+      { name, value: "Synthetic\u0007Studio", what: "a control character" },
+      {
+        name,
+        value: "x".repeat(maxIdentityLength + 1),
+        what: "too long a line",
+      },
+    ])
+  )("refuses $what in $name", ({ name, value }) =>
     Effect.gen(function* refused() {
-      const failure = yield* identityFrom({ PEAL_MAIL_IDENTITY: value }).pipe(
-        Effect.flip
-      );
+      const failure = yield* identityFrom({ [name]: value }).pipe(Effect.flip);
 
-      assert.include(String(failure), "PEAL_MAIL_IDENTITY");
+      assert.include(String(failure), name);
     })
   );
 });

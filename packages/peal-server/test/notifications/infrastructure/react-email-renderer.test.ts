@@ -27,6 +27,8 @@ const verifyEmail = {
 
 const identity = "Synthetic Studio <SAS> & Co";
 
+const frenchIdentity = "Synthetic Studio. Siège social : 1 Example St";
+
 describe("the emails' renderer", () => {
   layer(
     rendererOf({
@@ -49,6 +51,34 @@ describe("the emails' renderer", () => {
 
         assert.include(html, "Synthetic Studio &lt;SAS&gt; &amp; Co");
         assert.isTrue(text.endsWith(`The Peal team\n\n${identity}`));
+      })
+    );
+  });
+
+  layer(
+    rendererOf({
+      PEAL_MAIL_IDENTITY: identity,
+      PEAL_MAIL_IDENTITY_FR: frenchIdentity,
+      PUBLIC_URL: "https://peal.example.test",
+    })
+  )((it) => {
+    it.effect.each([
+      { closing: `The Peal team\n\n${identity}`, locale: "en" as const },
+      { closing: `L’équipe Peal\n\n${frenchIdentity}`, locale: "fr" as const },
+    ])("says who sends in the reader's language: $locale", (sample) =>
+      Effect.gen(function* inTheirs() {
+        const { closing, locale } = sample;
+
+        const { html, text } = yield* EmailRenderer.use((renderer) =>
+          renderer.account({ ...verifyEmail, locale })
+        );
+
+        assert.isTrue(text.endsWith(closing));
+        assert.strictEqual(html.includes("Siège social"), locale === "fr");
+        assert.strictEqual(
+          html.includes("&lt;SAS&gt; &amp; Co"),
+          locale === "en"
+        );
       })
     );
   });

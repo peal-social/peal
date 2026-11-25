@@ -17,6 +17,7 @@ Voici les réglages que lit Peal :
 | `RESEND_API_KEY`                  | L’un des deux | Envoie par l’API de Resend                                                                                                                                       |
 | `SMTP_URL`                        | L’un des deux | Utilisé sans `RESEND_API_KEY`. Un serveur SMTP, comme `smtp://utilisateur:motdepasse@mail.example.com:587`, ou `smtps://…:465` pour du TLS dès le premier octet. |
 | `PEAL_MAIL_IDENTITY`              | Non           | Dit qui envoie, sur une ligne sous chaque e-mail ([Dire qui envoie](#identity))                                                                                  |
+| `PEAL_MAIL_IDENTITY_FR`           | Non           | La même ligne pour les lecteurs français                                                                                                                         |
 | `AUTH_REQUIRE_EMAIL_VERIFICATION` | Non           | Avec `false`, les gens peuvent se connecter avant d’avoir confirmé leur adresse                                                                                  |
 
 [Variables d’environnement](/self-hosting/environment-variables#email) donne leurs valeurs par défaut, avec `AUTH_REQUIRE_EMAIL_VERIFICATION` sous [Connexion](/self-hosting/environment-variables#sign-in).
@@ -40,7 +41,13 @@ La loi de votre pays peut demander à une société de se nommer dans ses e-mail
 PEAL_MAIL_IDENTITY=Example SAS, 1 Example Street, Example City
 ```
 
-La ligne est la même dans toutes les langues, et vous ne l’écrivez donc qu’une fois. Elle compte 300 caractères au plus. Sans ce réglage, vos e-mails n’ont pas cette ligne.
+Tous vos lecteurs reçoivent cette ligne. Si elle contient des mots à traduire, donnez aux lecteurs français la leur :
+
+```sh
+PEAL_MAIL_IDENTITY_FR=Example SAS, 1 rue de l’Exemple, Exempleville
+```
+
+Chaque ligne compte 300 caractères au plus. Sans aucun des deux réglages, vos e-mails n’ont pas cette ligne.
 
 ## Laisser les messageries charger les images [#images]
 

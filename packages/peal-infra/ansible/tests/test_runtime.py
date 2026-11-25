@@ -58,14 +58,54 @@ def test_the_web_app_links_the_legal_pages(rendered: Path, environment: str) -> 
 
 
 @pytest.mark.parametrize("environment", ENVIRONMENTS)
-def test_peals_emails_say_who_sends_them_by_name_alone(rendered: Path, environment: str) -> None:
+def test_peals_emails_say_who_sends_them_in_the_readers_language(rendered: Path, environment: str) -> None:
     """The software states nobody by default (PEAL_MAIL_IDENTITY)."""
-    assert _host_env(rendered, environment)["PEAL_MAIL_IDENTITY"] == "Peal SAS"
+    host_env = _host_env(rendered, environment)
+
+    assert host_env["PEAL_MAIL_IDENTITY"] == (
+        "Peal SAS, a French société par actions simplifiée."
+        " Registered office: 15 rue Paul Verlaine, 85710 La Garnache, France."
+        " RCS La Roche-sur-Yon 133 102 822."
+    )
+    # A no-break space before the colon, as French writes it.
+    assert host_env["PEAL_MAIL_IDENTITY_FR"] == (
+        "Peal SAS."
+        " Siège social\u00a0: 15 rue Paul Verlaine, 85710 La Garnache, France."
+        " RCS La Roche-sur-Yon 133 102 822."
+    )
+    # What the server takes: one line of 300 characters at most.
+    for name in ("PEAL_MAIL_IDENTITY", "PEAL_MAIL_IDENTITY_FR"):
+        assert len(host_env[name]) <= 300
 
 
-def test_a_server_that_states_nobody_is_given_no_line(rendered_with: Callable[..., Path]) -> None:
-    for environment in ENVIRONMENTS:
-        assert "PEAL_MAIL_IDENTITY" not in _host_env(rendered_with(peal_mail_identity=""), environment)
+@pytest.mark.parametrize("locale", ["en", "fr"])
+def test_who_sends_is_who_the_legal_pages_name(locale: str) -> None:
+    """Both lines' facts are the terms' and the privacy policy's."""
+    legal = INFRA.parents[1] / "peal-site" / "src" / "content" / "legal" / locale
+    group = settings("production")
+    facts = ["Peal SAS", "15 rue Paul Verlaine, 85710 La Garnache, France", "La Roche-sur-Yon", "133 102 822"]
+
+    for page in ("terms.md", "privacy.md"):
+        words = (legal / page).read_text().replace("\u00a0", " ").replace("\u202f", " ")
+        assert [fact for fact in facts if fact not in words] == []
+
+    for line in (group["peal_mail_identity"], group["peal_mail_identity_fr"]):
+        assert [fact for fact in facts if fact not in line] == []
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_a_server_that_states_nobody_is_given_no_line(rendered_with: Callable[..., Path], environment: str) -> None:
+    host_env = _host_env(rendered_with(peal_mail_identity="", peal_mail_identity_fr=""), environment)
+
+    assert not [name for name in host_env if name.startswith("PEAL_MAIL_IDENTITY")]
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_a_server_may_state_one_line_for_every_reader(rendered_with: Callable[..., Path], environment: str) -> None:
+    host_env = _host_env(rendered_with(peal_mail_identity_fr=""), environment)
+
+    assert "PEAL_MAIL_IDENTITY" in host_env
+    assert "PEAL_MAIL_IDENTITY_FR" not in host_env
 
 
 @pytest.mark.parametrize("environment", ENVIRONMENTS)

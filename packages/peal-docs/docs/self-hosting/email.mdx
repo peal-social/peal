@@ -17,6 +17,7 @@ These are the settings Peal reads:
 | `RESEND_API_KEY`                  | One of the two | Sends through Resend's API                                                                                                                          |
 | `SMTP_URL`                        | One of the two | Used without `RESEND_API_KEY`. An SMTP server, such as `smtp://user:password@mail.example.com:587`, or `smtps://…:465` for TLS from the first byte. |
 | `PEAL_MAIL_IDENTITY`              | No             | Says who sends, on one line under every email ([Say who sends](#identity))                                                                          |
+| `PEAL_MAIL_IDENTITY_FR`           | No             | The same line for French readers                                                                                                                    |
 | `AUTH_REQUIRE_EMAIL_VERIFICATION` | No             | With `false`, people can sign in before they confirm their address                                                                                  |
 
 [Environment variables](/self-hosting/environment-variables#email) has their defaults, with `AUTH_REQUIRE_EMAIL_VERIFICATION` under [Sign-in](/self-hosting/environment-variables#sign-in).
@@ -40,7 +41,13 @@ The law where you are may ask a company to name itself in its emails. Set `PEAL_
 PEAL_MAIL_IDENTITY=Example SAS, 1 Example Street, Example City
 ```
 
-The line is the same in every language, so you write it once. It holds 300 characters at most. Without the setting, your emails have no such line.
+Every reader gets this line. If it has words to translate, give French readers their own:
+
+```sh
+PEAL_MAIL_IDENTITY_FR=Example SAS, 1 rue de l’Exemple, Exempleville
+```
+
+Each line holds 300 characters at most. Without either setting, your emails have no such line.
 
 ## Let mail services load the images [#images]
 
