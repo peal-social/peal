@@ -115,10 +115,24 @@ layer(PlainHttpLive, { excludeTestServices: true, timeout: "120 seconds" })(
 
         assert.include(JSON.stringify(forMcp), "invalid_target");
 
-        const mcp = yield* app.request("/api/mcp", {
-          body: { id: 1, jsonrpc: "2.0", method: "tools/list" },
-          headers: { accept: "application/json, text/event-stream" },
-        });
+        // As an MCP client sends it: with no Origin header.
+        const mcp = yield* Effect.promise(
+          async () =>
+            await app.handler(
+              new Request(`${publicUrl}/api/mcp`, {
+                body: JSON.stringify({
+                  id: 1,
+                  jsonrpc: "2.0",
+                  method: "tools/list",
+                }),
+                headers: {
+                  accept: "application/json, text/event-stream",
+                  "content-type": "application/json",
+                },
+                method: "POST",
+              })
+            )
+        );
 
         assert.strictEqual(mcp.status, 401);
       })

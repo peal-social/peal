@@ -121,8 +121,9 @@ export class Authenticate extends Context.Service<
      * the user of its OAuth access token, in the workspace the token is
      * bound to, its API key, in the key's workspace, or its partner key,
      * in the workspace the request names (`WorkspaceNotNamed` without
-     * one). A key that does not work is answered as a missing token is,
-     * with the challenge that leads a client to sign in.
+     * one). A key that does not work is refused as a token that does not
+     * work is, with the challenge that leads a client to sign in, and
+     * never told it sent no credential.
      */
     readonly mcp: (
       request: McpRequest
@@ -185,9 +186,9 @@ export class Authenticate extends Context.Service<
         isTrustedOrigin: (origin) =>
           Option.exists(origin, (value) => gateway.isTrustedOrigin(value)),
         mcp: ({ workspace, ...request }) => {
-          // The challenge of a request without a token.
-          const challenged: Effect.Effect<BoundPrincipal, McpRefusal> =
-            gateway.mcpToken({ ...request, authorization: Option.none() });
+          // A key was sent, and works for nothing here.
+          const refused: Effect.Effect<BoundPrincipal, McpRefusal> =
+            gateway.mcpCredentialRefused;
 
           return Option.match(apiKeyIn(request.authorization), {
             onNone: () => gateway.mcpToken(request),
@@ -199,7 +200,7 @@ export class Authenticate extends Context.Service<
                     ),
                     Effect.flatMap(
                       Option.match({
-                        onNone: () => challenged,
+                        onNone: () => refused,
                         onSome: (principal) =>
                           workspaceNamed(workspace).pipe(
                             Effect.map((workspaceId): BoundPrincipal => ({
@@ -213,7 +214,7 @@ export class Authenticate extends Context.Service<
                 : gateway.apiKey(key).pipe(
                     Effect.flatMap(
                       Option.match({
-                        onNone: () => challenged,
+                        onNone: () => refused,
                         onSome: (principal) =>
                           Effect.succeed<BoundPrincipal>({
                             principal,

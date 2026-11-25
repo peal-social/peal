@@ -19,6 +19,8 @@ import {
 import { CurrentMember } from "peal-contract";
 import type { Principal } from "peal-contract";
 
+import { jsonRpcRefusal } from "#app/mcp/refusal-answers.ts";
+
 /**
  * How many sessions of the sessionful revisions one credential keeps open
  * at once: a person's through one application in one workspace, or a
@@ -337,12 +339,6 @@ const InitializeSchema = Schema.fromJsonString(
 
 const decodeInitialize = Schema.decodeUnknownOption(InitializeSchema);
 
-const jsonRpcError = (status: number, message: string) =>
-  HttpServerResponse.jsonUnsafe(
-    { error: { code: -32_000, message }, id: null, jsonrpc: "2.0" },
-    { status }
-  );
-
 /**
  * The sessions of the sessionful revisions, request by request, after
  * `mcpAuthentication`: a session is its opener's alone (404 to anyone
@@ -364,6 +360,8 @@ export const mcpSessionGuard = HttpRouter.middleware(
         const sessionId = request.headers[sessionHeader];
 
         if (sessionId !== undefined) {
+          // Answered with a status alone, as effect/ai answers a session
+          // that ended: `mcpRefusalAnswers` gives both the same words.
           if (!(yield* sessions.use(sessionId, owner))) {
             return HttpServerResponse.empty({ status: 404 });
           }
@@ -385,7 +383,7 @@ export const mcpSessionGuard = HttpRouter.middleware(
               ByteSize.toNumberUnsafe(maxInitializeBytes) &&
             Option.isSome(decodeInitialize(body))
           ) {
-            return jsonRpcError(
+            return jsonRpcRefusal(
               413,
               "An initialize request this large is refused: send the client's information and capabilities alone."
             );

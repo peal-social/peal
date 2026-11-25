@@ -254,13 +254,25 @@ layer(DeviceGrantLive, { excludeTestServices: true, timeout: "180 seconds" })(
         assert.strictEqual(elsewhere.status, 404);
 
         // The MCP endpoint takes tokens issued for it, bound to a workspace.
-        const mcp = yield* app.request("/api/mcp", {
-          body: { id: 1, jsonrpc: "2.0", method: "tools/list" },
-          headers: {
-            accept: "application/json, text/event-stream",
-            ...bearer(token),
-          },
-        });
+        // Sent as an MCP client sends it: with no Origin header.
+        const mcp = yield* Effect.promise(
+          async () =>
+            await app.handler(
+              new Request(`${origin}/api/mcp`, {
+                body: JSON.stringify({
+                  id: 1,
+                  jsonrpc: "2.0",
+                  method: "tools/list",
+                }),
+                headers: {
+                  accept: "application/json, text/event-stream",
+                  "content-type": "application/json",
+                  ...bearer(token),
+                },
+                method: "POST",
+              })
+            )
+        );
 
         assert.strictEqual(mcp.status, 401);
         assert.include(

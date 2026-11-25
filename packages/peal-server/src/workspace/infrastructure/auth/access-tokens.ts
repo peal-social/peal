@@ -46,12 +46,30 @@ const decodeIssued = Schema.decodeUnknownOption(
   Schema.Struct({ iat: Schema.Number, sub: Schema.String })
 );
 
+// What a refusal tells the client, in its body and, for a credential that
+// was sent, in the challenge's `error_description` (RFC 6750 §3: no `"` or
+// `\`). Never the credential itself.
+const authorizationServer =
+  "the authorization server that the resource metadata in the WWW-Authenticate header names";
+
+const refusalTexts = {
+  expired: `The access token has expired. Refresh it, or sign in again through ${authorizationServer}.`,
+  invalid: `The access token was refused: it is not one this server issued for this endpoint, or it no longer works. Sign in again through ${authorizationServer}.`,
+  keyRefused: `The credential was refused: it is not an API key or access token that works on this server, and may have been revoked or have expired. Send a working API key of the workspace, or sign in through ${authorizationServer}.`,
+  missing: `This endpoint needs a credential. Sign in through ${authorizationServer}, or send an API key of a workspace as the bearer token.`,
+  noWorkspaceScope:
+    "The access token grants no workspace scope. Sign in again and allow at least workspace:read.",
+  revoked: `The access token was revoked since it was issued. Sign in again through ${authorizationServer}.`,
+  scheme:
+    "The Authorization header uses a scheme this endpoint does not take. Send the credential as Bearer followed by the credential, or a DPoP-bound access token with its proof.",
+} as const;
+
 // RFC 6750 §3.1: a token that is valid but grants no workspace scope, asked
 // to step up to reading at least.
 const noWorkspaceScope = () =>
   createInsufficientScopeError(
     ["workspace:read"],
-    "access token grants no workspace scope"
+    refusalTexts.noWorkspaceScope
   );
 
 const unauthorized = (
@@ -90,6 +108,18 @@ const invalidFor =
       status: challenge.statusCode === 403 ? 403 : 401,
     });
   };
+
+/**
+ * The answer to a credential that was sent for `resource` and works for
+ * nothing there (a key no workspace has): refused as a token that does not
+ * work is, with `invalid_token`, never as a missing one.
+ */
+export const credentialRefused = (
+  resource: string
+): Effect.Effect<never, AuthUnavailable | InvalidAccessToken> =>
+  Effect.fail(
+    invalidFor(resource)(unauthorized(refusalTexts.keyRefused, "invalid_token"))
+  );
 
 /**
  * Checks OAuth access tokens the way Better Auth's MCP plugin does
@@ -144,16 +174,14 @@ export const makeAccessTokens = Effect.gen(function* makeAccessTokens() {
       );
 
       if (authorization === undefined || authorization.token === "") {
-        return yield* invalid(unauthorized("missing authorization header"));
+        return yield* invalid(unauthorized(refusalTexts.missing));
       }
 
+      // RFC 6750 §3.1: a scheme the server does not take is a request
+      // without credentials, so its challenge carries no error code, and
+      // leads the client to sign in as a missing one does.
       if (authorization.scheme === "Unknown") {
-        return yield* invalid(
-          unauthorized(
-            "authorization scheme must be Bearer or DPoP",
-            "invalid_token"
-          )
-        );
+        return yield* invalid(unauthorized(refusalTexts.scheme));
       }
 
       const payload = yield* Effect.tryPromise({
@@ -170,11 +198,14 @@ export const makeAccessTokens = Effect.gen(function* makeAccessTokens() {
             return new AuthUnavailable({ cause });
           }
 
+          // RFC 6750 §3.1: a token that was sent and does not work is
+          // `invalid_token`, expired ones included.
           return invalid(
             unauthorized(
               Option.contains(code, "ERR_JWT_EXPIRED")
-                ? "token expired"
-                : "invalid access token"
+                ? refusalTexts.expired
+                : refusalTexts.invalid,
+              "invalid_token"
             )
           );
         },
@@ -220,7 +251,9 @@ export const makeAccessTokens = Effect.gen(function* makeAccessTokens() {
         });
 
         if (issuedBeforeReset(issued.value.iat, notBefore)) {
-          return yield* invalid(unauthorized("token revoked", "invalid_token"));
+          return yield* invalid(
+            unauthorized(refusalTexts.revoked, "invalid_token")
+          );
         }
       }
 
@@ -239,7 +272,9 @@ export const makeAccessTokens = Effect.gen(function* makeAccessTokens() {
       }
 
       return yield* Schema.decodeUnknownEffect(claims)(payload).pipe(
-        Effect.mapError(() => invalid(unauthorized("invalid access token")))
+        Effect.mapError(() =>
+          invalid(unauthorized(refusalTexts.invalid, "invalid_token"))
+        )
       );
     });
 
