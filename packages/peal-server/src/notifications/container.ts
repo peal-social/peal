@@ -8,6 +8,7 @@ import { Notify } from "#notifications/application/notify.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
 import { SendWeeklyDigests } from "#notifications/application/send-weekly-digests.ts";
 import { UnsubscribeWeeklyDigest } from "#notifications/application/unsubscribe-weekly-digest.ts";
+import { CatalogueEmailRenderer } from "#notifications/infrastructure/catalogue-email-renderer.ts";
 import { ContextDigestSources } from "#notifications/infrastructure/context-digest-sources.ts";
 import { DrizzleNoticeLog } from "#notifications/infrastructure/drizzle-notice-log.ts";
 import { DrizzleNoticeRecords } from "#notifications/infrastructure/drizzle-notice-records.ts";
@@ -39,17 +40,17 @@ export const MailerLive = Layer.unwrap(
 );
 
 /**
- * The notifications context: account emails, and those to the visitors of
- * review links, sent through MailerLive, which it shares with the notices
- * below.
+ * The notifications context: account emails, sent through MailerLive, which
+ * it shares with the notices below.
  */
 export const NotificationsLive = SendAuthEmail.layer.pipe(
   Layer.provideMerge(MailerLive),
-  Layer.provide(IdsLive)
+  Layer.provide([CatalogueEmailRenderer, IdsLive])
 );
 
 // The adapters behind the notices' ports.
 const NoticeAdaptersLive = Layer.mergeAll(
+  CatalogueEmailRenderer,
   DrizzleNoticeLog,
   HmacDigestLinks,
   DrizzleNoticeStore,
@@ -90,6 +91,7 @@ export const NoticesLive = Layer.mergeAll(
 export const WeeklyDigestsLive = SendWeeklyDigests.layer.pipe(
   Layer.provide(
     Layer.mergeAll(
+      CatalogueEmailRenderer,
       DrizzlePreferenceStore,
       PublicAppLinks,
       ContextDigestSources,

@@ -1,9 +1,9 @@
 import { Context, Effect, Layer, Schedule } from "effect";
 
 import type { AuthEmail } from "#notifications/domain/auth-email.ts";
-import { renderAuthEmail } from "#notifications/domain/render-auth-email.ts";
 import { Ids } from "#shared/application/ids.ts";
 
+import { EmailRenderer } from "./email-renderer.ts";
 import { Mailer } from "./mailer.ts";
 
 // A transport that is briefly down gets three more tries, over about four
@@ -33,11 +33,12 @@ export class SendAuthEmail extends Context.Service<
     Effect.gen(function* sendAuthEmail() {
       const mailer = yield* Mailer;
       const ids = yield* Ids;
+      const renderer = yield* EmailRenderer;
 
       const deliver = Effect.fn("SendAuthEmail.deliver")(function* deliver(
         email: AuthEmail
       ) {
-        const rendered = renderAuthEmail(email);
+        const rendered = yield* renderer.account(email);
         const idempotencyKey = yield* ids.next;
 
         return yield* mailer

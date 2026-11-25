@@ -118,17 +118,6 @@ const framed = (
     "</html>",
   ].join("\n");
 
-/**
- * The layout of an email that links nowhere: one to a visitor of a review
- * link, whose address Peal does not keep.
- */
-export const linklessLayout = (parts: {
-  readonly body: string;
-  readonly ignore: string;
-  readonly locale: Locale;
-  readonly signature: string;
-}): string => framed(parts, []);
-
 // One layout for every email: inline styles and tables, as email clients
 // ignore stylesheets, with a button and the link written out beneath it.
 export const layout = (parts: {
