@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "peal-emails",
+  "projectType": "library",
+  "targets": {
+    "typecheck": {
+      "command": "tsc --noEmit",
+      "options": { "cwd": "{projectRoot}" }
+    },
+    "test": {
+      "command": "vitest run",
+      "options": { "cwd": "{projectRoot}" }
+    },
+    "dev": {
+      "command": "email dev --dir previews --port 4325",
+      "options": { "cwd": "{projectRoot}" },
+      "continuous": true
+    }
+  }
+}

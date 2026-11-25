@@ -82,6 +82,14 @@ const references: readonly Reference[] = [
     tag: (version) => `@ui-sdk/react@${version}`,
   },
   {
+    // One monorepo for the emails' components, their renderer and their
+    // preview server, tagged per package.
+    name: "react-email",
+    packageName: "react-email",
+    repository: "resend/react-email",
+    tag: (version) => `react-email@${version}`,
+  },
+  {
     name: "blume",
     packageName: "blume",
     repository: "haydenbleasel/blume",
