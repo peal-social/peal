@@ -23,9 +23,9 @@ describe(PlatformsScreen, () => {
       </RegistryProvider>
     );
 
-    expect(html).toContain('aria-busy="true"');
-    expect(html).toContain(messages.Platforms.loading);
     expect(html).not.toContain('role="alert"');
     expect(html).not.toContain(messages.Platforms.loadFailed);
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain(messages.Platforms.loading);
   });
 });

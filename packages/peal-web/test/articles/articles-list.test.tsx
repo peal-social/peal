@@ -27,8 +27,8 @@ describe(ArticlesList, () => {
       </RegistryProvider>
     );
 
+    expect(html).not.toContain(messages.Articles.list.loadFailed);
     expect(html).toContain("aria-busy");
     expect(html).toContain(messages.Articles.list.loading);
-    expect(html).not.toContain(messages.Articles.list.loadFailed);
   });
 });
