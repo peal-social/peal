@@ -47,7 +47,10 @@ credentials and how to adopt what exists.
   Stripe's events, Meta's data deletion requests and its events
   (`api/platform-events`), each checked by the server. A path added there
   joins the Ansible project's `peal_access_bypass_paths` and
-  `tests/test_cloudflared.py` in the same change.
+  `tests/test_cloudflared.py` in the same change. The web app's error
+  reports, which browsers send without cookies, have their own Bypass
+  application, `access-client-errors`, on `/api/client-errors` alone
+  (`clientErrorsPath`, which that test reads).
 - Production is public but for its admin, Grafana and SSH: no Access
   application covers its app, site, docs or short links. Its admin
   application's paths (`adminPaths`) are the Ansible project's
