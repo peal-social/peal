@@ -6,17 +6,17 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
-from .comment_rule_ability import CommentRuleAbility
-from .comment_rule_private_ability import CommentRulePrivateAbility
 from .platform import Platform
+from .platform_comment_rule_private import PlatformCommentRulePrivate
+from .platform_comment_rule_reply import PlatformCommentRuleReply
 
 
 class PlatformCommentRule(UniversalBaseModel):
     platform: Platform
     private_reply: typing_extensions.Annotated[
-        CommentRulePrivateAbility, FieldMetadata(alias="privateReply"), pydantic.Field(alias="privateReply")
+        PlatformCommentRulePrivate, FieldMetadata(alias="privateReply"), pydantic.Field(alias="privateReply")
     ]
-    reply: CommentRuleAbility
+    reply: PlatformCommentRuleReply
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

@@ -4,8 +4,8 @@ pub use crate::prelude::*;
 pub struct PlatformCommentRule {
     pub platform: Platform,
     #[serde(rename = "privateReply")]
-    pub private_reply: CommentRulePrivateAbility,
-    pub reply: CommentRuleAbility,
+    pub private_reply: PlatformCommentRulePrivate,
+    pub reply: PlatformCommentRuleReply,
 }
 
 impl PlatformCommentRule {
@@ -18,8 +18,8 @@ impl PlatformCommentRule {
 #[non_exhaustive]
 pub struct PlatformCommentRuleBuilder {
     platform: Option<Platform>,
-    private_reply: Option<CommentRulePrivateAbility>,
-    reply: Option<CommentRuleAbility>,
+    private_reply: Option<PlatformCommentRulePrivate>,
+    reply: Option<PlatformCommentRuleReply>,
 }
 
 impl PlatformCommentRuleBuilder {
@@ -28,12 +28,12 @@ impl PlatformCommentRuleBuilder {
         self
     }
 
-    pub fn private_reply(mut self, value: CommentRulePrivateAbility) -> Self {
+    pub fn private_reply(mut self, value: PlatformCommentRulePrivate) -> Self {
         self.private_reply = Some(value);
         self
     }
 
-    pub fn reply(mut self, value: CommentRuleAbility) -> Self {
+    pub fn reply(mut self, value: PlatformCommentRuleReply) -> Self {
         self.reply = Some(value);
         self
     }

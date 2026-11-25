@@ -309,12 +309,39 @@ export const commentRuleSupport = {
   readonly [P in Platform]: "available" | "noApi" | "notAllowed";
 };
 
+/**
+ * Whether a rule answers on a platform, on this server: the platform's
+ * rules, then whether the server reads its comments. No channel's own
+ * standing (connected again, its reply's length) is in it.
+ */
+export const PlatformRuleReplySchema = Schema.Literals([
+  "available",
+  "noApi",
+  "notAllowed",
+  "unsupported",
+]);
+
+export type PlatformRuleReply = typeof PlatformRuleReplySchema.Type;
+
+/**
+ * Whether a rule sends its private message on a platform, on this server:
+ * on Instagram and Facebook Pages, where it reads their comments and
+ * messages. No channel's own standing is in it.
+ */
+export const PlatformRulePrivateSchema = Schema.Literals([
+  "available",
+  "noApi",
+  "unsupported",
+]);
+
+export type PlatformRulePrivate = typeof PlatformRulePrivateSchema.Type;
+
 /** What a rule can carry on a platform, before any channel's standing. */
 export interface PlatformRuleSupport {
   readonly platform: Platform;
   /** `noApi` but on Instagram and Facebook Pages. */
-  readonly privateReply: "available" | "noApi" | "unsupported";
-  readonly reply: "available" | "noApi" | "notAllowed" | "unsupported";
+  readonly privateReply: PlatformRulePrivate;
+  readonly reply: PlatformRuleReply;
 }
 
 // A private reply goes out on Instagram and Facebook Pages alone, where
@@ -323,7 +350,7 @@ const privateSupportOn = (
   platform: Platform,
   readsComments: boolean,
   messages: InboxMessagePlatforms
-): PlatformRuleSupport["privateReply"] => {
+): PlatformRulePrivate => {
   if (platform !== "facebook" && platform !== "instagram") {
     return "noApi";
   }

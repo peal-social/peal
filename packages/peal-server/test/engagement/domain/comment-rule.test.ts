@@ -171,4 +171,10 @@ describe("where comment rules answer", () => {
       )
     ).toStrictEqual({ privateReply: "available", reply: "available" });
   });
+
+  it("sends no private message where the server reads the messages but not the comments", () => {
+    expect(
+      byPlatform(new Set(), new Set(["instagram"])).get("instagram")
+    ).toStrictEqual({ privateReply: "unsupported", reply: "unsupported" });
+  });
 });

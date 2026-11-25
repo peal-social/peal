@@ -793,6 +793,8 @@ if typing.TYPE_CHECKING:
     from .platform_capabilities_analytics_post_counts_item import PlatformCapabilitiesAnalyticsPostCountsItem
     from .platform_capabilities_options import PlatformCapabilitiesOptions
     from .platform_comment_rule import PlatformCommentRule
+    from .platform_comment_rule_private import PlatformCommentRulePrivate
+    from .platform_comment_rule_reply import PlatformCommentRuleReply
     from .platform_dashboard import PlatformDashboard
     from .platform_posts import PlatformPosts
     from .platform_rate_limited_encoded import PlatformRateLimitedEncoded
@@ -1936,6 +1938,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PlatformCapabilitiesAnalyticsPostCountsItem": ".platform_capabilities_analytics_post_counts_item",
     "PlatformCapabilitiesOptions": ".platform_capabilities_options",
     "PlatformCommentRule": ".platform_comment_rule",
+    "PlatformCommentRulePrivate": ".platform_comment_rule_private",
+    "PlatformCommentRuleReply": ".platform_comment_rule_reply",
     "PlatformDashboard": ".platform_dashboard",
     "PlatformPosts": ".platform_posts",
     "PlatformRateLimitedEncoded": ".platform_rate_limited_encoded",
@@ -3100,6 +3104,8 @@ __all__ = [
     "PlatformCapabilitiesAnalyticsPostCountsItem",
     "PlatformCapabilitiesOptions",
     "PlatformCommentRule",
+    "PlatformCommentRulePrivate",
+    "PlatformCommentRuleReply",
     "PlatformDashboard",
     "PlatformPosts",
     "PlatformRateLimitedEncoded",

@@ -15,10 +15,10 @@ public record PlatformCommentRule : IJsonOnDeserialized
     public required Platform Platform { get; set; }
 
     [JsonPropertyName("privateReply")]
-    public required CommentRulePrivateAbility PrivateReply { get; set; }
+    public required PlatformCommentRulePrivate PrivateReply { get; set; }
 
     [JsonPropertyName("reply")]
-    public required CommentRuleAbility Reply { get; set; }
+    public required PlatformCommentRuleReply Reply { get; set; }
 
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();

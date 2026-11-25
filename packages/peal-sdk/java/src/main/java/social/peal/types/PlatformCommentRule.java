@@ -21,16 +21,16 @@ import social.peal.core.ObjectMappers;
 public final class PlatformCommentRule {
     private final Platform platform;
 
-    private final CommentRulePrivateAbility privateReply;
+    private final PlatformCommentRulePrivate privateReply;
 
-    private final CommentRuleAbility reply;
+    private final PlatformCommentRuleReply reply;
 
     private final Map<String, Object> additionalProperties;
 
     private PlatformCommentRule(
             Platform platform,
-            CommentRulePrivateAbility privateReply,
-            CommentRuleAbility reply,
+            PlatformCommentRulePrivate privateReply,
+            PlatformCommentRuleReply reply,
             Map<String, Object> additionalProperties) {
         this.platform = platform;
         this.privateReply = privateReply;
@@ -44,12 +44,12 @@ public final class PlatformCommentRule {
     }
 
     @JsonProperty("privateReply")
-    public CommentRulePrivateAbility getPrivateReply() {
+    public PlatformCommentRulePrivate getPrivateReply() {
         return privateReply;
     }
 
     @JsonProperty("reply")
-    public CommentRuleAbility getReply() {
+    public PlatformCommentRuleReply getReply() {
         return reply;
     }
 
@@ -89,11 +89,11 @@ public final class PlatformCommentRule {
     }
 
     public interface PrivateReplyStage {
-        ReplyStage privateReply(@NotNull CommentRulePrivateAbility privateReply);
+        ReplyStage privateReply(@NotNull PlatformCommentRulePrivate privateReply);
     }
 
     public interface ReplyStage {
-        _FinalStage reply(@NotNull CommentRuleAbility reply);
+        _FinalStage reply(@NotNull PlatformCommentRuleReply reply);
     }
 
     public interface _FinalStage {
@@ -108,9 +108,9 @@ public final class PlatformCommentRule {
     public static final class Builder implements PlatformStage, PrivateReplyStage, ReplyStage, _FinalStage {
         private Platform platform;
 
-        private CommentRulePrivateAbility privateReply;
+        private PlatformCommentRulePrivate privateReply;
 
-        private CommentRuleAbility reply;
+        private PlatformCommentRuleReply reply;
 
         private Map<String, Object> additionalProperties = new HashMap<>();
 
@@ -133,14 +133,14 @@ public final class PlatformCommentRule {
 
         @java.lang.Override
         @JsonSetter("privateReply")
-        public ReplyStage privateReply(@NotNull CommentRulePrivateAbility privateReply) {
+        public ReplyStage privateReply(@NotNull PlatformCommentRulePrivate privateReply) {
             this.privateReply = Objects.requireNonNull(privateReply, "privateReply must not be null");
             return this;
         }
 
         @java.lang.Override
         @JsonSetter("reply")
-        public _FinalStage reply(@NotNull CommentRuleAbility reply) {
+        public _FinalStage reply(@NotNull PlatformCommentRuleReply reply) {
             this.reply = Objects.requireNonNull(reply, "reply must not be null");
             return this;
         }

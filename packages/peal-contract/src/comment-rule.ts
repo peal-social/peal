@@ -96,18 +96,45 @@ export const ChannelCommentRuleSchema = Schema.Struct({
 }).annotate({ identifier: "ChannelCommentRule" });
 
 /**
+ * Whether a rule answers on a platform, on this server: `available`;
+ * `noApi` or `notAllowed` by the platform; `unsupported` where this server
+ * does not read the platform's comments. No channel's own standing.
+ */
+export const PlatformCommentRuleReplySchema = Schema.Literals([
+  "available",
+  "noApi",
+  "notAllowed",
+  "unsupported",
+]).annotate({ identifier: "PlatformCommentRuleReply" });
+
+export type PlatformCommentRuleReply =
+  typeof PlatformCommentRuleReplySchema.Type;
+
+/**
+ * Whether a rule sends its private message on a platform, on this server:
+ * `available`; `noApi` but on Instagram and Facebook Pages;
+ * `unsupported` where this server does not read the platform's comments
+ * or messages. No channel's own standing.
+ */
+export const PlatformCommentRulePrivateSchema = Schema.Literals([
+  "available",
+  "noApi",
+  "unsupported",
+]).annotate({ identifier: "PlatformCommentRulePrivate" });
+
+export type PlatformCommentRulePrivate =
+  typeof PlatformCommentRulePrivateSchema.Type;
+
+/**
  * What a rule can carry on a platform, on this server, before any
- * channel's own standing: its `reply` (`available`; `noApi` or
- * `notAllowed` by the platform; `unsupported` where this server does not
- * read the platform's comments) and its private reply (`available`;
- * `noApi` but on Instagram and Facebook Pages; `unsupported` where this
- * server does not read the platform's comments or messages). A channel
- * there may still need to be connected again, or its messages turned on.
+ * channel's own standing. A channel there may still need to be connected
+ * again, or, for the private message, its messages turned on, and an
+ * Instagram account connected through Meta's unified login sends none.
  */
 export const PlatformCommentRuleSchema = Schema.Struct({
   platform: PlatformSchema,
-  privateReply: CommentRulePrivateAbilitySchema,
-  reply: CommentRuleAbilitySchema,
+  privateReply: PlatformCommentRulePrivateSchema,
+  reply: PlatformCommentRuleReplySchema,
 }).annotate({ identifier: "PlatformCommentRule" });
 
 export type PlatformCommentRule = typeof PlatformCommentRuleSchema.Type;

@@ -312,14 +312,14 @@ public class AsyncRawCommentRulesClient {
     }
 
     /**
-     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its <code>privateReply</code> is <code>unsupported</code> there, though the platform's is <code>available</code>); <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<PlatformCommentRule>>> platforms() {
         return platforms(null);
     }
 
     /**
-     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its <code>privateReply</code> is <code>unsupported</code> there, though the platform's is <code>available</code>); <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<PlatformCommentRule>>> platforms(
             RequestOptions requestOptions) {

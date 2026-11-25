@@ -260,6 +260,8 @@ export {
   maxKeywords,
   maxRuleRepliesPerDay,
   NewCommentRuleSchema,
+  PlatformCommentRulePrivateSchema,
+  PlatformCommentRuleReplySchema,
   PlatformCommentRuleSchema,
 } from "./comment-rule.ts";
 
@@ -273,6 +275,8 @@ export type {
   CommentRuleStatus,
   NewCommentRule,
   PlatformCommentRule,
+  PlatformCommentRulePrivate,
+  PlatformCommentRuleReply,
 } from "./comment-rule.ts";
 
 export { CommentRuleEnded } from "./comment-rule-ended.ts";

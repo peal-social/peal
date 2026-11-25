@@ -43813,9 +43813,9 @@ var (
 )
 
 type PlatformCommentRule struct {
-	Platform     Platform                  `json:"platform" url:"platform"`
-	PrivateReply CommentRulePrivateAbility `json:"privateReply" url:"privateReply"`
-	Reply        CommentRuleAbility        `json:"reply" url:"reply"`
+	Platform     Platform                   `json:"platform" url:"platform"`
+	PrivateReply PlatformCommentRulePrivate `json:"privateReply" url:"privateReply"`
+	Reply        PlatformCommentRuleReply   `json:"reply" url:"reply"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -43831,14 +43831,14 @@ func (p *PlatformCommentRule) GetPlatform() Platform {
 	return p.Platform
 }
 
-func (p *PlatformCommentRule) GetPrivateReply() CommentRulePrivateAbility {
+func (p *PlatformCommentRule) GetPrivateReply() PlatformCommentRulePrivate {
 	if p == nil {
 		return ""
 	}
 	return p.PrivateReply
 }
 
-func (p *PlatformCommentRule) GetReply() CommentRuleAbility {
+func (p *PlatformCommentRule) GetReply() PlatformCommentRuleReply {
 	if p == nil {
 		return ""
 	}
@@ -43870,14 +43870,14 @@ func (p *PlatformCommentRule) SetPlatform(platform Platform) {
 
 // SetPrivateReply sets the PrivateReply field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PlatformCommentRule) SetPrivateReply(privateReply CommentRulePrivateAbility) {
+func (p *PlatformCommentRule) SetPrivateReply(privateReply PlatformCommentRulePrivate) {
 	p.PrivateReply = privateReply
 	p.require(platformCommentRuleFieldPrivateReply)
 }
 
 // SetReply sets the Reply field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PlatformCommentRule) SetReply(reply CommentRuleAbility) {
+func (p *PlatformCommentRule) SetReply(reply PlatformCommentRuleReply) {
 	p.Reply = reply
 	p.require(platformCommentRuleFieldReply)
 }
@@ -43922,6 +43922,59 @@ func (p *PlatformCommentRule) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", p)
+}
+
+type PlatformCommentRulePrivate string
+
+const (
+	PlatformCommentRulePrivateAvailable   PlatformCommentRulePrivate = "available"
+	PlatformCommentRulePrivateNoAPI       PlatformCommentRulePrivate = "noApi"
+	PlatformCommentRulePrivateUnsupported PlatformCommentRulePrivate = "unsupported"
+)
+
+func NewPlatformCommentRulePrivateFromString(s string) (PlatformCommentRulePrivate, error) {
+	switch s {
+	case "available":
+		return PlatformCommentRulePrivateAvailable, nil
+	case "noApi":
+		return PlatformCommentRulePrivateNoAPI, nil
+	case "unsupported":
+		return PlatformCommentRulePrivateUnsupported, nil
+	}
+	var t PlatformCommentRulePrivate
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (p PlatformCommentRulePrivate) Ptr() *PlatformCommentRulePrivate {
+	return &p
+}
+
+type PlatformCommentRuleReply string
+
+const (
+	PlatformCommentRuleReplyAvailable   PlatformCommentRuleReply = "available"
+	PlatformCommentRuleReplyNoAPI       PlatformCommentRuleReply = "noApi"
+	PlatformCommentRuleReplyNotAllowed  PlatformCommentRuleReply = "notAllowed"
+	PlatformCommentRuleReplyUnsupported PlatformCommentRuleReply = "unsupported"
+)
+
+func NewPlatformCommentRuleReplyFromString(s string) (PlatformCommentRuleReply, error) {
+	switch s {
+	case "available":
+		return PlatformCommentRuleReplyAvailable, nil
+	case "noApi":
+		return PlatformCommentRuleReplyNoAPI, nil
+	case "notAllowed":
+		return PlatformCommentRuleReplyNotAllowed, nil
+	case "unsupported":
+		return PlatformCommentRuleReplyUnsupported, nil
+	}
+	var t PlatformCommentRuleReply
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (p PlatformCommentRuleReply) Ptr() *PlatformCommentRuleReply {
+	return &p
 }
 
 var (

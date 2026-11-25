@@ -4,6 +4,6 @@ import * as Peal from "../index.js";
 
 export interface PlatformCommentRule {
     platform: Peal.Platform;
-    privateReply: Peal.CommentRulePrivateAbility;
-    reply: Peal.CommentRuleAbility;
+    privateReply: Peal.PlatformCommentRulePrivate;
+    reply: Peal.PlatformCommentRuleReply;
 }

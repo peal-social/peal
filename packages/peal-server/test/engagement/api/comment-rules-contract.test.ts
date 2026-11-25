@@ -11,6 +11,8 @@ import {
   maxKeywords as contractKeywords,
   maxRuleRepliesPerDay as contractPerDay,
   commentRuleMatchesShown as contractShown,
+  PlatformCommentRulePrivateSchema as ContractPlatformPrivateSchema,
+  PlatformCommentRuleReplySchema as ContractPlatformReplySchema,
 } from "peal-contract";
 
 import { CommentRuleNotPossible } from "#engagement/application/comment-rule-not-possible.ts";
@@ -26,6 +28,8 @@ import {
   maxKeywordLength,
   maxKeywords,
   maxRuleRepliesPerDay,
+  PlatformRulePrivateSchema,
+  PlatformRuleReplySchema,
 } from "#engagement/domain/comment-rule.ts";
 import { PrivateReplyStatusTagSchema } from "#engagement/domain/private-reply.ts";
 
@@ -55,6 +59,16 @@ describe("the comment rules' contract", () => {
     expect(ContractEndReasonSchema.literals).toStrictEqual(
       CommentRuleEndReasonSchema.literals
     );
+  });
+
+  it("copies the server's words for where rules answer, and no channel's", () => {
+    expect([
+      ContractPlatformReplySchema.literals,
+      ContractPlatformPrivateSchema.literals,
+    ]).toStrictEqual([
+      PlatformRuleReplySchema.literals,
+      PlatformRulePrivateSchema.literals,
+    ]);
   });
 
   it("copies the server's words for private replies", () => {

@@ -80065,7 +80065,7 @@ func TestSettersPlatformCommentRule(t *testing.T) {
 
 	t.Run("SetPrivateReply", func(t *testing.T) {
 		obj := &PlatformCommentRule{}
-		var fernTestValuePrivateReply CommentRulePrivateAbility
+		var fernTestValuePrivateReply PlatformCommentRulePrivate
 		obj.SetPrivateReply(fernTestValuePrivateReply)
 		assert.Equal(t, fernTestValuePrivateReply, obj.PrivateReply)
 		assert.NotNil(t, obj.explicitFields)
@@ -80073,7 +80073,7 @@ func TestSettersPlatformCommentRule(t *testing.T) {
 
 	t.Run("SetReply", func(t *testing.T) {
 		obj := &PlatformCommentRule{}
-		var fernTestValueReply CommentRuleAbility
+		var fernTestValueReply PlatformCommentRuleReply
 		obj.SetReply(fernTestValueReply)
 		assert.Equal(t, fernTestValueReply, obj.Reply)
 		assert.NotNil(t, obj.explicitFields)
@@ -80109,7 +80109,7 @@ func TestGettersPlatformCommentRule(t *testing.T) {
 		t.Parallel()
 		// Arrange
 		obj := &PlatformCommentRule{}
-		var expected CommentRulePrivateAbility
+		var expected PlatformCommentRulePrivate
 		obj.PrivateReply = expected
 
 		// Act & Assert
@@ -80132,7 +80132,7 @@ func TestGettersPlatformCommentRule(t *testing.T) {
 		t.Parallel()
 		// Arrange
 		obj := &PlatformCommentRule{}
-		var expected CommentRuleAbility
+		var expected PlatformCommentRuleReply
 		obj.Reply = expected
 
 		// Act & Assert
@@ -80189,7 +80189,7 @@ func TestSettersMarkExplicitPlatformCommentRule(t *testing.T) {
 		t.Parallel()
 		// Arrange
 		obj := &PlatformCommentRule{}
-		var fernTestValuePrivateReply CommentRulePrivateAbility
+		var fernTestValuePrivateReply PlatformCommentRulePrivate
 
 		// Act
 		obj.SetPrivateReply(fernTestValuePrivateReply)
@@ -80220,7 +80220,7 @@ func TestSettersMarkExplicitPlatformCommentRule(t *testing.T) {
 		t.Parallel()
 		// Arrange
 		obj := &PlatformCommentRule{}
-		var fernTestValueReply CommentRuleAbility
+		var fernTestValueReply PlatformCommentRuleReply
 
 		// Act
 		obj.SetReply(fernTestValueReply)
@@ -159751,6 +159751,85 @@ func TestEnumPlatformCapabilitiesAnalyticsPostCountsItem(t *testing.T) {
 
 	t.Run("Ptr", func(t *testing.T) {
 		val, err := NewPlatformCapabilitiesAnalyticsPostCountsItemFromString("likes")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumPlatformCommentRulePrivate(t *testing.T) {
+	t.Run("NewFromString_available", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformCommentRulePrivateFromString("available")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformCommentRulePrivate("available"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_noApi", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformCommentRulePrivateFromString("noApi")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformCommentRulePrivate("noApi"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_unsupported", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformCommentRulePrivateFromString("unsupported")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformCommentRulePrivate("unsupported"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewPlatformCommentRulePrivateFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewPlatformCommentRulePrivateFromString("available")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumPlatformCommentRuleReply(t *testing.T) {
+	t.Run("NewFromString_available", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformCommentRuleReplyFromString("available")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformCommentRuleReply("available"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_noApi", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformCommentRuleReplyFromString("noApi")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformCommentRuleReply("noApi"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_notAllowed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformCommentRuleReplyFromString("notAllowed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformCommentRuleReply("notAllowed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_unsupported", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformCommentRuleReplyFromString("unsupported")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformCommentRuleReply("unsupported"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewPlatformCommentRuleReplyFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewPlatformCommentRuleReplyFromString("available")
 		assert.NoError(t, err)
 		ptr := val.Ptr()
 		assert.NotNil(t, ptr)

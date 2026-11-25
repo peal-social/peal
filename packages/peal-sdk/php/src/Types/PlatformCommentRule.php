@@ -14,13 +14,13 @@ class PlatformCommentRule extends JsonSerializableType
     public string $platform;
 
     /**
-     * @var value-of<CommentRulePrivateAbility> $privateReply
+     * @var value-of<PlatformCommentRulePrivate> $privateReply
      */
     #[JsonProperty('privateReply')]
     public string $privateReply;
 
     /**
-     * @var value-of<CommentRuleAbility> $reply
+     * @var value-of<PlatformCommentRuleReply> $reply
      */
     #[JsonProperty('reply')]
     public string $reply;
@@ -28,8 +28,8 @@ class PlatformCommentRule extends JsonSerializableType
     /**
      * @param array{
      *   platform: value-of<Platform>,
-     *   privateReply: value-of<CommentRulePrivateAbility>,
-     *   reply: value-of<CommentRuleAbility>,
+     *   privateReply: value-of<PlatformCommentRulePrivate>,
+     *   reply: value-of<PlatformCommentRuleReply>,
      * } $values
      */
     public function __construct(
