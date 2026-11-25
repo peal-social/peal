@@ -96,7 +96,7 @@ describe("the Node.js SDK's package", () => {
 const oldName = [
   /from ["']peal-sdk(?:\/[^"']*)?["']/u,
   /require\(["']peal-sdk["']\)/u,
-  /npm install (?:--?\S+ )*peal-sdk\b/u,
+  /npm install(?: --?[A-Za-z][A-Za-z-]*)* peal-sdk\b/u,
   /npmjs\.com\/package\/peal-sdk\b/u,
   /shields\.io\/npm\/v\/peal-sdk\b/u,
 ];
