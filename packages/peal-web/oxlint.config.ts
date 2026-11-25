@@ -37,7 +37,11 @@ export default defineConfig({
         ],
         "no-restricted-properties": [
           "error",
-          { message: signOutMessage, object: "authClient", property: "signOut" },
+          {
+            message: signOutMessage,
+            object: "authClient",
+            property: "signOut",
+          },
         ],
       },
     },
