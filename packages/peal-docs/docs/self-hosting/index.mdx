@@ -203,6 +203,12 @@ Sign-in is rate limited by the client's address. The server reads it from the he
   it, there's no address to trust, and rate limits can't tell clients apart.
 </Callout>
 
+### Don't pass on the proxy's own token [#proxy-token]
+
+Peal reads a token in the `Authorization` header as the request's credential. If Peal refuses that token, the request gets a 401, even when it also carries a valid session cookie. So a proxy in front of Peal must not pass its own `Authorization: Bearer` header upstream, such as the ID token an identity proxy holds for the person. Remove that header before the request reaches Peal. Otherwise every API call the browser makes gets a 401.
+
+A proxy's `Basic` sign-in is unaffected. Peal doesn't read that scheme, and the session cookie decides.
+
 ### Set timeouts and probes [#probes]
 
 Let requests last at least 90 seconds through everything between browsers and the server, a tunnel included, because the writing assistant waits that long for its AI provider. The web app's own forwarding of `/api/*` waits up to 120 seconds.

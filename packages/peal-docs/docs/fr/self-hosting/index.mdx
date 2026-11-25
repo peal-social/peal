@@ -211,6 +211,12 @@ La connexion est limitée en débit par adresse du client. Le serveur la lit dan
   les clients.
 </Callout>
 
+### Ne pas transmettre le jeton du proxy [#proxy-token]
+
+Peal lit un jeton dans l’en-tête `Authorization` comme le moyen d’authentification de la requête. Si Peal refuse ce jeton, la requête reçoit une 401, même si elle porte aussi un cookie de session valide. Un proxy placé devant Peal ne doit donc pas transmettre son propre en-tête `Authorization: Bearer`, comme le jeton d’identité qu’un proxy d’identité détient pour la personne. Retirez cet en-tête avant que la requête n’atteigne Peal. Sinon, chaque appel du navigateur à l’API reçoit une 401.
+
+La connexion `Basic` d’un proxy n’est pas concernée. Peal ne lit pas ce schéma, et le cookie de session décide.
+
 ### Régler les délais et les sondes [#probes]
 
 Laissez les requêtes durer au moins 90 secondes à travers tout ce qui sépare les navigateurs du serveur, tunnel compris, car l’assistant de rédaction attend jusque-là son fournisseur d’IA. L’application web, quand elle transmet `/api/*`, attend jusqu’à 120 secondes.
