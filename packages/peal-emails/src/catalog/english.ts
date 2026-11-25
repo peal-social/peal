@@ -706,6 +706,18 @@ export const english: EmailCatalog = {
   },
   withinFreePlan:
     "It holds nothing beyond what the free plan allows, and keeps its content.",
+  welcome: {
+    action: "Schedule your first post",
+    api: "If you’re here for the API, create a key in the settings and send your first request.",
+    firstStep:
+      "To see how it works, schedule one post. Connect a social account if you haven’t yet, write a few lines and pick a time. Peal publishes it then.",
+    greeting:
+      "Hi, I’m {signer}, and I run Peal. Your account is ready, and I’m glad you’re here.",
+    once: "You get this email once, because you created a Peal account.",
+    reply:
+      "If something doesn’t work, or you can’t find how to do what you want, reply to this email. It comes to me, and I’ll answer.",
+    subject: "Welcome to Peal",
+  },
   workspaceDeleted: {
     action: "Open my workspaces",
     body: "The workspace {workspaceName} was deleted, as you asked, with everything in it: its channels, posts, media, analytics, members and API keys.",

@@ -15,6 +15,9 @@ import { MessageEmail } from "./emails/message.tsx";
 import { noticeContent } from "./emails/notice.ts";
 import type { NoticeEmail } from "./emails/notice.ts";
 import { WeeklyDigest } from "./emails/weekly-digest.tsx";
+import { Welcome } from "./emails/welcome-letter.tsx";
+import { welcomeContent, welcomeText } from "./emails/welcome.ts";
+import type { WelcomeEmail } from "./emails/welcome.ts";
 import type { Letterhead } from "./letterhead.ts";
 import type { Locale } from "./locale.ts";
 
@@ -76,6 +79,23 @@ export const renderNoticeEmail = async (
     letterhead,
     "still"
   );
+
+/**
+ * A new account's welcome, in its reader's language, signed by a person
+ * rather than the team.
+ */
+export const renderWelcomeEmail = async (
+  email: WelcomeEmail,
+  letterhead: Letterhead
+): Promise<RenderedEmail> => {
+  const content = welcomeContent(email);
+
+  return await rendered(
+    <Welcome content={content} letterhead={letterhead} locale={email.locale} />,
+    content.subject,
+    welcomeText(content, email.locale, letterhead.identity)
+  );
+};
 
 /**
  * A person's weekly digest: for each workspace, its posts that went out,

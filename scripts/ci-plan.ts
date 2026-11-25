@@ -43,7 +43,8 @@ export const rules: Readonly<Record<Job, Rule>> = {
   ansible: {
     // The release, backup, tunnel and uptime tests read the compose files,
     // the server's catalogue, the emails' pictures, the web app's routes, the
-    // Pulumi stack and the design system's colours.
+    // Pulumi stack, the design system's colours and who the legal pages
+    // name.
     paths: [
       "DESIGN.md",
       "packages/peal-docker/",
@@ -51,6 +52,7 @@ export const rules: Readonly<Record<Job, Rule>> = {
       "packages/peal-server/",
       "packages/peal-web/",
       "packages/peal-infra/pulumi/",
+      "packages/peal-site/src/content/legal/",
     ],
     project: named("peal-infra-ansible"),
   },

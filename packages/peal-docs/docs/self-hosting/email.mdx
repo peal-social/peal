@@ -14,9 +14,12 @@ These are the settings Peal reads:
 | Setting                           | Required       | What it does                                                                                                                                        |
 | --------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MAIL_FROM`                       | Yes            | The sender, as `Peal <noreply@example.com>` or an address your mail service may send from                                                           |
+| `PEAL_MAIL_PERSONAL_FROM`         | No             | The sender of the emails a person signs ([Send some emails as a person](#person))                                                                   |
 | `RESEND_API_KEY`                  | One of the two | Sends through Resend's API                                                                                                                          |
 | `SMTP_URL`                        | One of the two | Used without `RESEND_API_KEY`. An SMTP server, such as `smtp://user:password@mail.example.com:587`, or `smtps://…:465` for TLS from the first byte. |
+| `PEAL_MAIL_WELCOME_SIGNER`        | No             | Sends each new account a welcome, signed with this name ([Welcome new accounts](#welcome))                                                          |
 | `PEAL_MAIL_IDENTITY`              | No             | Says who sends, on one line under every email ([Say who sends](#identity))                                                                          |
+| `PEAL_MAIL_IDENTITY_FR`           | No             | The same line for French readers                                                                                                                    |
 | `AUTH_REQUIRE_EMAIL_VERIFICATION` | No             | With `false`, people can sign in before they confirm their address                                                                                  |
 
 [Environment variables](/self-hosting/environment-variables#email) has their defaults, with `AUTH_REQUIRE_EMAIL_VERIFICATION` under [Sign-in](/self-hosting/environment-variables#sign-in).
@@ -29,8 +32,35 @@ Peal sends these emails, each in the reader's language:
 - Password resets.
 - Invitations to a workspace.
 - [Notifications](/guides/workspace/notifications) about posts and channels. Members choose which ones also reach them by email.
+- A welcome to each new account, if you [turn it on](#welcome).
 
 Sometimes the mail service turns an email away for now. Peal then tries an account email three more times, over about four seconds, and drops it, because people can ask for another. It tries a notification's email again for about five hours.
+
+## Send some emails as a person [#person]
+
+Peal sends everything from `MAIL_FROM`. If you want the emails a person signs to come from that person instead, give Peal a second sender:
+
+```sh
+PEAL_MAIL_PERSONAL_FROM=Ada at Example <ada@example.com>
+```
+
+Write one address, alone or after a name. If the name holds a comma, a colon, a semicolon, an `@`, parentheses or square brackets, put it in double quotes, as in `"Example, Ada" <ada@example.com>`. Anything else stops the server at startup. Your mail service must accept both addresses. Without the setting, these emails come from `MAIL_FROM` too.
+
+Peal sets no reply address, so a reply goes to the address the email came from. Make sure someone reads it.
+
+## Welcome new accounts [#welcome]
+
+Peal can send each new account one welcome, signed by a person. It's off until you name who signs it:
+
+```sh
+PEAL_MAIL_WELCOME_SIGNER=Ada
+```
+
+The welcome says the account is ready, suggests scheduling a first post, and asks the reader to reply if something doesn't work. It comes from `PEAL_MAIL_PERSONAL_FROM`, or from `MAIL_FROM` without it, so choose an address whose mail the signer reads and answers.
+
+An account gets it once, however it was made, and only after its address is confirmed. Peal looks five minutes after the account is made. If the address isn't confirmed by then, or your mail service refuses the welcome, Peal looks again after 15 minutes, then 1, 6, 24 and 72 hours, each counted from the last look. After that it gives up. If the mail service says the refusal is about the reader's own address, Peal gives up at once. Banned accounts and accounts made before you set the name get none.
+
+The name is one line of 60 characters at most. If you remove the setting, no welcome is sent any more, even to accounts still waiting for theirs.
 
 ## Say who sends [#identity]
 
@@ -40,7 +70,13 @@ The law where you are may ask a company to name itself in its emails. Set `PEAL_
 PEAL_MAIL_IDENTITY=Example SAS, 1 Example Street, Example City
 ```
 
-The line is the same in every language, so you write it once. It holds 300 characters at most. Without the setting, your emails have no such line.
+Every reader gets this line. If it has words to translate, give French readers their own:
+
+```sh
+PEAL_MAIL_IDENTITY_FR=Example SAS, 1 rue de l’Exemple, Exempleville
+```
+
+Each line holds 300 characters at most. Without either setting, your emails have no such line.
 
 ## Let mail services load the images [#images]
 
@@ -48,4 +84,4 @@ Every email shows the Peal mark and two decorations. They come from your own ser
 
 Most mail services fetch images through a proxy of theirs, so `PUBLIC_URL` must answer from the internet, without a sign-in in front of that path. If it doesn't, readers see the name "Peal" in text and the rest of the email as it is.
 
-The images have the same addresses for every reader, with nothing after the name. The weekly digest, the email that confirms an address and invitations load a moving decoration besides. Peal doesn't trace these requests, and its log keeps their path without the reader's IP address. Your own proxy may keep more.
+The images have the same addresses for every reader, with nothing after the name. The weekly digest, the email that confirms an address, invitations and the welcome load a moving decoration besides. Peal doesn't trace these requests, and its log keeps their path without the reader's IP address. Your own proxy may keep more.

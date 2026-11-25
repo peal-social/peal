@@ -1,8 +1,9 @@
-import { Effect, Layer, Redacted } from "effect";
+import { Effect, Layer, Option, Redacted, Schema } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 
 import { MailDeliveryFailed } from "#notifications/application/mail-delivery-failed.ts";
 import { Mailer } from "#notifications/application/mailer.ts";
+import type { MailSenders } from "#notifications/infrastructure/mail-settings.ts";
 
 const endpoint = "https://api.resend.com/emails";
 
@@ -11,13 +12,35 @@ const endpoint = "https://api.resend.com/emails";
 const isRetryableStatus = (status: number): boolean =>
   status === 429 || status >= 500;
 
+const decodeRefusal = Schema.decodeOption(
+  Schema.fromJsonString(
+    Schema.Struct({ message: Schema.String, name: Schema.String })
+  )
+);
+
+// What Resend's answer says no later try may change: a key used for another
+// email, or the recipient, whose field its message names.
+const refusedFor = (body: string) =>
+  Option.match(decodeRefusal(body), {
+    onNone: () => ({}),
+    onSome: ({ message, name }) => {
+      if (name === "invalid_idempotent_request") {
+        return { refusedFor: "duplicate" as const };
+      }
+
+      return /`to`|suppress/iu.test(message)
+        ? { refusedFor: "recipient" as const }
+        : {};
+    },
+  });
+
 /**
  * Sends through Resend's HTTP API. The idempotency key makes a retried
  * request send the email once.
  */
 export const resendMailer = (options: {
   readonly apiKey: Redacted.Redacted;
-  readonly from: string;
+  readonly senders: MailSenders;
 }) =>
   Layer.effect(
     Mailer,
@@ -33,7 +56,7 @@ export const resendMailer = (options: {
               message.idempotencyKey
             ),
             HttpClientRequest.bodyJsonUnsafe({
-              from: options.from,
+              from: options.senders[message.sender ?? "automatic"],
               // Its own, as the weekly digest's `List-Unsubscribe`.
               headers: message.headers ?? {},
               html: message.html,
@@ -63,6 +86,7 @@ export const resendMailer = (options: {
                         `Resend answered ${response.status}: ${body}`
                       ),
                       retryable: isRetryableStatus(response.status),
+                      ...refusedFor(body),
                     })
                   )
                 )

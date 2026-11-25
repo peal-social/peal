@@ -56,6 +56,7 @@ const toldRenderer = Layer.succeed(
       }),
     notice: () => Effect.die(new Error("Not a notice")),
     weeklyDigest: () => Effect.die(new Error("Not a digest")),
+    welcome: () => Effect.die(new Error("Not a welcome")),
   })
 );
 

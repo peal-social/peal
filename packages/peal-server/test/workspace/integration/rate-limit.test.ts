@@ -9,6 +9,7 @@ import { ConfigProvider, Effect, Layer } from "effect";
 import { AgentRecordsLive } from "#agent/container.ts";
 import { BillingLive } from "#billing/container.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
+import { WelcomeEmails } from "#notifications/application/welcome-emails.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { SiteMeasurement } from "#shared/application/site-measurement.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
@@ -70,6 +71,8 @@ const authWith = (env: Record<string, string>) =>
         })
       )
     ),
+    // Nor signs up.
+    Layer.provide(WelcomeEmails.none),
     // Nobody signs in here, as staff or anyone.
     Layer.provide(
       Layer.succeed(

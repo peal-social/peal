@@ -1,6 +1,8 @@
 import { Context } from "effect";
 import type { Effect } from "effect";
 
+import type { MailSender } from "#notifications/domain/mail-sender.ts";
+
 import type { MailDeliveryFailed } from "./mail-delivery-failed.ts";
 
 /** One email to one address, rendered, as a mail transport takes it. */
@@ -16,14 +18,16 @@ export interface EmailMessage {
    * deduplicates (Resend keeps keys for a day) sends it once.
    */
   readonly idempotencyKey: string;
+  /** Whose address it leaves from: the server's when not said. */
+  readonly sender?: MailSender;
   readonly subject: string;
   readonly text: string;
   readonly to: string;
 }
 
 /**
- * Sends email from Peal's address: through Resend's API, or any SMTP server
- * (Mailpit in development).
+ * Sends each email from its sender's address: through Resend's API, or any
+ * SMTP server (Mailpit in development).
  */
 export class Mailer extends Context.Service<
   Mailer,

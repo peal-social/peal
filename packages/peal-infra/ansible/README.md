@@ -413,13 +413,22 @@ copy run without Pulumi, and for what Pulumi does in their place.
 5. **Telegram** ([Telegram](#telegram)): three bots from @BotFather, one for
    each server that alerts, and two private channels.
 6. **Email**: a Resend key for the verified sending domain `peal.social`,
-   which sends as `notifications@peal.social` (`peal_mail_from`), and,
-   where the blog runs and mails, a second one of its own
+   and, where the blog runs and mails, a second one of its own
    (`PEAL_BLOG_RESEND_API_KEY`), with Sending access alone, for that
-   domain: the blog never holds the server's key. Open and click tracking
-   stay off for the domain: the privacy policy says Peal does not know who
-   opened an email from its images. Each email ends on
-   `peal_mail_identity` (`PEAL_MAIL_IDENTITY`), the company's name alone.
+   domain: the blog never holds the server's key. Automatic emails leave
+   from `notifications@peal.social` (`peal_mail_from`), and what a person
+   signs from that person's address there (`peal_mail_personal_from`,
+   `PEAL_MAIL_PERSONAL_FROM`): today the welcome, which each new account
+   gets once, signed `peal_mail_welcome_signer` (`PEAL_MAIL_WELCOME_SIGNER`;
+   empty, none is sent) and asking for a reply. The domain forwards what
+   both addresses receive (the Pulumi account stack's `forwardedLocals`).
+   Open and click tracking stay off for the domain: the privacy policy says
+   Peal does not know who opened an email from its images. Each email ends
+   on `peal_mail_identity` (`PEAL_MAIL_IDENTITY`), or, for French readers,
+   on `peal_mail_identity_fr` (`PEAL_MAIL_IDENTITY_FR`): the company's name
+   and form, its share capital, its registered office and its registration,
+   as the Kbis gives them. The site's terms and privacy policy give the name,
+   the office and the registration too: change them together.
 7. **The platforms' apps**, a set of its own for each environment
    ([The platforms' apps](#the-platforms-apps)).
 

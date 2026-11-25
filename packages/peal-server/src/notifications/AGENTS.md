@@ -1,8 +1,17 @@
 # Notifications
 
 - Emails go through the `Mailer` port: Resend when `RESEND_API_KEY` is set,
-  otherwise SMTP at `SMTP_URL`, from `MAIL_FROM`. Requests never wait for
+  otherwise SMTP at `SMTP_URL`. Each leaves from its sender's address
+  (`MailSenderSchema`): `MAIL_FROM` for an automatic one, which every email
+  is unless it says otherwise, and `PEAL_MAIL_PERSONAL_FROM` for one a
+  person signs (`MAIL_FROM` where that is not set). No `Reply-To` is set: a
+  reply goes to the address the email came from. Requests never wait for
   them.
+- `PEAL_MAIL_PERSONAL_FROM`, the signer's name and the identity lines are
+  read as the server starts, which a value of the wrong form stops: one line,
+  with no control character nor one a reader does not see (bidirectional
+  controls, zero-width spaces), but the joiners names need (U+200C, U+200D),
+  and one address for the sender.
 - Emails are written in `peal-emails`
   ([its guide](../../../peal-emails/AGENTS.md)): their words in English and
   French, their templates and their text. Use cases reach it through the
@@ -14,8 +23,9 @@
   notices' emails would stay lost once fixed. It reads the letterhead every
   email carries as the server starts: where the server serves their
   pictures, `/api/email-assets` at `PUBLIC_URL` (`src/app/email-assets/`),
-  and who sends, `PEAL_MAIL_IDENTITY` (one line, optional). Account emails
-  go through `SendAuthEmail`. A test that moves `TestClock` while an email is being
+  and who sends, `PEAL_MAIL_IDENTITY` (one line, optional), or
+  `PEAL_MAIL_IDENTITY_FR` for French readers. Account emails go through
+  `SendAuthEmail`. A test that moves `TestClock` while an email is being
   written provides a renderer that answers at once
   (`send-auth-email.test.ts`), as rendering waits on promises.
 - A new notice, or a new reason of one, needs its member in
@@ -129,6 +139,53 @@
   not). The path is never traced (`src/app/untraced-paths.ts`), as
   `url.full` would keep the token, and the request log writes it with
   `<redacted>` in the token's place (`SecretPathsLive`).
+- The welcome (`SendWelcomeEmail`, `WelcomeV1`) is one email to each new
+  account, from the personal sender, signed `PEAL_MAIL_WELCOME_SIGNER`. That
+  setting is its switch: unset, nothing is started
+  (`WelcomeEmails.start` does nothing) and what was started before ends
+  without an email. The workspace context starts it when Better Auth makes
+  an account, whatever the way of signing up, on fibers of its own: a start
+  that fails is logged, and never fails a sign-up.
+- A welcome goes only to a confirmed address, whatever
+  `AUTH_REQUIRE_EMAIL_VERIFICATION` says, as someone may sign up with another
+  person's: several paths confirm one, and none is a hook, so `WelcomeV1`
+  checks the account (`WelcomeReaders`, from the workspace context) after
+  5 minutes, then 15 minutes, 1, 6, 24 and 72 hours, each from the one
+  before, and gives up after the last. A banned or erased account gets none.
+  A refusal waits for the next check, whatever it is about (a sender or a
+  domain not verified, a key revoked), as it sent nothing and may be put
+  right by then, unless `MailDeliveryFailed.refusedFor` says no later try may
+  send it: `recipient` (its address, by the SMTP reply's enhanced code, never a
+  reply without one, which may be about the sender or the relay, or by the
+  field Resend names) or `duplicate` (Resend holds another email under its
+  key, which may have gone out). It is informational and goes once, so it carries
+  no `List-Unsubscribe`, and no price, offer or programme may join it.
+- `WelcomeV1` is persisted contract: its tag, its payload (`userId`), its
+  activities `attempt/<n>`, its clocks `wait/<n>`, `welcomeChecks` and
+  `WelcomeOutcomeSchema`.
+- A welcome may go out twice, or never. Twice, when the transport took it
+  and the server did not learn it: it died before the check was stored, or
+  the answer was lost, and the next check sends it again. Resend drops the
+  second by its key (`welcome:<user>:<SHA-256 of the sender>`, kept a day: a
+  lost answer at the check after 6 hours is tried again after 24, when the
+  key may be gone), unless the sender was changed after the lost answer,
+  which is another key: a sender corrected after a refusal must be one, as
+  Resend may keep a refused key. SMTP delivers both. Never, when the server
+  dies between making the account and storing the run, which no transaction holds together (Better
+  Auth has its own pool) and nothing looks for later; or when the address is
+  confirmed, or the refusal put right, only after the last check, about
+  4 days and 7 hours after the account was made.
+- Erasing an account erases its welcome's run and clocks from the cluster's
+  tables, in the erasure's transaction (`WelcomeEmails.forget`, through
+  `NoticeRecords.eraseUser`), whatever the run has come to. One caught as it
+  sends ends by itself: its email may still go out, and what it stores after
+  (its outcome, a clock) has the run's id, a hash, and names nobody, but is
+  in no finished run, so the retention leaves it. A database restored, whose
+  closures `ReplayErasures` applies without the cluster, keeps the run until
+  its next check finds the account gone, then as any finished run.
+- Rolled back past the welcome, a server sends none and leaves the runs that
+  wait, an account's it erases too: back on this release, each that is due is
+  checked at once.
 - A name someone typed (a member's, a workspace's) goes into an email only
   through `peal-emails`' `nameForMail`: one that reads as a host or an
   address is replaced by the catalog's `withheldNames` ("A member", "a
