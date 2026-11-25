@@ -379,8 +379,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   that reads the query only once hydrated, its loading state before
   (`ChannelsSettings`, `PlatformsScreen`), or read it and show its loading
   state until hydrated whatever it holds (`!mounted || …`, as
-  `ComposerScreen` does, and `OverPlanScreen` for those who manage
-  billing, `overPlanLoadOf`). Tiptap editors set `immediatelyRender: false`.
+  `ComposerScreen` does, and `OverPlanScreen`'s lists for those who
+  manage billing, `listLoadOf`). Tiptap editors set `immediatelyRender: false`.
 - Settings pages follow DESIGN.md's "Settings": the layout puts each in
   peal-ui's `SettingsPage` column; a page is sections (`SettingsGroup`,
   `components/settings/settings-group.tsx`) of `SettingsCard`s of
@@ -1243,10 +1243,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`standingOfWorkspace`, read with the visitor's cookies): on the free
   tier it says the account holds more than its free accounts without a
   payment method; a grace shows `GraceBanner` above every page instead.
-  For those who manage billing it loads (`OverPlanLoading`) until the
-  browser has read the channels and the members they choose among, and
-  says when either could not be read, with **Try again**
-  (`OverPlanLoadFailed`); the others read it at once.
+  Its title, explanation and offer come from the standing and the
+  workspace the server read, and show at once, on the server too (the
+  offer takes that standing, `UpgradeOffer`'s `standing`, for the
+  workspace that bills the account). For those who manage billing, the
+  card that chooses what stays shows its title at once, and each of its
+  two lists, the channels and the members, rows in their place until the
+  browser has read it (`HeldList`: as many as the standing counts, ten at
+  most), or that it could not be read, with **Try again**, which reads
+  that list again; the confirmation waits for both. The others read who
+  can fix it at once.
 - A meter's refusal (`UsageAllowanceReached`) opens the same dialog when
   it asks for a payment method (`MeterReached`, `isMeterReason` in
   `#billing/upgrade.ts`: what the month allowed, when it starts again, what

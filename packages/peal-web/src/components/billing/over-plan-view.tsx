@@ -19,6 +19,7 @@ import { Skeleton } from "peal-ui/components/skeleton";
 import { useId } from "react";
 import type { ReactNode } from "react";
 
+import type { ListLoad } from "#billing/over-plan-load.ts";
 import { ExcessList } from "#components/billing/excess-list.tsx";
 
 /** A channel to keep or let go. */
@@ -56,7 +57,10 @@ export interface OverPlanViewProps {
   readonly billingLink: ReactNode;
   /** Whether the member orders a plan and chooses what stays. */
   readonly canManage: boolean;
+  /** The workspace's channels, once read. */
   readonly channels: readonly HeldChannel[];
+  /** Whether the channels are read, loading, or could not be. */
+  readonly channelsLoad: ListLoad;
   /** Whether the box saying what is removed is ticked. */
   readonly confirmed: boolean;
   readonly error: OverPlanError | null;
@@ -64,11 +68,18 @@ export interface OverPlanViewProps {
   readonly keptMembers: readonly string[];
   /** The names of those who can fix it, for the other members. */
   readonly managers: readonly string[];
+  /** The workspace's members, once read. */
   readonly members: readonly HeldMember[];
+  /** Whether the members are read, loading, or could not be. */
+  readonly membersLoad: ListLoad;
   readonly onApply: () => void;
   readonly onConfirm: (confirmed: boolean) => void;
   readonly onKeepChannel: (channelId: string, kept: boolean) => void;
   readonly onKeepMember: (userId: string, kept: boolean) => void;
+  /** Reads the channels again, once they could not be. */
+  readonly onRetryChannels: () => void;
+  /** Reads the members again, once they could not be. */
+  readonly onRetryMembers: () => void;
   /** The member reading, who always stays. */
   readonly self: string;
   readonly standing: Standing;
@@ -77,8 +88,98 @@ export interface OverPlanViewProps {
   readonly workspaceName: string;
 }
 
+const excessOf = (standing: Standing, limit: "channels" | "members") =>
+  standing.over.find((excess) => excess.limit === limit);
+
 const allowedOf = (standing: Standing, limit: "channels" | "members") =>
-  standing.over.find((excess) => excess.limit === limit)?.allowed ?? null;
+  excessOf(standing, limit)?.allowed ?? null;
+
+// The rows a list draws while it loads: as many as the standing counts,
+// ten at most. A billing account's other workspaces count their channels
+// too, so the list may hold fewer.
+const placeholderRowsOf = (
+  standing: Standing,
+  limit: "channels" | "members"
+): readonly number[] =>
+  Array.from(
+    { length: Math.min(excessOf(standing, limit)?.used ?? 0, 10) },
+    (_, row) => row
+  );
+
+// The placeholder labels, in turn, of different widths, so the rows read
+// as names.
+const placeholderLabels = [
+  <Skeleton key="long" className="h-3 w-48" />,
+  <Skeleton key="short" className="h-3 w-36" />,
+  <Skeleton key="middle" className="h-3 w-44" />,
+] as const;
+
+// A row in the place of a choice still loading, of its height: the box and
+// the label.
+const PlaceholderRow = ({ row }: { readonly row: number }) => (
+  <div className="flex h-4 items-center gap-3">
+    <Skeleton className="size-4" />
+    {placeholderLabels[row % placeholderLabels.length]}
+  </div>
+);
+
+// The confirmation in its place while a list loads: its box and its
+// sentence, on two lines on a phone, as the sentence wraps there.
+const ConfirmPlaceholder = () => (
+  <div className="flex items-start gap-3">
+    <Skeleton className="size-4" />
+    <div className="flex flex-col gap-1.5">
+      <Skeleton className="h-3 w-56" />
+      <Skeleton className="h-3 w-40 sm:hidden" />
+    </div>
+  </div>
+);
+
+// One of the lists to choose among: its choices once read; before, rows
+// in their place, so nothing moves when they arrive; why it could not be
+// read, with a way to read it again.
+const HeldList = ({
+  children,
+  failed,
+  load,
+  loading,
+  onRetry,
+  rows,
+}: {
+  /** The choices, once the list is read. */
+  readonly children: ReactNode;
+  readonly failed: string;
+  readonly load: ListLoad;
+  readonly loading: string;
+  readonly onRetry: () => void;
+  readonly rows: readonly number[];
+}) => {
+  const t = useTranslations("OverPlan");
+
+  if (load === "ready") {
+    return <ul className="flex flex-col gap-2">{children}</ul>;
+  }
+
+  if (load === "failed") {
+    return (
+      <div className="flex flex-col items-start gap-3" role="alert">
+        <p className="text-sm">{failed}</p>
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          {t("retry")}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2" aria-busy="true">
+      <span className="sr-only">{loading}</span>
+      {rows.map((row) => (
+        <PlaceholderRow key={row} row={row} />
+      ))}
+    </div>
+  );
+};
 
 const Choice = ({
   checked,
@@ -111,14 +212,18 @@ const Choice = ({
 const Choosing = ({
   applying,
   channels,
+  channelsLoad,
   confirmed,
   keptChannels,
   keptMembers,
   members,
+  membersLoad,
   onApply,
   onConfirm,
   onKeepChannel,
   onKeepMember,
+  onRetryChannels,
+  onRetryMembers,
   self,
   standing,
 }: OverPlanViewProps) => {
@@ -130,6 +235,14 @@ const Choosing = ({
   const tooMany =
     (channelsAllowed !== null && keptChannels.length > channelsAllowed) ||
     (membersAllowed !== null && keptMembers.length > membersAllowed);
+
+  // The lists shown: the confirmation waits for both.
+  const loads: readonly ListLoad[] = [
+    channelsAllowed === null ? "ready" : channelsLoad,
+    membersAllowed === null ? "ready" : membersLoad,
+  ];
+
+  const ready = loads.every((load) => load === "ready");
 
   const leaving = {
     channels:
@@ -155,7 +268,13 @@ const Choosing = ({
                   kept: keptChannels.length,
                 })}
               </legend>
-              <ul className="flex flex-col gap-2">
+              <HeldList
+                failed={t("channelsFailed")}
+                load={channelsLoad}
+                loading={t("loadingChannels")}
+                rows={placeholderRowsOf(standing, "channels")}
+                onRetry={onRetryChannels}
+              >
                 {channels.map(({ id, name }) => (
                   <Choice
                     key={id}
@@ -167,7 +286,7 @@ const Choosing = ({
                     }}
                   />
                 ))}
-              </ul>
+              </HeldList>
               <p className="text-muted-foreground text-xs">
                 {t("channelsNote")}
               </p>
@@ -181,7 +300,13 @@ const Choosing = ({
                   kept: keptMembers.length,
                 })}
               </legend>
-              <ul className="flex flex-col gap-2">
+              <HeldList
+                failed={t("membersFailed")}
+                load={membersLoad}
+                loading={t("loadingMembers")}
+                rows={placeholderRowsOf(standing, "members")}
+                onRetry={onRetryMembers}
+              >
                 {members.map(({ name, role, userId }) => (
                   <Choice
                     key={userId}
@@ -193,23 +318,26 @@ const Choosing = ({
                     }}
                   />
                 ))}
-              </ul>
+              </HeldList>
               <p className="text-muted-foreground text-xs">
                 {t("membersNote")}
               </p>
             </fieldset>
           )}
-          <div className="flex items-start gap-3">
-            <Checkbox
-              id={confirmId}
-              checked={confirmed}
-              disabled={applying}
-              onCheckedChange={(next) => {
-                onConfirm(next === true);
-              }}
-            />
-            <Label htmlFor={confirmId}>{t("confirm", leaving)}</Label>
-          </div>
+          {ready ? (
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id={confirmId}
+                checked={confirmed}
+                disabled={applying}
+                onCheckedChange={(next) => {
+                  onConfirm(next === true);
+                }}
+              />
+              <Label htmlFor={confirmId}>{t("confirm", leaving)}</Label>
+            </div>
+          ) : null}
+          {loads.includes("loading") ? <ConfirmPlaceholder /> : null}
           {tooMany ? (
             <p className="text-destructive text-sm">{t("tooMany")}</p>
           ) : null}
@@ -218,7 +346,7 @@ const Choosing = ({
       <CardFooter>
         <Button
           variant="destructive"
-          disabled={!confirmed || tooMany || applying}
+          disabled={!ready || !confirmed || tooMany || applying}
           focusableWhenDisabled
           onClick={onApply}
         >
@@ -226,48 +354,6 @@ const Choosing = ({
         </Button>
       </CardFooter>
     </Card>
-  );
-};
-
-/**
- * The screen for a member who manages billing until the channels and the
- * members are read: before hydration, and until the browser has both.
- */
-export const OverPlanLoading = () => {
-  const t = useTranslations("OverPlan");
-
-  return (
-    <div className="flex flex-col gap-6" aria-busy="true">
-      <span className="sr-only">{t("loading")}</span>
-      <Skeleton className="h-20 w-full" />
-      <Skeleton className="h-32 w-full" />
-      <Skeleton className="h-32 w-full" />
-    </div>
-  );
-};
-
-/**
- * The screen for a member who manages billing when the browser could not
- * read the channels or the members: why, and a way to read them again.
- */
-export const OverPlanLoadFailed = ({
-  onRetry,
-}: {
-  readonly onRetry: () => void;
-}) => {
-  const t = useTranslations("OverPlan");
-
-  return (
-    <div className="flex flex-col gap-4">
-      <Alert variant="destructive">
-        <AlertDescription>{t("loadFailed")}</AlertDescription>
-      </Alert>
-      <div>
-        <Button variant="outline" size="sm" onClick={onRetry}>
-          {t("retry")}
-        </Button>
-      </div>
-    </div>
   );
 };
 
