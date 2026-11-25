@@ -335,7 +335,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`headers: forWorkspace(workspaceId)`, from `peal-contract`, merged
   with an idempotency key where there is one), never through a transform
   of the client: query atoms are keyed by a call's arguments, so two
-  workspaces' queries stay apart. A deletion passes the key that lists
+  workspaces' queries stay apart. The app's registry
+  (`AppRegistryProvider`, over `renderRegistry` in `#api/registry.ts`,
+  tested) holds a query a render reads until something subscribes to it,
+  as that render's commit does, or `renderHoldMs` (ten seconds) when
+  nothing does: Next's router renders the page it opens, its requests
+  sent, before it commits it, and the registry's own task, which drops
+  what nothing subscribes to, ran in between and cancelled each request,
+  which the commit sent again. Once a reader has subscribed, a query goes
+  with its last reader, so a page opened again reads it afresh, which the
+  pages count on: give the registry no idle time (`defaultIdleTTL`) and a
+  query no `timeToLive`, which would show a page opened again what it
+  read before (the calendar without a post scheduled again, a list's
+  earlier refusal). A deletion passes the key that lists
   its kind again alone (`postListsChanged`, `articleListChanged`,
   `queueListChanged`, `feedListChanged`; a media's usage reads
   `mediaUsageKeys`), never one a query of the deleted item reads: the

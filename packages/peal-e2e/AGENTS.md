@@ -125,6 +125,12 @@
 - A toast's text is also in the page's live region, which keeps it after
   the toast has gone: find a toast inside the `region` "Notifications",
   as the journeys find "Post cancelled.".
+- `tests/first-post.e2e.ts` opens the Drafts tab from **Posts** and
+  counts the requests for its list with `browser.route`, read once the
+  answer is in (a request sent again goes with the commit, before it):
+  one, as the web app's registry holds what a render reads until its
+  commit (`#api/registry.ts`). It then reads the calendar again after
+  each change, which a query kept past its last reader would miss.
 - `tests/composer-comforts.e2e.ts` seeds three channels, selects them all
   and none, ticks one by pointer and by Space and scrolls the wheel, the
   document staying the window's height and unscrolled throughout (the

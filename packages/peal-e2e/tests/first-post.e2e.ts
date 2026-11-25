@@ -148,6 +148,44 @@ describe("a new member's first post", { serial: true }, () => {
     );
   });
 
+  test("asks for the Drafts tab's list once when the tab opens", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    await app.open(`/${slug}/posts`);
+    await expect(
+      screen.getByRole("main").getByRole("link", text)
+    ).toBeVisible();
+
+    // Every request for the drafts, a cancelled one included: the router
+    // renders the tab before it commits it, and the list was asked for two
+    // or three times while the registry dropped what nothing subscribed to.
+    const drafts = /\/api\/v1\/posts\?(?:[^#]*&)?status=draft(?:&|$)/u;
+    let asked = 0;
+
+    await browser.route(drafts, async (route) => {
+      asked += 1;
+      await route.continue();
+    });
+
+    const answered = browser.waitForResponse(drafts);
+
+    await screen.getByRole("link", "Drafts").tap();
+    await expect(browser).toHaveURL(`/${slug}/posts?status=draft`);
+
+    // A request sent again goes with the commit, before any answer comes.
+    const response = await answered;
+
+    expect(response.status).toBe(200);
+    expect(asked).toBe(1);
+    await expect(
+      screen.getByRole("main").getByRole("link", text)
+    ).toBeVisible();
+
+    await browser.unroute(drafts);
+  });
+
   test("finds it under the Drafts tab of Posts", async ({
     app,
     browser,
