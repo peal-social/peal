@@ -623,6 +623,7 @@ export {
   FollowerChangeSchema,
   maxTopPosts,
   PlatformDashboardSchema,
+  postCountsReadForDays,
   MetricsSnapshotSchema,
   MetricTotalsSchema,
   PostAnalyticsSchema,
