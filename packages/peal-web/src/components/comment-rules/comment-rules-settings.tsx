@@ -16,6 +16,7 @@ import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
 
 import {
+  commentRulePlatforms,
   commentRulesChanged,
   startCommentRule,
   stopCommentRule,
@@ -149,7 +150,12 @@ const NewRule = ({
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("CommentRules");
-  const channels = useAtomValue(workspaceChannels(workspaceId));
+  const channelsQuery = workspaceChannels(workspaceId);
+  const platformsQuery = commentRulePlatforms(workspaceId);
+  const channels = useAtomValue(channelsQuery);
+  const platforms = useAtomValue(platformsQuery);
+  const retryChannels = useAtomRefresh(channelsQuery);
+  const retryPlatforms = useAtomRefresh(platformsQuery);
   const create = useAtomSet(startCommentRule, { mode: "promiseExit" });
   const [draft, setDraft] = useState<CommentRuleDraft>(freshCommentRule);
   const [error, setError] = useState<string | null>(null);
@@ -207,13 +213,30 @@ const NewRule = ({
     });
   };
 
+  // The form offers channels from both answers: none is drawn before.
+  if (AsyncResult.isFailure(channels) || AsyncResult.isFailure(platforms)) {
+    return (
+      <SettingsLoadFailed
+        onRetry={() => {
+          retryChannels();
+          retryPlatforms();
+        }}
+      />
+    );
+  }
+
+  if (!AsyncResult.isSuccess(channels) || !AsyncResult.isSuccess(platforms)) {
+    return <SettingsLoading />;
+  }
+
   return (
     <CommentRuleFormView
       busy={busy}
-      channels={AsyncResult.isSuccess(channels) ? channels.value : []}
+      channels={channels.value}
       draft={draft}
       error={error}
       mayMessage={mayMessage}
+      platforms={platforms.value}
       onChange={setDraft}
       onSubmit={submit}
     />

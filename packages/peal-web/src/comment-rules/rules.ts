@@ -1,5 +1,11 @@
 import { maxKeywords } from "peal-contract";
-import type { CommentRule, NewCommentRule } from "peal-contract";
+import type {
+  Channel,
+  CommentRule,
+  NewCommentRule,
+  Platform,
+  PlatformCommentRule,
+} from "peal-contract";
 
 /** What the form holds while a member writes a rule. */
 export interface CommentRuleDraft {
@@ -19,12 +25,45 @@ export const freshCommentRule: CommentRuleDraft = {
 };
 
 /**
- * Whether a rule may send a private reply on the platform: Instagram and
- * Facebook Pages, whose platforms let an account send a commenter one
- * private message. The server says whether the channel can, now.
+ * The platforms where a rule answers, as the server says
+ * (`automations.commentRules.platforms`), in its order.
  */
-export const carriesPrivately = (platform: string | undefined): boolean =>
-  platform === "instagram" || platform === "facebook";
+export const answeringPlatforms = (
+  platforms: readonly PlatformCommentRule[]
+): readonly Platform[] =>
+  platforms.flatMap(({ platform, reply }) =>
+    reply === "available" ? [platform] : []
+  );
+
+/**
+ * The channels a rule may start on: those that are on and connected, on
+ * a platform where the server says rules answer. The server still says
+ * when one must be connected again for its comments.
+ */
+export const ruleChannelsOf = <C extends Pick<Channel, "platform" | "status">>(
+  channels: readonly C[],
+  platforms: readonly PlatformCommentRule[]
+): readonly C[] => {
+  const answering = new Set<Channel["platform"]>(answeringPlatforms(platforms));
+
+  return channels.filter(
+    ({ platform, status }) =>
+      status._tag === "active" && answering.has(platform)
+  );
+};
+
+/**
+ * Whether a rule may send a private reply on the platform, as the server
+ * says: Instagram and Facebook Pages, where it reads their messages. The
+ * channel's own messages must be on too, which the server checks.
+ */
+export const carriesPrivately = (
+  platforms: readonly PlatformCommentRule[],
+  platform: Channel["platform"] | undefined
+): boolean =>
+  platforms.some(
+    (each) => each.platform === platform && each.privateReply === "available"
+  );
 
 /**
  * Whether setting a paused rule going again is held back from the member:

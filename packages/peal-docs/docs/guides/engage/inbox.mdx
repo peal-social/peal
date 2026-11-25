@@ -333,6 +333,8 @@ A comment rule answers comments by itself, in public, as the channel's account. 
 
 To set one up, click **Settings** at the foot of the sidebar, then **Comment replies**. Select the **Channel**, type up to 10 **Keywords** and the **Reply**, then click **Start**.
 
+The **Channel** list shows only the channels a rule can answer on: those turned on, on a platform in the table below whose comments this server reads. Each one is named with its platform, so two accounts of the same name read apart.
+
 A rule answers:
 
 - A comment written after it started, or after it was last resumed, that holds a keyword as a word, whatever its case and accents. `prix` answers "Quel PRIX ?", not "surprix".
@@ -542,6 +544,7 @@ The inbox has these requests:
 | `DELETE /api/v1/inbox/reviews/{reviewId}/reply`                        | Deletes the location's reply to a review.                                                                                                                                                                                                                                                     |
 | `POST /api/v1/inbox/reviews/{reviewId}/answered`                       | Marks a review answered, or waiting again.                                                                                                                                                                                                                                                    |
 | `POST /api/v1/automations/comment-rules`                               | Starts a [comment rule](#comment-rules) on a post (`postId`) or a channel (`channelId`), with `keywords`, a `reply` and, optionally, a `privateReply`. `GET`, `PATCH` (keywords, reply, private reply, `paused`) and `DELETE …/automations/comment-rules/{ruleId}` read, change and stop one. |
+| `GET /api/v1/automations/comment-rules/platforms`                      | Says, for each platform, whether a rule can answer there on this server and send its private message.                                                                                                                                                                                         |
 | `GET /api/v1/inbox/messages/conversations`                             | Lists the conversations, the latest message first. `channelId` and `unread=true` narrow the list. `cursor` and `limit` page it.                                                                                                                                                               |
 | `GET /api/v1/inbox/messages/conversations/{conversationId}`            | A conversation: a page of its messages (the latest 100 unless `limit` says fewer, with `nextCursor` as `cursor` for older ones), those sent from Peal, and what the channel can do.                                                                                                           |
 | `POST /api/v1/inbox/messages/conversations/{conversationId}/messages`  | Sends a direct message. Answers `202` with the message, `sending`. With an `Idempotency-Key`, it's safe to send again.                                                                                                                                                                        |

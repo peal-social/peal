@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import type { Channel, CommentRule } from "peal-contract";
+import { useFormatter, useTranslations } from "next-intl";
+import type { Channel, CommentRule, PlatformCommentRule } from "peal-contract";
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
 import { Checkbox } from "peal-ui/components/checkbox";
@@ -18,8 +18,13 @@ import { Textarea } from "peal-ui/components/textarea";
 import { useId } from "react";
 import type { ReactNode } from "react";
 
-import { carriesPrivately } from "#comment-rules/rules.ts";
+import {
+  answeringPlatforms,
+  carriesPrivately,
+  ruleChannelsOf,
+} from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 
 // The views of comment rules: a rule with what it did, and the form that
 // starts one, whatever fetched them. Their state is in
@@ -198,7 +203,39 @@ export const RuleActionsView = ({
   );
 };
 
-/** The form that starts a rule on a channel. */
+/**
+ * Why no channel of the workspace can have a rule, in one sentence: where
+ * rules answer on this server, or that they answer nowhere.
+ */
+const NoRuleChannel = ({
+  platforms,
+}: {
+  readonly platforms: readonly PlatformCommentRule[];
+}) => {
+  const t = useTranslations("CommentRules.form");
+  const tPosts = useTranslations("Posts");
+  const format = useFormatter();
+  const answering = answeringPlatforms(platforms);
+
+  return (
+    <p className="text-muted-foreground text-sm">
+      {answering.length === 0
+        ? t("noPlatform")
+        : t("noChannel", {
+            platforms: format.list(
+              answering.map((platform) => tPosts("platform", { platform })),
+              { type: "conjunction" }
+            ),
+          })}
+    </p>
+  );
+};
+
+/**
+ * The form that starts a rule on a channel: it offers the channels a rule
+ * may start on (`ruleChannelsOf`, from where the server says rules answer),
+ * each named with its platform, or says why there is none.
+ */
 export const CommentRuleFormView = ({
   busy,
   channels,
@@ -207,8 +244,10 @@ export const CommentRuleFormView = ({
   mayMessage,
   onChange,
   onSubmit,
+  platforms,
 }: {
   readonly busy: boolean;
+  /** The workspace's channels. */
   readonly channels: readonly Channel[];
   readonly draft: CommentRuleDraft;
   readonly error: string | null;
@@ -216,32 +255,38 @@ export const CommentRuleFormView = ({
   readonly mayMessage: boolean;
   readonly onChange: (draft: CommentRuleDraft) => void;
   readonly onSubmit: () => void;
+  /** Where rules answer, as the server says. */
+  readonly platforms: readonly PlatformCommentRule[];
 }) => {
   const t = useTranslations("CommentRules");
+  const labelOf = useChannelLabel();
   const channelId = useId();
   const keywordsId = useId();
   const replyId = useId();
   const privateId = useId();
   const privateTextId = useId();
+  const offered = ruleChannelsOf(channels, platforms);
+
+  if (offered.length === 0) {
+    return <NoRuleChannel platforms={platforms} />;
+  }
+
+  const privateOn = (chosen: string) =>
+    carriesPrivately(
+      platforms,
+      offered.find(({ id }) => id === chosen)?.platform
+    );
 
   // The draft on another channel: one without private replies takes none.
   const onChannel = (chosen: string): CommentRuleDraft => ({
     ...draft,
     channelId: chosen,
-    privateReply: carriesPrivately(
-      channels.find(({ id }) => id === chosen)?.platform
-    )
-      ? draft.privateReply
-      : null,
+    privateReply: privateOn(chosen) ? draft.privateReply : null,
   });
 
-  // Offered only where the platform has private replies, to a member who
-  // may send messages; the server says whether the channel can now.
-  const offersPrivate =
-    mayMessage &&
-    carriesPrivately(
-      channels.find(({ id }) => id === draft.channelId)?.platform
-    );
+  // Offered only where the server sends private replies, to a member who
+  // may send messages; it says whether the channel can now.
+  const offersPrivate = mayMessage && privateOn(draft.channelId);
 
   return (
     <form
@@ -263,9 +308,9 @@ export const CommentRuleFormView = ({
             <SelectValue placeholder={t("form.chooseChannel")} />
           </SelectTrigger>
           <SelectContent>
-            {channels.map((channel) => (
+            {offered.map((channel) => (
               <SelectItem key={channel.id} value={channel.id}>
-                {channel.displayName ?? channel.handle}
+                {labelOf(channel)}
               </SelectItem>
             ))}
           </SelectContent>

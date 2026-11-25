@@ -26,7 +26,7 @@ import { useId, useState } from "react";
 
 import { kinds, maxTitleLength } from "#analytics/widgets.ts";
 import type { Period, WidgetKind } from "#analytics/widgets.ts";
-import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { PlatformMark } from "#components/channels/platform-mark.tsx";
 import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import type { FilterProperty } from "#components/lists/filter-menu.tsx";
@@ -58,6 +58,7 @@ export const WidgetFilter = ({
   readonly period: Period;
 }) => {
   const t = useTranslations("Analytics.widgets");
+  const channelLabel = useChannelLabel();
   const menu = useFilterMenu({ shortcut: false });
   const described = kinds[kind];
   const byChannel = described.channel !== "none" && channels.length > 0;
@@ -80,7 +81,7 @@ export const WidgetFilter = ({
             label: t("channelLabel"),
             values: channels.map((channel) => ({
               id: channel.id,
-              label: channelName(channel),
+              label: channelLabel(channel),
               mark: <PlatformMark platform={channel.platform} />,
             })),
           },

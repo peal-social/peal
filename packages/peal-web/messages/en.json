@@ -5403,6 +5403,8 @@
       "title": "New rule",
       "channel": "Channel",
       "chooseChannel": "Choose a channel",
+      "noChannel": "None of this workspace’s channels can have a rule. Rules answer on {platforms}.",
+      "noPlatform": "This server answers no comments by itself, so no channel can have a rule.",
       "keywords": "Keywords",
       "keywordsHelp": "Separated by commas, up to 10; whatever their case and accents.",
       "reply": "Reply",

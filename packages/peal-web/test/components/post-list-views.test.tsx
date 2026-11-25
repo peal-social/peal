@@ -216,14 +216,33 @@ describe(PostListEmpty, () => {
   });
 });
 
+// The same account on Instagram and on Facebook, of one name on both.
+const twins: readonly SocialChannel[] = [
+  {
+    ...channel,
+    handle: "fieldnotes",
+    id: "00000000-0000-7000-8000-00000000c002",
+    label: null,
+    platform: "instagram",
+  },
+  {
+    ...channel,
+    handle: "fieldnotes",
+    id: "00000000-0000-7000-8000-00000000c003",
+    label: null,
+    platform: "facebook",
+  },
+];
+
 const renderFilters = async (
-  shown: Parameters<typeof PostListToolbar>[0]["filters"]
+  shown: Parameters<typeof PostListToolbar>[0]["filters"],
+  channels: readonly SocialChannel[] = [channel]
 ) =>
   await render(
     "en",
     <PostListToolbar
       actions={null}
-      channels={[channel]}
+      channels={channels}
       filters={shown}
       queues={[]}
       tags={[]}
@@ -258,6 +277,20 @@ describe(PostListToolbar, () => {
     });
 
     expect(html).toContain("A channel no longer connected");
+  });
+
+  it("names a channel with its platform, so two of one name read apart", async () => {
+    const chips = await Promise.all(
+      twins.map(
+        async ({ id }) =>
+          await renderFilters({ ...noFilters, channelId: id }, twins)
+      )
+    );
+
+    expect([
+      chips[0]?.includes("fieldnotes on Instagram"),
+      chips[1]?.includes("fieldnotes on Facebook"),
+    ]).toStrictEqual([true, true]);
   });
 
   it("says that ordering by time leaves out the posts without one", async () => {

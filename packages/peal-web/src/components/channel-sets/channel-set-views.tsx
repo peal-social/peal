@@ -13,7 +13,7 @@ import {
   missingChannels,
   withChannel,
 } from "#channel-sets/selection.ts";
-import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { SavedItemErrorAlert } from "#components/settings/saved-item-error.tsx";
 import type { SavedItemError } from "#settings/saved-item-error.ts";
 
@@ -52,7 +52,7 @@ export const ChannelSetFieldsView = ({
   readonly onChange: (draft: ChannelSetDraft) => void;
 }) => {
   const t = useTranslations("ChannelSets");
-  const tPosts = useTranslations("Posts");
+  const channelLabel = useChannelLabel();
   const nameId = `${idPrefix}-set-name`;
 
   return (
@@ -98,14 +98,7 @@ export const ChannelSetFieldsView = ({
                       });
                     }}
                   />
-                  <Label htmlFor={id}>
-                    {tPosts("Composer.channelDetail", {
-                      handle: channelName(channel),
-                      platform: tPosts("platform", {
-                        platform: channel.platform,
-                      }),
-                    })}
-                  </Label>
+                  <Label htmlFor={id}>{channelLabel(channel)}</Label>
                 </li>
               );
             })}
@@ -144,7 +137,7 @@ export const ChannelSetItemView = ({
   readonly set: ChannelSet;
 }) => {
   const t = useTranslations("ChannelSets");
-  const tPosts = useTranslations("Posts");
+  const channelLabel = useChannelLabel();
   const connected = connectedChannels(set, channels);
   const missing = missingChannels(set, channels).length;
 
@@ -163,14 +156,7 @@ export const ChannelSetItemView = ({
               className="text-muted-foreground flex flex-col gap-0.5 text-sm"
             >
               {connected.map((channel) => (
-                <li key={channel.id}>
-                  {tPosts("Composer.channelDetail", {
-                    handle: channelName(channel),
-                    platform: tPosts("platform", {
-                      platform: channel.platform,
-                    }),
-                  })}
-                </li>
+                <li key={channel.id}>{channelLabel(channel)}</li>
               ))}
             </ul>
           )}

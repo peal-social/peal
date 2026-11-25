@@ -21,6 +21,7 @@ import { OverPlanView } from "#components/billing/over-plan-view.tsx";
 import type { OverPlanError } from "#components/billing/over-plan-view.tsx";
 import { UpgradeOffer } from "#components/billing/upgrade-dialog.tsx";
 import type { UpgradeWorkspace } from "#components/billing/upgrade-dialog.tsx";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 
@@ -87,6 +88,7 @@ export const OverPlanScreen = ({
 }: OverPlanScreenProps) => {
   const workspaceHref = useWorkspaceHref();
   const t = useTranslations("OverPlan");
+  const channelLabel = useChannelLabel();
   const channels = useAtomValue(channelsOf(workspace.id));
   const members = useAtomValue(membersOf(workspace.id));
   const reduce = useAtomSet(reduceWorkspace, { mode: "promiseExit" });
@@ -151,10 +153,10 @@ export const OverPlanScreen = ({
       canManage={workspace.canManage}
       channels={
         AsyncResult.isSuccess(channels)
-          ? channels.value.map(({ handle, id, platform }) => ({
-              id,
-              name: handle,
-              platform,
+          ? channels.value.map((channel) => ({
+              id: channel.id,
+              name: channelLabel(channel),
+              platform: channel.platform,
             }))
           : []
       }

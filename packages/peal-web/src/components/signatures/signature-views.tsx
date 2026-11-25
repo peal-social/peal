@@ -19,6 +19,7 @@ import { Textarea } from "peal-ui/components/textarea";
 import type { ReactNode } from "react";
 
 import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { SavedItemErrorAlert } from "#components/settings/saved-item-error.tsx";
 import type { SavedItemError } from "#settings/saved-item-error.ts";
 import { platformOf, ScopeKindSchema } from "#signatures/draft.ts";
@@ -98,12 +99,7 @@ export const SignatureFieldsView = ({
   const { length } = draft.text.trim();
   const platforms = platformsOf(channels, draft.platform);
   const channel = channels.find(({ id }) => id === draft.channelId);
-
-  const channelText = (shown: SocialChannel) =>
-    tPosts("Composer.channelDetail", {
-      handle: channelName(shown),
-      platform: tPosts("platform", { platform: shown.platform }),
-    });
+  const channelText = useChannelLabel();
 
   return (
     <div className="flex flex-col gap-4">
