@@ -6,8 +6,11 @@
 // console's user page to the second. That the proxy runs on such paths,
 // which hold a dot, is for the end-to-end tests to show
 // (peal-e2e/tests/path-spellings.e2e.ts): only Next's build reads the matcher.
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "@effect/vitest";
-import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
+import { Schema } from "effect";
 import { NextRequest } from "next/server";
 
 import proxy, { config } from "../src/proxy.ts";
@@ -17,13 +20,28 @@ const origin = "http://localhost:3001";
 const answerTo = async (path: string) =>
   await proxy(new NextRequest(`${origin}${path}`));
 
-// Whether the proxy runs on a path at all, from its matcher as Next's
-// build compiles it.
+// The proxy's matcher as Next's build compiles it (`getMiddlewareMatchers`),
+// in a process of its own: Next's build modules, and its testing helper
+// that wraps them, patch `console` for every test file this worker runs
+// after, where Next's request storage is missing.
+const compiled = execFileSync(
+  process.execPath,
+  [
+    "-e",
+    `const { getMiddlewareMatchers } = require("next/dist/build/analysis/get-page-static-info");
+process.stdout.write(JSON.stringify(getMiddlewareMatchers(JSON.parse(process.argv[1]), {})));`,
+    JSON.stringify(config.matcher),
+  ],
+  { cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf-8" }
+);
+
+const matchers = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Schema.Array(Schema.Struct({ regexp: Schema.String })))
+)(compiled).map(({ regexp }) => new RegExp(regexp, "u"));
+
+// Whether the proxy runs on a path at all.
 const runsOn = (path: string): boolean =>
-  unstable_doesMiddlewareMatch({
-    config: { matcher: [...config.matcher] },
-    url: `${origin}${path}`,
-  });
+  matchers.some((matcher) => matcher.test(path));
 
 describe("the proxy's matcher", () => {
   // A workspace's slug may start with `api` ("API Team" is `api-team`),
