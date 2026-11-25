@@ -6,12 +6,15 @@
 - Emails are written in `peal-emails`
   ([its guide](../../../peal-emails/AGENTS.md)): their words in English and
   French, their templates and their text. Use cases reach it through the
-  `EmailRenderer` port, whose adapter (`ReactEmailRenderer`) loads the
-  package with the first email and takes an email it cannot write as a
-  defect. Account emails go through `SendAuthEmail`. A test that moves
-  `TestClock` while an email is being written provides a renderer that
-  answers at once (`send-auth-email.test.ts`), as rendering waits on
-  promises.
+  `EmailRenderer` port, whose adapter (`ReactEmailRenderer`) takes an email
+  it cannot write as a defect. Keep its import of the package static, so a
+  package that does not load stops the server as it starts, where a
+  release's health check sees it: failing later, it would lose account
+  emails, and `DeliverNoticeV1` keeps a defect as its result, so its
+  notices' emails would stay lost once fixed. Account emails go through
+  `SendAuthEmail`. A test that moves `TestClock` while an email is being
+  written provides a renderer that answers at once
+  (`send-auth-email.test.ts`), as rendering waits on promises.
 - A new notice, or a new reason of one, needs its member in
   `NoticeEventSchema`, then its type, its words in both catalogues, its
   sample and its preview in `peal-emails`: `ReactEmailRenderer` does not

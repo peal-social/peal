@@ -1,4 +1,7 @@
 import type { ReactElement } from "react";
+// What React Email's render loads when it is first called: loaded here
+// instead, so an install without it fails when this module loads.
+import "react-dom/server";
 import { render } from "react-email";
 
 import { accountContent } from "./emails/account.ts";

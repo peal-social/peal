@@ -18,6 +18,11 @@ transport.
   resolve a catalogue's words into a `MessageContent`, plain text, which the
   one template, `message.tsx`, and the text part are both written from;
   `digest-content.ts` and `weekly-digest.tsx` do the same for the digest.
+- Load what rendering needs when the package loads, never with the first
+  email: the server imports it as it starts, so an install that lacks a
+  part of it stops the server there. React Email's `render` loads
+  `react-dom/server` when it is first called, so `src/render.tsx` imports
+  it too.
 - `src/components/` is where the branded components go. It holds what the
   emails share, with every colour, size and radius in `theme.ts`: an email
   takes none of its own. Set a style React Email's components would
@@ -52,6 +57,8 @@ transport.
 ## Previews
 
 `bun nx run peal-emails:dev` shows every email that goes out at
-<http://localhost:4325>, in French with `PEAL_EMAILS_PREVIEW_LOCALE=fr`. The
-preview lists files, so each email has its own under `previews/`; folders
+<http://localhost:4325>, in French with `PEAL_EMAILS_PREVIEW_LOCALE=fr`. That
+switch is for development alone: only `previews/` reads it, which no image
+ships, so it is the exception to listing every setting in the docs'
+environment variables page. The preview lists files, so each email has its own under `previews/`; folders
 starting with `_` are left out.

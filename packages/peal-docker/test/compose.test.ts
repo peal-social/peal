@@ -638,7 +638,7 @@ describe("server.Dockerfile", () => {
   });
 
   // Bun runs the sources: a workspace package the server imports and the
-  // image lacks would fail when it is first loaded, not at build.
+  // image lacks would stop the server as it starts, not the build.
   it("ships every workspace package the server depends on", () => {
     const { dependencies } = Schema.decodeUnknownSync(
       Schema.fromJsonString(
