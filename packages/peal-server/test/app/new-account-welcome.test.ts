@@ -22,6 +22,10 @@ import { TestClock } from "effect/testing";
 
 import { ProductAnalyticsLive } from "#app/product-analytics.ts";
 import { ContextsLive, WorkersLive } from "#app/server.ts";
+import { NoticeRecords } from "#notifications/application/notice-records.ts";
+import { TransactionRunner } from "#shared/application/transaction-runner.ts";
+import { UserIdSchema } from "#shared/domain/ids.ts";
+import type { UserId } from "#shared/domain/ids.ts";
 import { DatabaseLive } from "#shared/infrastructure/database.ts";
 import { MigrationsLive } from "#shared/infrastructure/migrations.ts";
 import { storageSettings } from "#test/media/support.ts";
@@ -123,6 +127,10 @@ const post = (
     )
   );
 
+const SignedUpSchema = Schema.Struct({
+  user: Schema.Struct({ id: UserIdSchema }),
+});
+
 // Signs up, then confirms the address from its email, as the web app does.
 const confirmedAccount = Effect.fn("confirmedAccount")(
   function* confirmedAccount(email: string) {
@@ -134,6 +142,12 @@ const confirmedAccount = Effect.fn("confirmedAccount")(
     });
 
     assert.strictEqual(created.status, 200);
+
+    const { user } = yield* Effect.promise(async () => {
+      const json: unknown = await created.json();
+
+      return json;
+    }).pipe(Effect.flatMap(Schema.decodeUnknownEffect(SignedUpSchema)));
 
     const [confirmation] = yield* emailsTo(email).pipe(
       Effect.repeat({
@@ -162,6 +176,8 @@ const confirmedAccount = Effect.fn("confirmedAccount")(
     );
 
     assert.strictEqual(confirmed.status, 200);
+
+    return user.id;
   }
 );
 
@@ -184,6 +200,17 @@ const lettingGo = TestClock.withLive(Effect.sleep("1 second")).pipe(
   Effect.forkDetach
 );
 
+// The cluster's messages that name the account.
+const rowsNaming = (userId: UserId) =>
+  SqlClient.SqlClient.use(
+    (sql) =>
+      sql`SELECT count(*)::int AS count FROM test_welcome_messages m WHERE m::text LIKE ${`%${userId}%`}`
+  ).pipe(
+    Effect.flatMap(Schema.decodeUnknownEffect(CountSchema)),
+    Effect.map(([{ count }]) => count),
+    Effect.orDie
+  );
+
 describe("a new account's welcome, through the server", () => {
   it.effect(
     "goes once, from the person who signs it, five minutes after the account was made",
@@ -198,7 +225,7 @@ describe("a new account's welcome, through the server", () => {
           const email = `welcome+${randomUUID()}@example.test`;
           const before = yield* runs;
 
-          yield* confirmedAccount(email);
+          const userId = yield* confirmedAccount(email);
 
           yield* eventuallyNow(
             "the welcome was started",
@@ -238,6 +265,16 @@ describe("a new account's welcome, through the server", () => {
             /https?:\/\/\S+/u.exec(Text)?.[0],
             `${origin}/fr/`
           );
+
+          // Closing the account erases the run with its notices.
+          assert.isAbove(yield* rowsNaming(userId), 0);
+
+          const records = yield* NoticeRecords;
+          const { transaction } = yield* TransactionRunner;
+
+          yield* transaction(records.eraseUser(userId));
+
+          assert.strictEqual(yield* rowsNaming(userId), 0);
         }).pipe(
           Effect.onError(() => lettingGo),
           Effect.provide(Server)

@@ -161,9 +161,25 @@
   no `List-Unsubscribe`, and no price, offer or programme may join it.
 - `WelcomeV1` is persisted contract: its tag, its payload (`userId`), its
   activities `attempt/<n>`, its clocks `wait/<n>`, `welcomeChecks` and
-  `WelcomeOutcomeSchema`. Delivery is at least once in one window, as the
-  digest's is: Resend drops a second one by its key (`welcome:<user>`), and
-  SMTP delivers both.
+  `WelcomeOutcomeSchema`.
+- A welcome may go out twice, or never. Twice, when the transport took it
+  and the server did not learn it: it died before the check was stored, or
+  the answer was lost, and the next check sends it again. Resend drops the
+  second by its key (`welcome:<user>`, kept a day: a lost answer at the
+  check after 6 hours is tried again after 24, when the key may be gone);
+  SMTP delivers both. Never, when the server dies between making the
+  account and storing the run, which no transaction holds together (Better
+  Auth has its own pool) and nothing looks for later; or when the address is
+  confirmed, or the refusal put right, only after the last check, about
+  4 days and 7 hours after the account was made.
+- Erasing an account erases its welcome's run and clocks from the cluster's
+  tables, in the erasure's transaction (`WelcomeEmails.forget`, through
+  `NoticeRecords.eraseUser`), whatever the run has come to. One caught as it
+  sends ends by itself: its email may still go out, and what it stores after
+  (its outcome, a clock) has the run's id, a hash, and names nobody, but is
+  in no finished run, so the retention leaves it. A database restored, whose
+  closures `ReplayErasures` applies without the cluster, keeps the run until
+  its next check finds the account gone, then as any finished run.
 - A name someone typed (a member's, a workspace's) goes into an email only
   through `peal-emails`' `nameForMail`: one that reads as a host or an
   address is replaced by the catalog's `withheldNames` ("A member", "a

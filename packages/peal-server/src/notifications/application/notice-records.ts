@@ -25,7 +25,10 @@ export class NoticeRecords extends Context.Service<
       },
       DatabaseError
     >;
-    /** Deletes the user's notices, in every workspace, and preferences. */
+    /**
+     * Deletes the user's notices, in every workspace, preferences, and what
+     * is stored of their account's welcome.
+     */
     readonly eraseUser: (userId: UserId) => Effect.Effect<void, DatabaseError>;
     /** Deletes the notices of the workspace, whoever they were for. */
     readonly eraseWorkspace: (

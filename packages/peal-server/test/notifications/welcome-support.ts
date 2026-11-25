@@ -38,6 +38,8 @@ export class TestReaders extends Context.Service<
   TestReaders,
   {
     readonly reads: Effect.Effect<number>;
+    /** How many times one account was read. */
+    readonly readsOf: (userId: UserId) => Effect.Effect<number>;
     readonly set: (
       userId: UserId,
       reader: WelcomeReader | null
@@ -46,7 +48,7 @@ export class TestReaders extends Context.Service<
 >()("peal-server/test/notifications/TestReaders") {
   static readonly layer = Layer.effectContext(
     Effect.gen(function* TestReadersLive() {
-      const reads = yield* Ref.make(0);
+      const read = yield* Ref.make<readonly UserId[]>([]);
 
       const readers = yield* Ref.make<ReadonlyMap<UserId, WelcomeReader>>(
         new Map()
@@ -56,7 +58,7 @@ export class TestReaders extends Context.Service<
         WelcomeReaders,
         WelcomeReaders.of({
           readerOf: (userId) =>
-            Ref.update(reads, (count) => count + 1).pipe(
+            Ref.update(read, (all) => [...all, userId]).pipe(
               Effect.andThen(Ref.get(readers)),
               Effect.map((all) => Option.fromUndefinedOr(all.get(userId)))
             ),
@@ -65,7 +67,11 @@ export class TestReaders extends Context.Service<
         Context.add(
           TestReaders,
           TestReaders.of({
-            reads: Ref.get(reads),
+            reads: Ref.get(read).pipe(Effect.map(({ length }) => length)),
+            readsOf: (userId) =>
+              Ref.get(read).pipe(
+                Effect.map((all) => all.filter((id) => id === userId).length)
+              ),
             set: (userId, reader) =>
               Ref.update(readers, (all) => {
                 const others = [...all].filter(([id]) => id !== userId);

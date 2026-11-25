@@ -1,5 +1,6 @@
 import { Context, Effect, Layer } from "effect";
 
+import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { UserId } from "#shared/domain/ids.ts";
 
 /**
@@ -10,11 +11,19 @@ import type { UserId } from "#shared/domain/ids.ts";
  */
 export class WelcomeEmails extends Context.Service<
   WelcomeEmails,
-  { readonly start: (userId: UserId) => Effect.Effect<void> }
+  {
+    /**
+     * Erases what is stored of an account's welcome, whatever it has come
+     * to, in the caller's transaction, if any: it wakes no more. An email on
+     * its way then may still go out.
+     */
+    readonly forget: (userId: UserId) => Effect.Effect<void, DatabaseError>;
+    readonly start: (userId: UserId) => Effect.Effect<void>;
+  }
 >()("peal-server/notifications/application/WelcomeEmails") {
   /** Starts none. */
   static readonly none = Layer.succeed(
     WelcomeEmails,
-    WelcomeEmails.of({ start: () => Effect.void })
+    WelcomeEmails.of({ forget: () => Effect.void, start: () => Effect.void })
   );
 }

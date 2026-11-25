@@ -2,6 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import { DateTime, Effect, Layer, Match, Option, Schema } from "effect";
 
 import { NoticeRecords } from "#notifications/application/notice-records.ts";
+import { WelcomeEmails } from "#notifications/application/welcome-emails.ts";
 import { NoticeEventSchema } from "#notifications/domain/notice-event.ts";
 import type { NoticeEvent } from "#notifications/domain/notice-event.ts";
 import { defaultPreferences } from "#notifications/domain/notification-preferences.ts";
@@ -10,6 +11,7 @@ import type {
   NoticeEventRecord,
   NoticeRecord,
 } from "#shared/application/personal-data.ts";
+import type { UserId } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { notificationPreferences, notices } from "./schema.ts";
@@ -253,6 +255,7 @@ export const DrizzleNoticeRecords = Layer.effect(
   NoticeRecords,
   Effect.gen(function* DrizzleNoticeRecords() {
     const db = yield* Drizzle;
+    const welcomes = yield* WelcomeEmails;
 
     const exportUser = Effect.fn("NoticeRecords.exportUser")(
       function* exportUser(userId: string) {
@@ -317,8 +320,10 @@ export const DrizzleNoticeRecords = Layer.effect(
     );
 
     const eraseUser = Effect.fn("NoticeRecords.eraseUser")(function* eraseUser(
-      userId: string
+      userId: UserId
     ) {
+      yield* welcomes.forget(userId);
+
       yield* db
         .delete(notices)
         .where(eq(notices.userId, userId))
