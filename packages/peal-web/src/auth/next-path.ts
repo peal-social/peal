@@ -87,3 +87,21 @@ export const landingLocale = (
   accountLocale: string | null | undefined
 ): Option.Option<Locale> =>
   localePrefix.test(next) ? Option.none() : decodeLocale(accountLocale);
+
+/**
+ * The address a sign-in loads anew once done: `next` in the language the
+ * account keeps, else the page's (`localized` adds its prefix, as
+ * `getPathname` does), or as it is when it names its own language.
+ */
+export const landingAddress = (
+  next: string,
+  accountLocale: string | null | undefined,
+  pageLocale: Locale,
+  localized: (href: string, locale: Locale) => string
+): string =>
+  localePrefix.test(next)
+    ? next
+    : localized(
+        next,
+        Option.getOrElse(landingLocale(next, accountLocale), () => pageLocale)
+      );

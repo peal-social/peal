@@ -13,6 +13,7 @@ import type { AuthErrorKey } from "#auth/errors.ts";
 import { methodsOf } from "#auth/last-sign-in.ts";
 import type { SignInMethod } from "#auth/last-sign-in.ts";
 import type { ProviderReturn } from "#auth/provider-return.ts";
+import { tellOtherTabs } from "#auth/session-news.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { GoogleMark } from "#components/auth/google-mark.tsx";
 
@@ -132,7 +133,13 @@ const useProviderSignIn = (returnTo: ProviderReturn) => {
             }
       );
 
-      // On success, Better Auth's client is sending the browser on.
+      // On success, Better Auth's client is sending the browser on, to
+      // the provider then back to `next`, a page loaded anew; the other
+      // tabs load the app anew now, as the person in them may change.
+      if (result.error === null) {
+        tellOtherTabs({ kind: "signedIn" });
+      }
+
       setError(result.error === null ? null : authErrorKey(result.error));
     });
   };

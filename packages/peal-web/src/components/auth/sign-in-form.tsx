@@ -10,8 +10,10 @@ import type { SubmitEvent } from "react";
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";
 import type { AuthErrorKey } from "#auth/errors.ts";
-import { landingLocale } from "#auth/next-path.ts";
+import { landingAddress } from "#auth/next-path.ts";
 import { isOAuthRedirect } from "#auth/oauth-redirect.ts";
+import { tellOtherTabs } from "#auth/session-news.ts";
+import { loadAnew } from "#auth/use-load-anew.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { FormField } from "#components/auth/form-field.tsx";
 import {
@@ -19,7 +21,7 @@ import {
   TwoStepChallengeView,
 } from "#components/auth/two-step-challenge-view.tsx";
 import type { ChallengeMode } from "#components/auth/two-step-challenge-view.tsx";
-import { getPathname, useRouter } from "#i18n/navigation.ts";
+import { getPathname } from "#i18n/navigation.ts";
 import { tellTabs } from "#measurement/tabs.ts";
 
 // What a sign-in answers an account with two-step verification on: no
@@ -37,6 +39,13 @@ interface SignedInAnswer {
 const localeOf = ({ user }: SignedInAnswer): Option.Option<string> =>
   Option.fromNullishOr(user.locale);
 
+// Signed in: the other tabs of Peal measure nobody's session until they
+// read who is signed in now, and load the app anew.
+const tellTabsSignedIn = () => {
+  tellTabs({ kind: "signedIn" });
+  tellOtherTabs({ kind: "signedIn" });
+};
+
 // `next` is where to go once signed in. During an OAuth authorization, Better
 // Auth answers the sign-in with the next step instead, which its client
 // follows, the second step's included.
@@ -44,7 +53,6 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
   const t = useTranslations("SignInPage");
   const fields = useTranslations("Auth");
   const locale = useLocale();
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<AuthErrorKey | null>(null);
@@ -54,22 +62,24 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
   const [mode, setMode] = useState<ChallengeMode>("app");
   const [code, setCode] = useState("");
   const [trust, setTrust] = useState(false);
+  // From a sign-in that worked until the next page replaces this one.
+  const [leaving, setLeaving] = useState(false);
 
   // Once signed in: on to `next`, in the language the account keeps, which
-  // may not be this page's.
+  // may not be this page's, loaded anew rather than in place. A session
+  // that ended elsewhere (expired, revoked) brought the tab here in place,
+  // with what it held for the last person: the new one starts afresh.
   const goNext = (accountLocale: Option.Option<string>) => {
-    // The other tabs of Peal measure nobody's session until they read
-    // who is signed in now.
-    tellTabs({ kind: "signedIn" });
-    Option.match(landingLocale(next, Option.getOrUndefined(accountLocale)), {
-      onNone: () => {
-        router.push(next);
-      },
-      onSome: (preferred) => {
-        router.push(next, { locale: preferred });
-      },
-    });
-    router.refresh();
+    tellTabsSignedIn();
+    setLeaving(true);
+    loadAnew(
+      landingAddress(
+        next,
+        Option.getOrUndefined(accountLocale),
+        locale,
+        (href, landing) => getPathname({ href, locale: landing })
+      )
+    );
   };
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -93,8 +103,10 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
       }
 
       // During an OAuth authorization, Better Auth's client follows the
-      // redirect it answered with instead.
+      // redirect it answered with instead, loading the next page anew.
       if (isOAuthRedirect(result.data)) {
+        tellTabsSignedIn();
+
         return;
       }
 
@@ -124,7 +136,9 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
         return;
       }
 
-      if (!isOAuthRedirect(result.data)) {
+      if (isOAuthRedirect(result.data)) {
+        tellTabsSignedIn();
+      } else {
         goNext(localeOf(result.data));
       }
     });
@@ -150,7 +164,7 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
         code={code}
         error={error}
         mode={mode}
-        pending={isPending}
+        pending={isPending || leaving}
         trust={trust}
         onCode={setCode}
         onMode={handleMode}
@@ -204,8 +218,12 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
         value={password}
         onChange={setPassword}
       />
-      <Button type="submit" disabled={isPending} focusableWhenDisabled>
-        {isPending ? t("submitting") : t("submit")}
+      <Button
+        type="submit"
+        disabled={isPending || leaving}
+        focusableWhenDisabled
+      >
+        {isPending || leaving ? t("submitting") : t("submit")}
       </Button>
       {error === "EMAIL_NOT_VERIFIED" ? (
         <Button

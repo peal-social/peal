@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Option } from "effect";
 
-import { landingLocale, nextPathOf } from "#auth/next-path.ts";
+import { landingAddress, landingLocale, nextPathOf } from "#auth/next-path.ts";
 
 describe(nextPathOf, () => {
   it.each([
@@ -104,5 +104,34 @@ describe(landingLocale, () => {
     expect(landingLocale("/french-notes", "en")).toStrictEqual(
       Option.some("en")
     );
+  });
+});
+
+// The app's own prefixes: English at the root, French under /fr.
+const localized = (href: string, locale: "en" | "fr"): string =>
+  locale === "en" ? href : `/${locale}${href}`;
+
+describe(landingAddress, () => {
+  it("loads `next` in the language the account keeps", () => {
+    expect(landingAddress("/ada/posts", "fr", "en", localized)).toBe(
+      "/fr/ada/posts"
+    );
+    expect(landingAddress("/ada/posts", "en", "fr", localized)).toBe(
+      "/ada/posts"
+    );
+  });
+
+  it("loads `next` in the page's language when the account keeps none", () => {
+    expect(
+      landingAddress("/device?user_code=ABCD", null, "fr", localized)
+    ).toBe("/fr/device?user_code=ABCD");
+    expect(landingAddress("/", undefined, "en", localized)).toBe("/");
+  });
+
+  it("loads a `next` that names its language as it is", () => {
+    expect(landingAddress("/fr/device", "en", "fr", localized)).toBe(
+      "/fr/device"
+    );
+    expect(landingAddress("/fr", "en", "en", localized)).toBe("/fr");
   });
 });

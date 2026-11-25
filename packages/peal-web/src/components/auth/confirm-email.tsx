@@ -11,6 +11,7 @@ import type {
   ConfirmationIntent,
   ConfirmationResult,
 } from "#auth/email-confirmation.ts";
+import { tellOtherTabs } from "#auth/session-news.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
 import { ResendVerificationForm } from "#components/auth/resend-verification-form.tsx";
 import { Link } from "#i18n/navigation.ts";
@@ -20,7 +21,7 @@ import { Link } from "#i18n/navigation.ts";
 type State = ConfirmationResult | "eraseAsked" | "idle" | "pending";
 
 // Posts the emailed token, from this browser, with why.
-const post = async (
+const confirmed = async (
   token: string,
   intent: ConfirmationIntent
 ): Promise<ConfirmationResult> => {
@@ -34,6 +35,22 @@ const post = async (
   } catch {
     return "failed";
   }
+};
+
+// Posts the token. Signed in from the email's link, on a page loaded
+// anew: the other tabs of the app load anew too, as the person in them
+// changed.
+const post = async (
+  token: string,
+  intent: ConfirmationIntent
+): Promise<ConfirmationResult> => {
+  const result = await confirmed(token, intent);
+
+  if (result === "signedIn") {
+    tellOtherTabs({ kind: "signedIn" });
+  }
+
+  return result;
 };
 
 const card = (
