@@ -40,8 +40,17 @@ describe(signInReturn, () => {
   it("marks a refusal as the provider's, and keeps where to go next", () => {
     expect(signInReturn("/device?code=ABCD", localized, false)).toStrictEqual({
       errorPath: "/fr/login?next=%2Fdevice%3Fcode%3DABCD&from=provider",
-      next: "/device?code=ABCD",
+      next: "/fr/login?next=%2Fdevice%3Fcode%3DABCD&from=provider",
     });
+  });
+
+  // Only once signed in does the account's language show, which `next`
+  // opens in: the provider comes back to the sign-in page, which sends on
+  // to `next` as the password's sign-in does (`landingAddressOf`).
+  it("comes back to the sign-in page, which sends on to next", () => {
+    expect(
+      signInReturn("/fr/synthetic-studio/posts", localized, false).next
+    ).toBe("/fr/login?next=%2Ffr%2Fsynthetic-studio%2Fposts&from=provider");
   });
 
   // Where anyone may sign up, an unknown address gets its account on the
@@ -49,8 +58,11 @@ describe(signInReturn, () => {
   it("makes an account where anyone may sign up", () => {
     expect(signInReturn("/device?code=ABCD", localized, true)).toStrictEqual({
       errorPath: "/fr/login?next=%2Fdevice%3Fcode%3DABCD&from=provider",
-      next: "/device?code=ABCD",
-      signUp: { invitationId: null, newUserPath: "/device?code=ABCD" },
+      next: "/fr/login?next=%2Fdevice%3Fcode%3DABCD&from=provider",
+      signUp: {
+        invitationId: null,
+        newUserPath: "/fr/login?next=%2Fdevice%3Fcode%3DABCD&from=provider",
+      },
     });
   });
 });

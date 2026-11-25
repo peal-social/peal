@@ -2,7 +2,12 @@ import { Option } from "effect";
 import type { Locale } from "next-intl";
 import type { Me } from "peal-contract";
 
-import { languageOf, nextPathOf, withoutLanguage } from "#auth/next-path.ts";
+import {
+  inLanguage,
+  languageOf,
+  nextPathOf,
+  withoutLanguage,
+} from "#auth/next-path.ts";
 import { routing } from "#i18n/routing.ts";
 
 /**
@@ -29,14 +34,6 @@ export const localeCookieName = "NEXT_LOCALE";
  */
 export const accountLanguageOf = (me: Me): Option.Option<Locale> =>
   me.impersonatedBy === null ? Option.some(me.user.locale) : Option.none();
-
-// What follows a language's prefix: `/fr/posts?x` → `/posts?x`, `/fr?x`
-// → `?x`, `/` → "".
-const afterLanguage = (address: string): string => {
-  const rest = withoutLanguage(address);
-
-  return rest.startsWith("/?") || rest === "/" ? rest.slice(1) : rest;
-};
 
 /**
  * What a layout of the signed-in app knows of the page it renders, from
@@ -85,7 +82,7 @@ export const accountLanguageAddress = (
     Option.flatMap((account) =>
       nextPathOf(address ?? undefined).pipe(
         Option.filter((page) => names(page, shown)),
-        Option.map((page) => `/${account}${afterLanguage(page)}`)
+        Option.map((page) => inLanguage(account, page))
       )
     )
   );

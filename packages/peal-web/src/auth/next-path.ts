@@ -93,6 +93,17 @@ export const withoutLanguage = (address: string): string => {
   return rest.startsWith("/") ? rest : `/${rest}`;
 };
 
+/**
+ * A page's address in a language, which it names, English too (`/en/…`),
+ * whatever it named before: `/fr/posts?x` in English is `/en/posts?x`,
+ * `/?x` in French `/fr?x`, `/` `/fr`.
+ */
+export const inLanguage = (locale: Locale, address: string): string => {
+  const rest = withoutLanguage(address);
+
+  return `/${locale}${rest === "/" || rest.startsWith("/?") ? rest.slice(1) : rest}`;
+};
+
 /** Where sign-in goes: a path without a language, and the one to open it in. */
 export interface Landing {
   readonly href: string;
@@ -121,4 +132,25 @@ export const landingOf = (
       ? Option.orElse(account, () => named)
       : Option.orElse(named, () => account),
   };
+};
+
+/**
+ * Where a provider's sign-in lands, as the server sends it on from the
+ * sign-in page it comes back to (`signInReturn`): the address `landingOf`
+ * gives, its language named, else the sign-in page's, so both ways to
+ * sign in open the same page in the same language. English is named
+ * (`/en/…`), so next-intl sets the language cookie to it as it drops the
+ * prefix, and the address without one does not open in the cookie's.
+ */
+export const landingAddressOf = (
+  next: string,
+  accountLocale: string | null | undefined,
+  pageLocale: Locale
+): string => {
+  const { href, locale } = landingOf(next, accountLocale);
+
+  return inLanguage(
+    Option.getOrElse(locale, () => pageLocale),
+    href
+  );
 };

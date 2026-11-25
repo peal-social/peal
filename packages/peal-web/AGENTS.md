@@ -389,7 +389,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   language the account keeps (`landingOf`), which account settings save
   with `updateUser`: a page of the app always, another unless its path
   names a language, which goes to the router without its prefix (the
-  router adds one, so `/fr/fr/…` never). `next` is a page of the app or nothing (`nextPathOf`,
+  router adds one, so `/fr/fr/…` never). A provider's sign-in lands the
+  same: it comes back to the sign-in page, marked (`signInReturn`), as
+  only then is the account's language known, and the page, signed in and
+  with no `?error=`, sends on to `landingAddressOf`, its language named.
+  `next` is a page of the app or nothing (`nextPathOf`,
   `#auth/next-path.ts`, tested): never a path the server answers (`/api`,
   where a short link redirects anywhere, `/.well-known`), a route handler
   of the app (`/pulse`, `/emoji-data`), a path with a dot, a `%`, a

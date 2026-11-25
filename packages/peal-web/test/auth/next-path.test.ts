@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Option } from "effect";
 
-import { landingOf, nextPathOf } from "#auth/next-path.ts";
+import { landingAddressOf, landingOf, nextPathOf } from "#auth/next-path.ts";
 
 describe(nextPathOf, () => {
   it.each([
@@ -141,5 +141,33 @@ describe(landingOf, () => {
       href: "/french-notes",
       locale: Option.some("en"),
     });
+  });
+});
+
+// A provider's sign-in comes back to the sign-in page, which sends on from
+// the server: the whole address, in the language `landingOf` picks, else
+// the page's. English is named too, so next-intl sets the language
+// cookie from it before it drops the prefix.
+describe(landingAddressOf, () => {
+  it("lands where the password's sign-in does", () => {
+    expect(
+      landingAddressOf("/fr/synthetic-studio/posts?status=draft", "en", "fr")
+    ).toBe("/en/synthetic-studio/posts?status=draft");
+    expect(landingAddressOf("/device?user_code=ABCD", "en", "fr")).toBe(
+      "/en/device?user_code=ABCD"
+    );
+    expect(landingAddressOf("/fr/device", "en", "en")).toBe("/fr/device");
+  });
+
+  it("names the language of the home page without a trailing slash", () => {
+    expect(landingAddressOf("/", "fr", "en")).toBe("/fr");
+    expect(landingAddressOf("/fr?from=email", "en", "fr")).toBe(
+      "/en?from=email"
+    );
+  });
+
+  it("keeps the page's language where neither the account nor the path names one", () => {
+    expect(landingAddressOf("/device", "de", "fr")).toBe("/fr/device");
+    expect(landingAddressOf("/", undefined, "en")).toBe("/en");
   });
 });
