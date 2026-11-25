@@ -364,6 +364,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Settings pages read Better Auth's members, invitations and sessions in
   atoms (`#settings/atoms.ts`), decoding each answer with `authCall`, and
   offer only the role changes its routes accept (`#settings/member-rules.ts`).
+  `/list-sessions` lists sessions, each with its token, only to a session
+  signed in less than Better Auth's `freshAge` ago (a day), and answers an
+  older one 403 `SESSION_NOT_FRESH`, which trying again never changes:
+  `SessionsView` says so in one muted row with **Sign in again**, which
+  signs this session out and opens `/login?next=` back to the page (any
+  other failure keeps **Try again**). Revoking a session needs no fresh one.
   Invitations go through `invite` (`#settings/invite.ts`): Better Auth's
   client types roles from its own defaults. Sign-in opens `next` in the
   language the account keeps (`landingLocale`), which account settings save
