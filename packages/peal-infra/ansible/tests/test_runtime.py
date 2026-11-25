@@ -104,13 +104,13 @@ def test_peals_emails_say_who_sends_them_in_the_readers_language(rendered: Path,
     host_env = _host_env(rendered, environment)
 
     assert host_env["PEAL_MAIL_IDENTITY"] == (
-        "Peal SAS, a French société par actions simplifiée."
+        "Peal SAS is a French société par actions simplifiée with a share capital of €1,000."
         " Registered office: 15 rue Paul Verlaine, 85710 La Garnache, France."
-        " RCS La Roche-sur-Yon 133 102 822."
+        " Registered number: 133 102 822 RCS La Roche-sur-Yon."
     )
-    # A no-break space before the colon, as French writes it.
+    # A no-break space before the colon and in a figure, as French writes them.
     assert host_env["PEAL_MAIL_IDENTITY_FR"] == (
-        "Peal SAS."
+        "Peal SAS, société par actions simplifiée au capital de 1\u00a0000\u00a0€."
         " Siège social\u00a0: 15 rue Paul Verlaine, 85710 La Garnache, France."
         " RCS La Roche-sur-Yon 133 102 822."
     )

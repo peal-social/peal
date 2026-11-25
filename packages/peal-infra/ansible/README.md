@@ -426,8 +426,9 @@ copy run without Pulumi, and for what Pulumi does in their place.
    Peal does not know who opened an email from its images. Each email ends
    on `peal_mail_identity` (`PEAL_MAIL_IDENTITY`), or, for French readers,
    on `peal_mail_identity_fr` (`PEAL_MAIL_IDENTITY_FR`): the company's name
-   and form, its registered office and its registration, as the site's terms
-   and privacy policy give them. Change them together.
+   and form, its share capital, its registered office and its registration,
+   as the Kbis gives them. The site's terms and privacy policy give the name,
+   the office and the registration too: change them together.
 7. **The platforms' apps**, a set of its own for each environment
    ([The platforms' apps](#the-platforms-apps)).
 

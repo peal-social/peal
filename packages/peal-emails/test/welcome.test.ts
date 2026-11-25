@@ -60,7 +60,7 @@ describe("the welcome", () => {
     expect(subject).toBe("Bienvenue sur Peal");
 
     expect(text.split("\n\n")).toStrictEqual([
-      "Bonjour, je m’appelle Camille Synthetic et je m’occupe de Peal. Votre compte est prêt, et c’est un plaisir de vous accueillir.",
+      "Bonjour, je m’appelle Camille Synthetic et je dirige Peal. Votre compte est prêt, et c’est un plaisir de vous accueillir.",
       "Pour voir comment Peal fonctionne, programmez une publication. Connectez un compte social si ce n’est pas déjà fait, écrivez quelques lignes et choisissez une heure. Peal la publie à ce moment-là.",
       "Programmer une publication\u00A0: https://app.example.test/fr",
       "Si vous venez pour l’API, créez une clé dans les paramètres et envoyez votre première requête.",

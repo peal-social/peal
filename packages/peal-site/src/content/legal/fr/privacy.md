@@ -165,7 +165,7 @@ Seulement une fois que vous l’autorisez sur le site : les mêmes événements 
 
 Les messages que vous nous envoyez et les e-mails que nous vous envoyons.
 
-Nos e-mails chargent jusqu’à quatre images, le logo et des décors, que votre application ou votre service de messagerie va chercher sur app.peal.social. Leurs adresses sont les mêmes pour tout le monde et ne disent rien de vous. Un décor, qui bouge, n’est que dans le récapitulatif hebdomadaire, l’e-mail qui confirme une adresse et les invitations. Nous ne nous servons pas de ces requêtes pour savoir si vous avez ouvert un e-mail.
+Nos e-mails chargent jusqu’à quatre images, le logo et des décors, que votre application ou votre service de messagerie va chercher sur app.peal.social. Leurs adresses sont les mêmes pour tout le monde et ne disent rien de vous. Un décor, qui bouge, n’est que dans le récapitulatif hebdomadaire, l’e-mail qui confirme une adresse, l’e-mail de bienvenue et les invitations. Nous ne nous servons pas de ces requêtes pour savoir si vous avez ouvert un e-mail.
 
 ### Commentaires sur vos publications, et personnes qui ne sont pas utilisatrices
 

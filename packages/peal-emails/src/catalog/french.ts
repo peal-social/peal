@@ -734,7 +734,7 @@ export const french: EmailCatalog = {
     firstStep:
       "Pour voir comment Peal fonctionne, programmez une publication. Connectez un compte social si ce n’est pas déjà fait, écrivez quelques lignes et choisissez une heure. Peal la publie à ce moment-là.",
     greeting:
-      "Bonjour, je m’appelle {signer} et je m’occupe de Peal. Votre compte est prêt, et c’est un plaisir de vous accueillir.",
+      "Bonjour, je m’appelle {signer} et je dirige Peal. Votre compte est prêt, et c’est un plaisir de vous accueillir.",
     once: "Vous ne recevez cet e-mail qu’une fois, parce que vous avez créé un compte Peal.",
     reply:
       "Si quelque chose ne marche pas, ou si vous ne trouvez pas comment faire ce que vous voulez, répondez à cet e-mail. Il m’arrive directement, et je vous répondrai.",

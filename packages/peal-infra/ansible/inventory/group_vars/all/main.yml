@@ -154,14 +154,15 @@ peal_mail_welcome_signer: ""
 
 # Who sends Peal's emails, one line under each (PEAL_MAIL_IDENTITY), and the
 # same for French readers (PEAL_MAIL_IDENTITY_FR): the company's name and
-# form, its registered office and its registration, as the site's legal pages
-# give them. Empty: no line, or the one line for every reader. \u00a0 is the
-# no-break space French writes before a colon.
+# form, its share capital, its registered office and its registration, which
+# French law asks of a company's letters and emails (Code de commerce, R123-237
+# and R123-238), as its Kbis gives them. Empty: no line, or the one line for every reader. \u00a0 is the
+# no-break space French writes before a colon and in a figure.
 peal_mail_identity: >-
-  Peal SAS, a French société par actions simplifiée.
+  Peal SAS is a French société par actions simplifiée with a share capital of €1,000.
   Registered office: 15 rue Paul Verlaine, 85710 La Garnache, France.
-  RCS La Roche-sur-Yon 133 102 822.
-peal_mail_identity_fr: "Peal SAS.
+  Registered number: 133 102 822 RCS La Roche-sur-Yon.
+peal_mail_identity_fr: "Peal SAS, société par actions simplifiée au capital de 1\u00a0000\u00a0€.
   Siège social\u00a0: 15 rue Paul Verlaine, 85710 La Garnache, France.
   RCS La Roche-sur-Yon 133 102 822."
 

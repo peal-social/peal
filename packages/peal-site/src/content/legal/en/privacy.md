@@ -162,7 +162,7 @@ Only once you allow it on the website: the same events under an identifier kept 
 
 The messages you send us and the emails we send you.
 
-Our emails load up to four images, the logo and decorations, which your mail app or mail service fetches from app.peal.social. Their addresses are the same for everyone and say nothing about you. One decoration, which moves, is only in the weekly digest, the email that confirms an address and invitations. We don't use these requests to know whether you opened an email.
+Our emails load up to four images, the logo and decorations, which your mail app or mail service fetches from app.peal.social. Their addresses are the same for everyone and say nothing about you. One decoration, which moves, is only in the weekly digest, the email that confirms an address, the welcome email and invitations. We don't use these requests to know whether you opened an email.
 
 ### Comments on your posts, and people who are not users
 
