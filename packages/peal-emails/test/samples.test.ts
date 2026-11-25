@@ -107,8 +107,9 @@ const withoutNowrap = (html: string): string =>
 const wordsOf = (html: string): string =>
   withoutNowrap(html)
     .replace(/<head>.*?<\/head>/su, "")
-    .replaceAll(/<!--.*?-->/gsu, "")
-    .replaceAll(/<[^>]*>/gu, " ");
+    .replaceAll(/<!--.*?-->|<[^>]*>/gsu, (markup) =>
+      markup.startsWith("<!--") ? "" : " "
+    );
 
 const picturesOf = (html: string): readonly string[] =>
   html.match(/<img [^>]*>/gu) ?? [];
