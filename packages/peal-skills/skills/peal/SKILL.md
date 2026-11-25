@@ -70,14 +70,14 @@ in the list of processes. Never print it, log it or write it to a file.
 
 ```sh
 export PEAL_API_KEY=peal_your_key
-export PEAL_WORKSPACE=5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60
 ```
 
 - The key wins over a saved sign-in.
-- A key is nobody. It cannot look workspaces up: `PEAL_WORKSPACE` or
-  `--workspace` must be the workspace's id, not its slug. The id is in the
-  address of the workspace's pages, and `peal whoami` with the key prints
-  it, with the key's permissions and expiry: run it first.
+- A key acts in its own workspace: leave `PEAL_WORKSPACE` and
+  `--workspace` out. `peal whoami` with the key prints that workspace, with
+  the key's permissions and expiry: run it first. A key is nobody and
+  cannot look workspaces up, so a workspace it names is given by its id,
+  never its slug.
 - `peal login`, `account`, `members` and `invitations` are for a person.
 
 Ask for the least a task needs.
@@ -440,7 +440,7 @@ Every error of the API carries:
 | `missingScope`      | The person did not give this client `scope`. Tell them; do not work around it.                                                                        |
 | `missingPermission` | The role or the key lacks `permission`. Tell them; do not work around it.                                                                             |
 | `personRequired`    | Only a person in the web app does this.                                                                                                               |
-| `wrongWorkspace`    | The key or token belongs to another workspace: check `PEAL_WORKSPACE`.                                                                                |
+| `wrongWorkspace`    | The key or token belongs to another workspace: unset `PEAL_WORKSPACE`, or check it.                                                                   |
 | `suspended`         | The account is suspended.                                                                                                                             |
 | `twoStepRequired`   | The workspace requires two-step verification: the person turns it on in the web app's account settings, then the same sign-in works. An agent cannot. |
 

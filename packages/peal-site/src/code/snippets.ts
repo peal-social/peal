@@ -85,7 +85,6 @@ const curl = `curl -X POST "https://app.peal.social/api/v1/posts?wait=${wait}" \
 
 const cli = `export PEAL_API_URL="https://app.peal.social"
 export PEAL_API_KEY="peal_…"
-export PEAL_WORKSPACE="${workspaceId}"
 
 peal post "${postText}" \\
   --channels ${channelIds.join(",")} \\

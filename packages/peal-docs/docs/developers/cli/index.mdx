@@ -155,12 +155,11 @@ peal logout
 
 ## Run it with an API key [#api-key]
 
-For a run nobody attends, such as a scheduled job or an agent on a server, set `PEAL_API_KEY` to a workspace's [API key](/guides/workspace#api-keys). Then name the workspace by its id:
+For a run nobody attends, such as a scheduled job or an agent on a server, set `PEAL_API_KEY` to a workspace's [API key](/guides/workspace#api-keys). The key acts in its own workspace, so the run needs nothing else:
 
 ```sh
 export PEAL_API_URL=https://peal.example.com
 export PEAL_API_KEY=peal_…
-export PEAL_WORKSPACE=7c9e6679-7425-40de-944b-e07fc1f90ae7
 peal doctor
 peal drafts list --json
 ```
@@ -169,7 +168,9 @@ peal drafts list --json
 
 With a key, `--api-url` or `PEAL_API_URL` must name the instance the key was made on. A key goes to no default address, so without either the command stops with `api_url_required` and sends nothing.
 
-With a key, `--workspace` or `PEAL_WORKSPACE` must give the workspace's id, not its slug. There's no default, because a key can't look workspaces up. `peal whoami` lists it when you're signed in as a person, as `GET /api/me` does. Without it, the command stops with `workspace_id_required`.
+A key acts in the workspace it belongs to, so you don't need `--workspace` or `PEAL_WORKSPACE`. `peal whoami` and `peal doctor` say which workspace that is. If you name one, give its id, not its slug, because a key can't look workspaces up. A slug stops the command with `workspace_id_required`, and the instance refuses another workspace's id (`forbidden`). A blank `PEAL_WORKSPACE` names no workspace.
+
+A partner key belongs to no workspace. Name one of its partner's workspaces by its id, or the command stops with `workspace_id_required`.
 
 The key does what its permissions allow, and no more. Without `post:schedule`, for example, it can write drafts but not schedule them. A refusal comes in the server's words, with the permission the key lacks.
 
@@ -237,7 +238,7 @@ peal drafts list
 peal drafts list --workspace clients
 ```
 
-If you belong to one workspace only, `peal` takes it. If you belong to several and name none, it lists their slugs and stops. With an [API key](#api-key), give the workspace's id.
+If you belong to one workspace only, `peal` takes it. If you belong to several and name none, it lists their slugs and stops. With an [API key](#api-key), `peal` takes the key's own workspace, and you name one only by its id.
 
 Each command does what your role allows there, as the web app does. A viewer reads. An editor writes, schedules, publishes and follows up. An owner or an admin also invites.
 
@@ -290,7 +291,7 @@ The command line has codes of its own for what stops it before, or instead of, a
 | `api_key_refused`         | The instance refused the key in `PEAL_API_KEY`: it's revoked, expired, or another server's.                 |
 | `person_required`         | The command is for a person who's signed in, and `PEAL_API_KEY` is set.                                     |
 | `api_url_required`        | `PEAL_API_KEY` is set, and neither `--api-url` nor `PEAL_API_URL` names the instance.                       |
-| `workspace_id_required`   | With an API key, no workspace is named, or it's named by something other than its id.                       |
+| `workspace_id_required`   | With an API key, the workspace is named by something other than its id, or a partner key names none.        |
 | `workspace_required`      | You belong to several workspaces and named none.                                                            |
 | `workspace_unknown`       | You belong to no workspace with that slug or id.                                                            |
 | `no_workspace`            | You don't belong to any workspace yet.                                                                      |
