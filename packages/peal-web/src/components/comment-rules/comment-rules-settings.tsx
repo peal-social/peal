@@ -27,6 +27,7 @@ import {
   commentRuleRequestOf,
   freshCommentRule,
   resumeHeld,
+  ruleFormStateOf,
 } from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
@@ -35,6 +36,8 @@ import {
   SettingsLoadFailed,
   SettingsLoading,
 } from "#components/settings/settings-status.tsx";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
+import { Link } from "#i18n/navigation.ts";
 import { workspaceChannels } from "#posts/api.ts";
 
 import {
@@ -156,6 +159,7 @@ const NewRule = ({
   const platforms = useAtomValue(platformsQuery);
   const retryChannels = useAtomRefresh(channelsQuery);
   const retryPlatforms = useAtomRefresh(platformsQuery);
+  const workspaceHref = useWorkspaceHref();
   const create = useAtomSet(startCommentRule, { mode: "promiseExit" });
   const [draft, setDraft] = useState<CommentRuleDraft>(freshCommentRule);
   const [error, setError] = useState<string | null>(null);
@@ -214,7 +218,9 @@ const NewRule = ({
   };
 
   // The form offers channels from both answers: none is drawn before.
-  if (AsyncResult.isFailure(channels) || AsyncResult.isFailure(platforms)) {
+  const state = ruleFormStateOf(channels, platforms);
+
+  if (state._tag === "failed") {
     return (
       <SettingsLoadFailed
         onRetry={() => {
@@ -225,18 +231,26 @@ const NewRule = ({
     );
   }
 
-  if (!AsyncResult.isSuccess(channels) || !AsyncResult.isSuccess(platforms)) {
+  if (state._tag === "loading") {
     return <SettingsLoading />;
   }
 
   return (
     <CommentRuleFormView
       busy={busy}
-      channels={channels.value}
+      channels={state.channels}
+      renderChannelsLink={(text) => (
+        <Link
+          href={workspaceHref(workspaceId, "/channels")}
+          className="underline underline-offset-4"
+        >
+          {text}
+        </Link>
+      )}
       draft={draft}
       error={error}
       mayMessage={mayMessage}
-      platforms={platforms.value}
+      platforms={state.platforms}
       onChange={setDraft}
       onSubmit={submit}
     />

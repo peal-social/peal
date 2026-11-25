@@ -1,3 +1,4 @@
+import { AsyncResult } from "effect/reactivity";
 import { maxKeywords } from "peal-contract";
 import type {
   Channel,
@@ -50,6 +51,64 @@ export const ruleChannelsOf = <C extends Pick<Channel, "platform" | "status">>(
     ({ platform, status }) =>
       status._tag === "active" && answering.has(platform)
   );
+};
+
+/** A channel a rule could answer on but for its state, and its fix. */
+export interface HeldChannel<C> {
+  readonly channel: C;
+  /** Turned off (`off`: turn it back on), or to connect again. */
+  readonly fix: "off" | "reconnect";
+}
+
+/**
+ * The channels on a platform where rules answer that `ruleChannelsOf`
+ * leaves out for their state alone, each with what brings it back.
+ */
+export const heldChannelsOf = <C extends Pick<Channel, "platform" | "status">>(
+  channels: readonly C[],
+  platforms: readonly PlatformCommentRule[]
+): readonly HeldChannel<C>[] => {
+  const answering = new Set<Channel["platform"]>(answeringPlatforms(platforms));
+
+  return channels.flatMap((channel) => {
+    if (!answering.has(channel.platform) || channel.status._tag === "active") {
+      return [];
+    }
+
+    return [
+      {
+        channel,
+        fix: channel.status._tag === "disabled" ? "off" : "reconnect",
+      } as const,
+    ];
+  });
+};
+
+/** What the rule form can draw from its two answers. */
+export type RuleFormState<C> =
+  | { readonly _tag: "failed" }
+  | { readonly _tag: "loading" }
+  | {
+      readonly _tag: "ready";
+      readonly channels: readonly C[];
+      readonly platforms: readonly PlatformCommentRule[];
+    };
+
+/**
+ * The rule form's state from the workspace's channels and where rules
+ * answer: it fails when either failed, and waits for both.
+ */
+export const ruleFormStateOf = <C, E1, E2>(
+  channels: AsyncResult.AsyncResult<readonly C[], E1>,
+  platforms: AsyncResult.AsyncResult<readonly PlatformCommentRule[], E2>
+): RuleFormState<C> => {
+  if (AsyncResult.isFailure(channels) || AsyncResult.isFailure(platforms)) {
+    return { _tag: "failed" };
+  }
+
+  return AsyncResult.isSuccess(channels) && AsyncResult.isSuccess(platforms)
+    ? { _tag: "ready", channels: channels.value, platforms: platforms.value }
+    : { _tag: "loading" };
 };
 
 /**

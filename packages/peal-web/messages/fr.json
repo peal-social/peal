@@ -5405,6 +5405,8 @@
       "chooseChannel": "Choisissez un canal",
       "noChannel": "Aucun canal de cet espace de travail ne peut avoir de règle. Les règles répondent sur {platforms}.",
       "noPlatform": "Ce serveur ne répond à aucun commentaire de lui-même, donc aucun canal ne peut avoir de règle.",
+      "heldOff": "{channel} est désactivé. Réactivez-le dans <channels>Canaux</channels> pour y lancer une règle.",
+      "heldReconnect": "{channel} doit être reconnecté. Reconnectez-le dans <channels>Canaux</channels> pour y lancer une règle.",
       "keywords": "Mots-clés",
       "keywordsHelp": "Séparés par des virgules, jusqu’à 10 ; quelles que soient leur casse et leurs accents.",
       "reply": "Réponse",

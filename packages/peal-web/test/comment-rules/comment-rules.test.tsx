@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
-import { DateTime } from "effect";
+import { Cause, DateTime } from "effect";
+import { AsyncResult } from "effect/reactivity";
 import { NextIntlClientProvider } from "next-intl";
 import type {
   Channel,
@@ -15,6 +16,7 @@ import {
   keywordsTyped,
   resumeHeld,
   ruleChannelsOf,
+  ruleFormStateOf,
 } from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
 import {
@@ -177,6 +179,7 @@ const form = async (
       error={null}
       mayMessage={mayMessage}
       platforms={offered.platforms ?? platforms}
+      renderChannelsLink={(text) => <u data-link="channels">{text}</u>}
       onChange={() => {}}
       onSubmit={() => {}}
     />
@@ -240,6 +243,60 @@ describe("the comment rule form's channels", () => {
         channels: [],
       })
     ).resolves.toContain("Aucun canal de cet espace de travail");
+  });
+
+  it("names a channel left out for being off or to reconnect, and links to Channels", async () => {
+    const held = await form("en", freshCommentRule, true, {
+      channels: [
+        {
+          ...channel("instagram-1", "instagram"),
+          status: { _tag: "refreshNeeded" },
+        },
+        {
+          ...channel("mastodon-off", "mastodon"),
+          status: { _tag: "disabled", refreshNeeded: false },
+        },
+        channel("bluesky-1", "bluesky"),
+      ],
+    });
+
+    expect([
+      held.includes("@fieldnotes on Instagram must be connected again."),
+      held.includes("@fieldnotes on Mastodon is turned off."),
+      held.includes('<u data-link="channels">Channels</u>'),
+      held.includes("on Bluesky"),
+      held.includes(">Start<"),
+    ]).toStrictEqual([true, true, true, false, false]);
+  });
+
+  it("says in French which channel to turn back on", async () => {
+    await expect(
+      form("fr", freshCommentRule, true, {
+        channels: [
+          {
+            ...channel("mastodon-off", "mastodon"),
+            status: { _tag: "disabled", refreshNeeded: false },
+          },
+        ],
+      })
+    ).resolves.toContain("@fieldnotes sur Mastodon est désactivé.");
+  });
+});
+
+describe("the comment rule form's state", () => {
+  it("fails when either answer failed, and waits for both", () => {
+    const failed = AsyncResult.failure<never, string>(Cause.fail("refused"));
+
+    expect([
+      ruleFormStateOf(AsyncResult.success(channels), failed)._tag,
+      ruleFormStateOf(failed, AsyncResult.success(platforms))._tag,
+      ruleFormStateOf(AsyncResult.initial(), AsyncResult.success(platforms))
+        ._tag,
+      ruleFormStateOf(
+        AsyncResult.success(channels),
+        AsyncResult.success(platforms)
+      )._tag,
+    ]).toStrictEqual(["failed", "failed", "loading", "ready"]);
   });
 });
 

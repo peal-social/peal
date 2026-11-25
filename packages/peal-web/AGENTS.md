@@ -577,8 +577,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   widgets do. The comment rules' form offers only the channels that are
   on, on a platform where `automations.commentRules.platforms` says rules
   answer (`ruleChannelsOf`), and its private message where that answer
-  says so (`carriesPrivately`); with none, one line says where rules
-  answer. The name is Peal's (`Channel.label`, `RenameChannel`,
+  says so (`carriesPrivately`); with none, it names each channel there
+  that is off or must be connected again, with its fix on the Channels
+  page (`heldChannelsOf`), else one line says where rules answer. The
+  form waits for both answers (`ruleFormStateOf`). The name is Peal's (`Channel.label`, `RenameChannel`,
   `labelUpdateOf`) and never hides the handle. The text tabs still show
   the handle alone. `ChannelPower` turns a channel off, after a
   confirmation, and back on: every string about a channel that is off

@@ -21,6 +21,7 @@ import type { ReactNode } from "react";
 import {
   answeringPlatforms,
   carriesPrivately,
+  heldChannelsOf,
   ruleChannelsOf,
 } from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
@@ -204,18 +205,41 @@ export const RuleActionsView = ({
 };
 
 /**
- * Why no channel of the workspace can have a rule, in one sentence: where
- * rules answer on this server, or that they answer nowhere.
+ * Why no channel of the workspace can have a rule: each channel on a
+ * platform where rules answer that is off or must be connected again,
+ * with its fix on the Channels page; else, in one sentence, where rules
+ * answer on this server, or that they answer nowhere.
  */
 const NoRuleChannel = ({
+  channels,
+  renderChannelsLink,
   platforms,
 }: {
+  readonly channels: readonly Channel[];
+  readonly renderChannelsLink: (text: ReactNode) => ReactNode;
   readonly platforms: readonly PlatformCommentRule[];
 }) => {
   const t = useTranslations("CommentRules.form");
   const tPosts = useTranslations("Posts");
   const format = useFormatter();
+  const labelOf = useChannelLabel();
   const answering = answeringPlatforms(platforms);
+  const held = heldChannelsOf(channels, platforms);
+
+  if (held.length > 0) {
+    return (
+      <ul className="text-muted-foreground flex flex-col gap-1 text-sm">
+        {held.map(({ channel, fix }) => (
+          <li key={channel.id}>
+            {t.rich(fix === "off" ? "heldOff" : "heldReconnect", {
+              channel: labelOf(channel),
+              channels: renderChannelsLink,
+            })}
+          </li>
+        ))}
+      </ul>
+    );
+  }
 
   return (
     <p className="text-muted-foreground text-sm">
@@ -239,6 +263,7 @@ const NoRuleChannel = ({
 export const CommentRuleFormView = ({
   busy,
   channels,
+  renderChannelsLink,
   draft,
   error,
   mayMessage,
@@ -249,6 +274,8 @@ export const CommentRuleFormView = ({
   readonly busy: boolean;
   /** The workspace's channels. */
   readonly channels: readonly Channel[];
+  /** A link to the Channels page, around its text. */
+  readonly renderChannelsLink: (text: ReactNode) => ReactNode;
   readonly draft: CommentRuleDraft;
   readonly error: string | null;
   /** Whether the member may send private messages. */
@@ -268,7 +295,13 @@ export const CommentRuleFormView = ({
   const offered = ruleChannelsOf(channels, platforms);
 
   if (offered.length === 0) {
-    return <NoRuleChannel platforms={platforms} />;
+    return (
+      <NoRuleChannel
+        channels={channels}
+        renderChannelsLink={renderChannelsLink}
+        platforms={platforms}
+      />
+    );
   }
 
   const privateOn = (chosen: string) =>
