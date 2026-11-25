@@ -1,9 +1,14 @@
 import { describe, expect, it } from "@effect/vitest";
 import { NextIntlClientProvider } from "next-intl";
 import type { BillingAccount, Standing } from "peal-contract";
+import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { OverPlanView } from "#components/billing/over-plan-view.tsx";
+import {
+  OverPlanLoadFailed,
+  OverPlanLoading,
+  OverPlanView,
+} from "#components/billing/over-plan-view.tsx";
 import type { OverPlanViewProps } from "#components/billing/over-plan-view.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
@@ -202,4 +207,56 @@ describe(OverPlanView, () => {
     expect(html).not.toContain("Garder ceux-ci");
     expect(html).not.toContain("The upgrade offer");
   });
+});
+
+const renderOf = async (locale: "en" | "fr", node: ReactNode) => {
+  const messages = await loadMessages(locale);
+
+  return {
+    html: renderToStaticMarkup(
+      <NextIntlClientProvider
+        locale={locale}
+        messages={messages}
+        timeZone="UTC"
+      >
+        {node}
+      </NextIntlClientProvider>
+    ),
+    t: messages.OverPlan,
+  };
+};
+
+// What a member who manages billing sees before the channels and the
+// members are read: before hydration, and until the browser has both.
+describe(OverPlanLoading, () => {
+  it.each(["en", "fr"] as const)(
+    "says in %s that the screen is loading, and nothing more",
+    async (locale) => {
+      const { html, t } = await renderOf(locale, <OverPlanLoading />);
+
+      expect(html).toContain('aria-busy="true"');
+      expect(html).toContain(t.loading);
+      expect(html).not.toContain(t.loadFailed);
+      expect(html).not.toContain(t.chooseTitle);
+    }
+  );
+});
+
+// What the browser shows when it could not read the channels or the
+// members: why, with a way to read them again.
+describe(OverPlanLoadFailed, () => {
+  it.each(["en", "fr"] as const)(
+    "says in %s the channels and members could not be loaded, and offers to try again",
+    async (locale) => {
+      const { html, t } = await renderOf(
+        locale,
+        <OverPlanLoadFailed onRetry={nothing} />
+      );
+
+      expect(html).toContain('role="alert"');
+      expect(html).toContain(t.loadFailed);
+      expect(html).toMatch(new RegExp(`<button[^>]*>${t.retry}</button>`, "u"));
+      expect(html).not.toContain("aria-busy");
+    }
+  );
 });

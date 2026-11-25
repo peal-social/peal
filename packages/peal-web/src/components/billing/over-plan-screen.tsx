@@ -1,12 +1,11 @@
 "use client";
 
-import { useAtomSet, useAtomValue } from "@effect/atom-react";
+import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Cause, Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { ReductionRefused, forWorkspace } from "peal-contract";
 import type { Standing } from "peal-contract";
-import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { useState, useTransition } from "react";
 
@@ -15,13 +14,19 @@ import {
   membersOf,
   reduceWorkspace,
 } from "#billing/members.ts";
+import { overPlanLoadOf } from "#billing/over-plan-load.ts";
 import type { UpgradeReason } from "#billing/upgrade.ts";
 import { channelsOf } from "#channels/channels-api.ts";
-import { OverPlanView } from "#components/billing/over-plan-view.tsx";
+import {
+  OverPlanLoadFailed,
+  OverPlanLoading,
+  OverPlanView,
+} from "#components/billing/over-plan-view.tsx";
 import type { OverPlanError } from "#components/billing/over-plan-view.tsx";
 import { UpgradeOffer } from "#components/billing/upgrade-dialog.tsx";
 import type { UpgradeWorkspace } from "#components/billing/upgrade-dialog.tsx";
 import { useChannelLabel } from "#components/channels/channel-label.ts";
+import { useHydrated } from "#components/media/use-hydrated.ts";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 
@@ -77,7 +82,10 @@ const reasonOf = (standing: Standing): UpgradeReason | null => {
  * The screen a workspace over its plan shows instead of its pages, but
  * billing's: the upgrade, by card, or the choice of what stays, for those
  * who manage billing, and who can fix it for the others. Once the choice
- * is applied, the pages load again.
+ * is applied, the pages load again. The channels and the members are read
+ * with the visitor's cookies, in the browser alone: for those who manage
+ * billing, the server renders the loading state, as the browser's first
+ * render does (`overPlanLoadOf`).
  */
 export const OverPlanScreen = ({
   contactUrl,
@@ -89,8 +97,13 @@ export const OverPlanScreen = ({
   const workspaceHref = useWorkspaceHref();
   const t = useTranslations("OverPlan");
   const channelLabel = useChannelLabel();
-  const channels = useAtomValue(channelsOf(workspace.id));
-  const members = useAtomValue(membersOf(workspace.id));
+  const hydrated = useHydrated();
+  const channelsQuery = channelsOf(workspace.id);
+  const membersQuery = membersOf(workspace.id);
+  const channels = useAtomValue(channelsQuery);
+  const members = useAtomValue(membersQuery);
+  const refreshChannels = useAtomRefresh(channelsQuery);
+  const refreshMembers = useAtomRefresh(membersQuery);
   const reduce = useAtomSet(reduceWorkspace, { mode: "promiseExit" });
   const [keptChannels, setKeptChannels] = useState<readonly string[]>([]);
   const [keptMembers, setKeptMembers] = useState<readonly string[]>([self]);
@@ -128,11 +141,25 @@ export const OverPlanScreen = ({
     });
   };
 
-  if (AsyncResult.isFailure(channels) && workspace.canManage) {
+  const load = overPlanLoadOf({
+    canManage: workspace.canManage,
+    channels,
+    hydrated,
+    members,
+  });
+
+  if (load === "loading") {
+    return <OverPlanLoading />;
+  }
+
+  if (load === "failed") {
     return (
-      <Alert variant="destructive">
-        <AlertDescription>{t("loadFailed")}</AlertDescription>
-      </Alert>
+      <OverPlanLoadFailed
+        onRetry={() => {
+          refreshChannels();
+          refreshMembers();
+        }}
+      />
     );
   }
 
