@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { clientName } from "#auth/oauth-client.ts";
 import { currentUser } from "#auth/session.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
+import { TabPerson } from "#components/auth/tab-person.tsx";
 import { OAuthConsent } from "#components/oauth/oauth-consent.tsx";
 import { SignInToContinue } from "#components/oauth/sign-in-to-continue.tsx";
 
@@ -15,6 +16,7 @@ const decodeUrl = Schema.decodeUnknownOption(Schema.URLFromString);
 // with the authorization's signed query, which names the client, the
 // scopes it asks for and where it sends them back. The client may have
 // registered itself, so its name is its own claim: the page says so.
+// Signed in, it names its person to the tab (`TabPerson`).
 const OAuthConsentPage = async ({
   searchParams,
 }: PageProps<"/[locale]/oauth/consent">) => {
@@ -48,6 +50,7 @@ const OAuthConsentPage = async ({
 
   return (
     <AuthCard title={title} description={t("description")}>
+      <TabPerson userId={me.value.user.id} />
       <OAuthConsent redirectHost={redirectHost} scopes={scopes} />
     </AuthCard>
   );

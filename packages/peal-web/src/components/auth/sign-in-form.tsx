@@ -13,6 +13,8 @@ import type { AuthErrorKey } from "#auth/errors.ts";
 import { landingAddress } from "#auth/next-path.ts";
 import { isOAuthRedirect } from "#auth/oauth-redirect.ts";
 import { tellOtherTabs } from "#auth/session-news.ts";
+import { expectSignIn } from "#auth/sign-in-arrival.ts";
+import { tabStorage } from "#auth/signed-out-notice.ts";
 import { loadAnew } from "#auth/use-load-anew.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { FormField } from "#components/auth/form-field.tsx";
@@ -30,20 +32,35 @@ const isChallenge = Schema.is(
   Schema.Struct({ twoFactorRedirect: Schema.Literal(true) })
 );
 
-// What a sign-in, or its second step, answers once it is done: the
-// language the account keeps, if any.
+// What a sign-in, or its second step, answers once it is done: who signed
+// in, and the language the account keeps, if any.
 interface SignedInAnswer {
-  readonly user: { readonly locale?: string | null | undefined };
+  readonly user: {
+    readonly id: string;
+    readonly locale?: string | null | undefined;
+  };
 }
 
 const localeOf = ({ user }: SignedInAnswer): Option.Option<string> =>
   Option.fromNullishOr(user.locale);
 
 // Signed in: the other tabs of Peal measure nobody's session until they
-// read who is signed in now, and load the app anew.
-const tellTabsSignedIn = () => {
+// read who is signed in now, and those that showed someone else load the
+// app anew.
+const tellTabsSignedIn = ({ user }: SignedInAnswer) => {
   tellTabs({ kind: "signedIn" });
-  tellOtherTabs({ kind: "signedIn" });
+  tellOtherTabs({ kind: "signedIn", userId: user.id });
+};
+
+// Signed in during an OAuth authorization, which Better Auth's client
+// follows to its next page: the answer names nobody, so the next page
+// rendered for the person tells the other tabs who (`TabPerson`).
+const expectArrival = () => {
+  tellTabs({ kind: "signedIn" });
+
+  for (const storage of Option.toArray(tabStorage())) {
+    expectSignIn(storage);
+  }
 };
 
 // `next` is where to go once signed in. During an OAuth authorization, Better
@@ -69,13 +86,13 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
   // may not be this page's, loaded anew rather than in place. A session
   // that ended elsewhere (expired, revoked) brought the tab here in place,
   // with what it held for the last person: the new one starts afresh.
-  const goNext = (accountLocale: Option.Option<string>) => {
-    tellTabsSignedIn();
+  const goNext = (answer: SignedInAnswer) => {
+    tellTabsSignedIn(answer);
     setLeaving(true);
     loadAnew(
       landingAddress(
         next,
-        Option.getOrUndefined(accountLocale),
+        Option.getOrUndefined(localeOf(answer)),
         locale,
         (href, landing) => getPathname({ href, locale: landing })
       )
@@ -105,12 +122,12 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
       // During an OAuth authorization, Better Auth's client follows the
       // redirect it answered with instead, loading the next page anew.
       if (isOAuthRedirect(result.data)) {
-        tellTabsSignedIn();
+        expectArrival();
 
         return;
       }
 
-      goNext(localeOf(result.data));
+      goNext(result.data);
     });
   };
 
@@ -137,9 +154,9 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
       }
 
       if (isOAuthRedirect(result.data)) {
-        tellTabsSignedIn();
+        expectArrival();
       } else {
-        goNext(localeOf(result.data));
+        goNext(result.data);
       }
     });
   };

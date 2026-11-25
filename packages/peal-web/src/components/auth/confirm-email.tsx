@@ -1,5 +1,6 @@
 "use client";
 
+import { Option } from "effect";
 import { useTranslations } from "next-intl";
 import { Button, buttonVariants } from "peal-ui/components/button";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -12,6 +13,8 @@ import type {
   ConfirmationResult,
 } from "#auth/email-confirmation.ts";
 import { tellOtherTabs } from "#auth/session-news.ts";
+import { expectSignIn } from "#auth/sign-in-arrival.ts";
+import { tabStorage } from "#auth/signed-out-notice.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
 import { ResendVerificationForm } from "#components/auth/resend-verification-form.tsx";
 import { Link } from "#i18n/navigation.ts";
@@ -37,9 +40,22 @@ const confirmed = async (
   }
 };
 
+// Who the emailed link signed in, as the session says: the confirmation's
+// answer names nobody.
+const signedInPerson = async (): Promise<Option.Option<string>> => {
+  try {
+    const { data } = await authClient.getSession();
+
+    return Option.fromNullishOr(data?.user.id);
+  } catch {
+    // The server could not be reached: the app's first page tells.
+    return Option.none();
+  }
+};
+
 // Posts the token. Signed in from the email's link, on a page loaded
-// anew: the other tabs of the app load anew too, as the person in them
-// changed.
+// anew: the browser's other tabs are told who, or, where the session
+// cannot say yet, the app's first page tells them (`TabPerson`).
 const post = async (
   token: string,
   intent: ConfirmationIntent
@@ -47,7 +63,16 @@ const post = async (
   const result = await confirmed(token, intent);
 
   if (result === "signedIn") {
-    tellOtherTabs({ kind: "signedIn" });
+    Option.match(await signedInPerson(), {
+      onNone: () => {
+        for (const storage of Option.toArray(tabStorage())) {
+          expectSignIn(storage);
+        }
+      },
+      onSome: (userId) => {
+        tellOtherTabs({ kind: "signedIn", userId });
+      },
+    });
   }
 
   return result;

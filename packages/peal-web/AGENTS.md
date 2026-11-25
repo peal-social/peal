@@ -405,12 +405,29 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   registry and every module's state). Whenever the person in a tab
   changes, the next page loads anew (`loadAnew`, `useLoadAnew`:
   `#auth/use-load-anew.ts`, `window.location.assign`), never
-  `router.push`, and the browser's other tabs of the app are told
-  (`tellOtherTabs`, `#auth/session-news.ts`: `peal.session-news` in
-  `localStorage`, written and removed at once, so only the other tabs
-  hear it), which `OtherTabsSession` in `Providers` answers with a full
-  load of `/`; this news is the app's own, measured or not, beside the
-  measurement's (`peal.measurement-news`).
+  `router.push`, and the browser's other tabs of the app are told who is
+  signed in now (`tellOtherTabs`, `#auth/session-news.ts`:
+  `peal.session-news` in `localStorage`, written and removed at once, so
+  only the other tabs hear it; `signedIn` names the person's id,
+  `signedOut` nobody); this news is the app's own, measured or not,
+  beside the measurement's (`peal.measurement-news`).
+- A tab loads anew only when its person changes, never on the news
+  alone: the composer and the article editor keep their text in React
+  state, and a sign-in elsewhere by the same person (back after a session
+  ended) must not lose it. Each tab knows whom its pages showed
+  (`#auth/tab-person.ts`, named by `TabPerson` from the signed-in app's
+  layout and the OAuth and device pages; none on a page nobody was signed
+  in to). `OtherTabsSession` in `Providers` answers the news, and a page
+  the back-forward cache restores (`pageshow`, which reads the session
+  only then, and only for a tab that showed someone), with `tabAnswer`
+  (`#auth/other-tabs.ts`): the same person, or a tab that showed nobody,
+  stays as it is; signed out, the tab loads its own address again (the
+  server sends it to sign in); someone else, it loads `/` anew, except on
+  the pages that keep their place (`keepsItsPlace`: sign-in, sign-up, the
+  OAuth pages and `/device`, whose authorization `/` would lose), which
+  load their own address again. Before loading anew the tab is marked as
+  leaving (`markLeaving`), and nothing is kept for the person it showed
+  after that (the Studio's draft as the page goes, `isLeaving`).
 - Every way out of the app signs out through `useSignOut`
   (`#auth/use-sign-out.ts`, its steps in `#auth/sign-out.ts`): the account
   menu's and the setup page's **Sign out**, the Security page's **Sign in
@@ -431,12 +448,21 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   therefore ends with a full load. The sign-in form, password or second
   step, loads the validated `next` (`landingAddress`, `#auth/next-path.ts`:
   in the account's language, or as it is when it names its own) and
-  tells the other tabs; a provider's sign-in and a sign-in during an
-  OAuth authorization leave through Better Auth's client, which sets
-  `location.href`, and tell them too, as does the confirmation page once
-  the emailed link signs the new account in. Starting and stopping
-  impersonation (`UserActions`, `StopImpersonating`) load the next page
-  anew and tell the other tabs. Accepting an invitation signs nobody in.
+  tells the other tabs who signed in, as does a sign-up on a server that
+  asks for no confirmation (`signedInAtSignUp`), which signs the browser
+  in at once. A sign-in whose answer names nobody (a provider's, which
+  leaves for the provider first and may be refused or left there; one
+  during an OAuth authorization, which Better Auth's client follows by
+  setting `location.href`) never tells the other tabs before anyone is
+  signed in: it marks the tab (`expectSignIn`,
+  `#auth/sign-in-arrival.ts`, in `sessionStorage`), and the next page
+  rendered for a signed-in person takes the mark once (`TabPerson`) and
+  tells them who. The confirmation page reads the session once the
+  emailed link signed the new account in, and tells them who. Starting
+  and stopping impersonation (`UserActions`, `StopImpersonating`) load
+  the next page anew and tell the other tabs the person the session is
+  now (the account, then the staff member, `impersonatedBy`). Accepting
+  an invitation signs nobody in.
 - What the browser keeps of a person's unfinished work in a workspace,
   the Studio's draft (`#studio/draft.ts`) and the agent panel's tabs
   (`#agent/panel-store.ts`), is keyed by the person and the workspace

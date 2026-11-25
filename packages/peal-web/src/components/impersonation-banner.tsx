@@ -13,7 +13,7 @@ export const ImpersonationBanner = async () => {
     return null;
   }
 
-  const { user } = me.value;
+  const { impersonatedBy, user } = me.value;
   const t = await getTranslations("Impersonation");
 
   return (
@@ -23,7 +23,7 @@ export const ImpersonationBanner = async () => {
     >
       <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm">
         <p>{t("notice", { email: user.email, name: user.name })}</p>
-        <StopImpersonating userId={user.id} />
+        <StopImpersonating staffId={impersonatedBy} userId={user.id} />
       </div>
     </section>
   );

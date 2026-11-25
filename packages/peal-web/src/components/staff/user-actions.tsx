@@ -230,7 +230,7 @@ export const UserActions = ({
   // loaded anew (`useLoadAnew`), so nothing the tab held for the staff
   // member stays; the other tabs of the app load anew too.
   const openTheirApp = () => {
-    tellOtherTabs({ kind: "signedIn" });
+    tellOtherTabs({ kind: "signedIn", userId });
     loadAnew("/");
   };
 

@@ -1,6 +1,7 @@
 import { DateTime, Option } from "effect";
 
 import { currentUserOrNone } from "#auth/session.ts";
+import { TabPerson } from "#components/auth/tab-person.tsx";
 import { Measurement } from "#components/measurement/measurement.tsx";
 import { WorkspaceAddresses } from "#components/shell/workspace-addresses.tsx";
 
@@ -8,9 +9,15 @@ import { WorkspaceAddresses } from "#components/shell/workspace-addresses.tsx";
 // addresses need them (`/<slug>`), and the web app's measurement, only
 // where GET /api/me (read once per request) says the server measures it
 // for this person. Elsewhere the pages render alone, and the SDK's code,
-// behind a dynamic import, is never downloaded.
+// behind a dynamic import, is never downloaded. Signed in, the pages name
+// their person to the tab (`TabPerson`), whose answer to the other tabs'
+// news depends on it.
 const AppLayout = async ({ children }: LayoutProps<"/[locale]">) => {
   const me = await currentUserOrNone();
+
+  const person = Option.isSome(me) ? (
+    <TabPerson userId={me.value.user.id} />
+  ) : null;
 
   const workspaces = Option.match(me, {
     onNone: () => [],
@@ -28,6 +35,7 @@ const AppLayout = async ({ children }: LayoutProps<"/[locale]">) => {
   if (Option.isNone(measured)) {
     return (
       <WorkspaceAddresses workspaces={workspaces}>
+        {person}
         {await children}
       </WorkspaceAddresses>
     );
@@ -37,6 +45,7 @@ const AppLayout = async ({ children }: LayoutProps<"/[locale]">) => {
 
   return (
     <WorkspaceAddresses workspaces={workspaces}>
+      {person}
       <Measurement
         settings={{
           consent: settings.consent,

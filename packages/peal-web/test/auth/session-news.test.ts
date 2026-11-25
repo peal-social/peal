@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { Option } from "effect";
 
 import {
+  personOfNews,
   sessionNewsKey,
   sessionNewsOf,
   tellOtherTabs,
@@ -54,14 +55,24 @@ describe("the news of a session, from one tab to the others", () => {
     expect(items.size).toBe(0);
   });
 
-  it("reaches them as someone signs in", () => {
+  it("reaches them as someone signs in, and says who", () => {
     const { changes, storage } = recordedStorage();
 
-    tellOtherTabs({ kind: "signedIn" }, Option.some(storage));
+    tellOtherTabs(
+      { kind: "signedIn", userId: "user_synthetic_ada" },
+      Option.some(storage)
+    );
 
     expect(changes.map((change) => sessionNewsOf(change))[0]).toStrictEqual(
-      Option.some({ kind: "signedIn" })
+      Option.some({ kind: "signedIn", userId: "user_synthetic_ada" })
     );
+  });
+
+  it("names who is signed in now, nobody once signed out", () => {
+    expect(
+      personOfNews({ kind: "signedIn", userId: "user_synthetic_ada" })
+    ).toStrictEqual(Option.some("user_synthetic_ada"));
+    expect(personOfNews({ kind: "signedOut" })).toStrictEqual(Option.none());
   });
 
   it("is nothing for another key, or for what is not news", () => {
@@ -75,6 +86,13 @@ describe("the news of a session, from one tab to the others", () => {
       sessionNewsOf({
         key: sessionNewsKey,
         newValue: JSON.stringify({ kind: "synthetic-unknown-news" }),
+      })
+    ).toStrictEqual(Option.none());
+    // An older page's sign-in, which named nobody.
+    expect(
+      sessionNewsOf({
+        key: sessionNewsKey,
+        newValue: JSON.stringify({ kind: "signedIn" }),
       })
     ).toStrictEqual(Option.none());
     expect(

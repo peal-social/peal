@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { currentUser } from "#auth/session.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
+import { TabPerson } from "#components/auth/tab-person.tsx";
 import { DeviceApproval } from "#components/oauth/device-approval.tsx";
 import { SignInToContinue } from "#components/oauth/sign-in-to-continue.tsx";
 
@@ -10,7 +11,8 @@ const decodeCode = Schema.decodeUnknownOption(Schema.String);
 
 // Where the command line sends people to approve its sign-in, with
 // ?user_code= when they open the link it prints. Signed out, they sign in
-// first and come back here.
+// first and come back here. Signed in, it names its person to the tab
+// (`TabPerson`).
 const DevicePage = async ({ searchParams }: PageProps<"/[locale]/device">) => {
   const { user_code: userCode } = await searchParams;
   const t = await getTranslations("OAuth.device");
@@ -31,6 +33,7 @@ const DevicePage = async ({ searchParams }: PageProps<"/[locale]/device">) => {
 
   return (
     <AuthCard title={t("title")} description={t("description")}>
+      <TabPerson userId={me.value.user.id} />
       <DeviceApproval initialCode={code} />
     </AuthCard>
   );
