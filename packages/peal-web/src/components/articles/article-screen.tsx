@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "peal-ui/components/alert";
 
 import { workspaceArticle, workspaceSites } from "#articles/api.ts";
 import { ArticleEditor } from "#components/articles/article-editor.tsx";
+import { useHydrated } from "#components/media/use-hydrated.ts";
 
 interface ArticleScreenProps {
   /** The article to edit; none for a new one. */
@@ -74,8 +75,7 @@ const ExistingArticle = ({
   ) : null;
 };
 
-/** Loads the workspace's websites, and the article, for the editor. */
-export const ArticleScreen = ({
+const LoadedArticleScreen = ({
   articleId,
   permissions,
   workspaceId,
@@ -110,4 +110,16 @@ export const ArticleScreen = ({
       workspaceId={workspaceId}
     />
   );
+};
+
+/**
+ * Loads the workspace's websites, and the article, for the editor. Both
+ * are read with the visitor's cookies, which only the browser sends, so
+ * they load once the page has hydrated, as the browser's first render
+ * shows nothing either.
+ */
+export const ArticleScreen = (props: ArticleScreenProps) => {
+  const hydrated = useHydrated();
+
+  return hydrated ? <LoadedArticleScreen {...props} /> : null;
 };

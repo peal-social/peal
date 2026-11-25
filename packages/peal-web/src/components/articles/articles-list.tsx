@@ -9,8 +9,10 @@ import type { Article, Channel } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Badge } from "peal-ui/components/badge";
 import { Button, buttonVariants } from "peal-ui/components/button";
+import { Skeleton } from "peal-ui/components/skeleton";
 
 import { workspaceArticles, workspaceSites } from "#articles/api.ts";
+import { useHydrated } from "#components/media/use-hydrated.ts";
 import { PageActions } from "#components/shell/frame-view.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
@@ -101,14 +103,24 @@ const ArticleItems = ({
   );
 };
 
-/** The workspace's articles, newest first, each opening in the editor. */
-export const ArticlesList = ({
-  canCreate,
-  workspaceId,
-}: {
+const Loading = () => {
+  const t = useTranslations("Articles.list");
+
+  return (
+    <div className="flex flex-col gap-3" aria-busy>
+      <span className="sr-only">{t("loading")}</span>
+      <Skeleton className="h-20" />
+      <Skeleton className="h-20" />
+    </div>
+  );
+};
+
+interface ArticlesListProps {
   readonly canCreate: boolean;
   readonly workspaceId: string;
-}) => {
+}
+
+const LoadedArticles = ({ canCreate, workspaceId }: ArticlesListProps) => {
   const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Articles.list");
   const query = workspaceArticles(workspaceId);
@@ -163,4 +175,16 @@ export const ArticlesList = ({
       ) : null}
     </div>
   );
+};
+
+/**
+ * The workspace's articles, newest first, each opening in the editor.
+ * They and the websites are read with the visitor's cookies, which only
+ * the browser sends, so they load once the page has hydrated: the server
+ * renders the loading state, as the browser's first render does.
+ */
+export const ArticlesList = (props: ArticlesListProps) => {
+  const hydrated = useHydrated();
+
+  return hydrated ? <LoadedArticles {...props} /> : <Loading />;
 };
