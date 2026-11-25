@@ -18,6 +18,7 @@ import { Button } from "peal-ui/components/button";
 import { useState, useTransition } from "react";
 import type { ReactNode, SubmitEvent } from "react";
 
+import { browserStorage, forgetPersonKeys } from "#auth/person-storage.ts";
 import { useSignOut } from "#auth/use-sign-out.ts";
 import { FormField } from "#components/auth/form-field.tsx";
 import { SettingsError } from "#components/settings/settings-error.tsx";
@@ -72,7 +73,8 @@ export const LastOwnerOf = ({
 
 /**
  * The right to erasure: deletes the account once its password confirms it,
- * then signs out (`useSignOut`). The server refuses while the user alone owns a workspace
+ * forgets what the browser kept of its work, then signs out
+ * (`useSignOut`). The server refuses while the user alone owns a workspace
  * others use, which the dialog lists, and while a workspace it deletes has
  * a subscription, which the dialog describes until the user agrees to
  * cancel it. `legalHold` says what the law has this server keep of the
@@ -80,8 +82,11 @@ export const LastOwnerOf = ({
  */
 export const DeleteAccount = ({
   legalHold,
+  userId,
 }: {
   readonly legalHold: ReactNode;
+  /** The account's id, whose unfinished work the browser forgets. */
+  readonly userId: string;
 }) => {
   const workspaceHref = useWorkspaceHref();
   const t = useTranslations("AccountSettings.delete");
@@ -120,6 +125,9 @@ export const DeleteAccount = ({
       });
 
       if (Exit.isSuccess(exit)) {
+        // The account is gone: so is what this browser kept of its work
+        // (the Studio's drafts, the agent panel's tabs) in every workspace.
+        forgetPersonKeys(browserStorage(), userId);
         // The session went with the account: signing out clears its
         // cookies, and the page it loads says the account is deleted.
         await signOut({

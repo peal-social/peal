@@ -64,6 +64,8 @@ import "./studio.css";
 interface EditorProps {
   readonly mayConfigure: boolean;
   readonly status: AssistantStatus;
+  /** The signed-in person, whose draft of the workspace the browser keeps. */
+  readonly userId: string;
   readonly workspaceId: string;
 }
 
@@ -97,11 +99,11 @@ export const StudioEditor = (props: EditorProps) => {
   // The SDK loads an edit only with a clip: a new one starts with a text.
   const initial = useMemo<StudioEdit>(
     () =>
-      readDraft(props.workspaceId).pipe(
+      readDraft({ userId: props.userId, workspaceId: props.workspaceId }).pipe(
         Option.filter(hasClips),
         Option.getOrElse(() => emptyEdit([textClipOf(newText, 0)]))
       ),
-    [newText, props.workspaceId]
+    [newText, props.userId, props.workspaceId]
   );
 
   const files = useLibraryFiles(props.workspaceId, mediaIdsOf(initial));
@@ -197,6 +199,7 @@ const LoadedStudio = ({
   initial,
   mayConfigure,
   status,
+  userId,
   workspaceId,
 }: EditorProps & {
   readonly files: ReadonlyMap<string, Media>;
@@ -310,7 +313,7 @@ const LoadedStudio = ({
 
       if (studio !== null && waits && !forgotten.current) {
         waits = false;
-        writeDraft(workspaceId, storedIn(studio, files.current));
+        writeDraft({ userId, workspaceId }, storedIn(studio, files.current));
       }
     };
 
@@ -327,7 +330,7 @@ const LoadedStudio = ({
       keep();
       unsubscribe?.();
     };
-  }, [studio, workspaceId]);
+  }, [studio, userId, workspaceId]);
 
   // Pictures and films go on a track over the others, at the playhead;
   // sounds on one under them.
@@ -379,7 +382,7 @@ const LoadedStudio = ({
 
   const handleStartOver = () => {
     forgotten.current = true;
-    clearDraft(workspaceId);
+    clearDraft({ userId, workspaceId });
     window.location.reload();
   };
 

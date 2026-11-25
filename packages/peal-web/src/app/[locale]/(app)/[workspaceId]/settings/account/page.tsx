@@ -92,6 +92,7 @@ const ProfilePage = async ({
               <SettingsRowControl>
                 <DeleteAccount
                   legalHold={<LegalHoldNotice legalHold={legalHold} />}
+                  userId={user.id}
                 />
               </SettingsRowControl>
             )}

@@ -28,6 +28,8 @@ import { StudioEditor } from "./studio-editor.tsx";
 interface EditorProps {
   /** The member may change the assistant's settings (assistant:configure). */
   readonly mayConfigure: boolean;
+  /** The signed-in person, whose draft of the workspace the browser keeps. */
+  readonly userId: string;
   readonly workspaceId: string;
 }
 

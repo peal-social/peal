@@ -1,14 +1,22 @@
 import { Option, Schema } from "effect";
 
+import {
+  browserStorage,
+  dropWorkspaceKey,
+  personKeyOf,
+} from "#auth/person-storage.ts";
+import type { KeptFor, PersonStorage } from "#auth/person-storage.ts";
 import type { StudioEdit } from "#studio/edit-document.ts";
 
-// The editor keeps the person's work in this browser, per workspace, so a
-// reload or a visit to another page loses nothing. Library files are kept
-// by name (`peal:media/<id>`), never by address, which lasts an hour.
+// The editor keeps the person's work in this browser, per person and
+// workspace (`#auth/person-storage.ts`), so a reload, a visit to another
+// page or signing out and back in loses nothing, and nobody else signed
+// in on the same browser loads it. Library files are kept by name
+// (`peal:media/<id>`), never by address, which lasts an hour.
 
-/** Where a workspace's draft is kept in `localStorage`. */
-export const draftKeyOf = (workspaceId: string): string =>
-  `peal.studio-draft.${workspaceId}`;
+/** Where the person's draft of a workspace is kept in `localStorage`. */
+export const draftKeyOf = (owner: KeptFor): string =>
+  personKeyOf("studio-draft", owner);
 
 // What a draft's document must look like for the editor to read it: an
 // output and tracks. The SDK checks the rest against Shotstack's schema
@@ -43,29 +51,51 @@ export const draftOf = (stored: string | null): Option.Option<StudioEdit> =>
 export const storedDraftOf = (edit: StudioEdit): string =>
   JSON.stringify({ edit, version: 1 });
 
-/** The workspace's draft in this browser, or none. */
-export const readDraft = (workspaceId: string): Option.Option<StudioEdit> => {
-  try {
-    return draftOf(localStorage.getItem(draftKeyOf(workspaceId)));
-  } catch {
-    return Option.none();
+/**
+ * The person's draft of the workspace in this browser, or none. A draft
+ * an older page kept under the workspace alone is dropped, never read.
+ */
+export const readDraft = (
+  owner: KeptFor,
+  storage: Option.Option<PersonStorage> = browserStorage()
+): Option.Option<StudioEdit> =>
+  storage.pipe(
+    Option.flatMap((kept) => {
+      dropWorkspaceKey(kept, "studio-draft", owner.workspaceId);
+
+      try {
+        return draftOf(kept.getItem(draftKeyOf(owner)));
+      } catch {
+        return Option.none();
+      }
+    })
+  );
+
+/** Keeps the person's draft in this browser, when the browser lets it. */
+export const writeDraft = (
+  owner: KeptFor,
+  edit: StudioEdit,
+  storage: Option.Option<PersonStorage> = browserStorage()
+): void => {
+  for (const kept of Option.toArray(storage)) {
+    try {
+      kept.setItem(draftKeyOf(owner), storedDraftOf(edit));
+    } catch {
+      // A private window or a full storage keeps nothing: the editor works on.
+    }
   }
 };
 
-/** Keeps the draft in this browser, when the browser lets it. */
-export const writeDraft = (workspaceId: string, edit: StudioEdit): void => {
-  try {
-    localStorage.setItem(draftKeyOf(workspaceId), storedDraftOf(edit));
-  } catch {
-    // A private window or a full storage keeps nothing: the editor works on.
-  }
-};
-
-/** Forgets the workspace's draft in this browser. */
-export const clearDraft = (workspaceId: string): void => {
-  try {
-    localStorage.removeItem(draftKeyOf(workspaceId));
-  } catch {
-    // Nothing kept, nothing to forget.
+/** Forgets the person's draft of the workspace in this browser. */
+export const clearDraft = (
+  owner: KeptFor,
+  storage: Option.Option<PersonStorage> = browserStorage()
+): void => {
+  for (const kept of Option.toArray(storage)) {
+    try {
+      kept.removeItem(draftKeyOf(owner));
+    } catch {
+      // Nothing kept, nothing to forget.
+    }
   }
 };

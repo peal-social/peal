@@ -26,18 +26,25 @@ const PanelContext = createContext<AgentPanel>({
 
 /**
  * The agent's panel of a workspace, open across its pages: which chats
- * are tabs and which one shows, kept in the browser (`makePanelStore`).
+ * are tabs and which one shows, kept in the browser for the person
+ * (`makePanelStore`).
  */
 export const AgentPanelProvider = ({
   allowed,
   children,
+  userId,
   workspaceId,
 }: {
   readonly allowed: boolean;
   readonly children: ReactNode;
+  /** The signed-in person: the browser keeps each person's panel apart. */
+  readonly userId: string;
   readonly workspaceId: string;
 }) => {
-  const store = useMemo(() => makePanelStore(workspaceId), [workspaceId]);
+  const store = useMemo(
+    () => makePanelStore({ userId, workspaceId }),
+    [userId, workspaceId]
+  );
 
   // The server knows nothing of the browser's panel: closed until hydrated.
   const stored = useSyncExternalStore(
