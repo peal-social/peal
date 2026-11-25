@@ -602,6 +602,18 @@ describe.each(dockerfiles)("%s", (file) => {
   });
 });
 
+// Bun refuses to install a lockfile whose patches it cannot read, whatever
+// workspace it installs.
+describe("the images that install the workspace", () => {
+  it.each(dockerfiles)("%s copies the patches with the lockfile", (file) => {
+    const copies = instructionsOf(read("..", file))("COPY");
+
+    expect(copies.filter((copy) => copy === "patches patches")).toHaveLength(
+      copies.filter((copy) => copy === "package.json bun.lock ./").length
+    );
+  });
+});
+
 // Postgres's entrypoint starts as root and drops to the postgres user itself.
 describe.each(dockerfiles.filter((file) => file !== "postgres.Dockerfile"))(
   "%s",
