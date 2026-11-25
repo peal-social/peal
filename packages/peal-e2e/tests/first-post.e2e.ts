@@ -6,6 +6,7 @@ import { credentials, expect } from "e2e";
 import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
 import { seedVideo } from "./support/media.ts";
+import { settled } from "./support/settled.ts";
 import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
 
 // One new member's first steps, in order, in one browser: each test starts
@@ -169,21 +170,30 @@ describe("a new member's first post", { serial: true }, () => {
       await route.continue();
     });
 
-    const answered = browser.waitForResponse(drafts);
+    try {
+      const answered = browser.waitForResponse(drafts);
 
-    await screen.getByRole("link", "Drafts").tap();
-    await expect(browser).toHaveURL(`/${slug}/posts?status=draft`);
+      await screen.getByRole("link", "Drafts").tap();
+      await expect(browser).toHaveURL(`/${slug}/posts?status=draft`);
 
-    // A request sent again goes with the commit, before any answer comes.
-    const response = await answered;
+      const response = await answered;
 
-    expect(response.status).toBe(200);
-    expect(asked).toBe(1);
-    await expect(
-      screen.getByRole("main").getByRole("link", text)
-    ).toBeVisible();
+      expect(response.status).toBe(200);
 
-    await browser.unroute(drafts);
+      // Read once the tab has settled, with its list in: a request sent
+      // again, with the commit or after the first answer, is counted.
+      await expect
+        .poll(async () => await browser.evaluate<boolean>(settled), {
+          timeout: 20_000,
+        })
+        .toBe(true);
+      await expect(
+        screen.getByRole("main").getByRole("link", text)
+      ).toBeVisible();
+      expect(asked).toBe(1);
+    } finally {
+      await browser.unroute(drafts);
+    }
   });
 
   test("finds it under the Drafts tab of Posts", async ({
