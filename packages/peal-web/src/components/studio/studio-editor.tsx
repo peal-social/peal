@@ -18,6 +18,7 @@ import { cn } from "peal-ui/lib/utils";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { isSlideshowSettingsRefusal } from "#assistant/slideshows.ts";
+import { isLeaving } from "#auth/tab-person.ts";
 import { SlideshowJobs } from "#components/media/generate-slideshow.tsx";
 import { MediaPicker } from "#components/posts/media-picker.tsx";
 import { PageActions, useFullWindow } from "#components/shell/frame-view.tsx";
@@ -303,7 +304,9 @@ const LoadedStudio = ({
   }, [initial]);
 
   // The draft is kept a moment after each change, and what is not kept yet
-  // as the page is left.
+  // as the page is left; never once another tab's news has this one load
+  // the app anew (`isLeaving`): the person it shows may be gone, their
+  // account and its keys with them.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let waits = false;
@@ -311,7 +314,7 @@ const LoadedStudio = ({
     const keep = () => {
       clearTimeout(timer);
 
-      if (studio !== null && waits && !forgotten.current) {
+      if (studio !== null && waits && !forgotten.current && !isLeaving()) {
         waits = false;
         writeDraft({ userId, workspaceId }, storedIn(studio, files.current));
       }
