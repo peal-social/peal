@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>social.peal</groupId>
     <artifactId>peal</artifactId>
-    <version>0.3.1</version>
+    <version>0.4.0-beta.1</version>
     <packaging>jar</packaging>
     <name>Peal</name>
     <description>Client for the Peal API: schedule social media posts across platforms.</description>

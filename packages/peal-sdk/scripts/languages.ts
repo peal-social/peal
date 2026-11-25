@@ -82,14 +82,17 @@ export interface Language {
   readonly version: string;
 }
 
-const python = "0.3.0";
-const node = "0.3.0";
-const go = "0.3.0";
-const ruby = "0.3.0";
-const java = "0.3.1";
-const php = "0.3.0";
-const dotnet = "0.3.0";
-const rust = "0.3.0";
+// Each language's release. The SDKs stay on 0.4.0-beta.N, which sorts above
+// every 0.x published before the API moved under /api/v1, until general
+// availability.
+const python = "0.4.0-beta.1";
+const node = "0.4.0-beta.1";
+const go = "0.4.0-beta.1";
+const ruby = "0.4.0-beta.1";
+const java = "0.4.0-beta.1";
+const php = "0.4.0-beta.1";
+const dotnet = "0.4.0-beta.1";
+const rust = "0.4.0-beta.1";
 
 /**
  * While the beta line is the only one that speaks the live API, npm's

@@ -5,16 +5,22 @@ from the contract (`packages/peal-contract`) by
 [Fern](https://github.com/fern-api/fern)'s open-source generators, and
 published to each language's registry.
 
-| Language              | Folder             | Registry                                                                          | Install                                                   |
-| --------------------- | ------------------ | --------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| TypeScript/JavaScript | [`node`](node)     | [npm](https://www.npmjs.com/package/peal-sdk)                                     | `npm install peal-sdk`                                    |
-| Python                | [`python`](python) | [PyPI](https://pypi.org/project/peal-sdk/)                                        | `pip install peal-sdk` (imported as `peal`)               |
-| Go                    | [`go`](go)         | [Go modules](https://pkg.go.dev/github.com/peal-social/peal/packages/peal-sdk/go) | `go get github.com/peal-social/peal/packages/peal-sdk/go` |
-| Ruby                  | [`ruby`](ruby)     | [RubyGems](https://rubygems.org/gems/peal)                                        | `gem install peal`                                        |
-| Java                  | [`java`](java)     | [Maven Central](https://central.sonatype.com/artifact/social.peal/peal)           | `social.peal:peal`                                        |
-| PHP                   | [`php`](php)       | [Packagist](https://packagist.org/packages/peal-social/peal)                      | `composer require peal-social/peal`                       |
-| .NET                  | [`dotnet`](dotnet) | [NuGet](https://www.nuget.org/packages/Peal)                                      | `dotnet add package Peal`                                 |
-| Rust                  | [`rust`](rust)     | [crates.io](https://crates.io/crates/peal-sdk)                                    | `cargo add peal-sdk`                                      |
+| Language              | Folder             | Registry                                                                          | Install                                                                 |
+| --------------------- | ------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| TypeScript/JavaScript | [`node`](node)     | [npm](https://www.npmjs.com/package/peal-sdk)                                     | `npm install --save-exact peal-sdk@0.4.0-beta.1`                        |
+| Python                | [`python`](python) | [PyPI](https://pypi.org/project/peal-sdk/)                                        | `pip install peal-sdk==0.4.0b1` (imported as `peal`)                    |
+| Go                    | [`go`](go)         | [Go modules](https://pkg.go.dev/github.com/peal-social/peal/packages/peal-sdk/go) | `go get github.com/peal-social/peal/packages/peal-sdk/go@v0.4.0-beta.1` |
+| Ruby                  | [`ruby`](ruby)     | [RubyGems](https://rubygems.org/gems/peal)                                        | `gem install peal --version 0.4.0.beta.1`                               |
+| Java                  | [`java`](java)     | [Maven Central](https://central.sonatype.com/artifact/social.peal/peal)           | `social.peal:peal:0.4.0-beta.1`                                         |
+| PHP                   | [`php`](php)       | [Packagist](https://packagist.org/packages/peal-social/peal)                      | `composer require peal-social/peal:0.4.0-beta.1`                        |
+| .NET                  | [`dotnet`](dotnet) | [NuGet](https://www.nuget.org/packages/Peal)                                      | `dotnet add package Peal --version 0.4.0-beta.1`                        |
+| Rust                  | [`rust`](rust)     | [crates.io](https://crates.io/crates/peal-sdk)                                    | `cargo add peal-sdk@=0.4.0-beta.1`                                      |
+
+The SDKs are in beta until general availability, on 0.4.0-beta.N, which each
+registry spells its own way (`0.4.0b1` on PyPI, `0.4.0.beta.1` on RubyGems).
+A beta release may change a method or a type, so each command installs one
+exact version, and your project keeps it until you change it. Releases 0.1 to
+0.3 call an API that is gone.
 
 Each folder's README shows how to use it, and its `reference.md` lists every
 operation. The docs' [SDKs page](https://docs.peal.social/developers/sdks) starts you:
@@ -93,16 +99,27 @@ and the hooks Ruby's gemspec and .NET's project load (`custom.gemspec.rb`,
 
 Each SDK is released on its own, from a tag:
 
-1. Bump the language's version in `scripts/languages.ts`, run
-   `bun run sdk:generate`, and merge the change.
-2. Tag that commit `sdk-<language>-v<version>` and push the tag:
-   `git tag sdk-python-v0.3.0 && git push origin sdk-python-v0.3.0`.
+1. Bump the language's release in `scripts/languages.ts`, in SemVer
+   (`0.4.0-beta.2`), run `bun run sdk:generate`, change the install lines
+   in the docs' SDKs page (English and French), its quickstart and the table
+   above (`scripts/install.test.ts` fails until they match), and merge the
+   change.
+2. Tag that commit `sdk-<language>-v<release>`, the release in SemVer
+   whatever the registry's spelling, and push the tag:
+   `git tag sdk-python-v0.4.0-beta.2 && git push origin sdk-python-v0.4.0-beta.2`.
    Push at most three tags at once: GitHub starts no workflow for a push of
    more.
 
 The `SDK release` workflow (`.github/workflows/sdk-release.yml`) refuses a
-tag whose version differs from `scripts/languages.ts`, builds the SDK from the
-tagged commit, and publishes it in the `sdk-release` environment:
+tag whose release differs from `scripts/languages.ts`
+(`scripts/release-tag.ts`), builds the SDK from the tagged commit, and
+publishes it in the `sdk-release` environment, under the version as its
+registry spells the release (`scripts/versions.ts`): PEP 440's `0.4.0b1` on
+PyPI, `0.4.0.beta.1` on RubyGems, the SemVer form everywhere else. npm
+refuses a prerelease without a dist-tag: the workflow names `latest` while
+`prereleasesAreLatest` (`scripts/languages.ts`) is true, so a plain
+`npm install peal-sdk` gets the beta, and `next` once it is false, at general
+availability.
 
 | Registry      | How it signs in                                                                                                                                       |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -12,3 +12,5 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
+
+retract [v0.1.0, v0.3.1] // Calls an API that is gone: use v0.4.0-beta.1 or later.

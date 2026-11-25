@@ -9,18 +9,26 @@ Les SDK de Peal appellent l’[API](/developers) depuis huit langages. Ils sont 
 
 ## Installer [#install]
 
-Chaque SDK est publié sur le registre de son langage :
+Chaque SDK est publié sur le registre de son langage. Ces commandes installent la version 0.4.0-beta.1 :
 
-| Langage               | Registre                                                                          | Installation                                              |
-| --------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| TypeScript/JavaScript | [npm](https://www.npmjs.com/package/peal-sdk)                                     | `npm install peal-sdk`                                    |
-| Python                | [PyPI](https://pypi.org/project/peal-sdk/)                                        | `pip install peal-sdk` (importé sous `peal`)              |
-| Go                    | [Go modules](https://pkg.go.dev/github.com/peal-social/peal/packages/peal-sdk/go) | `go get github.com/peal-social/peal/packages/peal-sdk/go` |
-| Ruby                  | [RubyGems](https://rubygems.org/gems/peal)                                        | `gem install peal`                                        |
-| Java                  | [Maven Central](https://central.sonatype.com/artifact/social.peal/peal)           | `social.peal:peal`                                        |
-| PHP                   | [Packagist](https://packagist.org/packages/peal-social/peal)                      | `composer require peal-social/peal`                       |
-| .NET                  | [NuGet](https://www.nuget.org/packages/Peal)                                      | `dotnet add package Peal`                                 |
-| Rust                  | [crates.io](https://crates.io/crates/peal-sdk)                                    | `cargo add peal-sdk`                                      |
+| Langage               | Registre                                                                          | Installation                                                            |
+| --------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| TypeScript/JavaScript | [npm](https://www.npmjs.com/package/peal-sdk)                                     | `npm install --save-exact peal-sdk@0.4.0-beta.1`                        |
+| Python                | [PyPI](https://pypi.org/project/peal-sdk/)                                        | `pip install peal-sdk==0.4.0b1` (importé sous `peal`)                   |
+| Go                    | [Go modules](https://pkg.go.dev/github.com/peal-social/peal/packages/peal-sdk/go) | `go get github.com/peal-social/peal/packages/peal-sdk/go@v0.4.0-beta.1` |
+| Ruby                  | [RubyGems](https://rubygems.org/gems/peal)                                        | `gem install peal --version 0.4.0.beta.1`                               |
+| Java                  | [Maven Central](https://central.sonatype.com/artifact/social.peal/peal)           | `social.peal:peal:0.4.0-beta.1`                                         |
+| PHP                   | [Packagist](https://packagist.org/packages/peal-social/peal)                      | `composer require peal-social/peal:0.4.0-beta.1`                        |
+| .NET                  | [NuGet](https://www.nuget.org/packages/Peal)                                      | `dotnet add package Peal --version 0.4.0-beta.1`                        |
+| Rust                  | [crates.io](https://crates.io/crates/peal-sdk)                                    | `cargo add peal-sdk@=0.4.0-beta.1`                                      |
+
+<Callout type="info">
+  Les SDK sont en bêta jusqu’à leur disponibilité générale. Une version bêta
+  peut modifier une méthode ou un type : chaque commande installe donc une
+  version exacte, que votre projet garde jusqu’à ce que vous la changiez. PyPI
+  écrit cette version `0.4.0b1`, et RubyGems `0.4.0.beta.1`. Les versions 0.1 à
+  0.3 appellent une API qui n’existe plus : ne les utilisez pas.
+</Callout>
 
 Le README de chaque paquet montre comment s’en servir, et son `reference.md` liste chaque méthode. Vous trouverez les deux dans [le dépôt](https://github.com/peal-social/peal/tree/main/packages/peal-sdk).
 
@@ -706,7 +714,7 @@ foreach (var target in outcome.Targets)
 ```
 
 ```rust Rust
-// cargo add peal-sdk tokio --features tokio/full
+// cargo add peal-sdk@=0.4.0-beta.1 tokio --features tokio/full
 // cargo add uuid --features v4
 use peal_sdk::prelude::*;
 

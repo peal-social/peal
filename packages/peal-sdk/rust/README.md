@@ -23,18 +23,18 @@ The Peal Rust library provides convenient access to the Peal APIs from Rust.
 
 ## Installation
 
-Add this to your `Cargo.toml`:
+```sh
+cargo add peal-sdk@=0.4.0-beta.1
+```
+
+Or in `Cargo.toml`:
 
 ```toml
 [dependencies]
-peal-sdk = "0.3.0"
+peal-sdk = "=0.4.0-beta.1"
 ```
 
-Or install via cargo:
-
-```sh
-cargo add peal-sdk
-```
+The SDKs are in beta until general availability. A beta release may change a method or a type, so this installs one exact version, and your project keeps it until you change it. Releases 0.1 to 0.3 call an API that is gone.
 
 ## Reference
 

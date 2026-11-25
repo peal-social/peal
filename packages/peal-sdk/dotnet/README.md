@@ -32,8 +32,10 @@ This SDK requires:
 ## Installation
 
 ```sh
-dotnet add package Peal
+dotnet add package Peal --version 0.4.0-beta.1
 ```
+
+The SDKs are in beta until general availability. A beta release may change a method or a type, so this installs one exact version, and your project keeps it until you change it. Releases 0.1 to 0.3 call an API that is gone.
 
 ## Reference
 

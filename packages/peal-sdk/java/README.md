@@ -27,15 +27,17 @@ With Maven:
 <dependency>
     <groupId>social.peal</groupId>
     <artifactId>peal</artifactId>
-    <version>0.3.1</version>
+    <version>0.4.0-beta.1</version>
 </dependency>
 ```
 
 With Gradle:
 
 ```groovy
-implementation 'social.peal:peal:0.3.1'
+implementation 'social.peal:peal:0.4.0-beta.1'
 ```
+
+The SDKs are in beta until general availability. A beta release may change a method or a type, so this installs one exact version, and your project keeps it until you change it. Releases 0.1 to 0.3 call an API that is gone.
 
 ## Reference
 

@@ -21,8 +21,10 @@ The Peal Go library provides convenient access to the Peal APIs from Go.
 ## Installation
 
 ```sh
-go get github.com/peal-social/peal/packages/peal-sdk/go@v0.3.0
+go get github.com/peal-social/peal/packages/peal-sdk/go@v0.4.0-beta.1
 ```
+
+The SDKs are in beta until general availability. A beta release may change a method or a type, so this installs one exact version, and your project keeps it until you change it. Releases 0.1 to 0.3 call an API that is gone.
 
 ## Reference
 
