@@ -5,6 +5,7 @@ import { Authentication } from "./authentication.ts";
 import { ChannelCannotPost } from "./channel-cannot-post.ts";
 import { ChannelNotFound } from "./channel-not-found.ts";
 import { Forbidden } from "./forbidden.ts";
+import { PlatformRateLimited } from "./platform-rate-limited.ts";
 import { PlatformUnreachable } from "./platform-unreachable.ts";
 import { TikTokPrivacyLevelSchema } from "./target-options.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
@@ -69,6 +70,7 @@ export class TikTokApi extends HttpApiGroup.make("channels.tiktokCreator")
         ChannelNotFound,
         ChannelCannotPost,
         PlatformUnreachable,
+        PlatformRateLimited,
       ],
       headers: workspaceHeaders,
       params: { channelId: Schema.String },
@@ -76,7 +78,7 @@ export class TikTokApi extends HttpApiGroup.make("channels.tiktokCreator")
     }).annotateMerge(
       OpenApi.annotations({
         description:
-          "Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.",
+          "Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel the workspace does not have, or that is not TikTok's, is ChannelNotFound; a channel turned off, or whose account must be reconnected (TikTok refused its credential, or it lacks a permission), ChannelCannotPost; TikTok not answering, or refusing the read, PlatformUnreachable; TikTok asking to slow down, PlatformRateLimited. Needs post:create.",
         summary: "Read a TikTok channel's creator",
       })
     )

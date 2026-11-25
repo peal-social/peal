@@ -1052,7 +1052,11 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   only for the platform's own refusal of the token, `RateLimited`,
   `PlatformUnavailable`, or `LookupInputRejected` when the platform refused
   what the input asked (a cursor it never gave); they never change anything
-  on the platform. Test them against the loopback fakes.
+  on the platform. Any other refusal of the platform is logged by its code
+  and is `PlatformUnavailable`, never `BadRequest`, which is the channels
+  context's alone (turned off or disconnected: `channelRefusalOf`), so no
+  answer reads a platform's refusal as a missing channel. Test them
+  against the loopback fakes.
 - `GET …/channels/:id/tiktok-creator` stays, for the composer; the
   `tiktokCreator` lookup answers the same view.
 
