@@ -11,5 +11,5 @@
     "packageRepository": "https://github.com/peal-social/peal",
     "preserveCrateNameHyphens": true
   },
-  "requestedVersion": "0.3.0"
+  "requestedVersion": "0.4.0-beta.1"
 }

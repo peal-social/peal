@@ -9,6 +9,7 @@ import path from "node:path";
 
 import { Schema } from "effect";
 
+import { betaNote, installCommand } from "./install.ts";
 import {
   contactEmail,
   description,
@@ -67,17 +68,70 @@ const removeBadge = async (folder: string): Promise<void> => {
   await Bun.write(file, readme.replace(fernBadge, ""));
 };
 
-/** An Installation section, for the READMEs Fern writes without one. */
-const addInstallation = async (
-  folder: string,
-  instructions: string
+type Installation = (command: string, version: string) => string;
+
+const shell: Installation = (command) => `\`\`\`sh\n${command}\n\`\`\``;
+
+/** How each language's build names the package at its version. */
+const installations = {
+  dotnet: shell,
+  go: shell,
+  java: (command, version) => `With Maven:
+
+\`\`\`xml
+<dependency>
+    <groupId>social.peal</groupId>
+    <artifactId>peal</artifactId>
+    <version>${version}</version>
+</dependency>
+\`\`\`
+
+With Gradle:
+
+\`\`\`groovy
+implementation '${command}'
+\`\`\``,
+  node: shell,
+  php: shell,
+  python: shell,
+  ruby: (command, version) =>
+    `${shell(command, version)}\n\nOr in a Gemfile:\n\n\`\`\`ruby\ngem "peal", "${version}"\n\`\`\``,
+  rust: (command, version) =>
+    `${shell(command, version)}\n\nOr in \`Cargo.toml\`:\n\n\`\`\`toml\n[dependencies]\npeal-sdk = "=${version}"\n\`\`\``,
+} satisfies Readonly<Record<LanguageName, Installation>>;
+
+const installation = (language: Language): string =>
+  installations[language.name](installCommand(language), language.version);
+
+/** Fern's Installation section, from its heading to the next one's. */
+const installationSection = /\n## Installation\n[\s\S]*?(?=\n## )/u;
+
+/**
+ * The README's Installation section, the one Fern writes or, for the
+ * READMEs Fern writes without one, a new one before the Reference: the
+ * command that installs this version (scripts/install.ts), and what a beta
+ * means.
+ */
+const setInstallation = async (
+  language: Language,
+  folder: string
 ): Promise<void> => {
-  await replaceIn(path.join(folder, "README.md"), [
-    [
-      "\n## Reference\n",
-      `\n## Installation\n\n${instructions}\n\n## Reference\n`,
-    ],
-  ]);
+  const file = path.join(folder, "README.md");
+  const readme = await Bun.file(file).text();
+
+  const parts = [installation(language), betaNote(language)].filter(
+    (part) => part !== undefined
+  );
+
+  const section = `\n## Installation\n\n${parts.join("\n\n")}\n`;
+
+  if (installationSection.test(readme)) {
+    await Bun.write(file, readme.replace(installationSection, section));
+
+    return;
+  }
+
+  await replaceIn(file, [["\n## Reference\n", `${section}\n## Reference\n`]]);
 };
 
 /**
@@ -113,7 +167,6 @@ const python = async (language: Language, folder: string): Promise<void> => {
       "[![pypi](https://img.shields.io/pypi/v/peal)](https://pypi.python.org/pypi/peal)",
       "[![pypi](https://img.shields.io/pypi/v/peal-sdk)](https://pypi.org/project/peal-sdk/)",
     ],
-    ["pip install peal\n", "pip install peal-sdk\n"],
   ]);
   await replaceIn(path.join(folder, "pyproject.toml"), [
     ['[project]\nname = "peal"\n', '[project]\nname = "peal-sdk"\n'],
@@ -237,25 +290,6 @@ const javaRelease = (gradleBuild: string): string => {
  */
 const java = async (language: Language, folder: string): Promise<void> => {
   const gradleBuild = await Bun.file(path.join(folder, "build.gradle")).text();
-
-  await addInstallation(
-    folder,
-    `With Maven:
-
-\`\`\`xml
-<dependency>
-    <groupId>social.peal</groupId>
-    <artifactId>peal</artifactId>
-    <version>${language.version}</version>
-</dependency>
-\`\`\`
-
-With Gradle:
-
-\`\`\`groovy
-implementation 'social.peal:peal:${language.version}'
-\`\`\``
-  );
 
   await Bun.write(
     path.join(folder, "pom.xml"),
@@ -464,11 +498,33 @@ const dotnet = async (_language: Language, folder: string): Promise<void> => {
   ]);
 };
 
-const go = async (language: Language, folder: string): Promise<void> => {
-  await addInstallation(
-    folder,
-    `\`\`\`sh\ngo get github.com/peal-social/peal/packages/peal-sdk/go@v${language.version}\n\`\`\``
-  );
+/**
+ * The releases that call the API as it was before /api/v1, retracted: Go
+ * hides them from `go get` and `@latest`, and warns a module that requires
+ * one. Go reads retractions from the go.mod of the highest release, and a
+ * prerelease above it does not count: v0.3.1, tagged on the beta's commit
+ * on release day (the README's "Release day"), is that release, there only
+ * to carry them, and retracts itself as Go's module reference shows. Every
+ * later go.mod keeps the directive, or the 0.x releases come back.
+ */
+const goRetractions = `
+retract (
+\t[v0.1.0, v0.3.0] // Calls the API as it was before /api/v1: use v0.4.0-beta.1 or later.
+\tv0.3.1 // Contains retractions only.
+)
+`;
+
+const go = async (_language: Language, folder: string): Promise<void> => {
+  const file = path.join(folder, "go.mod");
+  const goMod = await Bun.file(file).text();
+
+  if (goMod.includes("\nretract")) {
+    throw new Error(
+      "go.mod already retracts versions: merge its directive with goRetractions"
+    );
+  }
+
+  await Bun.write(file, `${goMod}${goRetractions}`);
 };
 
 /** The document the SDKs are generated from, which generate.ts requires. */
@@ -633,7 +689,6 @@ const rubyUnions = async (folder: string): Promise<void> => {
 };
 
 const ruby = async (_language: Language, folder: string): Promise<void> => {
-  await addInstallation(folder, "```sh\ngem install peal\n```");
   await rubyUnions(folder);
 };
 
@@ -680,4 +735,5 @@ export const finish = async (
   await keepStableMetadata(folder);
   await removeBadge(folder);
   await finishers[language.name]?.(language, folder);
+  await setInstallation(language, folder);
 };

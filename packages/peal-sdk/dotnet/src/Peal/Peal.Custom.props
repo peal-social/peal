@@ -10,6 +10,10 @@
     <PackageTags>peal;social-media;scheduling;api;sdk</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/peal-social/peal</RepositoryUrl>
+    <!-- The generated project sets both to $(Version), and the compiler takes numbers alone there:
+         a prerelease's (0.4.0-beta.1) gives them its release (0.4.0). The package keeps the whole version. -->
+    <AssemblyVersion>$([System.Text.RegularExpressions.Regex]::Replace($(Version), '-.*$', ''))</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <!-- Apache-2.0 asks every copy to carry the license and the notice. -->
