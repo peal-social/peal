@@ -12,6 +12,7 @@ import { Paragraph } from "../components/paragraph.tsx";
 import { StatRows } from "../components/stat-rows.tsx";
 import { colors, linkStyle, smallText } from "../components/theme.ts";
 import { Title } from "../components/title.tsx";
+import { unbroken } from "../components/unbroken.tsx";
 import type { Letterhead } from "../letterhead.ts";
 import type { Locale } from "../locale.ts";
 import { digestPreview } from "./digest-content.ts";
@@ -75,11 +76,11 @@ export const WeeklyDigest = ({
       footer={
         <>
           <FinePrint>
-            {content.why.before}
+            {unbroken(content.why.before)}
             <Link href={content.preferencesUrl} style={linkStyle(colors.muted)}>
               {content.preferences}
             </Link>
-            {content.why.after}
+            {unbroken(content.why.after)}
           </FinePrint>
           <FinePrint>{layout.signature}</FinePrint>
         </>

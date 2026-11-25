@@ -17,17 +17,24 @@ const artStyle = {
   width: "100%",
 } as const;
 
-// Hidden unless the stylesheet shows it, from Outlook's Word engine too.
-const hiddenArtStyle = { ...artStyle, display: "none", msoHide: "all" };
+// Shown by the stylesheet alone, under reduced motion. Outlook's Word engine
+// ignores `display: none` on a picture, and takes it on what holds it; its
+// size hides it where a client takes neither.
+const hiddenStyle = {
+  display: "none",
+  fontSize: 0,
+  lineHeight: 0,
+  maxHeight: 0,
+  msoHide: "all",
+  overflow: "hidden",
+} as const;
 
 const HeaderArt = ({
   className,
-  hidden = false,
   letterhead,
   name,
 }: {
   readonly className?: string;
-  readonly hidden?: boolean;
   readonly letterhead: Letterhead;
   readonly name: EmailAssetName;
 }): ReactElement => (
@@ -36,7 +43,7 @@ const HeaderArt = ({
     className={className}
     height={90}
     src={assetUrl(letterhead, name)}
-    style={hidden ? hiddenArtStyle : artStyle}
+    style={artStyle}
     width={300}
   />
 );
@@ -98,12 +105,9 @@ export const EmailHeader = ({
             letterhead={letterhead}
             name="header.gif"
           />
-          <HeaderArt
-            className={stillClass}
-            hidden
-            letterhead={letterhead}
-            name="header.png"
-          />
+          <div className={stillClass} style={hiddenStyle}>
+            <HeaderArt letterhead={letterhead} name="header.png" />
+          </div>
         </>
       ) : (
         <HeaderArt letterhead={letterhead} name="header.png" />

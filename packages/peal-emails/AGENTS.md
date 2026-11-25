@@ -41,7 +41,11 @@ transport.
   table, it would add to it.
 - The header's glow moves in the digest, the address's confirmation and the
   invitation (`accountMotion`), and is still in every other email. A moving
-  one carries both pictures, the still hidden.
+  one carries both pictures, the still hidden by the block that holds it:
+  Outlook's Word engine ignores `display: none` on a picture.
+- A word that must stay on one line ("e-mail") is kept so by `unbroken`, in
+  the HTML alone: the subject and the text part keep their words as they
+  are.
 - Import components and `render` from `react-email` alone: the
   `@react-email/*` component packages are deprecated. `react-email` and
   `@react-email/ui`, the preview server, move together.
@@ -77,8 +81,9 @@ transport.
 - A picture is decoration: `alt=""`, a width and a height, no text in it
   and no ground of its own, since a mail client may hide it or darken the
   card. What it says is said in text too.
-- Every reader asks for the same address: no query and no name of a
-  reader's or an email's, as the privacy policy says. Never add a picture
+- Every reader asks for the same addresses: no query and nothing of the
+  reader in them, and, of the email, only whether its header moves
+  (`header.gif`), as the privacy policy says. Never add a picture
   that tells who opened an email.
 
 ## Samples

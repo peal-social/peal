@@ -8,6 +8,7 @@ import { FinePrint } from "../components/fine-print.tsx";
 import { Highlight } from "../components/highlight.tsx";
 import { Paragraph } from "../components/paragraph.tsx";
 import { Title } from "../components/title.tsx";
+import { unbroken } from "../components/unbroken.tsx";
 import type { Letterhead } from "../letterhead.ts";
 import type { Locale } from "../locale.ts";
 import type { MessageContent } from "./message-content.ts";
@@ -30,7 +31,7 @@ export const MessageEmail = ({
     <EmailFrame
       footer={
         <>
-          <FinePrint>{content.ignore}</FinePrint>
+          <FinePrint>{unbroken(content.ignore)}</FinePrint>
           <FinePrint>{layout.signature}</FinePrint>
         </>
       }

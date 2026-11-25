@@ -2,6 +2,7 @@ import type { CSSProperties, ReactElement } from "react";
 import { Heading } from "react-email";
 
 import { colors } from "./theme.ts";
+import { unbroken } from "./unbroken.tsx";
 
 const looks = {
   1: {
@@ -25,6 +26,6 @@ export const Title = ({
     as={level === 1 ? "h1" : "h2"}
     style={{ color: colors.ink, fontWeight: 600, ...looks[level] }}
   >
-    {children}
+    {unbroken(children)}
   </Heading>
 );

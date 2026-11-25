@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { Text } from "react-email";
 
 import { bodyText, colors, radii } from "./theme.ts";
+import { unbroken } from "./unbroken.tsx";
 
 /** What an email sets apart under its body: DESIGN.md's `email-callout`. */
 export const Highlight = ({
@@ -19,6 +20,6 @@ export const Highlight = ({
       padding: "12px 16px",
     }}
   >
-    {children}
+    {unbroken(children)}
   </Text>
 );

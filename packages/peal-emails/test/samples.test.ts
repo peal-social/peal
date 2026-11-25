@@ -95,10 +95,17 @@ const entities = new Map([
 const escaped = (words: string): string =>
   words.replaceAll(/["&'<>]/gu, (character) => entities.get(character) ?? "");
 
+// The HTML without what keeps "e-mail" on one line.
+const withoutNowrap = (html: string): string =>
+  html.replaceAll(
+    /<span style="white-space:nowrap">(?<words>[^<]*)<\/span>/gu,
+    "$<words>"
+  );
+
 // What is left of an email's body without its pictures and its tags, as it
 // is written in the HTML.
 const wordsOf = (html: string): string =>
-  html
+  withoutNowrap(html)
     .replace(/<head>.*?<\/head>/su, "")
     .replaceAll(/<!--.*?-->/gsu, "")
     .replaceAll(/<[^>]*>/gu, " ");
@@ -142,8 +149,10 @@ describe.each(["en", "fr"] as const)("every email, in %s", (locale) => {
 
       expect(html).toContain(`<title>${escaped(subject)}</title>`);
       expect(html.match(/<h1/gu)).toHaveLength(1);
-      expect(html).toMatch(/<h1[^>]*>[^<]+<\/h1>/u);
-      expect(html).toContain(`>${escaped(title ?? subject)}</h1>`);
+      expect(withoutNowrap(html)).toMatch(/<h1[^>]*>[^<]+<\/h1>/u);
+      expect(withoutNowrap(html)).toContain(
+        `>${escaped(title ?? subject)}</h1>`
+      );
     }
   );
 
@@ -165,7 +174,7 @@ describe.each(["en", "fr"] as const)("every email, in %s", (locale) => {
   );
 
   it.each(samplesIn(locale))(
-    "$name shows pictures of the server's alone, the same for every reader",
+    "$name shows pictures of the server's alone, at addresses that say nothing of the reader",
     async ({ render }) => {
       const { html } = await render();
 
@@ -233,22 +242,56 @@ describe.each(["en", "fr"] as const)("every email, in %s", (locale) => {
     async ({ moves, render }) => {
       const { html } = await render();
 
-      const art = picturesOf(html).filter((picture) =>
-        picture.includes("/header.")
-      );
-
       expect(
-        art.map((picture) => [
-          attributeOf(picture, "src"),
-          attributeOf(picture, "style")?.includes("display:none") ?? false,
-        ])
+        sourcesOf(html).filter(
+          (source) => source?.includes("/header.") ?? false
+        )
       ).toStrictEqual(
         moves
+          ? [`${assetsIn}header.gif`, `${assetsIn}header.png`]
+          : [`${assetsIn}header.png`]
+      );
+    }
+  );
+
+  it.each(samplesIn(locale))(
+    "$name hides no picture by its own style, which Outlook ignores, but by what holds it",
+    async ({ moves, render }) => {
+      const { html } = await render();
+
+      expect(
+        picturesOf(html).filter((picture) =>
+          /display:none|mso-hide/u.test(attributeOf(picture, "style") ?? "")
+        )
+      ).toStrictEqual([]);
+
+      // Around the moving header's still alone: hidden by `display`, by
+      // Word's own property, and by its size where a client takes neither.
+      const holders = [
+        ...html.matchAll(
+          /<div class="peal-still" style="(?<style>[^"]*)"><img [^>]*src="(?<source>[^"]*)"[^>]*><\/div>/gu
+        ),
+      ].map(({ groups }) => ({
+        source: groups?.["source"],
+        style: groups?.["style"]?.split(";").toSorted(),
+      }));
+
+      expect(holders).toStrictEqual(
+        moves
           ? [
-              [`${assetsIn}header.gif`, false],
-              [`${assetsIn}header.png`, true],
+              {
+                source: `${assetsIn}header.png`,
+                style: [
+                  "display:none",
+                  "font-size:0",
+                  "line-height:0",
+                  "max-height:0",
+                  "mso-hide:all",
+                  "overflow:hidden",
+                ],
+              },
             ]
-          : [[`${assetsIn}header.png`, false]]
+          : []
       );
     }
   );
@@ -279,6 +322,29 @@ describe.each(["en", "fr"] as const)("every email, in %s", (locale) => {
       const { text } = await accountEmail(email);
 
       expect(/https?:\/\/\S+/u.exec(text)?.[0]).toBe(email.url);
+    }
+  );
+
+  it.each(samplesIn(locale))(
+    '$name never breaks "e-mail" over two lines where it is read',
+    async ({ render }) => {
+      const { html } = await render();
+
+      // But for the inbox's preview, which is one line.
+      const read = html.replace(
+        /<div style="display:none[^>]*>.*?<\/div>/su,
+        ""
+      );
+
+      expect(
+        read
+          .replace(/<head>.*?<\/head>/su, "")
+          .replaceAll(
+            /<span style="white-space:nowrap">e-mails?<\/span>/giu,
+            ""
+          )
+          .match(/e-mail/giu)
+      ).toBeNull();
     }
   );
 
