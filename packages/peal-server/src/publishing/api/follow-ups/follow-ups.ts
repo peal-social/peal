@@ -223,6 +223,14 @@ export const FollowUpsHandlers = HttpApiBuilder.group(
               found.length > limit ? (page.at(-1)?.rule.id ?? null) : null,
           };
         }),
+      platforms: () =>
+        Effect.gen(function* platforms() {
+          const actor = actorOf(yield* CurrentMember);
+
+          return yield* rules
+            .platforms(actor)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
+        }),
       update: ({ params, payload }) =>
         Effect.gen(function* update() {
           const actor = actorOf(yield* CurrentMember);
