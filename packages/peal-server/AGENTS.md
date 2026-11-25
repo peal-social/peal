@@ -216,7 +216,11 @@ and no socket, for tests.
   of its status (`generalErrors`: `not_found`, `internal_error`…, never more
   than the status says, so the staff console's 404 and a missing route stay
   alike), and a request the API could not decode `InvalidRequest` with its
-  `issues`. Better Auth's routes and the MCP endpoint keep their own shapes, and Meta's events answer bare statuses.
+  `issues`. So does a body in a content type its endpoint does not read,
+  which Effect's handler answers 415 in plain text of its own
+  (`writtenByEffect`): `unsupported_content_type`, as
+  `unsupported_media_type` is the media library's 422, a file it does not
+  store (`test/app/refusal-statuses.test.ts`). Better Auth's routes and the MCP endpoint keep their own shapes, and Meta's events answer bare statuses.
   `errorCatalogue()` (`peal-contract/errors`) reads the list from the
   contract: `test/app/fixtures/error-codes.json` freezes every code the
   server answers, to every audience (`UPDATE_ERROR_CODES=1` adds new ones;

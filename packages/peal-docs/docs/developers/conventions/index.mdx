@@ -53,7 +53,7 @@ Every endpoint of the [API](/developers) follows the same rules, so a client wri
 
 ## Requests and answers [#requests]
 
-Requests go to the address you open Peal at, under `/api`, and a workspace's endpoints under `/api/v1` ([The workspace of a request](#workspace)). Bodies are JSON, sent with `Content-Type: application/json`. So are answers, except those with no body (204).
+Requests go to the address you open Peal at, under `/api`, and a workspace's endpoints under `/api/v1` ([The workspace of a request](#workspace)). Bodies are JSON, sent with `Content-Type: application/json`. So are answers, except those with no body (204). A body of another type answers 415 [`unsupported_content_type`](/developers/conventions/errors#error-codes).
 
 Every answer carries an `X-Request-Id` header, whatever answered it and whether or not it succeeded. Here's how the id works:
 

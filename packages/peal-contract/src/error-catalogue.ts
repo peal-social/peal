@@ -69,6 +69,14 @@ export const generalErrors = [
     status: 413,
     tag: "PayloadTooLarge",
   },
+  // 415's name is taken: `unsupported_media_type` is a file the media
+  // library does not store (422).
+  {
+    message:
+      "The request's body is in a content type this endpoint does not read. The API's endpoints read JSON: send the body with `Content-Type: application/json`. Nothing was done.",
+    status: 415,
+    tag: "UnsupportedContentType",
+  },
   {
     message:
       "The server failed to answer, and the failure was recorded. Quote `requestId` when reporting it. A request that changes something may or may not have been applied: read before sending it again.",
