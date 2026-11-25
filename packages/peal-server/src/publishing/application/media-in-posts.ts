@@ -30,17 +30,18 @@ export interface MediaUse {
   readonly scheduled: readonly PostId[];
 }
 
+/** What letting the media go came to, once no post keeps it. */
 /** What releasing the media came to. */
 export type MediaRelease =
   // Posts about to go out show it: nothing changed.
   | { readonly _tag: "inUse"; readonly scheduled: readonly PostId[] }
+  | MediaLetGo;
+
+export type MediaLetGo =
   // These drafts no longer show it.
   | { readonly _tag: "released"; readonly drafts: readonly PostId[] }
   // No post that may still go out shows it.
   | { readonly _tag: "unused" };
-
-/** What letting the media go came to, once no post keeps it. */
-export type MediaLetGo = Exclude<MediaRelease, { readonly _tag: "inUse" }>;
 
 /** The posts that show a media asset, held until the transaction around ends. */
 export interface PostMediaHold {
@@ -141,6 +142,14 @@ export class MediaInPosts extends Context.Service<
       mediaId: MediaAssetId
     ) => Effect.Effect<MediaUse, DatabaseError>;
     /**
+     * Locks the drafts that show the media until the transaction around
+     * this ends, and says which posts keep it (read, not locked), changing
+     * nothing until `letGo`, which the caller runs only when none does and
+     * deletes the media after: for a caller that asks articles too, after
+     * the posts, as erasing a workspace locks them. It opens no
+     * transaction: call it in the caller's.
+     */
+    /**
      * Takes the media off the workspace's drafts, unless a post scheduled or
      * publishing shows it, all in one transaction: the caller deletes the
      * media once it is released.
@@ -149,13 +158,6 @@ export class MediaInPosts extends Context.Service<
       workspaceId: WorkspaceId,
       mediaId: MediaAssetId
     ) => Effect.Effect<MediaRelease, DatabaseError>;
-    /**
-     * Locks the drafts that show the media until the transaction around
-     * this ends, and says which posts keep it, changing nothing until
-     * `letGo`: for a caller that asks articles too, after the posts, as
-     * erasing a workspace locks them. It opens no transaction: call it in
-     * the caller's.
-     */
     readonly hold: (
       workspaceId: WorkspaceId,
       mediaId: MediaAssetId
@@ -168,25 +170,27 @@ export class MediaInPosts extends Context.Service<
       const posts = yield* PostRepository;
       const { transaction } = yield* TransactionRunner;
 
+      // Drafts and those that go out in one statement, so in one snapshot:
+      // a draft scheduled while they are read is in one list or the other,
+      // never in neither.
       const usage = Effect.fn("MediaInPosts.usage")(function* usage(
         workspaceId: WorkspaceId,
         mediaId: MediaAssetId
       ) {
-        const scheduled = yield* posts.showing(
-          workspaceId,
-          mediaId,
-          scheduledStatuses
-        );
-
-        const drafts = yield* posts.showing(
-          workspaceId,
-          mediaId,
-          draftStatuses
-        );
+        const showing = yield* posts.showing(workspaceId, mediaId, [
+          ...draftStatuses,
+          ...scheduledStatuses,
+        ]);
 
         const use: MediaUse = {
-          drafts: ids(drafts),
-          scheduled: ids(scheduled),
+          drafts: ids(
+            showing.filter(({ status }) => draftStatuses.includes(status._tag))
+          ),
+          scheduled: ids(
+            showing.filter(({ status }) =>
+              scheduledStatuses.includes(status._tag)
+            )
+          ),
         };
 
         return use;

@@ -23,10 +23,12 @@ type Release =
  * and publishing's MediaInPosts tell. Releasing an asset asks them in one
  * transaction, posts first, then articles, the order every transaction
  * that locks both takes (erasing a workspace locks its posts, then its
- * articles), so neither waits for the other forever. Both stay locked
- * until the transaction ends, so a post or an article scheduled meanwhile
- * waits and then finds the file gone, and nothing changes until both have
- * said they let it go.
+ * articles), so neither waits for the other forever. The drafts and the
+ * articles that show it stay locked until the transaction ends, so one
+ * scheduled meanwhile waits and then finds the file gone; the posts that
+ * go out with it are read, not locked, and read again once the articles
+ * are held, as waiting for them gives time to schedule one. Nothing
+ * changes until both have said they let it go.
  * The database failing is the server's own failure, as for the media
  * context's own tables.
  */
@@ -44,16 +46,22 @@ export const HoldersMediaUsage = Layer.effect(
         const heldPosts = yield* posts.hold(workspaceId, assetId);
         const heldArticles = yield* articles.hold(workspaceId, assetId);
 
+        // A post scheduled with it while the articles were waited for,
+        // which the posts' hold could not see.
+        const { scheduled: since } = yield* posts.usage(workspaceId, assetId);
+
+        const postIds = [
+          ...heldPosts.scheduled,
+          ...since.filter((postId) => !heldPosts.scheduled.includes(postId)),
+        ];
+
         // Articles or posts about to go out show it: the others keep it
         // too.
-        if (
-          heldPosts.scheduled.length > 0 ||
-          heldArticles.scheduled.length > 0
-        ) {
+        if (postIds.length > 0 || heldArticles.scheduled.length > 0) {
           const inUse: Release = {
             _tag: "inUse",
             articleIds: heldArticles.scheduled,
-            postIds: heldPosts.scheduled,
+            postIds,
           };
 
           return inUse;
