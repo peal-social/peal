@@ -1393,6 +1393,14 @@ thing over a period of its own.
   one adds it at the board's end with a toast. **Reset layout** sits at
   the sheet's foot. An empty board is the empty state, with **Add
   widgets**.
+- **`readings-chart`** — On a published post's page, under **How it
+  did**: one channel's counts each time Peal read them, one line a
+  count in colours of 3:1 or more on white (likes in `brand`, reposts
+  in `brand-pressed` dashed, replies in `muted-foreground` dotted,
+  quotes in ink dash-dotted), its legend drawing each line as the chart
+  does, its axis marking hours, with the day where it changes, when the
+  readings span less than two days, and the same figures in a table
+  behind **Table**.
 
 ### Settings
 
