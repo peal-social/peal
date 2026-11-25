@@ -307,7 +307,7 @@ describe("an article refused at scheduling", () => {
 });
 
 // What the library asks before it deletes a file, as the server builds
-// it: the articles held first, then the posts, in one transaction.
+// it: the posts held first, then the articles, in one transaction.
 const holders = MediaUsage.pipe(
   Effect.provide(
     HoldersMediaUsage.pipe(

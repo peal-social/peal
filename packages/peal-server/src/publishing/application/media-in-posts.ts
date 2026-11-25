@@ -39,6 +39,20 @@ export type MediaRelease =
   // No post that may still go out shows it.
   | { readonly _tag: "unused" };
 
+/** What letting the media go came to, once no post keeps it. */
+export type MediaLetGo = Exclude<MediaRelease, { readonly _tag: "inUse" }>;
+
+/** The posts that show a media asset, held until the transaction around ends. */
+export interface PostMediaHold {
+  /**
+   * Takes the media off the drafts that show it: they are `released`, or
+   * `unused` when no post that may still go out showed it.
+   */
+  readonly letGo: Effect.Effect<MediaLetGo, DatabaseError>;
+  /** Those that keep the media: awaiting approval, scheduled or publishing. */
+  readonly scheduled: readonly PostId[];
+}
+
 const draftStatuses: readonly PostStatusName[] = ["draft"];
 
 const scheduledStatuses: readonly PostStatusName[] = [
@@ -135,6 +149,17 @@ export class MediaInPosts extends Context.Service<
       workspaceId: WorkspaceId,
       mediaId: MediaAssetId
     ) => Effect.Effect<MediaRelease, DatabaseError>;
+    /**
+     * Locks the drafts that show the media until the transaction around
+     * this ends, and says which posts keep it, changing nothing until
+     * `letGo`: for a caller that asks articles too, after the posts, as
+     * erasing a workspace locks them. It opens no transaction: call it in
+     * the caller's.
+     */
+    readonly hold: (
+      workspaceId: WorkspaceId,
+      mediaId: MediaAssetId
+    ) => Effect.Effect<PostMediaHold, DatabaseError>;
   }
 >()("peal-server/publishing/application/MediaInPosts") {
   static readonly layer = Layer.effect(
@@ -239,49 +264,64 @@ export class MediaInPosts extends Context.Service<
           )
         );
 
+      const hold = Effect.fn("MediaInPosts.hold")(function* hold(
+        workspaceId: WorkspaceId,
+        mediaId: MediaAssetId
+      ) {
+        const listed = yield* usage(workspaceId, mediaId);
+
+        // Nothing to lock.
+        if (listed.drafts.length === 0 && listed.scheduled.length === 0) {
+          const unused: MediaLetGo = { _tag: "unused" };
+
+          return { letGo: Effect.succeed(unused), scheduled: [] };
+        }
+
+        const { drafts, scheduled } = yield* lockedDrafts(
+          listed.drafts,
+          mediaId
+        );
+
+        const released: MediaLetGo = {
+          _tag: "released",
+          drafts: drafts.map(({ post }) => post.id),
+        };
+
+        const held: PostMediaHold = {
+          letGo: Effect.forEach(drafts, (draft) => detach(draft, mediaId), {
+            discard: true,
+          }).pipe(Effect.as(released)),
+          scheduled: [...listed.scheduled, ...ids(scheduled)],
+        };
+
+        return held;
+      });
+
       const release = Effect.fn("MediaInPosts.release")(function* release(
         workspaceId: WorkspaceId,
         mediaId: MediaAssetId
       ) {
         return yield* transaction(
           Effect.gen(function* releasing() {
-            const listed = yield* usage(workspaceId, mediaId);
+            const held = yield* hold(workspaceId, mediaId);
 
-            if (listed.drafts.length === 0 && listed.scheduled.length === 0) {
-              const unused: MediaRelease = { _tag: "unused" };
-
-              return unused;
-            }
-
-            const { drafts, scheduled } = yield* lockedDrafts(
-              listed.drafts,
-              mediaId
-            );
-
-            if (listed.scheduled.length > 0 || scheduled.length > 0) {
+            if (held.scheduled.length > 0) {
               const inUse: MediaRelease = {
                 _tag: "inUse",
-                scheduled: [...listed.scheduled, ...ids(scheduled)],
+                scheduled: held.scheduled,
               };
 
               return inUse;
             }
 
-            yield* Effect.forEach(drafts, (draft) => detach(draft, mediaId), {
-              discard: true,
-            });
+            const letGo: MediaRelease = yield* held.letGo;
 
-            const released: MediaRelease = {
-              _tag: "released",
-              drafts: drafts.map(({ post }) => post.id),
-            };
-
-            return released;
+            return letGo;
           })
         );
       });
 
-      return MediaInPosts.of({ release, usage });
+      return MediaInPosts.of({ hold, release, usage });
     })
   );
 }

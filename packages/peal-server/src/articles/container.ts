@@ -101,7 +101,7 @@ export const ArticleWorkersLive = PublishArticleV1Live.pipe(
 
 /**
  * Which articles show a file of the library, for the media context to ask
- * before it deletes one (MediaInArticles), articles first in its
+ * before it deletes one (MediaInArticles), after the posts in its
  * transaction. Needs the database (Drizzle).
  */
 export const MediaInArticlesLive = MediaInArticles.layer.pipe(
