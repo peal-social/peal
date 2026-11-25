@@ -4,6 +4,8 @@ import { assert, layer } from "@effect/vitest";
 import { Context, Effect, Layer, Schema } from "effect";
 import { MeSchema, forWorkspace } from "peal-contract";
 
+import { commandLineToken } from "#test/workspace/support.ts";
+
 import {
   apiKeyOf,
   bodyOf,
@@ -24,13 +26,21 @@ interface Fixture {
   readonly bannedWorkspaceId: string;
   /** An API key of the workspace with apiKey:read and post:read. */
   readonly key: string;
+  /** The owner's command line's OAuth access token. */
+  readonly ownerToken: string;
   /** A workspace the owner does not belong to. */
   readonly otherWorkspaceId: string;
   readonly ownerCookies: string;
   /** An API key of the workspace with post:read only. */
   readonly postReaderKey: string;
+  /** An API key of the workspace with apiKey:read, revoked by the owner. */
+  readonly revokedKey: string;
+  /** A staff member's session. */
+  readonly staffCookies: string;
   readonly workspaceId: string;
 }
+
+const apiKeys = "/api/v1/workspace/api-keys";
 
 class Matrix extends Context.Service<Matrix, Fixture>()(
   "peal-server/test/SecurityMatrix"
@@ -62,6 +72,17 @@ const MatrixLive = Layer.effect(
       "post:read",
     ]);
 
+    const revoked = yield* apiKeyOf(owner, workspaceId, ["apiKey:read"]);
+
+    const revocation = yield* app.request(`${apiKeys}/${revoked.apiKey.id}`, {
+      headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+      method: "DELETE",
+    });
+
+    assert.strictEqual(revocation.status, 204);
+
+    const ownerToken = yield* commandLineToken(owner.cookies);
+
     yield* makeAdmin(staff.id);
 
     const staffCookies = yield* signIn(staff.email);
@@ -79,7 +100,10 @@ const MatrixLive = Layer.effect(
       key,
       otherWorkspaceId,
       ownerCookies: owner.cookies,
+      ownerToken,
       postReaderKey,
+      revokedKey: revoked.key,
+      staffCookies,
       workspaceId,
     };
   })
@@ -87,9 +111,42 @@ const MatrixLive = Layer.effect(
 
 const bearer = (key: string) => ({ authorization: `Bearer ${key}` });
 
-const apiKeys = "/api/v1/workspace/api-keys";
+const base64url = (value: string) => Buffer.from(value).toString("base64url");
+
+// An access token of Peal's whose signature was changed: it no longer
+// verifies.
+const tampered = (token: string) =>
+  [...token.split(".").slice(0, 2), base64url("synthetic signature")].join(".");
+
+// A token shaped as an access token, for this server's API, that expired
+// long ago and was never signed by it.
+const expiredToken = [
+  base64url(JSON.stringify({ alg: "EdDSA", typ: "JWT" })),
+  base64url(
+    JSON.stringify({
+      aud: `${origin}/api`,
+      azp: "peal-cli",
+      exp: 1,
+      iat: 0,
+      iss: `${origin}/api/auth`,
+      scope: "workspace:read workspace:write",
+      sub: "synthetic-user",
+    })
+  ),
+  base64url("synthetic signature"),
+].join(".");
+
+// A request with the owner's session and a bearer credential besides.
+const withSession =
+  (credential: (fixture: Fixture) => Record<string, string>) =>
+  (fixture: Fixture) => ({
+    cookie: fixture.ownerCookies,
+    ...credential(fixture),
+  });
 
 const channels = "/api/v1/channels";
+
+const credential = "/api/v1/credential";
 
 interface Case {
   readonly expected: number;
@@ -117,6 +174,11 @@ const ExportedSessionsSchema = Schema.Struct({
   sessions: Schema.Array(
     Schema.Struct({ userAgent: Schema.NullOr(Schema.String) })
   ),
+});
+
+const RefusalSchema = Schema.Struct({
+  code: Schema.String,
+  message: Schema.String,
 });
 
 const MembersSchema = Schema.Struct({
@@ -315,6 +377,246 @@ const cases: readonly Case[] = [
     name: "an API key marking the user's notices read",
     path: "/api/me/notices/read-all",
   },
+  // A bearer credential the request presents decides: one refused is a
+  // 401, whatever session the request carries besides.
+  {
+    expected: 401,
+    headers: withSession(() => bearer("peal_not-a-key-that-was-ever-issued")),
+    name: "a session with an API key that was never issued, on the credential",
+    path: credential,
+  },
+  {
+    expected: 401,
+    headers: withSession(() => bearer("peal_not-a-key-that-was-ever-issued")),
+    name: "a session with an API key that was never issued",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession(() => bearer("peal_not-a-key-that-was-ever-issued")),
+    method: "POST",
+    name: "a session with an API key that was never issued, writing",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession((fixture) => bearer(fixture.revokedKey)),
+    name: "a session with a revoked API key, on the credential",
+    path: credential,
+  },
+  {
+    expected: 401,
+    headers: withSession((fixture) => bearer(fixture.revokedKey)),
+    name: "a session with a revoked API key",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: (fixture) => bearer(fixture.revokedKey),
+    name: "a revoked API key",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession(() => bearer("peal_synthetic-key-of-another-server")),
+    name: "a session with an API key of another server",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession(() =>
+      bearer("peal_partner_synthetic-key-of-another-server")
+    ),
+    name: "a session with a partner key of another server",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession(() => bearer(expiredToken)),
+    name: "a session with an expired access token",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession((fixture) => bearer(tampered(fixture.ownerToken))),
+    name: "a session with an access token whose signature does not verify",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession(() => bearer("synthetic.malformed.token")),
+    name: "a session with a malformed access token",
+    path: credential,
+  },
+  {
+    expected: 401,
+    headers: withSession(() => bearer("peal_not-a-key-that-was-ever-issued")),
+    name: "a session with an API key that was never issued, on /api/me",
+    path: "/api/me",
+  },
+  {
+    expected: 401,
+    headers: (fixture) => ({
+      ...withSession(() => bearer("peal_not-a-key-that-was-ever-issued"))(
+        fixture
+      ),
+      origin: "https://elsewhere.example",
+    }),
+    method: "POST",
+    name: "a session sent by another site with an API key that was never issued",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  // The scheme is matched in any case, and an access token sent in the
+  // DPoP scheme, which the API never took, is refused all the same.
+  {
+    expected: 401,
+    headers: withSession((fixture) => ({
+      authorization: `bearer ${fixture.revokedKey}`,
+    })),
+    name: "a session with a revoked API key in a lower-case bearer scheme",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession((fixture) => ({
+      authorization: `DPoP ${fixture.ownerToken}`,
+    })),
+    name: "a session with an access token in the DPoP scheme",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession(() => ({ authorization: `dpop ${expiredToken}` })),
+    name: "a session with an expired access token in a lower-case DPoP scheme",
+    path: credential,
+  },
+  {
+    expected: 401,
+    headers: (fixture) => ({ authorization: `DPoP ${fixture.ownerToken}` }),
+    name: "an access token in the DPoP scheme without a session",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  // A valid bearer credential acts as itself, the session aside.
+  {
+    expected: 403,
+    headers: withSession((fixture) => bearer(fixture.postReaderKey)),
+    name: "a session with an API key without the permission",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession((fixture) => bearer(fixture.ownerToken)),
+    name: "a session with the command line's access token",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 403,
+    headers: withSession((fixture) => bearer(fixture.key)),
+    name: "a session with an API key on /api/me",
+    path: "/api/me",
+  },
+  // A header that presents no bearer credential leaves the session to
+  // decide: a proxy's own sign-in sends Basic on every request.
+  {
+    expected: 200,
+    headers: withSession(() => ({
+      authorization: `Basic ${Buffer.from("synthetic-user:synthetic-password").toString("base64")}`,
+    })),
+    name: "a session behind a proxy's Basic sign-in",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: () => ({
+      authorization: `Basic ${Buffer.from("synthetic-user:synthetic-password").toString("base64")}`,
+    }),
+    name: "a proxy's Basic sign-in without a session",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({
+      authorization: `Negotiate ${base64url("synthetic negotiation")}`,
+    })),
+    name: "a session behind a proxy's Negotiate sign-in",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({
+      authorization: `NTLM ${base64url("synthetic negotiation")}`,
+    })),
+    name: "a session behind a proxy's NTLM sign-in",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({
+      authorization:
+        'Digest username="synthetic-user", realm="synthetic", response="synthetic"',
+    })),
+    name: "a session behind a proxy's Digest sign-in",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({ authorization: "DPoP " })),
+    name: "a session with a DPoP scheme that carries no token",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({ authorization: "" })),
+    name: "a session with an empty Authorization header",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({ authorization: "Bearer " })),
+    name: "a session with a bearer scheme that carries no token",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  // The staff console reads the staff member's session alone, and never
+  // took a bearer token: one sent beside the session is ignored there, not
+  // refused as the API's Authentication refuses it. Only staff in their
+  // own browser use the console, and no program reaches it.
+  {
+    expected: 200,
+    headers: (fixture) => ({ cookie: fixture.staffCookies }),
+    name: "a staff session on the console",
+    path: "/api/admin/session",
+  },
+  {
+    expected: 200,
+    headers: (fixture) => ({
+      cookie: fixture.staffCookies,
+      ...bearer(fixture.revokedKey),
+    }),
+    name: "a staff session with a revoked API key on the console",
+    path: "/api/admin/session",
+  },
 ];
 
 layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
@@ -338,6 +640,44 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
           });
 
           assert.strictEqual(reply.status, expected);
+        })
+    );
+
+    it.effect(
+      "refuses a refused bearer credential with a session as it refuses one without",
+      () =>
+        Effect.gen(function* sameRefusal() {
+          const app = yield* TestApp;
+          const fixture = yield* Matrix;
+
+          const refusalOf = (headers: Record<string, string>) =>
+            app.request(credential, { headers }).pipe(
+              Effect.flatMap((reply) =>
+                bodyOf(RefusalSchema, reply).pipe(
+                  Effect.map(({ code, message }) => ({
+                    challenge: reply.headers.get("www-authenticate"),
+                    code,
+                    message,
+                    status: reply.status,
+                  }))
+                )
+              )
+            );
+
+          const alone = yield* refusalOf(bearer(fixture.revokedKey));
+
+          const besideSession = yield* refusalOf({
+            ...bearer(fixture.revokedKey),
+            cookie: fixture.ownerCookies,
+          });
+
+          assert.deepStrictEqual(alone, {
+            challenge: null,
+            code: "unauthenticated",
+            message: alone.message,
+            status: 401,
+          });
+          assert.deepStrictEqual(besideSession, alone);
         })
     );
 

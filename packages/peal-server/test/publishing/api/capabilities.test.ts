@@ -638,6 +638,8 @@ describe("a channel's capabilities endpoint", () => {
             new TokenExpired(),
             new BadRequest({ code: ownRefusalCodes.channelDisabled }),
             new BadRequest({ code: ownRefusalCodes.channelDisconnected }),
+            // A refusal that is none of Peal's own: the platform's doing.
+            new BadRequest({ code: "hostNotAllowed" }),
           ],
           (failure) =>
             clientWith(viewer, Effect.fail(failure)).pipe(
@@ -663,6 +665,7 @@ describe("a channel's capabilities endpoint", () => {
               "reconnect",
               "disabled",
               "disconnected",
+              "platformUnreachable",
             ] as const
           ).map((reason) => [
             "tiktok" as const,

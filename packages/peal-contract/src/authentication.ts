@@ -9,7 +9,8 @@ import { Unauthenticated } from "./unauthenticated.ts";
 /**
  * Who sends the request: a bearer token (an API key of a workspace, a
  * partner key or an OAuth access token), or the browser's session cookie.
- * Each is tried in turn, and a request with neither answers 401. A key or a
+ * Each is tried in turn, and a request with neither answers 401, as does one
+ * whose bearer token is refused, whatever cookie it carries. A key or a
  * token that sent too many requests answers 429. It provides
  * CurrentPrincipal to the endpoints behind it.
  */
