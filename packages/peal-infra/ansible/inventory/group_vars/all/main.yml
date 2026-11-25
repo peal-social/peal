@@ -207,6 +207,10 @@ peal_access_paths:
 # events' handshake, the operator's verify token). tests/test_cloudflared.py checks them against the
 # addresses the server lists as called by the platforms' servers
 # (peal-server:platform-addresses): a platform's new route joins them here.
+# The web app's error reports go to /api/client-errors too, which browsers
+# send without cookies, so without Access's, and which the server takes
+# without a credential, counted per address (the Pulumi project's
+# clientErrorsPath, its application access-client-errors).
 peal_access_bypass_paths:
   - path: ^/+api/+channels/+oauth/
     to: server
@@ -217,4 +221,6 @@ peal_access_bypass_paths:
   - path: ^/+api/+data-deletion/+(facebook|instagram|threads)(/+deauthorize)?/*$
     to: server
   - path: ^/+api/+platform-events/+meta/+(facebook|instagram)/*$
+    to: server
+  - path: ^/+api/+client-errors/*$
     to: server
