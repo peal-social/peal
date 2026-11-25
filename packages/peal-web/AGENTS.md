@@ -485,15 +485,21 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   the next page anew and tell the other tabs the person the session is
   now (the account, then the staff member, `impersonatedBy`). Accepting
   an invitation signs nobody in.
-- What the browser keeps of a person's unfinished work in a workspace,
-  the Studio's draft (`#studio/draft.ts`) and the agent panel's tabs
-  (`#agent/panel-store.ts`), is keyed by the person and the workspace
+- What the browser keeps of a person's work in a workspace, the
+  Studio's draft (`#studio/draft.ts`), the agent panel's tabs
+  (`#agent/panel-store.ts`) and the analytics board
+  (`#analytics/board-store.ts`), is keyed by the person and the workspace
   (`#auth/person-storage.ts`, `peal.<kind>.<userId>.<workspaceId>`, the
-  signed-in user's id from the workspace layout and the editor's page),
-  so it lasts across a sign-out for its owner and nobody else signed in
-  on the browser loads it. A key named by the workspace alone, as older
-  pages kept it, is never read and is removed when found. Deleting the
-  account forgets all of the person's (`forgetPersonKeys`).
+  signed-in user's id from the workspace layout, the editor's page and
+  the analytics page, each from the request's one reading of the
+  session), so it lasts across a sign-out for its owner and nobody else
+  signed in on the browser loads it. A component that keeps one takes
+  the id as a required prop, so nothing is read or written for nobody. A
+  key named by the workspace alone, as older pages kept it
+  (`workspaceKeys`, `peal.analytics.board.<workspaceId>` for the board),
+  is never read and is removed when found. Deleting the account forgets
+  all of the person's (`forgetPersonKeys`); a new kind joins `KeptKind`
+  and `keptKinds`, so it is forgotten too.
 - Keep the OAuth pages' views (`WorkspacePickerView`) apart from their state,
   so tests render each state: peal-web has no DOM test environment. A view
   under test imports nothing from `#i18n/navigation.ts`, which needs Next to
@@ -893,10 +899,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`data-[dnd-placeholder]:after:visible`), a skeleton with peal-ui's
   `bg-shimmer`. It ignores untrusted pointer
   events: check a move in a browser with its keyboard (Space, arrows). The board is
-  the person's, kept per workspace in `localStorage`
-  (`#analytics/board-store.ts`, `peal.analytics.board.<workspace>`,
-  decoded with Schema, the default board when it does not read), the
-  same in every tab through the storage event. A widget reads the
+  the person's, kept for them and the workspace in `localStorage`
+  (`#analytics/board-store.ts`, `peal.analytics-board.<user>.<workspace>`
+  through `#auth/person-storage.ts`, the user's id from the analytics
+  page; decoded with Schema, the default board when nothing is kept or
+  it does not read), the same in every tab through the storage event.
+  Nothing is written until the person changes it; **Reset layout**
+  writes the default board under their key alone. A widget reads the
   dashboard of its own range (queries of one range are shared), and
   one channel's series beside it when it shows one channel
   (`channelFigures`). Best times (`best-times-view.tsx`) takes one
