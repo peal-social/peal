@@ -3,17 +3,6 @@
 import { Cause, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useFormatter, useTranslations } from "next-intl";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "peal-ui/components/alert-dialog";
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
 import {
@@ -28,6 +17,7 @@ import { useTransition } from "react";
 import type { ReactNode } from "react";
 
 import { authClient } from "#auth/client.ts";
+import { RevokeOthersRow } from "#components/account/revoke-others.tsx";
 import {
   SettingsLoadFailed,
   SettingsLoading,
@@ -109,57 +99,6 @@ const SessionRow = ({
   );
 };
 
-// Signs out every session but this one, once confirmed.
-const RevokeOthers = ({ onChanged }: { readonly onChanged: () => void }) => {
-  const t = useTranslations("AccountSettings.sessions");
-  const settings = useTranslations("Settings");
-  const errors = useTranslations("Settings.errors");
-  const [isPending, startTransition] = useTransition();
-
-  const handleRevoke = () => {
-    startTransition(async () => {
-      const result = await authClient.revokeOtherSessions();
-
-      if (result.error === null) {
-        toast.success(t("othersRevoked"));
-        onChanged();
-      } else {
-        toast.error(errors(settingsErrorKey(result.error)));
-      }
-    });
-  };
-
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger
-        render={
-          <Button
-            variant="outline"
-            disabled={isPending}
-            focusableWhenDisabled
-          />
-        }
-      >
-        {isPending ? t("revoking") : t("revokeOthers")}
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t("revokeOthersTitle")}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("revokeOthersDescription")}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{settings("cancel")}</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={handleRevoke}>
-            {t("revokeOthers")}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
-
 // Better Auth lists sessions, each with its token, only to a session signed
 // in less than `freshAge` ago (a day): an older one is refused 403
 // `SESSION_NOT_FRESH`, which trying again never changes. Signing in again
@@ -169,9 +108,17 @@ const signedInTooLongAgo = (cause: Cause.Cause<AuthCallFailed>): boolean =>
     Option.exists(({ code }) => code === "SESSION_NOT_FRESH")
   );
 
-// What shows in place of the list to a session too old to read it: why, and
-// the way to sign in again.
-const SignInToSee = ({ signInAgain }: { readonly signInAgain: ReactNode }) => {
+// What shows in place of the list to a session too old to read it: why,
+// the way to sign in again, and signing out every other session, which
+// Better Auth lets any session do, fresh or not: someone who fears for a
+// device lost or left signed in cuts it off at once.
+const SignInToSee = ({
+  onChanged,
+  signInAgain,
+}: {
+  readonly onChanged: () => void;
+  readonly signInAgain: ReactNode;
+}) => {
   const t = useTranslations("AccountSettings.sessions");
 
   return (
@@ -182,6 +129,7 @@ const SignInToSee = ({ signInAgain }: { readonly signInAgain: ReactNode }) => {
         </SettingsRowText>
         <SettingsRowControl>{signInAgain}</SettingsRowControl>
       </SettingsRow>
+      <RevokeOthersRow onChanged={onChanged} />
     </SettingsCard>
   );
 };
@@ -189,8 +137,9 @@ const SignInToSee = ({ signInAgain }: { readonly signInAgain: ReactNode }) => {
 /**
  * The user's sessions as Better Auth listed them: loading, the list with
  * this session marked, a session too old to list them told to sign in
- * again (`signInAgain`, the page's button), or another failure, which may
- * pass when tried again.
+ * again (`signInAgain`, the page's button) and offered to sign out the
+ * others all the same, or another failure, which may pass when tried
+ * again.
  */
 export const SessionsView = ({
   currentToken,
@@ -205,13 +154,11 @@ export const SessionsView = ({
     AuthCallFailed
   >;
   readonly signInAgain: ReactNode;
-}) => {
-  const t = useTranslations("AccountSettings.sessions");
-
-  return AsyncResult.match(sessions, {
+}) =>
+  AsyncResult.match(sessions, {
     onFailure: ({ cause }) =>
       signedInTooLongAgo(cause) ? (
-        <SignInToSee signInAgain={signInAgain} />
+        <SignInToSee signInAgain={signInAgain} onChanged={onChanged} />
       ) : (
         <SettingsLoadFailed onRetry={onChanged} />
       ),
@@ -228,19 +175,7 @@ export const SessionsView = ({
             />
           ))}
         </ul>
-        {value.length > 1 ? (
-          <SettingsRow>
-            <SettingsRowText>
-              <SettingsRowDescription>
-                {t("revokeOthersDescription")}
-              </SettingsRowDescription>
-            </SettingsRowText>
-            <SettingsRowControl>
-              <RevokeOthers onChanged={onChanged} />
-            </SettingsRowControl>
-          </SettingsRow>
-        ) : null}
+        {value.length > 1 ? <RevokeOthersRow onChanged={onChanged} /> : null}
       </SettingsCard>
     ),
   });
-};
