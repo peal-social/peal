@@ -346,15 +346,20 @@ The staff context follows these rules too. What the law has a host keep is in
 - `Authentication` keeps the connection of each write to a content group
   in the legal journal (the legal guide's `ConnectionJournal`): the groups
   are `contentGroups` in `api/security.ts`, matched by their whole
-  identifier, less `checksOnly`: posts, articles, comments, messages,
-  approvals, the rules that publish a follow-up or repeat a post, and the
-  media library's files, uploaded or made by the assistant. A new group
-  whose writes create, change or delete content joins `contentGroups` and
-  the frozen list of `test/workspace/api/journalled-writes.test.ts`
-  together: the test notices a write that leaves the list or joins a
-  listed group, never a group left out.
-  `test/workspace/api/content-connections.test.ts` sends each write that
-  joined since through `Authentication`, as each kind of credential.
+  identifier, less `checksOnly`: posts, articles, signatures, comments,
+  messages, approvals, feeds, the rules that publish a follow-up or repeat
+  a post, and the media library's files and their descriptions, uploaded,
+  made from a prompt or composed. `contentOperations` names the single
+  writes of a group otherwise left out (a queue's reshuffle, which moves
+  its posts' times). A new group whose writes create, change or delete
+  content joins `contentGroups` and the frozen list of
+  `test/workspace/api/journalled-writes.test.ts` together: the test
+  notices a write that leaves the list or joins a listed group, never a
+  group left out. `test/workspace/api/content-connections.test.ts` sends
+  each write that joined since through `Authentication`, as each kind of
+  credential, and `test/app/mcp-content-tools.test.ts` maps each MCP tool
+  that changes something to the write it makes: a tool is in
+  `contentTools` exactly when its write is kept.
 - Better Auth caches a session in a cookie for five minutes, which a
   sign-out everywhere, a password reset or a ban does not reach. Its
   routes whose effect outlives the session (`refusedWhileImpersonating`)

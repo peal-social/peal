@@ -7,16 +7,22 @@
   Postgres schema, which no other code reads. `ConnectionJournal`
   (`workspace/application`, backed by `LegalRecords`) keeps each request
   that creates, changes or deletes content and succeeds, whatever
-  authenticated it (`Authentication`, both paths, for the groups of
-  `contentGroups`, and `mcpAuthentication` for the MCP tools that change
-  content, which `app/mcp/server.ts` names from their annotations).
-  Content is what a workspace publishes or keeps to publish: posts and
-  articles, comments, replies, messages and approvals, the text of the
-  rules that publish a follow-up or repeat a post, and the media library's
-  files, uploaded or made by the assistant. It keeps when, the address as
-  Better Auth reads it (full IPv6), the protocol of `PUBLIC_URL` and how
-  it signed in, never what it carried, 1 year. `CloseAccount` reads `AccountStore.identification` (name, email,
-  each sign-in method's account id, never a password or its hash, the Stripe
+  authenticated it (`Authentication`, both paths, for the writes of
+  `contentGroups` and `contentOperations`, and `mcpAuthentication` for the
+  MCP tools that make the same writes, `contentTools` in
+  `app/mcp/server.ts`). Content is what a workspace publishes or keeps to
+  publish: posts, articles and signatures; comments, replies, messages and
+  approvals; the feeds and rules that publish for it (a feed's items, a
+  follow-up, a repeated post) and the times its queues give its posts;
+  the media library's files, uploaded, made from a prompt or composed from
+  its own files, and their descriptions, a transcript saved as one
+  included. A transcript only read changes no content: its handler says
+  so (`changesNoContent`), and the journal leaves it out while the
+  activity log keeps it. It keeps when, the address as Better Auth reads
+  it (full IPv6), the protocol of `PUBLIC_URL` and how it signed in, never
+  what it carried, 1 year. `CloseAccount` reads
+  `AccountStore.identification` (name, email, each sign-in method's
+  account id, never a password or its hash, the Stripe
   customers of the account and of the workspaces it deletes) before it
   erases anything, and keeps it (`ContextRecords.holdIdentification`) in
   the same transaction, last: no account closes without it, and nothing
