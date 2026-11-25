@@ -181,6 +181,10 @@
   page, reading the key written beside the QR code and computing the codes
   an authenticator app would (`tests/support/totp.ts`, RFC 6238), signs in
   again with the password then a code, and requires it of its workspace.
+- `tests/sessions.e2e.ts` reads the account's sessions, moves their
+  sign-in time two days back in the database (`ageSessions`) and clears
+  the browser's cookie cache of the session (`peal.session_data`), then
+  signs in again from the page and is brought back to the list.
 - CI's `e2e` jobs run beside the others when a change can reach the pages
   (`scripts/ci-plan.ts`), each with its own Postgres and Mailpit and
   SeaweedFS from `compose.yaml`: Chromium's suite in three shards

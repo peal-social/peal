@@ -3997,7 +3997,9 @@
       "revokeOthers": "Sign out everywhere else",
       "revokeOthersTitle": "Sign out of every other session?",
       "revokeOthersDescription": "Every browser and device but this one must sign in again.",
-      "othersRevoked": "Every other session is signed out."
+      "othersRevoked": "Every other session is signed out.",
+      "notFresh": "This list shows only for a short while after you sign in. Sign in again to see it.",
+      "signInAgain": "Sign in again"
     },
     "apps": {
       "title": "Connected applications",

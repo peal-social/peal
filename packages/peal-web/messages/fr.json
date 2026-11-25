@@ -3997,7 +3997,9 @@
       "revokeOthers": "Fermer toutes les autres sessions",
       "revokeOthersTitle": "Fermer toutes les autres sessions ?",
       "revokeOthersDescription": "Tous les navigateurs et appareils, sauf celui-ci, devront se reconnecter.",
-      "othersRevoked": "Toutes les autres sessions sont fermées."
+      "othersRevoked": "Toutes les autres sessions sont fermées.",
+      "notFresh": "Cette liste ne s’affiche que peu de temps après la connexion. Reconnectez-vous pour la voir.",
+      "signInAgain": "Se reconnecter"
     },
     "apps": {
       "title": "Applications connectées",
