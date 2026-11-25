@@ -126,7 +126,8 @@ export const DeleteAccount = ({
 
       if (Exit.isSuccess(exit)) {
         // The account is gone: so is what this browser kept of its work
-        // (the Studio's drafts, the agent panel's tabs) in every workspace.
+        // (the Studio's drafts, the agent panel's tabs, the analytics
+        // boards) in every workspace.
         forgetPersonKeys(browserStorage(), userId);
         // The session went with the account: signing out clears its
         // cookies, and the page it loads says the account is deleted.

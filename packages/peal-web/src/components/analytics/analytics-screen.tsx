@@ -28,11 +28,17 @@ const Loading = ({ label }: { readonly label: string }) => (
 
 interface AnalyticsViewProps {
   readonly timeZone: string;
+  /** The signed-in person, whose board of the workspace the browser keeps. */
+  readonly userId: string;
   readonly workspaceId: string;
 }
 
 // The board, once the workspace's channels, which its filters name, came.
-const BoardOfChannels = ({ timeZone, workspaceId }: AnalyticsViewProps) => {
+const BoardOfChannels = ({
+  timeZone,
+  userId,
+  workspaceId,
+}: AnalyticsViewProps) => {
   const t = useTranslations("Analytics");
   const channelsQuery = workspaceChannels(workspaceId);
   const channels = useAtomValue(channelsQuery);
@@ -53,6 +59,7 @@ const BoardOfChannels = ({ timeZone, workspaceId }: AnalyticsViewProps) => {
         <AnalyticsBoard
           channels={value}
           timeZone={timeZone}
+          userId={userId}
           workspaceId={workspaceId}
         />
       </InTimeZone>
@@ -60,11 +67,13 @@ const BoardOfChannels = ({ timeZone, workspaceId }: AnalyticsViewProps) => {
   });
 };
 
-const AnalyticsView = ({ timeZone, workspaceId }: AnalyticsViewProps) => (
-  <BoardOfChannels timeZone={timeZone} workspaceId={workspaceId} />
+const AnalyticsView = (props: AnalyticsViewProps) => (
+  <BoardOfChannels {...props} />
 );
 
 interface AnalyticsScreenProps {
+  /** The signed-in person, whose board of the workspace the browser keeps. */
+  readonly userId: string;
   readonly workspaceId: string;
 }
 
