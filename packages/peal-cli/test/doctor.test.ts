@@ -5,9 +5,9 @@ import { runWith } from "#cli.ts";
 import { DiagnosisSchema } from "#commands/doctor.ts";
 import { DoctorFailed } from "#doctor-failed.ts";
 
-import { draftingKey, filesLayer, signedIn } from "./signed-in.ts";
+import { draftingKey, filesLayer, partnerKey, signedIn } from "./signed-in.ts";
 import type { Runs } from "./signed-in.ts";
-import { studioId, studioMe } from "./studio.ts";
+import { customerId, shopId, studioId, studioMe } from "./studio.ts";
 import { cliEnvironment, fetching, output } from "./support.ts";
 
 // peal doctor, against the in-memory server: what it reports for each way
@@ -263,7 +263,7 @@ describe("peal doctor", () => {
       );
 
       assert.strictEqual(statuses(bySlug)["workspace"], "failing");
-      assert.include(check(bySlug, "workspace").fix, "GET /api/me");
+      assert.include(check(bySlug, "workspace").fix, "Leave it out");
 
       const printed = yield* output;
 
@@ -271,6 +271,183 @@ describe("peal doctor", () => {
         [...printed.errors, ...printed.logs].join("\n"),
         "peal_test_"
       );
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("says which workspace a key acts in when none is named", () =>
+    Effect.gen(function* own() {
+      const session = yield* signedIn({
+        keys: [draftingKey],
+        signIn: false,
+      });
+
+      const withKey = {
+        PEAL_API_KEY: draftingKey.key,
+        PEAL_API_URL: "http://localhost:3000",
+      };
+
+      // None named, or a blank PEAL_WORKSPACE, which names nothing.
+      for (const env of [withKey, { ...withKey, PEAL_WORKSPACE: " " }]) {
+        const text = yield* session.withEnv(env).printed(["doctor", "--json"]);
+
+        assert.isTrue(diagnosisOf(text).ok);
+        assert.strictEqual(statuses(text)["workspace"], "ok");
+        assert.strictEqual(
+          check(text, "workspace").detail,
+          `Commands act in Studio (${studioId}), the key's own workspace.`
+        );
+        assert.include(
+          check(text, "access").detail,
+          "The key reads the workspace"
+        );
+      }
+
+      // Another workspace's id is the server's to refuse.
+      const elsewhere = yield* failingReport(session.withEnv(withKey), [
+        "doctor",
+        "--json",
+        "--workspace",
+        shopId,
+      ]);
+
+      assert.strictEqual(statuses(elsewhere)["access"], "failing");
+      assert.include(
+        check(elsewhere, "access").detail,
+        "belongs to another workspace"
+      );
+
+      // A server that is not named gets no key, so nothing says whose.
+      const unnamed = yield* failingReport(
+        session.withEnv({ PEAL_API_KEY: draftingKey.key }),
+        ["doctor", "--json"]
+      );
+
+      assert.strictEqual(statuses(unnamed)["workspace"], "skipped");
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
+    "fails the workspace check, with its cause, when the server will not say whose key it is",
+    () =>
+      Effect.gen(function* unsaid() {
+        const suspended = {
+          ...draftingKey,
+          checkRefused: "forbidden",
+          id: "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e",
+          key: "peal_test_synthetic_suspended_key",
+        } as const;
+
+        const limited = {
+          ...draftingKey,
+          checkRefused: "tooManyRequests",
+          id: "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6f",
+          key: "peal_test_synthetic_limited_key",
+        } as const;
+
+        const session = yield* signedIn({
+          keys: [suspended, limited],
+          signIn: false,
+        });
+
+        const using = (sent: string) =>
+          session.withEnv({
+            PEAL_API_KEY: sent,
+            PEAL_API_URL: "http://localhost:3000",
+          });
+
+        for (const [sent, detail, fix] of [
+          [
+            "peal_test_synthetic_unknown_key",
+            "The server refused the key (401)",
+            "creates a key",
+          ],
+          [suspended.key, "(403): This account is suspended.", "web app"],
+          [limited.key, "(429)", "Try again in 42 seconds."],
+        ] as const) {
+          const text = yield* failingReport(using(sent), ["doctor", "--json"]);
+
+          assert.isFalse(diagnosisOf(text).ok);
+          assert.strictEqual(statuses(text)["workspace"], "failing");
+          assert.strictEqual(statuses(text)["access"], "skipped");
+          assert.include(check(text, "workspace").detail, detail);
+          assert.include(check(text, "workspace").fix, fix);
+        }
+
+        assert.include(
+          check(
+            yield* failingReport(using(limited.key), ["doctor", "--json"]),
+            "workspace"
+          ).fix,
+          "Setting PEAL_WORKSPACE to the key's workspace id saves one request per command."
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
+    "tells a token bound to a workspace its person left to connect again",
+    () =>
+      Effect.gen(function* left() {
+        const token = {
+          ...draftingKey,
+          binding: { _tag: "left", id: studioId },
+          id: "3c4d5e6f-7a8b-4c9d-8e0f-2a3b4c5d6e7a",
+          key: "peal_test_synthetic_left_token",
+        } as const;
+
+        const session = yield* signedIn({ keys: [token], signIn: false });
+
+        const text = yield* failingReport(
+          session.withEnv({
+            PEAL_API_KEY: token.key,
+            PEAL_API_URL: "http://localhost:3000",
+          }),
+          ["doctor", "--json"]
+        );
+
+        assert.strictEqual(statuses(text)["workspace"], "failing");
+        assert.include(
+          check(text, "workspace").detail,
+          "bound to a workspace its person has left"
+        );
+        assert.include(
+          check(text, "workspace").fix,
+          "until its application is connected again"
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("asks a partner key to name one of its partner's workspaces", () =>
+    Effect.gen(function* partner() {
+      const session = yield* signedIn({
+        keys: [partnerKey],
+        signIn: false,
+      }).pipe(
+        Effect.map((signed) =>
+          signed.withEnv({
+            PEAL_API_KEY: partnerKey.key,
+            PEAL_API_URL: "http://localhost:3000",
+          })
+        )
+      );
+
+      const text = yield* failingReport(session, ["doctor", "--json"]);
+
+      assert.strictEqual(statuses(text)["workspace"], "failing");
+      assert.strictEqual(statuses(text)["access"], "skipped");
+      assert.include(
+        check(text, "workspace").detail,
+        "A partner key is used, and no workspace is named."
+      );
+      assert.include(check(text, "workspace").fix, "--workspace");
+
+      const named = yield* session.printed([
+        "doctor",
+        "--json",
+        "--workspace",
+        customerId,
+      ]);
+
+      assert.isTrue(diagnosisOf(named).ok);
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 

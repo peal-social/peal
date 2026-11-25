@@ -160,12 +160,11 @@ peal logout
 
 ## La lancer avec une clé d’API [#api-key]
 
-Pour un lancement que personne ne surveille, comme une tâche planifiée ou un agent sur un serveur, mettez dans `PEAL_API_KEY` la [clé d’API](/guides/workspace#api-keys) d’un espace de travail. Nommez ensuite cet espace par son identifiant :
+Pour un lancement que personne ne surveille, comme une tâche planifiée ou un agent sur un serveur, mettez dans `PEAL_API_KEY` la [clé d’API](/guides/workspace#api-keys) d’un espace de travail. La clé agit dans son propre espace de travail, et le lancement n’a besoin de rien d’autre :
 
 ```sh
 export PEAL_API_URL=https://peal.example.com
 export PEAL_API_KEY=peal_…
-export PEAL_WORKSPACE=7c9e6679-7425-40de-944b-e07fc1f90ae7
 peal doctor
 peal drafts list --json
 ```
@@ -174,7 +173,11 @@ peal drafts list --json
 
 Avec une clé, `--api-url` ou `PEAL_API_URL` doit nommer l’instance où la clé a été créée. Une clé ne part vers aucune adresse par défaut : sans l’une ni l’autre, la commande s’arrête avec `api_url_required` et n’envoie rien.
 
-Avec une clé, `--workspace` ou `PEAL_WORKSPACE` doit donner l’identifiant de l’espace de travail, pas son slug. Il n’y a pas de valeur par défaut, car une clé ne peut pas chercher les espaces de travail. `peal whoami` le liste quand vous êtes connecté en tant que personne, comme `GET /api/me`. Sans lui, la commande s’arrête avec `workspace_id_required`.
+Une clé agit dans l’espace de travail auquel elle appartient, et vous n’avez besoin ni de `--workspace` ni de `PEAL_WORKSPACE`. `peal whoami` et `peal doctor` disent de quel espace il s’agit. Si vous en nommez un, donnez son identifiant, pas son slug, car une clé ne peut pas chercher les espaces de travail. Un slug arrête la commande avec `workspace_id_required`, et l’instance refuse l’identifiant d’un autre espace de travail (`forbidden`). Une valeur vide de `PEAL_WORKSPACE` ne nomme aucun espace de travail.
+
+Avec la clé seule, chaque commande demande d’abord à l’instance à qui est la clé, et cette requête compte dans la [limite de débit](/developers/conventions/rate-limits#rate-limits). Définir `PEAL_WORKSPACE` avec l’identifiant de l’espace de travail de la clé, que `peal whoami` affiche, économise une requête par commande.
+
+Une clé partenaire n’appartient à aucun espace de travail. Nommez l’un des espaces de travail de son partenaire par son identifiant, sinon la commande s’arrête avec `workspace_id_required`.
 
 La clé fait ce que ses permissions permettent, et rien de plus. Sans `post:schedule`, par exemple, elle écrit des brouillons mais ne les programme pas. Un refus arrive dans les mots du serveur, avec la permission qui manque.
 
@@ -242,7 +245,7 @@ peal drafts list
 peal drafts list --workspace clients
 ```
 
-Si vous n’appartenez qu’à un espace de travail, `peal` le prend. Si vous appartenez à plusieurs sans en nommer aucun, il liste leurs slugs et s’arrête. Avec une [clé d’API](#api-key), donnez l’identifiant de l’espace.
+Si vous n’appartenez qu’à un espace de travail, `peal` le prend. Si vous appartenez à plusieurs sans en nommer aucun, il liste leurs slugs et s’arrête. Avec une [clé d’API](#api-key), `peal` prend l’espace de travail de la clé, et vous n’en nommez un que par son identifiant.
 
 Chaque commande fait ce que votre rôle y permet, comme l’application web. Un lecteur lit. Un éditeur écrit, programme, publie et assure le suivi. Un propriétaire ou un administrateur invite en plus.
 
@@ -284,24 +287,24 @@ Quand l’API refuse, `error` est l’erreur telle que le serveur l’a envoyée
 
 La ligne de commande a ses propres codes pour ce qui l’arrête avant une réponse de l’API, ou à sa place :
 
-| Code                      | Quand                                                                                                                                     |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `invalid_usage`           | Les arguments sont illisibles : une option inconnue, ou un argument manquant.                                                             |
-| `unreachable`             | L’instance n’a rien répondu : connexion refusée, hôte inconnu ou délai dépassé.                                                           |
-| `unhealthy`               | `peal health` a reçu une réponse qui n’est pas celle d’un serveur en bonne santé.                                                         |
-| `unexpected_answer`       | L’instance a répondu quelque chose que le contrat de l’API ne décrit pas. Elle est peut-être plus ancienne, ou n’est pas un serveur Peal. |
-| `not_signed_in`           | Aucune connexion n’est enregistrée pour l’instance, et `PEAL_API_KEY` n’est pas définie.                                                  |
-| `sign_in_expired`         | La connexion enregistrée ne fonctionne plus. Relancez `peal login`.                                                                       |
-| `api_key_refused`         | L’instance a refusé la clé de `PEAL_API_KEY` : révoquée, expirée, ou venue d’un autre serveur.                                            |
-| `person_required`         | La commande s’adresse à une personne connectée, et `PEAL_API_KEY` est définie.                                                            |
-| `api_url_required`        | `PEAL_API_KEY` est définie, et ni `--api-url` ni `PEAL_API_URL` ne nomme l’instance.                                                      |
-| `workspace_id_required`   | Avec une clé d’API, aucun espace de travail n’est nommé, ou il l’est autrement que par son identifiant.                                   |
-| `workspace_required`      | Vous appartenez à plusieurs espaces de travail et n’en avez nommé aucun.                                                                  |
-| `workspace_unknown`       | Vous n’appartenez à aucun espace de travail de ce slug ou de cet identifiant.                                                             |
-| `no_workspace`            | Vous n’appartenez encore à aucun espace de travail.                                                                                       |
-| `credential_store_failed` | La connexion n’a pas pu être lue dans `credentials.json`, ou y être enregistrée.                                                          |
-| `checks_failed`           | `peal doctor` a trouvé des vérifications en échec, nommées dans `failed`.                                                                 |
-| `refused`, `failed`       | Tout autre refus ou échec de la ligne de commande, avec la raison dans `message`.                                                         |
+| Code                      | Quand                                                                                                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `invalid_usage`           | Les arguments sont illisibles : une option inconnue, ou un argument manquant.                                                                                                              |
+| `unreachable`             | L’instance n’a rien répondu : connexion refusée, hôte inconnu ou délai dépassé.                                                                                                            |
+| `unhealthy`               | `peal health` a reçu une réponse qui n’est pas celle d’un serveur en bonne santé.                                                                                                          |
+| `unexpected_answer`       | L’instance a répondu quelque chose que le contrat de l’API ne décrit pas. Elle est peut-être plus ancienne, ou n’est pas un serveur Peal.                                                  |
+| `not_signed_in`           | Aucune connexion n’est enregistrée pour l’instance, et `PEAL_API_KEY` n’est pas définie.                                                                                                   |
+| `sign_in_expired`         | La connexion enregistrée ne fonctionne plus. Relancez `peal login`.                                                                                                                        |
+| `api_key_refused`         | L’instance a refusé la clé de `PEAL_API_KEY` : révoquée, expirée, ou venue d’un autre serveur.                                                                                             |
+| `person_required`         | La commande s’adresse à une personne connectée, et `PEAL_API_KEY` est définie.                                                                                                             |
+| `api_url_required`        | `PEAL_API_KEY` est définie, et ni `--api-url` ni `PEAL_API_URL` ne nomme l’instance.                                                                                                       |
+| `workspace_id_required`   | Avec une clé d’API, l’espace de travail est nommé autrement que par son identifiant. Ou une clé partenaire, ou le jeton d’une application lié à aucun espace de travail, n’en nomme aucun. |
+| `workspace_required`      | Vous appartenez à plusieurs espaces de travail et n’en avez nommé aucun.                                                                                                                   |
+| `workspace_unknown`       | Vous n’appartenez à aucun espace de travail de ce slug ou de cet identifiant.                                                                                                              |
+| `no_workspace`            | Vous n’appartenez encore à aucun espace de travail.                                                                                                                                        |
+| `credential_store_failed` | La connexion n’a pas pu être lue dans `credentials.json`, ou y être enregistrée.                                                                                                           |
+| `checks_failed`           | `peal doctor` a trouvé des vérifications en échec, nommées dans `failed`.                                                                                                                  |
+| `refused`, `failed`       | Tout autre refus ou échec de la ligne de commande, avec la raison dans `message`.                                                                                                          |
 
 Une réponse au statut d’erreur qui ne porte aucune erreur de l’API reçoit le code général de l’API pour ce statut, comme `internal_error`, et le `requestId` quand le serveur en a donné un.
 

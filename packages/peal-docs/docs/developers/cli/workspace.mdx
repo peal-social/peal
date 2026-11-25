@@ -343,7 +343,7 @@ The `peal ads` commands are these:
 | `PEAL_API_URL`       | The instance's address, unless `--api-url` is given. Default: `http://localhost:3000`, which an API key is never sent to: with `PEAL_API_KEY`, one of the two must name the instance. |
 | `PEAL_INSECURE_HTTP` | `true` lets the sign-in or the API key go over plain HTTP to a server that isn't this machine, as `--insecure-http` does. Off by default.                                             |
 | `PEAL_API_KEY`       | A workspace API key to run with instead of a saved sign-in, which it wins over ([Run it with an API key](/developers/cli#api-key)).                                                   |
-| `PEAL_WORKSPACE`     | The workspace commands act in, by slug or id, unless `--workspace` is given. With an API key, by id.                                                                                  |
+| `PEAL_WORKSPACE`     | The workspace commands act in, by slug or id, unless `--workspace` is given. With an API key, by id, and the key's own when unset.                                                    |
 | `TZ`                 | The zone `peal analytics summary` runs days in, and the zone `--at` is read in, unless `--time-zone` is given.                                                                        |
 | `PEAL_CONFIG_DIR`    | The folder `credentials.json` is saved in.                                                                                                                                            |
 | `XDG_CONFIG_HOME`    | Without `PEAL_CONFIG_DIR`, the sign-in goes in its `peal` folder.                                                                                                                     |
