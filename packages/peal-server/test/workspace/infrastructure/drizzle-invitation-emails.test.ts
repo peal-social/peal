@@ -19,7 +19,9 @@ const EmailsTest = DrizzleInvitationEmailsLive.pipe(
   Layer.provideMerge(Layer.merge(PlainPseudonymsTest, DatabaseTest))
 );
 
-const at = DateTime.makeUnsafe("2026-11-23T10:00:00Z");
+// Today: a claim deletes the days before yesterday, whoever made them, and
+// suites that invite for real claim today while this one counts.
+const at = DateTime.nowUnsafe();
 
 const someone = () => UserIdSchema.make(randomUUID());
 
