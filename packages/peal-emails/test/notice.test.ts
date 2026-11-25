@@ -227,7 +227,7 @@ describe(renderNoticeEmail, () => {
     );
 
     expect(started.text).toContain("Contract number: 7K3M-9QXD-42TN");
-    expect(started.text).toContain("at the foot of every page");
+    expect(started.text).toContain("at the foot of every page of the website");
 
     const renewing = await render(
       {

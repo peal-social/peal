@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import type { ReactNode } from "react";
 
 import { AccountMenu } from "#components/account-menu.tsx";
-import { ContractLinks } from "#components/contract/contract-links.tsx";
 import { ImpersonationBanner } from "#components/impersonation-banner.tsx";
 import { LanguageSwitcher } from "#components/language-switcher.tsx";
 import { ShellFrame } from "#components/shell-frame.tsx";
@@ -36,18 +35,6 @@ export const AppHeader = () => {
   );
 };
 
-// The app's footer: the functions to cancel a contract and to withdraw
-// from one.
-export const AppFooter = () => (
-  <footer className="border-t">
-    <div className="text-muted-foreground mx-auto w-full max-w-5xl px-4 py-6 text-sm">
-      <Suspense fallback={null}>
-        <ContractLinks />
-      </Suspense>
-    </div>
-  </footer>
-);
-
 /**
  * The app's frame, for a workspace's page shown without the workspace's
  * own (to someone not a member, or who must first turn on two-step
@@ -59,17 +46,14 @@ export const PlainFrame = ({ children }: { readonly children: ReactNode }) => (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
       {children}
     </main>
-    <AppFooter />
   </>
 );
 
 // The frame around every page: the impersonation banner while staff act as
 // someone, a header with the product name, the language switcher and the
-// account menu, the page itself, then a footer with the functions to
-// cancel a contract and to withdraw from one. The sign-in pages have no
-// header, and a quiet foot with those functions alone. A connect link's pages, whose
-// visitors have no Peal account, get a plain footer in their place
-// (ShellFrame).
+// account menu, then the page itself. The sign-in pages have no header. A
+// connect link's pages, whose visitors have no Peal account, get a plain
+// footer in its place (ShellFrame).
 export const AppShell = ({ children }: { readonly children: ReactNode }) => {
   const t = useTranslations("AppShell");
 
@@ -80,14 +64,6 @@ export const AppShell = ({ children }: { readonly children: ReactNode }) => {
       </Suspense>
       <ShellFrame
         header={<AppHeader />}
-        footer={<AppFooter />}
-        signIn={
-          <footer className="text-muted-foreground px-4 py-4 text-xs">
-            <Suspense fallback={null}>
-              <ContractLinks />
-            </Suspense>
-          </footer>
-        }
         hosted={
           <footer className="border-t">
             <div className="text-muted-foreground mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 text-sm">

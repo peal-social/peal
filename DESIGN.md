@@ -746,7 +746,8 @@ it. There is no bar across the top.
     `accent`). A section with pages of its own (Posts, Automations and
     Settings) shows a chevron and **drills down**:
     on its pages, the sidebar shows that section's pages under a back link.
-  - Its **foot**: Settings.
+  - Its **foot**: Settings, hidden while the sidebar shows Settings' own
+    pages.
 - **`panel`**: the page, white (`card`), a 1 px hairline, `{rounded.lg}`,
   8 px from the window's top and right edges, its foot on the bottom bar.
   It scrolls on its own; the sidebar stays. On a phone it fills the
@@ -790,8 +791,7 @@ it. There is no bar across the top.
   bar 48 px high across its top holds, at its start, **Back** (a small
   ghost button, an arrow first) to the person's workspace when they have
   one, and at its end "Signed in as …" in muted text with **Sign out**
-  (a small ghost button); the contract functions close the page, in small
-  muted text. The content is a column 24 rem wide, centred, 96 px from
+  (a small ghost button). The content is a column 24 rem wide, centred, 96 px from
   the top: a title (`headline`, centred, the page's `h1`) with one muted
   line under it, then the form: **Name**,
   then **URL** as one field: the site's address in a segment of its own
@@ -808,9 +808,7 @@ it. There is no bar across the top.
 - **`sign-in`**: the pages where someone signs in, signs up or gets back
   in (a forgotten password, a new one, a confirmed address). No frame of
   the app's and no header: the window's `background` alone, a column
-  24 rem wide centred in the window, then at the window's foot the
-  contract functions alone, in small muted text: no language switcher
-  (the page follows the browser's language, or the address's `/fr`).
+  24 rem wide centred in the window: no language switcher (the page follows the browser's language, or the address's `/fr`).
   The column holds Peal's mark (48 px), the title (`headline`, centred,
   the page's `h1`: "Sign in to Peal", "Create your account"), then the
   ways in, one button each, stacked: the way this browser used last
@@ -828,7 +826,6 @@ it. There is no bar across the top.
   the column fades in and rises 8 px (500 ms, easing out), so going
   from one page to the other reads as a step. With reduced motion, nothing
   moves. The pages are at `/login` and `/signup`.
-- The contract functions close the panel's content, in small muted text.
 
 PealCreative holds, in this order: Home, Agent and Channels without a
 label; then **Studio**, what makes and plans the posts: Editor, Posts,
@@ -871,7 +868,7 @@ videos are. It shows only to members who may compose one (assistant:use
 and media:upload).
 
 - The page opens over the whole window: the sidebar and the bottom bar
-  are hidden, the panel's header and the contract functions stay, and the
+  are hidden, the panel's header stays, and the
   stage takes the height the timeline leaves. **Exit full screen**, first
   in the header, brings the frame back, and **Full screen** hides it
   again.
