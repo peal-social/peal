@@ -7,6 +7,7 @@ from ...core.request_options import RequestOptions
 from ...types.follow_up_rule import FollowUpRule
 from ...types.follow_up_rule_page import FollowUpRulePage
 from ...types.follow_up_rule_status import FollowUpRuleStatus
+from ...types.platform_follow_ups import PlatformFollowUps
 from .raw_client import AsyncRawFollowUpsClient, RawFollowUpsClient
 
 # this is used as the default value for optional parameters
@@ -126,6 +127,33 @@ class FollowUpsClient:
             repost=repost,
             request_options=request_options,
         )
+        return _response.data
+
+    def platforms(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[PlatformFollowUps]:
+        """
+        Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[PlatformFollowUps]
+            Success
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            workspace="YOUR_WORKSPACE",
+            token="YOUR_TOKEN",
+        )
+        client.automations.follow_ups.platforms()
+        """
+        _response = self._raw_client.platforms(request_options=request_options)
         return _response.data
 
     def get(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> FollowUpRule:
@@ -400,6 +428,43 @@ class AsyncFollowUpsClient:
             repost=repost,
             request_options=request_options,
         )
+        return _response.data
+
+    async def platforms(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.List[PlatformFollowUps]:
+        """
+        Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[PlatformFollowUps]
+            Success
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.automations.follow_ups.platforms()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.platforms(request_options=request_options)
         return _response.data
 
     async def get(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> FollowUpRule:

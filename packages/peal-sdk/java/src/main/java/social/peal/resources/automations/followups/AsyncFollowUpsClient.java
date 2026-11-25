@@ -3,6 +3,7 @@
  */
 package social.peal.resources.automations.followups;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
@@ -15,6 +16,7 @@ import social.peal.resources.automations.followups.requests.ListFollowUpsRequest
 import social.peal.resources.automations.followups.requests.NewFollowUpRule;
 import social.peal.types.FollowUpRule;
 import social.peal.types.FollowUpRulePage;
+import social.peal.types.PlatformFollowUps;
 
 public class AsyncFollowUpsClient {
     protected final ClientOptions clientOptions;
@@ -111,6 +113,35 @@ public class AsyncFollowUpsClient {
         CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
                 this.rawClient.create(request, requestOptions);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (<code>comment</code>) and repost (<code>repost</code>), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: <code>channels</code> on the refusal and on the rule says so. Needs post:read.
+     */
+    public CompletableFuture<List<PlatformFollowUps>> platforms() {
+        CompletableFuture<PealClientHttpResponse<List<PlatformFollowUps>>> rawFuture = this.rawClient.platforms();
+        CompletableFuture<List<PlatformFollowUps>> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (<code>comment</code>) and repost (<code>repost</code>), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: <code>channels</code> on the refusal and on the rule says so. Needs post:read.
+     */
+    public CompletableFuture<List<PlatformFollowUps>> platforms(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<PlatformFollowUps>>> rawFuture =
+                this.rawClient.platforms(requestOptions);
+        CompletableFuture<List<PlatformFollowUps>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
                 rawFuture.cancel(true);

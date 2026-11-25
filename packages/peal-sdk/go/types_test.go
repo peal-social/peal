@@ -80249,6 +80249,201 @@ func TestSettersMarkExplicitPlatformCommentRule(t *testing.T) {
 
 }
 
+func TestSettersPlatformFollowUps(t *testing.T) {
+	t.Run("SetComment", func(t *testing.T) {
+		obj := &PlatformFollowUps{}
+		var fernTestValueComment PlatformFollowUpComment
+		obj.SetComment(fernTestValueComment)
+		assert.Equal(t, fernTestValueComment, obj.Comment)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPlatform", func(t *testing.T) {
+		obj := &PlatformFollowUps{}
+		var fernTestValuePlatform Platform
+		obj.SetPlatform(fernTestValuePlatform)
+		assert.Equal(t, fernTestValuePlatform, obj.Platform)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetRepost", func(t *testing.T) {
+		obj := &PlatformFollowUps{}
+		var fernTestValueRepost PlatformFollowUpRepost
+		obj.SetRepost(fernTestValueRepost)
+		assert.Equal(t, fernTestValueRepost, obj.Repost)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersPlatformFollowUps(t *testing.T) {
+	t.Run("GetComment", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PlatformFollowUps{}
+		var expected PlatformFollowUpComment
+		obj.Comment = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetComment(), "getter should return the property value")
+	})
+
+	t.Run("GetComment_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *PlatformFollowUps
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetComment() // Should return zero value
+	})
+
+	t.Run("GetPlatform", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PlatformFollowUps{}
+		var expected Platform
+		obj.Platform = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPlatform(), "getter should return the property value")
+	})
+
+	t.Run("GetPlatform_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *PlatformFollowUps
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPlatform() // Should return zero value
+	})
+
+	t.Run("GetRepost", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PlatformFollowUps{}
+		var expected PlatformFollowUpRepost
+		obj.Repost = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetRepost(), "getter should return the property value")
+	})
+
+	t.Run("GetRepost_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *PlatformFollowUps
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetRepost() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitPlatformFollowUps(t *testing.T) {
+	t.Run("SetComment_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PlatformFollowUps{}
+		var fernTestValueComment PlatformFollowUpComment
+
+		// Act
+		obj.SetComment(fernTestValueComment)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPlatform_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PlatformFollowUps{}
+		var fernTestValuePlatform Platform
+
+		// Act
+		obj.SetPlatform(fernTestValuePlatform)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetRepost_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PlatformFollowUps{}
+		var fernTestValueRepost PlatformFollowUpRepost
+
+		// Act
+		obj.SetRepost(fernTestValueRepost)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersPlatformPosts(t *testing.T) {
 	t.Run("SetPlatform", func(t *testing.T) {
 		obj := &PlatformPosts{}
@@ -136792,6 +136987,39 @@ func TestJSONMarshalingPlatformCommentRule(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingPlatformFollowUps(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PlatformFollowUps{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled PlatformFollowUps
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj PlatformFollowUps
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj PlatformFollowUps
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingPlatformPosts(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -151042,6 +151270,22 @@ func TestStringPlatformCommentRule(t *testing.T) {
 	})
 }
 
+func TestStringPlatformFollowUps(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &PlatformFollowUps{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *PlatformFollowUps
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
 func TestStringPlatformPosts(t *testing.T) {
 	t.Run("StringMethod", func(t *testing.T) {
 		t.Parallel()
@@ -159837,6 +160081,120 @@ func TestEnumPlatformCommentRuleReply(t *testing.T) {
 	})
 }
 
+func TestEnumPlatformFollowUpComment(t *testing.T) {
+	t.Run("NewFromString_available", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpCommentFromString("available")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpComment("available"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_noApi", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpCommentFromString("noApi")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpComment("noApi"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_review", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpCommentFromString("review")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpComment("review"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_notBuilt", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpCommentFromString("notBuilt")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpComment("notBuilt"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_notAllowed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpCommentFromString("notAllowed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpComment("notAllowed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_turnedOff", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpCommentFromString("turnedOff")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpComment("turnedOff"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_notCounted", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpCommentFromString("notCounted")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpComment("notCounted"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewPlatformFollowUpCommentFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewPlatformFollowUpCommentFromString("available")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumPlatformFollowUpRepost(t *testing.T) {
+	t.Run("NewFromString_available", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpRepostFromString("available")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpRepost("available"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_noApi", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpRepostFromString("noApi")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpRepost("noApi"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_notBuilt", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpRepostFromString("notBuilt")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpRepost("notBuilt"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_notAllowed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpRepostFromString("notAllowed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpRepost("notAllowed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_notCounted", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewPlatformFollowUpRepostFromString("notCounted")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, PlatformFollowUpRepost("notCounted"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewPlatformFollowUpRepostFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewPlatformFollowUpRepostFromString("available")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
 func TestEnumPlatformUnreachableEncodedTag(t *testing.T) {
 	t.Run("NewFromString_PlatformUnreachable", func(t *testing.T) {
 		t.Parallel()
@@ -168577,6 +168935,29 @@ func TestExtraPropertiesPlatformCommentRule(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *PlatformCommentRule
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesPlatformFollowUps(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &PlatformFollowUps{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *PlatformFollowUps
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

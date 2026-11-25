@@ -43977,6 +43977,192 @@ func (p PlatformCommentRuleReply) Ptr() *PlatformCommentRuleReply {
 	return &p
 }
 
+type PlatformFollowUpComment string
+
+const (
+	PlatformFollowUpCommentAvailable  PlatformFollowUpComment = "available"
+	PlatformFollowUpCommentNoAPI      PlatformFollowUpComment = "noApi"
+	PlatformFollowUpCommentReview     PlatformFollowUpComment = "review"
+	PlatformFollowUpCommentNotBuilt   PlatformFollowUpComment = "notBuilt"
+	PlatformFollowUpCommentNotAllowed PlatformFollowUpComment = "notAllowed"
+	PlatformFollowUpCommentTurnedOff  PlatformFollowUpComment = "turnedOff"
+	PlatformFollowUpCommentNotCounted PlatformFollowUpComment = "notCounted"
+)
+
+func NewPlatformFollowUpCommentFromString(s string) (PlatformFollowUpComment, error) {
+	switch s {
+	case "available":
+		return PlatformFollowUpCommentAvailable, nil
+	case "noApi":
+		return PlatformFollowUpCommentNoAPI, nil
+	case "review":
+		return PlatformFollowUpCommentReview, nil
+	case "notBuilt":
+		return PlatformFollowUpCommentNotBuilt, nil
+	case "notAllowed":
+		return PlatformFollowUpCommentNotAllowed, nil
+	case "turnedOff":
+		return PlatformFollowUpCommentTurnedOff, nil
+	case "notCounted":
+		return PlatformFollowUpCommentNotCounted, nil
+	}
+	var t PlatformFollowUpComment
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (p PlatformFollowUpComment) Ptr() *PlatformFollowUpComment {
+	return &p
+}
+
+type PlatformFollowUpRepost string
+
+const (
+	PlatformFollowUpRepostAvailable  PlatformFollowUpRepost = "available"
+	PlatformFollowUpRepostNoAPI      PlatformFollowUpRepost = "noApi"
+	PlatformFollowUpRepostNotBuilt   PlatformFollowUpRepost = "notBuilt"
+	PlatformFollowUpRepostNotAllowed PlatformFollowUpRepost = "notAllowed"
+	PlatformFollowUpRepostNotCounted PlatformFollowUpRepost = "notCounted"
+)
+
+func NewPlatformFollowUpRepostFromString(s string) (PlatformFollowUpRepost, error) {
+	switch s {
+	case "available":
+		return PlatformFollowUpRepostAvailable, nil
+	case "noApi":
+		return PlatformFollowUpRepostNoAPI, nil
+	case "notBuilt":
+		return PlatformFollowUpRepostNotBuilt, nil
+	case "notAllowed":
+		return PlatformFollowUpRepostNotAllowed, nil
+	case "notCounted":
+		return PlatformFollowUpRepostNotCounted, nil
+	}
+	var t PlatformFollowUpRepost
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (p PlatformFollowUpRepost) Ptr() *PlatformFollowUpRepost {
+	return &p
+}
+
+var (
+	platformFollowUpsFieldComment  = big.NewInt(1 << 0)
+	platformFollowUpsFieldPlatform = big.NewInt(1 << 1)
+	platformFollowUpsFieldRepost   = big.NewInt(1 << 2)
+)
+
+type PlatformFollowUps struct {
+	Comment  PlatformFollowUpComment `json:"comment" url:"comment"`
+	Platform Platform                `json:"platform" url:"platform"`
+	Repost   PlatformFollowUpRepost  `json:"repost" url:"repost"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (p *PlatformFollowUps) GetComment() PlatformFollowUpComment {
+	if p == nil {
+		return ""
+	}
+	return p.Comment
+}
+
+func (p *PlatformFollowUps) GetPlatform() Platform {
+	if p == nil {
+		return ""
+	}
+	return p.Platform
+}
+
+func (p *PlatformFollowUps) GetRepost() PlatformFollowUpRepost {
+	if p == nil {
+		return ""
+	}
+	return p.Repost
+}
+
+func (p *PlatformFollowUps) GetExtraProperties() map[string]interface{} {
+	if p == nil {
+		return nil
+	}
+	return p.extraProperties
+}
+
+func (p *PlatformFollowUps) require(field *big.Int) {
+	next := new(big.Int)
+	if p.explicitFields != nil {
+		next.Set(p.explicitFields)
+	}
+	next.Or(next, field)
+	p.explicitFields = next
+}
+
+// SetComment sets the Comment field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PlatformFollowUps) SetComment(comment PlatformFollowUpComment) {
+	p.Comment = comment
+	p.require(platformFollowUpsFieldComment)
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PlatformFollowUps) SetPlatform(platform Platform) {
+	p.Platform = platform
+	p.require(platformFollowUpsFieldPlatform)
+}
+
+// SetRepost sets the Repost field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PlatformFollowUps) SetRepost(repost PlatformFollowUpRepost) {
+	p.Repost = repost
+	p.require(platformFollowUpsFieldRepost)
+}
+
+func (p *PlatformFollowUps) UnmarshalJSON(data []byte) error {
+	type unmarshaler PlatformFollowUps
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*p = PlatformFollowUps(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *p)
+	if err != nil {
+		return err
+	}
+	p.extraProperties = extraProperties
+	p.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (p *PlatformFollowUps) MarshalJSON() ([]byte, error) {
+	type embed PlatformFollowUps
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*p),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (p *PlatformFollowUps) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	if len(p.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(p); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", p)
+}
+
 var (
 	platformPostsFieldPlatform = big.NewInt(1 << 0)
 	platformPostsFieldPosts    = big.NewInt(1 << 1)

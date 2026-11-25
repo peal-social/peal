@@ -4,7 +4,9 @@
 package social.peal.resources.automations.followups;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
+import java.util.List;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -38,6 +40,7 @@ import social.peal.resources.automations.followups.requests.ListFollowUpsRequest
 import social.peal.resources.automations.followups.requests.NewFollowUpRule;
 import social.peal.types.FollowUpRule;
 import social.peal.types.FollowUpRulePage;
+import social.peal.types.PlatformFollowUps;
 import social.peal.types.UnauthenticatedEncoded;
 
 public class RawFollowUpsClient {
@@ -224,6 +227,85 @@ public class RawFollowUpsClient {
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 422:
                         throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (<code>comment</code>) and repost (<code>repost</code>), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: <code>channels</code> on the refusal and on the rule says so. Needs post:read.
+     */
+    public PealClientHttpResponse<List<PlatformFollowUps>> platforms() {
+        return platforms(null);
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (<code>comment</code>) and repost (<code>repost</code>), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: <code>channels</code> on the refusal and on the rule says so. Needs post:read.
+     */
+    public PealClientHttpResponse<List<PlatformFollowUps>> platforms(RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/v1/automations/follow-ups/platforms");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("GET", null)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        if (requestOptions != null && requestOptions.getMaxRetries().isPresent()) {
+            okhttpRequest = okhttpRequest
+                    .newBuilder()
+                    .tag(
+                            RetryInterceptor.MaxRetriesOverride.class,
+                            new RetryInterceptor.MaxRetriesOverride(
+                                    requestOptions.getMaxRetries().get()))
+                    .build();
+        }
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(
+                                responseBodyString, new TypeReference<List<PlatformFollowUps>>() {}),
+                        response);
+            }
+            try {
+                switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 429:
                         throw new TooManyRequestsError(

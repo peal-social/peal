@@ -796,6 +796,9 @@ if typing.TYPE_CHECKING:
     from .platform_comment_rule_private import PlatformCommentRulePrivate
     from .platform_comment_rule_reply import PlatformCommentRuleReply
     from .platform_dashboard import PlatformDashboard
+    from .platform_follow_up_comment import PlatformFollowUpComment
+    from .platform_follow_up_repost import PlatformFollowUpRepost
+    from .platform_follow_ups import PlatformFollowUps
     from .platform_posts import PlatformPosts
     from .platform_rate_limited_encoded import PlatformRateLimitedEncoded
     from .platform_unreachable_encoded import PlatformUnreachableEncoded
@@ -1941,6 +1944,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PlatformCommentRulePrivate": ".platform_comment_rule_private",
     "PlatformCommentRuleReply": ".platform_comment_rule_reply",
     "PlatformDashboard": ".platform_dashboard",
+    "PlatformFollowUpComment": ".platform_follow_up_comment",
+    "PlatformFollowUpRepost": ".platform_follow_up_repost",
+    "PlatformFollowUps": ".platform_follow_ups",
     "PlatformPosts": ".platform_posts",
     "PlatformRateLimitedEncoded": ".platform_rate_limited_encoded",
     "PlatformUnreachableEncoded": ".platform_unreachable_encoded",
@@ -3107,6 +3113,9 @@ __all__ = [
     "PlatformCommentRulePrivate",
     "PlatformCommentRuleReply",
     "PlatformDashboard",
+    "PlatformFollowUpComment",
+    "PlatformFollowUpRepost",
+    "PlatformFollowUps",
     "PlatformPosts",
     "PlatformRateLimitedEncoded",
     "PlatformUnreachableEncoded",

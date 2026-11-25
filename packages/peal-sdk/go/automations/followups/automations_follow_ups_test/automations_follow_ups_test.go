@@ -127,6 +127,28 @@ func TestAutomationsFollowUpsCreateWithWireMock(
 	VerifyRequestCount(t, "TestAutomationsFollowUpsCreateWithWireMock", "POST", "/api/v1/automations/follow-ups", nil, 1)
 }
 
+func TestAutomationsFollowUpsPlatformsWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	_, invocationErr := client.Automations.FollowUps.Platforms(
+		context.TODO(),
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestAutomationsFollowUpsPlatformsWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestAutomationsFollowUpsPlatformsWithWireMock", "GET", "/api/v1/automations/follow-ups/platforms", nil, 1)
+}
+
 func TestAutomationsFollowUpsGetWithWireMock(
 	t *testing.T,
 ) {
