@@ -7,7 +7,8 @@ import type { NoticeChannel, NoticeEvent } from "../../src/emails/notice.ts";
 import type { Locale } from "../../src/locale.ts";
 
 // Every email with made-up values, which the previews show and the tests
-// read: an email without a sample here does not pass them.
+// read: an event without a sample here, or a sample without a preview, does
+// not pass them.
 
 const at = (iso: string) => DateTime.makeUnsafe(iso);
 

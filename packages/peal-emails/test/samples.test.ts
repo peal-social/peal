@@ -1,4 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { readdirSync } from "node:fs";
+import path from "node:path";
+
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   accountSamples,
@@ -13,7 +16,12 @@ import {
   renderNoticeEmail,
   renderWeeklyDigest,
 } from "../src/index.ts";
-import type { Locale, RenderedEmail } from "../src/index.ts";
+import type {
+  AccountEmail,
+  Locale,
+  NoticeEvent,
+  RenderedEmail,
+} from "../src/index.ts";
 
 interface Sample {
   readonly name: string;
@@ -84,5 +92,49 @@ describe.each(["en", "fr"] as const)("every email, in %s", (locale) => {
     expect(html).toContain("Studio &lt;Nord&gt; &amp; Co");
     expect(html).not.toContain("&amp;lt;");
     expect(html).not.toContain("<b>soon</b>");
+  });
+});
+
+interface Tagged {
+  readonly _tag: string;
+}
+
+type TagOf<Samples extends Readonly<Record<string, Tagged>>> =
+  Samples[keyof Samples]["_tag"];
+
+// Told in the app alone, never emailed: nothing to preview.
+const inAppOnly: ReadonlySet<string> = new Set([
+  "SlideshowEnded",
+  "VideoGenerationEnded",
+] satisfies NoticeEvent["_tag"][]);
+
+const fileNameOf = (name: string): string =>
+  `${name.replaceAll(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`)}.tsx`;
+
+const previewsIn = (folder: string): readonly string[] =>
+  readdirSync(
+    path.join(import.meta.dirname, "..", "previews", folder)
+  ).toSorted();
+
+describe("the samples", () => {
+  it("hold every account email and every notice", () => {
+    expectTypeOf<
+      Exclude<AccountEmail["_tag"], TagOf<ReturnType<typeof accountSamples>>>
+    >().toBeNever();
+    expectTypeOf<
+      Exclude<NoticeEvent["_tag"], TagOf<typeof noticeSamples>>
+    >().toBeNever();
+  });
+
+  it("have a preview each, but for what is told in the app alone", () => {
+    expect(previewsIn("account")).toStrictEqual(
+      Object.keys(accountSamples("en")).map(fileNameOf).toSorted()
+    );
+    expect(previewsIn("notices")).toStrictEqual(
+      Object.entries(noticeSamples)
+        .filter(([, { _tag }]) => !inAppOnly.has(_tag))
+        .map(([name]) => fileNameOf(name))
+        .toSorted()
+    );
   });
 });
