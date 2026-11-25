@@ -13,7 +13,7 @@ In this quickstart you'll send a post to one of your channels with the API, then
 You need three things:
 
 - A workspace with at least one channel connected in the app ([Quickstart](/quickstart), [Connect channels](/guides/channels)).
-- `curl`, the [command line](/developers/cli) or an [SDK](/developers/sdks) (`npm install --save-exact peal-sdk@0.4.0-beta.1` for Node.js, a beta).
+- `curl`, the [command line](/developers/cli) or an [SDK](/developers/sdks) (`npm install --save-exact @peal-social/sdk@0.4.0-beta.1` for Node.js, a beta).
 - Your instance's address. The examples use `https://api.example.com`, and Peal Cloud is `https://app.peal.social` ([Base URL](/developers#base-url)).
 
 The ids on this page are made up, so yours will differ. The answers are abridged.
@@ -55,7 +55,7 @@ Then set up your client with the key:
 <CodeGroup>
 
 ```ts Node.js
-import { PealClient } from "peal-sdk";
+import { PealClient } from "@peal-social/sdk";
 
 const peal = new PealClient({
   token: process.env.PEAL_API_KEY,

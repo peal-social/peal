@@ -13,7 +13,7 @@ const lines = [
     { kind: "keyword", text: "const" },
     { text: " peal " },
     { kind: "punctuation", text: "=" },
-    { kind: "string", text: ' "peal-sdk"' },
+    { kind: "string", text: ' "@peal-social/sdk"' },
   ],
   [],
   [{ kind: "comment", text: "// done" }],
@@ -26,7 +26,7 @@ describe("highlighted code", () => {
         { kind: "keyword", offset: 0, text: "const" },
         { offset: 5, text: " peal " },
         { kind: "punctuation", offset: 11, text: "=" },
-        { kind: "string", offset: 12, text: ' "peal-sdk"' },
+        { kind: "string", offset: 12, text: ' "@peal-social/sdk"' },
       ],
       [],
       [{ kind: "comment", offset: 0, text: "// done" }],
@@ -35,7 +35,7 @@ describe("highlighted code", () => {
 
   it("gives back the plain source", () => {
     expect(highlightedSource(encodeHighlighted(lines))).toBe(
-      'const peal = "peal-sdk"\n\n// done'
+      'const peal = "@peal-social/sdk"\n\n// done'
     );
   });
 

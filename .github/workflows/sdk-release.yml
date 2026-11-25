@@ -3,8 +3,8 @@ name: SDK release
 # A tag sdk-<language>-v<version> publishes that language's SDK, built from
 # the tagged commit, once scripts/release.ts confirms the version is the one
 # scripts/languages.ts gives it. npm, PyPI, RubyGems, NuGet and crates.io
-# take it through trusted publishing (OpenID Connect: no token is stored),
-# Maven Central with its token and signing key, Go as a tag of this
+# take it through trusted publishing (OpenID Connect: no token is stored,
+# but for the first release of a new npm package, below), Maven Central with its token and signing key, Go as a tag of this
 # repository, and Packagist as a tag of the PHP mirror. Every publishing job
 # runs in the sdk-release environment, whose rules decide who may release.
 #
@@ -74,10 +74,15 @@ jobs:
       # Trusted publishing, with a provenance statement linking the package
       # to this run. npm refuses a prerelease without a dist-tag:
       # scripts/release.ts names latest, for a prerelease too while the beta
-      # line is the only one, so a plain `npm install peal-sdk` gets it.
+      # line is the only one, so a plain `npm install @peal-social/sdk` gets
+      # it. npm takes a trusted publisher only for a package that exists:
+      # @peal-social/sdk's first release signs in with the short-lived token
+      # in the environment's secret NPM_TOKEN, deleted once the trusted
+      # publisher is set (packages/peal-sdk/README.md). npm tries OIDC first.
       - run: npm publish --provenance --access public --tag "$NPM_TAG"
         working-directory: packages/peal-sdk/node
         env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TAG: ${{ needs.resolve.outputs.npm-tag }}
 
   python:

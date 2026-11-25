@@ -4,6 +4,8 @@ import { describe, expect, it } from "bun:test";
 // a version fails here until they follow.
 import path from "node:path";
 
+import { Schema } from "effect";
+
 import { installCommand } from "./install.ts";
 import { languageNamed, languages } from "./languages.ts";
 
@@ -66,5 +68,58 @@ describe.each([...tables.slice(1), ...quickstarts])("%s", (_name, segments) => {
       .flatMap((line) => line.match(printedVersion) ?? []);
 
     expect(printed.filter((version) => !current.has(version))).toEqual([]);
+  });
+});
+
+const node = languageNamed("node");
+
+const decodeManifest = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Schema.Struct({ name: Schema.String }))
+);
+
+describe("the Node.js SDK's package", () => {
+  it("is @peal-social/sdk on npm, the name its manifest gets", async () => {
+    expect(node.package).toStrictEqual({
+      name: "@peal-social/sdk",
+      registry: "npm",
+    });
+    expect(installCommand(node)).toBe(
+      `npm install --save-exact @peal-social/sdk@${node.version}`
+    );
+    expect(
+      decodeManifest(await read("peal-sdk", "node", "package.json")).name
+    ).toBe(node.package.name);
+  });
+});
+
+// The package's name until 0.3, which only its retirement names now.
+const oldName = [
+  /from ["']peal-sdk(?:\/[^"']*)?["']/u,
+  /require\(["']peal-sdk["']\)/u,
+  /npm install (?:--?\S+ )*peal-sdk\b/u,
+  /npmjs\.com\/package\/peal-sdk\b/u,
+  /shields\.io\/npm\/v\/peal-sdk\b/u,
+];
+
+// The pages and samples that install the Node.js SDK or import it, from
+// the repository's root.
+const samples: readonly string[] = [
+  "README.md",
+  "packages/peal-sdk/README.md",
+  "packages/peal-sdk/node/README.md",
+  "packages/peal-site/src/code/snippets.ts",
+  "packages/peal-web/src/components/home/workspace-home.tsx",
+  ...[
+    ...new Bun.Glob("packages/peal-docs/docs/**/*.mdx").scanSync({
+      cwd: path.join(packages, ".."),
+    }),
+  ].toSorted(),
+];
+
+describe.each(samples)("%s", (file) => {
+  it("names the Node.js SDK by its npm name", async () => {
+    const text = await read("..", file);
+
+    expect(oldName.filter((pattern) => pattern.test(text))).toEqual([]);
   });
 });

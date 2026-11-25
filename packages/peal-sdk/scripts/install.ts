@@ -11,19 +11,35 @@ const commands = {
   go: (version) =>
     `go get github.com/peal-social/peal/packages/peal-sdk/go@v${version}`,
   java: (version) => `social.peal:peal:${version}`,
-  node: (version) => `npm install --save-exact peal-sdk@${version}`,
+  node: (version, name) => `npm install --save-exact ${name}@${version}`,
   php: (version) => `composer require peal-social/peal:${version}`,
   python: (version) => `pip install peal-sdk==${version}`,
   ruby: (version) => `gem install peal --version ${version}`,
   rust: (version) => `cargo add peal-sdk@=${version}`,
-} satisfies Readonly<Record<LanguageName, (version: string) => string>>;
+} satisfies Readonly<
+  Record<LanguageName, (version: string, name: string) => string>
+>;
 
 /**
  * The command that installs the language's version, or for Java the
  * coordinates a Maven or Gradle build names.
  */
 export const installCommand = (language: Language): string =>
-  commands[language.name](language.version);
+  commands[language.name](language.version, language.package.name);
+
+/** The packages a language's registry held its earlier releases under. */
+const formerNames: Partial<Record<LanguageName, string>> = {
+  node: "peal-sdk",
+};
+
+/** Where to find the releases published under another name, if any. */
+export const formerNameNote = (language: Language): string | undefined => {
+  const former = formerNames[language.name];
+
+  return former === undefined
+    ? undefined
+    : `Releases 0.1 to 0.3 were published as \`${former}\`.`;
+};
 
 /**
  * What a beta means for whoever installs it, said once in each README, and

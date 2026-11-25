@@ -9,7 +9,7 @@ import path from "node:path";
 
 import { Schema } from "effect";
 
-import { betaNote, installCommand } from "./install.ts";
+import { betaNote, formerNameNote, installCommand } from "./install.ts";
 import {
   contactEmail,
   description,
@@ -109,8 +109,8 @@ const installationSection = /\n## Installation\n[\s\S]*?(?=\n## )/u;
 /**
  * The README's Installation section, the one Fern writes or, for the
  * READMEs Fern writes without one, a new one before the Reference: the
- * command that installs this version (scripts/install.ts), and what a beta
- * means.
+ * command that installs this version (scripts/install.ts), what a beta
+ * means, and the name earlier releases were published under.
  */
 const setInstallation = async (
   language: Language,
@@ -119,9 +119,11 @@ const setInstallation = async (
   const file = path.join(folder, "README.md");
   const readme = await Bun.file(file).text();
 
-  const parts = [installation(language), betaNote(language)].filter(
-    (part) => part !== undefined
-  );
+  const parts = [
+    installation(language),
+    betaNote(language),
+    formerNameNote(language),
+  ].filter((part) => part !== undefined);
 
   const section = `\n## Installation\n\n${parts.join("\n\n")}\n`;
 
