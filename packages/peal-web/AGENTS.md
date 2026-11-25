@@ -400,22 +400,52 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   the session cookie; calls that must not resume it, such as setting the
   active workspace, go through `workspaceClient`. Better Auth error codes map
   to `Auth.errors` in the catalogues.
+- The agent's chats and drafts are kept-alive atoms that last as long as
+  the tab, so only a new page load drops them (with the rest of the atom
+  registry and every module's state). Whenever the person in a tab
+  changes, the next page loads anew (`loadAnew`, `useLoadAnew`:
+  `#auth/use-load-anew.ts`, `window.location.assign`), never
+  `router.push`, and the browser's other tabs of the app are told
+  (`tellOtherTabs`, `#auth/session-news.ts`: `peal.session-news` in
+  `localStorage`, written and removed at once, so only the other tabs
+  hear it), which `OtherTabsSession` in `Providers` answers with a full
+  load of `/`; this news is the app's own, measured or not, beside the
+  measurement's (`peal.measurement-news`).
 - Every way out of the app signs out through `useSignOut`
   (`#auth/use-sign-out.ts`, its steps in `#auth/sign-out.ts`): the account
   menu's and the setup page's **Sign out**, the Security page's **Sign in
   again** and deleting the account. It ends the session with Better Auth,
-  forgets the measured person (which tells the other tabs) and the support
-  conversation, then loads the caller's page anew
-  (`window.location.assign`), never `router.push`: the agent's chats and
-  drafts are kept-alive atoms that last as long as the tab, so only a new
-  page load drops them, the rest of the atom registry and every module's
-  state, before someone else signs in in the same tab. A refused sign-out
+  forgets the measured person and the support conversation, tells the
+  other tabs, then loads the caller's page anew. A refused sign-out
   leaves the person where they are, with the caller's toast; deleting the
   account leaves whatever Better Auth answers (`sessionGone`, the session
   went with the account). A toast the next page must show crosses the load
   in the tab's `sessionStorage` (`#auth/signed-out-notice.ts`), which
   `SignedOutNoticeToast` in `Providers` says once. Nothing else calls
-  `authClient.signOut` or `forgetConversation` (a test reads `src/`).
+  `authClient.signOut` or imports `forgetConversation`: the lint rules
+  (`no-restricted-properties`, `no-restricted-imports` in
+  `oxlint.config.ts`) allow them in `use-sign-out.ts` alone.
+- A session that ends without **Sign out** (it expired, or was revoked
+  from another device, by staff or by a password changed elsewhere)
+  brings the tab to `/login` in place, with what it held: every sign-in
+  therefore ends with a full load. The sign-in form, password or second
+  step, loads the validated `next` (`landingAddress`, `#auth/next-path.ts`:
+  in the account's language, or as it is when it names its own) and
+  tells the other tabs; a provider's sign-in and a sign-in during an
+  OAuth authorization leave through Better Auth's client, which sets
+  `location.href`, and tell them too, as does the confirmation page once
+  the emailed link signs the new account in. Starting and stopping
+  impersonation (`UserActions`, `StopImpersonating`) load the next page
+  anew and tell the other tabs. Accepting an invitation signs nobody in.
+- What the browser keeps of a person's unfinished work in a workspace,
+  the Studio's draft (`#studio/draft.ts`) and the agent panel's tabs
+  (`#agent/panel-store.ts`), is keyed by the person and the workspace
+  (`#auth/person-storage.ts`, `peal.<kind>.<userId>.<workspaceId>`, the
+  signed-in user's id from the workspace layout and the editor's page),
+  so it lasts across a sign-out for its owner and nobody else signed in
+  on the browser loads it. A key named by the workspace alone, as older
+  pages kept it, is never read and is removed when found. Deleting the
+  account forgets all of the person's (`forgetPersonKeys`).
 - Keep the OAuth pages' views (`WorkspacePickerView`) apart from their state,
   so tests render each state: peal-web has no DOM test environment. A view
   under test imports nothing from `#i18n/navigation.ts`, which needs Next to
@@ -441,7 +471,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   anything itself); the account menu's **Support**
   (`supportChat`) opens the chat through `openSupportChat` and shows the
   replies waiting (`listenToSupportUnread`). Every sign-out (`useSignOut`)
-  calls `forgetConversation`, so the next person in the browser starts their own.
+  calls `forgetConversation`, which resets Crisp's session where it is
+  loaded and expires its cookie in every case (the next page may load
+  before the reset is done), so the next person in the browser starts
+  their own.
 - The account menu at the bottom bar's start (`AccountMenuView`, the
   person's avatar with a dot while notices wait unread, and their count
   beside Notifications) polls `GET /api/me/notices/unread` every 30
