@@ -8,6 +8,8 @@ import type {
   ChannelFollowUps,
   FollowUpAsk,
 } from "#publishing/domain/follow-ups/follow-up-ability.ts";
+import { followUpsOnPlatforms } from "#publishing/domain/follow-ups/platform-follow-ups.ts";
+import type { PlatformFollowUps } from "#publishing/domain/follow-ups/platform-follow-ups.ts";
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
@@ -31,6 +33,11 @@ export class FollowUpChannels extends Context.Service<
       channel: FollowUpTarget,
       ask: FollowUpAsk
     ) => Effect.Effect<ChannelFollowUps>;
+    /**
+     * Where a rule may act on this server, every platform in Peal's
+     * order, before any channel's standing (`followUpsOnPlatforms`).
+     */
+    readonly platforms: readonly PlatformFollowUps[];
   }
 >()("peal-server/publishing/application/FollowUpChannels") {
   static readonly layer = Layer.effect(
@@ -55,6 +62,10 @@ export class FollowUpChannels extends Context.Service<
             ask
           );
         }),
+        platforms: followUpsOnPlatforms({
+          counts: counted.includes,
+          takesParts: threaded.takesParts,
+        }),
       });
     })
   );
@@ -76,6 +87,10 @@ export class FollowUpChannels extends Context.Service<
             ask
           )
         ),
+      platforms: followUpsOnPlatforms({
+        counts: () => true,
+        takesParts: () => true,
+      }),
     })
   );
 }

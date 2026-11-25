@@ -701,6 +701,7 @@ export const english: EmailCatalog = {
     plannedHeading: "Planned",
     preferences: "your notification preferences",
     subject: "Your week on Peal: {from} to {to}",
+    title: "Your week on Peal",
     wentOutHeading: "Went out",
   },
   withinFreePlan:

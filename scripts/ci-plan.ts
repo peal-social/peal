@@ -42,11 +42,12 @@ const compose = "packages/peal-docker/compose.yaml";
 export const rules: Readonly<Record<Job, Rule>> = {
   ansible: {
     // The release, backup, tunnel and uptime tests read the compose files,
-    // the server's catalogue, the web app's routes, the Pulumi stack and the
-    // design system's colours.
+    // the server's catalogue, the emails' pictures, the web app's routes, the
+    // Pulumi stack and the design system's colours.
     paths: [
       "DESIGN.md",
       "packages/peal-docker/",
+      "packages/peal-emails/src/assets/",
       "packages/peal-server/",
       "packages/peal-web/",
       "packages/peal-infra/pulumi/",

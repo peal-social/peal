@@ -126,6 +126,47 @@ func (r *RawClient) Create(
 	}, nil
 }
 
+func (r *RawClient) Platforms(
+	ctx context.Context,
+	opts ...option.RequestOption,
+) (*core.Response[[]*peal.PlatformFollowUps], error) {
+	options := core.NewRequestOptions(opts...)
+	baseURL := internal.ResolveBaseURL(
+		options.BaseURL,
+		r.baseURL,
+		"https://app.peal.social",
+	)
+	endpointURL := baseURL + "/api/v1/automations/follow-ups/platforms"
+	headers := internal.MergeHeaders(
+		r.options.ToHeader(),
+		options.ToHeader(),
+	)
+	var response []*peal.PlatformFollowUps
+	raw, err := r.caller.Call(
+		ctx,
+		&internal.CallParams{
+			URL:             endpointURL,
+			Method:          http.MethodGet,
+			Headers:         headers,
+			MaxAttempts:     options.MaxAttempts,
+			DisableRetries:  options.DisableRetries,
+			BodyProperties:  options.BodyProperties,
+			QueryParameters: options.QueryParameters,
+			Client:          options.HTTPClient,
+			Response:        &response,
+			ErrorDecoder:    internal.NewErrorDecoder(automations.ErrorCodes),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &core.Response[[]*peal.PlatformFollowUps]{
+		StatusCode: raw.StatusCode,
+		Header:     raw.Header,
+		Body:       response,
+	}, nil
+}
+
 func (r *RawClient) Get(
 	ctx context.Context,
 	request *automations.GetFollowUpsRequest,

@@ -1,4 +1,4 @@
-import { Config, Option, Redacted } from "effect";
+import { Config, Option, Redacted, Schema } from "effect";
 
 import { requiredInProduction } from "#shared/infrastructure/environment.ts";
 
@@ -42,5 +42,30 @@ export const mailSettingsConfig = Config.all({
   ),
   transport,
 });
+
+/** The most characters the line that says who sends may hold. */
+export const maxIdentityLength = 300;
+
+// One line: no line break, nor any other control character.
+const IdentitySchema = Schema.Trim.check(
+  Schema.isPattern(
+    new RegExp(
+      String.raw`^[^\p{Cc}\u2028\u2029]{0,${maxIdentityLength}}$`,
+      "u"
+    ),
+    { expected: `one line of at most ${maxIdentityLength} characters` }
+  )
+);
+
+/**
+ * `PEAL_MAIL_IDENTITY`: who sends the emails, as the operator states it
+ * under each, on one line and in the same words for every reader; none
+ * when unset or empty. Read when the server starts, so a value that is not
+ * one line stops it there.
+ */
+export const mailIdentityConfig = Config.schema(
+  IdentitySchema,
+  "PEAL_MAIL_IDENTITY"
+).pipe(Config.option, Config.map(Option.filter((identity) => identity !== "")));
 
 export type MailSettings = Config.Success<typeof mailSettingsConfig>;

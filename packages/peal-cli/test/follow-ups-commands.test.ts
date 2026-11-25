@@ -12,6 +12,34 @@ const inStudio = ["--workspace", "studio"];
 const ruleId = "0190f3a0-0000-7000-8000-0000000f0001";
 
 describe("peal follow-ups", () => {
+  it.effect("lists where rules act, kind by kind, and why not", () =>
+    Effect.gen(function* platforms() {
+      const session = yield* signedIn();
+
+      const printed = yield* session.printed([
+        "follow-ups",
+        "platforms",
+        ...inStudio,
+      ]);
+
+      assert.include(printed, "  bluesky: comment, repost");
+      assert.include(printed, "  x: comment (no repost: notBuilt)");
+      assert.include(
+        printed,
+        "  youtube: no follow-up (comment: notBuilt, repost: noApi)"
+      );
+      assert.include(
+        yield* session.printed([
+          "follow-ups",
+          "platforms",
+          "--json",
+          ...inStudio,
+        ]),
+        '"comment": "notBuilt"'
+      );
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
   it.effect(
     "starts a rule on a post, lists, pauses, resumes, approves and stops it",
     () =>

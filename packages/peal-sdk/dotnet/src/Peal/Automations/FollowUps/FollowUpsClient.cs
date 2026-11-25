@@ -346,6 +346,158 @@ public partial class FollowUpsClient : IFollowUpsClient
         }
     }
 
+    private async Task<WithRawResponse<IEnumerable<PlatformFollowUps>>> PlatformsAsyncCore(
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var _queryString = new Peal.Core.QueryStringBuilder.Builder(capacity: 0)
+            .MergeAdditional(options?.AdditionalQueryParameters)
+            .Build();
+        var _headers = await new Peal.Core.HeadersBuilder.Builder()
+            .Add(_client.Options.Headers)
+            .Add(_client.Options.AdditionalHeaders)
+            .Add(options?.AdditionalHeaders)
+            .BuildAsync()
+            .ConfigureAwait(false);
+        var response = await _client
+            .SendRequestAsync(
+                new JsonRequest
+                {
+                    Method = HttpMethod.Get,
+                    Path = "api/v1/automations/follow-ups/platforms",
+                    QueryString = _queryString,
+                    Headers = _headers,
+                    Options = options,
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+        if (response.StatusCode is >= 200 and < 400)
+        {
+            var responseBody = await response
+                .Raw.Content.ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+            try
+            {
+                var responseData = JsonUtils.Deserialize<IEnumerable<PlatformFollowUps>>(
+                    responseBody
+                )!;
+                return new WithRawResponse<IEnumerable<PlatformFollowUps>>()
+                {
+                    Data = responseData,
+                    RawResponse = new Peal.RawResponse()
+                    {
+                        StatusCode = response.Raw.StatusCode,
+                        Url = response.Raw.RequestMessage?.RequestUri ?? new Uri("about:blank"),
+                        Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                    },
+                };
+            }
+            catch (JsonException e)
+            {
+                throw new PealClientApiException(
+                    "Failed to deserialize response",
+                    response.StatusCode,
+                    responseBody,
+                    e,
+                    rawResponse: new Peal.RawResponse()
+                    {
+                        StatusCode = response.Raw.StatusCode,
+                        Url = response.Raw.RequestMessage?.RequestUri ?? new Uri("about:blank"),
+                        Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                    }
+                );
+            }
+        }
+        {
+            var responseBody = await response
+                .Raw.Content.ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+            try
+            {
+                switch (response.StatusCode)
+                {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 401:
+                        throw new UnauthorizedError(
+                            JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 403:
+                        throw new ForbiddenError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 404:
+                        throw new NotFoundError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 429:
+                        throw new TooManyRequestsError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                }
+            }
+            catch (JsonException)
+            {
+                // unable to map error response, throwing generic error
+            }
+            throw new PealClientApiException(
+                $"Error with status code {response.StatusCode}",
+                response.StatusCode,
+                responseBody,
+                rawResponse: new Peal.RawResponse()
+                {
+                    StatusCode = response.Raw.StatusCode,
+                    Url = response.Raw.RequestMessage?.RequestUri ?? new Uri("about:blank"),
+                    Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                }
+            );
+        }
+    }
+
     private async Task<WithRawResponse<FollowUpRule>> GetAsyncCore(
         GetFollowUpsRequest request,
         RequestOptions? options = null,
@@ -1007,6 +1159,22 @@ public partial class FollowUpsClient : IFollowUpsClient
     {
         return new WithRawResponseTask<FollowUpRule>(
             CreateAsyncCore(request, options, cancellationToken)
+        );
+    }
+
+    /// <summary>
+    /// Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+    /// </summary>
+    /// <example><code>
+    /// await client.Automations.FollowUps.PlatformsAsync();
+    /// </code></example>
+    public WithRawResponseTask<IEnumerable<PlatformFollowUps>> PlatformsAsync(
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return new WithRawResponseTask<IEnumerable<PlatformFollowUps>>(
+            PlatformsAsyncCore(options, cancellationToken)
         );
     }
 

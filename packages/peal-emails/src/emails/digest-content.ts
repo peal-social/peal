@@ -2,6 +2,8 @@ import { DateTime, Option } from "effect";
 
 import type { EmailCatalog, PluralWords } from "../catalog/email-catalog.ts";
 import { catalogs } from "../catalog/index.ts";
+import type { ListRow } from "../components/list-rows.tsx";
+import type { StatRow } from "../components/stat-rows.tsx";
 import { fill, instantIn } from "../format.ts";
 import type { Locale } from "../locale.ts";
 import { nameForMail } from "../names.ts";
@@ -93,52 +95,55 @@ const dayIn = (instant: DateTime.Utc, locale: Locale) =>
 const lastDayBefore = (instant: DateTime.Utc) =>
   DateTime.subtract(instant, { days: 1 });
 
+/** The first posts of a week, then how many more, if any. */
+export interface DigestList {
+  readonly more: string | null;
+  readonly rows: readonly ListRow[];
+}
+
 /**
- * One workspace's part, in the words of the reader's catalog, as lines: the
- * HTML and the text are written from the same ones.
+ * One workspace's part, in the words of the reader's catalog: the HTML and
+ * the text are written from the same ones.
  */
 export interface DigestPart {
   readonly calendar: string;
   readonly calendarUrl: string;
-  readonly counts: string;
+  readonly counts: readonly StatRow[];
   readonly figures: readonly string[];
   readonly name: string;
-  /** The first posts planned, then how many more. */
-  readonly planned: readonly string[];
-  /** The first posts that went out, then how many more. */
-  readonly wentOut: readonly string[];
+  readonly planned: DigestList;
+  readonly wentOut: DigestList;
 }
 
 const countsOf = (
   catalog: EmailCatalog,
   locale: Locale,
   counts: DigestCounts
-): string =>
-  [
-    pluralIn(locale, catalog.weeklyDigest.counts.wentOut, counts.wentOut),
-    ...(counts.failed > 0
-      ? [pluralIn(locale, catalog.weeklyDigest.counts.failed, counts.failed)]
-      : []),
+): readonly StatRow[] => {
+  const words = catalog.weeklyDigest.counts;
+
+  const row = (
+    state: StatRow["state"],
+    plural: PluralWords,
+    count: number
+  ): StatRow => ({ state, text: pluralIn(locale, plural, count) });
+
+  return [
+    row("published", words.wentOut, counts.wentOut),
+    ...(counts.failed > 0 ? [row("failed", words.failed, counts.failed)] : []),
     ...(counts.unconfirmed > 0
-      ? [
-          pluralIn(
-            locale,
-            catalog.weeklyDigest.counts.unconfirmed,
-            counts.unconfirmed
-          ),
-        ]
+      ? [row("unconfirmed", words.unconfirmed, counts.unconfirmed)]
       : []),
-    pluralIn(locale, catalog.weeklyDigest.counts.scheduled, counts.scheduled),
+    row("scheduled", words.scheduled, counts.scheduled),
     ...(counts.awaitingApproval > 0
-      ? [
-          pluralIn(
-            locale,
-            catalog.weeklyDigest.counts.awaitingApproval,
-            counts.awaitingApproval
-          ),
-        ]
+      ? [row("approval", words.awaitingApproval, counts.awaitingApproval)]
       : []),
-  ].join(" · ");
+  ];
+};
+
+// The counts on one line, as the text and an inbox's preview have them.
+const countsLine = (counts: readonly StatRow[]): string =>
+  counts.map(({ text }) => text).join(" · ");
 
 const figuresOf = (
   catalog: EmailCatalog,
@@ -165,33 +170,29 @@ const figuresOf = (
     },
   });
 
-const postLine = (catalog: EmailCatalog, locale: Locale, post: DigestPost) =>
-  `${instantIn(post.at, locale)}: ${
-    post.excerpt === "" ? catalog.weeklyDigest.noText : post.excerpt
-  }`;
+const postRow = (
+  catalog: EmailCatalog,
+  locale: Locale,
+  post: DigestPost
+): ListRow => ({
+  at: instantIn(post.at, locale),
+  text: post.excerpt === "" ? catalog.weeklyDigest.noText : post.excerpt,
+});
 
-// The posts listed, a line each, then how many more were counted. None
-// listed, nothing said.
-const linesOf = (
+// The posts listed, then how many more were counted. None listed, nothing
+// said.
+const listOf = (
   catalog: EmailCatalog,
   locale: Locale,
   posts: readonly DigestPost[],
   counted: number
-): readonly string[] =>
-  posts.length === 0
-    ? []
-    : [
-        ...posts.map((post) => postLine(catalog, locale, post)),
-        ...(counted > posts.length
-          ? [
-              pluralIn(
-                locale,
-                catalog.weeklyDigest.more,
-                counted - posts.length
-              ),
-            ]
-          : []),
-      ];
+): DigestList => ({
+  more:
+    posts.length > 0 && counted > posts.length
+      ? pluralIn(locale, catalog.weeklyDigest.more, counted - posts.length)
+      : null,
+  rows: posts.map((post) => postRow(catalog, locale, post)),
+});
 
 const partOf = (
   catalog: EmailCatalog,
@@ -211,18 +212,13 @@ const partOf = (
   counts: countsOf(catalog, locale, workspace.counts),
   figures: figuresOf(catalog, locale, workspace.engagement),
   name: nameForMail(workspace.name, catalog.withheldNames.workspace),
-  planned: linesOf(
+  planned: listOf(
     catalog,
     locale,
     workspace.planned,
     workspace.counts.scheduled + workspace.counts.awaitingApproval
   ),
-  wentOut: linesOf(
-    catalog,
-    locale,
-    workspace.wentOut,
-    workspace.counts.wentOut
-  ),
+  wentOut: listOf(catalog, locale, workspace.wentOut, workspace.counts.wentOut),
 });
 
 /** What a digest says, in its reader's language, as plain text. */
@@ -235,6 +231,8 @@ export interface DigestContent {
   readonly preferences: string;
   readonly preferencesUrl: string;
   readonly subject: string;
+  /** Its heading: the subject without its dates, which the intro says. */
+  readonly title: string;
   readonly url: string;
   readonly wentOutHeading: string;
   /** Why it comes and how to stop it, around `preferences`. */
@@ -266,24 +264,33 @@ export const digestContent = (email: WeeklyDigestEmail): DigestContent => {
     preferences: words.preferences,
     preferencesUrl: email.preferencesUrl,
     subject: fill(words.subject, range),
+    title: words.title,
     url: email.calendarUrl,
     wentOutHeading: words.wentOutHeading,
     why: { after, before },
   };
 };
 
+/** What an inbox shows after the subject: each workspace and its counts. */
+export const digestPreview = ({ parts }: DigestContent): string =>
+  parts.map(({ counts, name }) => `${name}: ${countsLine(counts)}`).join(". ");
+
 const listText = (
   heading: string,
-  lines: readonly string[]
+  { more, rows }: DigestList
 ): readonly string[] =>
-  lines.length === 0
+  rows.length === 0
     ? []
-    : [`${heading}:`, ...lines.map((line) => `- ${line}`)];
+    : [
+        `${heading}:`,
+        ...rows.map(({ at, text }) => `- ${at}: ${text}`),
+        ...(more === null ? [] : [`- ${more}`]),
+      ];
 
 const partText = (content: DigestContent, part: DigestPart): string =>
   [
     part.name,
-    part.counts,
+    countsLine(part.counts),
     ...part.figures,
     ...listText(content.wentOutHeading, part.wentOut),
     ...listText(content.plannedHeading, part.planned),
@@ -291,7 +298,11 @@ const partText = (content: DigestContent, part: DigestPart): string =>
   ].join("\n");
 
 /** A digest's text. */
-export const digestText = (content: DigestContent, locale: Locale): string =>
+export const digestText = (
+  content: DigestContent,
+  locale: Locale,
+  identity: string | null
+): string =>
   textPart(
     {
       action: content.action,
@@ -299,6 +310,7 @@ export const digestText = (content: DigestContent, locale: Locale): string =>
         content.intro,
         ...content.parts.map((part) => partText(content, part)),
       ],
+      identity,
       ignore: `${content.why.before}${content.preferences} (${content.preferencesUrl})${content.why.after}`,
       url: content.url,
     },

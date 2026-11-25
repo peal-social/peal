@@ -6,7 +6,7 @@ draft: false
 
 Effective date: 13 November 2026
 
-Last updated: 23 November 2026
+Last updated: 25 November 2026
 
 ## Summary
 
@@ -161,6 +161,8 @@ Only once you allow it on the website: the same events under an identifier kept 
 ### Communications
 
 The messages you send us and the emails we send you.
+
+Our emails load up to four images, the logo and decorations, which your mail app or mail service fetches from app.peal.social. Their addresses are the same for everyone and say nothing about you. One decoration, which moves, is only in the weekly digest, the email that confirms an address and invitations. We don't use these requests to know whether you opened an email.
 
 ### Comments on your posts, and people who are not users
 
@@ -521,6 +523,7 @@ We email account holders at least 30 days before a substantial change to this po
 
 Changes since this policy was first published:
 
+- 25 November 2026: the images our emails load, which your mail app or mail service fetches from app.peal.social, and which we don't use to know whether you opened an email.
 - 23 November 2026: a summary at the top and a few plain lines after each section, which change nothing of what the policy says; the list of our providers moves to the sub-processors page; the data processing agreement that applies between an organisation and us; our registration number.
 - 22 November 2026: a support chat, with Crisp, on this website, the documentation, the blog and the app, which loads only once you open it; its conversations are kept 3 years after their last message.
 - 20 November 2026: the app keeps how you last signed in on a browser in the cookie `peal.last-sign-in` for 30 days, so its sign-in page offers that way first.

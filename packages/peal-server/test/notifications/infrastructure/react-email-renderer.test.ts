@@ -1,8 +1,9 @@
 import { assert, describe, layer } from "@effect/vitest";
-import { DateTime, Effect, Option } from "effect";
+import { ConfigProvider, DateTime, Effect, Layer, Option } from "effect";
 
 import { EmailRenderer } from "#notifications/application/email-renderer.ts";
 import { digestWeekOf } from "#notifications/domain/weekly-digest.ts";
+import { PublicAppLinks } from "#notifications/infrastructure/public-app-links.ts";
 import { ReactEmailRenderer } from "#notifications/infrastructure/react-email-renderer.ts";
 import { PostIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 
@@ -10,8 +11,64 @@ const workspaceId = WorkspaceIdSchema.make(
   "2f9a3c1e-7d4b-4e8f-9a1c-3b5d7e9f1a2c"
 );
 
+// The renderer of a server with these settings.
+const rendererOf = (settings: Readonly<Record<string, string>>) =>
+  ReactEmailRenderer.pipe(
+    Layer.provide(PublicAppLinks),
+    Layer.provide(ConfigProvider.layer(ConfigProvider.fromUnknown(settings)))
+  );
+
+const verifyEmail = {
+  _tag: "VerifyEmail",
+  locale: "en",
+  to: "ada@example.test",
+  url: "https://app.example.test/api/auth/verify-email?token=abc",
+} as const;
+
+const identity = "Synthetic Studio <SAS> & Co";
+
 describe("the emails' renderer", () => {
-  layer(ReactEmailRenderer)((it) => {
+  layer(
+    rendererOf({
+      PEAL_MAIL_IDENTITY: identity,
+      PUBLIC_URL: "https://peal.example.test",
+    })
+  )((it) => {
+    it.effect("names the pictures this server serves, and who sends", () =>
+      Effect.gen(function* stated() {
+        const { html, text } = yield* EmailRenderer.use((renderer) =>
+          renderer.account(verifyEmail)
+        );
+
+        for (const name of ["mark.png", "header.gif", "footer.png"]) {
+          assert.include(
+            html,
+            `src="https://peal.example.test/api/email-assets/${name}"`
+          );
+        }
+
+        assert.include(html, "Synthetic Studio &lt;SAS&gt; &amp; Co");
+        assert.isTrue(text.endsWith(`The Peal team\n\n${identity}`));
+      })
+    );
+  });
+
+  layer(rendererOf({}))((it) => {
+    it.effect("states nobody on a server that does not", () =>
+      Effect.gen(function* unstated() {
+        const { html, text } = yield* EmailRenderer.use((renderer) =>
+          renderer.account(verifyEmail)
+        );
+
+        assert.include(
+          html,
+          'src="http://localhost:3001/api/email-assets/mark.png"'
+        );
+        assert.notInclude(html, "Synthetic Studio");
+        assert.isTrue(text.endsWith("The Peal team"));
+      })
+    );
+
     it.effect("writes an account email in its reader's language", () =>
       Effect.gen(function* account() {
         const renderer = yield* EmailRenderer;
@@ -93,9 +150,12 @@ describe("the emails' renderer", () => {
 
         for (const part of [html, text]) {
           assert.include(part, "Studio Nord");
-          assert.include(part, "November 10, 2026 at 9:00 AM UTC: Hello");
+          assert.include(part, "November 10, 2026 at 9:00 AM UTC");
           assert.include(part, calendarUrl);
         }
+
+        assert.include(text, "November 10, 2026 at 9:00 AM UTC: Hello");
+        assert.include(html, ">Hello</div>");
       })
     );
   });

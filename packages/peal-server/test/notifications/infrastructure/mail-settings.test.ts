@@ -1,7 +1,11 @@
 import { assert, describe, it } from "@effect/vitest";
-import { ConfigProvider, Effect, Redacted } from "effect";
+import { ConfigProvider, Effect, Option, Redacted } from "effect";
 
-import { mailSettingsConfig } from "#notifications/infrastructure/mail-settings.ts";
+import {
+  mailIdentityConfig,
+  mailSettingsConfig,
+  maxIdentityLength,
+} from "#notifications/infrastructure/mail-settings.ts";
 
 const settingsFrom = (env: Record<string, string>) =>
   mailSettingsConfig.parse(ConfigProvider.fromUnknown(env));
@@ -59,6 +63,44 @@ describe("the mail settings", () => {
       const failure = yield* settingsFrom(env).pipe(Effect.flip);
 
       assert.include(String(failure), missing);
+    })
+  );
+});
+
+const identityFrom = (env: Record<string, string>) =>
+  mailIdentityConfig.parse(ConfigProvider.fromEnv({ env }));
+
+describe("who sends, as the operator states it", () => {
+  it.effect.each([
+    { env: {}, stated: Option.none() },
+    { env: { PEAL_MAIL_IDENTITY: "" }, stated: Option.none() },
+    { env: { PEAL_MAIL_IDENTITY: "   " }, stated: Option.none() },
+    {
+      env: { PEAL_MAIL_IDENTITY: " Synthetic Studio SAS · 1 Example St " },
+      stated: Option.some("Synthetic Studio SAS · 1 Example St"),
+    },
+    {
+      env: { PEAL_MAIL_IDENTITY: "x".repeat(maxIdentityLength) },
+      stated: Option.some("x".repeat(maxIdentityLength)),
+    },
+  ])("is read from $env", ({ env, stated }) =>
+    Effect.gen(function* read() {
+      assert.deepStrictEqual(yield* identityFrom(env), stated);
+    })
+  );
+
+  it.effect.each([
+    { value: "Synthetic Studio SAS\n1 Example St", what: "two lines" },
+    { value: "Synthetic Studio\u2028SAS", what: "a line separator" },
+    { value: "Synthetic\u0007Studio", what: "a control character" },
+    { value: "x".repeat(maxIdentityLength + 1), what: "too long a line" },
+  ])("refuses $what", ({ value }) =>
+    Effect.gen(function* refused() {
+      const failure = yield* identityFrom({ PEAL_MAIL_IDENTITY: value }).pipe(
+        Effect.flip
+      );
+
+      assert.include(String(failure), "PEAL_MAIL_IDENTITY");
     })
   );
 });

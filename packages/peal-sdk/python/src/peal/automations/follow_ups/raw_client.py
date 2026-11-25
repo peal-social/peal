@@ -20,6 +20,7 @@ from ...errors.unprocessable_entity_error import UnprocessableEntityError
 from ...types.follow_up_rule import FollowUpRule
 from ...types.follow_up_rule_page import FollowUpRulePage
 from ...types.follow_up_rule_status import FollowUpRuleStatus
+from ...types.platform_follow_ups import PlatformFollowUps
 from ...types.unauthenticated_encoded import UnauthenticatedEncoded
 from pydantic import ValidationError
 
@@ -265,6 +266,101 @@ class RawFollowUpsClient:
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def platforms(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[typing.List[PlatformFollowUps]]:
+        """
+        Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[typing.List[PlatformFollowUps]]
+            Success
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "api/v1/automations/follow-ups/platforms",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[PlatformFollowUps],
+                    parse_obj_as(
+                        type_=typing.List[PlatformFollowUps],  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        UnauthenticatedEncoded,
+                        parse_obj_as(
+                            type_=UnauthenticatedEncoded,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         typing.Any,
@@ -975,6 +1071,101 @@ class AsyncRawFollowUpsClient:
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def platforms(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[typing.List[PlatformFollowUps]]:
+        """
+        Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[typing.List[PlatformFollowUps]]
+            Success
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "api/v1/automations/follow-ups/platforms",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[PlatformFollowUps],
+                    parse_obj_as(
+                        type_=typing.List[PlatformFollowUps],  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        UnauthenticatedEncoded,
+                        parse_obj_as(
+                            type_=UnauthenticatedEncoded,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         typing.Any,

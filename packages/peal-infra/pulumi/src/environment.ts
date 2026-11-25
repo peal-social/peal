@@ -52,6 +52,16 @@ const adminPaths = [
 const clientErrorsPath = "api/client-errors";
 
 /**
+ * The pictures the emails show (peal-server, src/app/email-assets/route.ts),
+ * which mail clients and the proxies of mail services fetch without
+ * signing in: a Bypass policy opens them, in an application of their own.
+ * The server takes no credential there and answers the pictures it lists
+ * alone, as in production. The Ansible project's peal_access_bypass_paths
+ * routes the same path.
+ */
+const emailAssetsPath = "api/email-assets";
+
+/**
  * How long the uptime server's service token is valid: a year, in hours.
  * Renewed before it ends with the dashboard's Refresh, which keeps its id
  * and secret (README.md, "The uptime server").
@@ -385,8 +395,34 @@ export class PealEnvironment extends pulumi.ComponentResource {
         { parent: this }
       );
 
+      const emailAssets = new cloudflare.ZeroTrustAccessApplication(
+        "access-email-assets",
+        {
+          accountId,
+          destinations: [
+            {
+              type: "public",
+              uri: `${host(hostnames.app)}/${emailAssetsPath}`,
+            },
+          ],
+          domain: `${host(hostnames.app)}/${emailAssetsPath}`,
+          name: `${title} email assets`,
+          policies: [{ id: policies.publicCallbacks, precedence: 1 }],
+          sessionDuration: "24h",
+          type: "self_hosted",
+        },
+        { parent: this }
+      );
+
       const [grafanaApp, sshApp] = [grafana(), ssh()];
-      this.applications = [app, callbacks, clientErrors, grafanaApp, sshApp];
+      this.applications = [
+        app,
+        callbacks,
+        clientErrors,
+        emailAssets,
+        grafanaApp,
+        sshApp,
+      ];
       this.accessAud = {
         app: app.aud,
         grafana: grafanaApp.aud,
