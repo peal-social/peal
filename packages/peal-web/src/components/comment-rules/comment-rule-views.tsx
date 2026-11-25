@@ -299,12 +299,13 @@ export const CommentRuleFormView = ({
       <div className="flex flex-col gap-1">
         <Label htmlFor={channelId}>{t("form.channel")}</Label>
         <Select
+          className="w-full"
           value={draft.channelId}
           onValueChange={(value) => {
             onChange(onChannel(value ?? ""));
           }}
         >
-          <SelectTrigger id={channelId}>
+          <SelectTrigger id={channelId} className="w-full">
             <SelectValue placeholder={t("form.chooseChannel")} />
           </SelectTrigger>
           <SelectContent>
