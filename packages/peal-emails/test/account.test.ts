@@ -107,7 +107,7 @@ describe(renderAccountEmail, () => {
     expect(email.subject).toBe("Confirm your email for Peal");
     expect(email.text).toContain(`Confirm my email: ${url}`);
     expect(email.html).toMatch(/<html [^>]*lang="en"/u);
-    expect(email.html).toContain(`href="${url.replace("&", "&amp;")}"`);
+    expect(email.html).toContain(`href="${url.replaceAll("&", "&amp;")}"`);
   });
 
   it("says nothing is refunded when nothing was charged, and that a plan renews until a later day asked for", async () => {
