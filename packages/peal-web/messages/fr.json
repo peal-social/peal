@@ -5564,6 +5564,7 @@
       "sites": "{count, plural, one {# site web connecté} other {# sites web connectés}}.",
       "new": "Nouvel article",
       "connect": "Connecter un site",
+      "loading": "Chargement des articles…",
       "loadFailed": "Les articles n’ont pas pu être chargés.",
       "retry": "Réessayer",
       "empty": "Aucun article pour l’instant."
