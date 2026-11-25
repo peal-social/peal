@@ -1,5 +1,5 @@
-import { constVoid } from "effect/Function";
-import { AtomRegistry } from "effect/reactivity";
+import { Option } from "effect";
+import { AsyncResult, AtomRegistry } from "effect/reactivity";
 import type { Atom } from "effect/reactivity";
 
 /**
@@ -13,11 +13,18 @@ export const renderHoldMs = 10_000;
 export interface RenderRegistry extends AtomRegistry.AtomRegistry {
   /**
    * Holds, from now on, what a render reads until a subscription comes;
-   * the function returned stops it. Server rendering never holds: nothing
-   * subscribes there.
+   * the function returned stops it and lets every hold go. Server
+   * rendering never holds: nothing subscribes there.
    */
   readonly holdRenders: () => () => void;
 }
+
+// Whether a node holds a refusal (a 401, a 403, a 429): never kept.
+const refusedIn = (node: AtomRegistry.Node<unknown>) =>
+  Option.exists(
+    node.valueOption(),
+    (value) => AsyncResult.isAsyncResult(value) && AsyncResult.isFailure(value)
+  );
 
 interface Hold {
   readonly stop: () => void;
@@ -33,15 +40,19 @@ interface Hold {
  * their requests, before it commits it, once its payload is in. The registry
  * drops a node that nothing subscribes to in a task of its own, which runs
  * in between: it cancelled the request, and the commit asked again (two or
- * three requests for one list). A hold covers that gap alone: once a reader
- * has subscribed, the query goes as its last reader goes, as before, so a
- * page opened again reads it afresh.
+ * three requests for one list). A hold covers that gap alone, once per
+ * node: a node something has subscribed to is never held, so a query goes
+ * as its last reader goes, as before, and a page opened again reads it
+ * afresh even when its render comes before the registry's task. A refusal
+ * is never held either: the commit asks again, as it did.
  */
 export const renderRegistry = (
   registry: AtomRegistry.AtomRegistry,
   holdMs: number = renderHoldMs
 ): RenderRegistry => {
   const holds = new Map<AtomRegistry.Node<unknown>, Hold>();
+  // Nodes held once, or subscribed to: never held (again).
+  const seen = new WeakSet<AtomRegistry.Node<unknown>>();
   let holding = false;
 
   const release = (node: AtomRegistry.Node<unknown>) => {
@@ -61,18 +72,44 @@ export const renderRegistry = (
     }
   };
 
-  // A node nothing listens to yet: the render's own read, before its commit.
+  // Subscribed to: the registry keeps it from now on, and lets it go with
+  // its last reader.
+  const subscribed = (node: AtomRegistry.Node<unknown>) => {
+    seen.add(node);
+    release(node);
+  };
+
+  // A node never read before, nothing listening to it: the render's own
+  // read, before its commit.
   const hold = (node: AtomRegistry.Node<unknown>) => {
-    if (!holding || node.listeners.size > 0) {
+    if (
+      !holding ||
+      seen.has(node) ||
+      node.listeners.size > 0 ||
+      refusedIn(node)
+    ) {
       return;
     }
 
+    seen.add(node);
     holds.set(node, {
-      stop: node.subscribe(constVoid),
+      // A refusal that comes while held goes at once.
+      stop: node.subscribe(() => {
+        if (refusedIn(node)) {
+          release(node);
+        }
+      }),
       timer: setTimeout(() => {
         release(node);
       }, holdMs),
     });
+  };
+
+  const releaseAll = () => {
+    // A Map's iteration skips what is deleted on the way.
+    for (const node of holds.keys()) {
+      release(node);
+    }
   };
 
   const forgetHolds = () => {
@@ -103,6 +140,7 @@ export const renderRegistry = (
 
       return () => {
         holding = false;
+        releaseAll();
       };
     },
     modify: <R, W, A>(
@@ -112,7 +150,7 @@ export const renderRegistry = (
     mount: <A>(atom: Atom.Atom<A>) => {
       const unmount = registry.mount(atom);
 
-      release(registry.ensureNode(atom));
+      subscribed(registry.ensureNode(atom));
 
       return unmount;
     },
@@ -154,7 +192,7 @@ export const renderRegistry = (
     ) => {
       const unsubscribe = registry.subscribe(atom, f, options);
 
-      release(registry.ensureNode(atom));
+      subscribed(registry.ensureNode(atom));
 
       return unsubscribe;
     },

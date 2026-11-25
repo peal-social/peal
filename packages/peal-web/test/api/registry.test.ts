@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import { Atom, AtomRegistry } from "effect/reactivity";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -37,6 +38,39 @@ const setUp = () => {
 
   return { builds: () => builds, inner, query, runTasks };
 };
+
+// A query refused (a 401 near a session's end, a 403, a 429): its answer
+// comes once the registry's tasks run, `sync` when it comes at once.
+const refused = (count: () => void, sync = false) =>
+  Atom.make(
+    Effect.sync(count).pipe(
+      Effect.andThen(sync ? Effect.void : Effect.yieldNow),
+      Effect.andThen(Effect.fail("refused"))
+    )
+  );
+
+// What a registry of the library holds that the app's never reads, so the
+// wrapper leaves it out: its own workings, not the registry's interface.
+const workings = [
+  "atomHasTtl",
+  "constructor",
+  "createNode",
+  "defaultIdleTTL",
+  "destroyNode",
+  "dispatcher",
+  "disposed",
+  "invalidateAtom",
+  "nodeTimeoutBucket",
+  "nodes",
+  "removeIdleNode",
+  "removeNode",
+  "removeNodeTimeout",
+  "scheduleAtomRemoval",
+  "setNodeTimeout",
+  "sweepBucket",
+  "timeoutBuckets",
+  "timeoutResolution",
+];
 
 describe("the app's atom registry", () => {
   beforeEach(() => {
@@ -155,6 +189,166 @@ describe("the app's atom registry", () => {
     registry.get(query);
 
     expect(builds()).toBe(2);
+
+    registry.dispose();
+  });
+
+  it("reads a query again when its page opens again before the registry let it go", () => {
+    const { builds, inner, query, runTasks } = setUp();
+    const registry = renderRegistry(inner);
+
+    registry.holdRenders();
+
+    registry.get(query);
+
+    const unsubscribe = registry.subscribe(query, () => {
+      // The component's update.
+    });
+
+    runTasks();
+
+    // The page closes, and opens again before the registry's task has
+    // dropped the query: the new render reads the old node, then the task
+    // runs before the commit, as on a page that was never held.
+    unsubscribe();
+    registry.get(query);
+    runTasks();
+
+    const unmount = registry.mount(query);
+
+    expect(registry.get(query)).toBe(2);
+    expect(builds()).toBe(2);
+
+    unmount();
+    registry.dispose();
+  });
+
+  it("lets a refusal go as soon as it comes, so the commit asks again", () => {
+    const { inner, runTasks } = setUp();
+    const registry = renderRegistry(inner);
+    let asked = 0;
+
+    const query = refused(() => {
+      asked += 1;
+    });
+
+    registry.holdRenders();
+
+    registry.get(query);
+    // The answer comes, a refusal, then the registry drops the query.
+    runTasks();
+    runTasks();
+
+    expect(vi.getTimerCount()).toBe(0);
+
+    const unmount = registry.mount(query);
+
+    expect(asked).toBe(2);
+
+    unmount();
+    registry.dispose();
+  });
+
+  it("holds no refusal that came with the read", () => {
+    const { inner, runTasks } = setUp();
+    const registry = renderRegistry(inner);
+    let asked = 0;
+
+    const query = refused(() => {
+      asked += 1;
+    }, true);
+
+    registry.holdRenders();
+
+    registry.get(query);
+
+    expect(vi.getTimerCount()).toBe(0);
+
+    runTasks();
+    registry.get(query);
+
+    expect(asked).toBe(2);
+
+    registry.dispose();
+  });
+
+  it("holds again after Strict Mode's second effect, as the provider's effect runs twice", () => {
+    const { builds, inner, query, runTasks } = setUp();
+    const registry = renderRegistry(inner);
+
+    registry.holdRenders()();
+    registry.holdRenders();
+
+    registry.get(query);
+    runTasks();
+
+    const unmount = registry.mount(query);
+
+    expect(builds()).toBe(1);
+
+    unmount();
+    registry.dispose();
+  });
+
+  it("lets every hold go, its timer cleared, when the provider unmounts", () => {
+    const { builds, inner, query, runTasks } = setUp();
+    const registry = renderRegistry(inner);
+    const stopHolding = registry.holdRenders();
+
+    registry.get(query);
+    stopHolding();
+
+    expect(vi.getTimerCount()).toBe(0);
+
+    runTasks();
+    registry.get(query);
+
+    expect(builds()).toBe(2);
+
+    registry.dispose();
+  });
+
+  it("leaves alone what a commit subscribed before holding began", () => {
+    // Children's effects run before their provider's: on the first commit,
+    // the page subscribes before the registry holds anything.
+    const { builds, inner, query, runTasks } = setUp();
+    const registry = renderRegistry(inner);
+
+    registry.get(query);
+
+    const unmount = registry.mount(query);
+
+    registry.holdRenders();
+    runTasks();
+    unmount();
+    runTasks();
+
+    expect(vi.getTimerCount()).toBe(0);
+    expect(registry.get(query)).toBe(2);
+    expect(builds()).toBe(2);
+
+    registry.dispose();
+  });
+
+  it("passes on every member of the library's registry", () => {
+    const { inner } = setUp();
+    const registry = renderRegistry(inner);
+
+    const members = [
+      ...Object.keys(inner),
+      ...Object.getOwnPropertyNames(Object.getPrototypeOf(inner)),
+    ];
+
+    // A member a new version adds fails here until the wrapper passes it on
+    // or it joins the workings above.
+    expect(
+      members.filter(
+        (member) => !(member in registry) && !workings.includes(member)
+      )
+    ).toStrictEqual([]);
+    expect(
+      workings.filter((member) => !members.includes(member))
+    ).toStrictEqual([]);
 
     registry.dispose();
   });
