@@ -1,8 +1,10 @@
 // The SDKs: one folder, Nx project (peal-sdk-<name>) and registry package per
 // language, generated from openapi.json by Fern's generator for the language.
-// A language's version is its package's: bump it here to release it. Every
+// A language's release is its package's: bump it here to release it. Every
 // image is pinned by digest, as the compose stack's are.
 import type { Schema } from "effect";
+
+import { pep440, rubygems } from "./versions.ts";
 
 export const repository = "https://github.com/peal-social/peal";
 export const homepage = "https://peal.social";
@@ -55,6 +57,11 @@ export interface Language {
   /** What developers install: the registry and the package's name there. */
   readonly package: { readonly name: string; readonly registry: string };
   /**
+   * The release, in SemVer (`0.4.0-beta.1`): what its tag names,
+   * sdk-<language>-v<release>.
+   */
+  readonly release: string;
+  /**
    * The smoke test, run like the build (same image, same folder) by
    * scripts/test.ts, with PEAL_API_URL pointing at its stand-in server.
    */
@@ -68,6 +75,10 @@ export interface Language {
    * other than the one the API reads.
    */
   readonly testsUnions?: true;
+  /**
+   * The release as the language's registry spells it (scripts/versions.ts):
+   * the version the generator writes in the manifest, and the package's.
+   */
   readonly version: string;
 }
 
@@ -79,6 +90,14 @@ const java = "0.3.1";
 const php = "0.3.0";
 const dotnet = "0.3.0";
 const rust = "0.3.0";
+
+/**
+ * While the beta line is the only one that speaks the live API, npm's
+ * `latest` takes a prerelease too, so `npm install peal-sdk` gets it. Set it
+ * to false at general availability: a later prerelease then goes out under
+ * `next`, and `latest` stays on the stable release.
+ */
+export const prereleasesAreLatest = true;
 
 /** Where the SDKs' source lives, for the manifests that link to it. */
 export const sourceUrl = (language: LanguageName): string =>
@@ -128,13 +147,14 @@ export const languages: readonly Language[] = [
     },
     name: "node",
     package: { name: "peal-sdk", registry: "npm" },
+    release: node,
     test: "node test/smoke.mjs",
     version: node,
   },
   {
     build: {
       kind: "host",
-      script: `rm -rf dist && uv build --quiet --out-dir dist && uv run --quiet --isolated --no-project --with "$(ls dist/*.whl)" python -c "import peal; from importlib.metadata import version; assert version('peal-sdk') == '${python}'"`,
+      script: `rm -rf dist && uv build --quiet --out-dir dist && uv run --quiet --isolated --no-project --with "$(ls dist/*.whl)" python -c "import peal; from importlib.metadata import version; assert version('peal-sdk') == '${pep440(python)}'"`,
     },
     generator: {
       config: {
@@ -148,8 +168,9 @@ export const languages: readonly Language[] = [
     },
     name: "python",
     package: { name: "peal-sdk", registry: "PyPI" },
+    release: python,
     test: 'uv run --quiet --isolated --no-project --with "$(ls dist/*.whl)" python smoke.py',
-    version: python,
+    version: pep440(python),
   },
   {
     build: {
@@ -180,6 +201,7 @@ export const languages: readonly Language[] = [
       name: "github.com/peal-social/peal/packages/peal-sdk/go",
       registry: "Go",
     },
+    release: go,
     // Fern's own tests call a WireMock server, which the smoke test has no
     // need of.
     test: "go test -count=1 -run TestSmoke .",
@@ -192,7 +214,7 @@ export const languages: readonly Language[] = [
         "ruby:4.0.9@sha256:07042b74555ff2eef7365abd72d39cba6e499ab63e2d2942fd34d4778338495b",
       kind: "container",
       // custom.gemspec.rb lists the gem's files, so dist/ can wait.
-      script: `rm -rf dist && gem build --silent peal.gemspec && mkdir dist && mv peal-${ruby}.gem dist/ && ruby -Ilib -e 'require "peal"; abort("wrong version") unless Peal::VERSION == "${ruby}"'`,
+      script: `rm -rf dist && gem build --silent peal.gemspec && mkdir dist && mv peal-${rubygems(ruby)}.gem dist/ && ruby -Ilib -e 'require "peal"; abort("wrong version") unless Peal::VERSION == "${rubygems(ruby)}"'`,
     },
     generator: {
       // The gem, its folder and its module take the organization's name:
@@ -205,9 +227,10 @@ export const languages: readonly Language[] = [
     },
     name: "ruby",
     package: { name: "peal", registry: "RubyGems" },
+    release: ruby,
     test: "ruby -Ilib smoke.rb",
     testsUnions: true,
-    version: ruby,
+    version: rubygems(ruby),
   },
   {
     build: {
@@ -230,6 +253,7 @@ export const languages: readonly Language[] = [
     },
     name: "java",
     package: { name: "social.peal:peal", registry: "Maven Central" },
+    release: java,
     test: "mvn --batch-mode --quiet -Dmaven.repo.local=/cache/m2 -Dtest=SmokeTest -Dsurefire.failIfNoSpecifiedTests=false test",
     version: java,
   },
@@ -255,6 +279,7 @@ export const languages: readonly Language[] = [
     },
     name: "php",
     package: { name: "peal-social/peal", registry: "Packagist" },
+    release: php,
     test: "php smoke.php",
     version: php,
   },
@@ -284,6 +309,7 @@ export const languages: readonly Language[] = [
     },
     name: "dotnet",
     package: { name: "Peal", registry: "NuGet" },
+    release: dotnet,
     test: "dotnet run --project smoke/Smoke.csproj --nologo --verbosity quiet",
     version: dotnet,
   },
@@ -314,6 +340,7 @@ export const languages: readonly Language[] = [
     },
     name: "rust",
     package: { name: "peal-sdk", registry: "crates.io" },
+    release: rust,
     test: "cargo run --quiet --example smoke",
     version: rust,
   },
