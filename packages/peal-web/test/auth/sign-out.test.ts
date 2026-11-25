@@ -33,13 +33,16 @@ const recorded = (ended: boolean | "unreachable") => {
     load: (address) => {
       calls.push(`load:${address}`);
     },
+    tellOtherTabs: () => {
+      calls.push("tellOtherTabs");
+    },
   };
 
   return { calls, steps };
 };
 
 describe("signing out", () => {
-  it("ends the session, forgets the person, then loads the next page anew", async () => {
+  it("ends the session, forgets the person, tells the other tabs, then loads the next page anew", async () => {
     const { calls, steps } = recorded(true);
 
     const left = await signOutAndLoad(steps, {
@@ -54,6 +57,7 @@ describe("signing out", () => {
       "endSession",
       "forgetMeasurement",
       "forgetConversation",
+      "tellOtherTabs",
       "load:/fr/login?next=%2Fada%2Fsettings%2Faccount%2Fsecurity",
     ]);
   });
@@ -100,6 +104,7 @@ describe("signing out", () => {
       "endSession",
       "forgetMeasurement",
       "forgetConversation",
+      "tellOtherTabs",
       "keepNotice:accountDeleted",
       "load:/",
     ]);

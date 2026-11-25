@@ -5,7 +5,8 @@ import type { SignedOutNotice } from "#auth/signed-out-notice.ts";
 // browser drops the atom registry (the agent's chats and drafts, which
 // live as long as the tab) and every module's state with the page, so
 // the next person who signs in in the same tab starts with nothing of
-// the last one's. `useSignOut` (`#auth/use-sign-out.ts`) gives the
+// the last one's. The browser's other tabs of the app are told, and load
+// the app anew as well. `useSignOut` (`#auth/use-sign-out.ts`) gives the
 // browser's own steps.
 
 /** What signing out does in the browser, step by step. */
@@ -20,6 +21,11 @@ export interface SignOutSteps {
   readonly keepNotice: (notice: SignedOutNotice) => void;
   /** Loads the address anew, dropping the page and all it holds. */
   readonly load: (address: string) => void;
+  /**
+   * Tells the browser's other tabs of the app, which load the app anew
+   * too (`#auth/session-news.ts`).
+   */
+  readonly tellOtherTabs: () => void;
 }
 
 /** Where one way out goes, and what it does when the server refuses. */
@@ -51,7 +57,8 @@ const ended = async (steps: SignOutSteps): Promise<boolean> => {
 
 /**
  * Signs out, forgets the person (measurement, then the support chat),
- * then loads the next page: whether the tab is leaving. A refused
+ * tells the other tabs, then loads the next page: whether the tab is
+ * leaving. A refused
  * sign-out forgets nothing and loads nothing, unless the session went
  * with the account.
  */
@@ -68,6 +75,7 @@ export const signOutAndLoad = async (
   // Before leaving, so nothing more is measured as the person.
   steps.forgetMeasurement();
   steps.forgetConversation();
+  steps.tellOtherTabs();
 
   if (request.notice !== undefined) {
     steps.keepNotice(request.notice);
