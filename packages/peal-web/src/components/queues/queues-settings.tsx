@@ -31,6 +31,7 @@ import {
   createQueue,
   deleteQueue,
   queueSlots,
+  queueListChanged,
   queuesChanged,
   updateQueue,
   workspaceQueues,
@@ -205,7 +206,7 @@ const QueueRow = ({
           await remove({
             headers: forWorkspace(workspaceId),
             params: { queueId: queue.id },
-            reactivityKeys: queuesChanged(workspaceId),
+            reactivityKeys: queueListChanged(workspaceId),
           })
         }
       />

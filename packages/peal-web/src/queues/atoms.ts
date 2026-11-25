@@ -2,20 +2,42 @@ import { Atom } from "effect/reactivity";
 import { maxPostPageSize, forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
+import { postListKeys } from "#posts/api.ts";
 
 // The queries and mutations of a workspace's queues. A change passes
 // `reactivityKeys: queuesChanged(workspaceId)`, which lists them again,
 // with their coming slots; so does a change to the channels, as a queue
 // says which of its channels are no longer connected, and a post made or
-// moved, which takes or frees a slot.
+// moved, which takes or frees a slot. A deletion passes
+// `queueListChanged(workspaceId)`, which lists them again alone: the
+// deleted queue's slots, still on the page when the answer lands, would
+// be asked for again and found gone.
 
 /** What refreshes a workspace's queues once a change lands. */
 export const queuesChanged = (workspaceId: string) => [`queues:${workspaceId}`];
 
+/** What lists a workspace's queues again, and reads no queue's slots. */
+export const queueListChanged = (workspaceId: string) => [
+  `queue-list:${workspaceId}`,
+];
+
+/** What the list of a workspace's queues is read again for. */
+export const queueListKeys = (workspaceId: string) => [
+  ...queuesChanged(workspaceId),
+  ...queueListChanged(workspaceId),
+  "channels",
+];
+
+/** What a queue's slots are read again for. */
+export const queueSlotsKeys = (workspaceId: string) => [
+  ...queuesChanged(workspaceId),
+  "posts",
+];
+
 export const workspaceQueues = Atom.family((workspaceId: string) =>
   PealApi.query("automations.queues", "list", {
     headers: forWorkspace(workspaceId),
-    reactivityKeys: [...queuesChanged(workspaceId), "channels"],
+    reactivityKeys: queueListKeys(workspaceId),
   })
 );
 
@@ -32,7 +54,7 @@ export const queueSlots = (
     headers: forWorkspace(workspaceId),
     params: { queueId },
     query: { count },
-    reactivityKeys: [...queuesChanged(workspaceId), "posts"],
+    reactivityKeys: queueSlotsKeys(workspaceId),
   });
 
 export const createQueue = PealApi.mutation("automations.queues", "create");
@@ -61,5 +83,5 @@ export const queuedPosts = (
   PealApi.query("posts", "list", {
     headers: forWorkspace(workspaceId),
     query: { limit: maxPostPageSize, queueId, status },
-    reactivityKeys: [...queuesChanged(workspaceId), "posts"],
+    reactivityKeys: [...queuesChanged(workspaceId), ...postListKeys],
   });
