@@ -400,6 +400,22 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   the session cookie; calls that must not resume it, such as setting the
   active workspace, go through `workspaceClient`. Better Auth error codes map
   to `Auth.errors` in the catalogues.
+- Every way out of the app signs out through `useSignOut`
+  (`#auth/use-sign-out.ts`, its steps in `#auth/sign-out.ts`): the account
+  menu's and the setup page's **Sign out**, the Security page's **Sign in
+  again** and deleting the account. It ends the session with Better Auth,
+  forgets the measured person (which tells the other tabs) and the support
+  conversation, then loads the caller's page anew
+  (`window.location.assign`), never `router.push`: the agent's chats and
+  drafts are kept-alive atoms that last as long as the tab, so only a new
+  page load drops them, the rest of the atom registry and every module's
+  state, before someone else signs in in the same tab. A refused sign-out
+  leaves the person where they are, with the caller's toast; deleting the
+  account leaves whatever Better Auth answers (`sessionGone`, the session
+  went with the account). A toast the next page must show crosses the load
+  in the tab's `sessionStorage` (`#auth/signed-out-notice.ts`), which
+  `SignedOutNoticeToast` in `Providers` says once. Nothing else calls
+  `authClient.signOut` or `forgetConversation` (a test reads `src/`).
 - Keep the OAuth pages' views (`WorkspacePickerView`) apart from their state,
   so tests render each state: peal-web has no DOM test environment. A view
   under test imports nothing from `#i18n/navigation.ts`, which needs Next to
@@ -424,8 +440,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `PEAL_CRISP_IDENTITY_SECRET`, which Crisp verifies; the app never signs
   anything itself); the account menu's **Support**
   (`supportChat`) opens the chat through `openSupportChat` and shows the
-  replies waiting (`listenToSupportUnread`). Every sign-out calls
-  `forgetConversation`, so the next person in the browser starts their own.
+  replies waiting (`listenToSupportUnread`). Every sign-out (`useSignOut`)
+  calls `forgetConversation`, so the next person in the browser starts their own.
 - The account menu at the bottom bar's start (`AccountMenuView`, the
   person's avatar with a dot while notices wait unread, and their count
   beside Notifications) polls `GET /api/me/notices/unread` every 30
