@@ -170,6 +170,8 @@ With a key, `--api-url` or `PEAL_API_URL` must name the instance the key was mad
 
 A key acts in the workspace it belongs to, so you don't need `--workspace` or `PEAL_WORKSPACE`. `peal whoami` and `peal doctor` say which workspace that is. If you name one, give its id, not its slug, because a key can't look workspaces up. A slug stops the command with `workspace_id_required`, and the instance refuses another workspace's id (`forbidden`). A blank `PEAL_WORKSPACE` names no workspace.
 
+With the key alone, each command first asks the instance whose key it is, and that request counts toward the [rate limit](/developers/conventions/rate-limits#rate-limits). Setting `PEAL_WORKSPACE` to the key's workspace id, which `peal whoami` prints, saves one request per command.
+
 A partner key belongs to no workspace. Name one of its partner's workspaces by its id, or the command stops with `workspace_id_required`.
 
 The key does what its permissions allow, and no more. Without `post:schedule`, for example, it can write drafts but not schedule them. A refusal comes in the server's words, with the permission the key lacks.
@@ -280,24 +282,24 @@ When the API refuses, `error` is the error as the server sent it: its `code`, it
 
 The command line has codes of its own for what stops it before, or instead of, an answer from the API:
 
-| Code                      | When                                                                                                        |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `invalid_usage`           | The arguments can't be read: an unknown flag, or a missing argument.                                        |
-| `unreachable`             | No answer came from the instance: a refused connection, an unknown host, or a timeout.                      |
-| `unhealthy`               | `peal health` got an answer that isn't a healthy one.                                                       |
-| `unexpected_answer`       | The instance answered something the API's contract doesn't describe. It may be older, or not a Peal server. |
-| `not_signed_in`           | No sign-in is saved for the instance, and `PEAL_API_KEY` isn't set.                                         |
-| `sign_in_expired`         | The saved sign-in no longer works. Run `peal login` again.                                                  |
-| `api_key_refused`         | The instance refused the key in `PEAL_API_KEY`: it's revoked, expired, or another server's.                 |
-| `person_required`         | The command is for a person who's signed in, and `PEAL_API_KEY` is set.                                     |
-| `api_url_required`        | `PEAL_API_KEY` is set, and neither `--api-url` nor `PEAL_API_URL` names the instance.                       |
-| `workspace_id_required`   | With an API key, the workspace is named by something other than its id, or a partner key names none.        |
-| `workspace_required`      | You belong to several workspaces and named none.                                                            |
-| `workspace_unknown`       | You belong to no workspace with that slug or id.                                                            |
-| `no_workspace`            | You don't belong to any workspace yet.                                                                      |
-| `credential_store_failed` | The sign-in couldn't be read from, or saved to, `credentials.json`.                                         |
-| `checks_failed`           | `peal doctor` found failing checks, named in `failed`.                                                      |
-| `refused`, `failed`       | Anything else the command line refuses or fails at, with the reason in `message`.                           |
+| Code                      | When                                                                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `invalid_usage`           | The arguments can't be read: an unknown flag, or a missing argument.                                                                                   |
+| `unreachable`             | No answer came from the instance: a refused connection, an unknown host, or a timeout.                                                                 |
+| `unhealthy`               | `peal health` got an answer that isn't a healthy one.                                                                                                  |
+| `unexpected_answer`       | The instance answered something the API's contract doesn't describe. It may be older, or not a Peal server.                                            |
+| `not_signed_in`           | No sign-in is saved for the instance, and `PEAL_API_KEY` isn't set.                                                                                    |
+| `sign_in_expired`         | The saved sign-in no longer works. Run `peal login` again.                                                                                             |
+| `api_key_refused`         | The instance refused the key in `PEAL_API_KEY`: it's revoked, expired, or another server's.                                                            |
+| `person_required`         | The command is for a person who's signed in, and `PEAL_API_KEY` is set.                                                                                |
+| `api_url_required`        | `PEAL_API_KEY` is set, and neither `--api-url` nor `PEAL_API_URL` names the instance.                                                                  |
+| `workspace_id_required`   | With an API key, the workspace is named by something other than its id. Or a partner key, or an application's token bound to no workspace, names none. |
+| `workspace_required`      | You belong to several workspaces and named none.                                                                                                       |
+| `workspace_unknown`       | You belong to no workspace with that slug or id.                                                                                                       |
+| `no_workspace`            | You don't belong to any workspace yet.                                                                                                                 |
+| `credential_store_failed` | The sign-in couldn't be read from, or saved to, `credentials.json`.                                                                                    |
+| `checks_failed`           | `peal doctor` found failing checks, named in `failed`.                                                                                                 |
+| `refused`, `failed`       | Anything else the command line refuses or fails at, with the reason in `message`.                                                                      |
 
 An answer with an error status that carries no API error gets the API's general code for that status, such as `internal_error`, and the `requestId` when the server gave one.
 

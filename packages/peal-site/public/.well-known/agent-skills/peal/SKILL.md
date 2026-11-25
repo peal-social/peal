@@ -72,12 +72,12 @@ in the list of processes. Never print it, log it or write it to a file.
 export PEAL_API_KEY=peal_your_key
 ```
 
-- The key wins over a saved sign-in.
-- A key acts in its own workspace: leave `PEAL_WORKSPACE` and
-  `--workspace` out. `peal whoami` with the key prints that workspace, with
-  the key's permissions and expiry: run it first. A key is nobody and
-  cannot look workspaces up, so a workspace it names is given by its id,
-  never its slug.
+- The key wins over a saved sign-in and acts in its own workspace, so the
+  key alone works. `peal whoami` prints that workspace's id, the key's
+  permissions and expiry: run it first. A key names a workspace by its id.
+- With the key alone, every command first asks whose key it is, a request
+  that counts toward the rate limit. An agent that runs many commands sets
+  `PEAL_WORKSPACE` to the id `peal whoami` printed: one request less each.
 - `peal login`, `account`, `members` and `invitations` are for a person.
 
 Ask for the least a task needs.
