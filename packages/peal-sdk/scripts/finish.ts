@@ -503,12 +503,16 @@ const dotnet = async (_language: Language, folder: string): Promise<void> => {
  * hides them from `go get` and `@latest`, and warns a module that requires
  * one. Go reads retractions from the go.mod of the highest release, and a
  * prerelease above it does not count: v0.3.1, tagged on the beta's commit
- * on release day (the README's "Release day"), is that release, and
- * retracts itself too. Every later go.mod keeps the directive, or the 0.x
- * releases come back.
+ * on release day (the README's "Release day"), is that release, there only
+ * to carry them, and retracts itself as Go's module reference shows. Every
+ * later go.mod keeps the directive, or the 0.x releases come back.
  */
-const goRetractions =
-  "\nretract [v0.1.0, v0.3.1] // Calls an API that is gone: use v0.4.0-beta.1 or later.\n";
+const goRetractions = `
+retract (
+\t[v0.1.0, v0.3.0] // Calls the API as it was before /api/v1: use v0.4.0-beta.1 or later.
+\tv0.3.1 // Contains retractions only.
+)
+`;
 
 const go = async (_language: Language, folder: string): Promise<void> => {
   const file = path.join(folder, "go.mod");

@@ -9,7 +9,7 @@ Peal's SDKs call the [API](/developers) from eight languages. They're generated 
 
 ## Install [#install]
 
-Each SDK is published to its language's registry. These commands install version 0.4.0-beta.1:
+Each SDK is published to its language's registry. Each command installs one exact version:
 
 | Language              | Registry                                                                          | Install                                                                 |
 | --------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -25,9 +25,8 @@ Each SDK is published to its language's registry. These commands install version
 <Callout type="info">
   The SDKs are in beta until general availability. A beta release may change a
   method or a type, so each command installs one exact version, and your project
-  keeps it until you change it. PyPI writes this version `0.4.0b1` and RubyGems
-  `0.4.0.beta.1`. Versions 0.1 to 0.3 call an API that is gone, so don't use
-  them.
+  keeps it until you change it. Versions 0.1 to 0.3 call the API as it was
+  before `/api/v1`, not the one this page describes.
 </Callout>
 
 Each package's README shows how to use it, and its `reference.md` lists every method. You'll find both in [the repository](https://github.com/peal-social/peal/tree/main/packages/peal-sdk).

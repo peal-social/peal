@@ -27,7 +27,7 @@ This SDK requires PHP ^8.1.
 composer require peal-social/peal:0.4.0-beta.1
 ```
 
-The SDKs are in beta until general availability. A beta release may change a method or a type, so this installs one exact version, and your project keeps it until you change it. Releases 0.1 to 0.3 call an API that is gone.
+The SDKs are in beta until general availability. A beta release may change a method or a type, so this installs one exact version, and your project keeps it until you change it. Releases from 0.4 call the API under `/api/v1`, and 0.1 to 0.3 the API before it, which Peal Cloud stops serving when 0.4.0-beta.1 is published.
 
 ## Usage
 

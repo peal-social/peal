@@ -47,3 +47,24 @@ describe.each(quickstarts)("%s", (_name, segments) => {
     );
   });
 });
+
+/** A version as the pages print one: 0.4.0-beta.1, 0.4.0b1, 0.4.0.beta.1. */
+const printedVersion = /\d+\.\d+\.\d+(?:[-.]?[A-Za-z]+\.?\d+)?/gu;
+
+/** The libraries other than Peal's whose versions the pages print. */
+const otherLibraries = ["standardwebhooks"];
+
+describe.each([...tables.slice(1), ...quickstarts])("%s", (_name, segments) => {
+  it("prints no version but the SDKs' current ones", async () => {
+    const current = new Set(languages.map((language) => language.version));
+
+    const page = await read(...segments);
+
+    const printed = page
+      .split("\n")
+      .filter((line) => !otherLibraries.some((name) => line.includes(name)))
+      .flatMap((line) => line.match(printedVersion) ?? []);
+
+    expect(printed.filter((version) => !current.has(version))).toEqual([]);
+  });
+});

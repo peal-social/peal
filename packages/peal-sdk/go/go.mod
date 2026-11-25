@@ -13,4 +13,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
 
-retract [v0.1.0, v0.3.1] // Calls an API that is gone: use v0.4.0-beta.1 or later.
+retract (
+	[v0.1.0, v0.3.0] // Calls the API as it was before /api/v1: use v0.4.0-beta.1 or later.
+	v0.3.1 // Contains retractions only.
+)
