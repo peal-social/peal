@@ -66,12 +66,14 @@ describe.each([
 });
 
 // A select's form value is a hidden textarea that ui-sdk renders after the
-// select's parts, positioned the same way.
+// select's parts, positioned the same way. Its box is a `span`, valid where
+// a select sits inside a `span`, and takes the select's `className`, which
+// sets its width in a flex row.
 describe("the select's hidden input", () => {
   const html = renderToString(
     createElement(
-      Select,
-      { defaultValue: "utc", name: "zone" },
+      Select<string, false>,
+      { className: "w-full sm:w-48", defaultValue: "utc", name: "zone" },
       createElement(
         SelectTrigger,
         { "aria-label": "Zone" },
@@ -81,13 +83,20 @@ describe("the select's hidden input", () => {
   );
 
   const box =
-    /^<div(?<attributes>[^>]*)><button[^>]*data-slot="select-trigger"[^>]*>[\s\S]*?<\/button><textarea(?<input>[^>]*data-slot="select-form-input"[^>]*)>[^<]*<\/textarea><\/div>$/u.exec(
+    /^<span(?<attributes>[^>]*)><button[^>]*data-slot="select-trigger"[^>]*>[\s\S]*?<\/button><textarea(?<input>[^>]*data-slot="select-form-input"[^>]*)>[^<]*<\/textarea><\/span>$/u.exec(
       html
     )?.groups;
 
   it("sits with the trigger inside a positioned box of their own", () => {
     expect(box).toBeDefined();
     expect(classesOf(box?.["attributes"])).toContain("relative");
+    expect(classesOf(box?.["attributes"])).toContain("block");
+  });
+
+  it("gives its box the select's class", () => {
+    expect(classesOf(box?.["attributes"])).toEqual(
+      expect.arrayContaining(["w-full", "sm:w-48"])
+    );
   });
 
   it("stays out of sight and submits under the select's name", () => {

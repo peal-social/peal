@@ -18,8 +18,13 @@ component.
   `switch-control`, `select-control`), or the input is laid out against a
   distant ancestor and stretches the page below a scrolling panel's fold.
   A checkbox's and a switch's box is the `peer` a label reads
-  (`peer-has-disabled`). A new component with such an input does the
-  same, and joins `test/hidden-inputs.test.ts`.
+  (`peer-has-disabled`). A select's is a `span` styled `block`, valid
+  wherever a select sits, and `Select`'s `className` styles it: in a flex
+  row the box, not the trigger, is the row's item, so a width that reads
+  the row (`w-full sm:w-48`, `flex-1`) goes on `Select` and the trigger
+  takes `w-full`; a fixed width (`w-44`) may stay on the trigger. A new
+  component with such an input does the same, and joins
+  `test/hidden-inputs.test.ts`.
 - Tests run under vitest on Node without a DOM: keep logic in pure
   functions and the DOM glue thin.
 

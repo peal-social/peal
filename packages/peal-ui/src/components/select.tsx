@@ -176,15 +176,26 @@ const SelectValueIcon = ({
  * and absolutely positioned. The `select-control` box around them is its
  * positioning context, so it stays by the trigger: without it, the textarea
  * is laid out against a distant ancestor, and below the fold of a scrolling
- * panel it stretches the document. The box is block-level, as the trigger
- * is, and the trigger's width classes read it as they read the parent.
+ * panel it stretches the document. The box is a `span` styled `block`, so it
+ * may sit wherever a select may (inside a `span` too: the popup is portaled,
+ * and the box holds only the trigger and the textarea), and it is the
+ * select's own element: `className` styles it. In a flex row the box, not
+ * the trigger, is the row's item, so a width that reads the row
+ * (`w-full sm:w-48`) goes on `Select`, the trigger keeping `w-full`.
  */
 const Select = <T = string, Multiple extends boolean | undefined = false>(
-  props: SelectProps<T, Multiple>
+  props: SelectProps<T, Multiple> & {
+    readonly className?: string | undefined;
+  }
 ) => (
-  <div data-slot="select-control" className="relative">
+  // ui-sdk's select reads its options by name and renders no element of its
+  // own, so `className`, passed on with the rest, styles the box alone.
+  <span
+    data-slot="select-control"
+    className={cn("relative block", props.className)}
+  >
     <SelectPrimitive<T, Multiple> {...props} />
-  </div>
+  </span>
 );
 
 export {
