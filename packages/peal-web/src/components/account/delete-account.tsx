@@ -15,18 +15,15 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
-import { toast } from "peal-ui/components/toast";
-import { forgetConversation } from "peal-ui/lib/support/crisp";
 import { useState, useTransition } from "react";
 import type { ReactNode, SubmitEvent } from "react";
 
-import { authClient } from "#auth/client.ts";
+import { useSignOut } from "#auth/use-sign-out.ts";
 import { FormField } from "#components/auth/form-field.tsx";
-import { useMeasurementSignOut } from "#components/measurement/measurement.tsx";
 import { SettingsError } from "#components/settings/settings-error.tsx";
 import { SubscriptionCancellation } from "#components/settings/subscription-cancellation.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
-import { Link, useRouter } from "#i18n/navigation.ts";
+import { Link } from "#i18n/navigation.ts";
 import { deleteAccount } from "#settings/atoms.ts";
 import { apiErrorKey, subscriptionsToCancel } from "#settings/errors.ts";
 import type {
@@ -75,7 +72,7 @@ export const LastOwnerOf = ({
 
 /**
  * The right to erasure: deletes the account once its password confirms it,
- * then signs out. The server refuses while the user alone owns a workspace
+ * then signs out (`useSignOut`). The server refuses while the user alone owns a workspace
  * others use, which the dialog lists, and while a workspace it deletes has
  * a subscription, which the dialog describes until the user agrees to
  * cancel it. `legalHold` says what the law has this server keep of the
@@ -90,7 +87,6 @@ export const DeleteAccount = ({
   const t = useTranslations("AccountSettings.delete");
   const fields = useTranslations("Auth");
   const settings = useTranslations("Settings");
-  const router = useRouter();
   const remove = useAtomSet(deleteAccount, { mode: "promiseExit" });
   const [password, setPassword] = useState("");
   const [error, setError] = useState<SettingsErrorKey | null>(null);
@@ -102,7 +98,8 @@ export const DeleteAccount = ({
 
   const [agreed, setAgreed] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const forgetMeasurement = useMeasurementSignOut();
+  const { leaving, signOut } = useSignOut();
+  const busy = isPending || leaving;
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -123,13 +120,13 @@ export const DeleteAccount = ({
       });
 
       if (Exit.isSuccess(exit)) {
-        // The session went with the account: this clears its cookies.
-        await authClient.signOut();
-        forgetMeasurement();
-        forgetConversation();
-        toast.success(t("deleted"));
-        router.push("/");
-        router.refresh();
+        // The session went with the account: signing out clears its
+        // cookies, and the page it loads says the account is deleted.
+        await signOut({
+          notice: "accountDeleted",
+          sessionGone: true,
+          to: "/",
+        });
 
         return;
       }
@@ -203,20 +200,20 @@ export const DeleteAccount = ({
             onChange={setPassword}
           />
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>
+            <AlertDialogCancel disabled={busy}>
               {settings("cancel")}
             </AlertDialogCancel>
             <Button
               type="submit"
               variant="destructive"
               disabled={
-                isPending ||
+                busy ||
                 password === "" ||
                 (Option.isSome(subscriptions) && !agreed)
               }
               focusableWhenDisabled
             >
-              {isPending ? t("deleting") : t("confirm")}
+              {busy ? t("deleting") : t("confirm")}
             </Button>
           </AlertDialogFooter>
         </form>

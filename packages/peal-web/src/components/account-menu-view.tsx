@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "peal-ui/components/dropdown-menu";
 import { toast } from "peal-ui/components/toast";
-import { forgetConversation } from "peal-ui/lib/support/crisp";
 import {
   listenToSupportUnread,
   openSupportChat,
@@ -23,7 +22,7 @@ import {
 import { useEffect, useState, useTransition } from "react";
 
 import { authClient } from "#auth/client.ts";
-import { useMeasurementSignOut } from "#components/measurement/measurement.tsx";
+import { useSignOut } from "#auth/use-sign-out.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { useUnreadNotices } from "#components/notices/use-unread-notices.ts";
 import { useRouter } from "#i18n/navigation.ts";
@@ -85,7 +84,7 @@ const Menu = ({
   const account = useTranslations("AccountSettings");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const forgetMeasurement = useMeasurementSignOut();
+  const { leaving, signOut } = useSignOut();
   const count = Option.getOrElse(unread, () => 0);
   const [supportUnread, setSupportUnread] = useState(0);
 
@@ -98,17 +97,12 @@ const Menu = ({
 
   const handleSignOut = () => {
     startTransition(async () => {
-      const result = await authClient.signOut();
-
-      if (result.error === null) {
-        // Before leaving, so nothing more is measured as the person.
-        forgetMeasurement();
-        forgetConversation();
-        router.push("/");
-        router.refresh();
-      } else {
-        toast.error(t("signOutFailed"));
-      }
+      await signOut({
+        refused: () => {
+          toast.error(t("signOutFailed"));
+        },
+        to: "/",
+      });
     });
   };
 
@@ -124,7 +118,7 @@ const Menu = ({
             <Button
               variant="ghost"
               size="icon-sm"
-              disabled={isPending}
+              disabled={isPending || leaving}
               focusableWhenDisabled
             />
           }
@@ -196,7 +190,8 @@ const LiveMenu = (props: AccountMenuViewProps) => {
  * "The frame"): their avatar alone, with a dot while notices wait
  * unread, opening their notifications (with the count) and their account
  * (its language among its settings), both in a workspace's settings, and
- * signing out, after which the page renders again without the session.
+ * signing out, after which the browser loads the app anew without the
+ * session (`useSignOut`).
  */
 export const AccountMenuView = (props: AccountMenuViewProps) => {
   const hydrated = useHydrated();
