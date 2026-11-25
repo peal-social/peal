@@ -3240,8 +3240,10 @@
     "others": "Les propriétaires et les administrateurs de {workspace} peuvent ajouter un moyen de paiement ou choisir ce qui reste : {names}.",
     "othersUnknown": "Un propriétaire ou un administrateur de l’espace de travail peut ajouter un moyen de paiement ou choisir ce qui reste.",
     "billing": "Ouvrir la facturation",
-    "loading": "Chargement des canaux et des membres…",
-    "loadFailed": "Les canaux et les membres n’ont pas pu être chargés.",
+    "loadingChannels": "Chargement des canaux…",
+    "loadingMembers": "Chargement des membres…",
+    "channelsFailed": "Les canaux n’ont pas pu être chargés.",
+    "membersFailed": "Les membres n’ont pas pu être chargés.",
     "retry": "Réessayer",
     "errors": {
       "forbidden": "Seuls les propriétaires et les administrateurs, dans leur propre session, choisissent ce qui reste.",

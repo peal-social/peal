@@ -3240,8 +3240,10 @@
     "others": "Owners and admins of {workspace} can add a payment method or choose what stays: {names}.",
     "othersUnknown": "An owner or an admin of the workspace can add a payment method or choose what stays.",
     "billing": "Open billing",
-    "loading": "Loading the channels and members…",
-    "loadFailed": "The channels and members could not be loaded.",
+    "loadingChannels": "Loading the channels…",
+    "loadingMembers": "Loading the members…",
+    "channelsFailed": "The channels could not be loaded.",
+    "membersFailed": "The members could not be loaded.",
     "retry": "Try again",
     "errors": {
       "forbidden": "Only owners and admins, in their own session, choose what stays.",

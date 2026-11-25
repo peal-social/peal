@@ -14,14 +14,10 @@ import {
   membersOf,
   reduceWorkspace,
 } from "#billing/members.ts";
-import { overPlanLoadOf } from "#billing/over-plan-load.ts";
+import { listLoadOf } from "#billing/over-plan-load.ts";
 import type { UpgradeReason } from "#billing/upgrade.ts";
 import { channelsOf } from "#channels/channels-api.ts";
-import {
-  OverPlanLoadFailed,
-  OverPlanLoading,
-  OverPlanView,
-} from "#components/billing/over-plan-view.tsx";
+import { OverPlanView } from "#components/billing/over-plan-view.tsx";
 import type { OverPlanError } from "#components/billing/over-plan-view.tsx";
 import { UpgradeOffer } from "#components/billing/upgrade-dialog.tsx";
 import type { UpgradeWorkspace } from "#components/billing/upgrade-dialog.tsx";
@@ -82,10 +78,12 @@ const reasonOf = (standing: Standing): UpgradeReason | null => {
  * The screen a workspace over its plan shows instead of its pages, but
  * billing's: the upgrade, by card, or the choice of what stays, for those
  * who manage billing, and who can fix it for the others. Once the choice
- * is applied, the pages load again. The channels and the members are read
- * with the visitor's cookies, in the browser alone: for those who manage
- * billing, the server renders the loading state, as the browser's first
- * render does (`overPlanLoadOf`).
+ * is applied, the pages load again. What the server read (the standing,
+ * the workspace) shows at once, on the server too. The channels and the
+ * members are read with the visitor's cookies, in the browser alone: for
+ * those who manage billing, the server renders each list loading, as the
+ * browser's first render does (`listLoadOf`), and each says on its own
+ * when it could not be read, with Try again.
  */
 export const OverPlanScreen = ({
   contactUrl,
@@ -141,29 +139,16 @@ export const OverPlanScreen = ({
     });
   };
 
-  const load = overPlanLoadOf({
-    canManage: workspace.canManage,
-    channels,
-    hydrated,
-    members,
-  });
+  const channelsLoad = listLoadOf(hydrated, channels);
+  const membersLoad = listLoadOf(hydrated, members);
 
-  if (load === "loading") {
-    return <OverPlanLoading />;
-  }
-
-  if (load === "failed") {
-    return (
-      <OverPlanLoadFailed
-        onRetry={() => {
-          refreshChannels();
-          refreshMembers();
-        }}
-      />
-    );
-  }
-
-  const people = AsyncResult.isSuccess(members) ? members.value : [];
+  // The members, for those who manage billing once hydrated, as their
+  // list's state says; the names of who can fix it, for the others.
+  const people =
+    AsyncResult.isSuccess(members) &&
+    (membersLoad === "ready" || !workspace.canManage)
+      ? members.value
+      : [];
 
   return (
     <OverPlanView
@@ -179,7 +164,7 @@ export const OverPlanScreen = ({
       }
       canManage={workspace.canManage}
       channels={
-        AsyncResult.isSuccess(channels)
+        AsyncResult.isSuccess(channels) && channelsLoad === "ready"
           ? channels.value.map((channel) => ({
               id: channel.id,
               name: channelLabel(channel),
@@ -187,6 +172,7 @@ export const OverPlanScreen = ({
             }))
           : []
       }
+      channelsLoad={channelsLoad}
       confirmed={confirmed}
       error={error}
       keptChannels={keptChannels}
@@ -195,6 +181,7 @@ export const OverPlanScreen = ({
         .filter(({ role }) => managesBilling(role))
         .map(({ name }) => name)}
       members={people}
+      membersLoad={membersLoad}
       self={self}
       standing={standing}
       upgrade={
@@ -202,6 +189,7 @@ export const OverPlanScreen = ({
           <UpgradeOffer
             contactUrl={contactUrl}
             reason={reason}
+            standing={standing}
             termsUrl={termsUrl}
             workspace={workspace}
           />
@@ -212,6 +200,8 @@ export const OverPlanScreen = ({
       onConfirm={setConfirmed}
       onKeepChannel={toggle(setKeptChannels)}
       onKeepMember={toggle(setKeptMembers)}
+      onRetryChannels={refreshChannels}
+      onRetryMembers={refreshMembers}
     />
   );
 };

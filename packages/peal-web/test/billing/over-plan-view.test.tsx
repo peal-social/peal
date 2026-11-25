@@ -1,14 +1,9 @@
 import { describe, expect, it } from "@effect/vitest";
 import { NextIntlClientProvider } from "next-intl";
 import type { BillingAccount, Standing } from "peal-contract";
-import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import {
-  OverPlanLoadFailed,
-  OverPlanLoading,
-  OverPlanView,
-} from "#components/billing/over-plan-view.tsx";
+import { OverPlanView } from "#components/billing/over-plan-view.tsx";
 import type { OverPlanViewProps } from "#components/billing/over-plan-view.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
@@ -67,12 +62,14 @@ const render = async (
         billingLink={<span>Open billing</span>}
         canManage
         channels={channels}
+        channelsLoad="ready"
         confirmed={false}
         error={null}
         keptChannels={["one", "two", "three"]}
         keptMembers={["ana", "sam"]}
         managers={["Ana Example", "Sam Example"]}
         members={members}
+        membersLoad="ready"
         self="ana"
         standing={standing}
         upgrade={<p>The upgrade offer</p>}
@@ -81,6 +78,8 @@ const render = async (
         onConfirm={nothing}
         onKeepChannel={nothing}
         onKeepMember={nothing}
+        onRetryChannels={nothing}
+        onRetryMembers={nothing}
         {...props}
       />
     </NextIntlClientProvider>
@@ -209,54 +208,116 @@ describe(OverPlanView, () => {
   });
 });
 
-const renderOf = async (locale: "en" | "fr", node: ReactNode) => {
-  const messages = await loadMessages(locale);
+// How often a piece of markup appears in the page.
+const countOf = (html: string, piece: string) => html.split(piece).length - 1;
 
-  return {
-    html: renderToStaticMarkup(
-      <NextIntlClientProvider
-        locale={locale}
-        messages={messages}
-        timeZone="UTC"
-      >
-        {node}
-      </NextIntlClientProvider>
-    ),
-    t: messages.OverPlan,
-  };
+// The pieces the page lacks, and those it holds.
+const missingFrom = (html: string, pieces: readonly string[]) =>
+  pieces.filter((piece) => !html.includes(piece));
+
+const foundIn = (html: string, pieces: readonly string[]) =>
+  pieces.filter((piece) => html.includes(piece));
+
+// The screen's title and explanation, in each language.
+const heading = {
+  en: "Studio Nord holds more than its plan allows",
+  fr: "Studio Nord dépasse ce que permet son abonnement",
 };
 
-// What a member who manages billing sees before the channels and the
-// members are read: before hydration, and until the browser has both.
-describe(OverPlanLoading, () => {
-  it.each(["en", "fr"] as const)(
-    "says in %s that the screen is loading, and nothing more",
-    async (locale) => {
-      const { html, t } = await renderOf(locale, <OverPlanLoading />);
+// The button that removes what is not kept, while it cannot be pressed.
+const applyDisabled = (apply: string) =>
+  new RegExp(`<button[^>]*aria-disabled="true"[^>]*>${apply}`, "u");
 
-      expect(html).toContain('aria-busy="true"');
-      expect(html).toContain(t.loading);
-      expect(html).not.toContain(t.loadFailed);
-      expect(html).not.toContain(t.chooseTitle);
+// While the browser reads the channels and the members, or could not: the
+// rest of the screen shows at once, from the standing the server read.
+describe("OverPlanView's lists", () => {
+  it.each(["en", "fr"] as const)(
+    "shows in %s the title, the explanation and the offer at once, each list loading in rows of its own",
+    async (locale) => {
+      const messages = await loadMessages(locale);
+      const t = messages.OverPlan;
+
+      const html = await render(locale, {
+        channels: [],
+        channelsLoad: "loading",
+        members: [],
+        membersLoad: "loading",
+      });
+
+      expect(
+        missingFrom(html, [
+          heading[locale],
+          "The upgrade offer",
+          t.chooseTitle,
+          t.channelsNote,
+          t.membersNote,
+          t.loadingChannels,
+          t.loadingMembers,
+        ])
+      ).toStrictEqual([]);
+      expect(countOf(html, 'aria-busy="true"')).toBe(2);
+      // A row for each of the 4 channels and 3 members the standing
+      // counts, and one for the confirmation, each a box and a label.
+      expect(countOf(html, 'data-slot="skeleton"')).toBe(2 * (4 + 3 + 1));
+      expect(
+        foundIn(html, [t.channelsFailed, t.membersFailed, 'role="alert"'])
+      ).toStrictEqual([]);
+      expect(html).toMatch(applyDisabled(t.apply));
     }
   );
-});
 
-// What the browser shows when it could not read the channels or the
-// members: why, with a way to read them again.
-describe(OverPlanLoadFailed, () => {
-  it.each(["en", "fr"] as const)(
-    "says in %s the channels and members could not be loaded, and offers to try again",
-    async (locale) => {
-      const { html, t } = await renderOf(
-        locale,
-        <OverPlanLoadFailed onRetry={nothing} />
-      );
+  it("never draws more than ten rows for a list still loading", async () => {
+    const html = await render("en", {
+      channels: [],
+      channelsLoad: "loading",
+      standing: {
+        ...standing,
+        over: [{ allowed: 2, limit: "channels", used: 40 }],
+      },
+    });
 
-      expect(html).toContain('role="alert"');
-      expect(html).toContain(t.loadFailed);
-      expect(html).toMatch(new RegExp(`<button[^>]*>${t.retry}</button>`, "u"));
-      expect(html).not.toContain("aria-busy");
-    }
-  );
+    expect(countOf(html, 'data-slot="skeleton"')).toBe(2 * (10 + 1));
+  });
+
+  it("says the channels could not be read, with a way to read them again, and shows the members", async () => {
+    const messages = await loadMessages("en");
+    const t = messages.OverPlan;
+    const html = await render("en", { channels: [], channelsLoad: "failed" });
+
+    expect(
+      missingFrom(html, [
+        'role="alert"',
+        t.channelsFailed,
+        "Sam Example (admin)",
+      ])
+    ).toStrictEqual([]);
+    expect(html).toMatch(new RegExp(`<button[^>]*>${t.retry}</button>`, "u"));
+    expect(
+      foundIn(html, [t.membersFailed, "aria-busy", "I understand"])
+    ).toStrictEqual([]);
+    expect(html).toMatch(applyDisabled(t.apply));
+  });
+
+  it("says in French the members could not be read, and shows the channels", async () => {
+    const messages = await loadMessages("fr");
+    const t = messages.OverPlan;
+    const html = await render("fr", { members: [], membersLoad: "failed" });
+
+    expect(
+      missingFrom(html, [t.membersFailed, "@four@social.example"])
+    ).toStrictEqual([]);
+    expect(html).toMatch(new RegExp(`<button[^>]*>${t.retry}</button>`, "u"));
+    expect(html).not.toContain(t.channelsFailed);
+  });
+
+  it("keeps the confirmation for once both lists are read", async () => {
+    const html = await render("en", {
+      confirmed: true,
+      members: [],
+      membersLoad: "loading",
+    });
+
+    expect(html).not.toContain("I understand");
+    expect(html).toMatch(applyDisabled("Keep these, remove the rest"));
+  });
 });
