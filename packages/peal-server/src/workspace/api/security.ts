@@ -1,7 +1,7 @@
 import { Effect, Layer, Option, Redacted } from "effect";
 import { HttpRouter, HttpServerRequest } from "effect/http";
 import type { HttpServerResponse } from "effect/http";
-import { HttpApiError } from "effect/http-api";
+import { HttpApiBuilder, HttpApiError, HttpApiSecurity } from "effect/http-api";
 import {
   Authentication,
   ClientErrorIntake,
@@ -67,6 +67,13 @@ export const workspaceIdAttribute = "peal.workspace_id";
 const safeMethods: ReadonlySet<string> = new Set(["GET", "HEAD", "OPTIONS"]);
 
 const unauthenticated = () => Effect.fail(new Unauthenticated());
+
+// The bearer credential a request presents, as Authentication's bearer
+// scheme reads it from the Authorization header: empty when the header is
+// missing, empty, or of another scheme (a proxy's Basic sign-in).
+const presentedBearer = HttpApiBuilder.securityDecode(
+  HttpApiSecurity.bearer
+).pipe(Effect.map((credential) => Redacted.value(credential).trim() !== ""));
 
 // The request acts as the principal: for handlers, and for product
 // analytics, with the web app's session a browser named (a session's
@@ -229,7 +236,9 @@ export const journalled =
 /**
  * Authentication: a bearer token (an OAuth access token issued for the API,
  * or an API key), or the session cookies. Better Auth failing is a server
- * error, not a reason to refuse.
+ * error, not a reason to refuse. A bearer token the request presents
+ * decides: one refused is a 401, never the session the request carries
+ * besides, so a restricted key that stops working gains nothing.
  *
  * A session staff act as someone in goes through the ImpersonationGuard
  * here, before any handler runs: refused once the staff member is no longer
@@ -319,7 +328,10 @@ export const AuthenticationLive = Layer.effect(
           const request = yield* HttpServerRequest.HttpServerRequest;
           const cookies = request.headers["cookie"];
 
-          if (cookies === undefined) {
+          // The bearer scheme is tried first, and the session only once it
+          // failed: a bearer credential presented here was refused, and so
+          // is the request, whatever session it carries besides.
+          if (cookies === undefined || (yield* presentedBearer)) {
             return yield* new Unauthenticated();
           }
 

@@ -101,7 +101,7 @@ Deux moyens d’authentification appellent l’API :
 | Une clé d’API, `peal_…` | La clé elle-même, dans le seul espace de travail auquel elle appartient | Les permissions choisies à sa création, comme `post:read` ou `post:schedule` ([Clés d’API](/guides/workspace#api-keys))                    |
 | Un jeton d’accès OAuth  | Le membre qui a connecté l’application                                  | Ce que le rôle du membre permet, dans la limite des scopes qu’il a accordés ([Ce que permet chaque permission](/developers/agents#scopes)) |
 
-Le cookie de session de l’application web ne sert qu’à l’application web. La section [Authentification](/developers#authentication) de la présentation décrit chacun de ces moyens.
+Le cookie de session de l’application web ne sert qu’à l’application web. Une requête dont le moyen d’authentification envoyé en `Authorization: Bearer …` est refusé reçoit une 401, quoi qu’elle porte d’autre. Peal ne se rabat jamais sur un cookie de session envoyé avec elle. La section [Authentification](/developers#authentication) de la présentation décrit chacun de ces moyens.
 
 La référence de chaque point d’accès nomme la permission qu’il demande. Un jeton OAuth doit aussi porter le scope qui la contient :
 

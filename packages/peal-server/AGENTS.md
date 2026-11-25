@@ -306,7 +306,12 @@ and no socket, for tests.
   `DatabaseUnavailable` (503).
 - `Authentication` tries a bearer token (an OAuth access token issued for
   `PUBLIC_URL/api`, or a workspace API key starting with `peal_`), then the
-  session cookie, and provides `CurrentPrincipal`. A cookie request that
+  session cookie, and provides `CurrentPrincipal`. Effect tries the next
+  scheme whenever one fails, so the session scheme refuses (401) a request
+  that presents a bearer credential, which reaching it means was refused:
+  a key that stops working never acts as the session sent beside it. An
+  `Authorization` header that presents none (empty, or a proxy's `Basic`
+  sign-in) leaves the cookie to decide. A cookie request that
   changes something needs an `Origin` of `PUBLIC_URL` or `TRUSTED_ORIGINS`,
   and reads the session fresh from the database.
 - A request's workspace never comes from its path. `WorkspaceAccess`
