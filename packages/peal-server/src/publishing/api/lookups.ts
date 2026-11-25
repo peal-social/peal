@@ -14,6 +14,7 @@ import {
 import { ChannelLookups } from "#publishing/application/channel-lookups.ts";
 import { channelRefusalOf } from "#publishing/domain/own-refusals.ts";
 import { actorOf } from "#shared/api/actor.ts";
+import { setAnswerHeader } from "#shared/api/answer-headers.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
 import type { BadRequest } from "#shared/domain/bad-request.ts";
 import { storableLine } from "#shared/domain/platform-text.ts";
@@ -46,6 +47,23 @@ const refused = ({ code }: BadRequest) =>
 /** How long the platform asked to wait, in whole seconds, if it said. */
 export const retryAfterSecondsOf = ({ retryAfter }: RateLimited) =>
   retryAfter === undefined ? null : Math.ceil(Duration.toSeconds(retryAfter));
+
+/**
+ * 429 PlatformRateLimited, its wait in `Retry-After` too when the platform
+ * said, as Peal's own 429s carry it: a client that retries by the header
+ * waits as long as the body says.
+ */
+export const platformRateLimited = (limited: RateLimited) => {
+  const retryAfterSeconds = retryAfterSecondsOf(limited);
+
+  return (
+    retryAfterSeconds === null
+      ? Effect.void
+      : setAnswerHeader("Retry-After", String(retryAfterSeconds))
+  ).pipe(
+    Effect.andThen(Effect.fail(new PlatformRateLimited({ retryAfterSeconds })))
+  );
+};
 
 export const LookupsHandlers = HttpApiBuilder.group(
   Api,
@@ -87,13 +105,7 @@ export const LookupsHandlers = HttpApiBuilder.group(
                   PlatformUnavailable: unreachable,
                   RateLimited: (limited) =>
                     Effect.logWarning("A platform rate limited a lookup").pipe(
-                      Effect.andThen(
-                        Effect.fail(
-                          new PlatformRateLimited({
-                            retryAfterSeconds: retryAfterSecondsOf(limited),
-                          })
-                        )
-                      )
+                      Effect.andThen(platformRateLimited(limited))
                     ),
                   TokenExpired: () =>
                     Effect.fail(new ChannelCannotPost({ reason: "reconnect" })),

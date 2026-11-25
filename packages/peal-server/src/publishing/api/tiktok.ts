@@ -5,7 +5,6 @@ import {
   ChannelCannotPost,
   ChannelNotFound,
   CurrentMember,
-  PlatformRateLimited,
   PlatformUnreachable,
 } from "peal-contract";
 
@@ -17,7 +16,7 @@ import type { BadRequest } from "#shared/domain/bad-request.ts";
 import { storableLine } from "#shared/domain/platform-text.ts";
 import type { RateLimited } from "#shared/domain/rate-limited.ts";
 
-import { retryAfterSecondsOf } from "./lookups.ts";
+import { platformRateLimited } from "./lookups.ts";
 import { tiktokAccountView } from "./tiktok-account-view.ts";
 
 // TikTok did not answer, or refused the read: logged, then 502.
@@ -28,16 +27,10 @@ const unreachable = (failure: { readonly _tag: string }) =>
   );
 
 // TikTok asked to slow down, or a cap of the day is spent: logged, then
-// 429 with the wait it asked for.
+// 429 with the wait it asked for, in the body and in Retry-After.
 const slowDown = (limited: RateLimited) =>
   Effect.logWarning("TikTok rate limited a read of creator info").pipe(
-    Effect.andThen(
-      Effect.fail(
-        new PlatformRateLimited({
-          retryAfterSeconds: retryAfterSecondsOf(limited),
-        })
-      )
-    )
+    Effect.andThen(platformRateLimited(limited))
   );
 
 // The channel turned off, or disconnected while it was read; any other
