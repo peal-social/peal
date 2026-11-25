@@ -421,6 +421,79 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   the session cookie; calls that must not resume it, such as setting the
   active workspace, go through `workspaceClient`. Better Auth error codes map
   to `Auth.errors` in the catalogues.
+- The agent's chats and drafts are kept-alive atoms that last as long as
+  the tab, so only a new page load drops them (with the rest of the atom
+  registry and every module's state). Whenever the person in a tab
+  changes, the next page loads anew (`loadAnew`, `useLoadAnew`:
+  `#auth/use-load-anew.ts`, `window.location.assign`), never
+  `router.push`, and the browser's other tabs of the app are told who is
+  signed in now (`tellOtherTabs`, `#auth/session-news.ts`:
+  `peal.session-news` in `localStorage`, written and removed at once, so
+  only the other tabs hear it; `signedIn` names the person's id,
+  `signedOut` nobody); this news is the app's own, measured or not,
+  beside the measurement's (`peal.measurement-news`).
+- A tab loads anew only when its person changes, never on the news
+  alone: the composer and the article editor keep their text in React
+  state, and a sign-in elsewhere by the same person (back after a session
+  ended) must not lose it. Each tab knows whom its pages showed
+  (`#auth/tab-person.ts`, named by `TabPerson` from the signed-in app's
+  layout and the OAuth and device pages; none on a page nobody was signed
+  in to). `OtherTabsSession` in `Providers` answers the news, and a page
+  the back-forward cache restores (`pageshow`, which reads the session
+  only then, and only for a tab that showed someone), with `tabAnswer`
+  (`#auth/other-tabs.ts`): the same person, or a tab that showed nobody,
+  stays as it is; signed out, the tab loads its own address again (the
+  server sends it to sign in); someone else, it loads `/` anew, except on
+  the pages that keep their place (`keepsItsPlace`: sign-in, sign-up, the
+  OAuth pages and `/device`, whose authorization `/` would lose), which
+  load their own address again. Before loading anew the tab is marked as
+  leaving (`markLeaving`), and nothing is kept for the person it showed
+  after that (the Studio's draft as the page goes, `isLeaving`).
+- Every way out of the app signs out through `useSignOut`
+  (`#auth/use-sign-out.ts`, its steps in `#auth/sign-out.ts`): the account
+  menu's and the setup page's **Sign out**, the Security page's **Sign in
+  again** and deleting the account. It ends the session with Better Auth,
+  forgets the measured person and the support conversation, tells the
+  other tabs, then loads the caller's page anew. A refused sign-out
+  leaves the person where they are, with the caller's toast; deleting the
+  account leaves whatever Better Auth answers (`sessionGone`, the session
+  went with the account). A toast the next page must show crosses the load
+  in the tab's `sessionStorage` (`#auth/signed-out-notice.ts`), which
+  `SignedOutNoticeToast` in `Providers` says once. Nothing else calls
+  `authClient.signOut` or imports `forgetConversation`: the lint rules
+  (`no-restricted-properties`, `no-restricted-imports` in
+  `oxlint.config.ts`) allow them in `use-sign-out.ts` alone.
+- A session that ends without **Sign out** (it expired, or was revoked
+  from another device, by staff or by a password changed elsewhere)
+  brings the tab to `/login` in place, with what it held: every sign-in
+  therefore ends with a full load. The sign-in form, password or second
+  step, loads the validated `next` anew (`landingAddressOf`,
+  `#auth/next-path.ts`, where a provider's sign-in lands too, its
+  language named) and tells the other tabs who signed in, as does a
+  sign-up on a server that asks for no confirmation (`signedInAtSignUp`),
+  which signs the browser in at once. A sign-in whose answer names nobody
+  (a provider's, which leaves for the provider first and may be refused
+  or left there, and comes back through the sign-in page,
+  `from=provider`, which the server sends on; one during an OAuth
+  authorization, which Better Auth's client follows by setting
+  `location.href`) never tells the other tabs before anyone is signed in:
+  it marks the tab (`expectSignIn`, `#auth/sign-in-arrival.ts`, in
+  `sessionStorage`), and the next page rendered for a signed-in person
+  takes the mark once (`TabPerson`) and tells them who. The confirmation page reads the session once the
+  emailed link signed the new account in, and tells them who. Starting
+  and stopping impersonation (`UserActions`, `StopImpersonating`) load
+  the next page anew and tell the other tabs the person the session is
+  now (the account, then the staff member, `impersonatedBy`). Accepting
+  an invitation signs nobody in.
+- What the browser keeps of a person's unfinished work in a workspace,
+  the Studio's draft (`#studio/draft.ts`) and the agent panel's tabs
+  (`#agent/panel-store.ts`), is keyed by the person and the workspace
+  (`#auth/person-storage.ts`, `peal.<kind>.<userId>.<workspaceId>`, the
+  signed-in user's id from the workspace layout and the editor's page),
+  so it lasts across a sign-out for its owner and nobody else signed in
+  on the browser loads it. A key named by the workspace alone, as older
+  pages kept it, is never read and is removed when found. Deleting the
+  account forgets all of the person's (`forgetPersonKeys`).
 - Keep the OAuth pages' views (`WorkspacePickerView`) apart from their state,
   so tests render each state: peal-web has no DOM test environment. A view
   under test imports nothing from `#i18n/navigation.ts`, which needs Next to
@@ -445,8 +518,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `PEAL_CRISP_IDENTITY_SECRET`, which Crisp verifies; the app never signs
   anything itself); the account menu's **Support**
   (`supportChat`) opens the chat through `openSupportChat` and shows the
-  replies waiting (`listenToSupportUnread`). Every sign-out calls
-  `forgetConversation`, so the next person in the browser starts their own.
+  replies waiting (`listenToSupportUnread`). Every sign-out (`useSignOut`)
+  calls `forgetConversation`, which resets Crisp's session where it is
+  loaded and expires its cookie in every case (the next page may load
+  before the reset is done), so the next person in the browser starts
+  their own.
 - The account menu at the bottom bar's start (`AccountMenuView`, the
   person's avatar with a dot while notices wait unread, and their count
   beside Notifications) polls `GET /api/me/notices/unread` every 30

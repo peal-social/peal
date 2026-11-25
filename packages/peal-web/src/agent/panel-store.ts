@@ -1,9 +1,14 @@
+import { Option } from "effect";
+
 import { panelStateOf, panelStorageKey } from "#agent/panel-state.ts";
 import type { PanelState } from "#agent/panel-state.ts";
+import { browserStorage, dropWorkspaceKey } from "#auth/person-storage.ts";
+import type { KeptFor, PersonStorage } from "#auth/person-storage.ts";
 
-// A workspace's panel, kept in the browser's local storage so it stays
-// open across pages and reloads, for `useSyncExternalStore`. Storage may
-// be closed to the page: the panel then lasts as long as the page.
+// The person's panel of a workspace, kept in the browser's local storage
+// so it stays open across pages and reloads, for `useSyncExternalStore`.
+// Storage may be closed to the page: the panel then lasts as long as the
+// page.
 
 export interface PanelStore {
   readonly snapshot: () => string | null;
@@ -11,27 +16,50 @@ export interface PanelStore {
   readonly update: (change: (state: PanelState) => PanelState) => void;
 }
 
-const read = (key: string): string | null => {
+const read = (
+  storage: Option.Option<PersonStorage>,
+  key: string
+): string | null => {
   try {
-    return window.localStorage.getItem(key);
+    return Option.getOrNull(
+      storage.pipe(Option.flatMapNullishOr((kept) => kept.getItem(key)))
+    );
   } catch {
-    // Storage is closed to this page, or there is no window.
+    // Storage is closed to this page.
     return null;
   }
 };
 
-const write = (key: string, value: string): void => {
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {
-    // Storage is closed to this page: the panel lasts as long as it.
+const write = (
+  storage: Option.Option<PersonStorage>,
+  key: string,
+  value: string
+): void => {
+  for (const kept of Option.toArray(storage)) {
+    try {
+      kept.setItem(key, value);
+    } catch {
+      // Storage is closed to this page: the panel lasts as long as it.
+    }
   }
 };
 
-export const makePanelStore = (workspaceId: string): PanelStore => {
-  const key = panelStorageKey(workspaceId);
+/**
+ * The person's panel of the workspace. Tabs an older page kept under the
+ * workspace alone are dropped, never shown.
+ */
+export const makePanelStore = (
+  owner: KeptFor,
+  storage: Option.Option<PersonStorage> = browserStorage()
+): PanelStore => {
+  const key = panelStorageKey(owner);
   const listeners = new Set<() => void>();
-  let stored = read(key);
+
+  for (const kept of Option.toArray(storage)) {
+    dropWorkspaceKey(kept, "agent-panel", owner.workspaceId);
+  }
+
+  let stored = read(storage, key);
 
   return {
     snapshot: () => stored,
@@ -44,7 +72,7 @@ export const makePanelStore = (workspaceId: string): PanelStore => {
     },
     update: (change) => {
       stored = JSON.stringify(change(panelStateOf(stored)));
-      write(key, stored);
+      write(storage, key, stored);
 
       for (const listener of listeners) {
         listener();

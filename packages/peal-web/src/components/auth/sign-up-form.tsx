@@ -1,5 +1,6 @@
 "use client";
 
+import { Option } from "effect";
 import { useLocale, useTranslations } from "next-intl";
 import { signUpInvitationHeader } from "peal-contract";
 import { Alert, AlertDescription, AlertTitle } from "peal-ui/components/alert";
@@ -10,13 +11,20 @@ import type { SubmitEvent } from "react";
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";
 import type { AuthErrorKey } from "#auth/errors.ts";
+import { signUpLanding } from "#auth/provider-return.ts";
+import { tellOtherTabs } from "#auth/session-news.ts";
+import { signedInAtSignUp } from "#auth/sign-up-answer.ts";
+import { loadAnew } from "#auth/use-load-anew.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { FormField } from "#components/auth/form-field.tsx";
 import { useCaptcha } from "#components/auth/turnstile-field.tsx";
 import { getPathname } from "#i18n/navigation.ts";
+import { tellTabs } from "#measurement/tabs.ts";
 
 // Creates the account, in the page's language, which its emails will use.
-// The confirmation link signs the new user in on the verify-email page.
+// The confirmation link signs the new user in on the verify-email page; a
+// server that asks for no confirmation signs them in at once, and the
+// form loads the app anew.
 // With a Turnstile site key, the server wants the widget's token too; from
 // an invitation's page, the invitation's id goes with it. Creating the
 // account accepts the terms, which the page says under it (`SignUpTerms`).
@@ -40,6 +48,9 @@ export const SignUpForm = ({
   const [error, setError] = useState<AuthErrorKey | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // From a sign-up that signed in until the next page replaces this one.
+  const [leaving, setLeaving] = useState(false);
+  const busy = isPending || leaving;
   const captcha = useCaptcha(captchaSiteKey);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -64,12 +75,28 @@ export const SignUpForm = ({
       // The token is spent, whatever the answer.
       captcha.reset();
 
-      if (result.error === null) {
-        setError(null);
-        setSentTo(email);
-      } else {
+      if (result.error !== null) {
         setError(authErrorKey(result.error));
+
+        return;
       }
+
+      setError(null);
+
+      // A server that asks for no confirmation signed the browser in:
+      // like every sign-in, the next page loads anew and the browser's
+      // other tabs are told who.
+      Option.match(signedInAtSignUp(result.data), {
+        onNone: () => {
+          setSentTo(email);
+        },
+        onSome: (userId) => {
+          tellTabs({ kind: "signedIn" });
+          tellOtherTabs({ kind: "signedIn", userId });
+          setLeaving(true);
+          loadAnew(getPathname({ href: signUpLanding(invitationId), locale }));
+        },
+      });
     });
   };
 
@@ -114,10 +141,10 @@ export const SignUpForm = ({
       {captcha.widget}
       <Button
         type="submit"
-        disabled={isPending || !captcha.ready}
+        disabled={busy || !captcha.ready}
         focusableWhenDisabled
       >
-        {isPending ? t("submitting") : t("submit")}
+        {busy ? t("submitting") : t("submit")}
       </Button>
     </form>
   );

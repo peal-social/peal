@@ -43,6 +43,7 @@ const EditorPage = async ({
     <EditorScreen
       workspaceId={workspace.id}
       mayConfigure={may.has("assistant:configure")}
+      userId={me.value.user.id}
     />
   );
 };

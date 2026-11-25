@@ -28,6 +28,8 @@ import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { ChangeEvent, ReactNode } from "react";
 
+import { tellOtherTabs } from "#auth/session-news.ts";
+import { useLoadAnew } from "#auth/use-load-anew.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { useRouter } from "#i18n/navigation.ts";
 import {
@@ -207,6 +209,7 @@ export const UserActions = ({
 }: UserActionsProps) => {
   const t = useTranslations("Staff.actions");
   const router = useRouter();
+  const loadAnew = useLoadAnew();
   const durationId = useId();
   const [duration, setDuration] = useState<Duration>("forever");
   const params = { userId };
@@ -223,10 +226,12 @@ export const UserActions = ({
     router.refresh();
   };
 
-  // Signed in as the account: its own pages, which show the banner.
+  // Signed in as the account: its own pages, which show the banner,
+  // loaded anew (`useLoadAnew`), so nothing the tab held for the staff
+  // member stays; the other tabs of the app load anew too.
   const openTheirApp = () => {
-    router.push("/");
-    router.refresh();
+    tellOtherTabs({ kind: "signedIn", userId });
+    loadAnew("/");
   };
 
   const handleDuration = (value: string | null) => {

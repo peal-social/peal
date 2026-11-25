@@ -139,6 +139,7 @@ const WorkspaceLayout = async ({
         permissions={workspace.value.permissions}
         supportChat={supportChat}
         supportUrl={contactUrl}
+        userId={user.id}
         workspaceId={workspaceId}
         workspaceSlug={slug}
         workspaces={me.value.workspaces.map(({ id, name, slug: other }) => ({

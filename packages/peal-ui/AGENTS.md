@@ -82,7 +82,8 @@ same on all three:
   `start.ts` is what the site's, the docs' and the blog's layouts load:
   without a `<peal-support>` it does nothing. The app makes the element
   itself (`SupportLauncher`) and forgets the conversation at sign-out
-  (`forgetConversation`).
+  (`forgetConversation`: Crisp's `session:reset` where it is loaded, then
+  its cookie expired in every case, as the app loads a new page at once).
 - Only the app names a person (`data-source="app"`): the site, the docs
   and the blog set no email. The app sets the account's email with the
   server's signature (`GET /api/me`'s `supportChat.emailSignature`, an

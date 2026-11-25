@@ -1,5 +1,6 @@
 "use client";
 
+import { Option } from "effect";
 import { ArrowLeftIcon, KeyRound, MailIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { LastSignIn, SignInProvider } from "peal-contract";
@@ -13,6 +14,8 @@ import type { AuthErrorKey } from "#auth/errors.ts";
 import { methodsOf } from "#auth/last-sign-in.ts";
 import type { SignInMethod } from "#auth/last-sign-in.ts";
 import type { ProviderReturn } from "#auth/provider-return.ts";
+import { expectSignIn, forgetSignIn } from "#auth/sign-in-arrival.ts";
+import { tabStorage } from "#auth/signed-out-notice.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { GoogleMark } from "#components/auth/google-mark.tsx";
 
@@ -132,7 +135,19 @@ const useProviderSignIn = (returnTo: ProviderReturn) => {
             }
       );
 
-      // On success, Better Auth's client is sending the browser on.
+      // On success, Better Auth's client is sending the browser on, to
+      // the provider, which may yet refuse or be left: nobody is signed
+      // in so far. The mark waits in the tab for the page the provider
+      // brings the person back to, which tells the other tabs who signed
+      // in (`TabPerson`); a refusal drops it.
+      for (const storage of Option.toArray(tabStorage())) {
+        if (result.error === null) {
+          expectSignIn(storage);
+        } else {
+          forgetSignIn(storage);
+        }
+      }
+
       setError(result.error === null ? null : authErrorKey(result.error));
     });
   };

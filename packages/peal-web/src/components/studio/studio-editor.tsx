@@ -18,6 +18,7 @@ import { cn } from "peal-ui/lib/utils";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { isSlideshowSettingsRefusal } from "#assistant/slideshows.ts";
+import { isLeaving } from "#auth/tab-person.ts";
 import { SlideshowJobs } from "#components/media/generate-slideshow.tsx";
 import { MediaPicker } from "#components/posts/media-picker.tsx";
 import { PageActions, useFullWindow } from "#components/shell/frame-view.tsx";
@@ -64,6 +65,8 @@ import "./studio.css";
 interface EditorProps {
   readonly mayConfigure: boolean;
   readonly status: AssistantStatus;
+  /** The signed-in person, whose draft of the workspace the browser keeps. */
+  readonly userId: string;
   readonly workspaceId: string;
 }
 
@@ -97,11 +100,11 @@ export const StudioEditor = (props: EditorProps) => {
   // The SDK loads an edit only with a clip: a new one starts with a text.
   const initial = useMemo<StudioEdit>(
     () =>
-      readDraft(props.workspaceId).pipe(
+      readDraft({ userId: props.userId, workspaceId: props.workspaceId }).pipe(
         Option.filter(hasClips),
         Option.getOrElse(() => emptyEdit([textClipOf(newText, 0)]))
       ),
-    [newText, props.workspaceId]
+    [newText, props.userId, props.workspaceId]
   );
 
   const files = useLibraryFiles(props.workspaceId, mediaIdsOf(initial));
@@ -197,6 +200,7 @@ const LoadedStudio = ({
   initial,
   mayConfigure,
   status,
+  userId,
   workspaceId,
 }: EditorProps & {
   readonly files: ReadonlyMap<string, Media>;
@@ -300,7 +304,9 @@ const LoadedStudio = ({
   }, [initial]);
 
   // The draft is kept a moment after each change, and what is not kept yet
-  // as the page is left.
+  // as the page is left; never once another tab's news has this one load
+  // the app anew (`isLeaving`): the person it shows may be gone, their
+  // account and its keys with them.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let waits = false;
@@ -308,9 +314,9 @@ const LoadedStudio = ({
     const keep = () => {
       clearTimeout(timer);
 
-      if (studio !== null && waits && !forgotten.current) {
+      if (studio !== null && waits && !forgotten.current && !isLeaving()) {
         waits = false;
-        writeDraft(workspaceId, storedIn(studio, files.current));
+        writeDraft({ userId, workspaceId }, storedIn(studio, files.current));
       }
     };
 
@@ -327,7 +333,7 @@ const LoadedStudio = ({
       keep();
       unsubscribe?.();
     };
-  }, [studio, workspaceId]);
+  }, [studio, userId, workspaceId]);
 
   // Pictures and films go on a track over the others, at the playhead;
   // sounds on one under them.
@@ -379,7 +385,7 @@ const LoadedStudio = ({
 
   const handleStartOver = () => {
     forgotten.current = true;
-    clearDraft(workspaceId);
+    clearDraft({ userId, workspaceId });
     window.location.reload();
   };
 

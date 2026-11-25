@@ -37,6 +37,13 @@ export interface ProviderReturn {
 }
 
 /**
+ * Where an account made on the sign-up page goes once signed in: on to the
+ * invitation it came from, otherwise to the app.
+ */
+export const signUpLanding = (invitationId: string | null): string =>
+  invitationId === null ? "/" : `/invitations/${invitationId}`;
+
+/**
  * The sign-up page's: from an invitation, every account, new or not, goes
  * on to the invitation it came from; otherwise to the app.
  */
@@ -44,7 +51,7 @@ export const signUpReturn = (
   invitationId: string | null,
   localized: (href: string) => string
 ): ProviderReturn => {
-  const landing = invitationId === null ? "/" : `/invitations/${invitationId}`;
+  const landing = signUpLanding(invitationId);
 
   return {
     errorPath: localized(

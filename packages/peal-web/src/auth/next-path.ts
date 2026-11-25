@@ -135,10 +135,11 @@ export const landingOf = (
 };
 
 /**
- * Where a provider's sign-in lands, as the server sends it on from the
- * sign-in page it comes back to (`signInReturn`): the address `landingOf`
- * gives, its language named, else the sign-in page's, so both ways to
- * sign in open the same page in the same language. English is named
+ * Where a sign-in lands: the password's, which loads it anew, and a
+ * provider's, as the server sends it on from the sign-in page it comes
+ * back to (`signInReturn`). The address `landingOf` gives, its language
+ * named, else the sign-in page's, so both ways to sign in open the same
+ * page in the same language. English is named
  * (`/en/…`), so next-intl sets the language cookie to it as it drops the
  * prefix, and the address without one does not open in the cookie's.
  */

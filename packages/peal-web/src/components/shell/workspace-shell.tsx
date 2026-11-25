@@ -28,6 +28,7 @@ export const WorkspaceShell = ({
   permissions,
   supportChat = null,
   supportUrl,
+  userId,
   workspaceId,
   workspaceSlug,
   workspaces,
@@ -39,6 +40,8 @@ export const WorkspaceShell = ({
   /** The support chat's launcher, where the server names a Crisp website. */
   readonly supportChat?: ReactNode;
   readonly supportUrl: string | null;
+  /** The signed-in person, whose agent panel the browser keeps. */
+  readonly userId: string;
   readonly workspaceId: string;
   /** The workspace's slug, which its addresses hold. */
   readonly workspaceSlug: string;
@@ -70,6 +73,7 @@ export const WorkspaceShell = ({
     <CommandScopeProvider>
       <AgentPanelProvider
         allowed={permissions.includes("assistant:use")}
+        userId={userId}
         workspaceId={workspaceId}
       >
         <FrameView

@@ -1,9 +1,12 @@
 import { Option, Schema } from "effect";
 
+import { personKeyOf } from "#auth/person-storage.ts";
+import type { KeptFor } from "#auth/person-storage.ts";
+
 // The floating panel's chats, as the bottom bar shows them: each chat
 // open in the panel is a tab, one of them shown (or none, minimized). A
 // new chat has no id until its first message: it is the `newChat` tab.
-// The browser keeps this per workspace, never the server.
+// The browser keeps this per person and workspace, never the server.
 
 /** The tab of a chat not yet sent, which takes its id once made. */
 export const newChat = "new";
@@ -89,6 +92,9 @@ export const panelStateOf = (stored: string | null): PanelState => {
   return { ...state, tabs: state.tabs.filter((tab) => tab !== newChat) };
 };
 
-/** Where a workspace's panel is kept, in the browser's local storage. */
-export const panelStorageKey = (workspaceId: string): string =>
-  `peal.agent-panel.${workspaceId}`;
+/**
+ * Where the person's panel of a workspace is kept, in the browser's local
+ * storage: theirs alone, as others may sign in on the same browser.
+ */
+export const panelStorageKey = (owner: KeptFor): string =>
+  personKeyOf("agent-panel", owner);
