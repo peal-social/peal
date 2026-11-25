@@ -22,6 +22,13 @@ const person = (locale: "en" | "fr", impersonatedBy: string | null = null) =>
     workspaces: [],
   }) satisfies Me;
 
+// What the layout knows of the page from its route's own params: the
+// language it is shown in, and the first segment its path may hold.
+const shown = (locale: "en" | "fr", ...firstSegments: string[]) => ({
+  firstSegments,
+  locale,
+});
+
 describe(accountLanguageOf, () => {
   it("is the account's own language", () => {
     expect(accountLanguageOf(person("fr"))).toStrictEqual(Option.some("fr"));
@@ -42,14 +49,14 @@ describe(accountLanguageAddress, () => {
     expect(
       accountLanguageAddress(
         Option.some(person("fr")),
-        "en",
+        shown("en", "synthetic-studio"),
         "/synthetic-studio/posts?status=draft"
       )
     ).toStrictEqual(Option.some("/fr/synthetic-studio/posts?status=draft"));
     expect(
       accountLanguageAddress(
         Option.some(person("en")),
-        "fr",
+        shown("fr", "synthetic-studio"),
         "/fr/synthetic-studio/calendar?view=week"
       )
     ).toStrictEqual(Option.some("/en/synthetic-studio/calendar?view=week"));
@@ -59,48 +66,72 @@ describe(accountLanguageAddress, () => {
   // language cookie from it, then next-intl drops it.
   it("names English in the address it sends to", () => {
     expect(
-      accountLanguageAddress(Option.some(person("en")), "fr", "/fr")
+      accountLanguageAddress(Option.some(person("en")), shown("fr", ""), "/fr")
     ).toStrictEqual(Option.some("/en"));
     expect(
-      accountLanguageAddress(Option.some(person("en")), "fr", "/fr?next=1")
+      accountLanguageAddress(
+        Option.some(person("en")),
+        shown("fr", ""),
+        "/fr?next=1"
+      )
     ).toStrictEqual(Option.some("/en?next=1"));
     expect(
-      accountLanguageAddress(Option.some(person("en")), "fr", "/FR/notes")
+      accountLanguageAddress(
+        Option.some(person("en")),
+        shown("fr", "notes"),
+        "/FR/notes"
+      )
     ).toStrictEqual(Option.some("/en/notes"));
   });
 
   it("sends the home page on too", () => {
     expect(
-      accountLanguageAddress(Option.some(person("fr")), "en", "/")
+      accountLanguageAddress(Option.some(person("fr")), shown("en", ""), "/")
     ).toStrictEqual(Option.some("/fr"));
     expect(
-      accountLanguageAddress(Option.some(person("fr")), "en", "/?from=email")
+      accountLanguageAddress(
+        Option.some(person("fr")),
+        shown("en", ""),
+        "/?from=email"
+      )
     ).toStrictEqual(Option.some("/fr?from=email"));
   });
 
   it("does not take a segment that starts like a language for one", () => {
     expect(
-      accountLanguageAddress(Option.some(person("fr")), "en", "/french-notes")
+      accountLanguageAddress(
+        Option.some(person("fr")),
+        shown("en", "french-notes"),
+        "/french-notes"
+      )
     ).toStrictEqual(Option.some("/fr/french-notes"));
   });
 
   it("leaves a page already in the account's language", () => {
     expect(
-      accountLanguageAddress(Option.some(person("fr")), "fr", "/fr/notes")
+      accountLanguageAddress(
+        Option.some(person("fr")),
+        shown("fr", "notes"),
+        "/fr/notes"
+      )
     ).toStrictEqual(Option.none());
     expect(
-      accountLanguageAddress(Option.some(person("en")), "en", "/notes")
+      accountLanguageAddress(
+        Option.some(person("en")),
+        shown("en", "notes"),
+        "/notes"
+      )
     ).toStrictEqual(Option.none());
   });
 
   it("leaves the page for someone signed out, and for staff acting as someone", () => {
     expect(
-      accountLanguageAddress(Option.none(), "fr", "/fr/notes")
+      accountLanguageAddress(Option.none(), shown("fr", "notes"), "/fr/notes")
     ).toStrictEqual(Option.none());
     expect(
       accountLanguageAddress(
         Option.some(person("en", "3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c")),
-        "fr",
+        shown("fr", "notes"),
         "/fr/notes"
       )
     ).toStrictEqual(Option.none());
@@ -111,8 +142,54 @@ describe(accountLanguageAddress, () => {
   it("sends nowhere from an address that is not a page of the app", () => {
     for (const address of [null, "", "//elsewhere.example/x", "/api/me"]) {
       expect(
-        accountLanguageAddress(Option.some(person("fr")), "en", address)
+        accountLanguageAddress(
+          Option.some(person("fr")),
+          shown("en", ""),
+          address
+        )
       ).toStrictEqual(Option.none());
     }
+  });
+
+  // The header reaches the page from the browser itself wherever the
+  // proxy did not run (a path it skips, or next-intl's early return): it
+  // is only taken when it names the page the route renders.
+  it("sends nowhere from an address that is not the page shown", () => {
+    for (const [page, address] of [
+      [shown("en", "synthetic-studio"), "/elsewhere/posts"],
+      [shown("en", "synthetic-studio"), "/synthetic-studio-2/posts"],
+      [shown("en", "synthetic-studio"), "/fr/synthetic-studio/posts"],
+      [shown("fr", "synthetic-studio"), "/synthetic-studio/posts"],
+      [shown("en", "", "create"), "/synthetic-studio"],
+      [shown("en", "", "create"), "/creative"],
+    ] as const) {
+      expect(
+        accountLanguageAddress(Option.some(person("fr")), page, address)
+      ).toStrictEqual(Option.none());
+    }
+  });
+
+  it("takes an address of the page shown, by its first segment", () => {
+    expect(
+      accountLanguageAddress(
+        Option.some(person("fr")),
+        shown("en", "", "create"),
+        "/create/synthetic-studio/channels"
+      )
+    ).toStrictEqual(Option.some("/fr/create/synthetic-studio/channels"));
+    expect(
+      accountLanguageAddress(
+        Option.some(person("fr")),
+        shown("en", "", "create"),
+        "/?from=email"
+      )
+    ).toStrictEqual(Option.some("/fr?from=email"));
+    expect(
+      accountLanguageAddress(
+        Option.some(person("en")),
+        shown("fr", "synthetic-studio"),
+        "/fr/synthetic-studio"
+      )
+    ).toStrictEqual(Option.some("/en/synthetic-studio"));
   });
 });

@@ -16,6 +16,7 @@ import { TwoStepRefusalWatch } from "#components/two-step/refusal-watch.tsx";
 import { TwoStepRequiredNotice } from "#components/two-step/required-notice.tsx";
 import { TwoStepTurnOnHere } from "#components/two-step/turn-on-here.tsx";
 import { accountLanguageOf } from "#i18n/account-language.ts";
+import { toAccountLanguage } from "#i18n/to-account-language.ts";
 import { docsUrlConfig } from "#shell/docs-url.ts";
 import { supportChatConfig } from "#shell/support-chat.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
@@ -58,6 +59,10 @@ const WorkspaceLayout = async ({
   const { locale, workspaceId: segment } = await params;
   const me = await currentUserOrNone();
 
+  // A page shown in another language than the account's goes to it first,
+  // from the address the proxy hands on, when it is this workspace's.
+  await toAccountLanguage(me, locale, [segment]);
+
   const workspace = me.pipe(
     Option.flatMapNullishOr(({ workspaces }) =>
       workspaceAt(workspaces, segment)
@@ -65,7 +70,7 @@ const WorkspaceLayout = async ({
   );
 
   // No language switcher for someone whose account's language decides the
-  // page (the `(app)` layout).
+  // page (`toAccountLanguage`).
   const languageSwitcher = Option.isNone(
     me.pipe(Option.flatMap(accountLanguageOf))
   );

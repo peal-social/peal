@@ -1322,12 +1322,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   helpers in `src/i18n/navigation.ts`, not `next/link`.
 - A page's language: next-intl's proxy takes the address's, then its
   `NEXT_LOCALE` cookie's, then the browser's. On the signed-in app's
-  pages (`isAppPath`) the account's language wins over both: the `(app)`
-  layout, from the `/api/me` it reads anyway, sends a page shown in
-  another to the same path and query in the account's
-  (`accountLanguageAddress`, `#i18n/account-language.ts`, tested), from
-  the address the proxy hands every page (`x-peal-page`; layouts have no
-  other). English is sent to as `/en/…`, and the proxy sets the cookie to
+  pages (`isAppPath`) the account's language wins over both: the
+  `(setup)` and `[workspaceId]` layouts, from the `/api/me` they read
+  anyway, send a page shown in another to the same path and query in the
+  account's (`toAccountLanguage`; `accountLanguageAddress`,
+  `#i18n/account-language.ts`, tested), from the address the proxy hands
+  every page (`x-peal-page`; layouts have no other). The browser can send
+  that header too, where the proxy does not run: it is taken only when
+  its language and first segment are the route's own params, so it lives
+  in the layouts that receive them, not in `(app)`'s, which receives the
+  language alone. English is sent to as `/en/…`, and the proxy sets the cookie to
   English there for every request, the router's included, so the address
   without a language does not open in the cookie's again. No new request
   to the API: the layout's own answer decides. Staff acting as someone,
