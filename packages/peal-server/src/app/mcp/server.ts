@@ -8,7 +8,7 @@ import { InboxTools } from "#app/mcp/inbox-tools.ts";
 import { MediaTools } from "#app/mcp/media-tools.ts";
 import { PostTools } from "#app/mcp/posts-tools.ts";
 import { recordedCalls } from "#app/mcp/recorded-calls.ts";
-import { mcpRefusalAnswers } from "#app/mcp/refusal-answers.ts";
+import { mcpPath, mcpRefusalAnswers } from "#app/mcp/refusal-answers.ts";
 import { ReviewTools } from "#app/mcp/review-tools.ts";
 import { SavedTools } from "#app/mcp/saved-tools.ts";
 import {
@@ -57,9 +57,6 @@ export const changingTools: ReadonlySet<string> = new Set(
     .filter(({ changes }) => changes)
     .map(({ name }) => name)
 );
-
-/** Where the MCP endpoint answers, under PUBLIC_URL. */
-export const mcpPath = "/api/mcp";
 
 /** The version the MCP server gives of itself. */
 export const mcpServerVersion = "0.1.0";

@@ -349,11 +349,94 @@ layer(
 
         assert.strictEqual(endedDelete.status, 404);
         assert.strictEqual(endedDelete.text, ended.text);
+
+        // A request of the stateless revision that carries a session id
+        // is told the same, in words that hold for it too.
+        const stateless = yield* send({
+          body: {
+            ...listTools,
+            params: {
+              _meta: {
+                "io.modelcontextprotocol/clientCapabilities": {},
+                "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+              },
+            },
+          },
+          headers: {
+            ...bearer(token),
+            "mcp-method": "tools/list",
+            "mcp-protocol-version": "2026-07-28",
+            "mcp-session-id": "synthetic-session-that-ended",
+          },
+        });
+
+        assert.strictEqual(stateless.status, 404);
+        assert.strictEqual(stateless.text, ended.text);
+        assert.include(messageOf(stateless), "2026-07-28");
+        assert.include(
+          messageOf(stateless),
+          "without the Mcp-Session-Id header"
+        );
       })
   );
 
   it.effect(
-    "says what a request the transport does not take lacks: its method, its media types, one message at a time, a session to end",
+    "tells a DELETE what it lacks: the session's id, or the protocol version the session speaks",
+    () =>
+      Effect.gen(function* deletes() {
+        const owner = yield* signedUpUnconfirmed("delete-owner");
+        const workspace = yield* workspaceOf(owner, "Deletes");
+        const { key } = yield* apiKeyOf(owner, workspace, ["post:read"]);
+
+        const sessionless = yield* send({
+          headers: bearer(key),
+          method: "DELETE",
+        });
+
+        assert.strictEqual(sessionless.status, 400);
+        assert.include(
+          messageOf(sessionless),
+          "send the session's Mcp-Session-Id header"
+        );
+
+        const opened = yield* send({ body: initialize, headers: bearer(key) });
+        const session = opened.headers.get("mcp-session-id") ?? "";
+
+        assert.notStrictEqual(session, "");
+
+        const misversioned = yield* send({
+          headers: {
+            ...bearer(key),
+            "mcp-protocol-version": "2024-01-01",
+            "mcp-session-id": session,
+          },
+          method: "DELETE",
+        });
+
+        assert.strictEqual(misversioned.status, 400);
+        assert.include(messageOf(misversioned), "MCP-Protocol-Version");
+        assert.notInclude(
+          messageOf(misversioned),
+          "send the session's Mcp-Session-Id"
+        );
+        assert.notInclude(misversioned.text, session);
+
+        // Refused, the session stays, and its own version ends it.
+        const ended = yield* send({
+          headers: {
+            ...bearer(key),
+            "mcp-protocol-version": "2025-11-25",
+            "mcp-session-id": session,
+          },
+          method: "DELETE",
+        });
+
+        assert.strictEqual(ended.status, 204);
+      })
+  );
+
+  it.effect(
+    "says what a request the transport does not take lacks: its method, its media types, one message at a time",
     () =>
       Effect.gen(function* transport() {
         const owner = yield* signedUpUnconfirmed("transport-owner");
@@ -389,14 +472,6 @@ layer(
 
         assert.strictEqual(batch.status, 400);
         assert.include(messageOf(batch), "one JSON-RPC message");
-
-        const sessionless = yield* send({
-          headers: bearer(key),
-          method: "DELETE",
-        });
-
-        assert.strictEqual(sessionless.status, 400);
-        assert.include(messageOf(sessionless), "Mcp-Session-Id");
         assert.notInclude(got.text + plain.text + batch.text, key);
       })
   );
