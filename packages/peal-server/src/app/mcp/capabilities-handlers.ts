@@ -1,4 +1,4 @@
-import { Duration, Effect } from "effect";
+import { Duration, Effect, Match } from "effect";
 import { CurrentMember } from "peal-contract";
 
 import { CapabilityTools } from "#app/mcp/capabilities-tools.ts";
@@ -7,7 +7,7 @@ import { channelCapabilitiesView } from "#publishing/api/capabilities-view.ts";
 import { lookupResultView } from "#publishing/api/lookup-view.ts";
 import { ChannelLookups } from "#publishing/application/channel-lookups.ts";
 import { PostingCapabilities } from "#publishing/application/posting-capabilities.ts";
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
+import { channelRefusalOf } from "#publishing/domain/own-refusals.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import type { RateLimited } from "#shared/domain/rate-limited.ts";
 
@@ -25,6 +25,9 @@ const turnedOff = () =>
   refuse(
     "This channel is turned off: enable_channel turns it back on, to use it."
   );
+
+const unanswered = () =>
+  refuse("The platform did not answer: try again in a few minutes.");
 
 const slowDown = ({ retryAfter }: RateLimited) =>
   refuse(
@@ -63,19 +66,19 @@ export const CapabilityToolsLive = CapabilityTools.toLayer(
           Effect.map((result) => ({ result: lookupResultView(result) })),
           Effect.catchTags({
             BadRequest: ({ code }) =>
-              code === ownRefusalCodes.channelDisabled
-                ? turnedOff()
-                : notAChannel(),
+              Match.value(channelRefusalOf(code)).pipe(
+                Match.when("disabled", turnedOff),
+                Match.when("disconnected", notAChannel),
+                Match.when("other", unanswered),
+                Match.exhaustive
+              ),
             DatabaseError: Effect.die,
             LookupInputRejected: () =>
               refuse(
                 `The lookup ${name} does not take this input: get_channel_capabilities lists the fields it takes, and the values each allows. A cursor must be one a page before answered.`
               ),
             MissingPermission: notAllowed("ask a channel's platform"),
-            PlatformUnavailable: () =>
-              refuse(
-                "The platform did not answer: try again in a few minutes."
-              ),
+            PlatformUnavailable: unanswered,
             RateLimited: slowDown,
             TokenExpired: reconnect,
             UnknownChannels: notAChannel,

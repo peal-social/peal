@@ -40,6 +40,25 @@ export const ownRefusalCodes = {
 } as const;
 
 /**
+ * What a `BadRequest` says of the channel a read was for: turned off
+ * (`disabled`), no longer connected (`disconnected`), or nothing of the
+ * channel (`other`: the platform's refusal, or the outbound guard's), which
+ * never means the channel is missing.
+ */
+export type ChannelRefusal = "disabled" | "disconnected" | "other";
+
+/** What a `BadRequest`'s code says of the channel (`ChannelRefusal`). */
+export const channelRefusalOf = (code: string): ChannelRefusal => {
+  if (code === ownRefusalCodes.channelDisabled) {
+    return "disabled";
+  }
+
+  return code === ownRefusalCodes.channelDisconnected
+    ? "disconnected"
+    : "other";
+};
+
+/**
  * The codes adapters give a platform's refusal that has a failure reason of
  * its own, rather than `contentRejected`. They are stored in the
  * publication journal too, so never change one.

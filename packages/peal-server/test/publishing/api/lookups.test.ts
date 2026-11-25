@@ -603,6 +603,9 @@ describe("running a channel's lookup", () => {
           new TokenExpired(),
           new BadRequest({ code: ownRefusalCodes.channelDisabled }),
           new BadRequest({ code: ownRefusalCodes.channelDisconnected }),
+          // The outbound guard refused the platform's host: the server's
+          // doing, never a missing channel.
+          new BadRequest({ code: "hostNotAllowed" }),
           new LookupInputRejected(),
         ],
         (failure) =>
@@ -625,6 +628,7 @@ describe("running a channel's lookup", () => {
         new ChannelCannotPost({ reason: "reconnect" }),
         new ChannelCannotPost({ reason: "disabled" }),
         new ChannelNotFound(),
+        new PlatformUnreachable(),
         new LookupInputInvalid(),
       ]);
     })
