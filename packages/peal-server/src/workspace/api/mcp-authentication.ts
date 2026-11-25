@@ -103,7 +103,7 @@ const refusalOf = (principal: Principal, denied: AccessDenied) =>
 export const mcpAuthentication = ({
   contentTools,
 }: {
-  /** The tools that create, change or delete posts and media. */
+  /** The tools that create, change or delete content. */
   readonly contentTools: ReadonlySet<string>;
 }) =>
   HttpRouter.middleware<{
