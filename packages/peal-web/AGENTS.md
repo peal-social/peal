@@ -112,7 +112,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   draw: a sidebar on the page's background (in a `Sheet` on a
   phone; its links close it through `useCloseMenu`), the page in a white
   panel under a 48 px header (the breadcrumb, the page's `h1`, its
-  actions), the contract functions closing its content, and a bottom bar
+  actions), and a bottom bar
   across the window: the account menu at its start (`AccountMenuView`),
   Help (**Docs** at `PEAL_DOCS_URL`, **Support** at `PEAL_CONTACT_URL`
   when set, the shortcut sheet) and the agent's place (`AgentDock`) at
@@ -120,13 +120,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   gives a workspace's pages `WorkspaceShell`, whose `SidebarView` holds,
   in its head, the workspace switcher, Search (the command menu) and New
   post, then the mode's pages, a section's pages under a way back,
-  and Settings; the bottom bar holds, beside the account, `ModeSwitch`
+  and Settings (but while its own pages show); the bottom bar holds, beside the account, `ModeSwitch`
   (the open mode, and **Switch** on hover, whose menu offers PealCreative
   and PealAPI);
   `(app)/(setup)/layout.tsx` gives the setup page `SetupFrame`
   (`components/setup/`): no sidebar and no bottom bar, the way back to
   the workspace `/` would open when the person has one, who is signed in
-  and Sign out, and the contract functions at its foot. Someone signed
+  and Sign out. Someone signed
   out or not a member gets the app's `PlainFrame`; a member who must
   first turn on two-step verification gets it too, with the notice and
   the security and access page's own controls to turn it on (`TwoStepTurnOnHere`, as
@@ -1197,8 +1197,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   loads no measurement nor support chat (both live under `(app)`).
 - The sign-in pages (sign-in, sign-up, forgot and reset password,
   verify email) have a frame of their own (`frameOf` answers `signIn`:
-  no header, the contract functions alone at the foot, no language
-  switcher) and draw `AuthCard`, DESIGN.md's `sign-in` column. The sign-in
+  no header, no language switcher) and draw `AuthCard`, DESIGN.md's `sign-in` column. The sign-in
   and sign-up pages offer the ways in through `SignInChoices` (its view
   `SignInChoicesView`): the server's sign-in providers
   (`signUpSettings().providers`, `GET /api/captcha`'s `signInProviders`)

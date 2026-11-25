@@ -192,7 +192,7 @@ Un espace de travail dont un abonnement peut encore être facturé par Stripe, i
 
 ### Résilier et se rétracter [#cancel-withdraw]
 
-Chacun peut résilier un contrat ou s’en rétracter sans se connecter. Il suffit de cliquer sur **Résilier votre contrat** ou **Renoncer au contrat ici** au pied de chaque page de l’application web (`/fr/cancel` et `/fr/withdraw`). Un serveur qui ne facture pas ne les affiche pas.
+Chacun peut résilier un contrat ou s’en rétracter sans se connecter. Il suffit de cliquer sur **Résilier votre contrat** ou **Renoncer au contrat ici** au pied de chaque page du site vitrine, qui mènent à `/fr/cancel` et `/fr/withdraw` dans l’application web. L’application web n’y renvoie pas elle-même : si vous facturez sans le site vitrine, ajoutez les deux liens à votre propre site.
 
 `POST /api/contract-requests` enregistre chaque demande avec le moment de sa réception, qui fait foi quel que soit le moment où elle est appliquée. Il en accuse réception par e-mail. Il accepte 5 demandes par heure d’une même adresse (lue dans `AUTH_IP_HEADERS`), et un jeton Turnstile quand Turnstile est activé. Il n’écrit à une même adresse e-mail que 5 fois par jour au plus.
 

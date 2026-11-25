@@ -192,7 +192,7 @@ A workspace with a subscription Stripe may still bill, unpaid and paused ones in
 
 ### Cancelling and withdrawing [#cancel-withdraw]
 
-Anyone can cancel a contract or withdraw from one without signing in. They click **Cancel your contract** or **Withdraw from contract here** at the foot of every page of the web app (`/cancel` and `/withdraw`). A server that doesn't bill doesn't show them.
+Anyone can cancel a contract or withdraw from one without signing in. They click **Cancel your contract** or **Withdraw from contract here** at the foot of every page of the marketing site, which lead to the web app's `/cancel` and `/withdraw`. The web app doesn't link to them itself, so if you bill without the marketing site, link to both from your own.
 
 `POST /api/contract-requests` records each request with the moment it came in, which is the moment that counts whenever the request is applied. It acknowledges the request by email. It takes 5 requests an hour from an address (read from `AUTH_IP_HEADERS`), and a Turnstile token when Turnstile is on. It writes to one email address 5 times a day at most.
 

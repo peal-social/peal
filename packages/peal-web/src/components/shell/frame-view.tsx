@@ -92,7 +92,7 @@ export const PageTitle = ({ children }: { readonly children: string }) => {
 
 /**
  * Gives the page the whole window while `full`: the sidebar and the
- * bottom bar are hidden, the panel's header and the footer stay.
+ * bottom bar are hidden, the panel's header stays.
  */
 export const useFullWindow = (full: boolean): void => {
   const { setFull } = use(PanelHeader);
@@ -106,15 +106,13 @@ export const useFullWindow = (full: boolean): void => {
   }, [full, setFull]);
 };
 
-// What a split page places itself: the panel's header and footer, which
-// the frame leaves to it.
+// What a split page places itself: the panel's header, which the frame
+// leaves to it.
 interface SplitPartsValue {
-  readonly footer: ReactNode;
   readonly header: ReactNode;
 }
 
 const SplitParts = createContext<SplitPartsValue>({
-  footer: null,
   header: null,
 });
 
@@ -134,7 +132,7 @@ export const SplitView = ({
   /** Whether an item is open in the detail pane. */
   readonly open: boolean;
 }) => {
-  const { footer, header } = use(SplitParts);
+  const { header } = use(SplitParts);
 
   return (
     <>
@@ -153,14 +151,6 @@ export const SplitView = ({
         >
           {list}
         </div>
-        <footer
-          className={cn(
-            "text-muted-foreground border-t px-4 py-2 text-xs empty:hidden",
-            open && "max-md:hidden"
-          )}
-        >
-          {footer}
-        </footer>
       </div>
       <div
         className={cn(
@@ -285,7 +275,6 @@ export const FrameView = ({
   breadcrumb,
   children,
   docsUrl,
-  footer,
   label,
   sidebar,
   split = false,
@@ -309,12 +298,10 @@ export const FrameView = ({
   };
   readonly children: ReactNode;
   readonly docsUrl: string | null;
-  /** What every page ends with: the contract functions. */
-  readonly footer: ReactNode;
   /** The sidebar's name, for the sheet that holds it on a phone. */
   readonly label: string;
   readonly sidebar: ReactNode;
-  /** The page is a split view, which places the header and the footer. */
+  /** The page is a split view, which places the header. */
   readonly split?: boolean;
   /**
    * The support chat (`SupportLauncher`), which shows nothing: the
@@ -397,10 +384,7 @@ export const FrameView = ({
     [breadcrumb.trail, closeMenu, label, menuOpen, shownTitle, sidebar, t]
   );
 
-  const splitParts = useMemo(
-    () => ({ footer, header: panelHeader }),
-    [footer, panelHeader]
-  );
+  const splitParts = useMemo(() => ({ header: panelHeader }), [panelHeader]);
 
   return (
     <PanelHeader value={header}>
@@ -444,14 +428,6 @@ export const FrameView = ({
                   >
                     {children}
                   </div>
-                  <footer
-                    className={cn(
-                      "text-muted-foreground px-4 text-xs",
-                      full ? "pb-3" : "pt-2 pb-6 md:px-6"
-                    )}
-                  >
-                    {footer}
-                  </footer>
                 </main>
               )}
             </div>
