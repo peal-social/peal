@@ -57,7 +57,7 @@ Tous les points d’accès de l’[API](/developers) suivent les mêmes règles�
 
 ## Requêtes et réponses [#requests]
 
-Les requêtes vont à l’adresse où vous ouvrez Peal, sous `/api`, et celles d’un espace de travail sous `/api/v1` ([L’espace de travail d’une requête](#workspace)). Les corps sont en JSON, envoyés avec `Content-Type: application/json`. Les réponses aussi, sauf celles qui n’ont pas de corps (204).
+Les requêtes vont à l’adresse où vous ouvrez Peal, sous `/api`, et celles d’un espace de travail sous `/api/v1` ([L’espace de travail d’une requête](#workspace)). Les corps sont en JSON, envoyés avec `Content-Type: application/json`. Les réponses aussi, sauf celles qui n’ont pas de corps (204). Un corps d’un autre type répond 415 [`unsupported_content_type`](/developers/conventions/errors#error-codes).
 
 Chaque réponse porte un en-tête `X-Request-Id`, quel que soit ce qui a répondu, et que la requête ait abouti ou non. Voici comment fonctionne cet identifiant :
 
