@@ -17,6 +17,7 @@ Voici les réglages que lit Peal :
 | `PEAL_MAIL_PERSONAL_FROM`         | Non           | L’expéditeur des e-mails qu’une personne signe ([Envoyer certains e-mails au nom d’une personne](#person))                                                       |
 | `RESEND_API_KEY`                  | L’un des deux | Envoie par l’API de Resend                                                                                                                                       |
 | `SMTP_URL`                        | L’un des deux | Utilisé sans `RESEND_API_KEY`. Un serveur SMTP, comme `smtp://utilisateur:motdepasse@mail.example.com:587`, ou `smtps://…:465` pour du TLS dès le premier octet. |
+| `PEAL_MAIL_WELCOME_SIGNER`        | Non           | Envoie à chaque nouveau compte un e-mail de bienvenue, signé de ce nom ([Accueillir les nouveaux comptes](#welcome))                                             |
 | `PEAL_MAIL_IDENTITY`              | Non           | Dit qui envoie, sur une ligne sous chaque e-mail ([Dire qui envoie](#identity))                                                                                  |
 | `PEAL_MAIL_IDENTITY_FR`           | Non           | La même ligne pour les lecteurs français                                                                                                                         |
 | `AUTH_REQUIRE_EMAIL_VERIFICATION` | Non           | Avec `false`, les gens peuvent se connecter avant d’avoir confirmé leur adresse                                                                                  |
@@ -31,6 +32,7 @@ Peal envoie ces e-mails, chacun dans la langue du lecteur :
 - Les réinitialisations de mot de passe.
 - Les invitations à un espace de travail.
 - Les [notifications](/guides/workspace/notifications) sur les publications et les canaux. Les membres choisissent lesquelles leur arrivent aussi par e-mail.
+- Un e-mail de bienvenue à chaque nouveau compte, si vous [l’activez](#welcome).
 
 Il arrive que le service de messagerie refuse un e-mail pour le moment. Peal réessaie alors un e-mail de compte trois fois, en quatre secondes environ, puis l’abandonne, car la personne peut en demander un autre. Il réessaie l’e-mail d’une notification pendant environ cinq heures.
 
@@ -45,6 +47,20 @@ PEAL_MAIL_PERSONAL_FROM=Ada at Example <ada@example.com>
 Votre service de messagerie doit accepter les deux adresses. Sans ce réglage, ces e-mails viennent aussi de `MAIL_FROM`.
 
 Peal n’indique pas d’adresse de réponse. Une réponse arrive donc à l’adresse d’où vient l’e-mail. Vérifiez que quelqu’un la lit.
+
+## Accueillir les nouveaux comptes [#welcome]
+
+Peal peut envoyer à chaque nouveau compte un e-mail de bienvenue, signé par une personne. Il reste désactivé tant que vous ne nommez pas qui le signe :
+
+```sh
+PEAL_MAIL_WELCOME_SIGNER=Ada
+```
+
+L’e-mail dit que le compte est prêt, propose de programmer une première publication et invite à répondre si quelque chose ne marche pas. Il vient de `PEAL_MAIL_PERSONAL_FROM`, ou de `MAIL_FROM` sans ce réglage. Choisissez donc une adresse dont le signataire lit le courrier et y répond.
+
+Un compte le reçoit une seule fois, quelle que soit la façon dont il a été créé, et seulement une fois son adresse confirmée. Peal vérifie cinq minutes après la création du compte. Si l’adresse n’est pas encore confirmée, ou si votre service de messagerie refuse l’e-mail pour le moment, Peal vérifie à nouveau après 15 minutes, puis 1, 6, 24 et 72 heures, chaque délai partant de la vérification précédente. Ensuite, il abandonne. Les comptes bannis et ceux créés avant ce réglage ne le reçoivent pas.
+
+Le nom tient sur une ligne de 60 caractères au plus. Si vous retirez le réglage, plus aucun e-mail de bienvenue n’est envoyé, même aux comptes qui attendent encore le leur.
 
 ## Dire qui envoie [#identity]
 
@@ -68,4 +84,4 @@ Chaque e-mail affiche la marque de Peal et deux décors. Ils viennent de votre p
 
 La plupart des messageries vont chercher les images par leur propre proxy. `PUBLIC_URL` doit donc répondre depuis internet, sans connexion demandée devant ce chemin. Sinon, vos lecteurs voient le nom « Peal » en texte et le reste de l’e-mail tel quel.
 
-Les images ont les mêmes adresses pour chaque lecteur, sans rien après le nom. Le récapitulatif hebdomadaire, l’e-mail qui confirme une adresse et les invitations chargent en plus un décor qui bouge. Peal ne trace pas ces requêtes, et son journal garde leur chemin sans l’adresse IP du lecteur. Votre propre proxy peut en garder plus.
+Les images ont les mêmes adresses pour chaque lecteur, sans rien après le nom. Le récapitulatif hebdomadaire, l’e-mail qui confirme une adresse, les invitations et l’e-mail de bienvenue chargent en plus un décor qui bouge. Peal ne trace pas ces requêtes, et son journal garde leur chemin sans l’adresse IP du lecteur. Votre propre proxy peut en garder plus.

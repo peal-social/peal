@@ -22,6 +22,15 @@ export interface NoticeEmail {
   readonly workspaceName: string;
 }
 
+/** The welcome of a new account, as an email a person signs. */
+export interface WelcomeEmail {
+  readonly locale: Locale;
+  /** Who signs it. */
+  readonly signer: string;
+  /** The page it opens, in the reader's language. */
+  readonly url: string;
+}
+
 /**
  * Writes each email in its reader's language. It never fails: an email that
  * cannot be written is a bug.
@@ -32,5 +41,6 @@ export class EmailRenderer extends Context.Service<
     readonly account: (email: AuthEmail) => Effect.Effect<RenderedEmail>;
     readonly notice: (email: NoticeEmail) => Effect.Effect<RenderedEmail>;
     readonly weeklyDigest: (email: DigestEmail) => Effect.Effect<RenderedEmail>;
+    readonly welcome: (email: WelcomeEmail) => Effect.Effect<RenderedEmail>;
   }
 >()("peal-server/notifications/application/EmailRenderer") {}

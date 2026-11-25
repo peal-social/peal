@@ -4,7 +4,9 @@ import { ConfigProvider, Effect, Option, Redacted } from "effect";
 import {
   mailIdentityConfig,
   mailSettingsConfig,
+  mailWelcomeSignerConfig,
   maxIdentityLength,
+  maxSignerLength,
 } from "#notifications/infrastructure/mail-settings.ts";
 
 const settingsFrom = (env: Record<string, string>) =>
@@ -169,6 +171,43 @@ describe("who sends, as the operator states it", () => {
       const failure = yield* identityFrom({ [name]: value }).pipe(Effect.flip);
 
       assert.include(String(failure), name);
+    })
+  );
+});
+
+const signerFrom = (env: Record<string, string>) =>
+  mailWelcomeSignerConfig.parse(ConfigProvider.fromEnv({ env }));
+
+describe("who signs the welcome, which turns it on", () => {
+  it.effect.each([
+    { env: {}, signer: Option.none() },
+    { env: { PEAL_MAIL_WELCOME_SIGNER: "" }, signer: Option.none() },
+    { env: { PEAL_MAIL_WELCOME_SIGNER: "  " }, signer: Option.none() },
+    {
+      env: { PEAL_MAIL_WELCOME_SIGNER: " Ada Synthetic " },
+      signer: Option.some("Ada Synthetic"),
+    },
+    {
+      env: { PEAL_MAIL_WELCOME_SIGNER: "x".repeat(maxSignerLength) },
+      signer: Option.some("x".repeat(maxSignerLength)),
+    },
+  ])("is read from $env", ({ env, signer }) =>
+    Effect.gen(function* read() {
+      assert.deepStrictEqual(yield* signerFrom(env), signer);
+    })
+  );
+
+  it.effect.each([
+    { value: "Ada\nSynthetic", what: "two lines" },
+    { value: "Ada\u2029Synthetic", what: "a paragraph separator" },
+    { value: "x".repeat(maxSignerLength + 1), what: "too long a name" },
+  ])("refuses $what", ({ value }) =>
+    Effect.gen(function* refused() {
+      const failure = yield* signerFrom({
+        PEAL_MAIL_WELCOME_SIGNER: value,
+      }).pipe(Effect.flip);
+
+      assert.include(String(failure), "PEAL_MAIL_WELCOME_SIGNER");
     })
   );
 });

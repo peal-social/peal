@@ -134,6 +134,27 @@
   not). The path is never traced (`src/app/untraced-paths.ts`), as
   `url.full` would keep the token, and the request log writes it with
   `<redacted>` in the token's place (`SecretPathsLive`).
+- The welcome (`SendWelcomeEmail`, `WelcomeV1`) is one email to each new
+  account, from the personal sender, signed `PEAL_MAIL_WELCOME_SIGNER`. That
+  setting is its switch: unset, nothing is started
+  (`WelcomeEmails.start` does nothing) and what was started before ends
+  without an email. The workspace context starts it when Better Auth makes
+  an account, whatever the way of signing up, on fibers of its own: a start
+  that fails is logged, and never fails a sign-up.
+- A welcome goes only to a confirmed address, whatever
+  `AUTH_REQUIRE_EMAIL_VERIFICATION` says, as someone may sign up with another
+  person's: several paths confirm one, and none is a hook, so `WelcomeV1`
+  checks the account (`WelcomeReaders`, from the workspace context) after
+  5 minutes, then 15 minutes, 1, 6, 24 and 72 hours, each from the one
+  before, and gives up after the last. A banned or erased account gets none;
+  a transport that refuses for now waits for the next check, and one that
+  refuses for good ends it. It is informational and goes once, so it carries
+  no `List-Unsubscribe`, and no price, offer or programme may join it.
+- `WelcomeV1` is persisted contract: its tag, its payload (`userId`), its
+  activities `attempt/<n>`, its clocks `wait/<n>`, `welcomeChecks` and
+  `WelcomeOutcomeSchema`. Delivery is at least once in one window, as the
+  digest's is: Resend drops a second one by its key (`welcome:<user>`), and
+  SMTP delivers both.
 - A name someone typed (a member's, a workspace's) goes into an email only
   through `peal-emails`' `nameForMail`: one that reads as a host or an
   address is replaced by the catalog's `withheldNames` ("A member", "a

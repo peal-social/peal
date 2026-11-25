@@ -188,7 +188,8 @@ export interface AuthHooks extends BillingHooks {
   /** Emails the account what changed in its two-step verification. */
   readonly twoStepChanged: TwoStepTeller;
   /**
-   * An account was made: tells product analytics, and returns at once.
+   * An account was made: tells product analytics and starts its welcome,
+   * and returns at once.
    * The made-up user a known address's sign-up answers makes none.
    */
   readonly userCreated: (created: CreatedUser) => void;

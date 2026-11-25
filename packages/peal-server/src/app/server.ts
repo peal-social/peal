@@ -123,6 +123,8 @@ import {
   NotificationsLive,
   NotificationsWorkersLive,
   WeeklyDigestsLive,
+  WelcomesLive,
+  WelcomesWorkersLive,
 } from "#notifications/container.ts";
 import {
   CapabilitiesApiLive,
@@ -613,6 +615,12 @@ const WeeklyDigestContextLive = WeeklyDigestsLive.pipe(
   )
 );
 
+// New accounts' welcomes, which read the accounts from the workspace context
+// and send through the notifications' mailer.
+const WelcomesContextLive = WelcomesLive.pipe(
+  Layer.provide(ChannelsWithNoticesLive)
+);
+
 // The cancel and withdraw functions anyone reaches, which find the account
 // an address signs in to in the workspace context, tell members and write
 // acknowledgements through the notifications, and record what staff do
@@ -744,6 +752,7 @@ const WorkersLive = Layer.mergeAll(
   // large uploads, as posts do.
   ArticleWorkersLive.pipe(Layer.provide(PostingServicesLive)),
   NotificationsWorkersLive,
+  WelcomesWorkersLive,
   EngagementWorkersLive,
   WebhooksWorkersLive,
   AdsWorkersLive,
@@ -788,6 +797,7 @@ export const ContextsLive = Layer.mergeAll(
   ShortLinksContextLive,
   PartnerHealthContextLive,
   WeeklyDigestContextLive,
+  WelcomesContextLive,
   // The agent's chats, which the retention deletes.
   AgentRecordsLive,
   // Billing's meters and X's pass-through, which the workers' platforms

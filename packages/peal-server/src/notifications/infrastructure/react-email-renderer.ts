@@ -3,6 +3,7 @@ import {
   renderAccountEmail,
   renderNoticeEmail,
   renderWeeklyDigest,
+  renderWelcomeEmail,
 } from "peal-emails";
 import type { Letterhead } from "peal-emails";
 
@@ -48,6 +49,11 @@ export const ReactEmailRenderer = Layer.effect(
         Effect.promise(
           async () =>
             await renderWeeklyDigest(email, letterheadIn(email.locale))
+        ),
+      welcome: (email) =>
+        Effect.promise(
+          async () =>
+            await renderWelcomeEmail(email, letterheadIn(email.locale))
         ),
     });
   })

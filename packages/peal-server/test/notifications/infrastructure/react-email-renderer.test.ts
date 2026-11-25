@@ -139,6 +139,23 @@ describe("the emails' renderer", () => {
       })
     );
 
+    it.effect("writes the welcome, signed by who the server names", () =>
+      Effect.gen(function* welcome() {
+        const { html, subject, text } = yield* EmailRenderer.use((renderer) =>
+          renderer.welcome({
+            locale: "fr",
+            signer: "Camille Synthetic",
+            url: "https://app.example.test/fr/",
+          })
+        );
+
+        assert.strictEqual(subject, "Bienvenue sur Peal");
+        assert.include(text, "je m’appelle Camille Synthetic");
+        assert.include(html, 'href="https://app.example.test/fr/"');
+        assert.include(html, "/api/email-assets/header.gif");
+      })
+    );
+
     it.effect("writes the weekly digest", () =>
       Effect.gen(function* digest() {
         const renderer = yield* EmailRenderer;

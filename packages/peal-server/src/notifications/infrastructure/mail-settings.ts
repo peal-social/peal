@@ -69,22 +69,21 @@ export const mailSettingsConfig = Config.all({
 /** The most characters the line that says who sends may hold. */
 export const maxIdentityLength = 300;
 
-// One line: no line break, nor any other control character.
-const IdentitySchema = Schema.Trim.check(
-  Schema.isPattern(
-    new RegExp(
-      String.raw`^[^\p{Cc}\u2028\u2029]{0,${maxIdentityLength}}$`,
-      "u"
-    ),
-    { expected: `one line of at most ${maxIdentityLength} characters` }
-  )
-);
+/** The most characters the name that signs the welcome may hold. */
+export const maxSignerLength = 60;
 
-const identityLine = (name: string) =>
-  Config.schema(IdentitySchema, name).pipe(
-    Config.option,
-    Config.map(Option.filter((identity) => identity !== ""))
-  );
+// One line: no line break, nor any other control character. None when unset
+// or empty.
+const oneLine = (name: string, maxLength: number) =>
+  Config.schema(
+    Schema.Trim.check(
+      Schema.isPattern(
+        new RegExp(String.raw`^[^\p{Cc}\u2028\u2029]{0,${maxLength}}$`, "u"),
+        { expected: `one line of at most ${maxLength} characters` }
+      )
+    ),
+    name
+  ).pipe(Config.option, Config.map(Option.filter((line) => line !== "")));
 
 /** Who sends, as the operator states it to the readers of each language. */
 export type MailIdentity = Readonly<Record<Locale, Option.Option<string>>>;
@@ -100,13 +99,23 @@ export type MailIdentity = Readonly<Record<Locale, Option.Option<string>>>;
  * there.
  */
 export const mailIdentityConfig = Config.all({
-  everyone: identityLine("PEAL_MAIL_IDENTITY"),
-  french: identityLine("PEAL_MAIL_IDENTITY_FR"),
+  everyone: oneLine("PEAL_MAIL_IDENTITY", maxIdentityLength),
+  french: oneLine("PEAL_MAIL_IDENTITY_FR", maxIdentityLength),
 }).pipe(
   Config.map(({ everyone, french }): MailIdentity => ({
     en: everyone,
     fr: Option.orElse(french, () => everyone),
   }))
+);
+
+/**
+ * `PEAL_MAIL_WELCOME_SIGNER`: the name that signs the welcome, which is sent
+ * only where it is set. Read when the server starts, so a value that is not
+ * one line stops it there.
+ */
+export const mailWelcomeSignerConfig = oneLine(
+  "PEAL_MAIL_WELCOME_SIGNER",
+  maxSignerLength
 );
 
 export type MailSettings = Config.Success<typeof mailSettingsConfig>;

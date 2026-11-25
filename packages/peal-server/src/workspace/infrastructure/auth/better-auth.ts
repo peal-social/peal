@@ -18,6 +18,7 @@ import { CreditProblemDesk } from "#billing/application/credit-problem-desk.ts";
 import { RecordSubscription } from "#billing/application/record-subscription.ts";
 import { WorkspaceEntitlements } from "#billing/application/workspace-entitlements.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
+import { WelcomeEmails } from "#notifications/application/welcome-emails.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { SiteMeasurement } from "#shared/application/site-measurement.ts";
 import { UpgradePaths } from "#shared/application/upgrade-paths.ts";
@@ -283,12 +284,23 @@ const toldTwoStep =
       Effect.withSpan("BetterAuth.twoStepChanged")
     );
 
+// Starts a new account's welcome. A failure is logged: the account is made.
+const welcomed = (welcomes: WelcomeEmails["Service"], userId: string) =>
+  decodeUserId(userId).pipe(
+    Effect.flatMap((id) => welcomes.start(id)),
+    Effect.catchCause((cause) =>
+      Effect.logError("Starting a new account's welcome failed", cause)
+    ),
+    Effect.withSpan("BetterAuth.welcomed")
+  );
+
 export const BetterAuthLive = Layer.effect(
   BetterAuth,
   Effect.gen(function* betterAuthLive() {
     const settings = yield* AuthSettings;
     const database = yield* makeAuthDatabase(settings.databasePoolMax);
     const emails = yield* SendAuthEmail;
+    const welcomes = yield* WelcomeEmails;
     const entitlements = yield* WorkspaceEntitlements;
     const accounts = yield* BillingAccounts;
     const upgrades = yield* UpgradePaths;
@@ -529,6 +541,7 @@ export const BetterAuthLive = Layer.effect(
         ),
       userCreated: (created) => {
         run(toldSignUp(analytics, created));
+        run(welcomed(welcomes, created.userId));
       },
       verifyEmail: (link) => {
         run(emails.send({ _tag: "VerifyEmail", ...link }));
