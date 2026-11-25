@@ -152,6 +152,12 @@
   its close button fit the window, and that closing it gives the focus
   back to the thumbnail. A seeded description has no surrounding spaces,
   which the server refuses to read.
+- `tests/page-loads.e2e.ts` loads a new workspace's main pages from the
+  server, one after the other, and finds no error in the console: an init
+  script keeps what the page writes with `console.error` and the errors
+  nothing caught, where React's hydration error (#418) arrives. The runner
+  gives a test no console of the page, so read it this way; a page added
+  to the app's main ones joins its list.
 - A new workspace opens on its setup step (`/create/<slug>/channels`):
   `openedWorkspace` waits for it and leaves with **Skip for now**
   (`[data-setup-skip]`), so every journey starts on the workspace's home.
