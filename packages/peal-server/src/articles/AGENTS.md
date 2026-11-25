@@ -194,12 +194,14 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
 - A transaction that locks a workspace's posts and its articles locks the
   posts first, then the articles, as erasing a workspace does (posts,
   then `ArticleRecords`); a new code path that locks both follows that
-  order, so no two of them deadlock. Deleting a library file does too:
-  media's `HoldersMediaUsage` holds the posts (publishing's
-  `MediaInPosts.hold`), then calls `MediaInArticles.hold`, which locks the
-  articles that show it in media's transaction, until it ends; only once
-  neither keeps the file do the articles that may still be sent let it go
-  (`letGo`). `hold` opens no transaction: never call it outside one
+  order, so no two of them deadlock, and the articles' own locks
+  (`lockWorkspace`, `lockShowing`) are taken in the order of their ids.
+  Deleting a library file does too: media's `HoldersMediaUsage` has
+  publishing's `MediaInPosts.hold` lock the drafts that show it, then
+  calls `MediaInArticles.hold`, which locks the articles that show it in
+  media's transaction, until it ends; only once neither keeps the file do
+  the articles that may still be sent let it go (`letGo`). `hold` opens
+  no transaction: never call it outside one
   (`test/media/infrastructure/holders-media-usage.test.ts` proves the
   order, and that a file deleted while its workspace is erased waits
   instead of deadlocking).

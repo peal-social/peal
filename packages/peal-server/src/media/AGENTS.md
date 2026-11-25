@@ -123,9 +123,12 @@
   (`#articles/application/media-in-articles.ts`) and
   publishing's `MediaInPosts` (the composition root provides
   `MediaInArticlesLive` and `MediaInPostsLive`), in one transaction:
-  the posts that show it are held first (`MediaInPosts.hold`), then the
-  articles (`MediaInArticles.hold`), both locked until the transaction
-  ends and nothing changed until both said so. An
+  publishing's `MediaInPosts.hold` locks the drafts that show it and reads
+  the posts that go out with it (awaiting approval, scheduled or
+  publishing; read, not locked), then `MediaInArticles.hold` locks the
+  articles that show it, both until the transaction ends, and the posts
+  that go out are read again, as one may be scheduled while the articles
+  are waited for. Nothing changes until both said so. An
   article or a post scheduled or publishing that shows it refuses the
   deletion (`MediaInUse`, listing both), and drafts, and the articles that
   may still be sent, lose the attachment. Posts before articles is the
