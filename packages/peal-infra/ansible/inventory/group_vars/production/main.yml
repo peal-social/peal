@@ -73,8 +73,10 @@ cloudflare_access_team: winter-resonance-b4ec
 # Production is public; Access guards Grafana, SSH and peal_access_paths.
 peal_access_everything: false
 
-# Resend's sending domain is peal.social.
+# Resend's sending domain is peal.social. Every automatic email leaves from
+# the first address, and what a person signs from the second.
 peal_mail_from: Peal <notifications@peal.social>
+peal_mail_personal_from: Maxime at Peal <maxime@peal.social>
 
 # Grafana posts a heartbeat to the uptime server every few minutes, which
 # alerts when it stops (group_vars/uptime: uptime_hostname, and the external

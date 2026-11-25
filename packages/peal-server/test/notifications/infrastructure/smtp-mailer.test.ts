@@ -60,7 +60,10 @@ describe("the SMTP mailer", () => {
       ).pipe(
         Effect.provide(
           smtpMailer({
-            from: "Peal <noreply@example.test>",
+            senders: {
+              automatic: "Peal <noreply@example.test>",
+              personal: "Ada at Synthetic <ada@example.test>",
+            },
             url: Redacted.make(url),
           })
         )
@@ -105,6 +108,72 @@ describe("the SMTP mailer", () => {
     })
   );
 
+  it.live.each([
+    {
+      from: { Address: "ada@example.test", Name: "Ada at Synthetic" },
+      personal: "Ada at Synthetic <ada@example.test>",
+      sender: "personal" as const,
+      what: "a personal email from the person's address",
+    },
+    {
+      from: { Address: "noreply@example.test", Name: "Peal" },
+      personal: "Ada at Synthetic <ada@example.test>",
+      sender: "automatic" as const,
+      what: "an automatic email from MAIL_FROM",
+    },
+    {
+      from: { Address: "noreply@example.test", Name: "Peal" },
+      personal: "Peal <noreply@example.test>",
+      sender: "personal" as const,
+      what: "a personal email from MAIL_FROM where no person is set",
+    },
+  ])("sends $what", ({ from, personal, sender }) =>
+    Effect.gen(function* sendsAs() {
+      const to = `smtp-sender+${randomUUID()}@example.test`;
+      const url = yield* smtpUrl;
+      const mailpit = yield* mailpitUrl;
+
+      yield* Mailer.use((mailer) =>
+        mailer.send({
+          html: "<p>Hello</p>",
+          idempotencyKey: "00000000-0000-7000-8000-000000000003",
+          sender,
+          subject: "Hello",
+          text: "Hello",
+          to,
+        })
+      ).pipe(
+        Effect.provide(
+          smtpMailer({
+            senders: { automatic: "Peal <noreply@example.test>", personal },
+            url: Redacted.make(url),
+          })
+        )
+      );
+
+      const query = new URLSearchParams({ query: `to:"${to}"` });
+
+      const { messages } = yield* getJson(
+        `${mailpit}/api/v1/search?${query.toString()}`,
+        SearchSchema
+      );
+
+      assert.deepStrictEqual(
+        messages.map(({ From }) => From),
+        [from]
+      );
+
+      const headers = yield* getJson(
+        `${mailpit}/api/v1/message/${messages[0]?.ID ?? ""}/headers`,
+        Schema.Record(Schema.String, Schema.Array(Schema.String))
+      );
+
+      // A reply goes to the address the email came from.
+      assert.notProperty(headers, "Reply-To");
+      assert.deepStrictEqual(headers["Return-Path"], [`<${from.Address}>`]);
+    })
+  );
+
   it.live("fails, retryable, when the server does not answer", () =>
     Effect.gen(function* refused() {
       const failure = yield* Mailer.use((mailer) =>
@@ -118,7 +187,10 @@ describe("the SMTP mailer", () => {
       ).pipe(
         Effect.provide(
           smtpMailer({
-            from: "noreply@example.test",
+            senders: {
+              automatic: "noreply@example.test",
+              personal: "noreply@example.test",
+            },
             // Nothing listens on port 1.
             url: Redacted.make("smtp://127.0.0.1:1"),
           })

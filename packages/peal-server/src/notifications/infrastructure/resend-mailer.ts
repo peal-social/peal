@@ -3,6 +3,7 @@ import { HttpClient, HttpClientRequest } from "effect/http";
 
 import { MailDeliveryFailed } from "#notifications/application/mail-delivery-failed.ts";
 import { Mailer } from "#notifications/application/mailer.ts";
+import type { MailSenders } from "#notifications/infrastructure/mail-settings.ts";
 
 const endpoint = "https://api.resend.com/emails";
 
@@ -17,7 +18,7 @@ const isRetryableStatus = (status: number): boolean =>
  */
 export const resendMailer = (options: {
   readonly apiKey: Redacted.Redacted;
-  readonly from: string;
+  readonly senders: MailSenders;
 }) =>
   Layer.effect(
     Mailer,
@@ -33,7 +34,7 @@ export const resendMailer = (options: {
               message.idempotencyKey
             ),
             HttpClientRequest.bodyJsonUnsafe({
-              from: options.from,
+              from: options.senders[message.sender ?? "automatic"],
               // Its own, as the weekly digest's `List-Unsubscribe`.
               headers: message.headers ?? {},
               html: message.html,

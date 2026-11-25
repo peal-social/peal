@@ -13,8 +13,16 @@ const message = {
   to: "ada@example.test",
 };
 
+// The senders of a server, whose personal one is the automatic one unless
+// set.
+const sendersOf = ({
+  personal = "Peal <noreply@example.test>",
+}: {
+  readonly personal?: string;
+}) => ({ automatic: "Peal <noreply@example.test>", personal });
+
 // Resend, answering every request with `status`, and the requests it got.
-const resendAnswering = (status: number) => {
+const resendAnswering = (status: number, senders = sendersOf({})) => {
   const requests: Request[] = [];
 
   const fetch = Object.assign(
@@ -38,7 +46,7 @@ const resendAnswering = (status: number) => {
 
   const layer = resendMailer({
     apiKey: Redacted.make("re_test_key"),
-    from: "Peal <noreply@example.test>",
+    senders,
   }).pipe(
     Layer.provide(FetchHttpClient.layer),
     Layer.provide(Layer.succeed(FetchHttpClient.Fetch, fetch))
@@ -51,6 +59,7 @@ const BodySchema = Schema.fromJsonString(
   Schema.Struct({
     from: Schema.String,
     headers: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
+    reply_to: Schema.optionalKey(Schema.Unknown),
     html: Schema.String,
     subject: Schema.String,
     text: Schema.String,
@@ -115,6 +124,51 @@ describe("the Resend mailer", () => {
       }).pipe(Effect.provide(layer));
     }
   );
+
+  it.effect.each([
+    { from: "Peal <noreply@example.test>", sender: undefined },
+    { from: "Peal <noreply@example.test>", sender: "automatic" as const },
+    {
+      from: "Ada at Synthetic <ada@example.test>",
+      sender: "personal" as const,
+    },
+  ])("sends as $from for the sender $sender", ({ from, sender }) => {
+    const { layer, requests } = resendAnswering(
+      200,
+      sendersOf({ personal: "Ada at Synthetic <ada@example.test>" })
+    );
+
+    return Effect.gen(function* sendsAs() {
+      yield* Mailer.use((mailer) =>
+        mailer.send(sender === undefined ? message : { ...message, sender })
+      );
+
+      const body = yield* Schema.decodeUnknownEffect(BodySchema)(
+        yield* Effect.promise(async () => (await requests[0]?.text()) ?? "")
+      );
+
+      assert.strictEqual(body.from, from);
+      // A reply goes to the address the email came from.
+      assert.notProperty(body, "reply_to");
+      assert.deepStrictEqual(body.headers, {});
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect("sends what a person signs as MAIL_FROM where none is set", () => {
+    const { layer, requests } = resendAnswering(200);
+
+    return Effect.gen(function* fallsBack() {
+      yield* Mailer.use((mailer) =>
+        mailer.send({ ...message, sender: "personal" })
+      );
+
+      const body = yield* Schema.decodeUnknownEffect(BodySchema)(
+        yield* Effect.promise(async () => (await requests[0]?.text()) ?? "")
+      );
+
+      assert.strictEqual(body.from, "Peal <noreply@example.test>");
+    }).pipe(Effect.provide(layer));
+  });
 
   it.effect.each([
     { retryable: true, status: 429 },

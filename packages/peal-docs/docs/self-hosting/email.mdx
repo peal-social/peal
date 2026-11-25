@@ -14,6 +14,7 @@ These are the settings Peal reads:
 | Setting                           | Required       | What it does                                                                                                                                        |
 | --------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MAIL_FROM`                       | Yes            | The sender, as `Peal <noreply@example.com>` or an address your mail service may send from                                                           |
+| `PEAL_MAIL_PERSONAL_FROM`         | No             | The sender of the emails a person signs ([Send some emails as a person](#person))                                                                   |
 | `RESEND_API_KEY`                  | One of the two | Sends through Resend's API                                                                                                                          |
 | `SMTP_URL`                        | One of the two | Used without `RESEND_API_KEY`. An SMTP server, such as `smtp://user:password@mail.example.com:587`, or `smtps://…:465` for TLS from the first byte. |
 | `PEAL_MAIL_IDENTITY`              | No             | Says who sends, on one line under every email ([Say who sends](#identity))                                                                          |
@@ -32,6 +33,18 @@ Peal sends these emails, each in the reader's language:
 - [Notifications](/guides/workspace/notifications) about posts and channels. Members choose which ones also reach them by email.
 
 Sometimes the mail service turns an email away for now. Peal then tries an account email three more times, over about four seconds, and drops it, because people can ask for another. It tries a notification's email again for about five hours.
+
+## Send some emails as a person [#person]
+
+Peal sends everything from `MAIL_FROM`. If you want the emails a person signs to come from that person instead, give Peal a second sender:
+
+```sh
+PEAL_MAIL_PERSONAL_FROM=Ada at Example <ada@example.com>
+```
+
+Your mail service must accept both addresses. Without the setting, these emails come from `MAIL_FROM` too.
+
+Peal sets no reply address, so a reply goes to the address the email came from. Make sure someone reads it.
 
 ## Say who sends [#identity]
 

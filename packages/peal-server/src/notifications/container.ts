@@ -25,12 +25,12 @@ import { WorkspaceNoticeRecipients } from "#notifications/infrastructure/workspa
 import { WorkspaceReaderStanding } from "#notifications/infrastructure/workspace-reader-standing.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 
-const mailerFor = ({ from, transport }: MailSettings) =>
+const mailerFor = ({ senders, transport }: MailSettings) =>
   transport._tag === "Resend"
-    ? resendMailer({ apiKey: transport.apiKey, from }).pipe(
+    ? resendMailer({ apiKey: transport.apiKey, senders }).pipe(
         Layer.provide(FetchHttpClient.layer)
       )
-    : smtpMailer({ from, url: transport.url });
+    : smtpMailer({ senders, url: transport.url });
 
 /** The mail transport the environment names. */
 export const MailerLive = Layer.unwrap(

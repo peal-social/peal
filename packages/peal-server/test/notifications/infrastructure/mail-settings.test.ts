@@ -13,9 +13,12 @@ const settingsFrom = (env: Record<string, string>) =>
 describe("the mail settings", () => {
   it.effect("send through Mailpit outside production", () =>
     Effect.gen(function* development() {
-      const { from, transport } = yield* settingsFrom({});
+      const { senders, transport } = yield* settingsFrom({});
 
-      assert.strictEqual(from, "Peal <noreply@peal.localhost>");
+      assert.deepStrictEqual(senders, {
+        automatic: "Peal <noreply@peal.localhost>",
+        personal: "Peal <noreply@peal.localhost>",
+      });
       assert.strictEqual(transport._tag, "Smtp");
       assert.strictEqual(
         transport._tag === "Smtp" ? Redacted.value(transport.url) : "",
@@ -47,6 +50,36 @@ describe("the mail settings", () => {
 
       assert.strictEqual(transport._tag, "Smtp");
     })
+  );
+
+  it.effect.each([
+    { env: {}, personal: "Peal <noreply@example.test>" },
+    {
+      env: { PEAL_MAIL_PERSONAL_FROM: "" },
+      personal: "Peal <noreply@example.test>",
+    },
+    {
+      env: { PEAL_MAIL_PERSONAL_FROM: "  " },
+      personal: "Peal <noreply@example.test>",
+    },
+    {
+      env: { PEAL_MAIL_PERSONAL_FROM: "Ada at Synthetic <ada@example.test>" },
+      personal: "Ada at Synthetic <ada@example.test>",
+    },
+  ])(
+    "send what a person signs from their address, or MAIL_FROM: $env",
+    ({ env, personal }) =>
+      Effect.gen(function* signed() {
+        const { senders } = yield* settingsFrom({
+          ...env,
+          MAIL_FROM: "Peal <noreply@example.test>",
+        });
+
+        assert.deepStrictEqual(senders, {
+          automatic: "Peal <noreply@example.test>",
+          personal,
+        });
+      })
   );
 
   it.effect.each([

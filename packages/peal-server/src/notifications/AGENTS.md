@@ -1,7 +1,11 @@
 # Notifications
 
 - Emails go through the `Mailer` port: Resend when `RESEND_API_KEY` is set,
-  otherwise SMTP at `SMTP_URL`, from `MAIL_FROM`. Requests never wait for
+  otherwise SMTP at `SMTP_URL`. Each leaves from its sender's address
+  (`MailSenderSchema`): `MAIL_FROM` for an automatic one, which every email
+  is unless it says otherwise, and `PEAL_MAIL_PERSONAL_FROM` for one a
+  person signs (`MAIL_FROM` where that is not set). No `Reply-To` is set: a
+  reply goes to the address the email came from. Requests never wait for
   them.
 - Emails are written in `peal-emails`
   ([its guide](../../../peal-emails/AGENTS.md)): their words in English and

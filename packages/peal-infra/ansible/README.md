@@ -413,8 +413,11 @@ copy run without Pulumi, and for what Pulumi does in their place.
 5. **Telegram** ([Telegram](#telegram)): three bots from @BotFather, one for
    each server that alerts, and two private channels.
 6. **Email**: a Resend key for the verified sending domain `peal.social`,
-   which sends as `notifications@peal.social` (`peal_mail_from`), and,
-   where the blog runs and mails, a second one of its own
+   which sends as `notifications@peal.social` (`peal_mail_from`) and, what a
+   person signs, as that person's address there (`peal_mail_personal_from`,
+   `PEAL_MAIL_PERSONAL_FROM`); both receive replies, which the domain
+   forwards (the Pulumi account stack's `forwardedLocals`). And,
+   where the blog runs and mails, a second key of its own
    (`PEAL_BLOG_RESEND_API_KEY`), with Sending access alone, for that
    domain: the blog never holds the server's key. Open and click tracking
    stay off for the domain: the privacy policy says Peal does not know who

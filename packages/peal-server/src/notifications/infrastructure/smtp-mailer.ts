@@ -3,6 +3,7 @@ import { createTransport } from "nodemailer";
 
 import { MailDeliveryFailed } from "#notifications/application/mail-delivery-failed.ts";
 import { Mailer } from "#notifications/application/mailer.ts";
+import type { MailSenders } from "#notifications/infrastructure/mail-settings.ts";
 
 // SMTP replies 5xx for what will fail again (an unknown address, a refused
 // sender) and 4xx for what may pass later. An error without a reply code is
@@ -22,7 +23,7 @@ const isRetryable = (cause: unknown): boolean =>
  * between emails: some servers take seconds to greet a new connection.
  */
 export const smtpMailer = (options: {
-  readonly from: string;
+  readonly senders: MailSenders;
   readonly url: Redacted.Redacted;
 }) =>
   Layer.effect(
@@ -45,7 +46,7 @@ export const smtpMailer = (options: {
               new MailDeliveryFailed({ cause, retryable: isRetryable(cause) }),
             try: async () =>
               await transport.sendMail({
-                from: options.from,
+                from: options.senders[message.sender ?? "automatic"],
                 headers: { ...message.headers },
                 html: message.html,
                 subject: message.subject,

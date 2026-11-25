@@ -14,6 +14,7 @@ Voici les réglages que lit Peal :
 | Réglage                           | Requis        | Ce qu’il fait                                                                                                                                                    |
 | --------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MAIL_FROM`                       | Oui           | L’expéditeur, comme `Peal <noreply@example.com>` ou une adresse depuis laquelle votre service de messagerie peut envoyer                                         |
+| `PEAL_MAIL_PERSONAL_FROM`         | Non           | L’expéditeur des e-mails qu’une personne signe ([Envoyer certains e-mails au nom d’une personne](#person))                                                       |
 | `RESEND_API_KEY`                  | L’un des deux | Envoie par l’API de Resend                                                                                                                                       |
 | `SMTP_URL`                        | L’un des deux | Utilisé sans `RESEND_API_KEY`. Un serveur SMTP, comme `smtp://utilisateur:motdepasse@mail.example.com:587`, ou `smtps://…:465` pour du TLS dès le premier octet. |
 | `PEAL_MAIL_IDENTITY`              | Non           | Dit qui envoie, sur une ligne sous chaque e-mail ([Dire qui envoie](#identity))                                                                                  |
@@ -32,6 +33,18 @@ Peal envoie ces e-mails, chacun dans la langue du lecteur :
 - Les [notifications](/guides/workspace/notifications) sur les publications et les canaux. Les membres choisissent lesquelles leur arrivent aussi par e-mail.
 
 Il arrive que le service de messagerie refuse un e-mail pour le moment. Peal réessaie alors un e-mail de compte trois fois, en quatre secondes environ, puis l’abandonne, car la personne peut en demander un autre. Il réessaie l’e-mail d’une notification pendant environ cinq heures.
+
+## Envoyer certains e-mails au nom d’une personne [#person]
+
+Peal envoie tout depuis `MAIL_FROM`. Si vous voulez que les e-mails qu’une personne signe viennent d’elle, donnez à Peal un second expéditeur :
+
+```sh
+PEAL_MAIL_PERSONAL_FROM=Ada at Example <ada@example.com>
+```
+
+Votre service de messagerie doit accepter les deux adresses. Sans ce réglage, ces e-mails viennent aussi de `MAIL_FROM`.
+
+Peal n’indique pas d’adresse de réponse. Une réponse arrive donc à l’adresse d’où vient l’e-mail. Vérifiez que quelqu’un la lit.
 
 ## Dire qui envoie [#identity]
 

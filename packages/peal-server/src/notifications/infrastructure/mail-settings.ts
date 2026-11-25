@@ -1,5 +1,6 @@
 import { Config, Option, Redacted, Schema } from "effect";
 
+import type { MailSender } from "#notifications/domain/mail-sender.ts";
 import type { Locale } from "#shared/domain/locale.ts";
 import { requiredInProduction } from "#shared/infrastructure/environment.ts";
 
@@ -25,6 +26,28 @@ const transport = Config.option(Config.Redacted("RESEND_API_KEY")).pipe(
   )
 );
 
+/** The address each sender's emails leave from. */
+export type MailSenders = Readonly<Record<MailSender, string>>;
+
+const personalFrom = Config.option(
+  Config.String("PEAL_MAIL_PERSONAL_FROM").pipe(
+    Config.map((from) => from.trim())
+  )
+).pipe(Config.map(Option.filter((from) => from !== "")));
+
+const senders = Config.all({
+  automatic: requiredInProduction(
+    Config.NonEmptyString("MAIL_FROM"),
+    "Peal <noreply@peal.localhost>"
+  ),
+  personal: personalFrom,
+}).pipe(
+  Config.map(({ automatic, personal }): MailSenders => ({
+    automatic,
+    personal: Option.getOrElse(personal, () => automatic),
+  }))
+);
+
 /**
  * The mail settings, read from the environment:
  *
@@ -32,15 +55,14 @@ const transport = Config.option(Config.Redacted("RESEND_API_KEY")).pipe(
  *   that server (`smtp://user:password@host:587`, or `smtps://` for TLS).
  * - `MAIL_FROM` is the sender, as `Name <address>` or an address the
  *   transport may send from.
+ * - `PEAL_MAIL_PERSONAL_FROM`, written the same way, is the sender of the
+ *   emails a person signs. Unset or empty, they leave from `MAIL_FROM`.
  *
  * Production needs MAIL_FROM and a transport: without them nobody could
  * confirm an email address or reset a password.
  */
 export const mailSettingsConfig = Config.all({
-  from: requiredInProduction(
-    Config.NonEmptyString("MAIL_FROM"),
-    "Peal <noreply@peal.localhost>"
-  ),
+  senders,
   transport,
 });
 

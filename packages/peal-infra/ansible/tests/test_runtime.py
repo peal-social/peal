@@ -58,6 +58,29 @@ def test_the_web_app_links_the_legal_pages(rendered: Path, environment: str) -> 
 
 
 @pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_what_a_person_signs_leaves_from_their_address(rendered: Path, environment: str) -> None:
+    host_env = _host_env(rendered, environment)
+    group = settings(environment)
+
+    assert host_env["PEAL_MAIL_PERSONAL_FROM"] == group["peal_mail_personal_from"]
+    assert host_env["MAIL_FROM"] == group["peal_mail_from"]
+    # Two senders, on the one domain Peal's mail service may send for.
+    addresses = {name: host_env[name].rpartition("<")[2].removesuffix(">") for name in ("MAIL_FROM", "PEAL_MAIL_PERSONAL_FROM")}
+    assert len(set(addresses.values())) == 2
+    assert {address.rpartition("@")[2] for address in addresses.values()} == {"peal.social"}
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
+def test_a_server_without_a_persons_address_sends_all_from_one(
+    rendered_with: Callable[..., Path], environment: str
+) -> None:
+    host_env = _host_env(rendered_with(peal_mail_personal_from=""), environment)
+
+    assert "PEAL_MAIL_PERSONAL_FROM" not in host_env
+    assert "MAIL_FROM" in host_env
+
+
+@pytest.mark.parametrize("environment", ENVIRONMENTS)
 def test_peals_emails_say_who_sends_them_in_the_readers_language(rendered: Path, environment: str) -> None:
     """The software states nobody by default (PEAL_MAIL_IDENTITY)."""
     host_env = _host_env(rendered, environment)
