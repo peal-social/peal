@@ -128,6 +128,16 @@ export const PostMetricsView = ({
     );
   }
 
+  // Channels Peal reads that analytics does not follow the post on yet,
+  // as it went live there since: their counts are still to come.
+  const unread = publishedChannels.flatMap((channel) =>
+    channel !== undefined &&
+    isCounted(channel) &&
+    !analytics.targets.some(({ channelId }) => channelId === channel.id)
+      ? [channel]
+      : []
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <ul className="flex flex-col gap-6">
@@ -172,6 +182,17 @@ export const PostMetricsView = ({
             </li>
           );
         })}
+        {unread.map((channel) => (
+          <li key={channel.id} className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+              <span className="font-medium">{channelName(channel)}</span>
+              <span className="text-muted-foreground">{t("post.notRead")}</span>
+            </div>
+            <p className="text-muted-foreground text-sm">
+              {t("post.notYet", { counted })}
+            </p>
+          </li>
+        ))}
       </ul>
       {note}
     </div>

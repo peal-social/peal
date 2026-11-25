@@ -57,6 +57,7 @@ import type { ReactNode } from "react";
 import { channelName as nameOfChannel } from "#channels/channel-name.ts";
 import { BoostDialog } from "#components/ads/boost-dialog.tsx";
 import { PostPaid } from "#components/ads/post-paid.tsx";
+import { PostMetrics } from "#components/analytics/post-metrics.tsx";
 import { LivePostActions } from "#components/posts/live/live-post-actions.tsx";
 import { PollView } from "#components/posts/poll-view.tsx";
 import { PostOrigins } from "#components/posts/post-origins.tsx";
@@ -643,6 +644,11 @@ interface PostDetailViewProps {
   readonly busy: string | null;
   readonly canAct: boolean;
   readonly channels: readonly SocialChannel[];
+  /**
+   * What each platform counted of the post, channel by channel, for
+   * members who read analytics, once it is live on one.
+   */
+  readonly metrics?: ReactNode;
   readonly onRequest: (request: TargetRequest) => void;
   /** The post's boosts and paid numbers, for members who read ads. */
   readonly paid?: ReactNode;
@@ -660,7 +666,7 @@ interface PostDetailViewProps {
 /**
  * A post that went out, or was cancelled: what it says, when, and how it
  * went on each channel, with its attempts and why one failed or is to
- * check.
+ * check, then what each platform counted of it.
  */
 export const PostDetailView = ({
   actions,
@@ -669,6 +675,7 @@ export const PostDetailView = ({
   busy,
   canAct,
   channels,
+  metrics,
   onRequest,
   paid,
   post,
@@ -778,6 +785,7 @@ export const PostDetailView = ({
               })}
             </ul>
           </section>
+          {metrics}
           {paid}
         </div>
       </CardContent>
@@ -992,6 +1000,15 @@ export const PostDetail = ({
       busy={busy}
       canAct={permissions.includes("post:schedule")}
       channels={channels}
+      metrics={
+        published && permissions.includes("analytics:read") ? (
+          <PostMetrics
+            channels={channels}
+            post={post}
+            workspaceId={workspaceId}
+          />
+        ) : null
+      }
       paid={
         published && permissions.includes("ads:read") ? (
           <PostPaid

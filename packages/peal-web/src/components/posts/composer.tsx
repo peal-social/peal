@@ -26,7 +26,6 @@ import { toast } from "peal-ui/components/toast";
 import { useMemo, useRef, useState, useTransition } from "react";
 
 import { canGenerateImages } from "#assistant/permissions.ts";
-import { PostMetrics } from "#components/analytics/post-metrics.tsx";
 import { OfferUpgrade } from "#components/billing/offer-upgrade.tsx";
 import type { MediaUploaderHandle } from "#components/media/media-uploader.tsx";
 import { AiLabelsNotice } from "#components/posts/ai-labels-notice.tsx";
@@ -1103,15 +1102,6 @@ export const Composer = ({
           {post === undefined || status === "draft" ? null : (
             <TargetStatuses channels={channels} post={post} />
           )}
-          {post !== undefined &&
-          permissions.includes("analytics:read") &&
-          post.targets.some((target) => target.status === "published") ? (
-            <PostMetrics
-              channels={channels}
-              post={post}
-              workspaceId={workspaceId}
-            />
-          ) : null}
           <SignaturePause shown={signedPause} willWait={willWait} />
           <ComposerErrors
             channels={channels}

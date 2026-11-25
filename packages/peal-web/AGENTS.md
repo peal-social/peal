@@ -773,7 +773,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `sr-only` in the widget), in words
   that say it is the channel's past, never a prediction, and that
   nothing is ranked under the floor (`Analytics.bestTimes`).
-- A post's page (`PostMetrics`) names the platforms this server counts
+- A post's counts (`PostMetrics`) show on its page in `PostDetail`, after
+  its channels, to members with analytics:read once it is live on a
+  channel: the composer never shows them, as a post it opens has gone
+  live nowhere. Each channel analytics follows has its counts and when
+  they were read; one Peal reads that analytics does not follow yet says
+  its counts are to come. It names the platforms this server counts
   from its capabilities (`GET …/channels/capabilities`,
   `analytics.perPost`: `countedOn`), never from the contract's
   `countedPlatforms` alone: X is counted only where `X_ANALYTICS` is on.
