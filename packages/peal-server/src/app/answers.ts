@@ -22,6 +22,7 @@ import {
   isEnveloped,
   requestIssuesOf,
 } from "#app/error-envelope.ts";
+import { bodyTooLarge, mcpPath } from "#app/mcp/refusal-answers.ts";
 import { refusedPathError } from "#app/path-spelling.ts";
 import {
   mapFailureResponse,
@@ -57,8 +58,9 @@ const pathOf = (url: string) => url.split(/[?#]/u, 1)[0] ?? url;
  * 400 before any route runs, Better Auth's and the MCP endpoint's included.
  *
  * Every body is held to its route's limit (`bodyLimitFor`): one declared
- * larger is refused with 413 before any route runs, and one read past it
- * fails its read (`MaxBodySize`), which answers 413 too.
+ * larger is refused with 413 before any route runs (on the MCP endpoint,
+ * as a JSON-RPC error), and one read past it fails its read
+ * (`MaxBodySize`), which answers 413 too.
  *
  * A failure of the server's own keeps its cause, so it is logged, counted
  * and traced as one; a refusal of the caller is answered as a response
@@ -134,11 +136,15 @@ export const apiAnswers = <
           // body declared too large is refused here, for every route (one
           // with no length, Better Auth's routes read first: boundedBody).
           if (declaredPastLimit(request.headers["content-length"], bodyLimit)) {
+            // The MCP endpoint's clients read a JSON-RPC error, which says
+            // why, as its own refusals do.
             return named(
-              toldAs(
-                id,
-                Option.none()
-              )(HttpServerResponse.empty({ status: 413 }))
+              path === mcpPath
+                ? bodyTooLarge()
+                : toldAs(
+                    id,
+                    Option.none()
+                  )(HttpServerResponse.empty({ status: 413 }))
             );
           }
 
