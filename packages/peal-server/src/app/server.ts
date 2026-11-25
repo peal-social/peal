@@ -734,11 +734,14 @@ const HttpServerLive = Layer.unwrap(
   })
 );
 
-// The durable jobs: workflows, cluster entities and crons. The channels'
-// gates publish, change live posts and carry follow-ups out with
-// publishing's platforms, read analytics' counts with the platforms'
-// readers, and read and answer comments with engagement's.
-const WorkersLive = Layer.mergeAll(
+/**
+ * The durable jobs: workflows, cluster entities and crons. The channels'
+ * gates publish, change live posts and carry follow-ups out with
+ * publishing's platforms, read analytics' counts with the platforms'
+ * readers, and read and answer comments with engagement's. Exported for the
+ * test that runs them.
+ */
+export const WorkersLive = Layer.mergeAll(
   publishingWorkers(
     PlatformsLive,
     PlatformMetricsReaderLive,

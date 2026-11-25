@@ -262,7 +262,9 @@ peal-ui and its theme: a reference is a starting point, not code to paste.
   the server's daily jobs, which reach every row of their database. It
   runs them on a second database beside the one `DATABASE_URL` names,
   named after it with `_snapshot` (`ownDatabase`, which needs `CREATEDB`).
-  Whoever drops the first database drops that one too.
+  The suite of a new account's welcome (`test/app/new-account-welcome.test.ts`),
+  which runs the server's workers and crons, has one too, `_welcome`.
+  Whoever drops the first database drops those too.
 - A server on a scratch database sets its own `PEAL_S3_KEY_PREFIX`: the
   bucket's media folder belongs to one database, whose media sweeps delete
   what it does not know of (off outside production unless
