@@ -1,3 +1,4 @@
+import { Option, Predicate, Schema } from "effect";
 import { retentionPeriods } from "peal-contract/data-processing";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -113,6 +114,118 @@ describe("the glue to Crisp", () => {
     expect(conversationCookieSeconds).toBe(
       retentionPeriods.supportCookie.days * 86_400
     );
+  });
+});
+
+// What the page's stand-in for Crisp reads of a command: a handler
+// (`on`, an event, a function), and any command's verb and its name.
+const isHandler = (input: unknown): input is () => void =>
+  Predicate.isFunction(input);
+
+const decodeHandler = Schema.decodeUnknownOption(
+  Schema.Tuple([Schema.Literal("on"), Schema.String, Schema.declare(isHandler)])
+);
+
+const decodeStep = Schema.decodeUnknownOption(
+  Schema.TupleWithRest(Schema.Tuple([Schema.String, Schema.String]), [
+    Schema.Unknown,
+  ])
+);
+
+// A page with Crisp's queue and its cookie, which writes down, in order,
+// each command pushed and each cookie expired (by name and the domain it
+// was expired on, `host` for the page's own host).
+const pageWithConversation = () => {
+  const done: string[] = [];
+  const handlers = new Map<string, () => void>();
+
+  vi.stubGlobal("window", {
+    $crisp: {
+      push: (command: readonly unknown[]) => {
+        for (const [, event, handler] of Option.toArray(
+          decodeHandler(command)
+        )) {
+          handlers.set(event, handler);
+        }
+
+        for (const [verb, name] of Option.toArray(decodeStep(command))) {
+          done.push(`${verb} ${name}`);
+        }
+      },
+    },
+  });
+  vi.stubGlobal("location", { hostname: "app.peal.example" });
+  vi.stubGlobal("document", {
+    createElement: () => ({
+      addEventListener: () => {
+        // The script never fails here.
+      },
+    }),
+    get cookie() {
+      return `${sessionCookieName(website)}=session_1; theme=light`;
+    },
+    set cookie(written: string) {
+      const [pair = "", ...attributes] = written.split("; ");
+      const domain = attributes.find((part) => part.startsWith("domain="));
+
+      done.push(
+        `expire ${decodeURIComponent(pair.slice(0, pair.indexOf("=")))} ${
+          domain === undefined ? "host" : domain.slice("domain=".length)
+        }`
+      );
+    },
+    head: {
+      append: () => {
+        // Crisp's script is never fetched here.
+      },
+    },
+  });
+
+  return { done, handlers };
+};
+
+const expired = [
+  `expire crisp-client/session/${website} host`,
+  `expire crisp-client/session/${website} app.peal.example`,
+  `expire crisp-client/session/${website} peal.example`,
+];
+
+// Crisp's state is the page's: each case loads the glue anew.
+const freshGlue = async () => {
+  vi.resetModules();
+
+  return await import("../src/lib/support/crisp");
+};
+
+describe("forgetting the conversation at sign-out", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("expires the conversation's cookie where Crisp is not loaded", async () => {
+    const { done } = pageWithConversation();
+    const glue = await freshGlue();
+
+    glue.forgetConversation();
+
+    expect(done).toStrictEqual(expired);
+  });
+
+  // The page loads anew right after, so the reset Crisp queues may never
+  // reach it: the cookie goes too, and the next page starts afresh.
+  it("resets Crisp's session where it is loaded, then expires its cookie all the same", async () => {
+    const { done, handlers } = pageWithConversation();
+    const glue = await freshGlue();
+
+    glue.startCrisp(website, "en");
+    // Crisp's session is ready once its loader calls back.
+    handlers.get("session:loaded")?.();
+    expect(glue.crispReady()).toBe(true);
+
+    done.length = 0;
+    glue.forgetConversation();
+
+    expect(done).toStrictEqual(["do session:reset", ...expired]);
   });
 });
 

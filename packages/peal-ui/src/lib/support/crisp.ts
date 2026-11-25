@@ -286,16 +286,16 @@ export const identify = (person: SupportPerson): void => {
 
 /**
  * Forgets the conversation in this browser, at sign-out: through Crisp
- * where it is loaded, otherwise by expiring its cookie, which Crisp keeps
- * on the page's host or its parent domains.
+ * where it is loaded, then, in every case, by expiring its cookie, which
+ * Crisp keeps on the page's host or its parent domains. The app loads a
+ * new page right after signing out, which may come before Crisp's reset
+ * is done: without the cookie, the next page starts no conversation.
  */
 export const forgetConversation = (): void => {
   identified = undefined;
 
   if (state === "ready") {
     push("do", "session:reset");
-
-    return;
   }
 
   const labels = location.hostname.split(".");
