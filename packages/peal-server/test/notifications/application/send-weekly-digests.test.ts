@@ -25,8 +25,8 @@ import {
 } from "#notifications/domain/notification-preferences.ts";
 import type { NotificationPreferences } from "#notifications/domain/notification-preferences.ts";
 import type { DigestWorkspace } from "#notifications/domain/weekly-digest.ts";
-import { CatalogueEmailRenderer } from "#notifications/infrastructure/catalogue-email-renderer.ts";
 import { HmacDigestLinks } from "#notifications/infrastructure/hmac-digest-links.ts";
+import { ReactEmailRenderer } from "#notifications/infrastructure/react-email-renderer.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { UserId } from "#shared/domain/ids.ts";
@@ -295,7 +295,7 @@ const runs = (
         Layer.provideMerge(
           Layer.mergeAll(
             worldLayer(world),
-            CatalogueEmailRenderer,
+            ReactEmailRenderer,
             TestMailer.layer,
             HmacDigestLinks,
             pace

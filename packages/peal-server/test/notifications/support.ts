@@ -6,11 +6,11 @@ import { NoticeInbox } from "#notifications/application/notice-inbox.ts";
 import { NotificationSettings } from "#notifications/application/notification-settings.ts";
 import { Notify } from "#notifications/application/notify.ts";
 import { InboxReader } from "#notifications/domain/inbox-reader.ts";
-import { CatalogueEmailRenderer } from "#notifications/infrastructure/catalogue-email-renderer.ts";
 import { DrizzleNoticeLog } from "#notifications/infrastructure/drizzle-notice-log.ts";
 import { DrizzleNoticeStore } from "#notifications/infrastructure/drizzle-notice-store.ts";
 import { DrizzlePreferenceStore } from "#notifications/infrastructure/drizzle-preference-store.ts";
 import { PublicAppLinks } from "#notifications/infrastructure/public-app-links.ts";
+import { ReactEmailRenderer } from "#notifications/infrastructure/react-email-renderer.ts";
 import { Ids } from "#shared/application/ids.ts";
 import { UserIdSchema } from "#shared/domain/ids.ts";
 import type { UserId } from "#shared/domain/ids.ts";
@@ -41,7 +41,7 @@ export const noticesWith = <ROut, E, R>(delivery: Layer.Layer<ROut, E, R>) =>
   ).pipe(
     Layer.provideMerge(
       Layer.mergeAll(
-        CatalogueEmailRenderer,
+        ReactEmailRenderer,
         DrizzleNoticeLog,
         DrizzleNoticeStore,
         DrizzlePreferenceStore,

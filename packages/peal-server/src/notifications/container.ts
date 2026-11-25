@@ -8,7 +8,6 @@ import { Notify } from "#notifications/application/notify.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
 import { SendWeeklyDigests } from "#notifications/application/send-weekly-digests.ts";
 import { UnsubscribeWeeklyDigest } from "#notifications/application/unsubscribe-weekly-digest.ts";
-import { CatalogueEmailRenderer } from "#notifications/infrastructure/catalogue-email-renderer.ts";
 import { ContextDigestSources } from "#notifications/infrastructure/context-digest-sources.ts";
 import { DrizzleNoticeLog } from "#notifications/infrastructure/drizzle-notice-log.ts";
 import { DrizzleNoticeRecords } from "#notifications/infrastructure/drizzle-notice-records.ts";
@@ -18,6 +17,7 @@ import { HmacDigestLinks } from "#notifications/infrastructure/hmac-digest-links
 import { mailSettingsConfig } from "#notifications/infrastructure/mail-settings.ts";
 import type { MailSettings } from "#notifications/infrastructure/mail-settings.ts";
 import { PublicAppLinks } from "#notifications/infrastructure/public-app-links.ts";
+import { ReactEmailRenderer } from "#notifications/infrastructure/react-email-renderer.ts";
 import { resendMailer } from "#notifications/infrastructure/resend-mailer.ts";
 import { smtpMailer } from "#notifications/infrastructure/smtp-mailer.ts";
 import { WorkflowNoticeDelivery } from "#notifications/infrastructure/workflow-notice-delivery.ts";
@@ -45,12 +45,12 @@ export const MailerLive = Layer.unwrap(
  */
 export const NotificationsLive = SendAuthEmail.layer.pipe(
   Layer.provideMerge(MailerLive),
-  Layer.provide([CatalogueEmailRenderer, IdsLive])
+  Layer.provide([ReactEmailRenderer, IdsLive])
 );
 
 // The adapters behind the notices' ports.
 const NoticeAdaptersLive = Layer.mergeAll(
-  CatalogueEmailRenderer,
+  ReactEmailRenderer,
   DrizzleNoticeLog,
   HmacDigestLinks,
   DrizzleNoticeStore,
@@ -91,7 +91,7 @@ export const NoticesLive = Layer.mergeAll(
 export const WeeklyDigestsLive = SendWeeklyDigests.layer.pipe(
   Layer.provide(
     Layer.mergeAll(
-      CatalogueEmailRenderer,
+      ReactEmailRenderer,
       DrizzlePreferenceStore,
       PublicAppLinks,
       ContextDigestSources,
