@@ -88,18 +88,28 @@ const objectIdsOf = (
     Object.entries(params).filter(([name]) => name !== "workspaceId")
   );
 
-// The groups whose writes create, change or delete content, comments and
-// approvals included, the replies sent in public from the inbox (a comment
-// rule's own included) and the direct messages sent from it: the law has Peal keep each such connection
-// a year (ConnectionJournal). A group is named whole, and matched whole:
-// `posts` holds none of `posts.tags`, nor `media` any of `media.images`.
+// The groups whose writes create, change or delete content: posts and
+// articles, comments and approvals, the replies sent in public from the
+// inbox (a comment rule's own included) and the direct messages sent from
+// it, the rules that publish a follow-up or repeat a post, and the media
+// library's files, uploaded or made by the assistant. The law has Peal
+// keep each such connection a year (ConnectionJournal). A group is named
+// whole, and matched whole: `posts` holds none of `posts.tags`, nor
+// `media` any of `media.transcriptions`.
 export const contentGroups: ReadonlySet<string> = new Set([
   "approvals",
+  "articles",
   "automations.commentRules",
+  "automations.followUps",
+  "automations.recycling",
   "inbox.comments",
   "inbox.messages",
   "inbox.reviews",
   "media",
+  "media.images",
+  "media.slideshows",
+  "media.videos",
+  "media.voiceovers",
   "posts",
   "posts.drafts",
 ]);
@@ -239,9 +249,9 @@ export const journalled =
  * tokens never act for staff: OAuth tokens carry no impersonation, and
  * staff acting as someone may not grant a client access or create a key.
  *
- * A write to posts or media that succeeds is kept in the ConnectionJournal,
- * whatever authenticated it: the address and protocol it came over, never
- * what it carried.
+ * A write to content (`contentGroups`) that succeeds is kept in the
+ * ConnectionJournal, whatever authenticated it: the address and protocol
+ * it came over, never what it carried.
  *
  * A bearer credential's requests are counted (RequestLimits): each answer
  * says where it stands, and one past the limit is a 429.

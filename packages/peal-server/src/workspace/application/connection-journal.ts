@@ -25,7 +25,8 @@ export interface ContentChange {
 }
 
 /**
- * The connections that create, change or delete content (posts and media),
+ * The connections that create, change or delete content (posts, articles,
+ * comments, messages, approvals, publishing rules and media files),
  * which the law has a host keep a year so that their author can be
  * identified (décret n° 2021-1362, art. 5): the address and protocol, never
  * what the request carried. The legal context keeps them.
