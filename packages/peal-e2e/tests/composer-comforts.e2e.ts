@@ -32,14 +32,16 @@ const guest = () =>
 
 const password = () => credentials.user("member").password;
 
-// The document's height, how far it is scrolled, and the window's height.
+// The document's height, how far it is scrolled, the window's height, and
+// how far the page's panel still has to scroll before its end.
 const DocumentSchema = Schema.Struct({
   height: Schema.Number,
+  paneLeft: Schema.Number,
   scrolled: Schema.Number,
   window: Schema.Number,
 });
 
-const documentOf = `(() => ({ height: document.scrollingElement.scrollHeight, scrolled: document.scrollingElement.scrollTop, window: innerHeight }))()`;
+const documentOf = `(() => { const pane = document.querySelector("main"); return { height: document.scrollingElement.scrollHeight, paneLeft: pane.scrollHeight - pane.clientHeight - pane.scrollTop, scrolled: document.scrollingElement.scrollTop, window: innerHeight }; })()`;
 
 let workspaceId = "";
 let slug = "";
@@ -106,10 +108,19 @@ describe("the composer's comforts", { serial: true }, () => {
     // document never does. A checkbox's hidden input laid out against the
     // window, not the panel, made the document taller than the window, and
     // the frame scrolled up with it.
+    const read = async () =>
+      Schema.decodeUnknownSync(DocumentSchema)(
+        await browser.evaluate(documentOf)
+      );
+
+    const paneLeft = async () => {
+      const { paneLeft: left } = await read();
+
+      return left;
+    };
+
     const stays = async () => {
-      const { height, scrolled, window } = Schema.decodeUnknownSync(
-        DocumentSchema
-      )(await browser.evaluate(documentOf));
+      const { height, scrolled, window } = await read();
 
       expect({ height, scrolled }).toEqual({ height: window, scrolled: 0 });
     };
@@ -125,8 +136,11 @@ describe("the composer's comforts", { serial: true }, () => {
     await expect(channel).not.toBeChecked();
     await stays();
 
+    // More than the panel can scroll: once the wheel has carried it to its
+    // end, whatever is left would reach the document.
     await browser.mouse.move(640, 400);
     await browser.mouse.wheel(0, 3000);
+    await expect.poll(paneLeft).toBeLessThanOrEqual(1);
     await stays();
   });
 
