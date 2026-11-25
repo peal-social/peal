@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { english as words } from "../src/catalog/english.ts";
 import { renderNoticeEmail } from "../src/index.ts";
 import type { Locale, NoticeChannel, NoticeEvent } from "../src/index.ts";
-import { subjectOf, textOf } from "./support.ts";
+import { noticeEmail, subjectOf, textOf } from "./support.ts";
 
 const url = "https://app.example.test/app/0b1c/posts/0190";
 
@@ -16,7 +16,7 @@ const mastodon: Option.Option<NoticeChannel> = Option.some({
 });
 
 const render = async (event: NoticeEvent, locale: Locale) =>
-  await renderNoticeEmail({ event, locale, url, workspaceName: "Studio Nord" });
+  await noticeEmail({ event, locale, url, workspaceName: "Studio Nord" });
 
 const locales: readonly Locale[] = ["en", "fr"];
 
@@ -207,7 +207,7 @@ describe(renderNoticeEmail, () => {
       "\n\nDate limite de non-reconduction : 31 janvier 2027 à 00:00 UTC\n\n"
     );
     expect(email.html).toMatch(
-      /<p style="[^"]*border:2px solid[^"]*">Date limite de non-reconduction : 31 janvier 2027 à 00:00 UTC<\/p>/u
+      /<p style="[^"]*background-color:#f5f5f4[^"]*">Date limite de non-reconduction : 31 janvier 2027 à 00:00 UTC<\/p>/u
     );
     expect(email.text).toContain("Résilier votre contrat");
   });
@@ -227,7 +227,7 @@ describe(renderNoticeEmail, () => {
     );
 
     expect(started.text).toContain("Contract number: 7K3M-9QXD-42TN");
-    expect(started.text).toContain("at the foot of every page");
+    expect(started.text).toContain("at the foot of every page of the website");
 
     const renewing = await render(
       {
@@ -609,7 +609,7 @@ describe(renderNoticeEmail, () => {
   });
 
   it("escapes names in HTML and keeps them in the text", async () => {
-    const email = await renderNoticeEmail({
+    const email = await noticeEmail({
       event: {
         _tag: "PostPublished",
         channel: Option.some({ handle: "@a<b>", platform: "x" }),

@@ -348,6 +348,23 @@ components:
     typography: "{typography.mono}"
     rounded: "{rounded.lg}"
     padding: 16px
+  email-card:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.lg}"
+    padding: 32px
+    width: 600px
+  email-button:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    rounded: "{rounded.md}"
+    padding: 12px 20px
+    height: 44px
+  email-callout:
+    backgroundColor: "{colors.surface-2}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.md}"
+    padding: 12px 16px
 ---
 
 # Peal design
@@ -746,7 +763,8 @@ it. There is no bar across the top.
     `accent`). A section with pages of its own (Posts, Automations and
     Settings) shows a chevron and **drills down**:
     on its pages, the sidebar shows that section's pages under a back link.
-  - Its **foot**: Settings.
+  - Its **foot**: Settings, hidden while the sidebar shows Settings' own
+    pages.
 - **`panel`**: the page, white (`card`), a 1 px hairline, `{rounded.lg}`,
   8 px from the window's top and right edges, its foot on the bottom bar.
   It scrolls on its own; the sidebar stays. On a phone it fills the
@@ -790,8 +808,7 @@ it. There is no bar across the top.
   bar 48 px high across its top holds, at its start, **Back** (a small
   ghost button, an arrow first) to the person's workspace when they have
   one, and at its end "Signed in as …" in muted text with **Sign out**
-  (a small ghost button); the contract functions close the page, in small
-  muted text. The content is a column 24 rem wide, centred, 96 px from
+  (a small ghost button). The content is a column 24 rem wide, centred, 96 px from
   the top: a title (`headline`, centred, the page's `h1`) with one muted
   line under it, then the form: **Name**,
   then **URL** as one field: the site's address in a segment of its own
@@ -808,9 +825,7 @@ it. There is no bar across the top.
 - **`sign-in`**: the pages where someone signs in, signs up or gets back
   in (a forgotten password, a new one, a confirmed address). No frame of
   the app's and no header: the window's `background` alone, a column
-  24 rem wide centred in the window, then at the window's foot the
-  contract functions alone, in small muted text: no language switcher
-  (the page follows the browser's language, or the address's `/fr`).
+  24 rem wide centred in the window: no language switcher (the page follows the browser's language, or the address's `/fr`).
   The column holds Peal's mark (48 px), the title (`headline`, centred,
   the page's `h1`: "Sign in to Peal", "Create your account"), then the
   ways in, one button each, stacked: the way this browser used last
@@ -828,7 +843,6 @@ it. There is no bar across the top.
   the column fades in and rises 8 px (500 ms, easing out), so going
   from one page to the other reads as a step. With reduced motion, nothing
   moves. The pages are at `/login` and `/signup`.
-- The contract functions close the panel's content, in small muted text.
 
 PealCreative holds, in this order: Home, Agent and Channels without a
 label; then **Studio**, what makes and plans the posts: Editor, Posts,
@@ -871,7 +885,7 @@ videos are. It shows only to members who may compose one (assistant:use
 and media:upload).
 
 - The page opens over the whole window: the sidebar and the bottom bar
-  are hidden, the panel's header and the contract functions stay, and the
+  are hidden, the panel's header stays, and the
   stage takes the height the timeline leaves. **Exit full screen**, first
   in the header, brings the frame back, and **Full screen** hides it
   again.
@@ -1393,6 +1407,14 @@ thing over a period of its own.
   one adds it at the board's end with a toast. **Reset layout** sits at
   the sheet's foot. An empty board is the empty state, with **Add
   widgets**.
+- **`readings-chart`** — On a published post's page, under **How it
+  did**: one channel's counts each time Peal read them, one line a
+  count in colours of 3:1 or more on white (likes in `brand`, reposts
+  in `brand-pressed` dashed, replies in `muted-foreground` dotted,
+  quotes in ink dash-dotted), its legend drawing each line as the chart
+  does, its axis marking hours, with the day where it changes, when the
+  readings span less than two days, and the same figures in a table
+  behind **Table**.
 
 ### Settings
 
@@ -1932,7 +1954,55 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   over the pixel glow, and no other art: the turning cube it once held is
   gone. Pixel art stays in the menu previews, the section openers, the
   FAQ, the feature tiles, the consent notice, and the pixel glow of the
-  hero and the closing band.
+  hero and the closing band. Outside the site, the same glow is in the
+  header and the foot of Peal's emails (see [Email](#email)).
+
+## Email
+
+The emails Peal sends (`packages/peal-emails`) are letters on the same
+tokens: a white card (`{colors.surface-1}`, 1 px `{colors.hairline}`,
+`{rounded.lg}`), 600 px wide at most, on `{colors.canvas}`, in one column
+with 32 px of gutter, 20 px on a phone.
+
+- **Light only**, and the email says so (`color-scheme: light only`). Some
+  mail clients darken it anyway, so it stays legible there: no text in an
+  image, no image with a background of its own, and the name as text.
+- **Type.** An email loads no font. It asks for Geist, which a reader may
+  have, then the system's sans, and the same for mono. The subject is the
+  one heading (`{typography.headline}`). The weekly digest, whose subject
+  carries two dates, heads itself "Your week on Peal". The body is 16 px
+  on 24 px, as `{typography.subhead}` is on a phone; the fine print is
+  `{typography.body}`, muted; the line under the card is
+  `{typography.caption}`.
+- **Header.** The mark (28 px) and "Peal" (18 px, 600) are on the left. On
+  the right, flush with the card's top right corner, is the right half of
+  the pixel glow in its hero layout, 300 by 90 px.
+- **Button** (`email-button`). One per email, in ink, with
+  `{colors.on-primary}` words at 16 px, 500. It is 44 px high, a touch
+  target on its own. Its address is written out under it as a link.
+- **Callout** (`email-callout`). What an email sets apart from its body,
+  500, on `{colors.surface-2}`.
+- **Links** are `{colors.brand-text}` and underlined. In the fine print
+  they stay muted.
+- **Digest.** Each workspace has a bordered block (`{rounded.md}`): its
+  name (18 px, 600), its counts on a line each, then its posts between
+  hairlines, the time in muted mono over the start of the text, under an
+  `{typography.eyebrow}`. A count starts with the dot of the state its
+  posts are in (see [States](#states)); posts to check on their platform
+  take Draft's grey.
+- **Foot.** Under a hairline, muted: why the email came, and who signs it.
+  The pixel glow in its band layout, 80 px high, closes the card. Where
+  the server states who sends, that is one muted line under the card, on
+  the canvas.
+- **Motion.** The header's glow moves in three emails: the weekly digest,
+  an address's confirmation and an invitation. It twinkles as the site's
+  does, once, for 4.8 s, a frame every 130 ms, and ends on the still it
+  started from. Every other email has the same art, still, and so has
+  every foot. A mail client that reports reduced motion shows the still.
+- **Images.** All decoration: the mark, the header's glow and the foot's.
+  An email whose header moves loads a fourth, the still behind it. Every
+  reader gets the same files from the same addresses, which carry nothing
+  about the reader, and nothing of the email but whether its header moves.
 
 ## Writing
 

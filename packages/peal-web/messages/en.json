@@ -2869,7 +2869,7 @@
       "managing": "Opening the billing portal…",
       "manageHint": "Change the payment method, the billing address or the VAT number, or download invoices and receipts, in Stripe’s billing portal.",
       "trialEnds": "The trial ends on {date}. Nothing is charged: the workspace then moves to the free plan unless someone orders a plan.",
-      "withdrawable": "Until {date}, as a consumer you may withdraw from the contract, here or with “Withdraw from contract here” at the foot of every page: it ends at once and the unused part is refunded.",
+      "withdrawable": "Until {date}, as a consumer you may withdraw from the contract, here or with “Withdraw from contract here” at the foot of every page of the website: it ends at once and the unused part is refunded.",
       "trialHint": "A plan ordered during the trial ends it once it is paid for; nothing is charged for the trial.",
       "freeTier": "Up to {free, number} connected accounts across the billing account, without a payment method.",
       "perAccount": "Each connected account past the first {free, number}, counted by the day, is billed each month for the month past, at the rates below.",
@@ -2938,7 +2938,7 @@
       "perAccountNote": "Prices are in US dollars. At checkout you can pay in your own currency, converted by our payment provider at the day’s rate; otherwise your card is charged in US dollars."
     },
     "consent": {
-      "startNow": "I ask Peal to start per-account pricing now: each connected account past the free ones, counted by the day, and each use past its monthly allowance are billed at the rate card’s prices, excluding tax, each month for the month past. I know that, as a consumer, I may withdraw within 14 days, with “Withdraw from contract here”, at the foot of every page and on this one, and then pay only for what was used.",
+      "startNow": "I ask Peal to start per-account pricing now: each connected account past the free ones, counted by the day, and each use past its monthly allowance are billed at the rate card’s prices, excluding tax, each month for the month past. I know that, as a consumer, I may withdraw within 14 days, with “Withdraw from contract here”, at the foot of every page of the website and on this one, and then pay only for what was used.",
       "terms": "Ordering accepts the terms of service, which say how to cancel and how to withdraw, and hold the model withdrawal form.",
       "termsLink": "Ordering accepts the terms of service, which say how to cancel and how to withdraw, and hold the model withdrawal form."
     },
@@ -3155,11 +3155,6 @@
       "withdrawalExpired": "The 14 days to withdraw are over. You can still cancel the contract.",
       "withdrawalNotSubscribed": "This workspace has no subscription to withdraw from.",
       "unavailable": "Stripe could not be reached. Nothing changed: try again in a moment."
-    },
-    "links": {
-      "label": "Your contract",
-      "cancel": "Cancel your contract",
-      "withdraw": "Withdraw from contract here"
     },
     "confirmation": {
       "title": "Apply your request",
@@ -5356,16 +5351,16 @@
     "stopConfirm": "The rule sends nothing more: what it is waiting to send is given up, and what it sent stays on the platforms.",
     "stopped": "The rule is stopped.",
     "form": {
-      "description": "Once the post has the likes on a channel, Peal publishes what you write here under it, from that channel’s account, and reposts it if you ask, once.",
+      "description": "{offered, select, comment {Once the post has the likes on a channel, Peal publishes what you write here under it, from that channel’s account, once. Its channels’ platforms take no repost from Peal.} repost {Once the post has the likes on a channel, Peal reposts it from that channel’s account, once. Its channels’ platforms take no comment from Peal.} other {Once the post has the likes on a channel, Peal publishes what you write here under it, from that channel’s account, and reposts it if you ask, once.}}",
       "likes": "Likes",
       "comment": "Comment",
       "commentHelp": "Up to each platform’s length: 300 characters on Bluesky, 500 on Mastodon, 280 on X.",
-      "repost": "Repost the post too",
+      "repost": "{offered, select, repost {Repost the post} other {Repost the post too}}",
       "public": "It goes out in public, by itself, without anyone being asked: if the workspace asks for approvals, it waits for one.",
       "start": "Start",
       "cancel": "Cancel",
       "likesInvalid": "Likes are a whole number, from 1 to 1,000,000.",
-      "nothing": "Write a comment, ask for a repost, or both."
+      "nothing": "{offered, select, comment {Write a comment.} repost {Tick Repost the post.} other {Write a comment, ask for a repost, or both.}}"
     },
     "errors": {
       "notPossible": "{reason, select, noAction {Write a comment, ask for a repost, or both.} emptyComment {The comment is empty.} postCancelled {The post was cancelled.} noChannel {The rule acts on no channel of the workspace.} windowPassed {Nothing of the post is left to publish, and no channel it went out on can still be followed up: its seven days passed, it failed, or no channel there can carry the rule.} alreadyFollowedUp {Another rule already follows this post up this way: stop it first.} other {None of the post’s channels can carry this, or the comment is too long for one of them.}}",

@@ -1,4 +1,4 @@
-import { Console, Effect, Option } from "effect";
+import { Console, Effect, Option, Schema } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import {
   FollowUpRulePageSchema,
@@ -7,11 +7,13 @@ import {
   maxFollowUpPageSize,
   maxLikesThreshold,
   minLikesThreshold,
+  PlatformFollowUpsSchema,
 } from "peal-contract";
 import type {
   ChannelFollowUps,
   FollowUpRule,
   FollowUpRuleChange,
+  PlatformFollowUps,
 } from "peal-contract";
 
 import { explain } from "#explain.ts";
@@ -195,6 +197,46 @@ const list = Command.make(
 ).pipe(
   Command.withDescription(
     "List the workspace's follow-up rules: what each acts on, the likes it waits for, what it sends and where it is."
+  )
+);
+
+// A platform's line: what a rule can send there, and why not the rest.
+const platformLine = ({ comment, platform, repost }: PlatformFollowUps) => {
+  if (comment === "available" && repost === "available") {
+    return `  ${platform}: comment, repost`;
+  }
+
+  if (comment === "available") {
+    return `  ${platform}: comment (no repost: ${repost})`;
+  }
+
+  return repost === "available"
+    ? `  ${platform}: repost (no comment: ${comment})`
+    : `  ${platform}: no follow-up (comment: ${comment}, repost: ${repost})`;
+};
+
+const platforms = Command.make(
+  "platforms",
+  { json: jsonFlag, workspace: workspaceFlag },
+  Effect.fn("followUps.platforms")(function* platforms(input) {
+    const { client, url } = yield* inWorkspace(input.workspace);
+
+    const answered = yield* client["automations.followUps"]
+      .platforms({ headers: {} })
+      .pipe(Effect.mapError(explain(url)));
+
+    return yield* input.json
+      ? printJson(Schema.Array(PlatformFollowUpsSchema), answered)
+      : Console.log(
+          [
+            "Where follow-up rules act on this server:",
+            ...answered.map(platformLine),
+          ].join("\n")
+        );
+  })
+).pipe(
+  Command.withDescription(
+    "List where follow-up rules can comment and repost on this server, and why not elsewhere. A channel there may still need connecting again, or take a shorter comment."
   )
 );
 
@@ -436,6 +478,7 @@ export const followUps = Command.make("follow-ups").pipe(
   ),
   Command.withSubcommands([
     list,
+    platforms,
     show,
     start,
     update,

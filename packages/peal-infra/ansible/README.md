@@ -72,7 +72,8 @@ addresses the server lists as called by the platforms' servers
 ([The platforms' apps](#the-platforms-apps)). The web app's error reports
 (`/api/client-errors`) are open too, as in production: browsers send them
 without cookies, so without Access's, and the server takes them without a
-credential, counted per address. Cloudflare's free certificate covers the zone and
+credential, counted per address. So are the pictures emails show
+(`/api/email-assets/<name>`), which mail services fetch without signing in. Cloudflare's free certificate covers the zone and
 its first-level subdomains only, so no name goes deeper than that.
 
 A rule with Access needs an Access application at Cloudflare's edge, and
@@ -344,8 +345,9 @@ copy run without Pulumi, and for what Pulumi does in their place.
      `sandbox.peal.social/api/data-deletion` and
      `sandbox.peal.social/api/platform-events` for Meta; another with the
      same Bypass policy on `sandbox.peal.social/api/client-errors`, for the
-     web app's error reports, which browsers send without cookies; and its
-     own Grafana and SSH applications. The uptime server's checks of the sandbox need a
+     web app's error reports, which browsers send without cookies; another
+     on `sandbox.peal.social/api/email-assets`, for the pictures emails
+     show, which mail services fetch; and its own Grafana and SSH applications. The uptime server's checks of the sandbox need a
      service token and a Service Auth policy on its application too (see
      [Uptime › Set it up](#set-it-up)).
 3. **A tunnel per environment**, locally managed so `config.yml` holds its
@@ -414,7 +416,10 @@ copy run without Pulumi, and for what Pulumi does in their place.
    which sends as `notifications@peal.social` (`peal_mail_from`), and,
    where the blog runs and mails, a second one of its own
    (`PEAL_BLOG_RESEND_API_KEY`), with Sending access alone, for that
-   domain: the blog never holds the server's key.
+   domain: the blog never holds the server's key. Open and click tracking
+   stay off for the domain: the privacy policy says Peal does not know who
+   opened an email from its images. Each email ends on
+   `peal_mail_identity` (`PEAL_MAIL_IDENTITY`), the company's name alone.
 7. **The platforms' apps**, a set of its own for each environment
    ([The platforms' apps](#the-platforms-apps)).
 

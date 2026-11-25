@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { renderWeeklyDigest } from "../src/index.ts";
 import type { Locale, WeeklyDigestEmail } from "../src/index.ts";
+import { weeklyDigest } from "./support.ts";
 
 const utc = (iso: string) => DateTime.makeUnsafe(iso);
 
@@ -42,9 +43,17 @@ const email = (locale: Locale, workspaces = [studio]): WeeklyDigestEmail => ({
   workspaces,
 });
 
+// The headings of a level, as they are written in the HTML.
+const headings = (html: string, level: "h1" | "h2"): readonly string[] =>
+  [
+    ...html.matchAll(
+      new RegExp(`<${level}[^>]*>(?<words>.*?)</${level}>`, "gu")
+    ),
+  ].map(({ groups }) => groups?.["words"] ?? "");
+
 describe(renderWeeklyDigest, () => {
   it("counts a workspace's week and names its first posts, in UTC", async () => {
-    const { subject, text } = await renderWeeklyDigest(email("en"));
+    const { subject, text } = await weeklyDigest(email("en"));
 
     expect(subject).toBe(
       "Your week on Peal: November 9, 2026 to November 15, 2026"
@@ -65,7 +74,7 @@ describe(renderWeeklyDigest, () => {
   });
 
   it("escapes what members wrote in its HTML, and links how to stop it", async () => {
-    const { html } = await renderWeeklyDigest(email("en"));
+    const { html } = await weeklyDigest(email("en"));
 
     expect(html).toContain("Studio &lt;Nord&gt; &amp; Co");
     expect(html).toContain("Launch day &lt;b&gt;soon&lt;/b&gt;");
@@ -76,8 +85,52 @@ describe(renderWeeklyDigest, () => {
     expect(html).toContain('href="https://app.example.test/2f9a/calendar"');
   });
 
+  it("heads itself without its dates, and each workspace with its name", async () => {
+    const { html } = await weeklyDigest(
+      email("en", [
+        studio,
+        {
+          ...studio,
+          calendarUrl: "https://app.example.test/0b1c/calendar",
+          name: "Atelier Sud",
+        },
+      ])
+    );
+
+    expect(headings(html, "h1")).toStrictEqual(["Your week on Peal"]);
+    expect(headings(html, "h2")).toStrictEqual([
+      "Studio &lt;Nord&gt; &amp; Co",
+      "Atelier Sud",
+    ]);
+
+    const french = await weeklyDigest(email("fr"));
+
+    expect(headings(french.html, "h1")).toStrictEqual([
+      "Votre semaine sur Peal",
+    ]);
+  });
+
+  it("lists its counts after their states, and its posts under their times", async () => {
+    const { html } = await weeklyDigest(email("en"));
+
+    expect(html.match(/●/gu)).toHaveLength(4);
+    expect(html).toMatch(/color:#d92d20[^>]*>●<\/td><td[^>]*>1 failed<\/td>/u);
+    expect(html).toMatch(
+      />November 10, 2026 at 9:30 AM UTC<\/div><div[^>]*>Autumn sale<\/div>/u
+    );
+    expect(html).toContain(">and 5 more</td>");
+  });
+
+  it("shows an inbox each workspace's counts", async () => {
+    const { html } = await weeklyDigest(email("en"));
+
+    expect(html).toContain(
+      ">Studio &lt;Nord&gt; &amp; Co: 7 posts went out · 1 failed · 6 scheduled this week · 1 waiting for approval"
+    );
+  });
+
   it("is written in French, with French plurals", async () => {
-    const { subject, text } = await renderWeeklyDigest(
+    const { subject, text } = await weeklyDigest(
       email("fr", [
         {
           ...studio,

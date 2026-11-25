@@ -5,7 +5,7 @@ import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { forWorkspace } from "peal-contract";
-import type { Permission, Platform, Post } from "peal-contract";
+import type { Channel, Permission, Platform, Post } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
@@ -14,17 +14,19 @@ import { reconnectChannel } from "#channels/channels-api.ts";
 import { rememberConnection } from "#channels/pending-connection.ts";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import {
+  followUpPlatforms,
   followUpsChanged,
   startFollowUp,
   workspaceFollowUps,
 } from "#follow-ups/atoms.ts";
 import { followUpErrorOf } from "#follow-ups/follow-up-error.ts";
 import {
+  followUpOfferOn,
   followUpRequestOf,
   freshFollowUp,
   ruleOfPost,
 } from "#follow-ups/rules.ts";
-import type { FollowUpDraft } from "#follow-ups/rules.ts";
+import type { FollowUpDraft, FollowUpOffer } from "#follow-ups/rules.ts";
 import { Link } from "#i18n/navigation.ts";
 
 import { useFollowUpErrorText } from "./follow-up-error-text.ts";
@@ -38,10 +40,12 @@ const followable = (post: Post) =>
   post.status === "finished";
 
 const FollowUpForm = ({
+  offer,
   onClose,
   post,
   workspaceId,
 }: {
+  readonly offer: Exclude<FollowUpOffer, "none">;
   readonly onClose: () => void;
   readonly post: Post;
   readonly workspaceId: string;
@@ -87,7 +91,11 @@ const FollowUpForm = ({
     const request = followUpRequestOf(post.id, draft);
 
     if (request === "likes" || request === "nothing") {
-      setError(t(request === "likes" ? "form.likesInvalid" : "form.nothing"));
+      setError(
+        request === "likes"
+          ? t("form.likesInvalid")
+          : t("form.nothing", { offered: offer })
+      );
 
       return;
     }
@@ -124,6 +132,7 @@ const FollowUpForm = ({
         busy={busy}
         draft={draft}
         error={error}
+        offer={offer}
         onCancel={onClose}
         onChange={setDraft}
         onSubmit={submit}
@@ -154,14 +163,18 @@ const FollowUpForm = ({
 
 /**
  * A post's follow-up: the rule that follows it up, with a link to the
- * rules; or, for a member who may schedule, the form that starts one.
- * Nothing while the rules load.
+ * rules; or, for a member who may schedule, the form that starts one,
+ * where a channel of the post is on a platform the server says rules act
+ * on (`followUpOfferOn`). Nothing while the rules load.
  */
 export const PostFollowUp = ({
+  channels,
   permissions,
   post,
   workspaceId,
 }: {
+  /** The workspace's channels, which name each target's platform. */
+  readonly channels: readonly Pick<Channel, "id" | "platform">[];
   readonly permissions: readonly Permission[];
   readonly post: Post;
   readonly workspaceId: string;
@@ -169,6 +182,7 @@ export const PostFollowUp = ({
   const workspaceHref = useWorkspaceHref();
   const t = useTranslations("FollowUps");
   const rules = useAtomValue(workspaceFollowUps(workspaceId));
+  const platforms = useAtomValue(followUpPlatforms(workspaceId));
   const [open, setOpen] = useState(false);
 
   if (!AsyncResult.isSuccess(rules)) {
@@ -196,12 +210,23 @@ export const PostFollowUp = ({
     );
   }
 
-  if (!followable(post) || !permissions.includes("post:schedule")) {
+  if (
+    !followable(post) ||
+    !permissions.includes("post:schedule") ||
+    !AsyncResult.isSuccess(platforms)
+  ) {
+    return null;
+  }
+
+  const offer = followUpOfferOn(post, channels, platforms.value);
+
+  if (offer === "none") {
     return null;
   }
 
   return open ? (
     <FollowUpForm
+      offer={offer}
       onClose={() => {
         setOpen(false);
       }}

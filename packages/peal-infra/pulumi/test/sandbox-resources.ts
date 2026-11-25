@@ -114,6 +114,29 @@ export const sandboxResources = [
       destinations: [
         {
           type: "public",
+          uri: "sandbox.example.test/api/email-assets",
+        },
+      ],
+      domain: "sandbox.example.test/api/email-assets",
+      name: "Peal sandbox email assets",
+      policies: [
+        {
+          id: "callbacks-policy",
+          precedence: 1,
+        },
+      ],
+      sessionDuration: "24h",
+      type: "self_hosted",
+    },
+    name: "access-email-assets",
+    type: "cloudflare:index/zeroTrustAccessApplication:ZeroTrustAccessApplication",
+  },
+  {
+    inputs: {
+      accountId: "account-synthetic",
+      destinations: [
+        {
+          type: "public",
           uri: "sandbox-grafana.example.test",
         },
       ],

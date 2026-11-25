@@ -41,11 +41,10 @@ export const noticesWith = <ROut, E, R>(delivery: Layer.Layer<ROut, E, R>) =>
   ).pipe(
     Layer.provideMerge(
       Layer.mergeAll(
-        ReactEmailRenderer,
+        ReactEmailRenderer.pipe(Layer.provideMerge(PublicAppLinks)),
         DrizzleNoticeLog,
         DrizzleNoticeStore,
         DrizzlePreferenceStore,
-        PublicAppLinks,
         TestDirectory.layer,
         TestMailer.layer,
         delivery

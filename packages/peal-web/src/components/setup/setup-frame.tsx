@@ -1,10 +1,8 @@
 import { ArrowLeftIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { buttonVariants } from "peal-ui/components/button";
-import { Suspense } from "react";
 import type { ReactNode } from "react";
 
-import { ContractLinks } from "#components/contract/contract-links.tsx";
 import { SignOutButton } from "#components/setup/sign-out-button.tsx";
 import { Link } from "#i18n/navigation.ts";
 
@@ -12,7 +10,7 @@ import { Link } from "#i18n/navigation.ts";
  * The setup page's frame (DESIGN.md, "The frame", `setup`): no sidebar
  * and no bottom bar, the window's background alone. At its top, the way
  * back to the person's workspace when they have one (`back`), and who is
- * signed in with a way to sign out; the contract functions at its foot.
+ * signed in with a way to sign out.
  */
 export const SetupFrame = async ({
   back,
@@ -49,11 +47,6 @@ export const SetupFrame = async ({
         </div>
       </header>
       <main className="flex flex-1 flex-col px-4">{children}</main>
-      <footer className="text-muted-foreground px-4 py-6 text-xs">
-        <Suspense fallback={null}>
-          <ContractLinks />
-        </Suspense>
-      </footer>
     </div>
   );
 };

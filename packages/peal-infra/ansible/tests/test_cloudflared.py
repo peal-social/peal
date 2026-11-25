@@ -253,18 +253,18 @@ def test_sandbox_lets_outside_services_call(rendered: Path, path: str) -> None:
     assert _audience(rule) == [], rule
 
 
-def _pulumi_client_errors_path() -> str:
-    """`clientErrorsPath` of the Pulumi project (src/environment.ts): the
-    path the sandbox's access-client-errors lets through at the edge."""
+def _pulumi_path(name: str) -> str:
+    """A path of the Pulumi project (src/environment.ts) that a Bypass
+    application of the sandbox's own lets through at the edge."""
     source = (INFRA.parent / "pulumi" / "src" / "environment.ts").read_text()
-    found = re.search(r'const clientErrorsPath = "([^"]+)";', source)
-    assert found is not None, "clientErrorsPath is no longer a literal in src/environment.ts"
+    found = re.search(rf'const {name} = "([^"]+)";', source)
+    assert found is not None, f"{name} is no longer a literal in src/environment.ts"
     return f"/{found.group(1)}"
 
 
 # The web app's error reports, at the path Pulumi's Bypass application
 # opens at the edge, with and without a trailing slash.
-SANDBOX_CLIENT_ERRORS = [_pulumi_client_errors_path() + suffix for suffix in ("", "/")]
+SANDBOX_CLIENT_ERRORS = [_pulumi_path("clientErrorsPath") + suffix for suffix in ("", "/")]
 
 
 @pytest.mark.parametrize("path", SANDBOX_CLIENT_ERRORS)
@@ -279,6 +279,28 @@ def test_sandbox_lets_the_web_apps_error_reports_through(rendered: Path, path: s
 
     assert rule["service"] == f"http://127.0.0.1:{settings['peal_ports']['server']}", rule
     assert _audience(rule) == [], rule
+
+
+# The pictures emails show (packages/peal-emails/src/assets), under the path
+# Pulumi's Bypass application opens at the edge.
+SANDBOX_EMAIL_ASSETS = [
+    f"{_pulumi_path('emailAssetsPath')}/{picture.name}"
+    for picture in sorted((INFRA.parent.parent / "peal-emails" / "src" / "assets").iterdir())
+]
+
+
+def test_sandbox_lets_the_emails_pictures_through(rendered: Path) -> None:
+    """Mail services fetch them without signing in: each reaches the server
+    with no token here, and nothing beside them does (SANDBOX_GUARDED)."""
+    settings = _settings("peal-sandbox")
+    rules = _rules(rendered, "peal-sandbox")
+
+    assert SANDBOX_EMAIL_ASSETS
+    for path in SANDBOX_EMAIL_ASSETS:
+        rule = rules[_match(rules, settings["peal_hostnames"]["app"], path)]
+
+        assert rule["service"] == f"http://127.0.0.1:{settings['peal_ports']['server']}", path
+        assert _audience(rule) == [], path
 
 
 SERVER = INFRA.parent.parent / "peal-server"
@@ -352,6 +374,21 @@ SANDBOX_GUARDED = [
     "/api/client-errors%2F..%2Fme",
     "/API/client-errors",
     "/api/client-errors%0a",
+    "/api/email-assets",
+    "/api/email-assets/",
+    "/api/email-assets/mark.png/",
+    "/api/email-assets/mark.png/x",
+    "/api/email-assets/mark.png%0a",
+    "/api/email-assets/mark.svg",
+    "/api/email-assets/x/mark.png",
+    "/api/email-assets/.png",
+    "/api/email-assets/../me",
+    "/api/email-assets/../admin/users.png/..",
+    "/api/email-assets/..;/me",
+    "/api/email-assets%2F..%2Fme",
+    "/api/email-assets/..%2Fadmin%2Fx.png",
+    "/api/email-assetsx/mark.png",
+    "/API/email-assets/mark.png",
     "/.well-known/oauth-authorization-server",
 ]
 
@@ -388,7 +425,7 @@ def test_matching_agrees_with_cloudflared(rendered: Path, environment: str) -> N
     requests = [
         (host, path)
         for host in [*settings["peal_hostnames"].values(), settings["peal_short_link_hostname"]]
-        for path in [*SANDBOX_GUARDED, *SANDBOX_OPEN, *SANDBOX_CLIENT_ERRORS, SHORT_CODE, *SHORT_REFUSED]
+        for path in [*SANDBOX_GUARDED, *SANDBOX_OPEN, *SANDBOX_CLIENT_ERRORS, *SANDBOX_EMAIL_ASSETS, SHORT_CODE, *SHORT_REFUSED]
     ]
 
     for host, path in requests:

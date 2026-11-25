@@ -1,12 +1,21 @@
 import { assert, describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Option } from "effect";
 import { NextIntlClientProvider } from "next-intl";
-import type { FollowUpRule, FollowUpRulePage } from "peal-contract";
+import type {
+  FollowUpRule,
+  FollowUpRulePage,
+  PlatformFollowUps,
+  PostTarget,
+} from "peal-contract";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { FollowUpRuleView } from "#components/follow-ups/follow-up-views.tsx";
+import {
+  FollowUpFormView,
+  FollowUpRuleView,
+} from "#components/follow-ups/follow-up-views.tsx";
 import { everyFollowUpRule } from "#follow-ups/atoms.ts";
 import {
+  followUpOfferOn,
   followUpRequestOf,
   freshFollowUp,
   ruleOfPost,
@@ -124,6 +133,110 @@ describe("the follow-up form", () => {
       "likes"
     );
     expect(followUpRequestOf(postId, freshFollowUp)).toBe("nothing");
+  });
+});
+
+// Where rules act, as a server that sends X threads and counts every
+// platform answers.
+const platforms: readonly PlatformFollowUps[] = [
+  { comment: "available", platform: "x", repost: "notBuilt" },
+  { comment: "available", platform: "bluesky", repost: "available" },
+  { comment: "turnedOff", platform: "mastodon", repost: "available" },
+  { comment: "notBuilt", platform: "youtube", repost: "noApi" },
+  { comment: "notAllowed", platform: "linkedin", repost: "notAllowed" },
+];
+
+const channels = [
+  { id: "c-x", platform: "x" },
+  { id: "c-bluesky", platform: "bluesky" },
+  { id: "c-mastodon", platform: "mastodon" },
+  { id: "c-youtube", platform: "youtube" },
+  { id: "c-linkedin", platform: "linkedin" },
+] as const;
+
+const target = (
+  channelId: string,
+  status: PostTarget["status"],
+  removedAt: PostTarget["removedAt"] = null
+): PostTarget => ({
+  channelId,
+  editedAt: null,
+  failureReason: null,
+  id: `t-${channelId}`,
+  options: null,
+  parts: { count: 1, live: [] },
+  permalink: null,
+  publishedAt: null,
+  removedAt,
+  round: 1,
+  status,
+  unconfirmedReason: null,
+});
+
+const offerOn = (...targets: readonly PostTarget[]) =>
+  followUpOfferOn({ targets }, channels, platforms);
+
+// The form as a post whose platforms take one kind alone shows it.
+const formOffering = (offer: "comment" | "repost") => (
+  <FollowUpFormView
+    busy={false}
+    draft={freshFollowUp}
+    error={null}
+    offer={offer}
+    onCancel={() => {}}
+    onChange={() => {}}
+    onSubmit={() => {}}
+  />
+);
+
+describe("what the follow-up form offers on a post", () => {
+  it("offers nothing on a post that went out only where no rule acts", () => {
+    expect(offerOn(target("c-youtube", "published"))).toBe("none");
+    expect(
+      offerOn(target("c-youtube", "published"), target("c-linkedin", "pending"))
+    ).toBe("none");
+  });
+
+  it("offers the kinds some channel of the post takes, as the server says", () => {
+    expect(offerOn(target("c-bluesky", "published"))).toBe("both");
+    expect(offerOn(target("c-x", "published"))).toBe("comment");
+    expect(offerOn(target("c-mastodon", "pending"))).toBe("repost");
+    expect(
+      offerOn(target("c-x", "published"), target("c-mastodon", "publishing"))
+    ).toBe("both");
+  });
+
+  it("leaves out the channels a rule would never act on", () => {
+    expect(
+      offerOn(
+        target("c-youtube", "published"),
+        target("c-bluesky", "failed"),
+        target("c-x", "unconfirmed"),
+        target("c-mastodon", "cancelled")
+      )
+    ).toBe("none");
+    expect(
+      offerOn(target("c-bluesky", "published", at("2026-07-08T07:00:00Z")))
+    ).toBe("none");
+    // A channel the workspace no longer has, whatever its platform was.
+    expect(offerOn(target("c-gone", "published"))).toBe("none");
+  });
+
+  it("shows the repost alone where only reposts act", async () => {
+    const reposting = await render("en", formOffering("repost"));
+
+    expect(reposting).toContain("Repost the post");
+    expect(reposting).not.toContain("Repost the post too");
+    expect(reposting).not.toContain("<textarea");
+    expect(reposting).toContain("take no comment from Peal");
+  });
+
+  it("shows the comment alone where only comments act, in French too", async () => {
+    const commenting = await render("fr", formOffering("comment"));
+
+    expect(commenting).toContain("<textarea");
+    expect(commenting).not.toContain("Repartager");
+    expect(commenting).toContain("ne prennent pas de repartage de Peal");
   });
 });
 

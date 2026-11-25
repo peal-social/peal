@@ -837,8 +837,8 @@
   the order box's words only with `consentVersion`.
 - Both functions are reached without signing in: `/cancel` and
   `/withdraw` in the web app (`ContractFunctionPage`), linked at the foot
-  of every page (`ContractLinks` in `AppShell`, only on a server that
-  bills) and of the marketing site (`SITE_APP_URL`). They ask what
+  of every page of the marketing site (`SITE_APP_URL`), and not of the
+  app's (the owner's call, 2026-11-25). They ask what
   D215-2 and D221-5 list and nothing else (name, address for the
   acknowledgement, the contract, the day wanted), show a summary, then
   the one action. Never add a field, an offer or a reason to them. A

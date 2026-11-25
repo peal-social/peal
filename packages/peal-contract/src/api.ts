@@ -310,6 +310,9 @@ export {
   maxLikesThreshold,
   minLikesThreshold,
   NewFollowUpRuleSchema,
+  PlatformFollowUpCommentSchema,
+  PlatformFollowUpRepostSchema,
+  PlatformFollowUpsSchema,
 } from "./follow-up-rule.ts";
 
 export type {
@@ -326,6 +329,9 @@ export type {
   FollowUpRuleStatus,
   FollowUpStatus,
   NewFollowUpRule,
+  PlatformFollowUpComment,
+  PlatformFollowUpRepost,
+  PlatformFollowUps,
 } from "./follow-up-rule.ts";
 
 export { FollowUpNotPossible } from "./follow-up-not-possible.ts";

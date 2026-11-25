@@ -20,6 +20,9 @@ export const noticeUrl = `${app}/0b1c/posts/0190`;
 /** The workspace notices are about. */
 export const workspaceName = "Studio Nord";
 
+/** Who sends, as an operator may state it. */
+export const identity = "Synthetic Studio SAS";
+
 const postId = "00000000-0000-7000-8000-000000000001";
 
 const ruleId = "00000000-0000-7000-8000-00000000f001";

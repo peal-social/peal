@@ -40,7 +40,11 @@ export const resolved = (
 });
 
 /** A message's text. */
-export const messageText = (content: MessageContent, locale: Locale): string =>
+export const messageText = (
+  content: MessageContent,
+  locale: Locale,
+  identity: string | null
+): string =>
   textPart(
     {
       action: content.action,
@@ -48,6 +52,7 @@ export const messageText = (content: MessageContent, locale: Locale): string =>
         content.body,
         ...(content.highlight === undefined ? [] : [content.highlight]),
       ],
+      identity,
       ignore: content.ignore,
       url: content.url,
     },

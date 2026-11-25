@@ -7,8 +7,7 @@ import { emailedLink } from "./support/mailpit.ts";
 
 // The functions to cancel a contract and to withdraw from one open for
 // anyone, without signing in, under the words the law gives them. The
-// run's server sells subscriptions, so each page has its form, every
-// page's footer links to both, and a request sent without a contract
+// run's server sells subscriptions, so each page has its form, and a request sent without a contract
 // anyone can find is recorded and acknowledged by email.
 describe("the contract functions", () => {
   test("open without signing in, in English and French", async ({
@@ -29,15 +28,6 @@ describe("the contract functions", () => {
     ).toBeVisible();
     await expect(
       main.getByRole("textbox", "Contract number, or the workspace’s name")
-    ).toBeVisible();
-
-    const footer = screen.getByRole("navigation", "Your contract");
-
-    await expect(
-      footer.getByRole("link", "Cancel your contract")
-    ).toBeVisible();
-    await expect(
-      footer.getByRole("link", "Withdraw from contract here")
     ).toBeVisible();
 
     await app.open("/fr/withdraw");

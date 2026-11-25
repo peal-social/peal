@@ -415,6 +415,7 @@ Une [règle de relance](/guides/posts/queues#follow-ups) commente une publicatio
 peal follow-ups start --post <post-id> --likes 50 --comment "Merci à toutes et à tous !" --repost
 peal follow-ups start --channel <channel-id> --likes 100 --repost
 peal follow-ups list --post <post-id>
+peal follow-ups platforms
 peal follow-ups show <rule-id>
 peal follow-ups update <rule-id> --likes 80 --no-repost
 peal follow-ups pause <rule-id>
@@ -428,6 +429,8 @@ peal follow-ups stop <rule-id>
 `peal follow-ups show` affiche les canaux de la règle et chaque relance. Une relance est en attente des mentions J’aime, envoyée avec son adresse, échouée avec le code de la plateforme, non confirmée, expirée ou abandonnée, et la commande dit pourquoi.
 
 `peal follow-ups approve` demande un membre qui approuve les publications, connecté en personne. Une clé d’API n’approuve jamais.
+
+`peal follow-ups platforms` liste les plateformes où les règles commentent et repartagent sur votre serveur, et pourquoi non ailleurs.
 
 ## Flux [#feeds]
 

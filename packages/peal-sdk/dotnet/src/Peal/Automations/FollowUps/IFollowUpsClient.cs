@@ -23,6 +23,14 @@ public partial interface IFollowUpsClient
     );
 
     /// <summary>
+    /// Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+    /// </summary>
+    WithRawResponseTask<IEnumerable<PlatformFollowUps>> PlatformsAsync(
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
     /// </summary>
     WithRawResponseTask<FollowUpRule> GetAsync(

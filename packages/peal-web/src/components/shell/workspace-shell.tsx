@@ -25,7 +25,6 @@ export const WorkspaceShell = ({
   actions,
   children,
   docsUrl,
-  footer,
   permissions,
   supportChat = null,
   supportUrl,
@@ -36,8 +35,6 @@ export const WorkspaceShell = ({
   readonly actions: ReactNode;
   readonly children: ReactNode;
   readonly docsUrl: string | null;
-  /** What every page ends with: the contract functions. */
-  readonly footer: ReactNode;
   readonly permissions: readonly Permission[];
   /** The support chat's launcher, where the server names a Crisp website. */
   readonly supportChat?: ReactNode;
@@ -102,7 +99,6 @@ export const WorkspaceShell = ({
             })),
           }}
           docsUrl={docsUrl}
-          footer={footer}
           label={t("label")}
           split={navigation.split}
           supportChat={supportChat}

@@ -9,7 +9,6 @@ import { AccountMenu } from "#components/account-menu.tsx";
 import { PlainFrame } from "#components/app-shell.tsx";
 import { PlanGate } from "#components/billing/plan-gate.tsx";
 import { UpgradePrompts } from "#components/billing/upgrade-prompts.tsx";
-import { ContractLinks } from "#components/contract/contract-links.tsx";
 import { SupportLauncher } from "#components/shell/support-launcher.tsx";
 import { WorkspaceShell } from "#components/shell/workspace-shell.tsx";
 import { TwoStepRefusalWatch } from "#components/two-step/refusal-watch.tsx";
@@ -22,7 +21,7 @@ import { supportChatConfig } from "#shell/support-chat.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
 // Around every page of a workspace: its frame (the sidebar, the panel's
-// header, the bottom bar and the contract functions at the foot), the notice a member whose account lacks
+// header and the bottom bar), the notice a member whose account lacks
 // the two-step verification the workspace requires sees instead of any of
 // it, the upgrade dialog, which opens where the plan refuses something, and
 // the gate that shows the over-plan screen instead of the page while the
@@ -137,11 +136,6 @@ const WorkspaceLayout = async ({
           </Suspense>
         }
         docsUrl={docsUrl}
-        footer={
-          <Suspense fallback={null}>
-            <ContractLinks />
-          </Suspense>
-        }
         permissions={workspace.value.permissions}
         supportChat={supportChat}
         supportUrl={contactUrl}

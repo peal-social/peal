@@ -51,6 +51,12 @@ export const workspaceFollowUps = Atom.family((workspaceId: string) =>
   )
 );
 
+/** Where rules act on this server, for every platform, kind by kind. */
+export const followUpPlatforms = (workspaceId: string) =>
+  PealApi.query("automations.followUps", "platforms", {
+    headers: forWorkspace(workspaceId),
+  });
+
 export const startFollowUp = PealApi.mutation(
   "automations.followUps",
   "create"

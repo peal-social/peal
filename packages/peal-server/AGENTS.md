@@ -277,6 +277,13 @@ and no socket, for tests.
   cached, 404 and 410 in the general error envelope, 300 a minute per
   address in the process (429). A short domain's proxy rewrites `/<code>`
   to it, so the route rule holds.
+- `GET /api/email-assets/:name` (`src/app/email-assets/`) is a picture the
+  emails show, outside the contract and without credentials, at the same
+  address for every reader: the name is looked up in `emailAssets`
+  (peal-emails, read as it loads), never made into a path, and any other
+  answers 404. Any cache keeps one a day. The path is never traced
+  (`untracedPrefixes`), as a span would record someone opening an email,
+  and nothing is ever added to the address to tell readers apart.
 - `GET` and `POST /api/platform-events/meta/:app` (`src/app/platform-events/`,
   `:app` `facebook` or `instagram`, that exact path alone) are Meta's
   events, outside the contract and without credentials, read raw as
