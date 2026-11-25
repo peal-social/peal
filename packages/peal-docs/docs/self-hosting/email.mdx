@@ -16,6 +16,7 @@ These are the settings Peal reads:
 | `MAIL_FROM`                       | Yes            | The sender, as `Peal <noreply@example.com>` or an address your mail service may send from                                                           |
 | `RESEND_API_KEY`                  | One of the two | Sends through Resend's API                                                                                                                          |
 | `SMTP_URL`                        | One of the two | Used without `RESEND_API_KEY`. An SMTP server, such as `smtp://user:password@mail.example.com:587`, or `smtps://…:465` for TLS from the first byte. |
+| `PEAL_MAIL_IDENTITY`              | No             | Says who sends, on one line under every email ([Say who sends](#identity))                                                                          |
 | `AUTH_REQUIRE_EMAIL_VERIFICATION` | No             | With `false`, people can sign in before they confirm their address                                                                                  |
 
 [Environment variables](/self-hosting/environment-variables#email) has their defaults, with `AUTH_REQUIRE_EMAIL_VERIFICATION` under [Sign-in](/self-hosting/environment-variables#sign-in).
@@ -30,3 +31,21 @@ Peal sends these emails, each in the reader's language:
 - [Notifications](/guides/workspace/notifications) about posts and channels. Members choose which ones also reach them by email.
 
 Sometimes the mail service turns an email away for now. Peal then tries an account email three more times, over about four seconds, and drops it, because people can ask for another. It tries a notification's email again for about five hours.
+
+## Say who sends [#identity]
+
+The law where you are may ask a company to name itself in its emails. Set `PEAL_MAIL_IDENTITY` to the line you want, and Peal puts it under every email and at the end of its text version:
+
+```sh
+PEAL_MAIL_IDENTITY=Example SAS, 1 Example Street, Example City
+```
+
+The line is the same in every language, so you write it once. It holds 300 characters at most. Without the setting, your emails have no such line.
+
+## Let mail services load the images [#images]
+
+Every email shows the Peal mark and two decorations. They come from your own server, under `<PUBLIC_URL>/api/email-assets/`, and never from Peal's.
+
+Most mail services fetch images through a proxy of theirs, so `PUBLIC_URL` must answer from the internet, without a sign-in in front of that path. If it doesn't, readers see the name "Peal" in text and the rest of the email as it is.
+
+The images have the same addresses for every reader and every email, with nothing after the name. Peal doesn't trace these requests, and its log keeps their path without the reader's IP address. Your own proxy may keep more.
