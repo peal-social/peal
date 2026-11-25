@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { RevokeOthersRow } from "#components/account/revoke-others.tsx";
 import { SessionsView } from "#components/account/sessions-view.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 import type { AccountSession } from "#settings/atoms.ts";
@@ -19,6 +20,11 @@ const render = async (locale: "en" | "fr", view: ReactNode) =>
       {view}
     </NextIntlClientProvider>
   );
+
+// The ids React gives each element by its place in the tree, which differ
+// from one tree to the next.
+const withoutIds = (html: string): string =>
+  html.replaceAll(/ id="[^"]*"/gu, "");
 
 const onChanged = () => {
   // Nothing changes while rendering to markup.
@@ -102,6 +108,47 @@ describe(SessionsView, () => {
       "Cette liste ne s’affiche que peu de temps après la connexion. Reconnectez-vous pour la voir."
     );
     expect(html).not.toContain("Réessayer");
+  });
+
+  it("lets a session signed in too long ago sign out everywhere else, as the list does", async () => {
+    const pages = await Promise.all([
+      render("en", <RevokeOthersRow onChanged={onChanged} />),
+      render("en", view(AsyncResult.success(sessions))),
+      render("en", view(notFresh)),
+    ]);
+
+    const [row, fresh, stale] = pages.map(withoutIds);
+
+    expect(row).toContain("Sign out everywhere else");
+    expect(row).toContain(
+      "Every browser and device but this one must sign in again."
+    );
+    // The same row, so the same action, in both states.
+    expect(fresh).toContain(row);
+    expect(stale).toContain(row);
+    expect(stale).toContain("sign-in-again-slot");
+  });
+
+  it("offers it in French too", async () => {
+    const html = await render("fr", view(notFresh));
+
+    expect(html).toContain("Fermer toutes les autres sessions");
+    expect(html).toContain(
+      "Tous les navigateurs et appareils, sauf celui-ci, devront se reconnecter."
+    );
+  });
+
+  it("offers no way to sign out elsewhere while the list loads or failed otherwise", async () => {
+    const pages = await Promise.all(
+      [
+        AsyncResult.initial(),
+        AsyncResult.fail(new AuthCallFailed({ status: 500 })),
+      ].map(async (result) => await render("en", view(result)))
+    );
+
+    for (const html of pages) {
+      expect(html).not.toContain("Sign out everywhere else");
+    }
   });
 
   it("offers to try again when the list failed for another reason", async () => {

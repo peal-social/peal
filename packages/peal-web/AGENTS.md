@@ -398,7 +398,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   older one 403 `SESSION_NOT_FRESH`, which trying again never changes:
   `SessionsView` says so in one muted row with **Sign in again**, which
   signs this session out and opens `/login?next=` back to the page (any
-  other failure keeps **Try again**). Revoking a session needs no fresh one.
+  other failure keeps **Try again**). Revoking a session needs no fresh one,
+  nor does `/revoke-other-sessions` (Better Auth's
+  `sensitiveSessionMiddleware`, which keeps the calling session): the
+  stale state's card offers the list's own **Sign out everywhere else**
+  row under **Sign in again** (`RevokeOthersRow`,
+  `components/account/revoke-others.tsx`, its steps in
+  `#settings/revoke-others.ts`, tested), so a lost device is cut off
+  without signing in first. It tells the other tabs nothing: their
+  session, this one, stays.
   Invitations go through `invite` (`#settings/invite.ts`): Better Auth's
   client types roles from its own defaults. Sign-in opens `next` in the
   language the account keeps (`landingOf`), which account settings save

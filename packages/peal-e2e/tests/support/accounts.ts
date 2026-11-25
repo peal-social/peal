@@ -131,3 +131,51 @@ export const ageSessions = async (
     await client.end();
   }
 };
+
+/**
+ * Signs an account in through the server's API, as another device would,
+ * and answers that device's session cookie alone: never the five-minute
+ * cookie cache of the session (`peal.session_data`), which would answer
+ * for the session after it ended.
+ */
+export const signedInElsewhere = async (
+  baseUrl: string,
+  account: { readonly email: string; readonly password: string }
+): Promise<string> => {
+  const signedIn = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
+    body: JSON.stringify(account),
+    headers: { "content-type": "application/json", origin: baseUrl },
+    method: "POST",
+  });
+
+  if (!signedIn.ok) {
+    throw new Error(`Signing in answered ${signedIn.status}`);
+  }
+
+  const token = signedIn.headers
+    .getSetCookie()
+    .map((header) => header.split(";")[0] ?? "")
+    .find((pair) => pair.startsWith("peal.session_token="));
+
+  if (token === undefined) {
+    throw new Error("Signing in set no session cookie");
+  }
+
+  return token;
+};
+
+/** Whether the session a cookie names is still signed in. */
+export const sessionLives = async (
+  baseUrl: string,
+  cookie: string
+): Promise<boolean> => {
+  const answer = await fetch(`${baseUrl}/api/auth/get-session`, {
+    headers: { cookie, origin: baseUrl },
+  });
+
+  if (!answer.ok) {
+    throw new Error(`Reading the session answered ${answer.status}`);
+  }
+
+  return (await answer.json()) !== null;
+};
