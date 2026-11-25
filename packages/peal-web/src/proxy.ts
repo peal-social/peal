@@ -1,16 +1,55 @@
 import { Effect, Option } from "effect";
 import createMiddleware from "next-intl/middleware";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { isRefusedPath } from "peal-contract/path-spelling";
 
 import { forwardToApi, servedByApi } from "#api/forward.ts";
 import { currentUserEffect } from "#auth/session.ts";
+import { localeCookieName, pageAddressHeader } from "#i18n/account-language.ts";
 import { routing } from "#i18n/routing.ts";
 import { relayed } from "#measurement/relay.ts";
-import { namesWorkspaceById, slugAddressOf } from "#shell/workspace-path.ts";
+import {
+  isAppPath,
+  namesWorkspaceById,
+  slugAddressOf,
+} from "#shell/workspace-path.ts";
 
 const handleI18nRouting = createMiddleware(routing);
+
+const namesDefaultLanguage = new RegExp(
+  `^/${routing.defaultLocale}(?:/|$)`,
+  "iu"
+);
+
+// A page, through next-intl, which negotiates its language: the address's,
+// then the language cookie's, then the browser's. The page gets its own
+// address (`pageAddressHeader`), from which the signed-in app's layout
+// sends it to the account's language (#i18n/account-language.ts). Sent
+// to English, the app's page names it (`/en/…`), and next-intl drops the
+// prefix: the cookie is set to English here for every request, as
+// next-intl sets it only for a document, never for the router's own
+// requests, and the address without a language would otherwise open in
+// the cookie's again.
+const routePage = (request: NextRequest): NextResponse => {
+  const { pathname, search } = request.nextUrl;
+  const headers = new Headers(request.headers);
+
+  headers.set(pageAddressHeader, `${pathname}${search}`);
+
+  const response = handleI18nRouting(new NextRequest(request, { headers }));
+
+  if (
+    isAppPath(pathname) &&
+    namesDefaultLanguage.test(pathname) &&
+    request.cookies.get(localeCookieName)?.value !== routing.defaultLocale
+  ) {
+    response.cookies.set(localeCookieName, routing.defaultLocale, {
+      sameSite: "lax",
+    });
+  }
+
+  return response;
+};
 
 // A page of a workspace named by its id, as links did before they named
 // its slug (emails, notices, bookmarks): sent on to the same page under
@@ -37,7 +76,7 @@ const toSlug = async (request: NextRequest): Promise<NextResponse> => {
   // Next reads a proxy's Location as a whole URL: the path, on the
   // request's own address.
   return location === null
-    ? handleI18nRouting(request)
+    ? routePage(request)
     : NextResponse.redirect(new URL(location, request.nextUrl), 308);
 };
 
@@ -46,7 +85,8 @@ const toSlug = async (request: NextRequest): Promise<NextResponse> => {
 // src/api/forward.ts). The rewrite lives here rather than in next.config.ts
 // because Next resolves config rewrites at build time; here PEAL_API_URL is
 // read per request. Everything else is a page: negotiate its locale, with
-// English unprefixed and French under /fr.
+// English unprefixed and French under /fr (`routePage`); on the signed-in
+// app's pages, the account's language then wins (its layout).
 //
 // A page path with an encoded slash or backslash, or a semicolon (which
 // cloudflared drops with what follows it in a segment), is refused (400):
@@ -89,9 +129,7 @@ const proxy = (request: NextRequest): NextResponse | Promise<NextResponse> => {
     return new NextResponse(null, { status: 400 });
   }
 
-  return namesWorkspaceById(pathname)
-    ? toSlug(request)
-    : handleI18nRouting(request);
+  return namesWorkspaceById(pathname) ? toSlug(request) : routePage(request);
 };
 
 export default proxy;

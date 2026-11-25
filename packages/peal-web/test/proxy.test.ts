@@ -86,6 +86,69 @@ describe("the proxy", () => {
     expect(answer.status).not.toBe(308);
   });
 
+  // The signed-in app's layout sends a page shown in another language than
+  // the account's to the account's, which it can only do knowing the
+  // address: the proxy hands it on, whatever the browser sent under that
+  // name.
+  it("hands a page's address, its query included, to the page", async () => {
+    const answer = await proxy(
+      new NextRequest(`${origin}/fr/synthetic-studio/posts?status=draft`, {
+        headers: { "x-peal-page": "/elsewhere" },
+      })
+    );
+
+    expect(answer.headers.get("x-middleware-request-x-peal-page")).toBe(
+      "/fr/synthetic-studio/posts?status=draft"
+    );
+  });
+
+  // next-intl keeps the language a browser last opened in NEXT_LOCALE,
+  // which the account's language replaces through the proxy below.
+  it("remembers the language an address names", async () => {
+    const answer = await proxy(
+      new NextRequest(`${origin}/fr/login`, {
+        headers: { "sec-fetch-dest": "document" },
+      })
+    );
+
+    expect(answer.cookies.get("NEXT_LOCALE")?.value).toBe("fr");
+  });
+
+  // The layout sends a page to English as /en/…, whatever the request:
+  // the router follows a redirect with a request of its own, which
+  // next-intl never takes a language from. Unprefixed, the next page would
+  // open in the cookie's language and be sent back again.
+  it.each(["document", "empty"])(
+    "sets the language cookie to English for /en/… of the app (%s)",
+    async (destination) => {
+      const answer = await proxy(
+        new NextRequest(`${origin}/en/synthetic-studio/posts?status=draft`, {
+          headers: {
+            cookie: "NEXT_LOCALE=fr",
+            "sec-fetch-dest": destination,
+          },
+        })
+      );
+
+      expect(answer.status).toBe(307);
+      expect(answer.headers.get("location")).toBe(
+        `${origin}/synthetic-studio/posts?status=draft`
+      );
+      expect(answer.cookies.get("NEXT_LOCALE")?.value).toBe("en");
+    }
+  );
+
+  it("leaves the cookie of a page outside the app to next-intl", async () => {
+    const answer = await proxy(
+      new NextRequest(`${origin}/en/login`, {
+        headers: { cookie: "NEXT_LOCALE=fr", "sec-fetch-dest": "empty" },
+      })
+    );
+
+    expect(answer.status).toBe(307);
+    expect(answer.cookies.get("NEXT_LOCALE")).toBeUndefined();
+  });
+
   // The site's and the docs' host names reach the relay's site mode
   // through the edge, with their own Host.
   it("lets the site's events through, whatever host they came to", async () => {

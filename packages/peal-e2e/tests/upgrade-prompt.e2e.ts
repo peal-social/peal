@@ -4,7 +4,7 @@ import { describe, test } from "@e2e-dev/web";
 import { credentials, expect } from "e2e";
 import type { Locator } from "e2e";
 
-import { confirmedAccount } from "./support/accounts.ts";
+import { confirmedAccount, setAccountLanguage } from "./support/accounts.ts";
 import { postPerAccountSubscription } from "./support/billing.ts";
 import { seedChannel } from "./support/channels.ts";
 import { defaultWorkspaceOf, openedWorkspace } from "./support/workspaces.ts";
@@ -205,11 +205,16 @@ describe("per-account pricing", { serial: true }, () => {
 
     await opened("en", { height: 568, width: 320 });
     await opened("en", { height: 667, width: 375 });
+    // The app's pages are in the account's language, whatever the address:
+    // the account keeps French for the French ones.
+    await setAccountLanguage(address(), "fr");
     await opened("fr", { height: 568, width: 320 });
     await opened("fr", { height: 667, width: 375 });
+    await setAccountLanguage(address(), "en");
     await browser.setViewport({ height: 720, width: 1280 });
-    // Back to English, which the French pages' language cookie replaced.
-    await app.open(`/en/${slug}/channels/new/mastodon`);
+    // Back to English, the French address sent to the account's.
+    await app.open(`/fr/${slug}/channels/new/mastodon`);
+    await expect(browser).toHaveURL(`/${slug}/channels/new/mastodon`);
     await expect(screen.getByLabel("Server")).toBeVisible();
   });
 

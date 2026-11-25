@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Option } from "effect";
 
-import { landingLocale, nextPathOf } from "#auth/next-path.ts";
+import { landingOf, nextPathOf } from "#auth/next-path.ts";
 
 describe(nextPathOf, () => {
   it.each([
@@ -85,24 +85,61 @@ describe(nextPathOf, () => {
   });
 });
 
-describe(landingLocale, () => {
+describe(landingOf, () => {
   it("opens the app in the language the account keeps", () => {
-    expect(landingLocale("/app", "fr")).toStrictEqual(Option.some("fr"));
-    expect(landingLocale("/device?user_code=ABCD", "en")).toStrictEqual(
-      Option.some("en")
-    );
+    expect(landingOf("/app", "fr")).toStrictEqual({
+      href: "/app",
+      locale: Option.some("fr"),
+    });
+    expect(landingOf("/device?user_code=ABCD", "en")).toStrictEqual({
+      href: "/device?user_code=ABCD",
+      locale: Option.some("en"),
+    });
   });
 
-  it("keeps the language a path names, and ignores one it does not know", () => {
-    expect(landingLocale("/fr/device", "en")).toStrictEqual(Option.none());
-    expect(landingLocale("/fr", "en")).toStrictEqual(Option.none());
-    expect(landingLocale("/app", "de")).toStrictEqual(Option.none());
-    expect(landingLocale("/app", undefined)).toStrictEqual(Option.none());
+  // The signed-in app is in the account's language, whatever its address
+  // says (#i18n/account-language.ts): straight there, with no detour.
+  it("opens a page of the app in the account's language, whatever the path names", () => {
+    expect(
+      landingOf("/fr/synthetic-studio/posts?status=draft", "en")
+    ).toStrictEqual({
+      href: "/synthetic-studio/posts?status=draft",
+      locale: Option.some("en"),
+    });
+    expect(landingOf("/fr", "en")).toStrictEqual({
+      href: "/",
+      locale: Option.some("en"),
+    });
+  });
+
+  // next-intl's router prefixes the language it is given: a path that
+  // names one goes without it, never `/fr/fr/…`.
+  it("keeps the language a page outside the app names, without naming it twice", () => {
+    expect(landingOf("/fr/device", "en")).toStrictEqual({
+      href: "/device",
+      locale: Option.some("fr"),
+    });
+    expect(landingOf("/fr/app", "de")).toStrictEqual({
+      href: "/app",
+      locale: Option.some("fr"),
+    });
+  });
+
+  it("ignores a language the account names that the app does not know", () => {
+    expect(landingOf("/app", "de")).toStrictEqual({
+      href: "/app",
+      locale: Option.none(),
+    });
+    expect(landingOf("/app", undefined)).toStrictEqual({
+      href: "/app",
+      locale: Option.none(),
+    });
   });
 
   it("does not take a path that starts like a language for one", () => {
-    expect(landingLocale("/french-notes", "en")).toStrictEqual(
-      Option.some("en")
-    );
+    expect(landingOf("/french-notes", "en")).toStrictEqual({
+      href: "/french-notes",
+      locale: Option.some("en"),
+    });
   });
 });

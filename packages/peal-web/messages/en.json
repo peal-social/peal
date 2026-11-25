@@ -3964,7 +3964,7 @@
     },
     "language": {
       "title": "Language",
-      "description": "The language Peal writes to you in: this app, whenever you sign in, and your emails.",
+      "description": "The language Peal writes to you in: this app, on every device, and your emails.",
       "label": "Language",
       "option": "{locale, select, en {English} fr {Français} other {{locale}}}",
       "save": "Save the language",

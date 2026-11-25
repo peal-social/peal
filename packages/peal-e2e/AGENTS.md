@@ -22,6 +22,11 @@
   up through the API with `confirmedAccount`, and `makeStaff`
   (`tests/support/accounts.ts`) gives one the staff role in the database, as
   self-hosters do; it signs in again afterwards.
+- Signed in, the app's pages are in the account's language, whatever the
+  address: `/fr/…` opens in English for an English account. A journey
+  that reads them in French chooses French in the preferences, as
+  `first-post.e2e.ts` does, or sets the account's language in the
+  database (`setAccountLanguage`), as `upgrade-prompt.e2e.ts` does.
 - The run's server bills, against a stand-in for Stripe that lists Peal's
   meters and prices, the rate card's and the legacy plans', from the
   contract, by lookup key when asked (`scripts/stripe.ts`), as the server

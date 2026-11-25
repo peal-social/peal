@@ -10,7 +10,7 @@ import type { SubmitEvent } from "react";
 import { authClient } from "#auth/client.ts";
 import { authErrorKey } from "#auth/errors.ts";
 import type { AuthErrorKey } from "#auth/errors.ts";
-import { landingLocale } from "#auth/next-path.ts";
+import { landingOf } from "#auth/next-path.ts";
 import { isOAuthRedirect } from "#auth/oauth-redirect.ts";
 import { FormError } from "#components/auth/form-error.tsx";
 import { FormField } from "#components/auth/form-field.tsx";
@@ -56,17 +56,23 @@ export const SignInForm = ({ next }: { readonly next: string }) => {
   const [trust, setTrust] = useState(false);
 
   // Once signed in: on to `next`, in the language the account keeps, which
-  // may not be this page's.
+  // may not be this page's (`landingOf`).
   const goNext = (accountLocale: Option.Option<string>) => {
     // The other tabs of Peal measure nobody's session until they read
     // who is signed in now.
     tellTabs({ kind: "signedIn" });
-    Option.match(landingLocale(next, Option.getOrUndefined(accountLocale)), {
+
+    const { href, locale: landing } = landingOf(
+      next,
+      Option.getOrUndefined(accountLocale)
+    );
+
+    Option.match(landing, {
       onNone: () => {
-        router.push(next);
+        router.push(href);
       },
       onSome: (preferred) => {
-        router.push(next, { locale: preferred });
+        router.push(href, { locale: preferred });
       },
     });
     router.refresh();

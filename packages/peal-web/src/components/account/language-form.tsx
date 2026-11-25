@@ -29,7 +29,9 @@ const isLocale = Schema.is(Schema.Literals(routing.locales));
 
 /**
  * The language Peal writes to the person in: their emails, and the app,
- * which opens in it as soon as it is chosen, and whenever they sign in.
+ * which opens in it as soon as it is chosen, and keeps it on every page of
+ * the signed-in app, whatever language its address names (the `(app)`
+ * layout).
  */
 export const LanguageRow = ({ saved }: { readonly saved: Locale }) => {
   const t = useTranslations("AccountSettings.language");
