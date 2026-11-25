@@ -7,7 +7,8 @@ import type {
 import { gateRestrictions } from "#publishing/domain/bluesky-gates.ts";
 import type { ChannelOnPlatform } from "#publishing/domain/content-rules.ts";
 import { commentRestrictions } from "#publishing/domain/first-comments.ts";
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
+import { channelRefusalOf } from "#publishing/domain/own-refusals.ts";
+import type { ChannelRefusal } from "#publishing/domain/own-refusals.ts";
 import { followUpsOn } from "#publishing/domain/platform-rules.ts";
 import { replyControlRestrictions } from "#publishing/domain/threads-reply-control.ts";
 import {
@@ -18,6 +19,14 @@ import {
 import { ChannelGrants } from "./channel-grants.ts";
 import { PlatformLookups } from "./platform-lookups.ts";
 import { CurrentThreadedPlatforms } from "./threaded-platforms.ts";
+
+// Why an account went unread on a BadRequest, by what its code says of
+// the channel.
+const unreadReasons = {
+  disabled: "disabled",
+  disconnected: "disconnected",
+  other: "platformUnreachable",
+} as const satisfies Record<ChannelRefusal, AccountUnreadReason>;
 
 const unread = (reason: AccountUnreadReason): AccountStanding => ({
   _tag: "unread",
@@ -87,14 +96,10 @@ export class AccountStandings extends Context.Service<
                 };
           }),
           Effect.catchTags({
+            // Turned off, disconnected, or a refusal none of the
+            // channel's.
             BadRequest: ({ code }) =>
-              Effect.succeed(
-                unread(
-                  code === ownRefusalCodes.channelDisabled
-                    ? "disabled"
-                    : "disconnected"
-                )
-              ),
+              Effect.succeed(unread(unreadReasons[channelRefusalOf(code)])),
             LookupInputRejected: () =>
               Effect.succeed(unread("platformUnreachable")),
             PlatformUnavailable: () =>

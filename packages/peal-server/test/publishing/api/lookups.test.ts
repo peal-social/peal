@@ -40,6 +40,7 @@ import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
 import { memberOf } from "#test/channels/support.ts";
+import { recordedAnswerHeaders } from "#test/shared/answer-headers.ts";
 import { securityTest } from "#workspace/api/security.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
@@ -603,6 +604,9 @@ describe("running a channel's lookup", () => {
           new TokenExpired(),
           new BadRequest({ code: ownRefusalCodes.channelDisabled }),
           new BadRequest({ code: ownRefusalCodes.channelDisconnected }),
+          // The outbound guard refused the platform's host: the server's
+          // doing, never a missing channel.
+          new BadRequest({ code: "hostNotAllowed" }),
           new LookupInputRejected(),
         ],
         (failure) =>
@@ -625,9 +629,36 @@ describe("running a channel's lookup", () => {
         new ChannelCannotPost({ reason: "reconnect" }),
         new ChannelCannotPost({ reason: "disabled" }),
         new ChannelNotFound(),
+        new PlatformUnreachable(),
         new LookupInputInvalid(),
       ]);
     })
+  );
+
+  it.effect(
+    "says how long to wait in Retry-After too, when the platform said",
+    () =>
+      Effect.gen(function* retryAfter() {
+        for (const [limited, header] of [
+          [new RateLimited({ retryAfter: Duration.millis(29_001) }), ["30"]],
+          [new RateLimited({}), []],
+        ] as const) {
+          const { headers, layer: recorded } = yield* recordedAnswerHeaders;
+          const { client } = yield* clientWith(viewer, limited);
+
+          // The handler runs in the caller's fiber, which the answers
+          // middleware gives its headers in the server.
+          yield* client["channels.lookups"]
+            .run({
+              headers: forWorkspace(workspaceId),
+              params: { ...youtube, name: "youtubePlaylists" },
+              payload: {},
+            })
+            .pipe(Effect.flip, Effect.provide(recorded));
+
+          assert.deepStrictEqual(yield* headers("Retry-After"), [...header]);
+        }
+      })
   );
 
   it.effect("needs channel:read", () =>
