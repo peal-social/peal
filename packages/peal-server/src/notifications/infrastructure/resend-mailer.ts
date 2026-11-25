@@ -1,4 +1,4 @@
-import { Effect, Layer, Redacted } from "effect";
+import { Effect, Layer, Option, Redacted, Schema } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 
 import { MailDeliveryFailed } from "#notifications/application/mail-delivery-failed.ts";
@@ -11,6 +11,28 @@ const endpoint = "https://api.resend.com/emails";
 // other refusals (a bad sender, a malformed address) will fail again.
 const isRetryableStatus = (status: number): boolean =>
   status === 429 || status >= 500;
+
+const decodeRefusal = Schema.decodeOption(
+  Schema.fromJsonString(
+    Schema.Struct({ message: Schema.String, name: Schema.String })
+  )
+);
+
+// What Resend's answer says no later try may change: a key used for another
+// email, or the recipient, whose field its message names.
+const refusedFor = (body: string) =>
+  Option.match(decodeRefusal(body), {
+    onNone: () => ({}),
+    onSome: ({ message, name }) => {
+      if (name === "invalid_idempotent_request") {
+        return { refusedFor: "duplicate" as const };
+      }
+
+      return /`to`|suppress/iu.test(message)
+        ? { refusedFor: "recipient" as const }
+        : {};
+    },
+  });
 
 /**
  * Sends through Resend's HTTP API. The idempotency key makes a retried
@@ -64,6 +86,7 @@ export const resendMailer = (options: {
                         `Resend answered ${response.status}: ${body}`
                       ),
                       retryable: isRetryableStatus(response.status),
+                      ...refusedFor(body),
                     })
                   )
                 )

@@ -22,7 +22,18 @@ const sendersOf = ({
 }) => ({ automatic: "Peal <noreply@example.test>", personal });
 
 // Resend, answering every request with `status`, and the requests it got.
-const resendAnswering = (status: number, senders = sendersOf({})) => {
+// What Resend answers: an email's id, or a refusal.
+type ResendAnswer =
+  | { readonly id: string }
+  | { readonly message: string; readonly name: string };
+
+const accepted: ResendAnswer = { id: "email-1" };
+
+const resendAnswering = (
+  status: number,
+  senders = sendersOf({}),
+  answer: ResendAnswer = accepted
+) => {
   const requests: Request[] = [];
 
   const fetch = Object.assign(
@@ -33,9 +44,7 @@ const resendAnswering = (status: number, senders = sendersOf({})) => {
           : new Request(input.toString(), init)
       );
 
-      return await Promise.resolve(
-        Response.json({ id: "email-1" }, { status })
-      );
+      return await Promise.resolve(Response.json(answer, { status }));
     },
     {
       preconnect: () => {
@@ -181,6 +190,90 @@ describe("the Resend mailer", () => {
       );
 
       assert.strictEqual(failure.retryable, retryable);
+      assert.isUndefined(failure.refusedFor);
     }).pipe(Effect.provide(resendAnswering(status).layer))
+  );
+
+  // What Resend answers, and whether a later try could send the email.
+  it.effect.each([
+    {
+      answer: {
+        message:
+          "Invalid `to` field. The email address needs to follow the `email@example.com` or `Name <email@example.com>` format.",
+        name: "validation_error",
+      },
+      refusedFor: "recipient",
+      status: 422,
+    },
+    {
+      answer: {
+        message: "The recipient is on the suppression list.",
+        name: "validation_error",
+      },
+      refusedFor: "recipient",
+      status: 400,
+    },
+    {
+      answer: {
+        message:
+          "Same idempotency key used with a different request payload: the request body was modified and doesn't match the original request.",
+        name: "invalid_idempotent_request",
+      },
+      refusedFor: "duplicate",
+      status: 409,
+    },
+    {
+      answer: {
+        message:
+          "There is another request in progress with the same idempotency key.",
+        name: "concurrent_idempotent_requests",
+      },
+      refusedFor: undefined,
+      status: 409,
+    },
+    {
+      answer: {
+        message:
+          "The example.test domain is not verified. Please, add and verify your domain.",
+        name: "validation_error",
+      },
+      refusedFor: undefined,
+      status: 403,
+    },
+    {
+      answer: {
+        message:
+          "You can only send testing emails to your own email address. To send emails to other recipients, please verify a domain.",
+        name: "validation_error",
+      },
+      refusedFor: undefined,
+      status: 403,
+    },
+    {
+      answer: {
+        message: "Invalid `from` field.",
+        name: "validation_error",
+      },
+      refusedFor: undefined,
+      status: 422,
+    },
+    {
+      answer: { message: "API key is invalid", name: "validation_error" },
+      refusedFor: undefined,
+      status: 401,
+    },
+  ])(
+    "says a refusal of $status is for $refusedFor: $answer.message",
+    ({ answer, refusedFor, status }) =>
+      Effect.gen(function* says() {
+        const failure = yield* Mailer.use((mailer) =>
+          mailer.send(message)
+        ).pipe(Effect.flip);
+
+        assert.strictEqual(failure.refusedFor, refusedFor);
+        assert.isFalse(failure.retryable);
+      }).pipe(
+        Effect.provide(resendAnswering(status, sendersOf({}), answer).layer)
+      )
   );
 });

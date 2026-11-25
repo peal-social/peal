@@ -5,7 +5,8 @@ import type { UserId } from "#shared/domain/ids.ts";
 /**
  * How one check of a new account ended: its welcome went out, it waits for
  * the next check (the address is not confirmed, or the transport refused
- * the email for now), or there is none to send.
+ * the email for a reason a later try may not meet), or there is none to
+ * send.
  */
 export const WelcomeOutcomeSchema = Schema.Literals(["sent", "wait", "skip"]);
 

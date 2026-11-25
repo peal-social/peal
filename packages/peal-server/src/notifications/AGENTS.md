@@ -7,6 +7,11 @@
   person signs (`MAIL_FROM` where that is not set). No `Reply-To` is set: a
   reply goes to the address the email came from. Requests never wait for
   them.
+- `PEAL_MAIL_PERSONAL_FROM`, the signer's name and the identity lines are
+  read as the server starts, which a value of the wrong form stops: one line,
+  with no control character nor one a reader does not see (bidirectional
+  controls, zero-width spaces), but the joiners names need (U+200C, U+200D),
+  and one address for the sender.
 - Emails are written in `peal-emails`
   ([its guide](../../../peal-emails/AGENTS.md)): their words in English and
   French, their templates and their text. Use cases reach it through the
@@ -146,9 +151,13 @@
   person's: several paths confirm one, and none is a hook, so `WelcomeV1`
   checks the account (`WelcomeReaders`, from the workspace context) after
   5 minutes, then 15 minutes, 1, 6, 24 and 72 hours, each from the one
-  before, and gives up after the last. A banned or erased account gets none;
-  a transport that refuses for now waits for the next check, and one that
-  refuses for good ends it. It is informational and goes once, so it carries
+  before, and gives up after the last. A banned or erased account gets none.
+  A refusal waits for the next check, whatever it is about (a sender or a
+  domain not verified, a key revoked), as it sent nothing and may be put
+  right by then, unless `MailDeliveryFailed.refusedFor` says no later try may
+  send it: `recipient` (its address, by the SMTP reply's enhanced code or the
+  field Resend names) or `duplicate` (Resend holds another email under its
+  key, which may have gone out). It is informational and goes once, so it carries
   no `List-Unsubscribe`, and no price, offer or programme may join it.
 - `WelcomeV1` is persisted contract: its tag, its payload (`userId`), its
   activities `attempt/<n>`, its clocks `wait/<n>`, `welcomeChecks` and

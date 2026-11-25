@@ -6,10 +6,31 @@ import type { UserId } from "#shared/domain/ids.ts";
 
 import { AppLinks } from "./app-links.ts";
 import { EmailRenderer } from "./email-renderer.ts";
+import type { MailDeliveryFailed } from "./mail-delivery-failed.ts";
 import { Mailer } from "./mailer.ts";
 import type { RecipientsUnavailable } from "./recipients-unavailable.ts";
 import { WelcomeReaders } from "./welcome-readers.ts";
 import { WelcomeSigner } from "./welcome-signer.ts";
+
+// A refusal sent nothing, so it waits for the next check, when what it was
+// about (the sender, the account) may have been put right: unless it is the
+// recipient's, or another email went out under its key.
+const settled = ({ cause, refusedFor, retryable }: MailDeliveryFailed) => {
+  if (refusedFor !== undefined) {
+    return Effect.logError("A welcome was refused", cause).pipe(
+      Effect.annotateLogs({ refusedFor }),
+      Effect.as<WelcomeOutcome>("skip")
+    );
+  }
+
+  const message = "A welcome was refused, and waits for its next check";
+
+  return (
+    retryable
+      ? Effect.logWarning(message, cause)
+      : Effect.logError(message, cause)
+  ).pipe(Effect.as<WelcomeOutcome>("wait"));
+};
 
 /**
  * Sends a new account's welcome, from the address of the person who signs
@@ -71,16 +92,7 @@ export class SendWelcomeEmail extends Context.Service<
           })
           .pipe(
             Effect.as<WelcomeOutcome>("sent"),
-            Effect.catchTag("MailDeliveryFailed", (failure) =>
-              failure.retryable
-                ? Effect.logWarning(
-                    "A welcome was refused for now",
-                    failure.cause
-                  ).pipe(Effect.as<WelcomeOutcome>("wait"))
-                : Effect.logError("A welcome was refused", failure.cause).pipe(
-                    Effect.as<WelcomeOutcome>("skip")
-                  )
-            ),
+            Effect.catchTag("MailDeliveryFailed", settled),
             Effect.annotateLogs({ userId })
           );
       });

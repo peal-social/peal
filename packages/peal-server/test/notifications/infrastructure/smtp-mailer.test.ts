@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { once } from "node:events";
+import { createServer } from "node:net";
 
 import { assert, describe, it } from "@effect/vitest";
 import { Config, Effect, Redacted, Schema } from "effect";
@@ -37,6 +39,57 @@ const getJson = <S extends Schema.Top>(url: string, schema: S) =>
 
     return json;
   }).pipe(Effect.flatMap(Schema.decodeUnknownEffect(schema)));
+
+const ListeningSchema = Schema.Struct({ port: Schema.Number });
+
+// An SMTP server that takes every command but `at`, which it answers with
+// `reply`.
+const refusingServer = (at: string, reply: string) =>
+  Effect.acquireRelease(
+    Effect.promise(async () => {
+      const server = createServer((socket) => {
+        let inData = false;
+
+        socket.on("error", () => {
+          // The client may leave first.
+        });
+
+        socket.on("data", (chunk) => {
+          for (const line of chunk.toString().split("\r\n")) {
+            if (inData) {
+              if (line === ".") {
+                inData = false;
+                socket.write(`${at === "DATA" ? reply : "250 OK"}\r\n`);
+              }
+            } else if (line.startsWith("EHLO")) {
+              socket.write("250 synthetic.example.test\r\n");
+            } else if (line === "DATA") {
+              inData = true;
+              socket.write("354 Go on\r\n");
+            } else if (line !== "") {
+              socket.write(`${line.startsWith(at) ? reply : "250 OK"}\r\n`);
+            }
+          }
+        });
+
+        socket.write("220 synthetic.example.test\r\n");
+      });
+
+      server.listen(0, "127.0.0.1");
+      await once(server, "listening");
+
+      return server;
+    }),
+    (server) =>
+      Effect.sync(() => {
+        server.close();
+      })
+  ).pipe(
+    Effect.flatMap((server) =>
+      Schema.decodeUnknownEffect(ListeningSchema)(server.address())
+    ),
+    Effect.map(({ port }) => `smtp://127.0.0.1:${port}`)
+  );
 
 describe("the SMTP mailer", () => {
   it.live("delivers the email to the SMTP server", () =>
@@ -200,5 +253,72 @@ describe("the SMTP mailer", () => {
 
       assert.isTrue(failure.retryable);
     })
+  );
+
+  it.live.each([
+    {
+      at: "RCPT TO",
+      refusedFor: "recipient",
+      reply: "550 5.1.1 <nobody@example.test>: Recipient address rejected",
+    },
+    {
+      at: "RCPT TO",
+      refusedFor: "recipient",
+      reply: "552 5.2.2 Mailbox full",
+    },
+    { at: "RCPT TO", refusedFor: "recipient", reply: "550 No such user here" },
+    {
+      at: "RCPT TO",
+      refusedFor: undefined,
+      reply: "554 5.7.1 <ada@example.test>: Relay access denied",
+    },
+    {
+      at: "RCPT TO",
+      refusedFor: undefined,
+      reply: "553 5.7.1 <ada@example.test>: Sender address rejected",
+    },
+    {
+      at: "RCPT TO",
+      refusedFor: undefined,
+      reply: "550 5.1.8 <ada@example.test>: Sender address rejected",
+    },
+    {
+      at: "MAIL FROM",
+      refusedFor: undefined,
+      reply: "553 5.1.8 Sender address not verified",
+    },
+    {
+      at: "DATA",
+      refusedFor: undefined,
+      reply: "554 5.6.0 Message content rejected",
+    },
+  ])("says a refusal at $at is for $refusedFor: $reply", (sample) =>
+    Effect.gen(function* says() {
+      const url = yield* refusingServer(sample.at, sample.reply);
+
+      const failure = yield* Mailer.use((mailer) =>
+        mailer.send({
+          html: "<p>Hello</p>",
+          idempotencyKey: "00000000-0000-7000-8000-000000000004",
+          subject: "Hello",
+          text: "Hello",
+          to: "nobody@example.test",
+        })
+      ).pipe(
+        Effect.provide(
+          smtpMailer({
+            senders: {
+              automatic: "noreply@example.test",
+              personal: "noreply@example.test",
+            },
+            url: Redacted.make(url),
+          })
+        ),
+        Effect.flip
+      );
+
+      assert.strictEqual(failure.refusedFor, sample.refusedFor);
+      assert.isFalse(failure.retryable);
+    }).pipe(Effect.scoped)
   );
 });

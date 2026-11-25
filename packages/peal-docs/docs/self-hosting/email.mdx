@@ -44,7 +44,7 @@ Peal sends everything from `MAIL_FROM`. If you want the emails a person signs to
 PEAL_MAIL_PERSONAL_FROM=Ada at Example <ada@example.com>
 ```
 
-Your mail service must accept both addresses. Without the setting, these emails come from `MAIL_FROM` too.
+Write one address, alone or after a name. Anything else stops the server at startup. Your mail service must accept both addresses. Without the setting, these emails come from `MAIL_FROM` too.
 
 Peal sets no reply address, so a reply goes to the address the email came from. Make sure someone reads it.
 
@@ -58,7 +58,7 @@ PEAL_MAIL_WELCOME_SIGNER=Ada
 
 The welcome says the account is ready, suggests scheduling a first post, and asks the reader to reply if something doesn't work. It comes from `PEAL_MAIL_PERSONAL_FROM`, or from `MAIL_FROM` without it, so choose an address whose mail the signer reads and answers.
 
-An account gets it once, however it was made, and only after its address is confirmed. Peal looks five minutes after the account is made. If the address isn't confirmed by then, or your mail service turns the welcome away for now, Peal looks again after 15 minutes, then 1, 6, 24 and 72 hours, each counted from the last look. After that it gives up. Banned accounts and accounts made before you set the name get none.
+An account gets it once, however it was made, and only after its address is confirmed. Peal looks five minutes after the account is made. If the address isn't confirmed by then, or your mail service refuses the welcome, Peal looks again after 15 minutes, then 1, 6, 24 and 72 hours, each counted from the last look. After that it gives up. If the refusal is about the reader's own address, Peal gives up at once. Banned accounts and accounts made before you set the name get none.
 
 The name is one line of 60 characters at most. If you remove the setting, no welcome is sent any more, even to accounts still waiting for theirs.
 

@@ -3,6 +3,7 @@ import { Effect, Layer } from "effect";
 
 import { SendWelcomeEmail } from "#notifications/application/send-welcome-email.ts";
 import { TestMailer } from "#test/notifications/test-mailer.ts";
+import type { MailerMode } from "#test/notifications/test-mailer.ts";
 import {
   TestReaders,
   welcomeReader,
@@ -18,7 +19,7 @@ const sent = TestMailer.use((mailer) => mailer.sent);
 const given = (reader: Parameters<TestReaders["Service"]["set"]>[1]) =>
   TestReaders.use((readers) => readers.set(userId, reader));
 
-const answering = (mode: "accept" | "refuse" | "refuseForNow") =>
+const answering = (mode: MailerMode) =>
   TestMailer.use((mailer) => mailer.setMode(mode));
 
 describe(SendWelcomeEmail, () => {
@@ -72,10 +73,15 @@ describe(SendWelcomeEmail, () => {
       })
     );
 
-    it.effect("waits for a transport that refuses for now", () =>
-      Effect.gen(function* refusedForNow() {
+    // Refused for now, or for what the operator may put right (a sender or a
+    // domain not verified, a key revoked): nothing was sent.
+    it.effect.each([
+      { mode: "refuseForNow" as const },
+      { mode: "refuse" as const },
+    ])("waits for the next check when the transport answers $mode", (sample) =>
+      Effect.gen(function* refused() {
         yield* given(welcomeReader);
-        yield* answering("refuseForNow");
+        yield* answering(sample.mode);
 
         assert.strictEqual(yield* deliver, "wait");
 
@@ -85,10 +91,13 @@ describe(SendWelcomeEmail, () => {
       })
     );
 
-    it.effect("ends with a transport that refuses for good", () =>
-      Effect.gen(function* refused() {
+    it.effect.each([
+      { mode: "refuseRecipient" as const },
+      { mode: "refuseDuplicate" as const },
+    ])("ends when the transport answers $mode", (sample) =>
+      Effect.gen(function* ended() {
         yield* given(welcomeReader);
-        yield* answering("refuse");
+        yield* answering(sample.mode);
 
         assert.strictEqual(yield* deliver, "skip");
 

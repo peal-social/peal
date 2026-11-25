@@ -5,7 +5,21 @@ import { Mailer } from "#notifications/application/mailer.ts";
 import type { EmailMessage } from "#notifications/application/mailer.ts";
 
 /** How the test mailer answers. */
-export type MailerMode = "accept" | "refuseForNow" | "refuse";
+export type MailerMode =
+  | "accept"
+  | "refuseForNow"
+  | "refuse"
+  | "refuseDuplicate"
+  | "refuseRecipient";
+
+// What a later try could not change, for the modes that have it.
+const refusedFor = (mode: MailerMode) => {
+  if (mode === "refuseRecipient") {
+    return { refusedFor: "recipient" as const };
+  }
+
+  return mode === "refuseDuplicate" ? { refusedFor: "duplicate" as const } : {};
+};
 
 /** A mailer that records what it sends, and refuses as it is told. */
 export class TestMailer extends Context.Service<
@@ -37,6 +51,7 @@ export class TestMailer extends Context.Service<
                   new MailDeliveryFailed({
                     cause: new Error("Relay access denied"),
                     retryable: current === "refuseForNow",
+                    ...refusedFor(current),
                   })
                 )
           )

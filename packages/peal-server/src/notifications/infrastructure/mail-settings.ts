@@ -26,14 +26,63 @@ const transport = Config.option(Config.Redacted("RESEND_API_KEY")).pipe(
   )
 );
 
+/** The most characters the line that says who sends may hold. */
+export const maxIdentityLength = 300;
+
+/** The most characters the name that signs the welcome may hold. */
+export const maxSignerLength = 60;
+
+/** The most characters the personal sender may hold. */
+export const maxPersonalFromLength = 200;
+
+// No line break nor other control character, and none a reader does not see
+// (bidirectional controls, zero-width spaces), but the joiners names are
+// written with in some scripts.
+const visible = String.raw`[[^\p{Cc}\p{Cf}\u2028\u2029][\u200C\u200D]]`;
+
+interface Form {
+  readonly expected: string;
+  readonly pattern: RegExp;
+}
+
+// A setting of one line, with a form of its own if it has one: none when
+// unset or empty.
+const oneLine = (name: string, maxLength: number, form?: Form) => {
+  const line = Schema.Trim.check(
+    Schema.isPattern(new RegExp(`^${visible}{0,${maxLength}}$`, "v"), {
+      expected: `one line of at most ${maxLength} visible characters`,
+    })
+  );
+
+  return Config.schema(
+    form === undefined
+      ? line
+      : line.check(Schema.isPattern(form.pattern, { expected: form.expected })),
+    name
+  ).pipe(Config.option, Config.map(Option.filter((value) => value !== "")));
+};
+
+// One address: bare, or after a name, which quotes hold when it has a comma
+// or another character an address list reads. A setting left empty passes.
+const atom = String.raw`[^\s\p{Cf}<>@,;:"\(\)\[\]\\]+`;
+
+const address = `${atom}@${atom}`;
+
+const name = String.raw`(?:"[^"<>\\]*"|[^"<>@,;:\(\)\[\]\\]*)`;
+
+const personalFromForm: Form = {
+  expected: "one address, as `Name <address>` or alone",
+  pattern: new RegExp(`^(?:|${address}|${name}\\s*<${address}>)$`, "v"),
+};
+
 /** The address each sender's emails leave from. */
 export type MailSenders = Readonly<Record<MailSender, string>>;
 
-const personalFrom = Config.option(
-  Config.String("PEAL_MAIL_PERSONAL_FROM").pipe(
-    Config.map((from) => from.trim())
-  )
-).pipe(Config.map(Option.filter((from) => from !== "")));
+const personalFrom = oneLine(
+  "PEAL_MAIL_PERSONAL_FROM",
+  maxPersonalFromLength,
+  personalFromForm
+);
 
 const senders = Config.all({
   automatic: requiredInProduction(
@@ -56,7 +105,8 @@ const senders = Config.all({
  * - `MAIL_FROM` is the sender, as `Name <address>` or an address the
  *   transport may send from.
  * - `PEAL_MAIL_PERSONAL_FROM`, written the same way, is the sender of the
- *   emails a person signs. Unset or empty, they leave from `MAIL_FROM`.
+ *   emails a person signs. Unset or empty, they leave from `MAIL_FROM`; a
+ *   value that is not one address stops the server as it starts.
  *
  * Production needs MAIL_FROM and a transport: without them nobody could
  * confirm an email address or reset a password.
@@ -65,25 +115,6 @@ export const mailSettingsConfig = Config.all({
   senders,
   transport,
 });
-
-/** The most characters the line that says who sends may hold. */
-export const maxIdentityLength = 300;
-
-/** The most characters the name that signs the welcome may hold. */
-export const maxSignerLength = 60;
-
-// One line: no line break, nor any other control character. None when unset
-// or empty.
-const oneLine = (name: string, maxLength: number) =>
-  Config.schema(
-    Schema.Trim.check(
-      Schema.isPattern(
-        new RegExp(String.raw`^[^\p{Cc}\u2028\u2029]{0,${maxLength}}$`, "u"),
-        { expected: `one line of at most ${maxLength} characters` }
-      )
-    ),
-    name
-  ).pipe(Config.option, Config.map(Option.filter((line) => line !== "")));
 
 /** Who sends, as the operator states it to the readers of each language. */
 export type MailIdentity = Readonly<Record<Locale, Option.Option<string>>>;
