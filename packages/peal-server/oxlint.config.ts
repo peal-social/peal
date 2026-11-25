@@ -68,11 +68,19 @@ const testHelpers = {
 
 // The AI SDK is reached through one seam, the assistant's adapter
 // (`src/assistant/infrastructure/ai-sdk/`), which keeps its globals, its
-// errors and its keys in hand; everything else talks to effect/ai.
+// errors and its keys in hand; everything else talks to effect/ai. A pattern
+// without a slash matches at any depth (`ai` would refuse `effect/unstable/ai`
+// too), one that starts with a slash matches no import's name, and `ai/**`
+// matches what is under `ai`, not `ai` itself. So the package goes in
+// `paths`, which compare the whole name, and its subpaths (`ai/test`) and its
+// providers in a pattern; test/lint-ai-seam.test.ts lints each kind of file
+// against them. Every rule below repeats both, as it does testHelpers.
+const aiSeamMessage =
+  "Only src/assistant/infrastructure/ai-sdk/ imports the AI SDK: use effect/ai and the adapter there.";
+
 const aiSeam = {
-  group: ["/ai", "/ai/**", "@ai-sdk/**"],
-  message:
-    "Only src/assistant/infrastructure/ai-sdk/ imports the AI SDK: use effect/ai and the adapter there.",
+  paths: [{ message: aiSeamMessage, name: "ai" }],
+  patterns: [{ group: ["ai/**", "@ai-sdk/**"], message: aiSeamMessage }],
 };
 
 // The SDK's hosted gateway sends prompts to its vendor's service: never
@@ -107,7 +115,7 @@ const restrict = (
 ): NonNullable<Rules["no-restricted-imports"]> => [
   "error",
   {
-    paths: noGateway,
+    paths: [...noGateway, ...(ai === "seam" ? aiSeam.paths : [])],
     patterns: [
       {
         group: [...group, ...walls],
@@ -117,7 +125,7 @@ const restrict = (
             : message,
       },
       testHelpers,
-      ...(ai === "seam" ? [aiSeam] : []),
+      ...(ai === "seam" ? aiSeam.patterns : []),
     ],
   },
 ];
@@ -387,7 +395,10 @@ export default defineConfig({
       rules: {
         "no-restricted-imports": [
           "error",
-          { paths: noGateway, patterns: [testHelpers, aiSeam] },
+          {
+            paths: [...noGateway, ...aiSeam.paths],
+            patterns: [testHelpers, ...aiSeam.patterns],
+          },
         ],
       },
     },
