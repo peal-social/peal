@@ -35,6 +35,8 @@ interface Fixture {
   readonly postReaderKey: string;
   /** An API key of the workspace with apiKey:read, revoked by the owner. */
   readonly revokedKey: string;
+  /** A staff member's session. */
+  readonly staffCookies: string;
   readonly workspaceId: string;
 }
 
@@ -101,6 +103,7 @@ const MatrixLive = Layer.effect(
       ownerToken,
       postReaderKey,
       revokedKey: revoked.key,
+      staffCookies,
       workspaceId,
     };
   })
@@ -472,6 +475,39 @@ const cases: readonly Case[] = [
     path: apiKeys,
     workspace: (fixture) => fixture.workspaceId,
   },
+  // The scheme is matched in any case, and an access token sent in the
+  // DPoP scheme, which the API never took, is refused all the same.
+  {
+    expected: 401,
+    headers: withSession((fixture) => ({
+      authorization: `bearer ${fixture.revokedKey}`,
+    })),
+    name: "a session with a revoked API key in a lower-case bearer scheme",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession((fixture) => ({
+      authorization: `DPoP ${fixture.ownerToken}`,
+    })),
+    name: "a session with an access token in the DPoP scheme",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 401,
+    headers: withSession(() => ({ authorization: `dpop ${expiredToken}` })),
+    name: "a session with an expired access token in a lower-case DPoP scheme",
+    path: credential,
+  },
+  {
+    expected: 401,
+    headers: (fixture) => ({ authorization: `DPoP ${fixture.ownerToken}` }),
+    name: "an access token in the DPoP scheme without a session",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
   // A valid bearer credential acts as itself, the session aside.
   {
     expected: 403,
@@ -515,6 +551,41 @@ const cases: readonly Case[] = [
   },
   {
     expected: 200,
+    headers: withSession(() => ({
+      authorization: `Negotiate ${base64url("synthetic negotiation")}`,
+    })),
+    name: "a session behind a proxy's Negotiate sign-in",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({
+      authorization: `NTLM ${base64url("synthetic negotiation")}`,
+    })),
+    name: "a session behind a proxy's NTLM sign-in",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({
+      authorization:
+        'Digest username="synthetic-user", realm="synthetic", response="synthetic"',
+    })),
+    name: "a session behind a proxy's Digest sign-in",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
+    headers: withSession(() => ({ authorization: "DPoP " })),
+    name: "a session with a DPoP scheme that carries no token",
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
+  },
+  {
+    expected: 200,
     headers: withSession(() => ({ authorization: "" })),
     name: "a session with an empty Authorization header",
     path: apiKeys,
@@ -526,6 +597,25 @@ const cases: readonly Case[] = [
     name: "a session with a bearer scheme that carries no token",
     path: apiKeys,
     workspace: (fixture) => fixture.workspaceId,
+  },
+  // The staff console reads the staff member's session alone, and never
+  // took a bearer token: one sent beside the session is ignored there, not
+  // refused as the API's Authentication refuses it. Only staff in their
+  // own browser use the console, and no program reaches it.
+  {
+    expected: 200,
+    headers: (fixture) => ({ cookie: fixture.staffCookies }),
+    name: "a staff session on the console",
+    path: "/api/admin/session",
+  },
+  {
+    expected: 200,
+    headers: (fixture) => ({
+      cookie: fixture.staffCookies,
+      ...bearer(fixture.revokedKey),
+    }),
+    name: "a staff session with a revoked API key on the console",
+    path: "/api/admin/session",
   },
 ];
 

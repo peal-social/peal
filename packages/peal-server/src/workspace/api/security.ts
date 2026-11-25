@@ -68,12 +68,25 @@ const safeMethods: ReadonlySet<string> = new Set(["GET", "HEAD", "OPTIONS"]);
 
 const unauthenticated = () => Effect.fail(new Unauthenticated());
 
-// The bearer credential a request presents, as Authentication's bearer
-// scheme reads it from the Authorization header: empty when the header is
-// missing, empty, or of another scheme (a proxy's Basic sign-in).
-const presentedBearer = HttpApiBuilder.securityDecode(
-  HttpApiSecurity.bearer
-).pipe(Effect.map((credential) => Redacted.value(credential).trim() !== ""));
+// The schemes of the Authorization header that carry a token: Bearer, which
+// Authentication's bearer scheme reads, and DPoP, in which OAuth clients
+// send a token bound to their key, which the API never took. Any other
+// (a proxy's Basic, Negotiate, NTLM or Digest sign-in) presents none.
+const tokenSchemes = [
+  HttpApiSecurity.bearer,
+  HttpApiSecurity.http({ scheme: "DPoP" }),
+];
+
+// Whether a request presents a token, read as Effect reads a scheme from
+// the header (in any case): nothing when the header is missing, empty, or
+// names a token scheme with no token after it.
+const presentedToken = Effect.all(
+  tokenSchemes.map((scheme) => HttpApiBuilder.securityDecode(scheme))
+).pipe(
+  Effect.map((credentials) =>
+    credentials.some((credential) => Redacted.value(credential).trim() !== "")
+  )
+);
 
 // The request acts as the principal: for handlers, and for product
 // analytics, with the web app's session a browser named (a session's
@@ -236,9 +249,10 @@ export const journalled =
 /**
  * Authentication: a bearer token (an OAuth access token issued for the API,
  * or an API key), or the session cookies. Better Auth failing is a server
- * error, not a reason to refuse. A bearer token the request presents
- * decides: one refused is a 401, never the session the request carries
- * besides, so a restricted key that stops working gains nothing.
+ * error, not a reason to refuse. A token the request presents (Bearer, or
+ * DPoP, which the API never took) decides: one refused is a 401, never the
+ * session the request carries besides, so a restricted key that stops
+ * working gains nothing.
  *
  * A session staff act as someone in goes through the ImpersonationGuard
  * here, before any handler runs: refused once the staff member is no longer
@@ -329,9 +343,10 @@ export const AuthenticationLive = Layer.effect(
           const cookies = request.headers["cookie"];
 
           // The bearer scheme is tried first, and the session only once it
-          // failed: a bearer credential presented here was refused, and so
-          // is the request, whatever session it carries besides.
-          if (cookies === undefined || (yield* presentedBearer)) {
+          // failed: a token presented here was refused (one in the DPoP
+          // scheme always is), and so is the request, whatever session it
+          // carries besides.
+          if (cookies === undefined || (yield* presentedToken)) {
             return yield* new Unauthenticated();
           }
 
