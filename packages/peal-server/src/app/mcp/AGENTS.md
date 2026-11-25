@@ -30,7 +30,13 @@
   `#shared/infrastructure/database-ping.ts`, for the health tool.
   `mcpAuthentication` (`#workspace/api/mcp-authentication.ts`) provides
   the member from the request's OAuth token: 401 with an RFC 9728 challenge
-  without a working token, 403 without a workspace scope or membership. It
+  without a working token, 403 without a workspace scope or membership. A
+  credential that was sent and does not work (a token, or a key no
+  workspace has: `AuthGateway.mcpCredentialRefused`) is `invalid_token`,
+  told it was refused; only a request without one, or with a scheme the
+  endpoint does not take, is told it needs one, with no error code (RFC
+  6750 §3.1). The words are `refusalTexts` (`access-tokens.ts`), and no
+  refusal repeats the credential. It
   also takes a workspace's API key as the bearer token (never in the URL),
   for agents that run with nobody to sign in: the key's permissions apply,
   as on the API, `whoami` answers `apiKey` with a null `user` and role, and
@@ -42,6 +48,30 @@
   own workspace (`workspaceOfKey` in `Authenticate`: the one place to
   change if a key ever spans several). Past the rate limit it answers a
   JSON-RPC error with 429.
+- The refusals the endpoint answers itself before a tool runs are JSON-RPC
+  errors (`id: null`, -32000) beside the status the specification fixes,
+  with a message that says what happened and what to do. `mcpRefusalAnswers`
+  (`refusal-answers.ts`), around the other middlewares, refuses a request
+  with an `Origin` header (403, before its credential is read: the
+  transport's "Origin present and invalid" rule, every revision served),
+  and gives the words of its status to what effect/ai and the session
+  guard answer with a status alone (400, by whether a DELETE named its
+  session, 404, 405 with its `Allow`, 406, 415). Each such status stands
+  for one refusal (`explained` says which component answers it): a
+  middleware it wraps that gains another empty 403 or 404 gives it a body
+  of its own. A session that is not the caller's and one that ended get
+  the same 404, body included, in words right for a sessionful client and
+  a stateless one. A body declared past the limit is refused by
+  `apiAnswers` before any route runs, as a JSON-RPC error on this path
+  (`bodyTooLarge`). A new refusal answers through `jsonRpcRefusal`. Two
+  answers keep another shape: a refused path spelling (`/api/mcp%2F..`,
+  400 in the API's error envelope, from `apiAnswers` for every path) and
+  a session ended while its request runs (effect/ai's own answer, after
+  every middleware).
+- The session guard answers 404 to a request of the stateless revision
+  that carries an `Mcp-Session-Id` no session of the caller has, where
+  that revision says to ignore the header, as effect/ai does: a follow-up
+  could have the guard ignore it on requests claiming 2026-07-28.
 - No tool reads across workspaces: a connection acts in the one workspace
   the person chose, and a tool that read the others would hand a model
   what the person did not connect. Each workspace stands alone, and the
