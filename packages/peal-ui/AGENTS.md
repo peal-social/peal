@@ -11,6 +11,15 @@ component.
   `src/components`, one per file, light only (no `dark:` class).
   `src/styles/tokens.css` carries DESIGN.md's values; `nx run peal-ui:test`
   compares its colour tables and radius with DESIGN.md.
+- ui-sdk renders a control's native input, the one a form submits, beside
+  the control (a checkbox's and a switch's after it, a select's after its
+  parts), absolutely positioned and visually hidden. The component wraps
+  them in a `relative` box of its own (`checkbox-control`,
+  `switch-control`, `select-control`), or the input is laid out against a
+  distant ancestor and stretches the page below a scrolling panel's fold.
+  A checkbox's and a switch's box is the `peer` a label reads
+  (`peer-has-disabled`). A new component with such an input does the
+  same, and joins `test/hidden-inputs.test.ts`.
 - Tests run under vitest on Node without a DOM: keep logic in pure
   functions and the DOM glue thin.
 

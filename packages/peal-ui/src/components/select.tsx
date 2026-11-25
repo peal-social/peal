@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Select as SelectPrimitive,
   SelectContent as SelectContentPrimitive,
   SelectGroup as SelectGroupPrimitive,
   SelectGroupLabel as SelectGroupLabelPrimitive,
@@ -13,6 +14,7 @@ import {
   SelectValue as SelectValuePrimitive,
   SelectValueIcon as SelectValueIconPrimitive,
 } from "@ui-sdk/react/select";
+import type { SelectProps } from "@ui-sdk/react/select";
 import { ChevronDownIcon, CheckIcon } from "lucide-react";
 import type * as React from "react";
 
@@ -169,9 +171,24 @@ const SelectValueIcon = ({
   />
 );
 
-export { Select } from "@ui-sdk/react/select";
+/**
+ * ui-sdk renders the select's form value, a hidden textarea, after its parts
+ * and absolutely positioned. The `select-control` box around them is its
+ * positioning context, so it stays by the trigger: without it, the textarea
+ * is laid out against a distant ancestor, and below the fold of a scrolling
+ * panel it stretches the document. The box is block-level, as the trigger
+ * is, and the trigger's width classes read it as they read the parent.
+ */
+const Select = <T = string, Multiple extends boolean | undefined = false>(
+  props: SelectProps<T, Multiple>
+) => (
+  <div data-slot="select-control" className="relative">
+    <SelectPrimitive<T, Multiple> {...props} />
+  </div>
+);
 
 export {
+  Select,
   SelectContent,
   SelectGroup,
   SelectItem,
