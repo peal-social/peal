@@ -156,11 +156,17 @@
   back to the thumbnail. A seeded description has no surrounding spaces,
   which the server refuses to read.
 - `tests/page-loads.e2e.ts` loads a new workspace's main pages from the
-  server, one after the other, and finds no error in the console: an init
-  script keeps what the page writes with `console.error` and the errors
-  nothing caught, where React's hydration error (#418) arrives. The runner
-  gives a test no console of the page, so read it this way; a page added
-  to the app's main ones joins its list.
+  server, one after the other in one test, and finds no error in the
+  console: an init script, registered once, keeps what the page writes
+  with `console.error` and the errors nothing caught, where React's
+  hydration error (#418) arrives. The runner gives a test no console of
+  the page, so read it this way. Each page is read once it has settled:
+  React has taken over its `main` and nothing in it is `aria-busy`, which
+  a page that reads its data in the browser reaches only after hydration
+  (never `networkidle`, which a page that keeps a connection open never
+  reaches). It keeps each page's errors, a page that never settles among
+  them, and asserts once at the end, so one run names every page that
+  failed. A page added to the app's main ones joins its list.
 - A new workspace opens on its setup step (`/create/<slug>/channels`):
   `openedWorkspace` waits for it and leaves with **Skip for now**
   (`[data-setup-skip]`), so every journey starts on the workspace's home.
