@@ -166,7 +166,11 @@
   (never `networkidle`, which a page that keeps a connection open never
   reaches). It keeps each page's errors, a page that never settles among
   them, and asserts once at the end, so one run names every page that
-  failed. A page added to the app's main ones joins its list.
+  failed. A page added to the app's main ones joins its list. It then
+  seeds three channels, one past the free tier's two with no payment method,
+  and loads some of the pages again (`overPlanPages`): each must settle
+  on the over-plan screen, which its owner reads with the channels and
+  members the browser loads, with no error either.
 - A new workspace opens on its setup step (`/create/<slug>/channels`):
   `openedWorkspace` waits for it and leaves with **Skip for now**
   (`[data-setup-skip]`), so every journey starts on the workspace's home.
