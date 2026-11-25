@@ -4,6 +4,7 @@ import { Duration, Effect, Option } from "effect";
 import { ChannelDefaults } from "#publishing/application/channel-defaults.ts";
 import { ChannelSets } from "#publishing/application/channel-sets.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
+import type { MediaLetGo } from "#publishing/application/media-in-posts.ts";
 import { PostChecks } from "#publishing/application/post-checks.ts";
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
@@ -23,6 +24,7 @@ import {
 } from "#test/publishing/posts-server.ts";
 import {
   actorIn,
+  askedToLetGo,
   attachableMedia,
   contentOf,
   mediaFile,
@@ -193,15 +195,20 @@ describe("a file an option names", () => {
             }
           );
           assert.deepStrictEqual(
-            yield* inPosts.release(workspaceId, attachableImage),
-            { _tag: "inUse", scheduled: [sent.post.id] }
+            yield* askedToLetGo(workspaceId, attachableImage),
+            { letGo: Option.none(), scheduled: [sent.post.id] }
           );
 
           yield* scheduling.cancel(actor, sent.post.id);
 
+          const released: MediaLetGo = {
+            _tag: "released",
+            drafts: [draft.post.id],
+          };
+
           assert.deepStrictEqual(
-            yield* inPosts.release(workspaceId, attachableImage),
-            { _tag: "released", drafts: [draft.post.id] }
+            yield* askedToLetGo(workspaceId, attachableImage),
+            { letGo: Option.some(released), scheduled: [] }
           );
 
           // The draft lost the thumbnail, and kept its other options: a

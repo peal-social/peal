@@ -14,7 +14,6 @@ import {
   TextOverride,
 } from "#publishing/domain/text-override.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
-import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { MediaAssetId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
 
 import { PostRepository } from "./post-repository.ts";
@@ -31,12 +30,6 @@ export interface MediaUse {
 }
 
 /** What letting the media go came to, once no post keeps it. */
-/** What releasing the media came to. */
-export type MediaRelease =
-  // Posts about to go out show it: nothing changed.
-  | { readonly _tag: "inUse"; readonly scheduled: readonly PostId[] }
-  | MediaLetGo;
-
 export type MediaLetGo =
   // These drafts no longer show it.
   | { readonly _tag: "released"; readonly drafts: readonly PostId[] }
@@ -149,15 +142,6 @@ export class MediaInPosts extends Context.Service<
      * the posts, as erasing a workspace locks them. It opens no
      * transaction: call it in the caller's.
      */
-    /**
-     * Takes the media off the workspace's drafts, unless a post scheduled or
-     * publishing shows it, all in one transaction: the caller deletes the
-     * media once it is released.
-     */
-    readonly release: (
-      workspaceId: WorkspaceId,
-      mediaId: MediaAssetId
-    ) => Effect.Effect<MediaRelease, DatabaseError>;
     readonly hold: (
       workspaceId: WorkspaceId,
       mediaId: MediaAssetId
@@ -168,7 +152,6 @@ export class MediaInPosts extends Context.Service<
     MediaInPosts,
     Effect.gen(function* MediaInPostsLive() {
       const posts = yield* PostRepository;
-      const { transaction } = yield* TransactionRunner;
 
       // Drafts and those that go out in one statement, so in one snapshot:
       // a draft scheduled while they are read is in one list or the other,
@@ -301,31 +284,7 @@ export class MediaInPosts extends Context.Service<
         return held;
       });
 
-      const release = Effect.fn("MediaInPosts.release")(function* release(
-        workspaceId: WorkspaceId,
-        mediaId: MediaAssetId
-      ) {
-        return yield* transaction(
-          Effect.gen(function* releasing() {
-            const held = yield* hold(workspaceId, mediaId);
-
-            if (held.scheduled.length > 0) {
-              const inUse: MediaRelease = {
-                _tag: "inUse",
-                scheduled: held.scheduled,
-              };
-
-              return inUse;
-            }
-
-            const letGo: MediaRelease = yield* held.letGo;
-
-            return letGo;
-          })
-        );
-      });
-
-      return MediaInPosts.of({ hold, release, usage });
+      return MediaInPosts.of({ hold, usage });
     })
   );
 }
