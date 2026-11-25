@@ -351,12 +351,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `HydrationBoundary`. `prefetch` does not forward the visitor's cookies, so a
   query that needs them, and anything that depends on the browser (its time
   zone, the current time), renders after hydration (`useHydrated`,
-  `useMounted`): the component that reads it is rendered only then, its
-  loading state before, never the query read during the server's render,
-  where it fails at once (the client's `/api` address has no host there)
-  and the server's HTML shows the failure the browser's first render does
-  not (React's hydration error). Tiptap editors set
-  `immediatelyRender: false`.
+  `useMounted`). Read during the server's render, such a query has failed
+  already (the client's `/api` address has no host there) while the
+  browser's first render sees it loading, so what the server renders must
+  not depend on its result, or React throws away the page's HTML
+  (its hydration error). Either form keeps to that: render the component
+  that reads the query only once hydrated, its loading state before
+  (`ChannelsSettings`, `PlatformsScreen`), or read it and show its loading
+  state until hydrated whatever it holds (`!mounted || …`, as
+  `ComposerScreen` does). Tiptap editors set `immediatelyRender: false`.
 - Settings pages follow DESIGN.md's "Settings": the layout puts each in
   peal-ui's `SettingsPage` column; a page is sections (`SettingsGroup`,
   `components/settings/settings-group.tsx`) of `SettingsCard`s of
