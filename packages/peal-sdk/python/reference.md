@@ -11964,7 +11964,7 @@ client.system.changelog()
 </details>
 
 ## Automations CommentRules
-<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L31-L69">list</a>(...) -> CommentRulePage</code></summary>
+<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L32-L70">list</a>(...) -> CommentRulePage</code></summary>
 <dl>
 <dd>
 
@@ -12051,7 +12051,7 @@ client.automations.comment_rules.list()
 </dl>
 </details>
 
-<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L71-L125">create</a>(...) -> CommentRule</code></summary>
+<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L72-L126">create</a>(...) -> CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -12159,7 +12159,70 @@ client.automations.comment_rules.create(
 </dl>
 </details>
 
-<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L127-L156">get</a>(...) -> CommentRule</code></summary>
+<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L128-L153">platforms</a>() -> typing.List[PlatformCommentRule]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; `channels` on the refusal and on the rule says so. Needs engagement:read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from peal import Peal
+from peal.environment import PealEnvironment
+
+client = Peal(
+    token="<token>",
+    environment=PealEnvironment.DEFAULT,
+)
+
+client.automations.comment_rules.platforms()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L155-L184">get</a>(...) -> CommentRule</code></summary>
 <dl>
 <dd>
 
@@ -12232,7 +12295,7 @@ client.automations.comment_rules.get(
 </dl>
 </details>
 
-<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L158-L186">delete</a>(...)</code></summary>
+<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L186-L214">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12305,7 +12368,7 @@ client.automations.comment_rules.delete(
 </dl>
 </details>
 
-<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L188-L241">update</a>(...) -> CommentRule</code></summary>
+<details><summary><code>client.automations.comment_rules.<a href="src/peal/automations/comment_rules/client.py#L216-L269">update</a>(...) -> CommentRule</code></summary>
 <dl>
 <dd>
 

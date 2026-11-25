@@ -3,6 +3,7 @@
  */
 package social.peal.resources.automations.commentrules;
 
+import java.util.List;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
 import social.peal.resources.automations.commentrules.requests.CommentRuleChange;
@@ -12,6 +13,7 @@ import social.peal.resources.automations.commentrules.requests.ListCommentRulesR
 import social.peal.resources.automations.commentrules.requests.NewCommentRule;
 import social.peal.types.CommentRule;
 import social.peal.types.CommentRulePage;
+import social.peal.types.PlatformCommentRule;
 
 public class CommentRulesClient {
     protected final ClientOptions clientOptions;
@@ -70,6 +72,20 @@ public class CommentRulesClient {
      */
     public CommentRule create(NewCommentRule request, RequestOptions requestOptions) {
         return this.rawClient.create(request, requestOptions).body();
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
+     */
+    public List<PlatformCommentRule> platforms() {
+        return this.rawClient.platforms().body();
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
+     */
+    public List<PlatformCommentRule> platforms(RequestOptions requestOptions) {
+        return this.rawClient.platforms(requestOptions).body();
     }
 
     /**

@@ -11371,6 +11371,55 @@ async fn main() {
 </dl>
 </details>
 
+<details><summary><code>client.automations().comment_rules.<a href="/src/api/resources/automations/comment_rules/client.rs">platforms</a>() -> Result&lt;Vec&lt;PlatformCommentRule&gt;, ApiError&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; `channels` on the refusal and on the rule says so. Needs engagement:read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```rust
+use peal_sdk::prelude::*;
+
+#[tokio::main]
+async fn main() {
+    let config = ClientConfig {
+        token: Some("<token>".to_string()),
+        ..Default::default()
+    };
+    let client = PealClient::new(config).expect("Failed to build client");
+    client.automations.comment_rules.platforms(None).await;
+}
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.automations().comment_rules.<a href="/src/api/resources/automations/comment_rules/client.rs">get</a>(rule_id: String) -> Result&lt;CommentRule, ApiError&gt;</code></summary>
 <dl>
 <dd>

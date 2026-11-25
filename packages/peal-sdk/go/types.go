@@ -43807,6 +43807,124 @@ func (p *PlatformCapabilitiesOptions) String() string {
 }
 
 var (
+	platformCommentRuleFieldPlatform     = big.NewInt(1 << 0)
+	platformCommentRuleFieldPrivateReply = big.NewInt(1 << 1)
+	platformCommentRuleFieldReply        = big.NewInt(1 << 2)
+)
+
+type PlatformCommentRule struct {
+	Platform     Platform                  `json:"platform" url:"platform"`
+	PrivateReply CommentRulePrivateAbility `json:"privateReply" url:"privateReply"`
+	Reply        CommentRuleAbility        `json:"reply" url:"reply"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (p *PlatformCommentRule) GetPlatform() Platform {
+	if p == nil {
+		return ""
+	}
+	return p.Platform
+}
+
+func (p *PlatformCommentRule) GetPrivateReply() CommentRulePrivateAbility {
+	if p == nil {
+		return ""
+	}
+	return p.PrivateReply
+}
+
+func (p *PlatformCommentRule) GetReply() CommentRuleAbility {
+	if p == nil {
+		return ""
+	}
+	return p.Reply
+}
+
+func (p *PlatformCommentRule) GetExtraProperties() map[string]interface{} {
+	if p == nil {
+		return nil
+	}
+	return p.extraProperties
+}
+
+func (p *PlatformCommentRule) require(field *big.Int) {
+	next := new(big.Int)
+	if p.explicitFields != nil {
+		next.Set(p.explicitFields)
+	}
+	next.Or(next, field)
+	p.explicitFields = next
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PlatformCommentRule) SetPlatform(platform Platform) {
+	p.Platform = platform
+	p.require(platformCommentRuleFieldPlatform)
+}
+
+// SetPrivateReply sets the PrivateReply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PlatformCommentRule) SetPrivateReply(privateReply CommentRulePrivateAbility) {
+	p.PrivateReply = privateReply
+	p.require(platformCommentRuleFieldPrivateReply)
+}
+
+// SetReply sets the Reply field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PlatformCommentRule) SetReply(reply CommentRuleAbility) {
+	p.Reply = reply
+	p.require(platformCommentRuleFieldReply)
+}
+
+func (p *PlatformCommentRule) UnmarshalJSON(data []byte) error {
+	type unmarshaler PlatformCommentRule
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*p = PlatformCommentRule(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *p)
+	if err != nil {
+		return err
+	}
+	p.extraProperties = extraProperties
+	p.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (p *PlatformCommentRule) MarshalJSON() ([]byte, error) {
+	type embed PlatformCommentRule
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*p),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (p *PlatformCommentRule) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	if len(p.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(p); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", p)
+}
+
+var (
 	platformPostsFieldPlatform = big.NewInt(1 << 0)
 	platformPostsFieldPosts    = big.NewInt(1 << 1)
 )

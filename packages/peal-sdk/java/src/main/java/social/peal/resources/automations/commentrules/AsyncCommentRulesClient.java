@@ -3,6 +3,7 @@
  */
 package social.peal.resources.automations.commentrules;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
@@ -14,6 +15,7 @@ import social.peal.resources.automations.commentrules.requests.ListCommentRulesR
 import social.peal.resources.automations.commentrules.requests.NewCommentRule;
 import social.peal.types.CommentRule;
 import social.peal.types.CommentRulePage;
+import social.peal.types.PlatformCommentRule;
 
 public class AsyncCommentRulesClient {
     protected final ClientOptions clientOptions;
@@ -110,6 +112,35 @@ public class AsyncCommentRulesClient {
         CompletableFuture<PealClientHttpResponse<CommentRule>> rawFuture =
                 this.rawClient.create(request, requestOptions);
         CompletableFuture<CommentRule> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
+     */
+    public CompletableFuture<List<PlatformCommentRule>> platforms() {
+        CompletableFuture<PealClientHttpResponse<List<PlatformCommentRule>>> rawFuture = this.rawClient.platforms();
+        CompletableFuture<List<PlatformCommentRule>> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Says, for every platform in Peal's order, whether a comment rule can answer there on this server (<code>reply</code>) and send its private reply (<code>privateReply</code>): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; <code>channels</code> on the refusal and on the rule says so. Needs engagement:read.
+     */
+    public CompletableFuture<List<PlatformCommentRule>> platforms(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<PlatformCommentRule>>> rawFuture =
+                this.rawClient.platforms(requestOptions);
+        CompletableFuture<List<PlatformCommentRule>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
                 rawFuture.cancel(true);

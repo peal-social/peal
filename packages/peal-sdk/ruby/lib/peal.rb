@@ -1112,6 +1112,7 @@ module Peal
     autoload :UsageTotals, ::File.join(__dir__, "peal/types/usage_totals")
     autoload :PartnerUsageReport, ::File.join(__dir__, "peal/types/partner_usage_report")
     autoload :PlanShortfall, ::File.join(__dir__, "peal/types/plan_shortfall")
+    autoload :PlatformCommentRule, ::File.join(__dir__, "peal/types/platform_comment_rule")
     autoload :PlatformRateLimitedEncoded, ::File.join(__dir__, "peal/types/platform_rate_limited_encoded")
     autoload :PlatformUnreachableEncodedTag, ::File.join(__dir__, "peal/types/platform_unreachable_encoded_tag")
     autoload :PlatformUnreachableEncoded, ::File.join(__dir__, "peal/types/platform_unreachable_encoded")

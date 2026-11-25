@@ -563,6 +563,7 @@ export * from "./PlanPrice.js";
 export * from "./PlanShortfall.js";
 export * from "./Platform.js";
 export * from "./PlatformCapabilities.js";
+export * from "./PlatformCommentRule.js";
 export * from "./PlatformDashboard.js";
 export * from "./PlatformPosts.js";
 export * from "./PlatformRateLimitedEncoded.js";

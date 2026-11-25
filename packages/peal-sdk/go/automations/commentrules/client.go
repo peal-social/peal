@@ -90,6 +90,27 @@ func (c *Client) Create(
 	return response.Body, nil
 }
 
+// Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off; `channels` on the refusal and on the rule says so. Needs engagement:read.
+//
+// Example:
+//
+//	_, err := client.Automations.CommentRules.Platforms(
+//	    context.TODO(),
+//	)
+func (c *Client) Platforms(
+	ctx context.Context,
+	opts ...option.RequestOption,
+) ([]*peal.PlatformCommentRule, error) {
+	response, err := c.WithRawResponse.Platforms(
+		ctx,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
 // Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
 //
 // Example:
