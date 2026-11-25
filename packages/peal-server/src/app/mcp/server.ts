@@ -8,6 +8,7 @@ import { InboxTools } from "#app/mcp/inbox-tools.ts";
 import { MediaTools } from "#app/mcp/media-tools.ts";
 import { PostTools } from "#app/mcp/posts-tools.ts";
 import { recordedCalls } from "#app/mcp/recorded-calls.ts";
+import { mcpPath, mcpRefusalAnswers } from "#app/mcp/refusal-answers.ts";
 import { ReviewTools } from "#app/mcp/review-tools.ts";
 import { SavedTools } from "#app/mcp/saved-tools.ts";
 import {
@@ -57,9 +58,6 @@ export const changingTools: ReadonlySet<string> = new Set(
     .map(({ name }) => name)
 );
 
-/** Where the MCP endpoint answers, under PUBLIC_URL. */
-export const mcpPath = "/api/mcp";
-
 /** The version the MCP server gives of itself. */
 export const mcpServerVersion = "0.1.0";
 
@@ -92,7 +90,9 @@ export const mcpProtocolVersions: readonly string[] = protocols.map(
  * a token that works, like any other request; `mcpSessionGuard` ends those
  * unused for an hour and those a credential opens past its limit, and keeps
  * each session to the credential that opened it. Requests with
- * an Origin header are refused, as no browser page calls it.
+ * an Origin header are refused before their credential is read, as no
+ * browser page calls it, and every refusal says why in a JSON-RPC error
+ * (`mcpRefusalAnswers`).
  */
 export const McpLive = McpServer.layerHttp({
   allowSessionTermination: true,
@@ -108,7 +108,9 @@ export const McpLive = McpServer.layerHttp({
   version: mcpServerVersion,
 }).pipe(
   Layer.provide(
-    mcpSessionGuard.combine(mcpAuthentication({ contentTools })).layer
+    mcpSessionGuard
+      .combine(mcpAuthentication({ contentTools }))
+      .combine(mcpRefusalAnswers).layer
   ),
   Layer.provide(SessionEndingRouter),
   Layer.provide(McpSessions.layer)

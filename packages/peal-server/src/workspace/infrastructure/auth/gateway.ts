@@ -16,7 +16,7 @@ import {
   organization,
 } from "#workspace/infrastructure/auth-schema.generated.ts";
 
-import { makeAccessTokens } from "./access-tokens.ts";
+import { credentialRefused, makeAccessTokens } from "./access-tokens.ts";
 import { attempt } from "./attempt.ts";
 import { BetterAuth } from "./better-auth.ts";
 import { apiResourceOf, mcpResourceOf, workspaceClaim } from "./oauth.ts";
@@ -237,6 +237,9 @@ export const AuthGatewayLive = Layer.effect(
             Effect.withSpan("AuthGateway.apiToken")
           ),
       isTrustedOrigin: (origin) => trusted.has(origin),
+      mcpCredentialRefused: credentialRefused(
+        mcpResourceOf(settings.publicUrl)
+      ),
       mcpToken: (request) =>
         tokens
           .verify(
