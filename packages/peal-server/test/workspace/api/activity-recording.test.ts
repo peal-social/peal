@@ -8,6 +8,7 @@ import { errorsByTag } from "peal-contract/errors";
 
 import {
   ChangeMark,
+  changesNoContent,
   changesNothing,
   makeChangeMark,
 } from "#shared/api/change-mark.ts";
@@ -199,6 +200,25 @@ describe("recording a request", () => {
 
       assert.strictEqual(response.status, 200);
       assert.deepStrictEqual(yield* Ref.get(kept), []);
+    })
+  );
+
+  // A transcript not saved changes no content, which only the connection
+  // journal reads: the log still keeps what was asked.
+  it.effect("keeps a request that said it changes no content", () =>
+    Effect.gen(function* noContent() {
+      const kept = yield* Ref.make<readonly AnsweredChange[]>([]);
+
+      yield* changesNoContent.pipe(
+        Effect.as(HttpServerResponse.empty({ status: 200 })),
+        recorded(journalOf(kept), change),
+        Effect.provideService(ChangeMark, yield* makeChangeMark)
+      );
+
+      assert.deepStrictEqual(
+        (yield* Ref.get(kept)).map(({ outcome }) => outcome),
+        [{ _tag: "answered", status: 200 }]
+      );
     })
   );
 

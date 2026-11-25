@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Option } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import { Api, LastTargetLeft, forWorkspace } from "peal-contract";
@@ -8,6 +8,7 @@ import type { PostContent } from "peal-contract";
 import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
+import type { MediaLetGo } from "#publishing/application/media-in-posts.ts";
 import { newId } from "#shared/application/ids.ts";
 import {
   MediaAssetIdSchema,
@@ -22,6 +23,7 @@ import {
   storeMedia,
 } from "#test/publishing/library-media.ts";
 import { connect } from "#test/publishing/posts-server.ts";
+import { askedToLetGo } from "#test/publishing/support.ts";
 import { securityTest } from "#workspace/api/security.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
@@ -119,12 +121,13 @@ describe("a post with media of its own on a channel", () => {
 
           assert(own !== undefined);
 
-          const release = yield* MediaInPosts.use((inPosts) =>
-            inPosts.release(workspaceId, MediaAssetIdSchema.make(own))
+          const asked = yield* askedToLetGo(
+            workspaceId,
+            MediaAssetIdSchema.make(own)
           ).pipe(Effect.provide(MediaInPosts.layer));
 
-          assert.deepStrictEqual(release, {
-            _tag: "inUse",
+          assert.deepStrictEqual(asked, {
+            letGo: Option.none(),
             scheduled: [PostIdSchema.make(draft.id)],
           });
 
@@ -203,13 +206,19 @@ describe("a post with media of its own on a channel", () => {
             },
           });
 
-          const release = yield* MediaInPosts.use((inPosts) =>
-            inPosts.release(workspaceId, MediaAssetIdSchema.make(photo))
+          const asked = yield* askedToLetGo(
+            workspaceId,
+            MediaAssetIdSchema.make(photo)
           ).pipe(Effect.provide(MediaInPosts.layer));
 
-          assert.deepStrictEqual(release, {
+          const released: MediaLetGo = {
             _tag: "released",
             drafts: [PostIdSchema.make(draft.id)],
+          };
+
+          assert.deepStrictEqual(asked, {
+            letGo: Option.some(released),
+            scheduled: [],
           });
 
           const kept = yield* client.posts.get({

@@ -1,5 +1,6 @@
 import {
   and,
+  asc,
   desc,
   eq,
   inArray,
@@ -229,11 +230,14 @@ export const DrizzleArticleStore = Layer.effect(
           .set({ authorId: null })
           .where(eq(articles.authorId, userId))
           .pipe(Effect.mapError(failed), Effect.asVoid),
+      // In the order of their ids, as `lockShowing` and the posts' locks
+      // take them, so two transactions never hold what the other waits for.
       lockWorkspace: (workspaceId) =>
         db
           .select()
           .from(articles)
           .where(eq(articles.workspaceId, workspaceId))
+          .orderBy(asc(articles.id))
           .for("update")
           .pipe(
             Effect.mapError(failed),
@@ -293,11 +297,13 @@ export const DrizzleArticleStore = Layer.effect(
             Effect.mapError(failed),
             Effect.map((rows) => rows.length > 0)
           ),
+      // In the order of their ids, as `lockWorkspace` takes them.
       lockShowing: (workspaceId, mediaId) =>
         db
           .select()
           .from(articles)
           .where(showingMedia(workspaceId, mediaId))
+          .orderBy(asc(articles.id))
           .for("update")
           .pipe(
             Effect.mapError(failed),

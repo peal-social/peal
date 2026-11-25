@@ -107,9 +107,11 @@
   `post:publish` before it reads the post, and says the change is public
   at once and which platforms take it. Their refusals have their words in
   `refusals.ts` (`livePostRefusals`). Instants are
-  `Schema.DateTimeUtcFromString` in tool parameters. The tools of
-  `PostTools` and `MediaTools` that change something are `contentTools`,
-  whose calls the ConnectionJournal keeps. The account's own
+  `Schema.DateTimeUtcFromString` in tool parameters. The tools whose
+  write the API's connection journal keeps are `contentTools`
+  (`server.ts`), whose calls the ConnectionJournal keeps too:
+  `test/app/mcp-content-tools.test.ts` maps every tool that changes
+  something to the API's write it makes, so a new one joins that map. The account's own
   data (its export, its applications) has no tool.
 - The web app's agent (`src/agent/`, `src/app/agent/toolbox.ts`) calls
   some of these tools, by the same names and schemas, through

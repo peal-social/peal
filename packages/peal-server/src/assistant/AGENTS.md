@@ -17,8 +17,10 @@
 - Every model is the AI SDK's (`ai`, `@ai-sdk/*`) under effect/ai: the
   run loop, tools, approvals and structured output stay effect/ai's, and
   only the model underneath is the SDK's. Only
-  `infrastructure/ai-sdk/` imports the SDK (the lint rules refuse it
-  elsewhere, and its hosted gateway everywhere): `models.ts` builds a
+  `infrastructure/ai-sdk/` imports the SDK (the lint rules refuse `ai`,
+  its subpaths and `@ai-sdk/*` in the rest of `src/`, tests may drive its
+  mock models, and its hosted gateway is refused everywhere, which
+  `test/lint-ai-seam.test.ts` checks): `models.ts` builds a
   provider's package from its settings and a fetch (an exhaustive record
   by provider: a catalogue id without an adapter does not compile; each
   factory given its key and address, never its environment variables;

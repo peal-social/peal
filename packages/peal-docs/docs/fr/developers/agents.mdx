@@ -82,7 +82,7 @@ Un agent qui tourne à heure fixe ou sur un serveur n’a pas de navigateur pour
 
 - Sur le point d’accès MCP, dans l’en-tête `Authorization`, sous la forme `Bearer peal_…`, jamais dans l’adresse ([Se connecter avec une clé d’API](/developers/mcp#api-key)).
 - Sur l’[API HTTP](#api), dans le même en-tête.
-- Sur la [ligne de commande](#cli), dans la variable `PEAL_API_KEY`, jamais dans une option, avec l’espace de travail nommé par son identifiant ([La lancer avec une clé d’API](/developers/cli#api-key)).
+- Sur la [ligne de commande](#cli), dans la variable `PEAL_API_KEY`, jamais dans une option ([La lancer avec une clé d’API](/developers/cli#api-key)).
 
 Une clé n’a pas de scope. Ce qu’elle peut faire, c’est la liste de ses permissions, que répond `whoami`, et `GET /api/v1/credential` en HTTP ([SDK](/developers/sdks#credential)). Elle ne fait partir des publications que si elle porte `post:schedule`, et les outils réservés à une personne, comme inviter quelqu’un, la refusent.
 

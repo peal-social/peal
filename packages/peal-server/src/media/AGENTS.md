@@ -123,11 +123,18 @@
   (`#articles/application/media-in-articles.ts`) and
   publishing's `MediaInPosts` (the composition root provides
   `MediaInArticlesLive` and `MediaInPostsLive`), in one transaction:
-  the articles that show it are held first (`MediaInArticles.hold`, their
-  rows locked until the transaction ends), then posts are asked. An
+  publishing's `MediaInPosts.hold` locks the drafts that show it and reads
+  the posts that go out with it (awaiting approval, scheduled or
+  publishing; read, not locked), then `MediaInArticles.hold` locks the
+  articles that show it, both until the transaction ends, and the posts
+  that go out are read again, as one may be scheduled while the articles
+  are waited for. Nothing changes until both said so. An
   article or a post scheduled or publishing that shows it refuses the
   deletion (`MediaInUse`, listing both), and drafts, and the articles that
-  may still be sent, lose the attachment. `GET …/media/:id/usage` tells clients
+  may still be sent, lose the attachment. Posts before articles is the
+  order every transaction that locks both takes (erasing a workspace
+  does): a new path that locks both follows it
+  (`test/media/infrastructure/holders-media-usage.test.ts` proves it). `GET …/media/:id/usage` tells clients
   beforehand.
 - A file that arrives (an import, an image the assistant made) is stored
   and recorded through `keepArriving`: from the moment the store holds it

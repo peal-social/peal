@@ -2,33 +2,51 @@ import { Context, Layer } from "effect";
 import { McpProtocol, McpServer, Tool } from "effect/ai";
 
 import { toolCatalogue } from "#app/mcp/catalogue.ts";
+import { FeedTools } from "#app/mcp/feeds-tools.ts";
 import { PealToolsLive } from "#app/mcp/handlers.ts";
 import { InboxTools } from "#app/mcp/inbox-tools.ts";
 import { MediaTools } from "#app/mcp/media-tools.ts";
 import { PostTools } from "#app/mcp/posts-tools.ts";
 import { recordedCalls } from "#app/mcp/recorded-calls.ts";
 import { ReviewTools } from "#app/mcp/review-tools.ts";
+import { SavedTools } from "#app/mcp/saved-tools.ts";
 import {
   McpSessions,
   mcpSessionGuard,
   SessionEndingRouter,
 } from "#app/mcp/sessions.ts";
+import { TagTools } from "#app/mcp/tags-tools.ts";
 import { PealTools } from "#app/mcp/tools.ts";
 import { mcpAuthentication } from "#workspace/container.ts";
 
-// The tools that create, change or delete posts and media, decide on a
-// post's approval, or answer and moderate comments in public: the law has Peal keep the connection of each call a
-// year, as it keeps the API's writes to them.
+// The tools that create, change or delete content, as the API's writes
+// the connection journal keeps (`contentGroups` in `security.ts`): every
+// tool that changes something among those of posts, media files,
+// approvals and the inbox, and, of the other toolkits, those that tag a
+// post, write a signature, or start, change or stop a feed or a rule that
+// publishes. The law has Peal keep the connection of each call a year.
+// `test/app/mcp-content-tools.test.ts` maps each changing tool to the
+// API's write it makes, and fails when the two disagree.
 export const contentTools: ReadonlySet<string> = new Set(
   [
-    ...Object.values(PostTools.tools),
-    ...Object.values(MediaTools.tools),
-    ...Object.values(ReviewTools.tools),
-    ...Object.values(InboxTools.tools),
-  ]
-    .values()
-    .filter((tool) => !Context.get(tool.annotations, Tool.Readonly))
-    .map((tool) => tool.name)
+    ...[
+      ...Object.values(PostTools.tools),
+      ...Object.values(MediaTools.tools),
+      ...Object.values(ReviewTools.tools),
+      ...Object.values(InboxTools.tools),
+    ].filter((tool) => !Context.get(tool.annotations, Tool.Readonly)),
+    TagTools.tools.tag_post,
+    SavedTools.tools.create_signature,
+    SavedTools.tools.update_signature,
+    SavedTools.tools.delete_signature,
+    SavedTools.tools.stop_recycling_rule,
+    SavedTools.tools.start_follow_up_rule,
+    SavedTools.tools.update_follow_up_rule,
+    SavedTools.tools.stop_follow_up_rule,
+    FeedTools.tools.create_feed,
+    FeedTools.tools.update_feed,
+    FeedTools.tools.delete_feed,
+  ].map((tool) => tool.name)
 );
 
 // Every tool that changes something: each call that ran is kept in the
