@@ -25,7 +25,11 @@ const locale: Locale =
   process.env["PEAL_EMAILS_PREVIEW_LOCALE"] === "fr" ? "fr" : "en";
 
 // `previews/static` is a link to the assets, which the preview server serves.
-const letterhead: Letterhead = { assetsUrl: "/static", identity };
+// The line that says who sends is a sample, or PEAL_EMAILS_PREVIEW_IDENTITY.
+const letterhead: Letterhead = {
+  assetsUrl: "/static",
+  identity: process.env["PEAL_EMAILS_PREVIEW_IDENTITY"] ?? identity,
+};
 
 type Preview = () => ReactElement;
 

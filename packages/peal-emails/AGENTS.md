@@ -102,9 +102,10 @@ transport.
 ## Previews
 
 `bun nx run peal-emails:dev` shows every email that goes out at
-<http://localhost:4325>, in French with `PEAL_EMAILS_PREVIEW_LOCALE=fr`. That
-switch is for development alone: only `previews/` reads it, which no image
-ships, so it is the exception to listing every setting in the docs'
+<http://localhost:4325>, in French with `PEAL_EMAILS_PREVIEW_LOCALE=fr`, and
+with an operator's own line under the card with
+`PEAL_EMAILS_PREVIEW_IDENTITY`. Those switches are for development alone: only
+`previews/` reads them, which no image ships, so they are the exception to listing every setting in the docs'
 environment variables page. The preview lists files, so each email has its own under `previews/`; folders
 starting with `_` are left out. `previews/static` is a link to `src/assets`,
 which the preview server serves.
