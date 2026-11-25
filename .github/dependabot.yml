@@ -116,6 +116,12 @@ updates:
           - scheduler
           - "@types/react"
           - "@types/react-dom"
+      # The emails' components and their preview server are released
+      # together: the preview refuses another version of itself.
+      react-email:
+        patterns:
+          - react-email
+          - "@react-email/*"
       astro:
         patterns:
           - astro

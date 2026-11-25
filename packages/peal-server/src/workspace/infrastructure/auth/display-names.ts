@@ -18,7 +18,7 @@ import type { NameRefusal } from "#shared/domain/display-name.ts";
 // typed otherwise, with a code the web app's forms explain. A name a
 // sign-in provider gives is made fit instead (`fittedName`), so the
 // sign-in goes on. Emails leave out a name that still reads as an address
-// (`nameForMail`).
+// (peal-emails' `nameForMail`).
 
 /** The code a person's name that cannot be kept is refused with. */
 export const invalidNameCode = "INVALID_NAME";

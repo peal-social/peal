@@ -637,6 +637,64 @@ describe("server.Dockerfile", () => {
     ).toStrictEqual([]);
   });
 
+  // Bun runs the sources: a workspace package the server imports and the
+  // image lacks would stop the server as it starts, not the build.
+  it("ships every workspace package the server depends on", () => {
+    const { dependencies } = Schema.decodeUnknownSync(
+      Schema.fromJsonString(
+        Schema.Struct({
+          dependencies: Schema.Record(Schema.String, Schema.String),
+        })
+      )
+    )(read("..", "..", "peal-server", "package.json"));
+
+    const folders = Object.entries(dependencies)
+      .filter(([, version]) => version.startsWith("workspace:"))
+      .map(([name]) => `packages/${name}`);
+
+    const copies = instructionsOf(read("..", "server.Dockerfile"))("COPY");
+
+    const times = (copy: string): number =>
+      copies.filter((other) => other === copy).length;
+
+    expect(folders).not.toHaveLength(0);
+
+    expect(
+      folders.filter(
+        (folder) =>
+          // In each stage: to install it, then to resolve it.
+          times(`${folder}/package.json ${folder}/`) !== 2 ||
+          times(`${folder}/src ${folder}/src`) !== 1 ||
+          times(
+            `--from=dependencies /app/${folder}/node_modules ${folder}/node_modules`
+          ) !== 1
+      )
+    ).toStrictEqual([]);
+  });
+
+  // Bun reads the emails' TSX with the runtime their tsconfig.json names,
+  // which extends the workspace's.
+  it("ships the tsconfig the emails' templates are read with", () => {
+    const copies = instructionsOf(read("..", "server.Dockerfile"))("COPY");
+
+    const { compilerOptions, extends: base } = Schema.decodeUnknownSync(
+      Schema.fromJsonString(
+        Schema.Struct({
+          compilerOptions: Schema.Struct({ jsx: Schema.String }),
+          extends: Schema.String,
+        })
+      )
+    )(read("..", "..", "peal-emails", "tsconfig.json"));
+
+    expect(compilerOptions.jsx).toBe("react-jsx");
+    expect(base).toBe("../../tsconfig.base.json");
+
+    expect(copies).toContain(
+      "packages/peal-emails/tsconfig.json packages/peal-emails/"
+    );
+    expect(copies).toContain("tsconfig.base.json ./");
+  });
+
   it("ships ffprobe, which probes videos", () => {
     expect(
       instructionsOf(read("..", "server.Dockerfile"))("COPY").some((copy) =>

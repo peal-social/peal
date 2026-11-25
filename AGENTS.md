@@ -31,6 +31,8 @@ one per tool under `packages/peal-infra/`:
   `openapi.json` for the docs.
 - `peal-server`: the Effect server on Bun: the bounded contexts below, Better
   Auth, the MCP endpoint, and the cluster that runs durable jobs and crons.
+- `peal-emails`: the emails the server sends, with React Email: their words
+  in both languages, their templates and their previews, shipped as sources.
 - `peal-ui`: the design system, shipped as sources that apps compile:
   shadcn/ui's look (Nova style, lucide icons) on ui-sdk's behaviour, the
   Tailwind CSS v4 theme and the Geist fonts.
@@ -83,6 +85,8 @@ several:
 - [`packages/peal-ui/AGENTS.md`](packages/peal-ui/AGENTS.md): the design
   system, and the consent notice and measurement the site, the docs and
   the blog share.
+- [`packages/peal-emails/AGENTS.md`](packages/peal-emails/AGENTS.md): the
+  emails.
 - [`packages/peal-contract/AGENTS.md`](packages/peal-contract/AGENTS.md):
   the API contract, and how it may change.
 - [`packages/peal-cli/AGENTS.md`](packages/peal-cli/AGENTS.md): the command

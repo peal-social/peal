@@ -359,8 +359,6 @@
   "test/notifications/application/send-auth-email.test.ts": 5,
   "test/notifications/application/send-weekly-digests.test.ts": 3062,
   "test/notifications/domain/notices.test.ts": 8,
-  "test/notifications/domain/render-auth-email.test.ts": 9,
-  "test/notifications/domain/render-notice-email.test.ts": 11,
   "test/notifications/domain/weekly-digest.test.ts": 13,
   "test/notifications/infrastructure/digest-links.test.ts": 3,
   "test/notifications/infrastructure/mail-settings.test.ts": 2,

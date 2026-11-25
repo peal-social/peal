@@ -2,6 +2,7 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Fiber, Layer, Ref } from "effect";
 import { TestClock } from "effect/testing";
 
+import { EmailRenderer } from "#notifications/application/email-renderer.ts";
 import { MailDeliveryFailed } from "#notifications/application/mail-delivery-failed.ts";
 import { Mailer } from "#notifications/application/mailer.ts";
 import type { EmailMessage } from "#notifications/application/mailer.ts";
@@ -42,13 +43,31 @@ const verifyEmail = {
   url: "https://app.example.test/api/auth/verify-email?token=abc",
 } as const;
 
+// Says what it was asked to write, at once: the test's clock is not waited
+// on by anything but the retries.
+const toldRenderer = Layer.succeed(
+  EmailRenderer,
+  EmailRenderer.of({
+    account: ({ _tag, locale, url }) =>
+      Effect.succeed({
+        html: `<p>${url}</p>`,
+        subject: `${_tag} in ${locale}`,
+        text: url,
+      }),
+    notice: () => Effect.die(new Error("Not a notice")),
+    weeklyDigest: () => Effect.die(new Error("Not a digest")),
+  })
+);
+
 const sendWith = (layer: Layer.Layer<Mailer>) =>
   Effect.gen(function* send() {
     const fiber = yield* SendAuthEmail.use((emails) =>
       emails.send(verifyEmail)
     ).pipe(
       Effect.provide(
-        SendAuthEmail.layer.pipe(Layer.provide([layer, Ids.layerTest]))
+        SendAuthEmail.layer.pipe(
+          Layer.provide([layer, toldRenderer, Ids.layerTest])
+        )
       ),
       Effect.forkChild
     );
@@ -58,7 +77,7 @@ const sendWith = (layer: Layer.Layer<Mailer>) =>
   });
 
 describe(SendAuthEmail, () => {
-  it.effect("renders the email in its reader's language", () =>
+  it.effect("sends the email as it was rendered", () =>
     Effect.gen(function* renders() {
       const { attempts, layer } = yield* flakyMailer(0, true);
 
@@ -67,10 +86,9 @@ describe(SendAuthEmail, () => {
       const [sent] = yield* Ref.get(attempts);
 
       assert.strictEqual(sent?.to, "ada@example.test");
-      assert.strictEqual(
-        sent?.subject,
-        "Confirmez votre adresse e-mail pour Peal"
-      );
+      assert.strictEqual(sent?.subject, "VerifyEmail in fr");
+      assert.strictEqual(sent?.html, `<p>${verifyEmail.url}</p>`);
+      assert.strictEqual(sent?.text, verifyEmail.url);
     })
   );
 

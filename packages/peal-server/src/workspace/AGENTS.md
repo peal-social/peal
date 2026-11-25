@@ -228,7 +228,7 @@ The staff context follows these rules too. What the law has a host keep is in
   (`PartnerWorkspaces`, `InvalidWorkspaceDetails`). A sign-in provider's
   name is made fit instead (`fittedName` in `profileToUser`: the markers
   taken out), so the sign-in goes on. Emails are made safe where they are
-  built: the notifications context's renderers show a name through
+  written: `peal-emails` shows a name through its
   `nameForMail`, which puts the catalog's `withheldNames` ("A member", "a
   workspace") in place of one that reads as a host or an address by a
   broad test on its NFC form (`readsAsAddress`: the markers, `@`, a

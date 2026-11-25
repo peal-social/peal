@@ -10,6 +10,7 @@ import { DrizzleNoticeLog } from "#notifications/infrastructure/drizzle-notice-l
 import { DrizzleNoticeStore } from "#notifications/infrastructure/drizzle-notice-store.ts";
 import { DrizzlePreferenceStore } from "#notifications/infrastructure/drizzle-preference-store.ts";
 import { PublicAppLinks } from "#notifications/infrastructure/public-app-links.ts";
+import { ReactEmailRenderer } from "#notifications/infrastructure/react-email-renderer.ts";
 import { Ids } from "#shared/application/ids.ts";
 import { UserIdSchema } from "#shared/domain/ids.ts";
 import type { UserId } from "#shared/domain/ids.ts";
@@ -40,6 +41,7 @@ export const noticesWith = <ROut, E, R>(delivery: Layer.Layer<ROut, E, R>) =>
   ).pipe(
     Layer.provideMerge(
       Layer.mergeAll(
+        ReactEmailRenderer,
         DrizzleNoticeLog,
         DrizzleNoticeStore,
         DrizzlePreferenceStore,
