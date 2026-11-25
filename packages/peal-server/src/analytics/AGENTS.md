@@ -32,8 +32,8 @@
   `organizationalEntityShareStatistics`, one finder call for the posts
   asked, which needs `rw_organization_admin` and the page's ADMINISTRATOR:
   a profile's channel, and a page LinkedIn answers 403 for, are
-  `unsupported`. Clients say "LinkedIn pages" where they list the counted
-  platforms.
+  `unsupported`. The web post page says on a LinkedIn profile's row that
+  LinkedIn gives Peal no counts for a profile's posts.
 - Facebook Pages read a post in three calls with what Peal asks today
   (`shares`, the reactions edge's `summary=total_count`, the comments
   edge's summary with `filter=stream`), and its views and clicks
@@ -81,8 +81,9 @@
   The list is what Peal can read, not what a server does: the web post
   page (`PostMetrics`) takes the platforms counted from the server's
   capabilities (`GET …/channels/capabilities`, `analytics.perPost`:
-  `countedOn`), so X is named only where `X_ANALYTICS` is on, and falls
-  back on the list when it may not read them.
+  `countedOn`), so X is counted only where `X_ANALYTICS` is on. When it
+  may not read them, it promises no count, and says only the platforms
+  without a reader give none.
 - `CollectMetrics` runs on the `analytics.collect-metrics` cron, hourly at
   minute 7: a post is read every hour for 48 hours, then every day until it
   is 30 days old (`analytics/domain/collection-schedule.ts`), each next read

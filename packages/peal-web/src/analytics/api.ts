@@ -15,12 +15,20 @@ export interface SummaryRange {
   readonly to: CalendarDay;
 }
 
-/** A post's counts on each of its channels, over time. */
-export const postAnalytics = (workspaceId: string, postId: string) =>
+/**
+ * A post's counts on each of its channels, over time, read once for each
+ * state of its channels (`revision`, `channelsRevisionOf`): a channel
+ * going out, sent again or removed from its platform reads them again.
+ */
+export const postAnalytics = (
+  workspaceId: string,
+  postId: string,
+  revision: string
+) =>
   PealApi.query("analytics", "post", {
     headers: forWorkspace(workspaceId),
     params: { postId },
-    reactivityKeys: analyticsKeys,
+    reactivityKeys: [...analyticsKeys, `analytics:post:${postId}:${revision}`],
   });
 
 /**

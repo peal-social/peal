@@ -17,13 +17,24 @@ import { postFormatOf } from "peal-contract/post-text";
 export const postCountsWindow = Duration.days(postCountsReadForDays);
 
 /**
- * How long a post that went live waits for its first read. The server
- * reads a post first on the run after it went live (`firstCollection`,
- * peal-server's src/analytics/domain/collection-schedule.ts), and runs
- * every hour (`CollectMetricsCron`, src/analytics/infrastructure/crons.ts):
- * two hours leaves room for a run that came late.
+ * How long after it went live analytics starts following a post: the
+ * hourly collection (`CollectMetricsCron`, peal-server's
+ * src/analytics/infrastructure/crons.ts) picks up the posts that went live
+ * since its last run, so two hours leaves room for a run that came late.
+ * A post it does not follow by then, it never will.
  */
-export const firstReadWithin = Duration.hours(2);
+export const followedWithin = Duration.hours(2);
+
+/**
+ * How often the server reads a post near the end of its window: daily
+ * from its third day (`nextCollection`, peal-server's
+ * src/analytics/domain/collection-schedule.ts). A post last read longer
+ * than that before its window ended stopped for another reason.
+ */
+const lateRead = Duration.days(1);
+
+/** Why a channel present in the workspace is not read for now. */
+export type Pause = "disabled" | "refreshNeeded";
 
 /**
  * Why analytics no longer reads a post on a channel, as far as the page
@@ -35,14 +46,18 @@ export type EndReason = "window" | "removed" | "disconnected" | "other";
 
 /** What a channel's row says. */
 export type CountsState =
-  // Counts were read; `ended` says why they are read no more, if not.
+  // Counts were read; `ended` says why they are read no more, if not, and
+  // `paused` why the channel is not read for now.
   | {
       readonly _tag: "read";
       readonly ended: EndReason | undefined;
+      readonly paused: Pause | undefined;
       readonly tracked: TargetMetrics;
     }
-  // The post went live a moment ago: its first read is coming.
+  // Analytics follows the post, or may still: its counts show once read.
   | { readonly _tag: "toCome" }
+  // The channel is turned off or needs reconnecting: nothing is read.
+  | { readonly _tag: "paused"; readonly status: Pause }
   // Nothing read yet, and nothing promised.
   | { readonly _tag: "noneYet" }
   // Analytics stopped before reading anything.
@@ -84,7 +99,12 @@ const hasReaderFor = ({ connection, platform }: SocialChannel) =>
 
 const isRecent = (publishedAt: DateTime.Utc | null, now: DateTime.Utc) =>
   publishedAt !== null &&
-  Duration.isLessThan(DateTime.distance(publishedAt, now), firstReadWithin);
+  Duration.isLessThan(DateTime.distance(publishedAt, now), followedWithin);
+
+const pauseOf = (channel: SocialChannel | undefined): Pause | undefined =>
+  channel === undefined || channel.status._tag === "active"
+    ? undefined
+    : channel.status._tag;
 
 const endReasonOf = (
   tracked: TargetMetrics,
@@ -99,6 +119,19 @@ const endReasonOf = (
     DateTime.isLessThan(target.removedAt, windowEnd)
   ) {
     return "removed";
+  }
+
+  // A channel that left before the window's last reads ended them,
+  // however long ago.
+  const stoppedEarly =
+    tracked.lastCollectedAt === null ||
+    DateTime.isLessThan(
+      tracked.lastCollectedAt,
+      DateTime.subtractDuration(windowEnd, lateRead)
+    );
+
+  if (channel === undefined && stoppedEarly) {
+    return "disconnected";
   }
 
   if (DateTime.isGreaterThanOrEqualTo(now, windowEnd)) {
@@ -118,17 +151,19 @@ const trackedState = (
     ? undefined
     : endReasonOf(tracked, target, channel, now);
 
+  const paused = ended === undefined ? pauseOf(channel) : undefined;
+
   if (tracked.latest !== null) {
-    return { _tag: "read", ended, tracked };
+    return { _tag: "read", ended, paused, tracked };
   }
 
   if (ended !== undefined) {
     return { _tag: "ended", reason: ended };
   }
 
-  return isRecent(tracked.publishedAt, now)
+  return paused === undefined
     ? { _tag: "toCome" }
-    : { _tag: "noneYet" };
+    : { _tag: "paused", status: paused };
 };
 
 const untrackedState = (
@@ -137,6 +172,11 @@ const untrackedState = (
   counted: readonly Platform[] | undefined,
   now: DateTime.Utc
 ): CountsState => {
+  // Analytics never follows a post removed from its platform.
+  if (target.removedAt !== null) {
+    return { _tag: "ended", reason: "removed" };
+  }
+
   if (channel === undefined) {
     return { _tag: "none" };
   }
@@ -162,9 +202,15 @@ const untrackedState = (
     return { _tag: "uncounted", platform };
   }
 
-  return isRecent(target.publishedAt, now)
+  if (!isRecent(target.publishedAt, now)) {
+    return { _tag: "none" };
+  }
+
+  const paused = pauseOf(channel);
+
+  return paused === undefined
     ? { _tag: "toCome" }
-    : { _tag: "none" };
+    : { _tag: "paused", status: paused };
 };
 
 /**
@@ -201,6 +247,19 @@ export const countsRowsOf = ({
       },
     ];
   });
+
+/**
+ * What, of a post's channels, changes what analytics answers for it: each
+ * channel's status, its round and whether it was removed from its
+ * platform, as one string.
+ */
+export const channelsRevisionOf = (targets: readonly PostTarget[]): string =>
+  targets
+    .map(
+      ({ id, removedAt, round, status }) =>
+        `${id}:${status}:${String(round)}:${removedAt === null ? "" : DateTime.formatIso(removedAt)}`
+    )
+    .join(",");
 
 /**
  * Whether a target that went live is likely to show a chart once its

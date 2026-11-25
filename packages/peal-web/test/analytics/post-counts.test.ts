@@ -10,7 +10,7 @@ import type {
 
 import {
   countsRowsOf,
-  firstReadWithin,
+  followedWithin,
   postCountsWindow,
 } from "#analytics/post-counts.ts";
 
@@ -118,8 +118,29 @@ describe(countsRowsOf, () => {
     expect(rowOf(target("t1", "c1"), [read])).toStrictEqual({
       _tag: "read",
       ended: undefined,
+      paused: undefined,
       tracked: read,
     });
+  });
+
+  it("says a channel turned off or to reconnect is not read, beside what was", () => {
+    const read = tracked("t1", "c1", { latest: counts });
+    const off = channel("c1", "mastodon");
+
+    expect(
+      rowOf(
+        target("t1", "c1"),
+        [read],
+        [{ ...off, status: { _tag: "disabled", refreshNeeded: false } }]
+      )
+    ).toMatchObject({ paused: "disabled" });
+    expect(
+      rowOf(
+        target("t1", "c1"),
+        [read],
+        [{ ...off, status: { _tag: "refreshNeeded" } }]
+      )
+    ).toMatchObject({ paused: "refreshNeeded" });
   });
 
   it("names the 30 days only for a post older than them", () => {
@@ -167,6 +188,46 @@ describe(countsRowsOf, () => {
     });
   });
 
+  it("keeps a channel's leaving as the reason once the post is past its window", () => {
+    // Read last on its 10th day, then its channel left: 45 days on, the
+    // reason is still the channel.
+    const gone = tracked("t1", "c1", {
+      collecting: false,
+      lastCollectedAt: ago(Duration.days(35)),
+      latest: counts,
+      publishedAt: ago(Duration.days(45)),
+    });
+
+    expect(rowOf(target("t1", "c1"), [gone], [])).toMatchObject({
+      ended: "disconnected",
+    });
+
+    // Read to its last day, then the channel left: its window ended it.
+    const done = tracked("t1", "c1", {
+      collecting: false,
+      lastCollectedAt: ago(Duration.days(15)),
+      latest: counts,
+      publishedAt: ago(Duration.days(45)),
+    });
+
+    expect(rowOf(target("t1", "c1"), [done], [])).toMatchObject({
+      ended: "window",
+    });
+  });
+
+  it("says a post removed in its first hour is no longer read, never that counts are coming", () => {
+    // Analytics never follows a post removed before its first read.
+    expect(
+      rowOf(
+        target("t1", "c1", {
+          publishedAt: ago(Duration.minutes(30)),
+          removedAt: ago(Duration.minutes(10)),
+        }),
+        []
+      )
+    ).toStrictEqual({ _tag: "ended", reason: "removed" });
+  });
+
   it("says no longer read, and promises nothing, when the reads ended before the first", () => {
     const ended = tracked("t1", "c1", {
       collecting: false,
@@ -180,30 +241,50 @@ describe(countsRowsOf, () => {
     ).toStrictEqual({ _tag: "ended", reason: "removed" });
   });
 
-  it("says counts come while the post is fresh, and not after", () => {
+  it("says counts show once read, while analytics follows the post or may still", () => {
     const fresh = target("t1", "c1", {
       publishedAt: ago(Duration.minutes(10)),
     });
 
     expect(rowOf(fresh, [])).toStrictEqual({ _tag: "toCome" });
-    expect(
-      rowOf(fresh, [
-        tracked("t1", "c1", { publishedAt: ago(Duration.minutes(10)) }),
-      ])
-    ).toStrictEqual({ _tag: "toCome" });
 
     const late = target("t1", "c1", {
       publishedAt: DateTime.subtractDuration(
-        ago(firstReadWithin),
+        ago(followedWithin),
         Duration.minutes(1)
       ),
     });
 
     // Analytics never followed it: it never will.
     expect(rowOf(late, [])).toStrictEqual({ _tag: "none" });
-    // Followed, and not read yet: the next run may still.
+    // Followed and not read yet, however long since: no time is promised.
     expect(rowOf(late, [tracked("t1", "c1")])).toStrictEqual({
-      _tag: "noneYet",
+      _tag: "toCome",
+    });
+  });
+
+  it("says a channel turned off or to reconnect is not read, rather than counts to come", () => {
+    const fresh = target("t1", "c1", {
+      publishedAt: ago(Duration.minutes(10)),
+    });
+
+    const off: SocialChannel = {
+      ...mastodon,
+      status: { _tag: "disabled", refreshNeeded: true },
+    };
+
+    const toReconnect: SocialChannel = {
+      ...mastodon,
+      status: { _tag: "refreshNeeded" },
+    };
+
+    expect(rowOf(fresh, [], [off])).toStrictEqual({
+      _tag: "paused",
+      status: "disabled",
+    });
+    expect(rowOf(fresh, [tracked("t1", "c1")], [toReconnect])).toStrictEqual({
+      _tag: "paused",
+      status: "refreshNeeded",
     });
   });
 

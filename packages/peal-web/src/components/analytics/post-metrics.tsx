@@ -15,10 +15,13 @@ import type {
 } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
-import { useEffect, useRef } from "react";
 
 import { platformCapabilities, postAnalytics } from "#analytics/api.ts";
-import { countsRowsOf, likelyCharted } from "#analytics/post-counts.ts";
+import {
+  channelsRevisionOf,
+  countsRowsOf,
+  likelyCharted,
+} from "#analytics/post-counts.ts";
 import type { CountsRow, EndReason } from "#analytics/post-counts.ts";
 import { MetricList } from "#components/analytics/metric-list.tsx";
 import { ReadingsChart } from "#components/analytics/readings-chart.tsx";
@@ -63,7 +66,6 @@ const CountsRowView = ({
 }) => {
   const t = useTranslations("Analytics");
   const tPosts = useTranslations("Posts");
-  const tFormats = useTranslations("Posts.Formats");
   const format = useFormatter();
   const { state } = row;
   const name = channelName(row.channelId);
@@ -71,35 +73,34 @@ const CountsRowView = ({
   const endedText = (reason: EndReason) =>
     t("post.ended", { days: postCountsReadForDays, reason });
 
-  const aside = (() => {
-    if (state._tag === "read") {
-      return state.tracked.lastCollectedAt === null
-        ? null
-        : t("post.readAt", {
-            at: format.dateTime(
-              DateTime.toDate(state.tracked.lastCollectedAt),
-              { dateStyle: "medium", timeStyle: "short" }
-            ),
-          });
-    }
-
-    return state._tag === "toCome" || state._tag === "noneYet"
-      ? t("post.notRead")
+  const aside =
+    state._tag === "read" && state.tracked.lastCollectedAt !== null
+      ? t("post.readAt", {
+          at: format.dateTime(DateTime.toDate(state.tracked.lastCollectedAt), {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }),
+        })
       : null;
-  })();
 
   // The row's one line of words, if it has one.
   const note = (() => {
     if (state._tag === "read") {
-      return state.ended === undefined ? null : endedText(state.ended);
+      if (state.ended !== undefined) {
+        return endedText(state.ended);
+      }
+
+      return state.paused === undefined
+        ? null
+        : t("post.paused", { status: state.paused });
     }
 
     if (state._tag === "ended") {
       return endedText(state.reason);
     }
 
-    if (state._tag === "story") {
-      return tFormats("storiesExpire");
+    if (state._tag === "paused") {
+      return t("post.paused", { status: state.status });
     }
 
     if (state._tag === "uncounted") {
@@ -200,20 +201,10 @@ interface PostMetricsProps {
   readonly workspaceId: string;
 }
 
-// What changes the counts' answer, written as one string: a channel going out, sent again or
-// removed from its platform.
-const targetsStateOf = (post: Post) =>
-  post.targets
-    .map(
-      ({ id, removedAt, round, status }) =>
-        `${id}:${status}:${String(round)}:${removedAt === null ? "" : DateTime.formatIso(removedAt)}`
-    )
-    .join(",");
-
 /**
  * The post's analytics, on its page, once it went live on a channel. It
  * renders in the browser, in the reader's time zone, and reads the counts
- * again whenever the post's channels change.
+ * again whenever the post's channels change (`channelsRevisionOf`).
  */
 export const PostMetrics = ({
   channelName,
@@ -222,7 +213,13 @@ export const PostMetrics = ({
   workspaceId,
 }: PostMetricsProps) => {
   const t = useTranslations("Analytics");
-  const query = postAnalytics(workspaceId, post.id);
+
+  const query = postAnalytics(
+    workspaceId,
+    post.id,
+    channelsRevisionOf(post.targets)
+  );
+
   const result = useAtomValue(query);
   const retry = useAtomRefresh(query);
   const now = DateTime.nowUnsafe();
@@ -230,16 +227,6 @@ export const PostMetrics = ({
   // Which platforms this server counts: its capabilities say, X included
   // only where the operator turned its reads on.
   const capabilities = useAtomValue(platformCapabilities(workspaceId));
-
-  const targetsState = targetsStateOf(post);
-  const shown = useRef(targetsState);
-
-  useEffect(() => {
-    if (shown.current !== targetsState) {
-      shown.current = targetsState;
-      retry();
-    }
-  }, [retry, targetsState]);
 
   const body = (() => {
     if (AsyncResult.isFailure(result)) {

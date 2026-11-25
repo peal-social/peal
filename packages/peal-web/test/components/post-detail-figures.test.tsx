@@ -16,6 +16,7 @@ import type {
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { platformCapabilities, postAnalytics } from "#analytics/api.ts";
+import { channelsRevisionOf } from "#analytics/post-counts.ts";
 import { PostDetail } from "#components/posts/post-detail.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 import { postAttempts } from "#posts/api.ts";
@@ -186,11 +187,17 @@ const render = async ({
   capabilities = AsyncResult.success(
     capabilitiesOf(["mastodon", "bluesky", "linkedin"])
   ),
+  earlier,
   locale = "en",
   permissions = everyRole,
   post,
 }: {
   readonly analytics?: AsyncResult.AsyncResult<PostAnalytics, unknown>;
+  /** What was answered for the post as it was before, if anything. */
+  readonly earlier?: {
+    readonly analytics: AsyncResult.AsyncResult<PostAnalytics, unknown>;
+    readonly post: Post;
+  };
   readonly capabilities?: AsyncResult.AsyncResult<unknown, unknown>;
   readonly locale?: "en" | "fr";
   readonly permissions?: readonly Permission[];
@@ -200,7 +207,22 @@ const render = async ({
     // Everything the page reads, already answered, so nothing is fetched.
     <RegistryProvider
       initialValues={[
-        [postAnalytics(workspaceId, postId), analytics],
+        [
+          postAnalytics(workspaceId, postId, channelsRevisionOf(post.targets)),
+          analytics,
+        ],
+        ...(earlier === undefined
+          ? []
+          : [
+              [
+                postAnalytics(
+                  workspaceId,
+                  postId,
+                  channelsRevisionOf(earlier.post.targets)
+                ),
+                earlier.analytics,
+              ] as const,
+            ]),
         [platformCapabilities(workspaceId), capabilities],
         [postAttempts(workspaceId, postId), AsyncResult.success([])],
         [workspaceTags(workspaceId), AsyncResult.success([])],
@@ -272,9 +294,7 @@ describe(PostDetail, () => {
     );
 
     expect(figures).toContain(">fieldnotes.bsky.example on Bluesky</h3>");
-    expect(figures).toContain(
-      "Counts come within the hour after the post goes live."
-    );
+    expect(figures).toContain("Counts show here once Peal reads them.");
     expect(figures).not.toContain("30 days");
   });
 
@@ -388,7 +408,41 @@ describe(PostDetail, () => {
     );
 
     expect(figures).toContain("No counts have been read yet.");
-    expect(figures).not.toContain("within the hour");
+    expect(figures).not.toContain("once Peal reads them");
+  });
+
+  it("reads the counts again once a channel changes, never showing the ones read before", async () => {
+    const removed = postOn(
+      [
+        {
+          ...published(read.targetId, mastodon.id),
+          removedAt: ago(Duration.minutes(1)),
+        },
+      ],
+      "published"
+    );
+
+    // Read while the post was live, then again after Unpublish: the page
+    // shows the second answer, never the first.
+    const figures = figuresOf(
+      await render({
+        analytics: AsyncResult.success({
+          postId,
+          targets: [
+            { ...read, collecting: false, latest: { ...metrics, likes: 43 } },
+          ],
+        }),
+        earlier: {
+          analytics: AsyncResult.success({ postId, targets: [read] }),
+          post: onMastodon,
+        },
+        post: removed,
+      })
+    );
+
+    expect(figures).toContain(">43<");
+    expect(figures).not.toContain(">42<");
+    expect(figures).toContain("The post was removed from the platform.");
   });
 
   it("shows them in the reader's language", async () => {

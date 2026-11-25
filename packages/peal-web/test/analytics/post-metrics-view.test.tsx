@@ -107,10 +107,12 @@ const read = (fields: Partial<TargetMetrics> = {}): TargetMetrics => ({
 const render = async (
   {
     analytics,
+    channels = [mastodon, bluesky, profile, instagram, x],
     counted = ["mastodon", "bluesky", "instagram", "linkedin"],
     targets,
   }: {
     readonly analytics: PostAnalytics;
+    readonly channels?: readonly SocialChannel[];
     // `unknown`: the server's capabilities could not be read.
     readonly counted?: readonly Platform[] | "unknown";
     readonly targets: readonly PostTarget[];
@@ -126,7 +128,7 @@ const render = async (
       <PostMetricsView
         analytics={analytics}
         channelName={named}
-        channels={[mastodon, bluesky, profile, instagram, x]}
+        channels={channels}
         counted={counted === "unknown" ? undefined : counted}
         now={now}
         targets={targets}
@@ -219,11 +221,49 @@ describe(PostMetricsView, () => {
     });
 
     expect(html).toContain("No longer read.");
-    expect(html).not.toContain("within the hour");
-    expect(html).not.toContain("Not read yet");
+    expect(html).not.toContain("once Peal reads them");
   });
 
-  it("says counts come within the hour on a channel just published, without the 30 days or a list", async () => {
+  it("says a post removed before analytics followed it is no longer read", async () => {
+    const html = await render({
+      analytics: followed([]),
+      targets: [
+        target("t2", "c2", {
+          publishedAt: ago(Duration.minutes(30)),
+          removedAt: ago(Duration.minutes(10)),
+        }),
+      ],
+    });
+
+    expect(html).toContain(
+      "No longer read. The post was removed from the platform."
+    );
+    expect(html).not.toContain("once Peal reads them");
+  });
+
+  it("says a channel turned off or to reconnect is not read, as its card names it", async () => {
+    const html = await render({
+      analytics: followed([]),
+      channels: [
+        { ...bluesky, status: { _tag: "disabled", refreshNeeded: false } },
+        { ...mastodon, status: { _tag: "refreshNeeded" } },
+      ],
+      targets: [
+        target("t2", "c2", { publishedAt: ago(Duration.minutes(5)) }),
+        target("t1", "c1", { publishedAt: ago(Duration.minutes(5)) }),
+      ],
+    });
+
+    expect(html).toContain(
+      "Peal reads no counts while this channel is turned off."
+    );
+    expect(html).toContain(
+      "Peal reads no counts while this channel needs reconnecting."
+    );
+    expect(html).not.toContain("once Peal reads them");
+  });
+
+  it("says counts show once read on a channel just published, with no time, the 30 days or a list", async () => {
     const html = await render({
       analytics: followed([read()]),
       targets: [
@@ -233,10 +273,8 @@ describe(PostMetricsView, () => {
     });
 
     expect(html).toContain(">alice.bsky.test on bluesky</h3>");
-    expect(html).toContain("Not read yet");
-    expect(html).toContain(
-      "Counts come within the hour after the post goes live."
-    );
+    expect(html).toContain("Counts show here once Peal reads them.");
+    expect(html).not.toContain("hour");
     expect(html).not.toContain("30 days");
     expect(html).not.toContain("TikTok");
   });
@@ -248,7 +286,7 @@ describe(PostMetricsView, () => {
     });
 
     expect(html).toContain("Peal has no counts for this post on this channel.");
-    expect(html).not.toContain("within the hour");
+    expect(html).not.toContain("once Peal reads them");
   });
 
   it("says on its own row that a LinkedIn profile gives no counts", async () => {
@@ -285,10 +323,10 @@ describe(PostMetricsView, () => {
       ],
     });
 
-    expect(html).toContain(
-      "Stories disappear after 24 hours and have no statistics in Peal."
-    );
-    expect(html).not.toContain("within the hour");
+    // The channel's card says stories disappear: the row does not repeat it.
+    expect(html).toContain("Peal has no counts for stories.");
+    expect(html).not.toContain("Stories disappear");
+    expect(html).not.toContain("once Peal reads them");
   });
 
   it("promises no count when the server's capabilities could not be read", async () => {
@@ -299,7 +337,8 @@ describe(PostMetricsView, () => {
     });
 
     expect(html).toContain("No counts have been read yet.");
-    expect(html).not.toContain("within the hour");
+    expect(html).not.toContain("once Peal reads them");
+    expect(html).not.toContain("Not read yet");
   });
 
   it("shows nothing of a channel the post did not go out on", async () => {

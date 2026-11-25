@@ -787,12 +787,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   live nowhere. Each channel the post went out on is a row, named as its
   card is (`channelNamed`), whose state is `countsRowsOf`
   (`#analytics/post-counts.ts`, tested): its counts and when they were
-  read, or why there are none. Counts are promised only within
-  `firstReadWithin` of going live, never on a story; why reads ended
+  read, or why there are none. It promises no time: a channel analytics
+  follows, or may still follow (`followedWithin` of going live), says its
+  counts show once read, or that a channel turned off or to reconnect is
+  not read; a post removed from its platform, and a story, are never
+  read. Why reads ended
   comes from what the page holds (the window, `removedAt`, a channel
   gone), as the contract says only that they did. The readings chart
   draws its lines in colours of 3:1 or more, three of them dashed
-  (`readingLines`), never lavender or yellow. It names the platforms this server counts
+  (`readingLines`), never lavender or yellow, and marks days, or hours
+  with the day where it changes, on its time axis (`readingTicksOf`).
+  The counts are read once for each state of the post's channels
+  (`postAnalytics`' `revision`, `channelsRevisionOf`), so Unpublish or
+  Post again reads them again. It names the platforms this server counts
   from its capabilities (`GET …/channels/capabilities`,
   `analytics.perPost`: `countedOn`), never from the contract's
   `countedPlatforms` alone: X is counted only where `X_ANALYTICS` is on.
