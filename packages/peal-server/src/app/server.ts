@@ -34,6 +34,7 @@ import { HostedConnectLive } from "#app/connect-links/live.ts";
 import { ContractRequestsLive } from "#app/contract-requests/live.ts";
 import { CronsLive } from "#app/crons.ts";
 import { DiscoveryLive } from "#app/discovery/live.ts";
+import { EmailAssetsLive } from "#app/email-assets/route.ts";
 import { McpLive } from "#app/mcp/server.ts";
 import { MeterErrorsLive } from "#app/meter-errors/route.ts";
 import { ObservabilityLive } from "#app/observability.ts";
@@ -272,6 +273,7 @@ export const RoutesLive = Layer.mergeAll(
   RedactedQueryLive,
   SecretPathsLive,
   DigestUnsubscribeLive,
+  EmailAssetsLive,
   MeterErrorsLive,
   PlatformEventsLive,
   ApiAnswersLive

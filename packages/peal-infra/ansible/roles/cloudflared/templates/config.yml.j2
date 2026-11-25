@@ -23,8 +23,9 @@ ingress:
   - {hostname: {{ peal_hostnames.ssh }}, service: "ssh://127.0.0.1:22", originRequest: {access: {required: true, teamName: {{ team }}, audTag: [{{ cloudflare_access_aud.ssh }}]}}}
 {% if peal_access_everything %}
 
-  # Behind Access throughout, but for what outside services call and the web
-  # app's error reports, which carry no credentials.
+  # Behind Access throughout, but for what outside services call, the web
+  # app's error reports and the pictures emails show, which carry no
+  # credentials.
 {% for route in peal_access_bypass_paths %}
   - {hostname: {{ peal_hostnames.app }}, path: '{{ route.path }}', service: "{{ services[route.to] }}"}
 {% endfor %}

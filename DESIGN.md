@@ -348,6 +348,23 @@ components:
     typography: "{typography.mono}"
     rounded: "{rounded.lg}"
     padding: 16px
+  email-card:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.lg}"
+    padding: 32px
+    width: 600px
+  email-button:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    rounded: "{rounded.md}"
+    padding: 12px 20px
+    height: 44px
+  email-callout:
+    backgroundColor: "{colors.surface-2}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.md}"
+    padding: 12px 16px
 ---
 
 # Peal design
@@ -1937,7 +1954,55 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   over the pixel glow, and no other art: the turning cube it once held is
   gone. Pixel art stays in the menu previews, the section openers, the
   FAQ, the feature tiles, the consent notice, and the pixel glow of the
-  hero and the closing band.
+  hero and the closing band. Outside the site, the same glow is in the
+  header and the foot of Peal's emails (see [Email](#email)).
+
+## Email
+
+The emails Peal sends (`packages/peal-emails`) are letters on the same
+tokens: a white card (`{colors.surface-1}`, 1 px `{colors.hairline}`,
+`{rounded.lg}`), 600 px wide at most, on `{colors.canvas}`, in one column
+with 32 px of gutter, 20 px on a phone.
+
+- **Light only**, and the email says so (`color-scheme: light only`). Some
+  mail clients darken it anyway, so it stays legible there: no text in an
+  image, no image with a background of its own, and the name as text.
+- **Type.** An email loads no font. It asks for Geist, which a reader may
+  have, then the system's sans, and the same for mono. The subject is the
+  one heading (`{typography.headline}`). The weekly digest, whose subject
+  carries two dates, heads itself "Your week on Peal". The body is 16 px
+  on 24 px, as `{typography.subhead}` is on a phone; the fine print is
+  `{typography.body}`, muted; the line under the card is
+  `{typography.caption}`.
+- **Header.** The mark (28 px) and "Peal" (18 px, 600) are on the left. On
+  the right, flush with the card's top right corner, is the right half of
+  the pixel glow in its hero layout, 300 by 90 px.
+- **Button** (`email-button`). One per email, in ink, with
+  `{colors.on-primary}` words at 16 px, 500. It is 44 px high, a touch
+  target on its own. Its address is written out under it as a link.
+- **Callout** (`email-callout`). What an email sets apart from its body,
+  500, on `{colors.surface-2}`.
+- **Links** are `{colors.brand-text}` and underlined. In the fine print
+  they stay muted.
+- **Digest.** Each workspace has a bordered block (`{rounded.md}`): its
+  name (18 px, 600), its counts on a line each, then its posts between
+  hairlines, the time in muted mono over the start of the text, under an
+  `{typography.eyebrow}`. A count starts with the dot of the state its
+  posts are in (see [States](#states)); posts to check on their platform
+  take Draft's grey.
+- **Foot.** Under a hairline, muted: why the email came, and who signs it.
+  The pixel glow in its band layout, 80 px high, closes the card. Where
+  the server states who sends, that is one muted line under the card, on
+  the canvas.
+- **Motion.** The header's glow moves in three emails: the weekly digest,
+  an address's confirmation and an invitation. It twinkles as the site's
+  does, once, for 4.8 s, a frame every 130 ms, and ends on the still it
+  started from. Every other email has the same art, still, and so has
+  every foot. A mail client that reports reduced motion shows the still.
+- **Images.** All decoration: the mark, the header's glow and the foot's.
+  An email whose header moves loads a fourth, the still behind it. Every
+  reader gets the same files from the same addresses, which carry nothing
+  about the reader, and nothing of the email but whether its header moves.
 
 ## Writing
 

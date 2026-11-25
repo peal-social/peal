@@ -189,6 +189,42 @@ describe("the sandbox at Cloudflare", () => {
     ]);
   });
 
+  it("lets the emails' pictures through, at their one path alone", async () => {
+    await valueOf(pulumi.output(result.accessAud));
+
+    const applications = ofType(
+      "cloudflare:index/zeroTrustAccessApplication:ZeroTrustAccessApplication"
+    );
+
+    const pictures = applications.find(
+      (application) => application.name === "access-email-assets"
+    );
+
+    // Mail services fetch them without signing in: the Bypass policy alone,
+    // on the app's host name and that path alone.
+    expect(pictures?.inputs).toStrictEqual({
+      accountId: "account-synthetic",
+      destinations: [
+        { type: "public", uri: "sandbox.example.test/api/email-assets" },
+      ],
+      domain: "sandbox.example.test/api/email-assets",
+      name: "Peal sandbox email assets",
+      policies: [{ id: "callbacks-policy", precedence: 1 }],
+      sessionDuration: "24h",
+      type: "self_hosted",
+    });
+
+    const naming = applications.filter((application) =>
+      input(application, "destinations", DestinationsSchema).some(
+        (destination) => destination.uri.includes("email-assets")
+      )
+    );
+
+    expect(naming.map((application) => application.name)).toStrictEqual([
+      "access-email-assets",
+    ]);
+  });
+
   it("lets the uptime server's checks into the app, the site and the docs alone", async () => {
     await valueOf(pulumi.output(result.accessAud));
 

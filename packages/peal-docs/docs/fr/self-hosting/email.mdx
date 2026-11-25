@@ -16,6 +16,7 @@ Voici les réglages que lit Peal :
 | `MAIL_FROM`                       | Oui           | L’expéditeur, comme `Peal <noreply@example.com>` ou une adresse depuis laquelle votre service de messagerie peut envoyer                                         |
 | `RESEND_API_KEY`                  | L’un des deux | Envoie par l’API de Resend                                                                                                                                       |
 | `SMTP_URL`                        | L’un des deux | Utilisé sans `RESEND_API_KEY`. Un serveur SMTP, comme `smtp://utilisateur:motdepasse@mail.example.com:587`, ou `smtps://…:465` pour du TLS dès le premier octet. |
+| `PEAL_MAIL_IDENTITY`              | Non           | Dit qui envoie, sur une ligne sous chaque e-mail ([Dire qui envoie](#identity))                                                                                  |
 | `AUTH_REQUIRE_EMAIL_VERIFICATION` | Non           | Avec `false`, les gens peuvent se connecter avant d’avoir confirmé leur adresse                                                                                  |
 
 [Variables d’environnement](/self-hosting/environment-variables#email) donne leurs valeurs par défaut, avec `AUTH_REQUIRE_EMAIL_VERIFICATION` sous [Connexion](/self-hosting/environment-variables#sign-in).
@@ -30,3 +31,21 @@ Peal envoie ces e-mails, chacun dans la langue du lecteur :
 - Les [notifications](/guides/workspace/notifications) sur les publications et les canaux. Les membres choisissent lesquelles leur arrivent aussi par e-mail.
 
 Il arrive que le service de messagerie refuse un e-mail pour le moment. Peal réessaie alors un e-mail de compte trois fois, en quatre secondes environ, puis l’abandonne, car la personne peut en demander un autre. Il réessaie l’e-mail d’une notification pendant environ cinq heures.
+
+## Dire qui envoie [#identity]
+
+La loi de votre pays peut demander à une société de se nommer dans ses e-mails. Donnez à `PEAL_MAIL_IDENTITY` la ligne de votre choix, et Peal la place sous chaque e-mail et à la fin de sa version texte :
+
+```sh
+PEAL_MAIL_IDENTITY=Example SAS, 1 Example Street, Example City
+```
+
+La ligne est la même dans toutes les langues, et vous ne l’écrivez donc qu’une fois. Elle compte 300 caractères au plus. Sans ce réglage, vos e-mails n’ont pas cette ligne.
+
+## Laisser les messageries charger les images [#images]
+
+Chaque e-mail affiche la marque de Peal et deux décors. Ils viennent de votre propre serveur, sous `<PUBLIC_URL>/api/email-assets/`, et jamais de celui de Peal.
+
+La plupart des messageries vont chercher les images par leur propre proxy. `PUBLIC_URL` doit donc répondre depuis internet, sans connexion demandée devant ce chemin. Sinon, vos lecteurs voient le nom « Peal » en texte et le reste de l’e-mail tel quel.
+
+Les images ont les mêmes adresses pour chaque lecteur, sans rien après le nom. Le récapitulatif hebdomadaire, l’e-mail qui confirme une adresse et les invitations chargent en plus un décor qui bouge. Peal ne trace pas ces requêtes, et son journal garde leur chemin sans l’adresse IP du lecteur. Votre propre proxy peut en garder plus.

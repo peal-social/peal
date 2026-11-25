@@ -723,6 +723,7 @@ export const french: EmailCatalog = {
     plannedHeading: "Prévues",
     preferences: "vos préférences de notification",
     subject: "Votre semaine sur Peal : du {from} au {to}",
+    title: "Votre semaine sur Peal",
     wentOutHeading: "Parties",
   },
   withinFreePlan:
