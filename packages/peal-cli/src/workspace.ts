@@ -1,6 +1,10 @@
 import { Config, Effect, Option, Schema } from "effect";
 import { Flag } from "effect/cli";
-import type { Membership } from "peal-contract";
+import type {
+  Credential,
+  CredentialWorkspace,
+  Membership,
+} from "peal-contract";
 
 import { apiKey, apiKeyVariable } from "#api-key.ts";
 import { PealApi } from "#api.ts";
@@ -15,7 +19,7 @@ import { SignInExpired } from "#sign-in-expired.ts";
 export const workspaceFlag = Flag.String("workspace").pipe(
   Flag.withAlias("w"),
   Flag.withDescription(
-    "The workspace to act in, by its slug or id. Defaults to PEAL_WORKSPACE, then to your only workspace. With an API key in PEAL_API_KEY, it must be the workspace's id."
+    "The workspace to act in, by its slug or id. Defaults to PEAL_WORKSPACE, then to your only workspace. With an API key in PEAL_API_KEY, give the workspace's id, or leave it out to act in the key's own workspace."
   ),
   Flag.withMetavar("<slug>"),
   Flag.withFallbackConfig(Config.String("PEAL_WORKSPACE")),
@@ -61,33 +65,75 @@ const isUuid = Schema.is(Schema.String.check(Schema.isUUID()));
 /** Whether a value has the shape of a workspace's id. */
 export const isWorkspaceId = (value: string): boolean => isUuid(value);
 
-/** Where a person finds a workspace's id. */
-export const whereTheIdIs =
-  "peal whoami, signed in as a person, lists it, as GET /api/me does.";
-
-// A key is nobody: it cannot read whose workspaces these are, so the
-// workspace is known by its id alone, which stands for its name.
-const keyWorkspace = (
+/**
+ * The workspace a run names: a blank value, as an unset variable in a
+ * script gives, names none, as a blank `Peal-Workspace` does.
+ */
+export const namedWorkspace = (
   choice: Option.Option<string>
+): Option.Option<string> =>
+  choice.pipe(Option.filter((value) => value.trim() !== ""));
+
+/** What a key run that names a workspace by its slug is told. */
+export const keyTakesAnId = (wanted: string) =>
+  `With an API key (${apiKeyVariable}), --workspace and PEAL_WORKSPACE take the workspace's id, not its slug (${wanted}): a key cannot look workspaces up. Leave it out to act in the key's own workspace.`;
+
+/** What a partner key's run that names no workspace is told. */
+export const partnerKeyNamesOne = `A partner key belongs to no workspace: name one of its partner's workspaces by its id, with --workspace or PEAL_WORKSPACE. GET /api/v1/partner/workspaces lists them.`;
+
+/** What a token's run that names no workspace is told, when it has none. */
+export const tokenNamesOne = `The token in ${apiKeyVariable} belongs to no workspace: name one by its id, with --workspace or PEAL_WORKSPACE.`;
+
+/**
+ * The workspace a credential belongs to, which the server acts in when a
+ * request names none: a workspace's own key's, or the one an
+ * application's token is bound to. A partner key belongs to none.
+ */
+export const ownWorkspaceOf = (
+  credential: Credential
+): Option.Option<CredentialWorkspace> => {
+  if (credential._tag === "apiKey") {
+    return Option.some(credential.workspace);
+  }
+
+  const binding =
+    credential._tag === "user" ? credential.application?.binding : undefined;
+
+  return binding?._tag === "bound"
+    ? Option.some({ id: binding.id, name: binding.name })
+    : Option.none();
+};
+
+// The workspace a key acts in when the run names none, as the credential
+// check names it.
+const ownWorkspace = (
+  credential: Credential
 ): Effect.Effect<Workspace, Refused> =>
-  Option.match(choice, {
+  Option.match(ownWorkspaceOf(credential), {
     onNone: () =>
       Effect.fail(
         new Refused({
           code: "workspace_id_required",
-          reason: `With an API key (${apiKeyVariable}), name the workspace by its id, with --workspace or PEAL_WORKSPACE: a key cannot look workspaces up. ${whereTheIdIs}`,
+          reason:
+            credential._tag === "partnerKey"
+              ? partnerKeyNamesOne
+              : tokenNamesOne,
         })
       ),
-    onSome: (wanted) =>
-      isWorkspaceId(wanted)
-        ? Effect.succeed({ id: wanted, name: wanted, slug: wanted })
-        : Effect.fail(
-            new Refused({
-              code: "workspace_id_required",
-              reason: `With an API key (${apiKeyVariable}), --workspace and PEAL_WORKSPACE take the workspace's id, not its slug (${wanted}): a key cannot look workspaces up. ${whereTheIdIs}`,
-            })
-          ),
+    onSome: ({ id, name }) => Effect.succeed({ id, name, slug: id }),
   });
+
+// A key is nobody: it cannot read whose workspaces these are, so a
+// workspace it names is known by its id alone, which stands for its name.
+const keyWorkspace = (wanted: string): Effect.Effect<Workspace, Refused> =>
+  isWorkspaceId(wanted)
+    ? Effect.succeed({ id: wanted, name: wanted, slug: wanted })
+    : Effect.fail(
+        new Refused({
+          code: "workspace_id_required",
+          reason: keyTakesAnId(wanted),
+        })
+      );
 
 const pick = (
   workspaces: readonly Membership[],
@@ -132,7 +178,9 @@ const pick = (
 /**
  * The signed-in client, and the workspace a command acts in: the one the
  * user named, by slug or id, or their only one. With an API key, the one
- * whose id was given. The client names that workspace on every request
+ * whose id was given, or else the key's own, which the credential check
+ * names, and which the server acts in when a request names none. The
+ * client names a workspace it was given on every request
  * (`Peal-Workspace`), which the workspace's endpoints act in.
  */
 export const inWorkspace = (choice: Option.Option<string>) =>
@@ -140,9 +188,19 @@ export const inWorkspace = (choice: Option.Option<string>) =>
     const { bound, client, url, withKey } = yield* signedIn;
 
     if (withKey) {
-      const workspace = yield* keyWorkspace(choice);
+      const wanted = namedWorkspace(choice);
 
-      return { client: yield* bound(workspace.id), url, workspace };
+      if (Option.isSome(wanted)) {
+        const workspace = yield* keyWorkspace(wanted.value);
+
+        return { client: yield* bound(workspace.id), url, workspace };
+      }
+
+      const workspace = yield* client.credential
+        .get()
+        .pipe(Effect.mapError(explain(url)), Effect.flatMap(ownWorkspace));
+
+      return { client, url, workspace };
     }
 
     const me = yield* client.me.get().pipe(

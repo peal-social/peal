@@ -230,6 +230,9 @@ export const studioId = "5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60";
 
 export const shopId = "6c1d7f75-6e1a-4b8f-8b63-4a2d3e5f6071";
 
+/** A customer workspace of the studio's partner account. */
+export const customerId = "8e3f9a97-8a3c-4dab-8d85-6c4f5a7b8293";
+
 export const userId = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
 
 const everything: readonly Permission[] = [
@@ -1212,7 +1215,7 @@ const customers: readonly CustomerWorkspace[] = [
     channels: 2,
     createdAt: at("2026-11-02T09:00:00Z"),
     externalId: "cus_002",
-    id: "8e3f9a97-8a3c-4dab-8d85-6c4f5a7b8293",
+    id: customerId,
     name: "Garage Dupont",
   },
   {
@@ -1442,6 +1445,11 @@ export interface StudioKey {
   readonly id: string;
   /** The secret a request sends as its bearer token. */
   readonly key: string;
+  /**
+   * The partner whose key this is, for a partner key, which acts in the
+   * partner's customers; none for a workspace's own key.
+   */
+  readonly partnerId?: string;
   readonly permissions: readonly Permission[];
   readonly workspaceId: string;
 }
@@ -3361,6 +3369,24 @@ export const studioGroupsLive = (studio: Studio) =>
         get: () =>
           CurrentPrincipal.pipe(
             Effect.map((principal): Credential => {
+              // A partner key names its partner, and none of its
+              // workspaces.
+              if (principal._tag === "partnerKey") {
+                return {
+                  _tag: "partnerKey",
+                  expiresAt: null,
+                  id: principal.partnerKeyId,
+                  name: "Synthetic partner script",
+                  partner: {
+                    id: principal.partnerId,
+                    name: studioPartner.name,
+                  },
+                  permissions: principal.permissions,
+                  scopes: principal.scopes,
+                  start: "peal_synthetic",
+                };
+              }
+
               if (principal._tag !== "apiKey") {
                 return {
                   _tag: "user",

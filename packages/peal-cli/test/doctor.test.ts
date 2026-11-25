@@ -5,9 +5,9 @@ import { runWith } from "#cli.ts";
 import { DiagnosisSchema } from "#commands/doctor.ts";
 import { DoctorFailed } from "#doctor-failed.ts";
 
-import { draftingKey, filesLayer, signedIn } from "./signed-in.ts";
+import { draftingKey, filesLayer, partnerKey, signedIn } from "./signed-in.ts";
 import type { Runs } from "./signed-in.ts";
-import { studioId, studioMe } from "./studio.ts";
+import { customerId, shopId, studioId, studioMe } from "./studio.ts";
 import { cliEnvironment, fetching, output } from "./support.ts";
 
 // peal doctor, against the in-memory server: what it reports for each way
@@ -263,7 +263,7 @@ describe("peal doctor", () => {
       );
 
       assert.strictEqual(statuses(bySlug)["workspace"], "failing");
-      assert.include(check(bySlug, "workspace").fix, "GET /api/me");
+      assert.include(check(bySlug, "workspace").fix, "Leave it out");
 
       const printed = yield* output;
 
@@ -271,6 +271,93 @@ describe("peal doctor", () => {
         [...printed.errors, ...printed.logs].join("\n"),
         "peal_test_"
       );
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("says which workspace a key acts in when none is named", () =>
+    Effect.gen(function* own() {
+      const session = yield* signedIn({
+        keys: [draftingKey],
+        signIn: false,
+      });
+
+      const withKey = {
+        PEAL_API_KEY: draftingKey.key,
+        PEAL_API_URL: "http://localhost:3000",
+      };
+
+      // None named, or a blank PEAL_WORKSPACE, which names nothing.
+      for (const env of [withKey, { ...withKey, PEAL_WORKSPACE: " " }]) {
+        const text = yield* session.withEnv(env).printed(["doctor", "--json"]);
+
+        assert.isTrue(diagnosisOf(text).ok);
+        assert.strictEqual(statuses(text)["workspace"], "ok");
+        assert.strictEqual(
+          check(text, "workspace").detail,
+          `Commands act in Studio (${studioId}), the key's own workspace.`
+        );
+        assert.include(
+          check(text, "access").detail,
+          "The key reads the workspace"
+        );
+      }
+
+      // Another workspace's id is the server's to refuse.
+      const elsewhere = yield* failingReport(session.withEnv(withKey), [
+        "doctor",
+        "--json",
+        "--workspace",
+        shopId,
+      ]);
+
+      assert.strictEqual(statuses(elsewhere)["access"], "failing");
+      assert.include(
+        check(elsewhere, "access").detail,
+        "belongs to another workspace"
+      );
+
+      // A server that is not named gets no key, so nothing says whose.
+      const unnamed = yield* failingReport(
+        session.withEnv({ PEAL_API_KEY: draftingKey.key }),
+        ["doctor", "--json"]
+      );
+
+      assert.strictEqual(statuses(unnamed)["workspace"], "skipped");
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("asks a partner key to name one of its partner's workspaces", () =>
+    Effect.gen(function* partner() {
+      const session = yield* signedIn({
+        keys: [partnerKey],
+        signIn: false,
+      }).pipe(
+        Effect.map((signed) =>
+          signed.withEnv({
+            PEAL_API_KEY: partnerKey.key,
+            PEAL_API_URL: "http://localhost:3000",
+          })
+        )
+      );
+
+      const text = yield* failingReport(session, ["doctor", "--json"]);
+
+      assert.strictEqual(statuses(text)["workspace"], "failing");
+      assert.strictEqual(statuses(text)["access"], "skipped");
+      assert.include(
+        check(text, "workspace").detail,
+        "A partner key is used, and no workspace is named."
+      );
+      assert.include(check(text, "workspace").fix, "--workspace");
+
+      const named = yield* session.printed([
+        "doctor",
+        "--json",
+        "--workspace",
+        customerId,
+      ]);
+
+      assert.isTrue(diagnosisOf(named).ok);
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 

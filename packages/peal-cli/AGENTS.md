@@ -20,8 +20,9 @@
   `review`, `analytics`, `inbox`, `billing`, `usage`, `members`,
   `invitations`, `webhooks`, `ads` and `assistant`, which act in the
   workspace `--workspace`, then `PEAL_WORKSPACE`, names by slug or id
-  (`inWorkspace`, `src/workspace.ts`; a user's only workspace otherwise),
-  whose client names that workspace in `Peal-Workspace` on every request
+  (`inWorkspace`, `src/workspace.ts`; a user's only workspace otherwise,
+  an API key's own with a key),
+  whose client names a workspace it was given in `Peal-Workspace` on every request
   (`PealApi.signedIn` and `withApiKey` given its id, `src/api.ts`): the
   API's paths never name it, so call sites pass `headers: {}` where an
   endpoint takes headers, and never the header themselves,
@@ -49,11 +50,20 @@
   the server does (`Peal-Workspace`, else a key's own, else
   `WorkspaceRequired`), and its handlers read it from `CurrentMember`,
   never the path; `signedIn` (`test/signed-in.ts`) signs the command line in to it.
+  A `StudioKey` with a `partnerId` is a partner key (`partnerKey`), which
+  acts in the studio partner's customers, as `credential.get` says.
 - An agent or a script runs headless with `PEAL_API_KEY` (`src/api-key.ts`;
   the environment only, never a flag, which shell history keeps): the key
   is the bearer token, wins over a saved sign-in, stays `Redacted`, and
-  `--workspace` or `PEAL_WORKSPACE` must then be the workspace's id, as a
-  key cannot read `/api/me`. What only a person does (`login`, `account`,
+  acts in its own workspace when `--workspace` and `PEAL_WORKSPACE` name
+  none (a blank value names none, as a blank `Peal-Workspace` does):
+  `inWorkspace` reads `credential.get` once, for the workspace's id and
+  name that commands print, and sends no `Peal-Workspace`, so the server
+  acts in the key's own. A workspace a key names must be its id, as a key
+  cannot read `/api/me` (`workspace_id_required` for a slug), and goes in
+  the header, so another one is the server's to refuse (`wrongWorkspace`).
+  A partner key, or a token in `PEAL_API_KEY`, that belongs to no
+  workspace names one (`workspace_id_required` otherwise). What only a person does (`login`, `account`,
   members and invitations) says so without asking the server; `peal
   whoami` with a key reads `credential.get` instead of `/api/me`, and
   prints the key's name, start, workspace, permissions and expiry, never
@@ -214,7 +224,8 @@
 - `peal doctor` checks a configuration and changes nothing (the API URL and
   where it came from, health, readiness, the API's latest release, which
   credential is used and whether it works, the publish scope, the workspace
-  commands will act in, the MCP endpoint's address), exits with 1 when a
+  commands will act in, which for a key that names none is its own, from
+  `credential.get`, the MCP endpoint's address), exits with 1 when a
   check fails, and is the first thing the skill tells an agent to run.
 - No command manages two-step verification, which is a person's, in the
   web app. A workspace that requires it refuses a sign-in whose account

@@ -179,6 +179,19 @@ const securityLive = (authorization: AuthorizationServer, studio: Studio) =>
 
             // A workspace API key is nobody: it acts in its workspace,
             // with its own permissions.
+            // A partner key acts in its partner's customers.
+            if (key?.partnerId !== undefined) {
+              return yield* httpEffect.pipe(
+                Effect.provideService(CurrentPrincipal, {
+                  _tag: "partnerKey",
+                  partnerId: key.partnerId,
+                  partnerKeyId: key.id,
+                  permissions: key.permissions,
+                  scopes: [],
+                })
+              );
+            }
+
             if (key !== undefined) {
               return yield* httpEffect.pipe(
                 Effect.provideService(CurrentPrincipal, {

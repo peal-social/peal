@@ -1,8 +1,9 @@
 import { assert, describe, it } from "@effect/vitest";
 import { Effect, Ref, Schema } from "effect";
 
-import { draftingKey, filesLayer, signedIn } from "./signed-in.ts";
+import { draftingKey, filesLayer, partnerKey, signedIn } from "./signed-in.ts";
 import {
+  customerId,
   mastodonId,
   refusedRequestId,
   scheduledId,
@@ -115,7 +116,7 @@ describe("an API key in PEAL_API_KEY", () => {
       yield* session.printed(["whoami", "--json"]);
       yield* session.refused(["posts", "unschedule", scheduledId, ...inStudio]);
       yield* session.refused(["drafts", "list", "--workspace", shopId]);
-      yield* session.refused(["drafts", "list", "--json"]);
+      yield* session.printed(["drafts", "list", "--json"]);
       yield* session
         .withEnv({ PEAL_API_KEY: "peal_test_unknown_key" })
         .refused(["drafts", "list", ...inStudio]);
@@ -127,40 +128,128 @@ describe("an API key in PEAL_API_KEY", () => {
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 
-  it.effect("names its workspace by id, never by slug or by default", () =>
+  it.effect("acts in its own workspace when none is named", () =>
+    Effect.gen(function* own() {
+      const session = yield* headless();
+
+      // The workspace's name, as the credential check gives it.
+      assert.include(
+        yield* session.printed(["drafts", "list"]),
+        "Drafts of Studio"
+      );
+      assert.include(
+        yield* session.printed(["channels", "list", "--json"]),
+        mastodonId
+      );
+
+      const saved = yield* session.printed([
+        "drafts",
+        "save",
+        "--text",
+        "A synthetic draft with the key alone.",
+        "--channel",
+        mastodonId,
+      ]);
+
+      assert.include(saved, "Saved draft");
+      assert.include(saved, "in Studio");
+
+      // A blank PEAL_WORKSPACE, as an unset variable in a script gives,
+      // names nothing.
+      for (const blank of ["", "  "]) {
+        assert.include(
+          yield* session
+            .withEnv({ ...key, PEAL_WORKSPACE: blank })
+            .printed(["drafts", "list"]),
+          "Drafts of Studio"
+        );
+      }
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("names a workspace by id, never by slug", () =>
     Effect.gen(function* byId() {
       const session = yield* headless();
 
-      const missing = yield* session.refused(["drafts", "list"]);
-
-      assert.include(
-        missing,
-        "With an API key (PEAL_API_KEY), name the workspace by its id, with --workspace or PEAL_WORKSPACE: a key cannot look workspaces up."
-      );
-      assert.include(missing, "GET /api/me");
-      assert.include(missing, "peal whoami, signed in as a person, lists it");
-
-      assert.include(
-        yield* session.refused(["drafts", "list", "--workspace", "studio"]),
-        "take the workspace's id, not its slug (studio)"
-      );
-      assert.strictEqual(
-        failureOf(yield* session.refused(["drafts", "list", "--json"])).error
-          .code,
-        "workspace_id_required"
-      );
       assert.include(
         yield* session
           .withEnv({ ...key, PEAL_WORKSPACE: studioId })
           .printed(["drafts", "list"]),
         "Drafts of"
       );
+      assert.include(
+        yield* session.printed(["drafts", "list", ...inStudio]),
+        "Drafts of"
+      );
+
+      const bySlug = yield* session.refused([
+        "drafts",
+        "list",
+        "--workspace",
+        "studio",
+      ]);
+
+      assert.include(bySlug, "take the workspace's id, not its slug (studio)");
+      assert.include(bySlug, "Leave it out");
+      assert.strictEqual(
+        failureOf(
+          yield* session.refused([
+            "drafts",
+            "list",
+            "--json",
+            "--workspace",
+            "studio",
+          ])
+        ).error.code,
+        "workspace_id_required"
+      );
+
       // Another workspace's id is the server's to refuse.
       assert.include(
         yield* session.refused(["drafts", "list", "--workspace", shopId]),
         "This key or token belongs to another workspace"
       );
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
+    "is a partner key, which names one of its partner's workspaces",
+    () =>
+      Effect.gen(function* partner() {
+        const session = yield* signedIn({
+          keys: [partnerKey],
+          signIn: false,
+        }).pipe(
+          Effect.map((signed) =>
+            signed.withEnv({ ...key, PEAL_API_KEY: partnerKey.key })
+          )
+        );
+
+        const missing = yield* session.refused(["channels", "list"]);
+
+        assert.include(
+          missing,
+          "A partner key belongs to no workspace: name one of its partner's workspaces by its id, with --workspace or PEAL_WORKSPACE."
+        );
+        assert.strictEqual(
+          failureOf(yield* session.refused(["channels", "list", "--json"]))
+            .error.code,
+          "workspace_id_required"
+        );
+        assert.strictEqual(
+          failureOf(
+            yield* session.refused([
+              "channels",
+              "list",
+              "--json",
+              "--workspace",
+              studioId,
+            ])
+          ).error.code,
+          "workspace_not_found"
+        );
+        yield* session.printed(["channels", "list", "--workspace", customerId]);
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 
   it.effect(
