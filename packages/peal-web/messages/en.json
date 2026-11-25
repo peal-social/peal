@@ -5563,6 +5563,7 @@
       "sites": "{count, plural, one {# website} other {# websites}} connected.",
       "new": "New article",
       "connect": "Connect a website",
+      "loading": "Loading the articles…",
       "loadFailed": "The articles could not be loaded.",
       "retry": "Try again",
       "empty": "No article yet."
