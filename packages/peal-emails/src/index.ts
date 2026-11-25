@@ -1,3 +1,7 @@
+export { emailAssets } from "./assets.ts";
+
+export type { EmailAsset } from "./assets.ts";
+
 export type { AccountEmail } from "./emails/account.ts";
 
 export type {
