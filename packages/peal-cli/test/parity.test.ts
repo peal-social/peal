@@ -272,6 +272,7 @@ const coverage = {
   "automations.followUps.delete": by("follow-ups stop"),
   "automations.followUps.get": by("follow-ups show"),
   "automations.followUps.list": by("follow-ups list"),
+  "automations.followUps.platforms": by("follow-ups platforms"),
   "automations.followUps.update": by("follow-ups update"),
   "automations.recycling.create": by("recycling start"),
   "automations.recycling.delete": by("recycling end"),

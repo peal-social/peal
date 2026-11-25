@@ -664,6 +664,8 @@ Ces requêtes gèrent une règle :
 | `DELETE …/automations/follow-ups/{ruleId}`       | L’arrête                                                                                    |
 | `GET …/automations/follow-ups?postId=…`          | Liste les règles d’une publication                                                          |
 
+`GET …/automations/follow-ups/platforms` indique, pour chaque plateforme, si le `comment` et le `repost` d’une règle peuvent y partir sur votre serveur, ou pourquoi non (`turnedOff` quand le serveur n’envoie pas de fils X, `notCounted` quand Peal n’y compte pas les mentions J’aime). Un canal de cette plateforme peut encore devoir être reconnecté, ou prendre un commentaire plus court.
+
 ## Publier depuis un flux [#feeds]
 
 `POST …/automations/feeds` suit un flux web ([comment ça marche](/guides/posts/queues#feeds)). Peal le lit une fois, note comme vu chaque élément qu’il contient à ce moment-là, et n’en crée jamais de publication. Il répond 201 avec le flux et `seen`, le nombre d’éléments notés.

@@ -5635,6 +5635,38 @@
       }
     },
     {
+      "id": "e1f0a398-0d7f-4331-abec-92de79043135",
+      "name": "List where follow-up rules act - default",
+      "request": {
+        "urlPathTemplate": "/api/v1/automations/follow-ups/platforms",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "[\n  {\n    \"comment\": \"available\",\n    \"platform\": \"x\",\n    \"repost\": \"available\"\n  }\n]",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "e1f0a398-0d7f-4331-abec-92de79043135",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      },
+      "postServeActions": []
+    },
+    {
       "id": "a16cae3e-09d6-4ad7-8971-414afda0d9f5",
       "name": "Get a follow-up rule - default",
       "request": {
@@ -8851,6 +8883,6 @@
     }
   ],
   "meta": {
-    "total": 258
+    "total": 259
   }
 }

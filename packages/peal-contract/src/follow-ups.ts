@@ -24,6 +24,7 @@ import {
   maxFollowUpRulesPerWorkspace,
   maxFollowUpsPerChannelDay,
   NewFollowUpRuleSchema,
+  PlatformFollowUpsSchema,
 } from "./follow-up-rule.ts";
 import { Forbidden } from "./forbidden.ts";
 import { PostNotFound } from "./post-not-found.ts";
@@ -60,6 +61,18 @@ export class FollowUpsApi extends HttpApiGroup.make("automations.followUps")
       OpenApi.annotations({
         description: `Lists the workspace's follow-up rules, oldest first, ${String(defaultFollowUpPageSize)} a page unless \`limit\` (at most ${String(maxFollowUpPageSize)}) says otherwise, those of the post \`postId\` or with \`status\` alone when given, each with what its channels can carry and its latest ${String(followUpsShown)} follow-ups. Pass the page's \`nextCursor\` as \`cursor\` for the next one. Needs post:read.`,
         summary: "List follow-up rules",
+      })
+    ),
+    HttpApiEndpoint.get("platforms", "/platforms", {
+      error: Forbidden,
+      headers: workspaceHeaders,
+
+      success: Schema.Array(PlatformFollowUpsSchema),
+    }).annotateMerge(
+      OpenApi.annotations({
+        description:
+          "Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.",
+        summary: "List where follow-up rules act",
       })
     ),
     HttpApiEndpoint.post("create", "/", {

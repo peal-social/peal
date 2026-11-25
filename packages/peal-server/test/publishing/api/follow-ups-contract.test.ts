@@ -12,6 +12,8 @@ import {
   maxFollowUpsPerChannelDay as contractPerDay,
   maxLikesThreshold as contractMaxLikes,
   minLikesThreshold as contractMinLikes,
+  PlatformFollowUpCommentSchema as ContractPlatformCommentSchema,
+  PlatformFollowUpRepostSchema as ContractPlatformRepostSchema,
 } from "peal-contract";
 
 import { followUpView } from "#publishing/api/follow-ups/follow-up-view.ts";
@@ -30,7 +32,10 @@ import {
   maxLikesThreshold,
   minLikesThreshold,
 } from "#publishing/domain/follow-ups/follow-up-rule.ts";
-import { FollowUpBlockerSchema } from "#publishing/domain/follow-ups/follow-up-support.ts";
+import {
+  FollowUpBlockerSchema,
+  followUpSupport,
+} from "#publishing/domain/follow-ups/follow-up-support.ts";
 import {
   FollowUpKindSchema,
   FollowUpStatusSchema,
@@ -39,6 +44,10 @@ import {
   triggerFollowUp,
   waitFollowUp,
 } from "#publishing/domain/follow-ups/follow-up.ts";
+import {
+  PlatformFollowUpCommentSchema,
+  PlatformFollowUpRepostSchema,
+} from "#publishing/domain/follow-ups/platform-follow-ups.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
@@ -98,6 +107,42 @@ describe("the follow-ups' contract", () => {
         "textTooLong",
       ].toSorted()
     ).toStrictEqual([...FollowUpAbilitySchema.literals].toSorted());
+  });
+
+  it("copies the server's words for where rules act, and no channel's", () => {
+    expect([
+      ContractPlatformCommentSchema.literals,
+      ContractPlatformRepostSchema.literals,
+    ]).toStrictEqual([
+      PlatformFollowUpCommentSchema.literals,
+      PlatformFollowUpRepostSchema.literals,
+    ]);
+
+    // A platform's answer names no channel's standing.
+    const channelOnly = new Set<string>([
+      "notAsked",
+      "reconnect",
+      "textTooLong",
+    ]);
+
+    expect(
+      [
+        ...PlatformFollowUpCommentSchema.literals,
+        ...PlatformFollowUpRepostSchema.literals,
+      ].filter((word) => channelOnly.has(word))
+    ).toStrictEqual([]);
+
+    // A repost answers only what some platform's support may say, and the
+    // server's own reason, so no SDK offers a word it never gets.
+    const reposts = new Set<string>(
+      Object.values(followUpSupport).map(({ repost }) => repost)
+    );
+
+    expect(
+      PlatformFollowUpRepostSchema.literals.filter(
+        (word) => word !== "notCounted" && !reposts.has(word)
+      )
+    ).toStrictEqual([]);
   });
 
   it("says until when a follow-up waits for its channel", () => {

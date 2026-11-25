@@ -137,6 +137,53 @@ impl FollowUpsClient {
             .await
     }
 
+    /// Says, for every platform in Peal's order, whether a follow-up rule can publish its comment there on this server (`comment`) and repost (`repost`), or why not: where a rule can act, before any channel's own standing. A rule is still refused for a kind its channel cannot carry, such as a repost on a Bluesky channel that must be connected again, or a comment longer than the platform takes: `channels` on the refusal and on the rule says so. Needs post:read.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// JSON response from the API
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client.automations.follow_ups.platforms(None).await;
+    /// }
+    /// ```
+    pub async fn platforms(
+        &self,
+        options: Option<RequestOptions>,
+    ) -> Result<Vec<PlatformFollowUps>, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
+        self.http_client
+            .execute_request(
+                Method::GET,
+                "api/v1/automations/follow-ups/platforms",
+                None,
+                None,
+                options,
+            )
+            .await
+    }
+
     /// Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
     ///
     /// # Arguments

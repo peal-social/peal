@@ -155,11 +155,13 @@
   answered) reads the inbox's reviews; answering one or deleting its reply
   is a person's, in the web app (Google's policies), and has no command; the studio answers it
   from `test/studio-reviews.ts`.
-- `peal follow-ups` (`commands/follow-ups.ts`: list, show, start,
-  update, pause, resume, approve, stop) keeps the follow-up rules;
+- `peal follow-ups` (`commands/follow-ups.ts`: list, platforms, show,
+  start, update, pause, resume, approve, stop) keeps the follow-up rules;
   `start` takes `--post` or `--channel`, one of them, and `--comment`,
-  `--repost` or both, refused before any request otherwise. The studio
-  answers it from `test/studio-follow-ups.ts`.
+  `--repost` or both, refused before any request otherwise; `platforms`
+  says where they act on the server, kind by kind
+  (`automations.followUps.platforms`). The studio answers it from
+  `test/studio-follow-ups.ts`.
 - `peal inbox rules` (`commands/inbox-rules.ts`: list, platforms, show,
   start, update, pause, resume, stop) keeps the comment rules, from
   `test/studio-inbox-rules.ts` in tests; `platforms` says where they

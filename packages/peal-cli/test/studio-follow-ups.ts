@@ -274,6 +274,22 @@ export const studioFollowUpsOf = (world: FollowUpsWorld) => {
               nextCursor: null,
             };
           }),
+        // As a server that sends X threads and counts every platform.
+        platforms: () =>
+          Effect.gen(function* platforms() {
+            yield* world.allowed("post:read");
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
+
+            return [
+              { comment: "available", platform: "x", repost: "notBuilt" },
+              {
+                comment: "available",
+                platform: "bluesky",
+                repost: "available",
+              },
+              { comment: "notBuilt", platform: "youtube", repost: "noApi" },
+            ] as const;
+          }),
         update: ({ params, payload }) =>
           Effect.gen(function* update() {
             yield* world.allowed("post:schedule");

@@ -664,6 +664,8 @@ These requests manage a rule:
 | `DELETE …/automations/follow-ups/{ruleId}`       | Stops it                                                                                 |
 | `GET …/automations/follow-ups?postId=…`          | Lists a post's rules                                                                     |
 
+`GET …/automations/follow-ups/platforms` says, for each platform, whether a rule's `comment` and `repost` can go out there on your server, or why not (`turnedOff` where the server sends no X threads, `notCounted` where Peal counts no likes). A channel there may still need connecting again, or take a shorter comment.
+
 ## Post from a feed [#feeds]
 
 `POST …/automations/feeds` follows a web feed ([how it works](/guides/posts/queues#feeds)). Peal reads it once, records every item it holds at that moment as seen, and never makes posts from them. It answers 201 with the feed and `seen`, the number of items it recorded.
