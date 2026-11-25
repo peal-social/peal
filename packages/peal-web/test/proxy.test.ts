@@ -6,15 +6,88 @@
 // console's user page to the second. That the proxy runs on such paths,
 // which hold a dot, is for the end-to-end tests to show
 // (peal-e2e/tests/path-spellings.e2e.ts): only Next's build reads the matcher.
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "@effect/vitest";
+import { Schema } from "effect";
 import { NextRequest } from "next/server";
 
-import proxy from "../src/proxy.ts";
+import proxy, { config } from "../src/proxy.ts";
 
 const origin = "http://localhost:3001";
 
 const answerTo = async (path: string) =>
   await proxy(new NextRequest(`${origin}${path}`));
+
+// The proxy's matcher as Next's build compiles it (`getMiddlewareMatchers`),
+// in a process of its own: Next's build modules, and its testing helper
+// that wraps them, patch `console` for every test file this worker runs
+// after, where Next's request storage is missing.
+const compiled = execFileSync(
+  process.execPath,
+  [
+    "-e",
+    `const { getMiddlewareMatchers } = require("next/dist/build/analysis/get-page-static-info");
+process.stdout.write(JSON.stringify(getMiddlewareMatchers(JSON.parse(process.argv[1]), {})));`,
+    JSON.stringify(config.matcher),
+  ],
+  { cwd: fileURLToPath(new URL("..", import.meta.url)), encoding: "utf-8" }
+);
+
+const matchers = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Schema.Array(Schema.Struct({ regexp: Schema.String })))
+)(compiled).map(({ regexp }) => new RegExp(regexp, "u"));
+
+// Whether the proxy runs on a path at all.
+const runsOn = (path: string): boolean =>
+  matchers.some((matcher) => matcher.test(path));
+
+describe("the proxy's matcher", () => {
+  // A workspace's slug may start with `api` ("API Team" is `api-team`),
+  // and never holds a dot nor starts with `_`
+  // (peal-contract/workspace-slug).
+  it.each([
+    "/api-team/posts",
+    "/fr/api-team/posts",
+    "/en/api-team",
+    "/apiary",
+    "/synthetic-studio/posts",
+    "/fr/synthetic-studio/posts",
+    "/",
+    "/fr",
+    "/api",
+    "/api/v1/posts",
+    "/.well-known/oauth-authorization-server",
+    "/.well-known/oauth-protected-resource/api/mcp",
+    "/.well-known/api-catalog",
+    "/llms.txt",
+    "/pulse/e/",
+    "/en/admin;x/users",
+  ])("runs the proxy on %s", (path) => {
+    expect(runsOn(path)).toBeTruthy();
+  });
+
+  // Next's own files, and anything else with a dot, are files.
+  it.each([
+    "/_next/static/x.js",
+    "/_next/static/chunks/x",
+    "/_next/image",
+    "/favicon.ico",
+    "/.well-known/change-password",
+    "/.well-known/security.txt",
+  ])("leaves %s to Next", (path) => {
+    expect(runsOn(path)).toBeFalsy();
+  });
+
+  it("routes a workspace whose slug starts with api as a page", async () => {
+    const answer = await answerTo("/api-team/posts");
+
+    expect(answer.headers.get("x-middleware-rewrite")).toBe(
+      `${origin}/en/api-team/posts`
+    );
+  });
+});
 
 describe("the proxy", () => {
   it.each([
@@ -84,6 +157,69 @@ describe("the proxy", () => {
     );
 
     expect(answer.status).not.toBe(308);
+  });
+
+  // The signed-in app's layout sends a page shown in another language than
+  // the account's to the account's, which it can only do knowing the
+  // address: the proxy hands it on, whatever the browser sent under that
+  // name.
+  it("hands a page's address, its query included, to the page", async () => {
+    const answer = await proxy(
+      new NextRequest(`${origin}/fr/synthetic-studio/posts?status=draft`, {
+        headers: { "x-peal-page": "/elsewhere" },
+      })
+    );
+
+    expect(answer.headers.get("x-middleware-request-x-peal-page")).toBe(
+      "/fr/synthetic-studio/posts?status=draft"
+    );
+  });
+
+  // next-intl keeps the language a browser last opened in NEXT_LOCALE,
+  // which the account's language replaces through the proxy below.
+  it("remembers the language an address names", async () => {
+    const answer = await proxy(
+      new NextRequest(`${origin}/fr/login`, {
+        headers: { "sec-fetch-dest": "document" },
+      })
+    );
+
+    expect(answer.cookies.get("NEXT_LOCALE")?.value).toBe("fr");
+  });
+
+  // The layout sends a page to English as /en/…, whatever the request:
+  // the router follows a redirect with a request of its own, which
+  // next-intl never takes a language from. Unprefixed, the next page would
+  // open in the cookie's language and be sent back again.
+  it.each(["document", "empty"])(
+    "sets the language cookie to English for /en/… of the app (%s)",
+    async (destination) => {
+      const answer = await proxy(
+        new NextRequest(`${origin}/en/synthetic-studio/posts?status=draft`, {
+          headers: {
+            cookie: "NEXT_LOCALE=fr",
+            "sec-fetch-dest": destination,
+          },
+        })
+      );
+
+      expect(answer.status).toBe(307);
+      expect(answer.headers.get("location")).toBe(
+        `${origin}/synthetic-studio/posts?status=draft`
+      );
+      expect(answer.cookies.get("NEXT_LOCALE")?.value).toBe("en");
+    }
+  );
+
+  it("leaves the cookie of a page outside the app to next-intl", async () => {
+    const answer = await proxy(
+      new NextRequest(`${origin}/en/login`, {
+        headers: { cookie: "NEXT_LOCALE=fr", "sec-fetch-dest": "empty" },
+      })
+    );
+
+    expect(answer.status).toBe(307);
+    expect(answer.cookies.get("NEXT_LOCALE")).toBeUndefined();
   });
 
   // The site's and the docs' host names reach the relay's site mode

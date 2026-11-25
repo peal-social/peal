@@ -394,38 +394,53 @@ describe("a new member's first post", { serial: true }, () => {
     ).toBeVisible();
   });
 
-  test("reads the calendar in French", async ({ app, browser, screen }) => {
-    // The frame has no language switcher: the address names the language
-    // the browser reads, and the account page the one the account keeps.
-    await app.open(`/fr/${slug}/calendar`);
+  test("opens a French address in the account's English", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    // Signed in, the account's language wins over the address's: a link
+    // to a French page opens the same page in English, its query kept.
+    await app.open(`/fr/${slug}/calendar?view=month`);
 
-    await expect(screen.getByRole("heading", "Calendrier")).toBeVisible();
+    await expect(browser).toHaveURL(`/${slug}/calendar?view=month`);
+    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
     await expect(
-      screen.getByRole("navigation", "Vues").getByRole("link", "Semaine")
+      screen.getByRole("navigation", "Views").getByRole("link", "Month")
     ).toHaveAttribute("aria-current", "page");
-    await expect(browser).toHaveURL(`/fr/${slug}/calendar`);
   });
 
-  test("keeps French in the account settings", async ({ browser, screen }) => {
-    await screen.getByRole("button", `Compte de ${name}`).tap();
-    await screen.getByRole("menuitem", "Paramètres du compte").tap();
+  test("chooses French in the preferences, which the app then keeps", async ({
+    app,
+    browser,
+    screen,
+  }) => {
+    await screen.getByRole("button", `Account of ${name}`).tap();
+    await screen.getByRole("menuitem", "Account settings").tap();
 
     await expect(
-      screen.getByRole("heading", "Profil", { level: 1 })
+      screen.getByRole("heading", "Profile", { level: 1 })
     ).toBeVisible();
-    await expect(browser).toHaveURL(`/fr/${slug}/settings/account`);
+    await expect(browser).toHaveURL(`/${slug}/settings/account`);
 
-    // The account still keeps English, which it signed up in: choosing
-    // French among the preferences saves it at once.
+    // The account keeps English, which it signed up in: choosing French
+    // among the preferences saves it, and the page follows at once.
     await screen
-      .getByRole("navigation", "Espace de travail")
-      .getByRole("link", "Préférences")
+      .getByRole("navigation", "Workspace")
+      .getByRole("link", "Preferences")
       .tap();
-    await expect(browser).toHaveURL(`/fr/${slug}/settings/account/preferences`);
-    await screen.getByRole("combobox", "Langue").tap();
+    await expect(browser).toHaveURL(`/${slug}/settings/account/preferences`);
+    await screen.getByRole("combobox", "Language").tap();
     await screen.getByRole("option", "Français").tap();
 
-    await expect(screen.getByText("Langue enregistrée.")).toBeVisible();
+    await expect(browser).toHaveURL(`/fr/${slug}/settings/account/preferences`);
+    await expect(screen.getByRole("combobox", "Langue")).toBeVisible();
+
+    // An English address opens in French now.
+    await app.open(`/${slug}/calendar`);
+
+    await expect(browser).toHaveURL(`/fr/${slug}/calendar`);
+    await expect(screen.getByRole("heading", "Calendrier")).toBeVisible();
   });
 
   test("signs out", async ({ app, browser, screen }) => {

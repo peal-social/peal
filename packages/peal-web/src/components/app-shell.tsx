@@ -10,8 +10,14 @@ import { PealMark } from "#components/shell/peal-mark.tsx";
 import { Link } from "#i18n/navigation.ts";
 
 // The app's header: the product name, the language switcher and the
-// account menu.
-export const AppHeader = () => {
+// account menu. A page of the signed-in app shown to someone signed in
+// has no switcher: their account's language decides it
+// (`toAccountLanguage`), so another would only come back.
+export const AppHeader = ({
+  languageSwitcher = true,
+}: {
+  readonly languageSwitcher?: boolean;
+}) => {
   const t = useTranslations("AppShell");
 
   return (
@@ -25,7 +31,7 @@ export const AppHeader = () => {
           {t("productName")}
         </Link>
         <div className="flex items-center gap-1">
-          <LanguageSwitcher />
+          {languageSwitcher ? <LanguageSwitcher /> : null}
           <Suspense fallback={null}>
             <AccountMenu />
           </Suspense>
@@ -40,9 +46,15 @@ export const AppHeader = () => {
  * own (to someone not a member, or who must first turn on two-step
  * verification): `ShellFrame` leaves workspace pages to their layout.
  */
-export const PlainFrame = ({ children }: { readonly children: ReactNode }) => (
+export const PlainFrame = ({
+  children,
+  languageSwitcher = true,
+}: {
+  readonly children: ReactNode;
+  readonly languageSwitcher?: boolean;
+}) => (
   <>
-    <AppHeader />
+    <AppHeader languageSwitcher={languageSwitcher} />
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
       {children}
     </main>

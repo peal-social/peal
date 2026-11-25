@@ -401,8 +401,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   other failure keeps **Try again**). Revoking a session needs no fresh one.
   Invitations go through `invite` (`#settings/invite.ts`): Better Auth's
   client types roles from its own defaults. Sign-in opens `next` in the
-  language the account keeps (`landingLocale`), which account settings save
-  with `updateUser`. `next` is a page of the app or nothing (`nextPathOf`,
+  language the account keeps (`landingOf`), which account settings save
+  with `updateUser`: a page of the app always, another unless its path
+  names a language, which goes to the router without its prefix (the
+  router adds one, so `/fr/fr/…` never). A provider's sign-in lands the
+  same: it comes back to the sign-in page, marked (`signInReturn`), as
+  only then is the account's language known, and the page, signed in and
+  with no `?error=`, sends on to `landingAddressOf`, its language named.
+  `next` is a page of the app or nothing (`nextPathOf`,
   `#auth/next-path.ts`, tested): never a path the server answers (`/api`,
   where a short link redirects anywhere, `/.well-known`), a route handler
   of the app (`/pulse`, `/emoji-data`), a path with a dot, a `%`, a
@@ -1336,6 +1342,27 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   building sentences in code.
 - English has no prefix (`/`) and French is under `/fr`. Navigate with the
   helpers in `src/i18n/navigation.ts`, not `next/link`.
+- A page's language: next-intl's proxy takes the address's, then its
+  `NEXT_LOCALE` cookie's, then the browser's. On the signed-in app's
+  pages (`isAppPath`) the account's language wins over both: the
+  `(setup)` and `[workspaceId]` layouts, from the `/api/me` they read
+  anyway, send a page shown in another to the same path and query in the
+  account's (`toAccountLanguage`; `accountLanguageAddress`,
+  `#i18n/account-language.ts`, tested), from the address the proxy hands
+  every page (`x-peal-page`; layouts have no other). The browser can send
+  that header too, where the proxy does not run: it is taken only when
+  its language and first segment are the route's own params, so it lives
+  in the layouts that receive them, not in `(app)`'s, which receives the
+  language alone. English is sent to as `/en/…`, and the proxy sets the cookie to
+  English there for every request, the router's included, so the address
+  without a language does not open in the cookie's again. No new request
+  to the API: the layout's own answer decides. Staff acting as someone,
+  someone signed out, and every page outside the app (sign-in, review
+  links, connect links, OAuth, the staff console) keep next-intl's order.
+  So does a page of the app whose address `nextPathOf` refuses (a `%`, a
+  raw `//` in its query, a character outside ASCII): it is never sent
+  on, and keeps the address's language. The plain frame shows no
+  language switcher to someone the account's language decides for.
 - Folders in `peal-web` import each other through `#…` (package.json
   `imports`); `#messages/*` points at the catalogues.
 - The page is `connect/link` (`components/connect-link/`), which reads

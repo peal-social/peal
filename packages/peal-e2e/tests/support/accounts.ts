@@ -77,6 +77,32 @@ export const makeStaff = async (
 };
 
 /**
+ * Sets the language an account keeps, straight in the database the run's
+ * server uses, as the Preferences page saves it: the app's pages follow it
+ * on the next one opened, as GET /api/me reads the account on every
+ * request.
+ */
+export const setAccountLanguage = async (
+  email: string,
+  locale: "en" | "fr"
+): Promise<void> => {
+  const client = new Client({
+    connectionString: process.env["DATABASE_URL"],
+  });
+
+  await client.connect();
+
+  try {
+    await client.query(`UPDATE auth."user" SET locale = $2 WHERE email = $1`, [
+      email.toLowerCase(),
+      locale,
+    ]);
+  } finally {
+    await client.end();
+  }
+};
+
+/**
  * Moves back the sign-in time of every session of an account, straight in
  * the database the run's server uses, so Better Auth reads them as signed
  * in that long ago: past its freshness (a day), a session may no longer
