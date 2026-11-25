@@ -90,10 +90,14 @@ describe("the sessions list", () => {
       .getByRole("main")
       .getByRole("button", "Sign out everywhere else")
       .tap();
-    await screen
-      .getByRole("alertdialog", "Sign out of every other session?")
-      .getByRole("button", "Sign out everywhere else")
-      .tap();
+
+    const confirmation = screen.getByRole(
+      "alertdialog",
+      "Sign out of every other session?"
+    );
+
+    await confirmation.getByRole("button", "Sign out everywhere else").tap();
+    await expect(confirmation).toBeHidden();
     await expect(
       screen
         .getByRole("region", "Notifications")

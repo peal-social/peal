@@ -20,20 +20,23 @@ import {
   SettingsRowText,
 } from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { authClient } from "#auth/client.ts";
 import { signOutOtherSessions } from "#settings/revoke-others.ts";
 
 // Signs out every session but this one, once confirmed: it cannot be
-// taken back, and each of them must sign in again.
+// taken back, and each of them must sign in again. The confirmation
+// closes as it is given: the row stays where the list is hidden.
 const RevokeOthers = ({ onChanged }: { readonly onChanged: () => void }) => {
   const t = useTranslations("AccountSettings.sessions");
   const settings = useTranslations("Settings");
   const errors = useTranslations("Settings.errors");
+  const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const handleRevoke = () => {
+    setOpen(false);
     startTransition(async () => {
       await signOutOtherSessions({
         refused: (reason) => {
@@ -49,7 +52,7 @@ const RevokeOthers = ({ onChanged }: { readonly onChanged: () => void }) => {
   };
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
         render={
           <Button
