@@ -257,8 +257,9 @@ describe("OverPlanView's lists", () => {
       ).toStrictEqual([]);
       expect(countOf(html, 'aria-busy="true"')).toBe(2);
       // A row for each of the 4 channels and 3 members the standing
-      // counts, and one for the confirmation, each a box and a label.
-      expect(countOf(html, 'data-slot="skeleton"')).toBe(2 * (4 + 3 + 1));
+      // counts, each a box and a label, and the confirmation's box and its
+      // two lines.
+      expect(countOf(html, 'data-slot="skeleton"')).toBe(2 * (4 + 3) + 3);
       expect(
         foundIn(html, [t.channelsFailed, t.membersFailed, 'role="alert"'])
       ).toStrictEqual([]);
@@ -276,7 +277,7 @@ describe("OverPlanView's lists", () => {
       },
     });
 
-    expect(countOf(html, 'data-slot="skeleton"')).toBe(2 * (10 + 1));
+    expect(countOf(html, 'data-slot="skeleton"')).toBe(2 * 10 + 3);
   });
 
   it("says the channels could not be read, with a way to read them again, and shows the members", async () => {

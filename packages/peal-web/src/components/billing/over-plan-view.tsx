@@ -123,6 +123,18 @@ const PlaceholderRow = ({ row }: { readonly row: number }) => (
   </div>
 );
 
+// The confirmation in its place while a list loads: its box and its
+// sentence, on two lines on a phone, as the sentence wraps there.
+const ConfirmPlaceholder = () => (
+  <div className="flex items-start gap-3">
+    <Skeleton className="size-4" />
+    <div className="flex flex-col gap-1.5">
+      <Skeleton className="h-3 w-56" />
+      <Skeleton className="h-3 w-40 sm:hidden" />
+    </div>
+  </div>
+);
+
 // One of the lists to choose among: its choices once read; before, rows
 // in their place, so nothing moves when they arrive; why it could not be
 // read, with a way to read it again.
@@ -325,7 +337,7 @@ const Choosing = ({
               <Label htmlFor={confirmId}>{t("confirm", leaving)}</Label>
             </div>
           ) : null}
-          {loads.includes("loading") ? <PlaceholderRow row={0} /> : null}
+          {loads.includes("loading") ? <ConfirmPlaceholder /> : null}
           {tooMany ? (
             <p className="text-destructive text-sm">{t("tooMany")}</p>
           ) : null}
