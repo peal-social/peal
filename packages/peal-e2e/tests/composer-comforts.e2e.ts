@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { describe, test } from "@e2e-dev/web";
 import { credentials, expect } from "e2e";
+import { Schema } from "effect";
 
 import { seedPerAccountSubscription } from "./support/billing.ts";
 import { seedChannel } from "./support/channels.ts";
@@ -30,6 +31,17 @@ const guest = () =>
   credentials.user("member").username.replace("@", `+${run}-comforts-guest@`);
 
 const password = () => credentials.user("member").password;
+
+// The document's height, how far it is scrolled, the window's height, and
+// how far the page's panel still has to scroll before its end.
+const DocumentSchema = Schema.Struct({
+  height: Schema.Number,
+  paneLeft: Schema.Number,
+  scrolled: Schema.Number,
+  window: Schema.Number,
+});
+
+const documentOf = `(() => { const pane = document.querySelector("main"); return { height: document.scrollingElement.scrollHeight, paneLeft: pane.scrollHeight - pane.clientHeight - pane.scrollTop, scrolled: document.scrollingElement.scrollTop, window: innerHeight }; })()`;
 
 let workspaceId = "";
 let slug = "";
@@ -86,6 +98,50 @@ describe("the composer's comforts", { serial: true }, () => {
         await expect(screen.getByRole("checkbox", handle)).not.toBeChecked();
       })
     );
+  });
+
+  test("ticks a channel by pointer and by key without moving the frame", async ({
+    browser,
+    screen,
+  }) => {
+    // The composer is longer than the window: its panel scrolls, the
+    // document never does. A checkbox's hidden input laid out against the
+    // window, not the panel, made the document taller than the window, and
+    // the frame scrolled up with it.
+    const read = async () =>
+      Schema.decodeUnknownSync(DocumentSchema)(
+        await browser.evaluate(documentOf)
+      );
+
+    const paneLeft = async () => {
+      const { paneLeft: left } = await read();
+
+      return left;
+    };
+
+    const stays = async () => {
+      const { height, scrolled, window } = await read();
+
+      expect({ height, scrolled }).toEqual({ height: window, scrolled: 0 });
+    };
+
+    const channel = screen.getByRole("checkbox", handles[2]);
+
+    await stays();
+    await channel.tap();
+    await expect(channel).toBeChecked();
+    await stays();
+
+    await channel.press("Space");
+    await expect(channel).not.toBeChecked();
+    await stays();
+
+    // More than the panel can scroll: once the wheel has carried it to its
+    // end, whatever is left would reach the document.
+    await browser.mouse.move(640, 400);
+    await browser.mouse.wheel(0, 3000);
+    await expect.poll(paneLeft).toBeLessThanOrEqual(1);
+    await stays();
   });
 
   test("inserts an emoji where the text was being written", async ({

@@ -21,7 +21,8 @@ import {
 import { TagDot } from "peal-ui/components/tag";
 import type { ReactNode } from "react";
 
-import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
+import { PlatformMark } from "#components/channels/platform-mark.tsx";
 import { DisplayMenu } from "#components/lists/display-menu.tsx";
 import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import type { FilterProperty } from "#components/lists/filter-menu.tsx";
@@ -97,6 +98,7 @@ export const PostListToolbar = ({
   const lists = useTranslations("Lists");
   const tPosts = useTranslations("Posts");
 
+  const channelLabel = useChannelLabel();
   const menu = useFilterMenu();
 
   const properties: (FilterProperty & { readonly id: PostProperty })[] = [
@@ -127,7 +129,8 @@ export const PostListToolbar = ({
             label: t("channel"),
             values: channels.map((channel) => ({
               id: channel.id,
-              label: channelName(channel),
+              label: channelLabel(channel),
+              mark: <PlatformMark platform={channel.platform} />,
             })),
           },
         ]),
@@ -183,7 +186,9 @@ export const PostListToolbar = ({
     if (property === "channel") {
       const channel = channels.find(({ id }) => id === value);
 
-      return channel === undefined ? t("unknownChannel") : channelName(channel);
+      return channel === undefined
+        ? t("unknownChannel")
+        : channelLabel(channel);
     }
 
     if (property === "tag") {

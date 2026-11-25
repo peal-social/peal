@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Select as SelectPrimitive,
   SelectContent as SelectContentPrimitive,
   SelectGroup as SelectGroupPrimitive,
   SelectGroupLabel as SelectGroupLabelPrimitive,
@@ -13,6 +14,7 @@ import {
   SelectValue as SelectValuePrimitive,
   SelectValueIcon as SelectValueIconPrimitive,
 } from "@ui-sdk/react/select";
+import type { SelectProps } from "@ui-sdk/react/select";
 import { ChevronDownIcon, CheckIcon } from "lucide-react";
 import type * as React from "react";
 
@@ -169,9 +171,35 @@ const SelectValueIcon = ({
   />
 );
 
-export { Select } from "@ui-sdk/react/select";
+/**
+ * ui-sdk renders the select's form value, a hidden textarea, after its parts
+ * and absolutely positioned. The `select-control` box around them is its
+ * positioning context, so it stays by the trigger: without it, the textarea
+ * is laid out against a distant ancestor, and below the fold of a scrolling
+ * panel it stretches the document. The box is a `span` styled `block`, so it
+ * may sit wherever a select may (inside a `span` too: the popup is portaled,
+ * and the box holds only the trigger and the textarea), and it is the
+ * select's own element: `className` styles it. In a flex row the box, not
+ * the trigger, is the row's item, so a width that reads the row
+ * (`w-full sm:w-48`) goes on `Select`, the trigger keeping `w-full`.
+ */
+const Select = <T = string, Multiple extends boolean | undefined = false>(
+  props: SelectProps<T, Multiple> & {
+    readonly className?: string | undefined;
+  }
+) => (
+  // ui-sdk's select reads its options by name and renders no element of its
+  // own, so `className`, passed on with the rest, styles the box alone.
+  <span
+    data-slot="select-control"
+    className={cn("relative block", props.className)}
+  >
+    <SelectPrimitive<T, Multiple> {...props} />
+  </span>
+);
 
 export {
+  Select,
   SelectContent,
   SelectGroup,
   SelectItem,

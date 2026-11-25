@@ -21,6 +21,7 @@ import {
   maxCommentRulesPerWorkspace,
   maxRuleRepliesPerDay,
   NewCommentRuleSchema,
+  PlatformCommentRuleSchema,
 } from "./comment-rule.ts";
 import { Forbidden } from "./forbidden.ts";
 import { TooManyCommentRules } from "./too-many-comment-rules.ts";
@@ -50,6 +51,18 @@ export class InboxRulesApi extends HttpApiGroup.make("automations.commentRules")
       OpenApi.annotations({
         description: `Lists the workspace's comment rules, oldest first, 50 a page unless \`limit\` (at most 100) says otherwise, those with \`status\` alone when given, each with what its channels can carry and the latest ${String(commentRuleMatchesShown)} comments it matched. A rule's \`privateReply\`, and each match's \`privateCode\`, \`privateReplyId\` and \`privateStatus\`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.`,
         summary: "List comment rules",
+      })
+    ),
+    HttpApiEndpoint.get("platforms", "/platforms", {
+      error: Forbidden,
+      headers: workspaceHeaders,
+
+      success: Schema.Array(PlatformCommentRuleSchema),
+    }).annotateMerge(
+      OpenApi.annotations({
+        description:
+          "Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.",
+        summary: "List where comment rules answer",
       })
     ),
     HttpApiEndpoint.post("create", "/", {

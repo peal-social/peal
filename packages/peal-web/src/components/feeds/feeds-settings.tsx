@@ -45,6 +45,7 @@ import {
   createFeed,
   deleteFeed,
   feedItems,
+  feedListChanged,
   feedsChanged,
   previewFeed,
   updateFeed,
@@ -187,7 +188,11 @@ const FeedActions = ({
               onClick={() => {
                 start(async () => {
                   answered(
-                    await remove({ headers, params, reactivityKeys }),
+                    await remove({
+                      headers,
+                      params,
+                      reactivityKeys: feedListChanged(workspaceId),
+                    }),
                     t("deleted")
                   );
                 });

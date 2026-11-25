@@ -1202,7 +1202,9 @@ way, so a person who learns one screen knows them all.
 - The same words everywhere: a property is named in the singular
   (Channel, Tag), a value as the app names it elsewhere, a time range is
   a **Period** ("Last 30 days"), taking every filter off is **Clear**,
-  and the next page of a list is **Show more**.
+  and the next page of a list is **Show more**. A channel, as a value,
+  has its platform's mark before it, and its text names the platform too
+  ("Client A (@clienta) on Instagram"), in the menu and on its chip.
 - A list the filters leave empty says so, with **Clear**.
 
 ### Lists: choosing several

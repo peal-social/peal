@@ -179,6 +179,37 @@ const securityLive = (authorization: AuthorizationServer, studio: Studio) =>
 
             // A workspace API key is nobody: it acts in its workspace,
             // with its own permissions.
+            // An application's token acts for the person, in the workspace
+            // it is bound to.
+            if (key?.binding !== undefined) {
+              return yield* httpEffect.pipe(
+                Effect.provideService(CurrentPrincipal, {
+                  _tag: "user",
+                  impersonatedBy: null,
+                  oauth: {
+                    clientId: key.id,
+                    scopes: ["workspace:read"],
+                    workspaceId:
+                      key.binding._tag === "unbound" ? null : key.binding.id,
+                  },
+                  userId: syntheticMe.user.id,
+                })
+              );
+            }
+
+            // A partner key acts in its partner's customers.
+            if (key?.partnerId !== undefined) {
+              return yield* httpEffect.pipe(
+                Effect.provideService(CurrentPrincipal, {
+                  _tag: "partnerKey",
+                  partnerId: key.partnerId,
+                  partnerKeyId: key.id,
+                  permissions: key.permissions,
+                  scopes: [],
+                })
+              );
+            }
+
             if (key !== undefined) {
               return yield* httpEffect.pipe(
                 Effect.provideService(CurrentPrincipal, {

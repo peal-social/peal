@@ -14,7 +14,6 @@ import {
   digestKeyOf,
   digestWeekOf,
   hasNews,
-  renderWeeklyDigest,
 } from "#notifications/domain/weekly-digest.ts";
 import type { DigestWeek } from "#notifications/domain/weekly-digest.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -24,6 +23,7 @@ import { AppLinks } from "./app-links.ts";
 import { DigestLinks } from "./digest-links.ts";
 import { DigestSources } from "./digest-sources.ts";
 import type { DigestReader } from "./digest-sources.ts";
+import { EmailRenderer } from "./email-renderer.ts";
 import { MailDeliveryFailed } from "./mail-delivery-failed.ts";
 import { Mailer } from "./mailer.ts";
 import { PreferenceStore } from "./preference-store.ts";
@@ -125,6 +125,7 @@ export class SendWeeklyDigests extends Context.Service<
       const digestLinks = yield* DigestLinks;
       const mailer = yield* Mailer;
       const preferences = yield* PreferenceStore;
+      const renderer = yield* EmailRenderer;
       const sources = yield* DigestSources;
 
       const send = Effect.fn("SendWeeklyDigests.send")(function* send(
@@ -149,7 +150,7 @@ export class SendWeeklyDigests extends Context.Service<
             locale
           );
 
-        const email = renderWeeklyDigest({
+        const email = yield* renderer.weeklyDigest({
           calendarUrl: pageOf("/calendar"),
           locale,
           preferencesUrl: pageOf("/settings/notifications"),

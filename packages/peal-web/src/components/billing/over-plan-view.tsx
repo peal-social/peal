@@ -15,6 +15,7 @@ import {
 } from "peal-ui/components/card";
 import { Checkbox } from "peal-ui/components/checkbox";
 import { Label } from "peal-ui/components/label";
+import { Skeleton } from "peal-ui/components/skeleton";
 import { useId } from "react";
 import type { ReactNode } from "react";
 
@@ -225,6 +226,48 @@ const Choosing = ({
         </Button>
       </CardFooter>
     </Card>
+  );
+};
+
+/**
+ * The screen for a member who manages billing until the channels and the
+ * members are read: before hydration, and until the browser has both.
+ */
+export const OverPlanLoading = () => {
+  const t = useTranslations("OverPlan");
+
+  return (
+    <div className="flex flex-col gap-6" aria-busy="true">
+      <span className="sr-only">{t("loading")}</span>
+      <Skeleton className="h-20 w-full" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  );
+};
+
+/**
+ * The screen for a member who manages billing when the browser could not
+ * read the channels or the members: why, and a way to read them again.
+ */
+export const OverPlanLoadFailed = ({
+  onRetry,
+}: {
+  readonly onRetry: () => void;
+}) => {
+  const t = useTranslations("OverPlan");
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Alert variant="destructive">
+        <AlertDescription>{t("loadFailed")}</AlertDescription>
+      </Alert>
+      <div>
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          {t("retry")}
+        </Button>
+      </div>
+    </div>
   );
 };
 

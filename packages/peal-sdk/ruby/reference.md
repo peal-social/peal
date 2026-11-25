@@ -10673,6 +10673,60 @@ client.automations.comment_rules.create(
 </dl>
 </details>
 
+<details><summary><code>client.automations.comment_rules.<a href="/lib/peal/automations/comment_rules/client.rb">platforms</a>() -> Internal::Types::Array[Peal::Types::PlatformCommentRule]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A rule on a channel there is still refused when the channel must be connected again, or, for its private reply, when the channel's messages are off or the channel is an Instagram account connected through Meta's unified login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```ruby
+client.automations.comment_rules.platforms
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `Peal::Automations::CommentRules::RequestOptions` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.automations.comment_rules.<a href="/lib/peal/automations/comment_rules/client.rb">get</a>(rule_id:) -> Peal::Types::CommentRule</code></summary>
 <dl>
 <dd>
@@ -13902,7 +13956,7 @@ client.channels.connect_links.revoke(link_id: "linkId")
 <dl>
 <dd>
 
-Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
+Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel the workspace does not have, or that is not TikTok's, is ChannelNotFound; a channel turned off, or whose account must be reconnected (TikTok refused its credential, or it lacks a permission), ChannelCannotPost; TikTok not answering, or refusing the read, PlatformUnreachable; TikTok asking to slow down, PlatformRateLimited. Needs post:create.
 </dd>
 </dl>
 </dd>

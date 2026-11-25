@@ -82,6 +82,13 @@ export const PostMetricsSchema = Schema.Struct({
 
 export type PostMetrics = typeof PostMetricsSchema.Type;
 
+/**
+ * How many days after it went live Peal reads a post's counts. The
+ * server's schedule (src/analytics/domain/collection-schedule.ts) is the
+ * source; a test keeps the two equal.
+ */
+export const postCountsReadForDays = 30;
+
 /** A post's counts as read at one moment. */
 export const MetricsSnapshotSchema = Schema.Struct({
   collectedAt: Schema.DateTimeUtc,

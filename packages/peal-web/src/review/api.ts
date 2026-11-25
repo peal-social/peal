@@ -1,6 +1,7 @@
 import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
+import { postListKeys } from "#posts/api.ts";
 
 // The queries and mutations of reviews: a workspace's approval policy, the
 // approvals that wait, a post's comments, decisions and links. A mutation
@@ -21,7 +22,7 @@ export const pendingApprovals = (workspaceId: string) =>
   PealApi.query("approvals", "list", {
     headers: forWorkspace(workspaceId),
     // A post taken back or scheduled elsewhere no longer waits.
-    reactivityKeys: [...reviewKeys, "posts"],
+    reactivityKeys: [...reviewKeys, ...postListKeys],
   });
 
 /** A post's comments and approvals. */

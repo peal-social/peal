@@ -14,12 +14,19 @@ export type ExchangeError =
   | OutboundRequestRefused
   | Schema.SchemaError;
 
+/**
+ * The code of the `BadRequest` for a host the outbound guard refused for
+ * good: it is not a public HTTPS server. Stored in the publication journal,
+ * so never change it.
+ */
+export const hostNotAllowedCode = "hostNotAllowed";
+
 // The outbound guard refused the host before anything was sent: for now if
 // its name did not resolve, for good if it is not a public HTTPS server.
 const refusedHost = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: "hostNotAllowed" });
+    : new BadRequest({ code: hostNotAllowedCode });
 
 // Peal could not build the request: a bug, never the platform's doing.
 const unbuildable = (error: HttpClientError.HttpClientError) =>

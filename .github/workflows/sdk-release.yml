@@ -7,6 +7,10 @@ name: SDK release
 # Maven Central with its token and signing key, Go as a tag of this
 # repository, and Packagist as a tag of the PHP mirror. Every publishing job
 # runs in the sdk-release environment, whose rules decide who may release.
+#
+# A tag names the release in SemVer, a prerelease too
+# (sdk-python-v0.4.0-beta.1), which the trigger below and the environment's
+# tag rule (sdk-*) both match.
 on:
   push:
     tags: ["sdk-*-v*"]
@@ -26,8 +30,11 @@ jobs:
   resolve:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # The language, the version as its registry spells the tag's release
+    # (0.4.0b1 for PyPI, 0.4.0.beta.1 for RubyGems), and npm's dist-tag.
     outputs:
       language: ${{ steps.tag.outputs.language }}
+      npm-tag: ${{ steps.tag.outputs.npm-tag }}
       version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -65,9 +72,13 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun nx run peal-sdk-node:sdk:build
       # Trusted publishing, with a provenance statement linking the package
-      # to this run.
-      - run: npm publish --provenance --access public
+      # to this run. npm refuses a prerelease without a dist-tag:
+      # scripts/release.ts names latest, for a prerelease too while the beta
+      # line is the only one, so a plain `npm install peal-sdk` gets it.
+      - run: npm publish --provenance --access public --tag "$NPM_TAG"
         working-directory: packages/peal-sdk/node
+        env:
+          NPM_TAG: ${{ needs.resolve.outputs.npm-tag }}
 
   python:
     needs: resolve

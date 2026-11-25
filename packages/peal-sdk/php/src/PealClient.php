@@ -141,8 +141,8 @@ class PealClient
             'Peal-Version' => '2026-11-09',
             'X-Fern-Language' => 'PHP',
             'X-Fern-SDK-Name' => 'Peal',
-            'X-Fern-SDK-Version' => '0.3.0',
-            'User-Agent' => 'peal-social/peal/0.3.0',
+            'X-Fern-SDK-Version' => '0.4.0-beta.1',
+            'User-Agent' => 'peal-social/peal/0.4.0-beta.1',
         ];
         if ($token != null) {
             $defaultHeaders['Authorization'] = "Bearer $token";

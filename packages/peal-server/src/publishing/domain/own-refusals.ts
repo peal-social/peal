@@ -40,6 +40,34 @@ export const ownRefusalCodes = {
 } as const;
 
 /**
+ * What a `BadRequest` says of the channel a read was for: turned off
+ * (`disabled`), no longer connected (`disconnected`), or nothing of the
+ * channel (`other`: the platform's refusal, or the outbound guard's), which
+ * never means the channel is missing.
+ */
+export type ChannelRefusal = "disabled" | "disconnected" | "other";
+
+/** What a `BadRequest`'s code says of the channel (`ChannelRefusal`). */
+export const channelRefusalOf = (code: string): ChannelRefusal => {
+  if (code === ownRefusalCodes.channelDisabled) {
+    return "disabled";
+  }
+
+  return code === ownRefusalCodes.channelDisconnected
+    ? "disconnected"
+    : "other";
+};
+
+/**
+ * The code of a `PlatformUnavailable` for a read that got an answer and no
+ * data: the platform refused it, or Peal's outbound guard refused the
+ * platform's host. Unlike an outage, it may come back the same each time
+ * (an app the platform has not audited) until the server's operator reads
+ * the logs, which name the refusal's own code. Never stored.
+ */
+export const readRefusedCode = "readRefused";
+
+/**
  * The codes adapters give a platform's refusal that has a failure reason of
  * its own, rather than `contentRejected`. They are stored in the
  * publication journal too, so never change one.

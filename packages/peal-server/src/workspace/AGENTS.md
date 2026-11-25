@@ -228,7 +228,7 @@ The staff context follows these rules too. What the law has a host keep is in
   (`PartnerWorkspaces`, `InvalidWorkspaceDetails`). A sign-in provider's
   name is made fit instead (`fittedName` in `profileToUser`: the markers
   taken out), so the sign-in goes on. Emails are made safe where they are
-  built: the notifications context's renderers show a name through
+  written: `peal-emails` shows a name through its
   `nameForMail`, which puts the catalog's `withheldNames` ("A member", "a
   workspace") in place of one that reads as a host or an address by a
   broad test on its NFC form (`readsAsAddress`: the markers, `@`, a
@@ -346,11 +346,20 @@ The staff context follows these rules too. What the law has a host keep is in
 - `Authentication` keeps the connection of each write to a content group
   in the legal journal (the legal guide's `ConnectionJournal`): the groups
   are `contentGroups` in `api/security.ts`, matched by their whole
-  identifier, less `checksOnly`. A new group whose writes create, change
-  or delete content joins `contentGroups` and the frozen list of
-  `test/workspace/api/journalled-writes.test.ts` together: the test notices
-  a write that leaves the list or joins a listed group, never a group left
-  out.
+  identifier, less `checksOnly`: posts, articles, signatures, comments,
+  messages, approvals, feeds, the rules that publish a follow-up or repeat
+  a post, and the media library's files and their descriptions, uploaded,
+  made from a prompt or composed. `contentOperations` names the single
+  writes of a group otherwise left out (a queue's reshuffle, which moves
+  its posts' times). A new group whose writes create, change or delete
+  content joins `contentGroups` and the frozen list of
+  `test/workspace/api/journalled-writes.test.ts` together: the test
+  notices a write that leaves the list or joins a listed group, never a
+  group left out. `test/workspace/api/content-connections.test.ts` sends
+  each write that joined since through `Authentication`, as each kind of
+  credential, and `test/app/mcp-content-tools.test.ts` maps each MCP tool
+  that changes something to the write it makes: a tool is in
+  `contentTools` exactly when its write is kept.
 - Better Auth caches a session in a cookie for five minutes, which a
   sign-out everywhere, a password reset or a ban does not reach. Its
   routes whose effect outlives the session (`refusedWhileImpersonating`)
@@ -395,7 +404,10 @@ The staff context follows these rules too. What the law has a host keep is in
   idempotency key per workspace and subscription), at once,
   `prorate: false` and `invoice_now: false`. `DeleteWorkspace` checks the
   typed name before it. Then the erasure's transaction erases posts first,
-  which refuse while one goes out, and billing last, which asks Stripe again
+  which refuse while one goes out, then articles (posts before articles
+  is the order every transaction that locks both takes, deleting a
+  library file included: a new path that locks both follows it), and
+  billing last, which asks Stripe again
   and refuses while anything still bills, as a checkout completed in between
   would. `DeleteWorkspace` and `CloseAccount` answer `WorkspaceSubscribed`
   (409) with each subscription's workspace, plan and `paidUntil`, which the

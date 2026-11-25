@@ -3,8 +3,22 @@
 - Emails go through the `Mailer` port: Resend when `RESEND_API_KEY` is set,
   otherwise SMTP at `SMTP_URL`, from `MAIL_FROM`. Requests never wait for
   them.
-- Render every email from `notifications/domain/english.ts` and `french.ts`,
-  in the reader's locale. Account emails go through `SendAuthEmail`.
+- Emails are written in `peal-emails`
+  ([its guide](../../../peal-emails/AGENTS.md)): their words in English and
+  French, their templates and their text. Use cases reach it through the
+  `EmailRenderer` port, whose adapter (`ReactEmailRenderer`) takes an email
+  it cannot write as a defect. Keep its import of the package static, so a
+  package that does not load stops the server as it starts, where a
+  release's health check sees it: failing later, it would lose account
+  emails, and `DeliverNoticeV1` keeps a defect as its result, so its
+  notices' emails would stay lost once fixed. Account emails go through
+  `SendAuthEmail`. A test that moves `TestClock` while an email is being
+  written provides a renderer that answers at once
+  (`send-auth-email.test.ts`), as rendering waits on promises.
+- A new notice, or a new reason of one, needs its member in
+  `NoticeEventSchema`, then its type, its words in both catalogues, its
+  sample and its preview in `peal-emails`: `ReactEmailRenderer` does not
+  compile before.
 - Notices are events, not sentences: the context stores what happened as
   typed data (`NoticeEventSchema`: a post published, failed with its reason,
   or unconfirmed; a channel to reconnect now or soon), the web app writes it
@@ -113,9 +127,9 @@
   `url.full` would keep the token, and the request log writes it with
   `<redacted>` in the token's place (`SecretPathsLive`).
 - A name someone typed (a member's, a workspace's) goes into an email only
-  through `nameForMail` (`#shared/domain/display-name.ts`): one that reads
-  as a host or an address is replaced by the catalog's `withheldNames`
-  ("A member", "a workspace"), so no email of Peal's carries a link
-  someone typed (the invitation, the deletion of a workspace, notices'
-  `{workspaceName}`, the weekly digest). A new email that shows such a
-  name does the same.
+  through `peal-emails`' `nameForMail`: one that reads as a host or an
+  address is replaced by the catalog's `withheldNames` ("A member", "a
+  workspace"), so no email of Peal's carries a link someone typed (the
+  invitation, the deletion of a workspace, notices' `{workspaceName}`, the
+  weekly digest). The server hands names over as they were typed, and a new
+  email that shows such a name does the same.

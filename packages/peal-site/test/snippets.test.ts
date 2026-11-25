@@ -72,14 +72,10 @@ describe("the home page's requests", () => {
   it.each(snippets)(
     "sends the same post, now, with its key, in $language",
     ({ code: source, language }) => {
-      // A key acts in its own workspace: the request names none, but the
-      // command line, which still takes the workspace's id with a key.
-      if (language === "cli") {
-        expect(source).toContain(workspaceId);
-      } else {
-        expect(source).not.toContain(workspaceId);
-      }
-
+      // A key acts in its own workspace: no request names it, nor does
+      // the command line.
+      expect(source, language).not.toContain(workspaceId);
+      expect(source, language).not.toContain("PEAL_WORKSPACE");
       expect(source).toContain(idempotencyKey);
       expect(source).toContain(postText);
       expect(source).toContain(String(waitSeconds));

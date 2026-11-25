@@ -18,6 +18,12 @@ export const workspaceCommentRules = (workspaceId: string) =>
     reactivityKeys: commentRulesChanged(workspaceId),
   });
 
+/** Where rules answer on this server, for every platform. */
+export const commentRulePlatforms = (workspaceId: string) =>
+  PealApi.query("automations.commentRules", "platforms", {
+    headers: forWorkspace(workspaceId),
+  });
+
 export const startCommentRule = PealApi.mutation(
   "automations.commentRules",
   "create"

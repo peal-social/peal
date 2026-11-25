@@ -41,6 +41,17 @@ const adminPaths = [
 ] as const;
 
 /**
+ * The intake of the web app's error reports (packages/peal-web,
+ * src/errors/browser.ts), which browsers call without cookies, so without
+ * Access's on an environment behind it throughout: a Bypass policy opens
+ * it, in an application of its own, as it is no outside service's. The
+ * server takes no credential there and counts each address (peal-server,
+ * src/app/client-errors/intake.ts), as in production. The Ansible
+ * project's peal_access_bypass_paths routes the same path.
+ */
+const clientErrorsPath = "api/client-errors";
+
+/**
  * How long the uptime server's service token is valid: a year, in hours.
  * Renewed before it ends with the dashboard's Refresh, which keeps its id
  * and secret (README.md, "The uptime server").
@@ -353,8 +364,29 @@ export class PealEnvironment extends pulumi.ComponentResource {
         policies.publicCallbacks
       );
 
+      // Newer than the component, so with no alias to keep. Access applies
+      // the application with the longer path, this one over access-app.
+      const clientErrors = new cloudflare.ZeroTrustAccessApplication(
+        "access-client-errors",
+        {
+          accountId,
+          destinations: [
+            {
+              type: "public",
+              uri: `${host(hostnames.app)}/${clientErrorsPath}`,
+            },
+          ],
+          domain: `${host(hostnames.app)}/${clientErrorsPath}`,
+          name: `${title} client errors`,
+          policies: [{ id: policies.publicCallbacks, precedence: 1 }],
+          sessionDuration: "24h",
+          type: "self_hosted",
+        },
+        { parent: this }
+      );
+
       const [grafanaApp, sshApp] = [grafana(), ssh()];
-      this.applications = [app, callbacks, grafanaApp, sshApp];
+      this.applications = [app, callbacks, clientErrors, grafanaApp, sshApp];
       this.accessAud = {
         app: app.aud,
         grafana: grafanaApp.aud,

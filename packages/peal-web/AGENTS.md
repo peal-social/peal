@@ -112,7 +112,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   draw: a sidebar on the page's background (in a `Sheet` on a
   phone; its links close it through `useCloseMenu`), the page in a white
   panel under a 48 px header (the breadcrumb, the page's `h1`, its
-  actions), and a bottom bar
+  actions; the panel scrolls, never the document, and each scrolling pane
+  is `relative`, so `sr-only` text and hidden inputs scroll and clip with
+  it. A scroller of its own that is not positioned, inside a pane (the
+  tags field, the media picker, the assistant's preview) or beside them
+  (the sidebar), keeps a checkbox's, a switch's and a select's input
+  through their own boxes, but other absolutely positioned or `sr-only`
+  content in it resolves against the pane, or the window, and neither
+  scrolls nor clips with it: give that scroller `relative` when adding
+  such content there), and a bottom bar
   across the window: the account menu at its start (`AccountMenuView`),
   Help (**Docs** at `PEAL_DOCS_URL`, **Support** at `PEAL_CONTACT_URL`
   when set, the shortcut sheet) and the agent's place (`AgentDock`) at
@@ -327,8 +335,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`headers: forWorkspace(workspaceId)`, from `peal-contract`, merged
   with an idempotency key where there is one), never through a transform
   of the client: query atoms are keyed by a call's arguments, so two
-  workspaces' queries stay apart. A link cannot carry that header: a file
-  of a workspace endpoint is fetched through the API's client
+  workspaces' queries stay apart. A deletion passes the key that lists
+  its kind again alone (`postListsChanged`, `articleListChanged`,
+  `queueListChanged`, `feedListChanged`; a media's usage reads
+  `mediaUsageKeys`), never one a query of the deleted item reads: the
+  page still reads it when the answer lands, and would ask for it and get
+  a 404 (`test/api/deletions.test.ts`). A link cannot carry that header:
+  a file of a workspace endpoint is fetched through the API's client
   (`fetchFrom`, so its refusals are read as every call's, the two-step
   notice included) and saved from an anchor put in the document
   (`downloadExport`, `#analytics/export-download.ts`).
@@ -343,7 +356,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `HydrationBoundary`. `prefetch` does not forward the visitor's cookies, so a
   query that needs them, and anything that depends on the browser (its time
   zone, the current time), renders after hydration (`useHydrated`,
-  `useMounted`). Tiptap editors set `immediatelyRender: false`.
+  `useMounted`). Read during the server's render, such a query has failed
+  already (the client's `/api` address has no host there) while the
+  browser's first render sees it loading, so what the server renders must
+  not depend on its result, or React throws away the page's HTML
+  (its hydration error). Either form keeps to that: render the component
+  that reads the query only once hydrated, its loading state before
+  (`ChannelsSettings`, `PlatformsScreen`), or read it and show its loading
+  state until hydrated whatever it holds (`!mounted || …`, as
+  `ComposerScreen` does, and `OverPlanScreen` for those who manage
+  billing, `overPlanLoadOf`). Tiptap editors set `immediatelyRender: false`.
 - Settings pages follow DESIGN.md's "Settings": the layout puts each in
   peal-ui's `SettingsPage` column; a page is sections (`SettingsGroup`,
   `components/settings/settings-group.tsx`) of `SettingsCard`s of
@@ -356,6 +378,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Settings pages read Better Auth's members, invitations and sessions in
   atoms (`#settings/atoms.ts`), decoding each answer with `authCall`, and
   offer only the role changes its routes accept (`#settings/member-rules.ts`).
+  `/list-sessions` lists sessions, each with its token, only to a session
+  signed in less than Better Auth's `freshAge` ago (a day), and answers an
+  older one 403 `SESSION_NOT_FRESH`, which trying again never changes:
+  `SessionsView` says so in one muted row with **Sign in again**, which
+  signs this session out and opens `/login?next=` back to the page (any
+  other failure keeps **Try again**). Revoking a session needs no fresh one.
   Invitations go through `invite` (`#settings/invite.ts`): Better Auth's
   client types roles from its own defaults. Sign-in opens `next` in the
   language the account keeps (`landingLocale`), which account settings save
@@ -546,7 +574,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   alone: `channelName` wherever one line names it (the workspace's name
   with the handle beside it, "Client A (@handle)"), `channelTitle` where
   the handle is written beside anyway (the channels page, the composer's
-  picker). The name is Peal's (`Channel.label`, `RenameChannel`,
+  picker). A picker (a select's option, a Filter menu's value and its
+  chip, a box to tick) names a channel with `useChannelLabel`
+  (`components/channels/channel-label.ts`): `channelName` and the
+  platform, "Client A (@clienta) on Instagram", so two channels of one
+  name read apart and a search finds them by platform; a Filter menu's
+  value also takes the platform's mark (`PlatformMark`), as Analytics'
+  widgets do. The comment rules' form offers only the channels that are
+  on, on a platform where `automations.commentRules.platforms` says rules
+  answer (`ruleChannelsOf`), and its private message where that answer
+  says so (`carriesPrivately`); with none, it names each channel there
+  that is off or must be connected again, with its fix on the Channels
+  page (`heldChannelsOf`), else one line says where rules answer. The
+  form waits for both answers (`ruleFormStateOf`). The name is Peal's (`Channel.label`, `RenameChannel`,
   `labelUpdateOf`) and never hides the handle. The text tabs still show
   the handle alone. `ChannelPower` turns a channel off, after a
   confirmation, and back on: every string about a channel that is off
@@ -765,11 +805,30 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `sr-only` in the widget), in words
   that say it is the channel's past, never a prediction, and that
   nothing is ranked under the floor (`Analytics.bestTimes`).
-- A post's page (`PostMetrics`) names the platforms this server counts
+- A post's counts (`PostMetrics`) show on its page in `PostDetail`, after
+  its channels, to members with analytics:read once it is live on a
+  channel: the composer never shows them, as a post it opens has gone
+  live nowhere. Each channel the post went out on is a row, named as its
+  card is (`channelNamed`), whose state is `countsRowsOf`
+  (`#analytics/post-counts.ts`, tested): its counts and when they were
+  read, or why there are none. It promises no time: a channel analytics
+  follows, or may still follow (`followedWithin` of going live), says its
+  counts show once read, or that a channel turned off or to reconnect is
+  not read; a post removed from its platform, and a story, are never
+  read. Why reads ended
+  comes from what the page holds (the window, `removedAt`, a channel
+  gone), as the contract says only that they did. The readings chart
+  draws its lines in colours of 3:1 or more, three of them dashed
+  (`readingLines`), never lavender or yellow, and marks days, or hours
+  with the day where it changes, on its time axis (`readingTicksOf`).
+  The counts are read once for each state of the post's channels
+  (`postAnalytics`' `revision`, `channelsRevisionOf`), so Unpublish or
+  Post again reads them again. It names the platforms this server counts
   from its capabilities (`GET …/channels/capabilities`,
   `analytics.perPost`: `countedOn`), never from the contract's
   `countedPlatforms` alone: X is counted only where `X_ANALYTICS` is on.
-  It falls back on the list when it may not read the capabilities.
+  When it may not read the capabilities, it promises no count, and names
+  as uncounted only the platforms Peal has no reader for.
 - The composer's parts are `FollowUpParts` (`components/posts/
   follow-up-parts.tsx`, state in `#posts/parts.ts`): each part its own
   text, media and wait, checked against each selected channel as a post
@@ -1083,6 +1142,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`standingOfWorkspace`, read with the visitor's cookies): on the free
   tier it says the account holds more than its free accounts without a
   payment method; a grace shows `GraceBanner` above every page instead.
+  For those who manage billing it loads (`OverPlanLoading`) until the
+  browser has read the channels and the members they choose among, and
+  says when either could not be read, with **Try again**
+  (`OverPlanLoadFailed`); the others read it at once.
 - A meter's refusal (`UsageAllowanceReached`) opens the same dialog when
   it asks for a payment method (`MeterReached`, `isMeterReason` in
   `#billing/upgrade.ts`: what the month allowed, when it starts again, what

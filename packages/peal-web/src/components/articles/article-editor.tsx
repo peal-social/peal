@@ -22,6 +22,7 @@ import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
 
 import {
+  articleListChanged,
   articlesKeys,
   createArticle,
   deleteArticle,
@@ -390,7 +391,11 @@ export const ArticleEditor = ({
             handleDelete: () => {
               run(
                 async () =>
-                  await remove({ params, headers, reactivityKeys: keys }),
+                  await remove({
+                    params,
+                    headers,
+                    reactivityKeys: articleListChanged(workspaceId),
+                  }),
                 "deleted",
                 () => {
                   goTo("");

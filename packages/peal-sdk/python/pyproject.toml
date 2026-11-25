@@ -4,7 +4,7 @@ dynamic = ["version"]
 
 [tool.poetry]
 name = "peal-sdk"
-version = "0.3.0"
+version = "0.4.0b1"
 description = "Client for the Peal API: schedule social media posts across platforms."
 readme = "README.md"
 authors = ["Peal <hello@peal.social>"]

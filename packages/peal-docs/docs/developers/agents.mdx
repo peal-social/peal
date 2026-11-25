@@ -79,7 +79,7 @@ An agent that runs on a schedule or on a server has no browser to sign in with. 
 
 - On the MCP endpoint, in the `Authorization` header, as `Bearer peal_…`, never in the address ([Connect with an API key](/developers/mcp#api-key)).
 - On the [HTTP API](#api), in the same header.
-- On the [command line](#cli), in the `PEAL_API_KEY` variable, never a flag, with the workspace named by its id ([Run it with an API key](/developers/cli#api-key)).
+- On the [command line](#cli), in the `PEAL_API_KEY` variable, never a flag ([Run it with an API key](/developers/cli#api-key)).
 
 A key has no scope. What it may do is the list of its permissions, which `whoami` answers, and `GET /api/v1/credential` over HTTP ([SDKs](/developers/sdks#credential)). It puts posts out only when it holds `post:schedule`, and the tools only a person uses, such as inviting someone, refuse it.
 

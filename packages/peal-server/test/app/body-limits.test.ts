@@ -71,6 +71,7 @@ layer(MigratedSqlLive, { excludeTestServices: true, timeout: "180 seconds" })(
                   decodeCode(text).pipe(Option.map(({ code }) => code))
                 ),
                 status: response.status,
+                text,
               };
             });
 
@@ -164,10 +165,10 @@ layer(MigratedSqlLive, { excludeTestServices: true, timeout: "180 seconds" })(
             undeclared,
             tooMany,
           ]) {
-            assert.deepStrictEqual(refused, {
-              code: "payload_too_large",
-              status: 413,
-            });
+            assert.deepStrictEqual(
+              { code: refused.code, status: refused.status },
+              { code: "payload_too_large", status: 413 }
+            );
           }
 
           assert.strictEqual(signIn.status, 413);
@@ -175,7 +176,20 @@ layer(MigratedSqlLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Exactly at the limit, Better Auth reads it: nobody has that
           // address.
           assert.strictEqual(atLimitSignIn.status, 401);
+          // The MCP endpoint's own shape: a JSON-RPC error that says why.
           assert.strictEqual(mcp.status, 413);
+          assert.strictEqual(
+            mcp.text,
+            JSON.stringify({
+              error: {
+                code: -32_000,
+                message:
+                  "The request's body is larger than this endpoint takes, so nothing was done. Send less in one request.",
+              },
+              id: null,
+              jsonrpc: "2.0",
+            })
+          );
           assert.strictEqual(bulk.status, 401);
         })
     );

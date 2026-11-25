@@ -5,14 +5,9 @@ import {
   digestKeyOf,
   digestWeekOf,
   hasNews,
-  renderWeeklyDigest,
 } from "#notifications/domain/weekly-digest.ts";
-import type {
-  DigestEmail,
-  LinkedDigestWorkspace,
-} from "#notifications/domain/weekly-digest.ts";
+import type { LinkedDigestWorkspace } from "#notifications/domain/weekly-digest.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
-import type { Locale } from "#shared/domain/locale.ts";
 
 const utc = (iso: string) => DateTime.makeUnsafe(iso);
 
@@ -44,14 +39,6 @@ const studio: LinkedDigestWorkspace = {
   ],
   workspaceId,
 };
-
-const email = (locale: Locale, workspaces = [studio]): DigestEmail => ({
-  calendarUrl: "https://app.example.test/2f9a/calendar",
-  locale,
-  preferencesUrl: "https://app.example.test/2f9a/settings/notifications",
-  week,
-  workspaces,
-});
 
 describe(digestWeekOf, () => {
   it("tells the week that ended at the last Monday's midnight UTC, and the week it began", () => {
@@ -90,69 +77,5 @@ describe(hasNews, () => {
         },
       })
     ).toBeFalsy();
-  });
-});
-
-describe(renderWeeklyDigest, () => {
-  it("counts a workspace's week and names its first posts, in UTC", () => {
-    const { subject, text } = renderWeeklyDigest(email("en"));
-
-    expect(subject).toBe(
-      "Your week on Peal: November 9, 2026 to November 15, 2026"
-    );
-    expect(
-      [
-        "What went out from November 9, 2026 to November 15, 2026, and what is planned until November 22, 2026",
-        "7 posts went out · 1 failed · 6 scheduled this week · 1 waiting for approval",
-        "- November 10, 2026 at 9:30 AM UTC: Autumn sale",
-        "- November 11, 2026 at 9:30 AM UTC: No text",
-        "- and 5 more",
-        "Engagement with the week’s posts, as last counted: 1,234.",
-        "Open the calendar of Studio <Nord> & Co: https://app.example.test/2f9a/calendar",
-        "turn it off in your notification preferences (https://app.example.test/2f9a/settings/notifications).",
-      ].filter((expected) => !text.includes(expected))
-    ).toStrictEqual([]);
-    expect(text).not.toContain("Impressions");
-  });
-
-  it("escapes what members wrote in its HTML, and links how to stop it", () => {
-    const { html } = renderWeeklyDigest(email("en"));
-
-    expect(html).toContain("Studio &lt;Nord&gt; &amp; Co");
-    expect(html).toContain("Launch day &lt;b&gt;soon&lt;/b&gt;");
-    expect(html).not.toContain("<b>soon</b>");
-    expect(html).toContain(
-      '<a href="https://app.example.test/2f9a/settings/notifications" style="color:#52525b;">your notification preferences</a>'
-    );
-    expect(html).toContain('href="https://app.example.test/2f9a/calendar"');
-  });
-
-  it("is written in French, with French plurals", () => {
-    const { subject, text } = renderWeeklyDigest(
-      email("fr", [
-        {
-          ...studio,
-          counts: { ...studio.counts, failed: 0, unconfirmed: 2, wentOut: 1 },
-          engagement: Option.some({
-            engagement: 1234,
-            impressions: Option.some(56_789),
-          }),
-          wentOut: [studio.wentOut[0] ?? studio.planned[0]].flatMap((post) =>
-            post === undefined ? [] : [post]
-          ),
-        },
-      ])
-    );
-
-    expect(subject).toBe(
-      "Votre semaine sur Peal : du 9 novembre 2026 au 15 novembre 2026"
-    );
-    expect(text).toContain(
-      "1 publication partie · 2 à vérifier sur leurs plateformes · 6 programmées cette semaine · 1 en attente d’approbation"
-    );
-    expect(text).toContain("Impressions : 56 789.");
-    expect(text).toContain(
-      "désactivez-le dans vos préférences de notification"
-    );
   });
 });

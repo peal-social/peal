@@ -10,6 +10,7 @@ import { forWorkspace } from "peal-contract";
 
 import { SqlLive } from "#shared/infrastructure/database.ts";
 import {
+  apiKeyOf,
   bodyOf,
   confirmedAccount,
   emailTo,
@@ -21,6 +22,8 @@ import {
   TestApp,
   workspaceOf,
 } from "#test/workspace/integration/harness.ts";
+import { seedChannel } from "#test/workspace/integration/seed.ts";
+import { commandLineToken } from "#test/workspace/support.ts";
 
 // The edge in front of Peal sets the client's address.
 const clientAddress = "203.0.113.7";
@@ -28,6 +31,15 @@ const clientAddress = "203.0.113.7";
 const draftOf = (text: string) => ({
   channelIds: [],
   content: { media: [], overrides: [], text },
+});
+
+// An article of one paragraph, as the editor writes it.
+const articleOf = (text: string) => ({
+  body: {
+    content: [{ content: [{ text, type: "text" }], type: "paragraph" }],
+    type: "doc",
+  },
+  title: text,
 });
 
 const ConnectionSchema = Schema.Struct({
@@ -443,6 +455,123 @@ layer(RetainingLive, { excludeTestServices: true, timeout: "120 seconds" })(
             })).status,
             400
           );
+        })
+    );
+
+    it.effect(
+      "keep the connection of each write to an article, however it signed in, and none of a write refused",
+      () =>
+        Effect.gen(function* articles() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const dee = yield* signedUp("legal-articles");
+          const workspaceId = yield* workspaceOf(dee, "Articles");
+
+          const from = {
+            "x-forwarded-for": clientAddress,
+            ...forWorkspace(workspaceId),
+          };
+
+          const channelId = yield* seedChannel(workspaceId, "garden.example", {
+            platform: "wordpress",
+          });
+
+          const { key } = yield* apiKeyOf(dee, workspaceId, [
+            "channel:read",
+            "post:read",
+            "post:create",
+            "post:update",
+            "post:delete",
+            "post:schedule",
+          ]);
+
+          const token = yield* commandLineToken(dee.cookies);
+
+          // A draft written in the web app.
+          const created = yield* app.request("/api/v1/articles", {
+            body: { ...articleOf("A synthetic draft"), channelId },
+            headers: { cookie: dee.cookies, ...from },
+          });
+
+          assert.strictEqual(created.status, 200, JSON.stringify(created.body));
+
+          const { id } = yield* bodyOf(
+            Schema.Struct({ id: Schema.String }),
+            created
+          );
+
+          // Changed with the workspace's key.
+          const changed = yield* app.request(`/api/v1/articles/${id}`, {
+            body: articleOf("A synthetic draft, changed"),
+            headers: { authorization: `Bearer ${key}`, ...from },
+            method: "PATCH",
+          });
+
+          assert.strictEqual(changed.status, 200, JSON.stringify(changed.body));
+
+          // Refused: a website the workspace does not have, and a draft
+          // that waits for nothing to unschedule.
+          const refused = yield* Effect.all([
+            app.request("/api/v1/articles", {
+              body: { ...articleOf("A synthetic stray"), channelId: uuid7() },
+              headers: { cookie: dee.cookies, ...from },
+            }),
+            app.request(`/api/v1/articles/${id}/unschedule`, {
+              headers: { authorization: `Bearer ${key}`, ...from },
+              method: "POST",
+            }),
+          ]);
+
+          assert.deepStrictEqual(
+            refused.map(({ status }) => status),
+            [404, 409]
+          );
+
+          // Deleted from the command line.
+          const deleted = yield* app.request(`/api/v1/articles/${id}`, {
+            headers: { authorization: `Bearer ${token}`, ...from },
+            method: "DELETE",
+          });
+
+          assert.strictEqual(deleted.status, 204, JSON.stringify(deleted.body));
+
+          const kept =
+            yield* sql`SELECT access, ip_address, user_id, api_key_id IS NOT NULL AS by_key FROM legal.connections WHERE workspace_id = ${workspaceId} ORDER BY access`.pipe(
+              Effect.flatMap(
+                Schema.decodeUnknownEffect(
+                  Schema.Array(
+                    Schema.Struct({
+                      access: Schema.String,
+                      by_key: Schema.Boolean,
+                      ip_address: Schema.NullOr(Schema.String),
+                      user_id: Schema.NullOr(Schema.String),
+                    })
+                  )
+                )
+              ),
+              Effect.orDie
+            );
+
+          assert.deepStrictEqual(kept, [
+            {
+              access: "apiKey",
+              by_key: true,
+              ip_address: clientAddress,
+              user_id: null,
+            },
+            {
+              access: "oauth",
+              by_key: false,
+              ip_address: clientAddress,
+              user_id: dee.id,
+            },
+            {
+              access: "session",
+              by_key: false,
+              ip_address: clientAddress,
+              user_id: dee.id,
+            },
+          ]);
         })
     );
   }

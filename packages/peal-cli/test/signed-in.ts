@@ -7,7 +7,7 @@ import { TestClock } from "effect/testing";
 import { runWith } from "#cli.ts";
 
 import { adsScope, makeAuthorizationServer } from "./authorization-server.ts";
-import { makeStudio, studioId, studioMe } from "./studio.ts";
+import { makeStudio, studioId, studioMe, studioPartner } from "./studio.ts";
 import type { Studio, StudioKey } from "./studio.ts";
 import { cliEnvironment, inMemoryServer, output } from "./support.ts";
 
@@ -49,6 +49,18 @@ export const draftingKey: StudioKey = {
   id: "4e7a1b2c-3d5f-4a6b-9c8d-0e1f2a3b4c5d",
   key: "peal_test_synthetic_drafting_key",
   permissions: ["channel:read", "post:read", "post:create", "post:update"],
+  workspaceId: studioId,
+};
+
+/**
+ * A synthetic partner key of the studio's partner account, which acts in
+ * the partner's customers and belongs to none of them.
+ */
+export const partnerKey: StudioKey = {
+  id: "5f8b2c3d-4e6a-4b7c-8d9e-1f2a3b4c5d6e",
+  key: "peal_test_synthetic_partner_key",
+  partnerId: studioPartner.id,
+  permissions: ["channel:read", "post:read"],
   workspaceId: studioId,
 };
 

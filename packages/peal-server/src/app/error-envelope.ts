@@ -34,6 +34,13 @@ type ErrorBody = typeof ErrorBodySchema.Type;
 
 const decodeBody = Schema.decodeUnknownOption(ErrorBodySchema);
 
+// Effect's handler answers a body in a content type its endpoint does not
+// read with words of its own, in plain text (415): no handler of the API
+// answers that status, so such an answer keeps its status alone and gets
+// the general error, as one without a body does.
+const writtenByEffect = (response: HttpServerResponse.HttpServerResponse) =>
+  response.status === 415;
+
 const text = new TextDecoder();
 
 // The error an answer carries, if it carries one.
@@ -251,8 +258,10 @@ const invalidRequest = (issues: readonly RequestIssue[]) => {
  * `message` and `requestId`. A declared error keeps what its handler said
  * and gets its code and, unless it has words of its own, the catalogue's;
  * an answer without a body (a route that does not exist, a request that
- * could not be read, a bug) gets the general error of its status, which
- * never says more than the status does. Other answers are left alone: one
+ * could not be read, a bug), or with Effect's own words (a body in a
+ * content type its endpoint does not read), gets the general error of its
+ * status, which never says more than the status does. Other answers are
+ * left alone: one
  * that is not an error, a stream, a body that is not an error of the API.
  */
 export const enveloped =
@@ -267,7 +276,11 @@ export const enveloped =
     const general = generalErrorOf(response.status);
     const carried = bodyOf(response);
 
-    if (response.body._tag !== "Empty" && Option.isNone(carried)) {
+    if (
+      response.body._tag !== "Empty" &&
+      Option.isNone(carried) &&
+      !writtenByEffect(response)
+    ) {
       return response;
     }
 

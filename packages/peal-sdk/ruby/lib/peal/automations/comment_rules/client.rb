@@ -127,6 +127,50 @@ module Peal
           end
         end
 
+        # Says, for every platform in Peal's order, whether a comment rule can answer there on this server (`reply`) and
+        # send its private reply (`privateReply`): where a rule may be started, before any channel's own standing. A
+        # rule on a channel there is still refused when the channel must be connected again, or, for its private reply,
+        # when the channel's messages are off or the channel is an Instagram account connected through Meta's unified
+        # login, whose messages Peal does not read yet (its `privateReply` is `unsupported` there, though the platform's
+        # is `available`); `channels` on the refusal and on the rule says so. Needs engagement:read.
+        #
+        # @param request_options [Hash]
+        # @param _params [Hash]
+        # @option request_options [String] :base_url
+        # @option request_options [Hash{String => Object}] :additional_headers
+        # @option request_options [Hash{String => Object}] :additional_query_parameters
+        # @option request_options [Hash{String => Object}] :additional_body_parameters
+        # @option request_options [Integer] :timeout_in_seconds
+        #
+        # @example
+        #   client.automations.comment_rules.platforms
+        #
+        # @return [Array[Peal::Types::PlatformCommentRule]]
+        def platforms(request_options: {}, **_params)
+          request = Peal::Internal::JSON::Request.new(
+            base_url: request_options[:base_url],
+            method: "GET",
+            path: "api/v1/automations/comment-rules/platforms",
+            request_options: request_options
+          )
+          begin
+            response = @client.send(request)
+          rescue Net::HTTPRequestTimeout
+            raise Peal::Errors::TimeoutError
+          end
+          code = response.code.to_i
+          if code.between?(200, 299)
+            Peal::Internal::Types::Utils.coerce(Internal::Types::Array[Peal::Types::PlatformCommentRule], (response.body.to_s.empty? ? nil : JSON.parse(response.body, symbolize_names: true)))
+          else
+            error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+            error_types = {
+              401 => Peal::Types::UnauthenticatedEncoded
+            }
+            error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+            raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+          end
+        end
+
         # Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's
         # `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who
         # may not read private replies: one without engagement:readMessages, or an application the owner did not let

@@ -58,12 +58,15 @@
   `updateWorkspace` are kept in that workspace's log by their handlers
   (`recordMade`), as its path is not under the workspace. Its refusals say
   why, like any other: `missingScope` with the partner scope a key lacks.
-- A check leaves no event: `posts.validate`, `channels.lookups.run` and
-  `ads.quoteBoost`, which read
+- A check leaves no event: `posts.validate`, `channels.lookups.run`,
+  `automations.feeds.preview` and `ads.quoteBoost`, which read
   though they are sent as POST (`checksOnly` in
   `#workspace/api/security.ts`), and a request whose handler says first
   thing that it changes nothing (`changesNothing`, `#shared/api/change-mark.ts`:
   an import's dry run), which the ConnectionJournal leaves out too. A
+  request whose handler says it changes no content (`changesNoContent`: a
+  transcript not saved as a description) is still an event; only the
+  ConnectionJournal leaves it out. A
   request that makes several posts (`posts.bulk`, `posts.import`) is one
   event; its refused items carry their errors' codes (`inEnvelope`,
   `#publishing/api/post-refusal.ts`).

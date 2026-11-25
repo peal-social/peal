@@ -130,6 +130,28 @@ func TestAutomationsCommentRulesCreateWithWireMock(
 	VerifyRequestCount(t, "TestAutomationsCommentRulesCreateWithWireMock", "POST", "/api/v1/automations/comment-rules", nil, 1)
 }
 
+func TestAutomationsCommentRulesPlatformsWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	_, invocationErr := client.Automations.CommentRules.Platforms(
+		context.TODO(),
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestAutomationsCommentRulesPlatformsWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestAutomationsCommentRulesPlatformsWithWireMock", "GET", "/api/v1/automations/comment-rules/platforms", nil, 1)
+}
+
 func TestAutomationsCommentRulesGetWithWireMock(
 	t *testing.T,
 ) {

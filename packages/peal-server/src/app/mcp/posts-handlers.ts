@@ -38,6 +38,7 @@ import {
   unknownSignature,
   unknownTags,
 } from "#app/mcp/refusals.ts";
+import { tiktokRefusal } from "#app/mcp/tiktok-refusals.ts";
 import type { ToolRefused } from "#app/mcp/tool-refused.ts";
 import {
   livePostChangeView,
@@ -81,7 +82,6 @@ import type { ChangeRequest } from "#publishing/application/recycling/recycling.
 import { TikTokCreatorInfo } from "#publishing/application/tiktok-creator-info.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { livePostChangePermission } from "#publishing/domain/live-post-change.ts";
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import { queueKeyOf } from "#publishing/domain/queue.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { limitRefusal } from "#shared/api/limit-reached.ts";
@@ -145,16 +145,6 @@ const malformedContent = {
   UnknownChannels: unknownChannels,
   UnknownMedia: unknownMedia,
 } as const;
-
-const notTikTok = () =>
-  refuse(
-    "This is not one of the workspace's TikTok channels: list_channels answers them."
-  );
-
-const tiktokUnreachable = () =>
-  refuse(
-    "TikTok did not answer, or asked to slow down: try again in a few minutes."
-  );
 
 // The options a request gives, decoded: `undefined` when it gives none.
 const givenOptions = (input: readonly ChannelOptionsInput[] | undefined) =>
@@ -644,21 +634,13 @@ export const PostToolsLive = PostTools.toLayer(
           Effect.flatMap((member) => tiktok.read(member, channelId)),
           Effect.map(tiktokAccountView),
           Effect.catchTags({
-            BadRequest: ({ code }) =>
-              code === ownRefusalCodes.channelDisabled
-                ? refuse(
-                    "This channel is turned off: enable_channel turns it back on, to post to it."
-                  )
-                : notTikTok(),
+            BadRequest: tiktokRefusal,
             DatabaseError: Effect.die,
             MissingPermission: notAllowed("read what a TikTok channel takes"),
-            PlatformUnavailable: tiktokUnreachable,
-            RateLimited: tiktokUnreachable,
-            TokenExpired: () =>
-              refuse(
-                "The channel must be reconnected, in the web app, before TikTok tells its settings."
-              ),
-            UnknownChannels: notTikTok,
+            PlatformUnavailable: tiktokRefusal,
+            RateLimited: tiktokRefusal,
+            TokenExpired: tiktokRefusal,
+            UnknownChannels: tiktokRefusal,
           })
         ),
       list_drafts: ({ cursor, limit }) =>

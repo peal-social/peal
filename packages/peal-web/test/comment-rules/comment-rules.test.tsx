@@ -1,7 +1,13 @@
 import { describe, expect, it } from "@effect/vitest";
-import { DateTime } from "effect";
+import { Cause, DateTime } from "effect";
+import { AsyncResult } from "effect/reactivity";
 import { NextIntlClientProvider } from "next-intl";
-import type { Channel, CommentRule } from "peal-contract";
+import type {
+  Channel,
+  CommentRule,
+  Platform,
+  PlatformCommentRule,
+} from "peal-contract";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import {
@@ -9,6 +15,8 @@ import {
   freshCommentRule,
   keywordsTyped,
   resumeHeld,
+  ruleChannelsOf,
+  ruleFormStateOf,
 } from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
 import {
@@ -117,11 +125,11 @@ const inLocale = async (locale: "en" | "fr", node: React.ReactNode) =>
 const render = async (locale: "en" | "fr", shown: CommentRule = rule) =>
   await inLocale(locale, <CommentRuleView actions={null} rule={shown} />);
 
-const channel = (id: string, platform: "instagram" | "mastodon"): Channel => ({
+const channel = (id: string, platform: Platform): Channel => ({
   avatarUrl: null,
   connection: null,
-  displayName: `Studio on ${platform}`,
-  handle: "studio",
+  displayName: "Field Notes",
+  handle: "@fieldnotes",
   id,
   label: null,
   platform,
@@ -129,26 +137,168 @@ const channel = (id: string, platform: "instagram" | "mastodon"): Channel => ({
   tokenExpiresAt: null,
 });
 
+// One account, "Field Notes", on several platforms: as the platforms
+// show it, every channel has the same name.
+const channels: readonly Channel[] = [
+  channel("instagram-1", "instagram"),
+  channel("facebook-1", "facebook"),
+  channel("mastodon-1", "mastodon"),
+  channel("bluesky-1", "bluesky"),
+  {
+    ...channel("mastodon-off", "mastodon"),
+    status: { _tag: "disabled", refreshNeeded: false },
+  },
+];
+
+// Where rules answer, as a server that reads Facebook's and Instagram's
+// comments, and Instagram's messages, says.
+const platforms: readonly PlatformCommentRule[] = [
+  { platform: "x", privateReply: "noApi", reply: "notAllowed" },
+  { platform: "bluesky", privateReply: "noApi", reply: "notAllowed" },
+  { platform: "mastodon", privateReply: "noApi", reply: "available" },
+  { platform: "instagram", privateReply: "available", reply: "available" },
+  { platform: "facebook", privateReply: "unsupported", reply: "available" },
+  { platform: "threads", privateReply: "noApi", reply: "noApi" },
+];
+
 const form = async (
   locale: "en" | "fr",
   draft: CommentRuleDraft,
-  mayMessage = true
+  mayMessage = true,
+  offered: {
+    readonly channels?: readonly Channel[];
+    readonly platforms?: readonly PlatformCommentRule[];
+  } = {}
 ) =>
   await inLocale(
     locale,
     <CommentRuleFormView
       busy={false}
-      channels={[
-        channel("instagram-1", "instagram"),
-        channel("mastodon-1", "mastodon"),
-      ]}
+      channels={offered.channels ?? channels}
       draft={draft}
       error={null}
       mayMessage={mayMessage}
+      platforms={offered.platforms ?? platforms}
+      renderChannelsLink={(text) => <u data-link="channels">{text}</u>}
       onChange={() => {}}
       onSubmit={() => {}}
     />
   );
+
+describe("the comment rule form's channels", () => {
+  it("names each channel with its platform, so two of one name read apart", async () => {
+    await expect(
+      form("en", { ...freshCommentRule, channelId: "instagram-1" })
+    ).resolves.toContain("@fieldnotes on Instagram");
+    await expect(
+      form("en", { ...freshCommentRule, channelId: "facebook-1" })
+    ).resolves.toContain("@fieldnotes on Facebook");
+    await expect(
+      form("fr", { ...freshCommentRule, channelId: "mastodon-1" })
+    ).resolves.toContain("@fieldnotes sur Mastodon");
+  });
+
+  it("offers only the channels that are on, on a platform where the server says rules answer", async () => {
+    expect(
+      ruleChannelsOf(channels, platforms).map(({ id }) => id)
+    ).toStrictEqual(["instagram-1", "facebook-1", "mastodon-1"]);
+
+    // A channel the select does not offer cannot show as chosen: the
+    // select names no channel.
+    const shown = await Promise.all(
+      ["bluesky-1", "mastodon-off"].map(
+        async (refused) =>
+          await form("en", { ...freshCommentRule, channelId: refused })
+      )
+    );
+
+    expect(
+      shown.map((html) =>
+        /data-slot="select-value"[^>]*>[^<]*(?:Field Notes|@fieldnotes)/u.test(
+          html
+        )
+      )
+    ).toStrictEqual([false, false]);
+  });
+
+  it("says in one sentence that no channel can have a rule, and where rules answer, in place of the form", async () => {
+    const none = await form("en", freshCommentRule, true, {
+      channels: [channel("bluesky-1", "bluesky")],
+    });
+
+    expect(none).toContain(
+      "None of this workspace’s channels can have a rule. Rules answer on Mastodon, Instagram, and Facebook."
+    );
+    expect(none).not.toContain(">Start<");
+    await expect(
+      form("en", freshCommentRule, true, {
+        channels: [channel("bluesky-1", "bluesky")],
+        platforms: platforms.map((each) => ({ ...each, reply: "noApi" })),
+      })
+    ).resolves.toContain(
+      "This server answers no comments by itself, so no channel can have a rule."
+    );
+    await expect(
+      form("fr", freshCommentRule, true, {
+        channels: [],
+      })
+    ).resolves.toContain("Aucun canal de cet espace de travail");
+  });
+
+  it("names a channel left out for being off or to reconnect, and links to Channels", async () => {
+    const held = await form("en", freshCommentRule, true, {
+      channels: [
+        {
+          ...channel("instagram-1", "instagram"),
+          status: { _tag: "refreshNeeded" },
+        },
+        {
+          ...channel("mastodon-off", "mastodon"),
+          status: { _tag: "disabled", refreshNeeded: false },
+        },
+        channel("bluesky-1", "bluesky"),
+      ],
+    });
+
+    expect([
+      held.includes("@fieldnotes on Instagram must be connected again."),
+      held.includes("@fieldnotes on Mastodon is turned off."),
+      held.includes('<u data-link="channels">Channels</u>'),
+      held.includes("on Bluesky"),
+      held.includes(">Start<"),
+    ]).toStrictEqual([true, true, true, false, false]);
+  });
+
+  it("says in French which channel to turn back on", async () => {
+    await expect(
+      form("fr", freshCommentRule, true, {
+        channels: [
+          {
+            ...channel("mastodon-off", "mastodon"),
+            status: { _tag: "disabled", refreshNeeded: false },
+          },
+        ],
+      })
+    ).resolves.toContain("@fieldnotes sur Mastodon est désactivé.");
+  });
+});
+
+describe("the comment rule form's state", () => {
+  it("fails when either answer failed, and waits for both", () => {
+    const failed = AsyncResult.failure<never, string>(Cause.fail("refused"));
+
+    expect([
+      ruleFormStateOf(AsyncResult.success(channels), failed)._tag,
+      ruleFormStateOf(failed, AsyncResult.success(platforms))._tag,
+      ruleFormStateOf(AsyncResult.initial(), AsyncResult.success(platforms))
+        ._tag,
+      ruleFormStateOf(
+        AsyncResult.success(channels),
+        AsyncResult.success(platforms)
+      )._tag,
+    ]).toStrictEqual(["failed", "failed", "loading", "ready"]);
+  });
+});
 
 describe("the comment rule form", () => {
   it("sends the channel, the keywords typed and the reply", () => {
@@ -222,6 +372,13 @@ describe("the comment rule form", () => {
         privateReply: "",
       })
     ).resolves.toContain("Envoyer aussi un message privé");
+  });
+
+  it("offers no private reply where the server says it sends none", async () => {
+    // Facebook, whose messages this server does not read.
+    await expect(
+      form("en", { ...freshCommentRule, channelId: "facebook-1" })
+    ).resolves.not.toContain("Also send a private message");
   });
 
   it("reads a rule and what it did, in both languages", async () => {

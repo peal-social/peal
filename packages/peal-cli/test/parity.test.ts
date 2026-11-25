@@ -186,6 +186,7 @@ const coverage = {
   "automations.commentRules.delete": by("inbox rules stop"),
   "automations.commentRules.get": by("inbox rules show"),
   "automations.commentRules.list": by("inbox rules list"),
+  "automations.commentRules.platforms": by("inbox rules platforms"),
   "automations.commentRules.update": by("inbox rules update"),
   "inbox.reviews.listThreads": by("inbox reviews list"),
   "inbox.reviews.reply": exempt(

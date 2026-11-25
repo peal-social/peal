@@ -126,7 +126,10 @@
   the toast has gone: find a toast inside the `region` "Notifications",
   as the journeys find "Post cancelled.".
 - `tests/composer-comforts.e2e.ts` seeds three channels, selects them all
-  and none, inserts an emoji from the picker, reads the previews, opens
+  and none, ticks one by pointer and by Space and scrolls the wheel, the
+  document staying the window's height and unscrolled throughout (the
+  composer's panel scrolls, never the frame), inserts an emoji from the
+  picker, reads the previews, opens
   **Publish now** and leaves it ("Not now": nothing goes out), finds the
   saved draft among **Posts**, filters it out by status (the Filter
   menu's Cancelled, which no tab shows) and back with **Clear**, then
@@ -152,6 +155,22 @@
   its close button fit the window, and that closing it gives the focus
   back to the thumbnail. A seeded description has no surrounding spaces,
   which the server refuses to read.
+- `tests/page-loads.e2e.ts` loads a new workspace's main pages from the
+  server, one after the other in one test, and finds no error in the
+  console: an init script, registered once, keeps what the page writes
+  with `console.error` and the errors nothing caught, where React's
+  hydration error (#418) arrives. The runner gives a test no console of
+  the page, so read it this way. Each page is read once it has settled:
+  React has taken over its `main` and nothing in it is `aria-busy`, which
+  a page that reads its data in the browser reaches only after hydration
+  (never `networkidle`, which a page that keeps a connection open never
+  reaches). It keeps each page's errors, a page that never settles among
+  them, and asserts once at the end, so one run names every page that
+  failed. A page added to the app's main ones joins its list. It then
+  seeds three channels, one past the free tier's two with no payment method,
+  and loads some of the pages again (`overPlanPages`): each must settle
+  on the over-plan screen, which its owner reads with the channels and
+  members the browser loads, with no error either.
 - A new workspace opens on its setup step (`/create/<slug>/channels`):
   `openedWorkspace` waits for it and leaves with **Skip for now**
   (`[data-setup-skip]`), so every journey starts on the workspace's home.
@@ -166,6 +185,10 @@
   page, reading the key written beside the QR code and computing the codes
   an authenticator app would (`tests/support/totp.ts`, RFC 6238), signs in
   again with the password then a code, and requires it of its workspace.
+- `tests/sessions.e2e.ts` reads the account's sessions, moves their
+  sign-in time two days back in the database (`ageSessions`) and clears
+  the browser's cookie cache of the session (`peal.session_data`), then
+  signs in again from the page and is brought back to the list.
 - CI's `e2e` jobs run beside the others when a change can reach the pages
   (`scripts/ci-plan.ts`), each with its own Postgres and Mailpit and
   SeaweedFS from `compose.yaml`: Chromium's suite in three shards

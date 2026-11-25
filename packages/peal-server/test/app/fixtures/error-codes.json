@@ -1070,6 +1070,11 @@
     "tag": "UnknownTags"
   },
   {
+    "code": "unsupported_content_type",
+    "status": 415,
+    "tag": "UnsupportedContentType"
+  },
+  {
     "code": "unsupported_media_type",
     "status": 422,
     "tag": "UnsupportedMediaType"

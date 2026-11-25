@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "peal-ui/components/dropdown-menu";
 
-import { channelName } from "#channels/channel-name.ts";
+import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { workspaceSignatures } from "#signatures/atoms.ts";
 
 interface SignatureMenuViewProps {
@@ -46,6 +46,7 @@ export const SignatureMenuView = ({
   signatures,
 }: SignatureMenuViewProps) => {
   const t = useTranslations("Signatures");
+  const channelLabel = useChannelLabel();
 
   const items = (channelId: string | undefined) =>
     signatures.map((signature) => (
@@ -88,7 +89,7 @@ export const SignatureMenuView = ({
                 {channels.map((channel) => (
                   <DropdownMenuSub key={channel.id}>
                     <DropdownMenuSubTrigger>
-                      {channelName(channel)}
+                      {channelLabel(channel)}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                       {items(channel.id)}

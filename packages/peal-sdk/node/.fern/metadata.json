@@ -22,6 +22,6 @@
     },
     "writeUnitTests": false
   },
-  "requestedVersion": "0.3.0",
-  "sdkVersion": "0.3.0"
+  "requestedVersion": "0.4.0-beta.1",
+  "sdkVersion": "0.4.0-beta.1"
 }

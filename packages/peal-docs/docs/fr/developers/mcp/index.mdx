@@ -163,8 +163,21 @@ Un client qui n’a aucune des trois permissions ci-dessus sur l’espace de tra
 Le point d’accès a ces limites :
 
 - Une instance Peal ne sert les clients MCP que si son adresse est en HTTPS, ou sur `localhost` pour le développement. Ailleurs, le point d’accès refuse toutes les requêtes.
-- Le point d’accès refuse les requêtes envoyées depuis des pages web (avec un en-tête `Origin`). Connectez un client qui tourne sur votre ordinateur ou sur un serveur.
+- Le point d’accès refuse les requêtes envoyées depuis des pages web (avec un en-tête `Origin`) avec le statut 403, quels que soient leurs identifiants. Connectez un client qui tourne sur votre ordinateur ou sur un serveur.
 - Une connexion peut envoyer {{api-with-fr}} requêtes par minute ({{api-without-fr}} pour un compte de facturation sans moyen de paiement), comptées avec celles que la même clé ou la même application envoie à l’API. Au-delà, le point d’accès répond 429 avec un en-tête `Retry-After` ([Limites de débit](/developers/conventions/rate-limits#rate-limits)).
 - Chaque réponse porte un en-tête `X-Request-Id`. Citez-le quand vous demandez de l’aide ([Requêtes et réponses](/developers/conventions#requests)).
+
+## Quand une requête est refusée [#refusals]
+
+Quand le point d’accès refuse lui-même une requête avant qu’un outil ne s’exécute, il répond une erreur JSON-RPC avec le statut HTTP. Le `message` de l’erreur dit ce qui s’est passé et quoi faire, et ne répète jamais l’identifiant reçu.
+
+| Statut | Quand                                                                                                 | Ce que fait le client                                                                                       |
+| ------ | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 401    | Aucun identifiant n’a été envoyé                                                                      | Se connecte : l’en-tête `WWW-Authenticate` dit où                                                           |
+| 401    | La clé ou le jeton a été refusé : inconnu, révoqué ou expiré. L’en-tête porte `error="invalid_token"` | Renouvelle son jeton ou se reconnecte. Un agent qui a envoyé une clé en demande une neuve                   |
+| 403    | Le jeton ne permet rien dans un espace de travail. L’en-tête porte `error="insufficient_scope"`       | Se reconnecte et demande au moins `workspace:read`                                                          |
+| 403    | Vous n’appartenez plus à l’espace de travail, ou il exige la validation en deux étapes                | Se connecte de nouveau et choisit un autre espace, ou vous activez la validation en deux étapes             |
+| 403    | La requête a un en-tête `Origin`                                                                      | L’envoie depuis le client lui-même                                                                          |
+| 404    | La session n’est pas une de cette connexion, ou elle a pris fin                                       | Ouvre une nouvelle session. Un client de la révision 2026-07-28 envoie la requête sans l’en-tête de session |
 
 Pour voir et déconnecter les clients que vous avez autorisés, ouvrez **Sécurité et accès**, sous **Paramètres** dans l’application web. `peal account apps` les liste depuis la [ligne de commande](/developers/cli/workspace#account). Quitter l’espace de travail arrête tous les clients qui y agissent.

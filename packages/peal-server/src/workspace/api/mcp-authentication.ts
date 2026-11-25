@@ -59,7 +59,10 @@ const jsonRpcError = (
 // The token works, but its user can no longer act in its workspace. Signing
 // in again would not help, so there is no challenge.
 const closed = () =>
-  jsonRpcError(403, "The workspace this token is bound to is not open to you");
+  jsonRpcError(
+    403,
+    "The workspace this connection acts in is no longer open to its user, who left it or lost access to it. Signing in again does not change that: connect again and pick a workspace the user belongs to."
+  );
 
 /**
  * What a credential refused its workspace is told: a partner key, that no
@@ -98,12 +101,12 @@ const refusalOf = (principal: Principal, denied: AccessDenied) =>
  *
  * A request that calls one of `contentTools`, those that create, change or
  * delete content, is kept in the ConnectionJournal once answered without
- * an error, as the API's writes to posts and media are.
+ * an error, as the API's writes to content are.
  */
 export const mcpAuthentication = ({
   contentTools,
 }: {
-  /** The tools that create, change or delete posts and media. */
+  /** The tools that create, change or delete content. */
   readonly contentTools: ReadonlySet<string>;
 }) =>
   HttpRouter.middleware<{
@@ -182,7 +185,7 @@ export const mcpAuthentication = ({
           if (Option.isNone(body)) {
             return jsonRpcError(
               413,
-              "The request's body is larger than this endpoint takes."
+              "The request's body is larger than this endpoint takes, so nothing was done. Send less in one request."
             );
           }
 

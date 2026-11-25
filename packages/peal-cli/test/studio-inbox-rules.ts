@@ -183,6 +183,30 @@ export const studioInboxRulesOf = (world: InboxRulesWorld) => {
               nextCursor: null,
             };
           }),
+        // As a server that reads Instagram's comments and messages.
+        platforms: () =>
+          Effect.gen(function* platforms() {
+            yield* world.allowed("engagement:read");
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
+
+            return [
+              {
+                platform: "bluesky",
+                privateReply: "noApi",
+                reply: "notAllowed",
+              },
+              {
+                platform: "mastodon",
+                privateReply: "noApi",
+                reply: "available",
+              },
+              {
+                platform: "instagram",
+                privateReply: "available",
+                reply: "available",
+              },
+            ] as const;
+          }),
         update: ({ params, payload }) =>
           Effect.gen(function* update() {
             yield* world.allowed("engagement:reply");

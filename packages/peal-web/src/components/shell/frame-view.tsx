@@ -145,7 +145,7 @@ export const SplitView = ({
         {header}
         <div
           className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-y-auto",
+            "relative flex min-h-0 flex-1 flex-col overflow-y-auto",
             open && "max-md:hidden"
           )}
         >
@@ -154,7 +154,7 @@ export const SplitView = ({
       </div>
       <div
         className={cn(
-          "min-h-0 min-w-0 flex-1 flex-col overflow-y-auto",
+          "relative min-h-0 min-w-0 flex-1 flex-col overflow-y-auto",
           open ? "flex" : "hidden md:flex"
         )}
       >
@@ -413,9 +413,13 @@ export const FrameView = ({
                   </main>
                 </SplitParts>
               ) : (
+                // Each scrolling pane is `relative`, so what is positioned
+                // without a box of its own (`sr-only` text, a control's
+                // hidden input) scrolls and clips with it: laid out against
+                // the window, it would stretch the document past the frame.
                 <main
                   className={cn(
-                    "min-h-0 flex-1 overflow-y-auto",
+                    "relative min-h-0 flex-1 overflow-y-auto",
                     full && "flex flex-col"
                   )}
                 >

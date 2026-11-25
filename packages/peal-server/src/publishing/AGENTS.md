@@ -193,7 +193,12 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   held in the caller's transaction: a channel moving to another
   workspace waits for no scheduled post, and for no call but its own.
 - Articles, which go to a workspace's websites, are the articles
-  context's: [`../articles/AGENTS.md`](../articles/AGENTS.md).
+  context's: [`../articles/AGENTS.md`](../articles/AGENTS.md). A
+  transaction that locks a workspace's posts and its articles locks the
+  posts first (erasing a workspace, and deleting a library file through
+  `MediaInPosts.hold`, which locks the drafts showing it and changes
+  nothing until `letGo`): a new code path that locks both follows that
+  order.
 - A post keeps how it was created and last scheduled (`PostAttribution`,
   `#publishing/domain/post-origin.ts`): in the web app, with an API key or
   through an OAuth application (`Actor.subject.clientId`), with the key's or
@@ -1047,7 +1052,11 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   only for the platform's own refusal of the token, `RateLimited`,
   `PlatformUnavailable`, or `LookupInputRejected` when the platform refused
   what the input asked (a cursor it never gave); they never change anything
-  on the platform. Test them against the loopback fakes.
+  on the platform. Any other refusal of the platform is logged by its code
+  and is `PlatformUnavailable`, never `BadRequest`, which is the channels
+  context's alone (turned off or disconnected: `channelRefusalOf`), so no
+  answer reads a platform's refusal as a missing channel. Test them
+  against the loopback fakes.
 - `GET …/channels/:id/tiktok-creator` stays, for the composer; the
   `tiktokCreator` lookup answers the same view.
 

@@ -2,11 +2,17 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, forWorkspace } from "peal-contract";
+import {
+  Api,
+  Authentication,
+  CurrentPrincipal,
+  forWorkspace,
+} from "peal-contract";
 import type { Member } from "peal-contract";
 
 import { MediaTranscriptionsHandlers } from "#assistant/api/transcriptions.ts";
 import { AssistantApiLive, MediaAudioApiLive } from "#assistant/container.ts";
+import { ChangeMark, makeChangeMark } from "#shared/api/change-mark.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { storedAudioId } from "#test/assistant/audio-support.ts";
 import {
@@ -25,7 +31,25 @@ import { permissionsFor } from "#workspace/domain/roles.ts";
 
 const syntheticKey = "sk_test_synthetic_audio_key";
 
-const clientAs = (member: Member) =>
+// Each request acts as the member, its handler saying through `mark` what
+// it changed, as Authentication provides it.
+const markedSecurity = (member: Member, mark: ChangeMark["Service"]) => {
+  const marked = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+    effect.pipe(
+      Effect.provideService(CurrentPrincipal, member.principal),
+      Effect.provideService(ChangeMark, mark)
+    );
+
+  return Layer.succeed(
+    Authentication,
+    Authentication.of({ bearer: marked, session: marked })
+  );
+};
+
+const clientAs = (
+  member: Member,
+  mark: Layer.Layer<Authentication> | Layer.Layer<never> = Layer.empty
+) =>
   HttpApiTest.groups(Api, [
     "assistant",
     "media.voiceovers",
@@ -37,7 +61,7 @@ const clientAs = (member: Member) =>
           AssistantApiLive,
           MediaAudioApiLive,
           MediaTranscriptionsHandlers
-        ).pipe(Layer.provideMerge(securityTest(member))),
+        ).pipe(Layer.provideMerge(Layer.mergeAll(securityTest(member), mark))),
         HttpServer.layerServices
       )
     )
@@ -179,6 +203,15 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           const headers = forWorkspace(workspaceId);
           const owner = yield* as(workspaceId, "owner");
           const editor = yield* as(workspaceId, "editor");
+          const savedMark = yield* makeChangeMark;
+          const readMark = yield* makeChangeMark;
+
+          // An editor whose requests each tell `mark` what they changed.
+          const marking = (mark: ChangeMark["Service"]) => {
+            const member = memberOf(workspaceId, permissionsFor("editor"));
+
+            return clientAs(member, markedSecurity(member, mark));
+          };
 
           yield* owner.assistant.connectProvider({
             headers,
@@ -191,7 +224,9 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             payload: { model: "whisper-large-v3-turbo", provider: "groq" },
           });
 
-          const answered = yield* editor["media.transcriptions"].create({
+          const answered = yield* (yield* marking(savedMark))[
+            "media.transcriptions"
+          ].create({
             headers,
             params: { mediaId: recordingId },
             payload: { saveAsDescription: true },
@@ -203,6 +238,21 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             language: "en",
             text: "A synthetic transcript.",
           });
+
+          // Read only, the transcript changes no content, which the
+          // connection journal hears; saved, it changed the description.
+          const read = yield* (yield* marking(readMark))[
+            "media.transcriptions"
+          ].create({
+            headers,
+            params: { mediaId: recordingId },
+            payload: {},
+          });
+
+          assert.isFalse(read.descriptionSaved);
+          assert.isFalse(yield* savedMark.changedNoContent);
+          assert.isTrue(yield* readMark.changedNoContent);
+          assert.isFalse(yield* readMark.changedNothing);
 
           const tooLarge = yield* editor["media.transcriptions"]
             .create({

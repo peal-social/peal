@@ -75,3 +75,33 @@ export const makeStaff = async (
     await client.end();
   }
 };
+
+/**
+ * Moves back the sign-in time of every session of an account, straight in
+ * the database the run's server uses, so Better Auth reads them as signed
+ * in that long ago: past its freshness (a day), a session may no longer
+ * list the account's sessions. The browser keeps the session in a
+ * five-minute cookie cache (`peal.session_data`): clear that cookie too,
+ * so the server reads the moved time.
+ */
+export const ageSessions = async (
+  email: string,
+  hours: number
+): Promise<void> => {
+  const client = new Client({
+    connectionString: process.env["DATABASE_URL"],
+  });
+
+  await client.connect();
+
+  try {
+    await client.query(
+      `UPDATE auth.session
+          SET created_at = created_at - make_interval(hours => $2)
+        WHERE user_id = (SELECT id FROM auth."user" WHERE email = $1)`,
+      [email.toLowerCase(), hours]
+    );
+  } finally {
+    await client.end();
+  }
+};

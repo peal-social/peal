@@ -69,6 +69,16 @@ export class AuthGateway extends Context.Service<
       AuthUnavailable | InvalidAccessToken
     >;
     /**
+     * The refusal of a credential sent to the MCP endpoint that works for
+     * nothing there (a key no workspace has): a token that does not work,
+     * with the challenge that leads a client to sign in, never a missing
+     * one.
+     */
+    readonly mcpCredentialRefused: Effect.Effect<
+      never,
+      AuthUnavailable | InvalidAccessToken
+    >;
+    /**
      * The principal of the session the cookies carry. `fresh` reads the
      * session from the database, not from the copy cached in a cookie for a
      * few minutes, so a session revoked a moment ago no longer works.

@@ -53,7 +53,7 @@ Every endpoint of the [API](/developers) follows the same rules, so a client wri
 
 ## Requests and answers [#requests]
 
-Requests go to the address you open Peal at, under `/api`, and a workspace's endpoints under `/api/v1` ([The workspace of a request](#workspace)). Bodies are JSON, sent with `Content-Type: application/json`. So are answers, except those with no body (204).
+Requests go to the address you open Peal at, under `/api`, and a workspace's endpoints under `/api/v1` ([The workspace of a request](#workspace)). Bodies are JSON, sent with `Content-Type: application/json`. So are answers, except those with no body (204). A body of another type answers 415 [`unsupported_content_type`](/developers/conventions/errors#error-codes).
 
 Every answer carries an `X-Request-Id` header, whatever answered it and whether or not it succeeded. Here's how the id works:
 
@@ -97,7 +97,7 @@ Two credentials call the API:
 | An API key, `peal_…`  | The key itself, in the one workspace it belongs to | The permissions chosen when it was created, such as `post:read` or `post:schedule` ([API keys](/guides/workspace#api-keys)) |
 | An OAuth access token | The member who signed the application in           | What the member's role allows, within the scopes they granted ([What each permission allows](/developers/agents#scopes))    |
 
-The web app's session cookie is for the web app only. [Authentication](/developers#authentication), in the overview, describes each credential.
+The web app's session cookie is for the web app only. A request whose credential in `Authorization: Bearer …` is refused gets a 401, whatever else it carries. Peal never falls back to a session cookie sent with it. [Authentication](/developers#authentication), in the overview, describes each credential.
 
 Each endpoint's reference names the permission it needs. An OAuth token also needs the scope that carries it:
 

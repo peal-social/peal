@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Duration, Effect, Layer, Option } from "effect";
+import { Duration, Effect, Layer, Logger, Option, References } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import {
@@ -7,6 +7,7 @@ import {
   ChannelCannotPost,
   ChannelNotFound,
   Forbidden,
+  PlatformRateLimited,
   PlatformUnreachable,
   forWorkspace,
 } from "peal-contract";
@@ -23,8 +24,10 @@ import type { TikTokPosting } from "#publishing/domain/tiktok-creator.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
+import { RateLimited } from "#shared/domain/rate-limited.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
 import { memberOf } from "#test/channels/support.ts";
+import { recordedAnswerHeaders } from "#test/shared/answer-headers.ts";
 import { securityTest } from "#workspace/api/security.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
@@ -166,12 +169,29 @@ describe("a TikTok channel's creator endpoint", () => {
   it.effect("maps what keeps TikTok from answering", () =>
     Effect.gen(function* refusals() {
       const cases = [
+        // A credential TikTok refused, renewed and refused again, or that
+        // ran out: the account must be reconnected.
         [new TokenExpired(), new ChannelCannotPost({ reason: "reconnect" })],
         [
           new BadRequest({ code: ownRefusalCodes.channelDisabled }),
           new ChannelCannotPost({ reason: "disabled" }),
         ],
+        // Disconnected while it was read: no channel of the workspace now.
+        [
+          new BadRequest({ code: ownRefusalCodes.channelDisconnected }),
+          new ChannelNotFound(),
+        ],
         [new PlatformUnavailable(), new PlatformUnreachable()],
+        [
+          new RateLimited({ retryAfter: Duration.millis(29_500) }),
+          new PlatformRateLimited({ retryAfterSeconds: 30 }),
+        ],
+        [
+          new RateLimited({}),
+          new PlatformRateLimited({ retryAfterSeconds: null }),
+        ],
+        // Any other refusal is the platform's: never a missing channel.
+        [new BadRequest({ code: "hostNotAllowed" }), new PlatformUnreachable()],
       ] as const;
 
       for (const [failure, answer] of cases) {
@@ -187,6 +207,62 @@ describe("a TikTok channel's creator endpoint", () => {
         assert.deepStrictEqual(refused, answer);
       }
     })
+  );
+
+  it.effect("says how long to wait in Retry-After too, when TikTok said", () =>
+    Effect.gen(function* retryAfter() {
+      for (const [limited, header] of [
+        [new RateLimited({ retryAfter: Duration.hours(1) }), ["3600"]],
+        [new RateLimited({}), []],
+      ] as const) {
+        const { headers, layer: recorded } = yield* recordedAnswerHeaders;
+        const client = yield* clientWith(contributor, Effect.fail(limited));
+
+        // The handler runs in the caller's fiber, which the answers
+        // middleware gives its headers in the server.
+        yield* client["channels.tiktokCreator"]
+          .get({
+            headers: forWorkspace(workspaceId),
+            params: { channelId: onTikTok },
+          })
+          .pipe(Effect.flip, Effect.provide(recorded));
+
+        assert.deepStrictEqual(yield* headers("Retry-After"), [...header]);
+      }
+    })
+  );
+
+  it.effect(
+    "logs the code of a refusal none of the channel's, made storable",
+    () =>
+      Effect.gen(function* logged() {
+        const codes: unknown[] = [];
+
+        const client = yield* clientWith(
+          contributor,
+          Effect.fail(new BadRequest({ code: "hostNotAllowed" }))
+        );
+
+        yield* client["channels.tiktokCreator"]
+          .get({
+            headers: forWorkspace(workspaceId),
+            params: { channelId: onTikTok },
+          })
+          .pipe(
+            Effect.flip,
+            Effect.provide(
+              Logger.layer([
+                Logger.make(({ fiber }) => {
+                  codes.push(
+                    fiber.getRef(References.CurrentLogAnnotations)["code"]
+                  );
+                }),
+              ])
+            )
+          );
+
+        assert.deepStrictEqual(codes, ["hostNotAllowed"]);
+      })
   );
 
   it.effect("needs post:create", () =>
