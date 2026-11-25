@@ -91,6 +91,29 @@ export const sandboxResources = [
       destinations: [
         {
           type: "public",
+          uri: "sandbox.example.test/api/client-errors",
+        },
+      ],
+      domain: "sandbox.example.test/api/client-errors",
+      name: "Peal sandbox client errors",
+      policies: [
+        {
+          id: "callbacks-policy",
+          precedence: 1,
+        },
+      ],
+      sessionDuration: "24h",
+      type: "self_hosted",
+    },
+    name: "access-client-errors",
+    type: "cloudflare:index/zeroTrustAccessApplication:ZeroTrustAccessApplication",
+  },
+  {
+    inputs: {
+      accountId: "account-synthetic",
+      destinations: [
+        {
+          type: "public",
           uri: "sandbox-grafana.example.test",
         },
       ],

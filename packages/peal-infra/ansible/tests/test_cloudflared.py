@@ -244,6 +244,30 @@ def test_sandbox_lets_outside_services_call(rendered: Path, path: str) -> None:
     assert _audience(rule) == [], rule
 
 
+def _pulumi_client_errors_path() -> str:
+    """`clientErrorsPath` of the Pulumi project (src/environment.ts): the
+    path the sandbox's access-client-errors lets through at the edge."""
+    source = (INFRA.parent / "pulumi" / "src" / "environment.ts").read_text()
+    found = re.search(r'const clientErrorsPath = "([^"]+)";', source)
+    assert found is not None, "clientErrorsPath is no longer a literal in src/environment.ts"
+    return f"/{found.group(1)}"
+
+
+@pytest.mark.parametrize("suffix", ["", "/"])
+def test_sandbox_lets_the_web_apps_error_reports_through(rendered: Path, suffix: str) -> None:
+    """Browsers send their error reports without cookies, so without
+    Access's (packages/peal-web, src/errors/browser.ts): the path Pulumi's
+    Bypass application opens at the edge reaches the server with no token
+    here, and nothing under it or beside it does (SANDBOX_GUARDED)."""
+    settings = _settings("peal-sandbox")
+    rules = _rules(rendered, "peal-sandbox")
+    path = _pulumi_client_errors_path() + suffix
+    rule = rules[_match(rules, settings["peal_hostnames"]["app"], path)]
+
+    assert rule["service"] == f"http://127.0.0.1:{settings['peal_ports']['server']}", rule
+    assert _audience(rule) == [], rule
+
+
 SERVER = INFRA.parent.parent / "peal-server"
 BUN = shutil.which("bun")
 
@@ -308,6 +332,12 @@ SANDBOX_GUARDED = [
     "/api/platform-events/meta/facebook/x",
     "/api/platform-events/meta/facebook/../../../auth/admin/list-users",
     "/api/platform-events",
+    "/api/client-errors/x",
+    "/api/client-errorsx",
+    "/api/client-errors/../me",
+    "/api/client-errors/..;/me",
+    "/api/client-errors%2F..%2Fme",
+    "/API/client-errors",
     "/.well-known/oauth-authorization-server",
 ]
 
