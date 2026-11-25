@@ -7,11 +7,25 @@ import { channelsOf } from "#channels/channels-api.ts";
 
 // The articles' queries and mutations. A mutation passes
 // `reactivityKeys: articlesKeys(workspaceId)`, which refreshes the list
-// and every article of the workspace.
+// and every article of the workspace. A deletion passes
+// `articleListChanged(workspaceId)`, which reads the list again alone:
+// the article's page, still open when the answer lands, would ask for it
+// and find it gone.
 
 /** What refreshes a workspace's articles once a change lands. */
 export const articlesKeys = (workspaceId: string) => [
   `articles:${workspaceId}`,
+];
+
+/** What reads the list of a workspace's articles again, and no article. */
+export const articleListChanged = (workspaceId: string) => [
+  `article-list:${workspaceId}`,
+];
+
+/** What the list of a workspace's articles is read again for. */
+export const articleListKeys = (workspaceId: string) => [
+  ...articlesKeys(workspaceId),
+  ...articleListChanged(workspaceId),
 ];
 
 /** The workspace's articles, newest first. */
@@ -19,7 +33,7 @@ export const workspaceArticles = (workspaceId: string) =>
   PealApi.query("articles", "list", {
     headers: forWorkspace(workspaceId),
     query: {},
-    reactivityKeys: articlesKeys(workspaceId),
+    reactivityKeys: articleListKeys(workspaceId),
   });
 
 /** One article of the workspace. */

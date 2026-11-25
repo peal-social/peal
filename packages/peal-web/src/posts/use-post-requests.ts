@@ -11,6 +11,7 @@ import {
   cancelPost,
   createPost,
   discardPost,
+  discardRequestOf,
   postsKeys,
   reschedulePost,
   schedulePost,
@@ -24,7 +25,8 @@ import { enqueuePost, queuesChanged } from "#queues/atoms.ts";
 /**
  * The composer's requests, each answering with the post or none, and the
  * failure of the last one, which the composer shows. Every request refreshes
- * the posts queries, the calendar's included.
+ * the posts queries, the calendar's included; discarding refreshes the
+ * lists alone, as the page still reads the draft when the answer lands.
  */
 export const usePostRequests = (workspaceId: string) => {
   const [failure, setFailure] = useState<ComposerFailure | null>(null);
@@ -73,11 +75,7 @@ export const usePostRequests = (workspaceId: string) => {
       ),
     /** Deletes the draft, and says whether it is gone. */
     discard: async (postId: string) => {
-      const exit = await discard({
-        headers,
-        params: { postId },
-        reactivityKeys: postsKeys,
-      });
+      const exit = await discard(discardRequestOf(workspaceId, postId));
 
       if (Exit.isSuccess(exit)) {
         setFailure(null);
