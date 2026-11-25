@@ -84,9 +84,9 @@ export class SendWelcomeEmail extends Context.Service<
         return yield* mailer
           .send({
             ...rendered,
-            // The same at every check, so a transport that deduplicates
-            // sends it once.
-            idempotencyKey: welcomeKeyOf(userId),
+            // The same at every check while its sender is, so a transport
+            // that deduplicates sends it once.
+            idempotencyKey: welcomeKeyOf(userId, signer.senderDigest),
             sender: "personal",
             to: email,
           })

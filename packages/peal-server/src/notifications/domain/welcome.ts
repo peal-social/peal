@@ -12,5 +12,10 @@ export const WelcomeOutcomeSchema = Schema.Literals(["sent", "wait", "skip"]);
 
 export type WelcomeOutcome = typeof WelcomeOutcomeSchema.Type;
 
-/** Names an account's welcome, so it goes once. */
-export const welcomeKeyOf = (userId: UserId): string => `welcome:${userId}`;
+/**
+ * Names an account's welcome from one sender, so it goes once: a sender
+ * corrected after a refusal is another key, which the transport takes though
+ * it may keep the refused one.
+ */
+export const welcomeKeyOf = (userId: UserId, senderDigest: string): string =>
+  `welcome:${userId}:${senderDigest}`;

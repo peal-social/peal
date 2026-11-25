@@ -13,6 +13,7 @@ import {
 } from "#notifications/infrastructure/workflows/welcome.ts";
 import { TestMailer } from "#test/notifications/test-mailer.ts";
 import {
+  senderDigest,
   signedBy,
   TestReaders,
   welcomeReader,
@@ -115,7 +116,7 @@ describe(WelcomeV1, () => {
             })),
             [
               {
-                idempotencyKey: `welcome:${userId}`,
+                idempotencyKey: `welcome:${userId}:${senderDigest}`,
                 sender: "personal",
                 to: welcomeReader.email,
               },

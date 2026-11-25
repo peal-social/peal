@@ -87,11 +87,14 @@ export class TestReaders extends Context.Service<
   );
 }
 
+/** What names the test's personal sender in a welcome's key. */
+export const senderDigest = "synthetic-sender";
+
 /** A server whose welcomes this person signs, or that sends none. */
 export const signedBy = (name: string | null) =>
   Layer.succeed(
     WelcomeSigner,
-    WelcomeSigner.of({ name: Option.fromNullOr(name) })
+    WelcomeSigner.of({ name: Option.fromNullOr(name), senderDigest })
   );
 
 /** The accounts and the mailer, which outlive a server that restarts. */

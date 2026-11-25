@@ -169,6 +169,12 @@ describe("the SMTP mailer", () => {
       what: "a personal email from the person's address",
     },
     {
+      from: { Address: "ada@example.test", Name: "Synthetic, Ada (a @ b)" },
+      personal: '"Synthetic, Ada (a @ b)" <ada@example.test>',
+      sender: "personal" as const,
+      what: "a personal email under a quoted name",
+    },
+    {
       from: { Address: "noreply@example.test", Name: "Peal" },
       personal: "Ada at Synthetic <ada@example.test>",
       sender: "automatic" as const,
@@ -266,7 +272,9 @@ describe("the SMTP mailer", () => {
       refusedFor: "recipient",
       reply: "552 5.2.2 Mailbox full",
     },
-    { at: "RCPT TO", refusedFor: "recipient", reply: "550 No such user here" },
+    // No enhanced code: it may be the sender or the relay.
+    { at: "RCPT TO", refusedFor: undefined, reply: "550 No such user here" },
+    { at: "RCPT TO", refusedFor: undefined, reply: "554 Access denied" },
     {
       at: "RCPT TO",
       refusedFor: undefined,

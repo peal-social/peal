@@ -5,6 +5,7 @@ import { SendWelcomeEmail } from "#notifications/application/send-welcome-email.
 import { TestMailer } from "#test/notifications/test-mailer.ts";
 import type { MailerMode } from "#test/notifications/test-mailer.ts";
 import {
+  senderDigest,
   TestReaders,
   welcomeReader,
   welcomesSignedBy,
@@ -41,7 +42,7 @@ describe(SendWelcomeEmail, () => {
           assert.deepStrictEqual(after.slice(before.length), [
             {
               html: "<p>https://app.example.test/fr/</p>",
-              idempotencyKey: `welcome:${userId}`,
+              idempotencyKey: `welcome:${userId}:${senderDigest}`,
               sender: "personal",
               subject: "Welcome in fr from Camille Synthetic",
               text: "https://app.example.test/fr/",

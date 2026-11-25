@@ -44,7 +44,7 @@ Peal envoie tout depuis `MAIL_FROM`. Si vous voulez que les e-mails qu’une per
 PEAL_MAIL_PERSONAL_FROM=Ada at Example <ada@example.com>
 ```
 
-Écrivez une seule adresse, avec ou sans nom devant. Toute autre valeur arrête le serveur au démarrage. Votre service de messagerie doit accepter les deux adresses. Sans ce réglage, ces e-mails viennent aussi de `MAIL_FROM`.
+Écrivez une seule adresse, avec ou sans nom devant. Si le nom contient une virgule, un deux-points, un point-virgule, un `@`, des parenthèses ou des crochets, mettez-le entre guillemets droits, comme dans `"Example, Ada" <ada@example.com>`. Toute autre valeur arrête le serveur au démarrage. Votre service de messagerie doit accepter les deux adresses. Sans ce réglage, ces e-mails viennent aussi de `MAIL_FROM`.
 
 Peal n’indique pas d’adresse de réponse. Une réponse arrive donc à l’adresse d’où vient l’e-mail. Vérifiez que quelqu’un la lit.
 
@@ -58,7 +58,7 @@ PEAL_MAIL_WELCOME_SIGNER=Ada
 
 L’e-mail dit que le compte est prêt, propose de programmer une première publication et invite à répondre si quelque chose ne marche pas. Il vient de `PEAL_MAIL_PERSONAL_FROM`, ou de `MAIL_FROM` sans ce réglage. Choisissez donc une adresse dont le signataire lit le courrier et y répond.
 
-Un compte le reçoit une seule fois, quelle que soit la façon dont il a été créé, et seulement une fois son adresse confirmée. Peal vérifie cinq minutes après la création du compte. Si l’adresse n’est pas encore confirmée, ou si votre service de messagerie refuse l’e-mail, Peal vérifie à nouveau après 15 minutes, puis 1, 6, 24 et 72 heures, chaque délai partant de la vérification précédente. Ensuite, il abandonne. Si le refus porte sur l’adresse du lecteur, Peal abandonne tout de suite. Les comptes bannis et ceux créés avant ce réglage ne le reçoivent pas.
+Un compte le reçoit une seule fois, quelle que soit la façon dont il a été créé, et seulement une fois son adresse confirmée. Peal vérifie cinq minutes après la création du compte. Si l’adresse n’est pas encore confirmée, ou si votre service de messagerie refuse l’e-mail, Peal vérifie à nouveau après 15 minutes, puis 1, 6, 24 et 72 heures, chaque délai partant de la vérification précédente. Ensuite, il abandonne. Si le service de messagerie indique que le refus porte sur l’adresse du lecteur, Peal abandonne tout de suite. Les comptes bannis et ceux créés avant ce réglage ne le reçoivent pas.
 
 Le nom tient sur une ligne de 60 caractères au plus. Si vous retirez le réglage, plus aucun e-mail de bienvenue n’est envoyé, même aux comptes qui attendent encore le leur.
 

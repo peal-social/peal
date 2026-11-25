@@ -90,6 +90,9 @@ describe("the mail settings", () => {
     { from: "Ada <ada@example.test>" },
     { from: "<ada@example.test>" },
     { from: '"Synthetic, Ada" <ada@example.test>' },
+    { from: '"Ada (Synthetic)" <ada@example.test>' },
+    { from: '"Ada: Synthetic; [a]" <ada@example.test>' },
+    { from: '"Ada @ Synthetic" <ada@example.test>' },
     { from: "Adèle O’Synthetic-Née Jr. <ada+mail@sub.example.test>" },
     { from: "علی\u200Cرضا <ada@example.test>" },
     { from: "अक्\u200Dषय <ada@example.test>" },
@@ -117,6 +120,12 @@ describe("the mail settings", () => {
     },
     { value: "Synthetic, Ada <ada@example.test>", what: "an unquoted comma" },
     { value: "Team: ada@example.test;", what: "a group" },
+    {
+      value: "Ada (Synthetic) <ada@example.test>",
+      what: "unquoted parentheses",
+    },
+    { value: "Ada: Synthetic <ada@example.test>", what: "an unquoted colon" },
+    { value: "Ada @ Synthetic <ada@example.test>", what: "an unquoted @" },
     { value: "Ada <ada@example.test> (home)", what: "a comment" },
     { value: "Ada <ada@example.test", what: "an open angle bracket" },
     {

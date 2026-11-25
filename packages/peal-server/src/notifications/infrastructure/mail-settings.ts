@@ -84,7 +84,8 @@ const personalFrom = oneLine(
   personalFromForm
 );
 
-const senders = Config.all({
+/** The address each sender's emails leave from, as the settings give it. */
+export const mailSendersConfig = Config.all({
   automatic: requiredInProduction(
     Config.NonEmptyString("MAIL_FROM"),
     "Peal <noreply@peal.localhost>"
@@ -112,7 +113,7 @@ const senders = Config.all({
  * confirm an email address or reset a password.
  */
 export const mailSettingsConfig = Config.all({
-  senders,
+  senders: mailSendersConfig,
   transport,
 });
 

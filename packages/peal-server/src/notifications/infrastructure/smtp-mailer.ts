@@ -27,7 +27,8 @@ const enhancedCode = /^\d{3}[ -](?<code>5\.\d{1,3}\.\d{1,3})/u;
 
 // Those about the recipient's address or mailbox: not the sender's address
 // (5.1.7, 5.1.8) nor the server's policy (5.7.x, as "Relay access denied"),
-// which servers also answer once the recipient is named.
+// which servers also answer once the recipient is named. A reply without a
+// code may be about any of them.
 const aboutRecipient = /^5\.(?:1\.(?:[0-6]|10)|2\.\d{1,3})$/u;
 
 const refusedFor = (cause: unknown) =>
@@ -38,7 +39,8 @@ const refusedFor = (cause: unknown) =>
 
       return command === "RCPT TO" &&
         responseCode >= 500 &&
-        (code === undefined || aboutRecipient.test(code))
+        code !== undefined &&
+        aboutRecipient.test(code)
         ? { refusedFor: "recipient" as const }
         : {};
     },

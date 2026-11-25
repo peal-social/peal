@@ -155,7 +155,8 @@
   A refusal waits for the next check, whatever it is about (a sender or a
   domain not verified, a key revoked), as it sent nothing and may be put
   right by then, unless `MailDeliveryFailed.refusedFor` says no later try may
-  send it: `recipient` (its address, by the SMTP reply's enhanced code or the
+  send it: `recipient` (its address, by the SMTP reply's enhanced code, never a
+  reply without one, which may be about the sender or the relay, or by the
   field Resend names) or `duplicate` (Resend holds another email under its
   key, which may have gone out). It is informational and goes once, so it carries
   no `List-Unsubscribe`, and no price, offer or programme may join it.
@@ -165,10 +166,12 @@
 - A welcome may go out twice, or never. Twice, when the transport took it
   and the server did not learn it: it died before the check was stored, or
   the answer was lost, and the next check sends it again. Resend drops the
-  second by its key (`welcome:<user>`, kept a day: a lost answer at the
-  check after 6 hours is tried again after 24, when the key may be gone);
-  SMTP delivers both. Never, when the server dies between making the
-  account and storing the run, which no transaction holds together (Better
+  second by its key (`welcome:<user>:<SHA-256 of the sender>`, kept a day: a
+  lost answer at the check after 6 hours is tried again after 24, when the
+  key may be gone), unless the sender was changed after the lost answer,
+  which is another key: a sender corrected after a refusal must be one, as
+  Resend may keep a refused key. SMTP delivers both. Never, when the server
+  dies between making the account and storing the run, which no transaction holds together (Better
   Auth has its own pool) and nothing looks for later; or when the address is
   confirmed, or the refusal put right, only after the last check, about
   4 days and 7 hours after the account was made.
@@ -180,6 +183,9 @@
   in no finished run, so the retention leaves it. A database restored, whose
   closures `ReplayErasures` applies without the cluster, keeps the run until
   its next check finds the account gone, then as any finished run.
+- Rolled back past the welcome, a server sends none and leaves the runs that
+  wait, an account's it erases too: back on this release, each that is due is
+  checked at once.
 - A name someone typed (a member's, a workspace's) goes into an email only
   through `peal-emails`' `nameForMail`: one that reads as a host or an
   address is replaced by the catalog's `withheldNames` ("A member", "a

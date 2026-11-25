@@ -749,6 +749,15 @@ runs; rolled forward again, those still within their 7 days go.
    it, and check again; roll back once it lists none. The second needs no
    wait.
 
+## Past welcomes
+
+The release that welcomes new accounts keeps a run for each in the cluster's
+tables (`WelcomeV1`), for up to about four days. The release before does not
+run them: it welcomes nobody and leaves them there, those of the accounts it
+erases too. Once this release is back, each run that is due is checked at
+once, and ends where its account is gone. No migration; nothing to check
+before rolling back.
+
 ## Past Unified login
 
 The release that connects Instagram through Meta's Unified login
