@@ -7,6 +7,7 @@ config:
   peal:ownerName: Maxime
   peal:blueskyDid: did:plc:jttprfxjasemw7ebuk7g4pp4
   peal:domainVerifications:
+    google: google-site-verification=0gyfRTApb84oQ70oMMZwW_NdQOU15S0fvTqQ8Xl0pOs
     tiktok: tiktok-developers-site-verification=uaLiK7ir8LCIzfP1Q6gwHzDtMsCn2L8x
   peal:ownerEmail:
     secure: v1:NC6ki64aryh/nA0/:/MBg/QWRISg6HKtPOLNeTbu9SiD2GPT0qGzAximWU6P+aw+OBQ==
