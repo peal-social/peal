@@ -60,7 +60,8 @@ const uptimeRecords = (
 
 /**
  * What the whole Cloudflare account shares, whatever the environment: the
- * Access policies the environments' applications use, the addresses
+ * Access policies the environments' applications use, the emailed one-time
+ * PIN they offer beside Google, the addresses
  * Email Routing forwards, and the uptime server's records, once it exists.
  * The owner's address is a secret of the stack.
  */
@@ -82,6 +83,7 @@ export class PealAccount extends pulumi.ComponentResource {
   readonly forwardedAddresses: readonly pulumi.Output<string>[];
   readonly httpsSettings: readonly cloudflare.ZoneSetting[];
   readonly normalization: cloudflare.UrlNormalizationSettings;
+  readonly oneTimePinId: pulumi.Output<string>;
   readonly ownerPolicyId: pulumi.Output<string>;
   readonly publicCallbacksPolicyId: pulumi.Output<string>;
   readonly uptimeRecords: readonly cloudflare.DnsRecord[];
@@ -112,6 +114,21 @@ export class PealAccount extends pulumi.ComponentResource {
         name: `${settings.ownerName} only`,
       },
       child(true)
+    );
+
+    // A way to sign in to Access beside Google, which the account has from
+    // the dashboard: a code Cloudflare emails to the address typed. Scripted
+    // recordings of the sandbox sign in so, as Google refuses automated
+    // browsers. It opens nothing to anyone else: an application's policies
+    // say who gets in (the owner's address alone, above), and a code sent
+    // to another address lets no one through. No application names its
+    // providers (`allowedIdps`), so each offers both. Cloudflare holds one
+    // one-time PIN provider per account: one made in the dashboard is
+    // imported (README.md, "Adopting what exists").
+    const oneTimePin = new cloudflare.ZeroTrustAccessIdentityProvider(
+      "access-one-time-pin",
+      { accountId, config: {}, name: "One-time PIN", type: "onetimepin" },
+      { parent: this, protect: true }
     );
 
     // The paths that outside services call, open to everyone on an
@@ -310,6 +327,7 @@ export class PealAccount extends pulumi.ComponentResource {
     this.forwardedAddresses = forwards.map((rule) =>
       rule.matchers.apply((matchers) => matchers[0]?.value ?? "")
     );
+    this.oneTimePinId = oneTimePin.id;
     this.ownerPolicyId = ownerPolicy.id;
     this.publicCallbacksPolicyId = publicCallbacksPolicy.id;
     this.registerOutputs({

@@ -6,10 +6,10 @@ it, its R2 buckets with their lifecycle and CORS rules, the addresses
 Email Routing forwards, the short-link domain, peal.link, and the uptime
 server's records and service token. TypeScript, run by Bun (`runtime: bun`).
 
-| Project       | Stacks                  | What it holds                                                                                                                                          |
-| ------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `account`     | `peal`                  | What the account shares: the Access policies, the forwarded addresses, the short-link domain, the uptime server's records, the Bluesky handle's record |
-| `environment` | `sandbox`, `production` | An environment's tunnel, host names (its short-link one included), Access applications, buckets, the sandbox's service token for the uptime server     |
+| Project       | Stacks                  | What it holds                                                                                                                                                               |
+| ------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account`     | `peal`                  | What the account shares: the Access policies and the one-time PIN, the forwarded addresses, the short-link domain, the uptime server's records, the Bluesky handle's record |
+| `environment` | `sandbox`, `production` | An environment's tunnel, host names (its short-link one included), Access applications, buckets, the sandbox's service token for the uptime server                          |
 
 Each environment's stack reads the policies from the account's stack, so
 the account comes first. Pulumi comes before Ansible: the Ansible project
@@ -53,6 +53,26 @@ objects; neither it nor the server's other keys can change the lock.
 `test/sandbox-resources.ts` holds every resource the sandbox's stack makes,
 by name and inputs: the sandbox is applied, and a change there is a change
 its preview shows.
+
+## Signing in to Access
+
+Access offers two ways to sign in, on every application: Google, an
+identity provider made in the dashboard, and the one-time PIN
+(`access-one-time-pin`, in the account's stack), a code Cloudflare emails
+to the address typed. The code is for scripted recordings of the sandbox,
+as Google refuses automated browsers. It opens nothing to anyone else: the
+applications' policies still say who gets in, the owner's address alone
+(and the Bypass and Service Auth policies above), so a code sent to
+another address lets no one through. No application names its providers
+(`allowedIdps`), so each offers both.
+
+Cloudflare holds one one-time PIN provider per account. Should one have
+been made in the dashboard (Zero Trust › Settings › Authentication), the
+`up` that makes it fails: import it instead ([Adopting what
+exists](#adopting-what-exists)), with the id the API lists for the
+provider of type `onetimepin`
+(`GET /accounts/<account id>/access/identity_providers`), as
+`{ "access-one-time-pin": "accounts/<account id>/<provider id>" }`.
 
 ## Secrets and Ansible
 
@@ -186,11 +206,11 @@ the fields of the Proton Pass item `Pulumi` in the vault `Peal` (or the one
 `PEAL_PASS_VAULT` names), each named like its variable, and handed to Pulumi
 in its environment alone, never a file:
 
-| Variable                                     | What it is                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`                       | An account API token: Access: Apps and Policies Edit, Access: Service Tokens Edit, Cloudflare One Connector: cloudflared Edit, R2 Edit, Account API Tokens Edit; on peal.social, DNS Edit, Zone Read, Zone Settings Edit (HTTPS, minimum TLS and HSTS), Sanitize Edit (URL normalisation), Email Routing Rules Edit, Dynamic URL Redirects Edit (`blog.peal.social`'s redirect), Cache Settings Edit (the blog's images' cache rule); on peal.link, DNS Edit (DNSSEC too), Zone Read, Zone Settings Edit, Sanitize Edit (URL normalisation: the endpoint refuses an account token without it, whatever its reference lists), Dynamic URL Redirects Edit (single redirects), Zone Transform Rules Edit |
-| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | An R2 key with Object Read & Write on `peal-infra-state` alone                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `PULUMI_CONFIG_PASSPHRASE`                   | The passphrase of the stacks' secrets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Variable                                     | What it is                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CLOUDFLARE_API_TOKEN`                       | An account API token: Access: Apps and Policies Edit, Access: Service Tokens Edit, Access: Organizations, Identity Providers, and Groups Edit (the one-time PIN), Cloudflare One Connector: cloudflared Edit, R2 Edit, Account API Tokens Edit; on peal.social, DNS Edit, Zone Read, Zone Settings Edit (HTTPS, minimum TLS and HSTS), Sanitize Edit (URL normalisation), Email Routing Rules Edit, Dynamic URL Redirects Edit (`blog.peal.social`'s redirect), Cache Settings Edit (the blog's images' cache rule); on peal.link, DNS Edit (DNSSEC too), Zone Read, Zone Settings Edit, Sanitize Edit (URL normalisation: the endpoint refuses an account token without it, whatever its reference lists), Dynamic URL Redirects Edit (single redirects), Zone Transform Rules Edit |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | An R2 key with Object Read & Write on `peal-infra-state` alone                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `PULUMI_CONFIG_PASSPHRASE`                   | The passphrase of the stacks' secrets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 Sign `pass-cli` in once with `pass-cli login`. Without the passphrase, the
 stacks' secrets cannot be read: Proton Pass is where it is kept.

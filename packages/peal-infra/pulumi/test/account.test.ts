@@ -43,6 +43,38 @@ describe("what the account shares", () => {
     ]);
   });
 
+  it("offers the one-time PIN, emailed, as a way to sign in to Access, and no policy more", async () => {
+    await valueOf(result.oneTimePinId);
+
+    const providers = made.filter(
+      (resource) =>
+        resource.type ===
+        "cloudflare:index/zeroTrustAccessIdentityProvider:ZeroTrustAccessIdentityProvider"
+    );
+
+    expect(providers.map((provider) => provider.name)).toStrictEqual([
+      "access-one-time-pin",
+    ]);
+    expect(providers[0]?.inputs).toStrictEqual({
+      accountId: "account-synthetic",
+      config: {},
+      name: "One-time PIN",
+      type: "onetimepin",
+    });
+
+    // Who may sign in is the policies' to say: the owner alone, as before.
+    expect(
+      made
+        .filter(
+          (resource) =>
+            resource.type ===
+            "cloudflare:index/zeroTrustAccessPolicy:ZeroTrustAccessPolicy"
+        )
+        .map((policy) => policy.name)
+        .toSorted()
+    ).toStrictEqual(["owner-only", "public-callbacks"]);
+  });
+
   it("forwards developers@, hello@, maxime@, notifications@, sandbox@ and security@ to the owner", async () => {
     const addresses = await Promise.all(result.forwardedAddresses.map(valueOf));
     expect(addresses).toStrictEqual([
