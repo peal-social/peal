@@ -916,10 +916,14 @@ a WordPress, WordPress.com, DEV or Hashnode target) adds two nullable
 columns to `publishing.live_post_changes`, `body` (the edit's rich text)
 and `options` (the target's new options), which a pending edit holds and
 its end clears, as `text`. The release before never reads them. It takes
-a pending website edit as a text edit, and fails it `notSupported`
-without calling the site, as it edits no website, even one whose call
-already reached the site and only waits to be settled; and its end leaves
-`body` and `options` on the row, content Peal keeps of no ended change.
+a pending website edit as a text edit. One whose call's result was not
+recorded yet it fails `notSupported` without calling the site, as it
+edits no website, even when that call already reached the site. One
+whose call's result was recorded, and only waits to be settled, it
+settles `done` with its own `amendText`: the new text goes over the
+channel's rich text, and the new options are never written to the
+target. Either way its end leaves `body` and `options` on the row,
+content Peal keeps of no ended change.
 What a finished edit wrote (a rich text in `text_overrides`, a website's
 options on its target) is the previous section's.
 
