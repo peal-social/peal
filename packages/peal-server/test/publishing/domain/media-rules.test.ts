@@ -463,7 +463,7 @@ describe(mediaViolationsOn, () => {
     expect(violations("snapchat", lasting(5000))).toStrictEqual([]);
     expect(violations("snapchat", lasting(300_000))).toStrictEqual([]);
     expect(
-      violations("snapchat", video(first, { byteSize: 1_000_000_000 }))
+      violations("snapchat", video(first, { byteSize: 999_999_984 }))
     ).toStrictEqual([]);
 
     expect(violations("snapchat", lasting(4000))).toStrictEqual([
@@ -486,9 +486,9 @@ describe(mediaViolationsOn, () => {
     ]);
   });
 
-  it("holds a Spotlight to one MP4 alone, of 1,000,000,000 bytes at most", () => {
+  it("holds a Spotlight to one MP4 alone, of 999,999,984 bytes at most", () => {
     expect(
-      violations("snapchat", video(first, { byteSize: 1_000_000_001 })).map(
+      violations("snapchat", video(first, { byteSize: 999_999_985 })).map(
         ({ _tag }) => _tag
       )
     ).toStrictEqual(["mediaTooLarge"]);

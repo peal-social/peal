@@ -92,6 +92,11 @@ export interface PlatformClientSettings {
 // An upload of a large video on a slow line.
 const uploadTimeout = Duration.minutes(10);
 
+// Posting a Spotlight: past it the post is unconfirmed, which a member
+// checks by hand, so a slow answer is waited for longer than a plain
+// call's 20 seconds, about as long as the confirmations of the others.
+const spotlightTimeout = Duration.minutes(2);
+
 /**
  * The platforms Peal publishes to: Mastodon, Bluesky, LinkedIn, X, Threads,
  * Instagram, Facebook Pages, TikTok, YouTube, Pinterest, Google Business
@@ -112,6 +117,10 @@ export const platformClientsWith = (settings: PlatformClientSettings) =>
     Effect.gen(function* PlatformClientsLive() {
       const api = yield* publicHttpClient;
       const uploads = yield* publicHttpClientWith({ timeout: uploadTimeout });
+
+      const spotlights = yield* publicHttpClientWith({
+        timeout: spotlightTimeout,
+      });
 
       const timing =
         settings.timing === undefined ? {} : { timing: settings.timing };
@@ -198,6 +207,7 @@ export const platformClientsWith = (settings: PlatformClientSettings) =>
         yield* snapchatClient({
           api,
           apiUrl: settings.snapchatApi,
+          spotlights,
           uploads,
           ...timing,
         }),

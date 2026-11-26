@@ -20,6 +20,7 @@ import {
   expiredToken,
   fakeSnapchatApi,
   snapchatProfileId,
+  snapPartSize,
   snapRefusal,
 } from "#test/publishing/fakes/fake-snapchat-api.ts";
 import type {
@@ -214,19 +215,34 @@ describe("publishing on Snapchat", () => {
       })
   );
 
+  it.live("sends a video whose encryption fits in 32 MiB as one part", () =>
+    Effect.gen(function* onePart() {
+      const file = testFile("video", 9 * mebibyte);
+      const on = yield* onSnapchat({ files: [file] });
+
+      yield* on.client.publish(yield* post({ media: [attached(file)] }));
+
+      const [object] = on.snapchat.media();
+
+      assert.deepStrictEqual(object?.partsSent, [1]);
+      assert.strictEqual(object?.parts.get(1)?.length, 9 * mebibyte + 16);
+    })
+  );
+
   it.live(
-    "sends a large video in parts numbered from 1, which decrypt to the file",
+    "cuts a larger video every 32 MiB of its encryption, parts numbered from 1, which decrypt to the file",
     () =>
       Effect.gen(function* inParts() {
-        const file = testFile("video", 9 * mebibyte);
+        const file = testFile("video", 32 * mebibyte + 3000);
         const on = yield* onSnapchat({ files: [file] });
 
         yield* on.client.publish(yield* post({ media: [attached(file)] }));
 
         const [object] = on.snapchat.media();
 
-        assert.deepStrictEqual(object?.partsSent, [1, 2, 3]);
-        assert.strictEqual(object?.parts.get(1)?.length, 4 * mebibyte);
+        assert.deepStrictEqual(object?.partsSent, [1, 2]);
+        assert.strictEqual(object?.parts.get(1)?.length, snapPartSize);
+        assert.strictEqual(object?.parts.get(2)?.length, 3008);
         assert.deepStrictEqual(
           yield* decrypted(onlyMedia(on.snapchat.media())),
           file.bytes
@@ -238,7 +254,7 @@ describe("publishing on Snapchat", () => {
     "sends again only the part whose token was refused, in the same media object",
     () =>
       Effect.gen(function* lapses() {
-        const file = testFile("video", 9 * mebibyte);
+        const file = testFile("video", 32 * mebibyte + 3000);
         const on = yield* onSnapchat({ files: [file] });
 
         on.snapchat.script.push("add", [{ _tag: "own" }, expiredToken]);
@@ -249,10 +265,9 @@ describe("publishing on Snapchat", () => {
 
         assert.strictEqual(result._tag, "published");
         assert.lengthOf(on.snapchat.media(), 1);
-        assert.deepStrictEqual(on.snapchat.media()[0]?.partsSent, [1, 2, 3]);
+        assert.deepStrictEqual(on.snapchat.media()[0]?.partsSent, [1, 2]);
         assert.deepStrictEqual(on.snapchat.calls(), [
           "createMedia",
-          "add",
           "add",
           "add",
           "add",
@@ -293,6 +308,26 @@ describe("publishing on Snapchat", () => {
           assert.deepStrictEqual(on.snapchat.calls(), ["createMedia"]);
         }
       })
+  );
+
+  it.live("follows a path that names the profile in capitals", () =>
+    Effect.gen(function* capitals() {
+      const file = video();
+      const on = yield* onSnapchat({ files: [file] });
+
+      on.snapchat.script.push("createMedia", [
+        {
+          _tag: "addPath",
+          path: `/us/v1/public_profiles/${snapchatProfileId.toUpperCase()}/media/00000000-0000-4000-8000-000000000001/multipart-upload`,
+        },
+      ]);
+
+      const result = yield* on.client.publish(
+        yield* post({ media: [attached(file)] })
+      );
+
+      assert.strictEqual(result._tag, "published");
+    })
   );
 
   it.live("refuses, unsent, a post Snapchat cannot show", () =>
@@ -648,15 +683,17 @@ describe("publishing on Snapchat", () => {
               )
             );
 
-          for (const object of on.snapchat.media()) {
-            secretsSeen.push(object.key, object.iv);
+          // Every create request's, those the script refused included.
+          for (const { iv, key } of on.snapchat.created()) {
+            secretsSeen.push(key, iv);
           }
         }
 
         const written = [...lines, ...spans.map(spanText)].join("\n");
 
         assert.isAbove(spans.length, 8);
-        assert.isAbove(secretsSeen.length, 8);
+        // A key and an IV for each of the eight runs.
+        assert.strictEqual(secretsSeen.length, 16);
 
         for (const secret of [...secretsSeen, "token-1", "token-2"]) {
           assert.notInclude(written, secret);

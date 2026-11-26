@@ -425,9 +425,10 @@ const telegramPhoto: FormatLimits = {
 const slackImage: FormatLimits = { maxByteSize: 50 * mebibyte };
 
 // Snapchat's Spotlight (the server's platform rules cite Snap's page): one
-// MP4 of 5 to 300 seconds, 1 GB at most.
+// MP4 of 5 to 300 seconds, of 999,999,984 bytes at most, so its
+// encryption, which Snap uploads, stays within 1 GB.
 const snapchatVideo: FormatLimits = {
-  maxByteSize: 1_000_000_000,
+  maxByteSize: 999_999_984,
   maxDurationMs: 5 * minute,
   minDurationMs: 5 * second,
 };

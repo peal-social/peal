@@ -1810,7 +1810,7 @@
       "media": {
         "formats": {
           "video/mp4": {
-            "maxByteSize": 1000000000,
+            "maxByteSize": 999999984,
             "maxDurationMs": 300000,
             "minDurationMs": 5000
           }

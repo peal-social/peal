@@ -402,12 +402,14 @@ const slackImage: FormatLimits = { maxByteSize: 50 * mebibyte };
 
 // Snap's "Post Spotlight" (developers.snap.com, Public Profile API,
 // Profile Asset Management, read 2026-11-26): one MP4 of 5 to 300
-// seconds ("Video Duration : 5-300 seconds"); "A file of upto 1 GB",
-// read as 10^9 bytes, the smaller; a description that "can be up to a
-// 160 characters", counted in UTF-16 units, the strictest reading. "Any
+// seconds ("Video Duration : 5-300 seconds"); "A file of upto 1 GB can be
+// uploaded through the multipart upload API", read as 10^9 bytes, the
+// smaller, of the encrypted file it uploads: PKCS#7 adds up to 16 bytes,
+// so 999,999,984 bytes of video at most; a description that "can be up to
+// a 160 characters", counted in UTF-16 units, the strictest reading. "Any
 // video resolution and aspect ratio": no ratio is checked.
 const snapchatVideo: FormatLimits = {
-  maxByteSize: 1_000_000_000,
+  maxByteSize: 999_999_984,
   maxDurationMs: 5 * minute,
   minDurationMs: 5 * second,
 };

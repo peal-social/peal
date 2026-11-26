@@ -47,7 +47,7 @@ import {
   succeeded,
 } from "#shared/infrastructure/platforms/snapchat-api.ts";
 
-import { encryptedParts, partSizeOf } from "./snapchat-encryption.ts";
+import { encryptedParts, snapchatPartSize } from "./snapchat-encryption.ts";
 import { refused } from "./snapchat-refusal.ts";
 import type { SnapchatCall, SnapchatRefusal } from "./snapchat-refusal.ts";
 
@@ -57,12 +57,21 @@ export type SnapchatHttp = HttpClient.HttpClient.With<
 >;
 
 export interface SnapchatClientOptions {
-  /** For API calls. */
+  /** For making the media object. */
   readonly api: SnapchatHttp;
   /** The Business API's origin: `https://businessapi.snapchat.com`. */
   readonly apiUrl: URL;
+  /**
+   * For posting the Spotlight: a slow answer there is unconfirmed, which a
+   * member must check by hand, so it is waited for longer than a plain
+   * call (two minutes in production).
+   */
+  readonly spotlights: SnapchatHttp;
   readonly timing?: StepTiming;
-  /** For the parts of a video, which take longer. */
+  /**
+   * For the parts of a video and the finish, which may put up to 1 GB
+   * together on Snap's side (ten minutes in production).
+   */
   readonly uploads: SnapchatHttp;
 }
 
@@ -154,9 +163,13 @@ const uploadUrlOf = (
     Option.filter(
       (url) =>
         url.origin === apiUrl.origin &&
-        url.pathname.endsWith(
-          `/public_profiles/${accountId}/media/${mediaId}/multipart-upload`
-        )
+        // Ids are compared whatever their case: a UUID reads the same in
+        // either, and Snap's samples write them in lower case.
+        url.pathname
+          .toLowerCase()
+          .endsWith(
+            `/public_profiles/${accountId}/media/${mediaId}/multipart-upload`.toLowerCase()
+          )
     )
   );
 
@@ -281,7 +294,7 @@ export const snapchatClient = Effect.fn("SnapchatClient.make")(
     const media = yield* MediaForPublishing;
     const random = yield* SecureRandom.SecureRandom;
     const cipher = yield* Cipher.Cipher;
-    const { api, apiUrl, uploads } = options;
+    const { api, apiUrl, spotlights, uploads } = options;
 
     const profileUrl = (accountId: string, rest: string) =>
       new URL(`/v1/public_profiles/${accountId}${rest}`, apiUrl);
@@ -414,7 +427,7 @@ export const snapchatClient = Effect.fn("SnapchatClient.make")(
     const finalize = (post: OutgoingPost, finalizeUrl: URL) =>
       call(
         post,
-        api,
+        uploads,
         (token) => {
           const form = multipartFormBody({
             boundary: randomBoundary(),
@@ -467,7 +480,7 @@ export const snapchatClient = Effect.fn("SnapchatClient.make")(
           byteSize: described.byteSize,
           iv,
           key,
-          partSize: partSizeOf(described.byteSize),
+          partSize: snapchatPartSize,
         }),
         Stream.provideService(Cipher.Cipher, cipher),
         Stream.mapEffect(addPart(post, addUrl.value)),
@@ -491,7 +504,7 @@ export const snapchatClient = Effect.fn("SnapchatClient.make")(
       const spotlight = spotlightOf(post, prepared.mediaId);
 
       return yield* credentials.withToken(post.channelId, ({ accessToken }) =>
-        api
+        spotlights
           .execute(
             HttpClientRequest.post(
               profileUrl(post.accountId, "/spotlights")

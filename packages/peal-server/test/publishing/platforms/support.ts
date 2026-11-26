@@ -853,6 +853,7 @@ export const snapchatClientWith = Effect.fn("test.snapchatClient")(
     return yield* snapchatClient({
       api,
       apiUrl: new URL(options.api),
+      spotlights: api,
       timing: testTiming,
       uploads: api,
     }).pipe(

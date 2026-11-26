@@ -4,10 +4,10 @@ import { Cipher, SecureRandom } from "effect/crypto";
 
 import {
   encryptedParts,
+  encryptedSizeOf,
   maxParts,
-  minPartSize,
   partCountOf,
-  partSizeOf,
+  snapchatPartSize,
 } from "#publishing/infrastructure/platforms/snapchat/snapchat-encryption.ts";
 
 const CipherTest = Cipher.layerWebCrypto.pipe(
@@ -59,39 +59,51 @@ layer(CipherTest)("a file encrypted part by part", (withCipher) => {
     15,
     16,
     17,
+    partSize - 17,
+    partSize - 16,
     partSize - 1,
     partSize,
     partSize + 1,
-    3 * partSize,
+    2 * partSize - 1,
+    2 * partSize,
     3 * partSize + 1,
-  ])("of %d bytes is one encryption of the whole, cut", (size) =>
-    Effect.gen(function* encryptsWhole() {
-      const cipher = yield* Cipher.Cipher;
-      const file = fileOf(size);
-      const parts = yield* partsOf(file);
-      const sealed = yield* Cipher.key(Cipher.aes256Cbc, key);
-      const whole = yield* cipher.encrypt(sealed, file, { iv });
-      const ciphertext = joined(parts.map(({ bytes }) => bytes));
+  ])(
+    "of %d bytes is one encryption of the whole, cut as split cuts it",
+    (size) =>
+      Effect.gen(function* encryptsWhole() {
+        const cipher = yield* Cipher.Cipher;
+        const file = fileOf(size);
+        const parts = yield* partsOf(file);
+        const sealed = yield* Cipher.key(Cipher.aes256Cbc, key);
+        const whole = yield* cipher.encrypt(sealed, file, { iv });
+        const ciphertext = joined(parts.map(({ bytes }) => bytes));
 
-      // Byte for byte what `openssl enc -aes-256-cbc -nosalt` answers.
-      assert.deepStrictEqual(ciphertext, whole);
-      assert.deepStrictEqual(
-        yield* cipher.decrypt(sealed, ciphertext, { iv }),
-        file
-      );
-      assert.deepStrictEqual(
-        parts.map(({ number }) => number),
-        Array.from({ length: partCountOf(size, partSize) }, (_, i) => i + 1)
-      );
+        // Byte for byte what `openssl enc -aes-256-cbc -nosalt` answers.
+        assert.deepStrictEqual(ciphertext, whole);
+        assert.deepStrictEqual(
+          yield* cipher.decrypt(sealed, ciphertext, { iv }),
+          file
+        );
+        assert.deepStrictEqual(
+          parts.map(({ number }) => number),
+          Array.from({ length: partCountOf(size, partSize) }, (_, i) => i + 1)
+        );
 
-      for (const [index, { bytes }] of parts.entries()) {
-        assert.isAtMost(bytes.length, partSize + 16);
+        // One part when the encryption fits in one, as `split` leaves it;
+        // else every part but the last is a whole part's size.
+        assert.strictEqual(
+          parts.length,
+          Math.ceil(encryptedSizeOf(size) / partSize)
+        );
 
-        if (index < parts.length - 1) {
-          assert.strictEqual(bytes.length, partSize);
+        for (const [index, { bytes }] of parts.entries()) {
+          assert.isAtMost(bytes.length, partSize);
+
+          if (index < parts.length - 1) {
+            assert.strictEqual(bytes.length, partSize);
+          }
         }
-      }
-    })
+      })
   );
 
   withCipher.effect("fails on a file shorter or longer than declared", () =>
@@ -113,30 +125,23 @@ layer(CipherTest)("a file encrypted part by part", (withCipher) => {
   );
 });
 
-describe(partSizeOf, () => {
-  const mebibyte = 1024 * 1024;
-
-  it("is 4 MiB up to a file of 140 MiB, and more past it", () => {
-    expect(partSizeOf(1)).toBe(minPartSize);
-    expect(partSizeOf(20 * mebibyte)).toBe(4 * mebibyte);
-    expect(partSizeOf(140 * mebibyte)).toBe(4 * mebibyte);
-    expect(partSizeOf(140 * mebibyte + 1)).toBeGreaterThan(4 * mebibyte);
+describe(partCountOf, () => {
+  it("cuts every 32 MiB of the encryption, as split -b 32m does", () => {
+    expect(snapchatPartSize).toBe(33_554_432);
+    expect(partCountOf(1, snapchatPartSize)).toBe(1);
+    // The encryption of 32 MiB less 16 bytes takes 32 MiB: one part.
+    expect(partCountOf(snapchatPartSize - 16, snapchatPartSize)).toBe(1);
+    // Of 32 MiB, its padding makes a second part of 16 bytes.
+    expect(partCountOf(snapchatPartSize, snapchatPartSize)).toBe(2);
   });
 
-  it("is 28,571,440 bytes, in 35 parts, for a file of 1,000,000,000", () => {
-    expect(partSizeOf(1_000_000_000)).toBe(28_571_440);
-    expect(partCountOf(1_000_000_000, partSizeOf(1_000_000_000))).toBe(35);
+  it("keeps the largest video Snap takes within 35 parts and 1 GB", () => {
+    const largest = 999_999_984;
+
+    expect(encryptedSizeOf(largest)).toBe(1_000_000_000);
+    expect(partCountOf(largest, snapchatPartSize)).toBe(30);
+    expect(partCountOf(largest, snapchatPartSize)).toBeLessThanOrEqual(
+      maxParts
+    );
   });
-
-  it.each([1, 4_194_305, 146_800_641, 333_333_333, 999_999_999, 1_000_000_000])(
-    "is a whole number of blocks, in 35 parts at most, for %d bytes",
-    (size) => {
-      const part = partSizeOf(size);
-
-      expect(part % 16).toBe(0);
-      expect(partCountOf(size, part)).toBeLessThanOrEqual(maxParts);
-      // Under 32 MB with the last part's padding, in either reading.
-      expect(part + 16).toBeLessThan(32_000_000);
-    }
-  );
 });

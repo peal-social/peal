@@ -108,6 +108,27 @@ const success = (fields: Readonly<Record<string, string>> = {}) =>
     ...fields,
   });
 
+/** A part's size, as Snap's sample splits: `split -b 32m`. */
+export const snapPartSize = 32 * 1024 * 1024;
+
+// Whether the parts are numbered 1 to n and cut as `split -b 32m` cuts the
+// encrypted file: one of 32 MiB at most, or each but the last exactly
+// 32 MiB and the last one of what is left.
+const splitAsSnapShows = (parts: ReadonlyMap<number, Uint8Array>) => {
+  const sizes = Array.from(
+    { length: parts.size },
+    (_, index) => parts.get(index + 1)?.length ?? -1
+  );
+
+  const last = sizes.at(-1) ?? 0;
+
+  return (
+    last >= 1 &&
+    last <= snapPartSize &&
+    sizes.slice(0, -1).every((size) => size === snapPartSize)
+  );
+};
+
 const bearerOf = (request: PlatformRequest) =>
   headerOf(request, "authorization").replace(/^Bearer /u, "");
 
@@ -118,7 +139,10 @@ const text = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
  * synthetic profile: create media (answering paths under `/us/v1/…`), the
  * multipart ADD and FINALIZE, and Post Spotlight. Calls carry one of
  * `tokens`, else an expired token's 401. `script` replaces a route's next
- * answers.
+ * answers. FINALIZE takes only the shape Snap's page shows (`split -b
+ * 32m` of the encrypted file): one part of 32 MiB at most, or parts of
+ * exactly 32 MiB and a last one of what is left. Every create request's
+ * key and IV are kept (`created`), whatever the script answers.
  */
 export const fakeSnapchatApi = Effect.fnUntraced(function* fakeSnapchatApi(
   options: { readonly tokens?: readonly string[] } = {}
@@ -128,6 +152,7 @@ export const fakeSnapchatApi = Effect.fnUntraced(function* fakeSnapchatApi(
   const spotlights: FakeSpotlight[] = [];
   const script = scripted<SnapScript>();
   const calls: SnapRoute[] = [];
+  const created: { readonly iv: string; readonly key: string }[] = [];
 
   const profile = `/v1/public_profiles/${snapchatProfileId}`;
 
@@ -170,6 +195,10 @@ export const fakeSnapchatApi = Effect.fnUntraced(function* fakeSnapchatApi(
       text(parts.find((part) => part.name === name)?.data ?? new Uint8Array());
 
     if (field("action") === "FINALIZE") {
+      if (!splitAsSnapShows(object.parts)) {
+        return snapRefusal("SYNTHETIC_PARTS_NOT_AS_DOCUMENTED", 400);
+      }
+
       object.finalized = true;
       object.finalizedAs = headerOf(request, "content-type");
 
@@ -257,6 +286,12 @@ export const fakeSnapchatApi = Effect.fnUntraced(function* fakeSnapchatApi(
 
     calls.push(route);
 
+    if (route === "createMedia") {
+      const { iv, key } = createOf(request);
+
+      created.push({ iv, key });
+    }
+
     // A refused token comes before anything: it uses no scripted answer.
     if (!tokens.has(bearerOf(request))) {
       return expiredToken;
@@ -287,6 +322,8 @@ export const fakeSnapchatApi = Effect.fnUntraced(function* fakeSnapchatApi(
     ...server,
     /** The routes called, in order, refused tokens included. */
     calls: () => [...calls],
+    /** Every create request's Base64 key and IV, refused ones included. */
+    created: () => [...created],
     /** The media objects made, in order. */
     media: () => [...media.values()],
     script,

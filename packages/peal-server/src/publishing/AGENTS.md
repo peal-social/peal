@@ -577,8 +577,14 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   its client errors are typed where they happen, and neither value is
   ever logged or traced), sends the video encrypted with AES-256-CBC
   (`snapchat-encryption.ts`, `Cipher`: the whole file's encryption, cut
-  into parts of `partSizeOf`, 4 MiB up to 140 MiB, 35 parts at most, one
-  part and its ciphertext held at a time) to the answer's `add_path`, a
+  as Snap's sample cuts it, `split -b 32m`: one part when it takes 32 MiB
+  or less, else parts of exactly 32 MiB (`snapchatPartSize`) and a last of
+  what is left, 30 parts at most for the largest video, 999,999,984 bytes,
+  whose encryption is Snap's 1 GB; one part of the file and its
+  ciphertext held at a time, so a video of 32 MiB or less is held whole;
+  whether Snap reads its samples so stays to be seen: a video of several
+  parts uploaded from the sandbox and played on Snapchat is a condition
+  of merging) to the answer's `add_path`, a
   multipart form a part (`action=ADD`, `part_number`, then the file), and
   finishes it at `finalize_path` (a form too); both paths are followed
   only on the API's origin and under the profile's media object. Every
@@ -606,7 +612,8 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
 - No adapter holds a whole file: large uploads go in parts read one at a
   time from the media stream (`inParts` in `platforms/byte-parts.ts`:
   LinkedIn's video parts, X's 4 MiB appends, TikTok's and YouTube's
-  chunks), and a file a platform takes in one request is streamed with
+  chunks, Snapchat's 32 MiB parts, which hold a video of 32 MiB or less
+  whole, as Snap's sample splits only past that), and a file a platform takes in one request is streamed with
   `streamedBody` (`#shared/infrastructure/platforms/public-http.ts`), in a
   form with `multipartBody` (Mastodon, Pinterest's videos; LinkedIn's
   documents go as they are), never `Stream.mkUint8Array` or
