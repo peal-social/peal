@@ -52,12 +52,20 @@ const workspace = { workspaceId: WorkspaceIdSchema };
 
 const post = { ...workspace, postId: PostIdSchema };
 
+// A post as publishing tells of it: with its caller's own id for it, when
+// it has one; absent otherwise, and on events stored before it was told.
+// An id of the caller's, never content of the post.
+const ownPost = {
+  ...post,
+  externalId: Schema.optionalKey(Schema.NonEmptyString),
+};
+
 // One post on one channel, in the round it was sent: 1, and one more for
 // each repost.
 // `parts` says how many parts the post has there and how many are live;
 // events stored before posts had parts have none.
 const postOnChannel = {
-  ...post,
+  ...ownPost,
   ...EventTargetSchema.fields,
   parts: Schema.optionalKey(
     Schema.Struct({ count: Schema.Int, live: Schema.Int })
@@ -180,7 +188,7 @@ export const WebhookEventSchema = Schema.Union([
   // `scheduledAt`, chosen in `timeZone`, on `targets`.
   Schema.Struct({
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       scheduledAt: Schema.DateTimeUtc,
       targets: Schema.Array(EventTargetSchema),
       timeZone: Schema.String,
@@ -190,7 +198,7 @@ export const WebhookEventSchema = Schema.Union([
   // A scheduled post, or one that waited for an approval, was taken back
   // to draft: it goes out nowhere until it is scheduled again.
   Schema.Struct({
-    data: Schema.Struct(post),
+    data: Schema.Struct(ownPost),
     type: Schema.Literal("post.unscheduled"),
   }),
   // The post went live on the channel.
@@ -229,7 +237,7 @@ export const WebhookEventSchema = Schema.Union([
   // taken off a post that still goes out on its others is told alone.
   Schema.Struct({
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       cancelledAt: Schema.DateTimeUtc,
       // `post` when the post was cancelled, `target` when one channel was
       // taken off a post that still goes out. Absent on events stored
@@ -244,7 +252,7 @@ export const WebhookEventSchema = Schema.Union([
   // member's confirmation changes the outcome.
   Schema.Struct({
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       finishedAt: Schema.DateTimeUtc,
       outcome: FinishedOutcomeSchema,
       round: Schema.Int,
@@ -257,7 +265,7 @@ export const WebhookEventSchema = Schema.Union([
   // `alreadyGone` when the platform had it no longer, deleted there before.
   Schema.Struct({
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       ...EventTargetSchema.fields,
       alreadyGone: Schema.Boolean,
       removedAt: Schema.DateTimeUtc,
@@ -268,7 +276,7 @@ export const WebhookEventSchema = Schema.Union([
   // says why; the post may still be there, and a member may ask again.
   Schema.Struct({
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       ...EventTargetSchema.fields,
       code: Schema.NonEmptyString,
       failedAt: Schema.DateTimeUtc,
@@ -280,7 +288,7 @@ export const WebhookEventSchema = Schema.Union([
   // channel is the new one in Peal too. Never the text itself.
   Schema.Struct({
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       ...EventTargetSchema.fields,
       editedAt: Schema.DateTimeUtc,
       part: Schema.Int,
@@ -294,7 +302,7 @@ export const WebhookEventSchema = Schema.Union([
   // again.
   Schema.Struct({
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       ...EventTargetSchema.fields,
       code: Schema.NonEmptyString,
       failedAt: Schema.DateTimeUtc,

@@ -13,6 +13,8 @@ import { Schedule } from "#shared/domain/schedule.ts";
 import { InvalidPostTransition } from "./invalid-post-transition.ts";
 import type { PostAction } from "./invalid-post-transition.ts";
 import { PostContent } from "./post-content.ts";
+import { PostExternalIdSchema } from "./post-external-id.ts";
+import type { PostExternalId } from "./post-external-id.ts";
 import { PostNotDue } from "./post-not-due.ts";
 import { PostOccurrenceSchema } from "./post-occurrence.ts";
 import type { PostOccurrence } from "./post-occurrence.ts";
@@ -53,7 +55,8 @@ import { PostTagIdsSchema } from "./tag.ts";
  * draft may change. Its author is the member who created it, none when an
  * API key did, and its attribution says how it was created and scheduled
  * (`./post-origin.ts`). Its tags (`./tag.ts`) file it for its workspace:
- * they are no part of what it says, and change whatever its status.
+ * they are no part of what it says, and change whatever its status. So is
+ * its external id (`./post-external-id.ts`), its caller's own id for it.
  *
  * `queueId` is the queue that gave it its time, if one did (`./queue.ts`):
  * it holds that queue's slot while it is scheduled, awaiting approval or
@@ -79,6 +82,11 @@ export class Post extends Schema.Class<Post>(
   attribution: PostAttributionField,
   authorId: Schema.Option(UserIdSchema),
   content: PostContent,
+  // None unless its caller gave one: its own id for the post
+  // (`./post-external-id.ts`), no part of what it says.
+  externalId: Schema.Option(PostExternalIdSchema).pipe(
+    Schema.withConstructorDefault(Effect.succeed(Option.none()))
+  ),
   id: PostIdSchema,
   // None unless a recycling rule made it: which, and its place among the
   // rule's posts.
@@ -114,6 +122,7 @@ const withStatus = (
     attribution: post.attribution,
     authorId: post.authorId,
     content: post.content,
+    externalId: post.externalId,
     id: post.id,
     occurrence: post.occurrence,
     queueId: post.queueId,
@@ -188,6 +197,7 @@ export const editDraft = (post: Post, content: PostContent): Transition =>
           attribution: post.attribution,
           authorId: post.authorId,
           content,
+          externalId: post.externalId,
           id: post.id,
           occurrence: post.occurrence,
           queueId: post.queueId,
@@ -230,6 +240,7 @@ const attributed = (
     }),
     authorId: post.authorId,
     content: post.content,
+    externalId: post.externalId,
     id: post.id,
     occurrence: post.occurrence,
     queueId: post.queueId,
@@ -250,6 +261,7 @@ export const withLinksShortened = (post: Post, shortenLinks: boolean): Post =>
     attribution: post.attribution,
     authorId: post.authorId,
     content: post.content,
+    externalId: post.externalId,
     id: post.id,
     occurrence: post.occurrence,
     queueId: post.queueId,
@@ -269,6 +281,7 @@ export const tagPost = (post: Post, tagIds: readonly TagId[]): Post =>
     attribution: post.attribution,
     authorId: post.authorId,
     content: post.content,
+    externalId: post.externalId,
     id: post.id,
     occurrence: post.occurrence,
     queueId: post.queueId,
@@ -276,6 +289,29 @@ export const tagPost = (post: Post, tagIds: readonly TagId[]): Post =>
     shortenLinks: post.shortenLinks,
     status: post.status,
     tagIds,
+    workspaceId: post.workspaceId,
+  });
+
+/**
+ * Gives the post its caller's own id, or takes it off. Like its tags, it
+ * says nothing to the platforms, so a post takes it whatever its status.
+ */
+export const withExternalId = (
+  post: Post,
+  externalId: Option.Option<PostExternalId>
+): Post =>
+  new Post({
+    attribution: post.attribution,
+    authorId: post.authorId,
+    content: post.content,
+    externalId,
+    id: post.id,
+    occurrence: post.occurrence,
+    queueId: post.queueId,
+    scheduleRevision: post.scheduleRevision,
+    shortenLinks: post.shortenLinks,
+    status: post.status,
+    tagIds: post.tagIds,
     workspaceId: post.workspaceId,
   });
 
@@ -288,6 +324,7 @@ export const placedBy = (post: Post, queueId: QueueId): Post =>
     attribution: post.attribution,
     authorId: post.authorId,
     content: post.content,
+    externalId: post.externalId,
     id: post.id,
     occurrence: post.occurrence,
     queueId: Option.some(queueId),
@@ -304,6 +341,7 @@ export const madeBy = (post: Post, occurrence: PostOccurrence): Post =>
     attribution: post.attribution,
     authorId: post.authorId,
     content: post.content,
+    externalId: post.externalId,
     id: post.id,
     occurrence: Option.some(occurrence),
     queueId: post.queueId,

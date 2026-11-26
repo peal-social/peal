@@ -5,6 +5,7 @@ import {
   errorCodeOf,
   IdempotencyKeyReused,
   PostContentInvalid,
+  PostExternalIdTaken,
   PostNotFound,
   PostRefusalSchema,
   QueueHasNoRoom,
@@ -117,6 +118,10 @@ export const refusalOf =
         ),
       PostContentRejected: ({ violations }) =>
         Effect.succeed<PostRefusal>(new PostContentInvalid({ violations })),
+      PostExternalIdTaken: ({ postId }) =>
+        Effect.succeed<PostRefusal>(
+          new PostExternalIdTaken({ postId: Option.getOrNull(postId) })
+        ),
       PostNotFound: () => Effect.succeed<PostRefusal>(new PostNotFound()),
       QueueHasNoRoom: ({ queueId, reason }) =>
         Effect.succeed<PostRefusal>(new QueueHasNoRoom({ queueId, reason })),
@@ -146,6 +151,15 @@ export const refusalOfCheck =
       ...check.violations,
       ...check.channels.flatMap((channel) => channel.violations),
     ];
+
+    // Sending checks the id first, right after the idempotency key.
+    if (Option.isSome(check.externalIdTakenBy)) {
+      return Effect.succeed(
+        Option.some(
+          new PostExternalIdTaken({ postId: check.externalIdTakenBy.value })
+        )
+      );
+    }
 
     if (Arr.isReadonlyArrayNonEmpty(check.unknownChannels)) {
       return Effect.succeed(

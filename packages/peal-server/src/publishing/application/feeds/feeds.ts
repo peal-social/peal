@@ -912,7 +912,9 @@ export class Feeds extends Context.Service<
                     drafts.create(actor, { channelIds: [], content }),
                   UnknownChannels: () =>
                     drafts.create(actor, { channelIds: [], content }),
-                })
+                }),
+                // A feed's post has no external id to be taken.
+                Effect.catchTag("PostExternalIdTaken", Effect.die)
               );
 
             yield* store.settle(
@@ -1033,6 +1035,8 @@ export class Feeds extends Context.Service<
                   .pipe(Effect.as("starterGone" as const)),
               PlanLimitReached: () => heldBack("planLimit"),
               PostContentRejected: () => heldBack("contentRejected"),
+              // A feed's post has no external id to be taken.
+              PostExternalIdTaken: Effect.die,
               PostNotFound: () => heldBack("contentRejected"),
               QueueHasNoRoom: () => heldBack("queueFull"),
               QueueNotFound: () =>

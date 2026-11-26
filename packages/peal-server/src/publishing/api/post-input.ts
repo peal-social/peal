@@ -24,6 +24,8 @@ import type { PresetAsk } from "#publishing/application/post-presets.ts";
 import type { SendPostRequest } from "#publishing/application/post-scheduling.ts";
 import { ChannelOptionsListSchema } from "#publishing/domain/channel-options.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
+import { PostExternalIdSchema } from "#publishing/domain/post-external-id.ts";
+import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import { PostPart } from "#publishing/domain/post-part.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import { QueueIdSchema } from "#publishing/domain/queue-id.ts";
@@ -225,6 +227,46 @@ const tagsGiven = (
 /** A draft's tags, as a request gives them: left out, nothing is said. */
 export const draftTagsFrom = tagsGiven;
 
+// The contract holds an external id to the domain's bounds: one that does
+// not decode is a bug of the server's.
+const decodeExternalId = Schema.decodeUnknownEffect(PostExternalIdSchema);
+
+/** The external id a request gives a post, decoded. */
+export const externalIdFrom = (
+  raw: string
+): Effect.Effect<PostExternalId> => decodeExternalId(raw).pipe(Effect.orDie);
+
+/**
+ * The external id a new post's request gives, when it gives one: left
+ * out, the post has none.
+ */
+export const externalIdGiven = (
+  raw: string | undefined
+): Effect.Effect<{ readonly externalId?: PostExternalId }> =>
+  raw === undefined
+    ? Effect.succeed({})
+    : externalIdFrom(raw).pipe(Effect.map((externalId) => ({ externalId })));
+
+/**
+ * What a draft's update says of its external id: left out, nothing (it
+ * keeps its own); null, none; else the id.
+ */
+export const draftExternalIdFrom = (
+  raw: string | null | undefined
+): Effect.Effect<{
+  readonly externalId?: Option.Option<PostExternalId>;
+}> => {
+  if (raw === undefined) {
+    return Effect.succeed({});
+  }
+
+  return raw === null
+    ? Effect.succeed({ externalId: Option.none() })
+    : externalIdFrom(raw).pipe(
+        Effect.map((externalId) => ({ externalId: Option.some(externalId) }))
+      );
+};
+
 /** What a request names of what the workspace saved. */
 export interface PresetInput {
   readonly channelSets?: readonly string[];
@@ -393,6 +435,7 @@ export const sendRequestFrom = (input: NewPostInput, key?: string) =>
       allowDuplicate: input.allowDuplicate ?? false,
       channelIds,
       content: yield* contentFrom(input.content),
+      ...(yield* externalIdGiven(input.externalId)),
       idempotency: yield* keyedFrom(input, key),
       options: yield* optionsFrom(input.options ?? []),
       placement: yield* placementFrom(when),

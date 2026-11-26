@@ -16,6 +16,7 @@ import {
   requestUnpublish,
 } from "#publishing/domain/live-post-change.ts";
 import { PostTarget } from "#publishing/domain/post-target.ts";
+import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import { ToldLivePostEvents } from "#publishing/infrastructure/told-live-post-events.ts";
 import { newId } from "#shared/application/ids.ts";
 import { PostIdSchema, PostTargetIdSchema } from "#shared/domain/ids.ts";
@@ -94,6 +95,7 @@ const Recording = Layer.effectContext(
 
 const EventsTest = ToldLivePostEvents.pipe(
   Layer.provideMerge(Recording),
+  Layer.provideMerge(DrizzlePostRepository),
   Layer.provideMerge(DrizzleChannelRepository),
   Layer.provideMerge(DatabaseTest)
 );

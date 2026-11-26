@@ -11,6 +11,8 @@ import {
 import { parseCsv } from "./csv.ts";
 import { maxIdempotencyKeyLength } from "./idempotency.ts";
 import { maxMediaPerPost } from "./post-content.ts";
+import { PostExternalIdSchema } from "./post-external-id.ts";
+import type { PostExternalId } from "./post-external-id.ts";
 import { PostTextSchema } from "./post-text.ts";
 
 /** The most rows one import takes, the line that names the columns apart. */
@@ -25,6 +27,7 @@ export const importColumns = [
   "time_zone",
   "allow_duplicate",
   "idempotency_key",
+  "external_id",
 ] as const;
 
 export type ImportColumn = (typeof importColumns)[number];
@@ -60,6 +63,8 @@ export interface ImportedPost {
   /** None is now. */
   readonly at: Option.Option<DateTime.Utc>;
   readonly channels: readonly string[];
+  /** The post's own id in the caller's records, if the row gives one. */
+  readonly externalId: Option.Option<PostExternalId>;
   readonly idempotencyKey: Option.Option<string>;
   readonly media: readonly string[];
   readonly text: string;
@@ -166,6 +171,8 @@ const timeOf = (
   });
 };
 
+const decodeExternalId = Schema.decodeUnknownOption(PostExternalIdSchema);
+
 const flagOf = (cell: string): Option.Option<boolean> => {
   const written = cell.toLowerCase();
 
@@ -186,6 +193,13 @@ const postOf = (
   const at = timeOf(cellOf("at").trim(), zone);
   const allowDuplicate = flagOf(cellOf("allow_duplicate").trim());
   const key = cellOf("idempotency_key");
+  const externalCell = cellOf("external_id");
+
+  // An empty cell gives none; any other is the id as written, exactly.
+  const externalId =
+    externalCell === ""
+      ? Option.some(Option.none<PostExternalId>())
+      : decodeExternalId(externalCell).pipe(Option.map(Option.some));
 
   const problems: readonly CellProblem[] = [
     ...(isText(text) ? [] : [invalid("text")]),
@@ -201,13 +215,17 @@ const postOf = (
     ...(key.length > maxIdempotencyKeyLength || controlCharacter.test(key)
       ? [invalid("idempotency_key")]
       : []),
+    ...(Option.isNone(externalId)
+      ? [invalid("external_id")]
+      : []),
   ];
 
   if (
     problems.length > 0 ||
     Result.isFailure(at) ||
     Option.isNone(zone) ||
-    Option.isNone(allowDuplicate)
+    Option.isNone(allowDuplicate) ||
+    Option.isNone(externalId)
   ) {
     return Result.fail(problems);
   }
@@ -216,6 +234,7 @@ const postOf = (
     allowDuplicate: allowDuplicate.value,
     at: at.success,
     channels,
+    externalId: externalId.value,
     idempotencyKey: key === "" ? Option.none() : Option.some(key),
     media,
     text,

@@ -34,6 +34,19 @@ const neverStopping = <R>(
     )
   );
 
+/**
+ * The post as its events name it: its id, and its caller's own id for it
+ * when it has one, left out otherwise so an event of a post without one
+ * reads as before.
+ */
+export const postNamed = (post: Post) => ({
+  ...Option.match(post.externalId, {
+    onNone: () => ({}),
+    onSome: (externalId) => ({ externalId }),
+  }),
+  postId: post.id,
+});
+
 const makeTelling = Effect.gen(function* makeTelling() {
   const channels = yield* ChannelRepository;
   const webhooks = yield* WebhookEvents;
@@ -73,7 +86,7 @@ const makeTelling = Effect.gen(function* makeTelling() {
         count: partCount(post.content),
         live: livePartsOf(target).length,
       },
-      postId: post.id,
+      ...postNamed(post),
       round: target.round,
       workspaceId: post.workspaceId,
     };
@@ -85,7 +98,7 @@ const makeTelling = Effect.gen(function* makeTelling() {
         publish(key, {
           data: {
             cancelledAt,
-            postId: post.id,
+            ...postNamed(post),
             scope: "post",
             targets: [
               {
@@ -145,7 +158,7 @@ export const WebhookPostEvents = Layer.effect(
 
         yield* webhooks.publish({
           event: {
-            data: { postId: post.id, workspaceId: post.workspaceId },
+            data: { ...postNamed(post), workspaceId: post.workspaceId },
             type: "post.unscheduled",
           },
           key: `post:${post.id}:unscheduled:${post.scheduleRevision}`,
@@ -164,7 +177,7 @@ export const WebhookPostEvents = Layer.effect(
 
       yield* publish(`post:${post.id}:scheduled:${post.scheduleRevision}`, {
         data: {
-          postId: post.id,
+          ...postNamed(post),
           scheduledAt: post.status.schedule.at,
           // A channel taken off the post is no longer one it goes to.
           targets: yield* refsOf(
@@ -188,7 +201,7 @@ export const WebhookPostEvents = Layer.effect(
         {
           data: {
             cancelledAt,
-            postId: post.id,
+            ...postNamed(post),
             scope: "post",
             targets: yield* refsOf(targets),
             workspaceId: post.workspaceId,
@@ -211,7 +224,7 @@ export const WebhookPostEvents = Layer.effect(
       yield* publish(`post-target:${target.id}:dropped`, {
         data: {
           cancelledAt: target.status.cancelledAt,
-          postId: post.id,
+          ...postNamed(post),
           scope: "target",
           targets: yield* refsOf([target]),
           workspaceId: post.workspaceId,
@@ -273,7 +286,7 @@ export const WebhookPostEvents = Layer.effect(
         data: {
           finishedAt: status.finishedAt,
           outcome: status.outcome,
-          postId: post.id,
+          ...postNamed(post),
           round,
           targets: results,
           workspaceId: post.workspaceId,

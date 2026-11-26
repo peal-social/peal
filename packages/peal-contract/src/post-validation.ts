@@ -126,6 +126,10 @@ export const PostValidationSchema = Schema.Struct({
   // near its time, which `create` refuses unless told `allowDuplicate`;
   // none when the request gave no time, or allowed them.
   duplicates: Schema.Array(DuplicateOnChannelSchema),
+  // The post that is not cancelled and has the request's `externalId`
+  // already, which `create` refuses (PostExternalIdTaken); null when none
+  // has it, or the request gave none.
+  externalIdTakenBy: Schema.NullOr(Schema.String),
   // The limit of the plan it would pass; null when it has room, on a
   // server that does not bill, or when the request gave no time.
   planLimit: Schema.NullOr(PlanShortfallSchema),

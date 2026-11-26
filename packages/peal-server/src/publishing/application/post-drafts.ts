@@ -5,6 +5,8 @@ import { checkDraft } from "#publishing/domain/content-rules.ts";
 import type { InvalidPostTransition } from "#publishing/domain/invalid-post-transition.ts";
 import type { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
+import type { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
+import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import {
   authorOf,
   createDraft,
@@ -12,6 +14,7 @@ import {
   editDraft,
   mayDiscard,
   tagPost,
+  withExternalId,
   withLinksShortened,
 } from "#publishing/domain/post.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
@@ -30,6 +33,7 @@ import { ApprovalGate } from "./approval-gate.ts";
 import type { AttachableMedia } from "./attachable-media.ts";
 import type { ChannelSetNotFound } from "./channel-set-not-found.ts";
 import { copyOf } from "./post-copies.ts";
+import { externalIdFree } from "./post-external-ids.ts";
 import type { PostNotFound } from "./post-not-found.ts";
 import { PostOrigins } from "./post-origins.ts";
 import { nothingAsked, PostPresets } from "./post-presets.ts";
@@ -58,6 +62,12 @@ export interface DraftRequest {
   // Possibly none yet; a channel listed twice gets one target.
   readonly channelIds: readonly ChannelId[];
   readonly content: PostContent;
+  /**
+   * Its caller's own id for it, or none. Left out, a new draft has none,
+   * and a draft that is changed keeps its own: a client that knows nothing
+   * of ids never clears one.
+   */
+  readonly externalId?: Option.Option<PostExternalId>;
   // One at most per channel; left out, none on any channel.
   readonly options?: readonly ChannelOptions[];
   /**
@@ -83,6 +93,7 @@ type DraftFailure =
   | DatabaseError
   | MissingPermission
   | PostContentRejected
+  | PostExternalIdTaken
   | SignatureNotFound
   | UnknownChannels
   | UnknownMedia
@@ -198,6 +209,23 @@ export class PostDrafts extends Context.Service<
           withPorts
         );
 
+      // The external id a request gives the post, once no other post that
+      // is not cancelled has it: claimed in the transaction that keeps it,
+      // before the post's row is locked, as a post made with it does.
+      const externalIdOf = (
+        actor: Actor,
+        { externalId }: DraftRequest,
+        postId: PostId
+      ) =>
+        externalId === undefined || Option.isNone(externalId)
+          ? Effect.void
+          : externalIdFree(
+              actor.workspaceId,
+              externalId.value,
+              posts.claimExternalId,
+              Option.some(postId)
+            );
+
       // The tags a request names, once they are the workspace's. Inside
       // the transaction that keeps them, after the workspace's tags are
       // claimed: a tag deleted meanwhile is refused, never kept.
@@ -239,9 +267,11 @@ export class PostDrafts extends Context.Service<
 
         const post = yield* transaction(
           Effect.gen(function* insert() {
+            yield* externalIdOf(actor, request, postId);
+
             const tags = yield* tagsOf(actor, request);
 
-            const made = withLinksShortened(
+            const filed = withLinksShortened(
               tagPost(
                 createDraft(
                   postId,
@@ -254,6 +284,11 @@ export class PostDrafts extends Context.Service<
               ),
               shortenLinks
             );
+
+            const made =
+              request.externalId === undefined
+                ? filed
+                : withExternalId(filed, request.externalId);
 
             yield* posts.insert(made, targets);
 
@@ -276,6 +311,8 @@ export class PostDrafts extends Context.Service<
 
         return yield* transaction(
           Effect.gen(function* edit() {
+            yield* externalIdOf(actor, request, postId);
+
             // Before the post, as deleting a tag takes them in turn.
             const tags = yield* tagsOf(actor, request);
 
@@ -293,10 +330,15 @@ export class PostDrafts extends Context.Service<
               onSome: (chosen) => tagPost(edited, chosen),
             });
 
-            const post =
+            const shortened =
               request.shortenLinks === undefined
                 ? tagged
                 : withLinksShortened(tagged, request.shortenLinks);
+
+            const post =
+              request.externalId === undefined
+                ? shortened
+                : withExternalId(shortened, request.externalId);
 
             const targets = yield* targetsOn(
               postId,
@@ -310,6 +352,11 @@ export class PostDrafts extends Context.Service<
 
             if (Option.isSome(tags)) {
               yield* posts.setTags(postId, tags.value);
+            }
+
+            // Written on its own, as tags are: `update` never names it.
+            if (request.externalId !== undefined) {
+              yield* posts.setExternalId(postId, request.externalId);
             }
 
             return { dropped, post, targets };
@@ -339,6 +386,8 @@ export class PostDrafts extends Context.Service<
           // answer for, not the request's.
           Effect.catchTags({
             ChannelSetNotFound: Effect.die,
+            // A copy never takes the post's own id.
+            PostExternalIdTaken: Effect.die,
             SignatureNotFound: Effect.die,
             UnknownChannels: Effect.die,
             UnknownMedia: Effect.die,

@@ -259,6 +259,7 @@ describe("the validate endpoint", () => {
               },
             ],
             duplicates: [],
+            externalIdTakenBy: null,
             planLimit: null,
             schedule: "ok",
             unknownChannels: [],

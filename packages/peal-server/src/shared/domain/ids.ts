@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { DateTime, Schema } from "effect";
 
 // Every entity id Peal issues is a UUIDv7 in canonical lowercase form: unique
 // without coordination, and ordered by creation time so primary keys stay
@@ -55,3 +55,13 @@ export const PostTargetIdSchema = Uuid7Schema.pipe(
 );
 
 export type PostTargetId = typeof PostTargetIdSchema.Type;
+
+/**
+ * When an id was issued: a UUIDv7's first 48 bits are the milliseconds
+ * since the Unix epoch it was made at, so an entity keyed by one needs no
+ * column for when it was created.
+ */
+export const createdAtOf = (id: Uuid7): DateTime.Utc =>
+  DateTime.makeUnsafe(
+    Number.parseInt(id.replaceAll("-", "").slice(0, 12), 16)
+  );

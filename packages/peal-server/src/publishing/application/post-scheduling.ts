@@ -39,8 +39,11 @@ import {
   schedulePost,
   asReceived,
   tagPost,
+  withExternalId,
   withLinksShortened,
 } from "#publishing/domain/post.ts";
+import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
+import type { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
 import type { Post } from "#publishing/domain/post.ts";
 import { postingMonthOf, sameMonth } from "#publishing/domain/posting-month.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
@@ -81,6 +84,7 @@ import type { ContentFingerprints } from "./content-fingerprints.ts";
 import { admit, remember } from "./duplicate-guard.ts";
 import { IdempotencyKeyReused } from "./idempotency-key-reused.ts";
 import { IdempotencyKeys } from "./idempotency-keys.ts";
+import { externalIdFree } from "./post-external-ids.ts";
 import type { KeyedRequest, KeyUse } from "./idempotency-keys.ts";
 import { freeSlotOf, queueNamed } from "./placement.ts";
 import type { Placement } from "./placement.ts";
@@ -162,6 +166,13 @@ export interface SendPostRequest {
   readonly channelIds: readonly ChannelId[];
   readonly content: PostContent;
   /**
+   * Its caller's own id for it, if it gives one: unique in the workspace
+   * among posts that are not cancelled, so a second post with it, however
+   * long after, is PostExternalIdTaken; checked after the idempotency key,
+   * whose replay answers first.
+   */
+  readonly externalId?: PostExternalId;
+  /**
    * The key the request names itself with, if it does: sent again with it
    * within `idempotencyKeyLifetime`, it answers the post it made.
    */
@@ -233,6 +244,11 @@ export interface EnqueueRequest {
 interface NewPostRequest {
   readonly channelIds: readonly ChannelId[];
   readonly content: PostContent;
+  /**
+   * Its caller's own id for it, claimed in the transaction that saves it
+   * (`claimed`): none for a post Peal makes itself.
+   */
+  readonly externalId?: PostExternalId;
   readonly occurrence?: PostOccurrence;
   readonly options?: readonly ChannelOptions[];
   readonly shortenLinks?: boolean | undefined;
@@ -394,7 +410,10 @@ export class PostScheduling extends Context.Service<
      * stands, before anything is checked again, so a retry that comes once
      * the post went out is not told its time has passed. The same key with
      * another request is IdempotencyKeyReused, and PostNotFound once the
-     * post it made was deleted.
+     * post it made was deleted. An external id another post that is not
+     * cancelled has is PostExternalIdTaken, checked after the key: claimed
+     * in the transaction that saves the post, so requests sent together
+     * with the same id make one post.
      *
      * Added to a queue, it takes the queue's first free slot after the
      * request came, decided under the queue's lock in the transaction that
@@ -411,6 +430,7 @@ export class PostScheduling extends Context.Service<
       | DuplicateContent
       | IdempotencyKeyReused
       | MissingPermission
+      | PostExternalIdTaken
       | PostNotFound
       | QueueHasNoRoom
       | QueueNotFound
@@ -957,6 +977,7 @@ export class PostScheduling extends Context.Service<
           {
             channelIds,
             content,
+            externalId,
             occurrence,
             options = [],
             shortenLinks,
@@ -1015,8 +1036,13 @@ export class PostScheduling extends Context.Service<
             shortened
           );
 
+          const own =
+            externalId === undefined
+              ? created
+              : withExternalId(created, Option.some(externalId));
+
           const draft =
-            occurrence === undefined ? created : madeBy(created, occurrence);
+            occurrence === undefined ? own : madeBy(own, occurrence);
 
           const targets = yield* targetsOn(
             postId,
@@ -1176,6 +1202,16 @@ export class PostScheduling extends Context.Service<
           return yield* replay(actor, before.value);
         }
 
+        // Its own id taken already: refused before anything is checked,
+        // and again under the id's lock as it is saved.
+        if (request.externalId !== undefined) {
+          yield* externalIdFree(
+            actor.workspaceId,
+            request.externalId,
+            posts.externalIdHolder
+          );
+        }
+
         // The queue it is added to, read once for its channels; its slots
         // are read again under its lock, once the post is checked.
         const queue =
@@ -1288,7 +1324,20 @@ export class PostScheduling extends Context.Service<
                   { at: now, postId },
                   since
                 ),
-            }),
+            }).pipe(
+              // The key's claim first, so a request answered from an
+              // earlier one is never told its own post has the id; then
+              // the id, before the queue, the post's row and the month.
+              Effect.tap((earlier) =>
+                Option.isNone(earlier) && request.externalId !== undefined
+                  ? externalIdFree(
+                      actor.workspaceId,
+                      request.externalId,
+                      posts.claimExternalId
+                    )
+                  : Effect.void
+              )
+            ),
           (post, targets) => admit(post, targets, allowDuplicate),
           () => Effect.void
         );

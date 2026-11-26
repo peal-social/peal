@@ -8,6 +8,7 @@ import {
   duplicateWindowHours,
   IdempotencyKeyReused,
   ImportUnreadable,
+  PostExternalIdTaken,
   InvalidTimeRange,
   LastTargetLeft,
   LivePostNotChangeable,
@@ -28,6 +29,7 @@ import type { LivePostNotChangeable as LivePostNotChangeableError } from "#publi
 import { PostBatches } from "#publishing/application/post-batches.ts";
 import { PostChecks } from "#publishing/application/post-checks.ts";
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
+import { PostExternalIds } from "#publishing/application/post-external-ids.ts";
 import { PostFollowUp } from "#publishing/application/post-follow-up.ts";
 import type { Confirmation } from "#publishing/application/post-follow-up.ts";
 import { PostOutcomes } from "#publishing/application/post-outcomes.ts";
@@ -55,6 +57,7 @@ import { validationOf } from "./post-check-view.ts";
 import {
   conflict,
   contentInvalid,
+  externalIdTaken,
   notFound,
   setNotFound,
   signatureNotFound,
@@ -65,7 +68,9 @@ import {
 import {
   channelIdsFrom,
   contentFrom,
+  draftExternalIdFrom,
   draftTagsFrom,
+  externalIdFrom,
   optionsFrom,
   presetsFrom,
   postIdFrom,
@@ -77,7 +82,7 @@ import {
 } from "./post-input.ts";
 import { refusalOfCheck, toldRefusal } from "./post-refusal.ts";
 import { pageView, searchRequestFrom } from "./post-search.ts";
-import { attemptView, postView } from "./post-view.ts";
+import { attemptView, freshPostViews, postView } from "./post-view.ts";
 
 // How the use cases' failures answer. A database failure is a server error.
 
@@ -124,6 +129,7 @@ export const PostsHandlers = HttpApiBuilder.group(
     const batches = yield* PostBatches;
     const checks = yield* PostChecks;
     const drafts = yield* PostDrafts;
+    const externalIds = yield* PostExternalIds;
     const followUp = yield* PostFollowUp;
     const outcomes = yield* PostOutcomes;
     const queries = yield* PostQueries;
@@ -133,6 +139,7 @@ export const PostsHandlers = HttpApiBuilder.group(
     const presets = yield* PostPresets;
     const live = yield* LivePostChanges;
     const limitReached = yield* limitRefusal;
+    const views = yield* freshPostViews;
 
     const toValidation = validationOf(limitReached);
 
@@ -174,7 +181,8 @@ export const PostsHandlers = HttpApiBuilder.group(
             Effect.catchTags({
               DatabaseError: Effect.die,
               MissingPermission: forbidden,
-            })
+            }),
+            Effect.flatMap((made) => views.results(made))
           );
 
           // A refused item reads as the error `send` would have answered.
@@ -212,7 +220,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             })
           );
 
-          return postView(cancelled);
+          return yield* views.one(cancelled);
         }),
       changes: ({ params }) =>
         Effect.gen(function* changes() {
@@ -247,7 +255,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             .confirm(actor, postId, targetId, confirmation)
             .pipe(Effect.catchTags(followUpFailures));
 
-          return postView(confirmed);
+          return yield* views.one(confirmed);
         }),
       duplicate: ({ params }) =>
         Effect.gen(function* duplicatePost() {
@@ -263,7 +271,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             })
           );
 
-          return postView(copy);
+          return yield* views.one(copy);
         }),
       editTarget: ({ params, payload, query }) =>
         Effect.gen(function* editTarget() {
@@ -327,7 +335,7 @@ export const PostsHandlers = HttpApiBuilder.group(
               })
             );
 
-          return postView(placed);
+          return yield* views.one(placed);
         }),
       get: ({ params }) =>
         Effect.gen(function* get() {
@@ -342,7 +350,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             })
           );
 
-          return postView(found);
+          return yield* views.one(found);
         }),
       import: ({ headers, payload }) =>
         Effect.gen(function* importPosts() {
@@ -433,6 +441,17 @@ export const PostsHandlers = HttpApiBuilder.group(
                     Option.some<PostRefusal>(new IdempotencyKeyReused())
                   ),
                 made: () => Effect.succeed(Option.none<PostRefusal>()),
+                // An earlier row of the file gives the same id: there is
+                // no post to name yet, so the refusal names the row.
+                idRepeats: ({ earlier }) =>
+                  Effect.succeed(
+                    Option.some<PostRefusal>(
+                      new PostExternalIdTaken({
+                        message: `Row ${String(sendableRows[earlier] ?? earlier + 1)} of the file gives the same external_id: nothing was made. An external id is unique among the workspace's posts that are not cancelled; give each row its own.`,
+                        postId: null,
+                      })
+                    )
+                  ),
                 // What an earlier row of the file says: there is no post
                 // to name yet, so the refusal names the row.
                 repeats: ({ channelIds, earlier }) =>
@@ -511,7 +530,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             limitReached,
             actor,
             sendable.map((request) => Result.succeed(request))
-          ).pipe(Effect.catchTags(failures));
+          ).pipe(Effect.catchTags(failures), Effect.flatMap((made) => views.results(made)));
 
           const results = answered.map((outcome, at): ImportRowResult => {
             const row = rows[at]?.row ?? at + 1;
@@ -564,7 +583,7 @@ export const PostsHandlers = HttpApiBuilder.group(
               })
             );
 
-          return postView(awaited);
+          return yield* views.one(awaited);
         }),
       removeTarget: ({ params }) =>
         Effect.gen(function* removeTarget() {
@@ -581,7 +600,7 @@ export const PostsHandlers = HttpApiBuilder.group(
               })
             );
 
-          return postView(removed);
+          return yield* views.one(removed);
         }),
       leaveOutRest: ({ params }) =>
         Effect.gen(function* leaveOutRest() {
@@ -593,7 +612,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             .leaveOutRest(actor, postId, targetId)
             .pipe(Effect.catchTags(followUpFailures));
 
-          return postView(settled);
+          return yield* views.one(settled);
         }),
       repost: ({ params }) =>
         Effect.gen(function* repost() {
@@ -605,7 +624,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             .repost(actor, postId, targetId)
             .pipe(Effect.catchTags(followUpFailures));
 
-          return postView(reposted);
+          return yield* views.one(reposted);
         }),
       reschedule: ({ params, payload }) =>
         Effect.gen(function* reschedule() {
@@ -627,7 +646,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             })
           );
 
-          return postView(moved);
+          return yield* views.one(moved);
         }),
       schedule: ({ params, payload }) =>
         Effect.gen(function* schedule() {
@@ -652,7 +671,7 @@ export const PostsHandlers = HttpApiBuilder.group(
               })
             );
 
-          return postView(scheduled);
+          return yield* views.one(scheduled);
         }),
       list: ({ query }) =>
         Effect.gen(function* search() {
@@ -695,6 +714,7 @@ export const PostsHandlers = HttpApiBuilder.group(
               MissingPermission: forbidden,
               PlanLimitReached: limitReached,
               PostContentRejected: contentInvalid,
+              PostExternalIdTaken: externalIdTaken,
               PostNotFound: notFound,
               QueueHasNoRoom: noRoom,
               QueueNotFound: queueNotFound,
@@ -712,7 +732,28 @@ export const PostsHandlers = HttpApiBuilder.group(
             .afterSending(actor, sent, Duration.seconds(query.wait ?? 0))
             .pipe(Effect.orDie);
 
-          return postView(awaited);
+          return yield* views.one(awaited);
+        }),
+      setExternalId: ({ params, payload }) =>
+        Effect.gen(function* setExternalId() {
+          const actor = actorOf(yield* CurrentMember);
+          const postId = yield* postIdFrom(params.postId);
+
+          const externalId =
+            payload.externalId === null
+              ? Option.none()
+              : Option.some(yield* externalIdFrom(payload.externalId));
+
+          const given = yield* externalIds.set(actor, postId, externalId).pipe(
+            Effect.catchTags({
+              DatabaseError: Effect.die,
+              MissingPermission: forbidden,
+              PostExternalIdTaken: externalIdTaken,
+              PostNotFound: notFound,
+            })
+          );
+
+          return yield* views.one(given);
         }),
       setTags: ({ params, payload }) =>
         Effect.gen(function* tag() {
@@ -729,7 +770,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             })
           );
 
-          return postView(tagged);
+          return yield* views.one(tagged);
         }),
       unpublish: ({ params }) =>
         Effect.gen(function* unpublish() {
@@ -783,7 +824,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             })
           );
 
-          return postView(draft);
+          return yield* views.one(draft);
         }),
       update: ({ params, payload }) =>
         Effect.gen(function* update() {
@@ -793,6 +834,7 @@ export const PostsHandlers = HttpApiBuilder.group(
           const content = yield* contentFrom(payload.content);
           const options = yield* optionsFrom(payload.options ?? []);
           const filed = yield* draftTagsFrom(payload.tagIds);
+          const own = yield* draftExternalIdFrom(payload.externalId);
           const asked = yield* presetsFrom(payload);
 
           const updated = yield* drafts
@@ -803,6 +845,7 @@ export const PostsHandlers = HttpApiBuilder.group(
               presets: asked,
               shortenLinks: payload.shortenLinks,
               ...filed,
+              ...own,
             })
             .pipe(
               Effect.catchTags({
@@ -811,6 +854,7 @@ export const PostsHandlers = HttpApiBuilder.group(
                 InvalidPostTransition: conflict,
                 MissingPermission: forbidden,
                 PostContentRejected: contentInvalid,
+                PostExternalIdTaken: externalIdTaken,
                 PostNotFound: notFound,
                 SignatureNotFound: signatureNotFound,
                 UnknownChannels: unknownChannels,
@@ -819,7 +863,7 @@ export const PostsHandlers = HttpApiBuilder.group(
               })
             );
 
-          return postView(updated);
+          return yield* views.one(updated);
         }),
       validate: ({ payload }) =>
         Effect.gen(function* validate() {

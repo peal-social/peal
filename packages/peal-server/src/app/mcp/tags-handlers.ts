@@ -4,7 +4,7 @@ import { CurrentMember, maxTagsPerWorkspace } from "peal-contract";
 import { notAllowed, refuse, unknownTags } from "#app/mcp/refusals.ts";
 import { TagTools } from "#app/mcp/tags-tools.ts";
 import { postIdFrom, tagIdsFrom } from "#publishing/api/post-input.ts";
-import { postView } from "#publishing/api/post-view.ts";
+import { freshPostViews } from "#publishing/api/post-view.ts";
 import { tagView } from "#publishing/api/tag-view.ts";
 import { tagIdFrom } from "#publishing/api/tags.ts";
 import { PostTags } from "#publishing/application/post-tags.ts";
@@ -26,6 +26,7 @@ const nameTaken = () =>
 export const TagToolsLive = TagTools.toLayer(
   Effect.gen(function* tagTools() {
     const tags = yield* PostTags;
+    const views = yield* freshPostViews;
     const actor = CurrentMember.pipe(Effect.map(actorOf));
 
     return TagTools.of({
@@ -82,7 +83,7 @@ export const TagToolsLive = TagTools.toLayer(
               })
             );
 
-          return postView(tagged);
+          return yield* views.one(tagged);
         }).pipe(
           Effect.catchTags({ PostNotFound: noPost, UnknownTags: unknownTags })
         ),

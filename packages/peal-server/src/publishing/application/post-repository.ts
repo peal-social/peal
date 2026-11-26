@@ -3,6 +3,7 @@ import type { DateTime, Effect, Option } from "effect";
 
 import type { PostStatusName } from "#publishing/domain/post-status.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
+import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import type { Post } from "#publishing/domain/post.ts";
 import type { PostingMonth } from "#publishing/domain/posting-month.ts";
@@ -36,6 +37,16 @@ export interface PostWithTargets {
   readonly targets: readonly PostTarget[];
 }
 
+/**
+ * A post and its targets as they are stored now, with when what its answer
+ * shows last changed (`posts.updated_at`): what a view of it needs. The
+ * repository's reads answer it; a write's answer, built from the entities
+ * the use case holds, takes it from `PostFreshness`.
+ */
+export interface FreshPost extends PostWithTargets {
+  readonly updatedAt: DateTime.Utc;
+}
+
 /** A page of a workspace's drafts, newest first. */
 export interface DraftPageRequest {
   /** The last draft of the page before, if this is not the first. */
@@ -44,7 +55,7 @@ export interface DraftPageRequest {
 }
 
 export interface DraftPage {
-  readonly items: readonly PostWithTargets[];
+  readonly items: readonly FreshPost[];
   /** Where the next page starts, if there is one. */
   readonly next: Option.Option<PostId>;
 }
@@ -61,10 +72,48 @@ export interface DraftPage {
 export class PostRepository extends Context.Service<
   PostRepository,
   {
+    /**
+     * Writes a new post with its targets, its external id included: claim
+     * that id first (`claimExternalId`), in the same transaction.
+     */
     readonly insert: (
       post: Post,
       targets: readonly PostTarget[]
     ) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Holds back, until the transaction it runs in ends, any other
+     * transaction that claims the same external id in the workspace, then
+     * answers the post that is not cancelled and has it, if any: giving a
+     * post the id, after this answered none or the post itself, takes
+     * turns, so two requests sent together make one post with it.
+     */
+    readonly claimExternalId: (
+      workspaceId: WorkspaceId,
+      externalId: PostExternalId
+    ) => Effect.Effect<Option.Option<PostId>, DatabaseError>;
+    /**
+     * The post of the workspace that is not cancelled and has the external
+     * id, if any, as it stands: no lock, for a check.
+     */
+    readonly externalIdHolder: (
+      workspaceId: WorkspaceId,
+      externalId: PostExternalId
+    ) => Effect.Effect<Option.Option<PostId>, DatabaseError>;
+    /**
+     * Gives the post this external id, or none, and writes nothing else of
+     * it, whatever its status. Claim the id first (`claimExternalId`).
+     */
+    readonly setExternalId: (
+      postId: PostId,
+      externalId: Option.Option<PostExternalId>
+    ) => Effect.Effect<void, DatabaseError>;
+    /**
+     * When what each post's answer shows last changed, for those that are
+     * still stored.
+     */
+    readonly freshness: (
+      postIds: readonly PostId[]
+    ) => Effect.Effect<ReadonlyMap<PostId, DateTime.Utc>, DatabaseError>;
     readonly find: (
       postId: PostId
     ) => Effect.Effect<Option.Option<StoredPost>, DatabaseError>;
@@ -162,7 +211,7 @@ export class PostRepository extends Context.Service<
       workspaceId: WorkspaceId,
       from: DateTime.Utc,
       to: DateTime.Utc
-    ) => Effect.Effect<readonly PostWithTargets[], DatabaseError>;
+    ) => Effect.Effect<readonly FreshPost[], DatabaseError>;
     /** The workspace's drafts, newest first, a page at a time. */
     readonly listDrafts: (
       workspaceId: WorkspaceId,

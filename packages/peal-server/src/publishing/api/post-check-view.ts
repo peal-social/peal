@@ -74,6 +74,7 @@ const validationView = (
       channelId,
       postId,
     })),
+    externalIdTakenBy: Option.getOrNull(check.externalIdTakenBy),
     planLimit: Option.getOrNull(shortfall),
     schedule,
     unknownChannels: [...read.malformedChannels, ...check.unknownChannels],

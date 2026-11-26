@@ -1,4 +1,4 @@
-import { DateTime, Match, Option, Schema } from "effect";
+import { DateTime, Effect, Match, Option, Result, Schema } from "effect";
 import type {
   AttemptResult,
   Post as PostView,
@@ -8,8 +8,12 @@ import type {
   PostTarget as TargetView,
 } from "peal-contract";
 
+import { PostFreshness } from "#publishing/application/post-freshness.ts";
 import type { DroppedChannels } from "#publishing/application/post-presets.ts";
-import type { PostWithTargets } from "#publishing/application/post-repository.ts";
+import type {
+  FreshPost,
+  PostWithTargets,
+} from "#publishing/application/post-repository.ts";
 import type { RecordedAttempt } from "#publishing/application/publication-journal.ts";
 import { partCount } from "#publishing/domain/post-content.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
@@ -20,6 +24,7 @@ import type { PostTarget } from "#publishing/domain/post-target.ts";
 import { failureReasonOf } from "#publishing/domain/publication-policy.ts";
 import { TargetOptionsSchema } from "#publishing/domain/target-options.ts";
 import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
+import { createdAtOf } from "#shared/domain/ids.ts";
 import type { Schedule } from "#shared/domain/schedule.ts";
 
 /**
@@ -156,14 +161,17 @@ const saidBy = ({
 });
 
 /**
- * What clients see of a post: what it says, when, where it went, and how
- * it was created and scheduled.
+ * What clients see of a post: what it says, when, where it went, how it
+ * was created and scheduled, and when it was made and last changed. A
+ * post the repository read carries when it last changed; a write's answer
+ * gets it from `PostFreshness`, so no view is made without it.
  */
 export const postView = ({
   dropped = [],
   post,
   targets,
-}: PostWithTargets): PostView => {
+  updatedAt,
+}: FreshPost): PostView => {
   const view: PostView = {
     authorId: Option.getOrNull(post.authorId),
     content: {
@@ -179,7 +187,9 @@ export const postView = ({
         }),
       }),
     },
+    createdAt: createdAtOf(post.id),
     createdVia: originOrNull(post.attribution.createdVia),
+    externalId: Option.getOrNull(post.externalId),
     id: post.id,
     occurrence: post.occurrence.pipe(
       Option.map(({ number }) => number),
@@ -200,6 +210,7 @@ export const postView = ({
     targets: targets.map((target) =>
       targetView(target, partCount(post.content))
     ),
+    updatedAt,
   };
 
   // Said on the answer of the request that made the post, and only when
@@ -208,6 +219,35 @@ export const postView = ({
     ? view
     : { ...view, warnings: droppedWarnings(dropped) };
 };
+
+/**
+ * Views of the posts a write answers, each stamped with when it last
+ * changed by one read after the write (`PostFreshness`): `one` for a post,
+ * `results` for the posts a batch made beside its refusals. A database
+ * failure is the server's.
+ */
+export const freshPostViews = Effect.gen(function* freshPostViews() {
+  const freshness = yield* PostFreshness;
+
+  const one = (post: PostWithTargets) =>
+    freshness.stamp(post).pipe(Effect.orDie, Effect.map(postView));
+
+  const results = <A extends PostWithTargets, E>(
+    made: readonly Result.Result<A, E>[]
+  ) =>
+    Effect.forEach(
+      made,
+      (result): Effect.Effect<Result.Result<A & FreshPost, E>> =>
+        Result.isSuccess(result)
+          ? freshness.stamp(result.success).pipe(
+              Effect.orDie,
+              Effect.map((stamped) => Result.succeed(stamped))
+            )
+          : Effect.succeed(Result.fail(result.failure))
+    );
+
+  return { one, results };
+});
 
 // What an attempt came to, in the words the failure reasons use.
 const resultOf = (outcome: AttemptOutcome): AttemptResult =>

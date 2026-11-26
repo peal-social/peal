@@ -12,6 +12,7 @@ import { PostRepository } from "./post-repository.ts";
 import type {
   DraftPage,
   DraftPageRequest,
+  FreshPost,
   PostWithTargets,
 } from "./post-repository.ts";
 import { PublicationJournal } from "./publication-journal.ts";
@@ -59,7 +60,7 @@ export class PostQueries extends Context.Service<
       actor: Actor,
       range: TimeRange
     ) => Effect.Effect<
-      readonly PostWithTargets[],
+      readonly FreshPost[],
       DatabaseError | InvalidTimeRange | MissingPermission
     >;
     /**

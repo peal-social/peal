@@ -19,6 +19,7 @@ import {
 import { idempotencyKeyLifetime } from "#publishing/domain/idempotency.ts";
 import type { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
+import type { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
 import { postingMonthOf, sameMonth } from "#publishing/domain/posting-month.ts";
 import type { ScheduleInPast } from "#publishing/domain/schedule-in-past.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -57,6 +58,7 @@ export const maxBulkPosts = 50;
  */
 export type SendRefusal =
   | DuplicateContent
+  | PostExternalIdTaken
   | QueueHasNoRoom
   | QueueNotFound
   | IdempotencyKeyReused
@@ -87,8 +89,19 @@ export interface RepeatedRequest {
   readonly earlier: number;
 }
 
+/**
+ * A request that gives the external id an earlier one of the same file
+ * gives: sent after it, it would be refused, as that one's post has it.
+ */
+export interface RepeatedExternalId {
+  readonly _tag: "idRepeats";
+  /** The place of the earlier request among those checked, from 0. */
+  readonly earlier: number;
+}
+
 export type RequestCheck =
   | RepeatedRequest
+  | RepeatedExternalId
   | { readonly _tag: "checked"; readonly check: PostCheck }
   | { readonly _tag: "keyReused" }
   | { readonly _tag: "made" }
@@ -244,6 +257,7 @@ export class PostBatches extends Context.Service<
             MissingPermission: refused,
             PlanLimitReached: refused,
             PostContentRejected: refused,
+            PostExternalIdTaken: refused,
             PostNotFound: refused,
             QueueHasNoRoom: refused,
             QueueNotFound: refused,
@@ -282,6 +296,9 @@ export class PostBatches extends Context.Service<
         const now = yield* DateTime.now;
         const accepted: Accepted[] = [];
         const keyed = new Map<string, string>();
+        // The external ids the file's requests give, by the place of the
+        // first that gives each.
+        const ownIds = new Map<string, number>();
 
         return yield* Effect.forEach(
           requests,
@@ -290,6 +307,7 @@ export class PostBatches extends Context.Service<
               allowDuplicate = false,
               channelIds,
               content,
+              externalId,
               idempotency,
               options = [],
               placement,
@@ -326,11 +344,30 @@ export class PostBatches extends Context.Service<
               return again;
             }
 
+            // An id an earlier request of the file gives: that one's post
+            // would have it.
+            const earlierWithId =
+              externalId === undefined ? undefined : ownIds.get(externalId);
+
+            if (earlierWithId !== undefined) {
+              const repeatsId: RequestCheck = {
+                _tag: "idRepeats",
+                earlier: earlierWithId,
+              };
+
+              return repeatsId;
+            }
+
+            if (externalId !== undefined) {
+              ownIds.set(externalId, place);
+            }
+
             const checked = yield* checks
               .check(actor, {
                 allowDuplicate,
                 channelIds,
                 content,
+                ...(externalId === undefined ? {} : { externalId }),
                 options,
                 presets: presets ?? nothingAsked,
                 when: Option.some(placement),

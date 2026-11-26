@@ -50,7 +50,9 @@ import { validationOf } from "#publishing/api/post-check-view.ts";
 import {
   channelIdsFrom,
   contentFrom,
+  draftExternalIdFrom,
   draftTagsFrom,
+  externalIdFrom,
   optionsFrom,
   postIdFrom,
   postIdOption,
@@ -62,7 +64,11 @@ import {
 } from "#publishing/api/post-input.ts";
 import { toldRefusal } from "#publishing/api/post-refusal.ts";
 import { pageView, searchRequestFrom } from "#publishing/api/post-search.ts";
-import { attemptView, postView } from "#publishing/api/post-view.ts";
+import {
+  attemptView,
+  freshPostViews,
+  postView,
+} from "#publishing/api/post-view.ts";
 import { reshuffleView } from "#publishing/api/queue-view.ts";
 import { ruleView } from "#publishing/api/recycling/recycling-view.ts";
 import { tiktokAccountView } from "#publishing/api/tiktok-account-view.ts";
@@ -70,6 +76,7 @@ import { LivePostChanges } from "#publishing/application/live-post-changes.ts";
 import { PostBatches } from "#publishing/application/post-batches.ts";
 import { PostChecks } from "#publishing/application/post-checks.ts";
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
+import { PostExternalIds } from "#publishing/application/post-external-ids.ts";
 import { PostFollowUp } from "#publishing/application/post-follow-up.ts";
 import type { Confirmation } from "#publishing/application/post-follow-up.ts";
 import { PostOutcomes } from "#publishing/application/post-outcomes.ts";
@@ -82,6 +89,7 @@ import type { ChangeRequest } from "#publishing/application/recycling/recycling.
 import { TikTokCreatorInfo } from "#publishing/application/tiktok-creator-info.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { livePostChangePermission } from "#publishing/domain/live-post-change.ts";
+import type { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
 import { queueKeyOf } from "#publishing/domain/queue.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { limitRefusal } from "#shared/api/limit-reached.ts";
@@ -133,6 +141,18 @@ const unknownChannels = ({
     `These channels are not the workspace's: ${channelIds.join(", ")}. list_channels answers its channels.`
   );
 
+// Another post that is not cancelled has the id: the one that has it, so
+// the model reads it rather than making another.
+const externalIdTaken = ({ postId }: PostExternalIdTaken) =>
+  refuse(
+    Option.match(postId, {
+      onNone: () =>
+        "Another post of this call has the same externalId: nothing was made. Give each post its own.",
+      onSome: (holder) =>
+        `Post ${holder} has this externalId already: nothing was made or changed. If an earlier call's answer was lost, that post is the one it made: read it with get_post.`,
+    })
+  );
+
 const unknownMedia = ({ mediaIds }: { readonly mediaIds: readonly string[] }) =>
   refuse(
     `These media are not the workspace's, or not ready: ${mediaIds.join(", ")}.`
@@ -164,6 +184,8 @@ export const PostToolsLive = PostTools.toLayer(
     const checks = yield* PostChecks;
     const outcomes = yield* PostOutcomes;
     const searching = yield* PostSearch;
+    const externalIds = yield* PostExternalIds;
+    const views = yield* freshPostViews;
     const limitReached = yield* limitRefusal;
     const toValidation = validationOf(limitReached);
     const refusedByPlan = yield* planRefusal;
@@ -364,7 +386,7 @@ export const PostToolsLive = PostTools.toLayer(
             )
             .pipe(Effect.catchTags(awaitFailures));
 
-          return postView(awaited);
+          return yield* views.one(awaited);
         }).pipe(Effect.catchTags(malformedPost)),
       cancel_post: ({ postId }) =>
         Effect.gen(function* cancel() {
@@ -379,7 +401,7 @@ export const PostToolsLive = PostTools.toLayer(
               })
             );
 
-          return postView(cancelled);
+          return yield* views.one(cancelled);
         }).pipe(Effect.catchTags(malformedPost)),
       confirm_target: ({ confirmation, postId, targetId }) =>
         Effect.gen(function* confirm() {
@@ -398,11 +420,12 @@ export const PostToolsLive = PostTools.toLayer(
             .confirm(yield* actor, post, target, found)
             .pipe(Effect.catchTags(followUpFailures));
 
-          return postView(confirmed);
+          return yield* views.one(confirmed);
         }).pipe(Effect.catchTags(malformedPost)),
       create_draft: ({
         channelIds,
         content,
+        externalId,
         options,
         shortenLinks,
         tagIds,
@@ -411,6 +434,7 @@ export const PostToolsLive = PostTools.toLayer(
         Effect.gen(function* create() {
           const given = yield* givenOptions(options);
           const tags = yield* draftTagsFrom(tagIds);
+          const own = yield* draftExternalIdFrom(externalId);
 
           const created = yield* drafts
             .create(yield* actor, {
@@ -420,6 +444,7 @@ export const PostToolsLive = PostTools.toLayer(
               presets: yield* presetsFrom(saved),
               shortenLinks,
               ...tags,
+              ...own,
             })
             .pipe(
               Effect.catchTags({
@@ -427,13 +452,14 @@ export const PostToolsLive = PostTools.toLayer(
                 DatabaseError: Effect.die,
                 MissingPermission: notAllowed("write drafts"),
                 PostContentRejected: contentRejected,
+                PostExternalIdTaken: externalIdTaken,
                 UnknownChannels: unknownChannels,
                 UnknownMedia: unknownMedia,
                 UnknownTags: unknownTags,
               })
             );
 
-          return postView(created);
+          return yield* views.one(created);
         }).pipe(
           Effect.catchTags({
             ...malformedContent,
@@ -471,6 +497,7 @@ export const PostToolsLive = PostTools.toLayer(
                 refuse(
                   "The post this idempotencyKey made was deleted since: nothing was made. Use a new key to make it again."
                 ),
+              PostExternalIdTaken: externalIdTaken,
               QueueHasNoRoom: queueHasNoRoom,
               QueueNotFound: unknownQueue,
               UnknownTags: unknownTags,
@@ -482,7 +509,7 @@ export const PostToolsLive = PostTools.toLayer(
             .afterSending(yield* actor, sent, Duration.seconds(waitSeconds))
             .pipe(Effect.orDie);
 
-          return postView(awaited);
+          return yield* views.one(awaited);
         }).pipe(
           Effect.catchTags({
             ...malformedContent,
@@ -517,7 +544,8 @@ export const PostToolsLive = PostTools.toLayer(
             Effect.catchTags({
               DatabaseError: Effect.die,
               MissingPermission: notAllowed("schedule or publish posts"),
-            })
+            }),
+            Effect.flatMap((made) => views.results(made))
           );
 
           // A refused item carries the code the API's error has.
@@ -567,7 +595,7 @@ export const PostToolsLive = PostTools.toLayer(
               })
             );
 
-          return postView(copy);
+          return yield* views.one(copy);
         }).pipe(Effect.catchTags(malformedPost)),
       edit_published_post: ({ channelId, part, postId, targetId, text }) =>
         Effect.gen(function* editPublishedPost() {
@@ -628,7 +656,7 @@ export const PostToolsLive = PostTools.toLayer(
               })
             );
 
-          return postView(found);
+          return yield* views.one(found);
         }).pipe(Effect.catchTags(malformedPost)),
       get_tiktok_creator: ({ channelId }) =>
         actor.pipe(
@@ -747,7 +775,7 @@ export const PostToolsLive = PostTools.toLayer(
             .reschedule(member, id, now)
             .pipe(Effect.catchTags(schedulingFailures));
 
-          return postView(published);
+          return yield* views.one(published);
         }).pipe(Effect.catchTags({ ...malformedPost, ...badZone })),
       queue_post: ({ channelIds, postId, queue }) =>
         Effect.gen(function* queuePost() {
@@ -779,7 +807,7 @@ export const PostToolsLive = PostTools.toLayer(
               })
             );
 
-          return postView(placed);
+          return yield* views.one(placed);
         }).pipe(
           Effect.catchTags({
             ...malformedPost,
@@ -833,7 +861,7 @@ export const PostToolsLive = PostTools.toLayer(
               })
             );
 
-          return postView(removed);
+          return yield* views.one(removed);
         }).pipe(Effect.catchTags(malformedPost)),
       leave_out_rest: ({ postId, targetId }) =>
         Effect.gen(function* leaveOutRest() {
@@ -845,7 +873,7 @@ export const PostToolsLive = PostTools.toLayer(
             )
             .pipe(Effect.catchTags(followUpFailures));
 
-          return postView(settled);
+          return yield* views.one(settled);
         }).pipe(Effect.catchTags(malformedPost)),
       repost_target: ({ postId, targetId }) =>
         Effect.gen(function* repost() {
@@ -857,7 +885,7 @@ export const PostToolsLive = PostTools.toLayer(
             )
             .pipe(Effect.catchTags(followUpFailures));
 
-          return postView(reposted);
+          return yield* views.one(reposted);
         }).pipe(Effect.catchTags(malformedPost)),
       reschedule_post: ({ at, postId, timeZone }) =>
         Effect.gen(function* reschedule() {
@@ -882,7 +910,7 @@ export const PostToolsLive = PostTools.toLayer(
             .reschedule(member, id, yield* scheduleFrom(at, timeZone))
             .pipe(Effect.catchTags(schedulingFailures));
 
-          return postView(moved);
+          return yield* views.one(moved);
         }).pipe(Effect.catchTags({ ...malformedPost, ...badZone })),
       reshuffle_queue: ({ queue }) =>
         Effect.gen(function* reshuffleQueue() {
@@ -955,7 +983,7 @@ export const PostToolsLive = PostTools.toLayer(
                 })
           ).pipe(Effect.catchTags(schedulingFailures));
 
-          return postView(scheduled);
+          return yield* views.one(scheduled);
         }).pipe(
           Effect.catchTags({
             ...malformedPost,
@@ -1005,6 +1033,27 @@ export const PostToolsLive = PostTools.toLayer(
 
           return postUnpublishView({ changes: [change], refused: [] });
         }).pipe(Effect.catchTags(malformedPost)),
+      set_post_external_id: ({ externalId, postId }) =>
+        Effect.gen(function* setExternalId() {
+          const given = yield* externalIds
+            .set(
+              yield* actor,
+              yield* postIdFrom(postId),
+              externalId === null
+                ? Option.none()
+                : Option.some(yield* externalIdFrom(externalId))
+            )
+            .pipe(
+              Effect.catchTags({
+                DatabaseError: Effect.die,
+                MissingPermission: notAllowed("change posts"),
+                PostExternalIdTaken: externalIdTaken,
+                PostNotFound: notFound,
+              })
+            );
+
+          return yield* views.one(given);
+        }).pipe(Effect.catchTags(malformedPost)),
       unschedule_post: ({ postId }) =>
         Effect.gen(function* unschedule() {
           const draft = yield* scheduling
@@ -1018,11 +1067,12 @@ export const PostToolsLive = PostTools.toLayer(
               })
             );
 
-          return postView(draft);
+          return yield* views.one(draft);
         }).pipe(Effect.catchTags(malformedPost)),
       update_draft: ({
         channelIds,
         content,
+        externalId,
         options,
         postId,
         shortenLinks,
@@ -1033,8 +1083,10 @@ export const PostToolsLive = PostTools.toLayer(
           const id = yield* postIdFrom(postId);
           const channels = yield* channelIdsFrom(channelIds);
           const given = yield* givenOptions(options);
-          // Without tags, the draft keeps those it has.
+          // Without tags, the draft keeps those it has, and so with its
+          // own id.
           const tags = yield* draftTagsFrom(tagIds);
+          const own = yield* draftExternalIdFrom(externalId);
 
           // Without options, the draft keeps those it has on the channels
           // it keeps, rather than lose them as the API's update would.
@@ -1050,6 +1102,7 @@ export const PostToolsLive = PostTools.toLayer(
               presets: yield* presetsFrom(saved),
               shortenLinks,
               ...tags,
+              ...own,
             })
             .pipe(
               Effect.catchTags({
@@ -1058,6 +1111,7 @@ export const PostToolsLive = PostTools.toLayer(
                 InvalidPostTransition: postConflict,
                 MissingPermission: notAllowed("change drafts"),
                 PostContentRejected: contentRejected,
+                PostExternalIdTaken: externalIdTaken,
                 PostNotFound: notFound,
                 UnknownChannels: unknownChannels,
                 UnknownMedia: unknownMedia,
@@ -1065,7 +1119,7 @@ export const PostToolsLive = PostTools.toLayer(
               })
             );
 
-          return postView(updated);
+          return yield* views.one(updated);
         }).pipe(
           Effect.catchTags({
             ...malformedPost,

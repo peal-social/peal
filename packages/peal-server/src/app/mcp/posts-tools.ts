@@ -15,8 +15,11 @@ import {
   maxDraftPageSize,
   maxIdempotencyKeyLength,
   maxOutcomeWaitSeconds,
+  updateSettleSeconds,
   maxPostPageSize,
   NewPostSchema,
+  PostExternalIdChangeSchema,
+  PostExternalIdSchema,
   PlatformSchema,
   PostChannelSchema,
   PostContentSchema,
@@ -74,6 +77,20 @@ const { shortenLinks } = NewPostSchema.fields;
 
 const shortened =
   "Pass `shortenLinks: true` to send its links shortened where the server has short links (get_short_link_status): each link written with http:// or https:// and longer than a short address goes out as one, per channel, and counts its clicks, approximately and with nothing kept about visitors (list_short_links); the text kept stays as written, and Pinterest, Instagram and TikTok keep links as written, as does a link to a channel's own platform. Pass `false` to send them as written. Left out, a new post takes the workspace's default (get_short_link_status's `byDefault`) when it is made, and keeps it.";
+
+// The caller's own id for a post: what finds it again, for good.
+const ownIdWords =
+  "Your own id for the post, from the record of the system it comes from (1 to 255 characters, compared exactly; an id, never a person's name or address): unique in the workspace among posts that are not cancelled, so a second post with it is refused, naming the post that has it, and a call made again, however long after, makes no second post. One record that makes several posts gives each its own, as `record-42:linkedin`.";
+
+const externalId = Schema.optionalKey(
+  PostExternalIdSchema.annotate({ description: ownIdWords })
+);
+
+const draftExternalId = Schema.optionalKey(
+  Schema.NullOr(PostExternalIdSchema).annotate({
+    description: `${ownIdWords} Left out, the draft keeps its own; null takes it off.`,
+  })
+);
 
 const tagIds = PostDraftSchema.fields.tagIds.schema.annotate({
   description:
@@ -145,6 +162,7 @@ export const CreateDraft = Tool.make("create_draft", {
   parameters: Schema.Struct({
     channelIds,
     content: PostContentSchema,
+    externalId,
     options: Schema.optionalKey(options),
     shortenLinks,
     tagIds: Schema.optionalKey(tagIds),
@@ -164,6 +182,7 @@ export const UpdateDraft = Tool.make("update_draft", {
   parameters: Schema.Struct({
     channelIds,
     content: PostContentSchema,
+    externalId: draftExternalId,
     options: Schema.optionalKey(options),
     postId,
     shortenLinks,
@@ -400,13 +419,19 @@ const waitsForOutcome = `It answers while the post publishes, unless \`waitSecon
 
 export const ListPosts = Tool.make("list_posts", {
   dependencies: [CurrentMember],
-  description: `Lists the workspace's posts, whatever their state, a page at a time (${String(defaultPostPageSize)} unless \`limit\` says otherwise, ${String(maxPostPageSize)} at most): each whole, with its channels, how each went, its address there and why it failed. Every filter given must hold: \`status\` (draft, scheduled, publishing, finished, cancelled), \`outcome\` (how a finished post ended: \`failed\` and \`partiallyPublished\` are the ones to follow up), \`channelId\`, \`platform\`, \`from\` (included) and \`to\` (excluded) on the scheduled instant, which leave out posts without a time, \`createdVia\` (web, apiKey or application), \`authorId\`, \`tagId\` (the posts filed under that tag), \`queueId\` (the posts that queue placed), \`recyclingId\` (the posts that recycling rule made) and \`removed\` (the posts removed from a channel's platform, or from none). \`sort\` orders by creation (createdDesc, the default, or createdAsc) or by scheduled instant (scheduledDesc, scheduledAsc: only posts with a time). Pass \`nextCursor\` as \`cursor\`, with the same filters and sort, for the next page; it is null on the last. \`channels\` gives the platform of each channel the page names.`,
+  description: `Lists the workspace's posts, whatever their state, a page at a time (${String(defaultPostPageSize)} unless \`limit\` says otherwise, ${String(maxPostPageSize)} at most): each whole, with its channels, how each went, its address there and why it failed. Every filter given must hold: \`status\` (draft, scheduled, publishing, finished, cancelled), \`outcome\` (how a finished post ended: \`failed\` and \`partiallyPublished\` are the ones to follow up), \`channelId\`, \`platform\`, \`from\` (included) and \`to\` (excluded) on the scheduled instant, which leave out posts without a time, \`createdVia\` (web, apiKey or application), \`authorId\`, \`tagId\` (the posts filed under that tag), \`queueId\` (the posts that queue placed), \`recyclingId\` (the posts that recycling rule made), \`removed\` (the posts removed from a channel's platform, or from none), \`externalId\` (the post with that id of the caller's, exactly) and \`updatedSince\` (the posts whose \`updatedAt\` is at or after that instant). \`sort\` orders by creation (createdDesc, the default, or createdAsc), by scheduled instant (scheduledDesc, scheduledAsc: only posts with a time) or by when each last changed (updatedDesc, updatedAsc: updatedAsc never lists a post changed in the last ${String(updateSettleSeconds)} seconds, so walking it with \`updatedSince\` from the last \`updatedAt\` read misses no change). Pass \`nextCursor\` as \`cursor\`, with the same filters and sort, for the next page; it is null on the last. \`channels\` gives the platform of each channel the page names.`,
   failure: ToolRefused,
   parameters: Schema.Struct({
     authorId: Schema.optionalKey(Schema.String),
     channelId: Schema.optionalKey(Schema.String),
     createdVia: Schema.optionalKey(PostOriginViaSchema),
     cursor: Schema.optionalKey(Schema.String),
+    externalId: Schema.optionalKey(
+      Schema.String.annotate({
+        description:
+          "Only the post that has this id of the caller's (externalId), exactly, and the cancelled ones that had it.",
+      })
+    ),
     from: Schema.optionalKey(instant("2026-06-01T00:00:00Z")),
     limit: Schema.optionalKey(
       Schema.Int.check(
@@ -442,6 +467,7 @@ export const ListPosts = Tool.make("list_posts", {
       })
     ),
     to: Schema.optionalKey(instant("2026-07-01T00:00:00Z")),
+    updatedSince: Schema.optionalKey(instant("2026-06-01T00:00:00Z")),
   }),
   success: Schema.Struct({
     channels: Schema.Array(PostChannelSchema),
@@ -574,12 +600,13 @@ export const RemovePostTarget = Tool.make("remove_post_target", {
 
 export const CreatePost = Tool.make("create_post", {
   dependencies: [CurrentMember],
-  description: `Creates a post and sends it in one call: its text, the ready media of the workspace it shows (list_media, import_media), the text it has instead on some channels, the parts that follow it (\`content.followUps\`: a thread where the platform has threads, each part sent in order, after its \`delaySeconds\`, and never after a part that failed), the options of the channels whose platform asks for more (YouTube, TikTok), the workspace's tags it is filed under (\`tagIds\`), and \`when\`: \`now\`, which publishes within seconds, or \`at\` an instant. Where get_channel_capabilities gives \`followUps\` of kind \`comment\`, the one part after the first is a first comment under the post, and \`content.poll\` asks a poll with the post where it gives \`poll\`. ${takesSaved} A set none of whose channels is left, with no other channel, is refused. ${reachesThePublic} ${refusedWhole} Pass an \`idempotencyKey\` (any text of your choosing, at most ${String(maxIdempotencyKeyLength)} characters, new for each post) so that calling again after a lost answer makes no second post: within ${String(idempotencyKeyLifetimeHours)} hours the same key with the same arguments answers the post the first call made; with other arguments it is refused. Apart from keys, a post whose content already goes to one of its channels less than ${String(duplicateWindowHours)} hours from its time is refused, naming the post that has it: pass \`allowDuplicate: true\` only when the user means to post the same twice. ${shortened} An edit of a live post (edit_published_post) sends the text as written. ${waitsForOutcome} ${mayWait} ${needsPublishing}`,
+  description: `Creates a post and sends it in one call: its text, the ready media of the workspace it shows (list_media, import_media), the text it has instead on some channels, the parts that follow it (\`content.followUps\`: a thread where the platform has threads, each part sent in order, after its \`delaySeconds\`, and never after a part that failed), the options of the channels whose platform asks for more (YouTube, TikTok), the workspace's tags it is filed under (\`tagIds\`), and \`when\`: \`now\`, which publishes within seconds, or \`at\` an instant. Where get_channel_capabilities gives \`followUps\` of kind \`comment\`, the one part after the first is a first comment under the post, and \`content.poll\` asks a poll with the post where it gives \`poll\`. ${takesSaved} A set none of whose channels is left, with no other channel, is refused. ${reachesThePublic} ${refusedWhole} Pass an \`idempotencyKey\` (any text of your choosing, at most ${String(maxIdempotencyKeyLength)} characters, new for each post) so that calling again after a lost answer makes no second post: within ${String(idempotencyKeyLifetimeHours)} hours the same key with the same arguments answers the post the first call made; with other arguments it is refused. For good, pass \`externalId\`, the user's own id for the post: a second post with it is refused whenever it comes, naming the post that has it. Apart from keys, a post whose content already goes to one of its channels less than ${String(duplicateWindowHours)} hours from its time is refused, naming the post that has it: pass \`allowDuplicate: true\` only when the user means to post the same twice. ${shortened} An edit of a live post (edit_published_post) sends the text as written. ${waitsForOutcome} ${mayWait} ${needsPublishing}`,
   failure: ToolRefused,
   parameters: Schema.Struct({
     allowDuplicate: NewPostSchema.fields.allowDuplicate,
     channelIds: NewPostSchema.fields.channelIds,
     content: NewPostSchema.fields.content,
+    externalId,
     idempotencyKey: BulkPostSchema.fields.idempotencyKey,
     options: NewPostSchema.fields.options,
     shortenLinks,
@@ -600,6 +627,7 @@ const newPost = {
   allowDuplicate: NewPostSchema.fields.allowDuplicate,
   channelIds: NewPostSchema.fields.channelIds,
   content: NewPostSchema.fields.content,
+  externalId,
   idempotencyKey: BulkPostSchema.fields.idempotencyKey,
   options: NewPostSchema.fields.options,
   shortenLinks,
@@ -628,12 +656,13 @@ export const CreatePosts = Tool.make("create_posts", {
 
 export const ValidatePost = Tool.make("validate_post", {
   dependencies: [CurrentMember],
-  description: `Checks a post without making it, and changes nothing: call it before create_post, create_posts or schedule_post to know what would be refused, and what each channel would receive. It answers \`valid\`, and everything that would refuse the post, all at once: per channel (\`channels\`), the text the channel receives, counted as its platform counts it against each of its limits (\`textCounts\`), its hashtags, mentions, links and media against the platform's maximum, the same for each part after the first of a thread (\`parts\`, by its place from 1), and every violation of the platform's rules and of the account's own, in any part; \`unknownChannels\` and \`unknownMedia\`, which are not the workspace's; and, when \`when\` is given, \`schedule\` (ok, inPast or invalidTimeZone), \`planLimit\` (the plan's limit it would pass, or null) \`duplicates\` (the channels that already have the same content from another post near its time) and \`awaitsApproval\` (whether the post would be made and then wait for a person to approve it, which refuses nothing). Leave \`when\` out to check a draft's content alone. It takes what the post would name of what the workspace saved, and checks the post as filled in: ${takesSaved} A post valid now can still be refused later: a channel disconnected, a month filled meanwhile. \`shortenLinks\` changes nothing it answers: a short address is never longer than the link it replaces, so the text is checked as written.`,
+  description: `Checks a post without making it, and changes nothing: call it before create_post, create_posts or schedule_post to know what would be refused, and what each channel would receive. It answers \`valid\`, and everything that would refuse the post, all at once: per channel (\`channels\`), the text the channel receives, counted as its platform counts it against each of its limits (\`textCounts\`), its hashtags, mentions, links and media against the platform's maximum, the same for each part after the first of a thread (\`parts\`, by its place from 1), and every violation of the platform's rules and of the account's own, in any part; \`unknownChannels\` and \`unknownMedia\`, which are not the workspace's; and, when \`when\` is given, \`schedule\` (ok, inPast or invalidTimeZone), \`planLimit\` (the plan's limit it would pass, or null) \`duplicates\` (the channels that already have the same content from another post near its time) and \`awaitsApproval\` (whether the post would be made and then wait for a person to approve it, which refuses nothing), and \`externalIdTakenBy\`, the post that has the \`externalId\` given already. Leave \`when\` out to check a draft's content alone. It takes what the post would name of what the workspace saved, and checks the post as filled in: ${takesSaved} A post valid now can still be refused later: a channel disconnected, a month filled meanwhile. \`shortenLinks\` changes nothing it answers: a short address is never longer than the link it replaces, so the text is checked as written.`,
   failure: ToolRefused,
   parameters: Schema.Struct({
     allowDuplicate: NewPostSchema.fields.allowDuplicate,
     channelIds,
     content: PostContentSchema,
+    externalId,
     options: Schema.optionalKey(options),
     shortenLinks,
     when: Schema.optionalKey(when),
@@ -742,6 +771,25 @@ export const ResumeRecyclingRule = Tool.make("resume_recycling_rule", {
   )
   .annotate(Tool.Title, "Resume a recycling rule");
 
+export const SetPostExternalId = Tool.make("set_post_external_id", {
+  dependencies: [CurrentMember],
+  description:
+    "Gives a post of the workspace the user's own id for it (externalId, 1 to 255 characters), instead of the one it had, or none with null: an id from the user's own records, never a person's name or address. Nothing else of the post changes, nothing is sent to the platforms, and a post takes it whatever its status, sent or not. It is refused, naming the post that has it, when another post that is not cancelled has the same id.",
+  failure: ToolRefused,
+  parameters: Schema.Struct({
+    externalId: PostExternalIdChangeSchema.fields.externalId.annotate({
+      description:
+        "The post's id in the user's own records, or null to take it off.",
+    }),
+    postId,
+  }),
+  success: PostSchema,
+})
+  .annotateMerge(
+    changing({ destructive: false, idempotent: true, openWorld: false })
+  )
+  .annotate(Tool.Title, "Set a post's external id");
+
 /** The tools that read and change the workspace's posts. */
 export const PostTools = Toolkit.make(
   ListDrafts,
@@ -773,5 +821,6 @@ export const PostTools = Toolkit.make(
   ListPostChanges,
   RecyclePost,
   UpdateRecyclingRule,
-  ResumeRecyclingRule
+  ResumeRecyclingRule,
+  SetPostExternalId
 );

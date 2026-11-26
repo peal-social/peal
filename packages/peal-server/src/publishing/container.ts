@@ -40,6 +40,8 @@ import { PostMeter } from "#publishing/application/post-meter.ts";
 import { PostOrigins } from "#publishing/application/post-origins.ts";
 import { PostOutcomesLive } from "#publishing/application/post-outcomes.ts";
 import { PostPresets } from "#publishing/application/post-presets.ts";
+import { PostExternalIds } from "#publishing/application/post-external-ids.ts";
+import { PostFreshness } from "#publishing/application/post-freshness.ts";
 import { PostQueries } from "#publishing/application/post-queries.ts";
 import { PostRecords } from "#publishing/application/post-records.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
@@ -220,6 +222,8 @@ const publishingOver = <E, R, E2, R2, E3, R3, H, R4, R5, R6, E7, R7, E8, R8>(
       )
     ),
     PostOutcomesLive,
+    PostExternalIds.layer,
+    PostFreshness.layer,
     PostQueries.layer,
     PostRecords.layer,
     PostSearch.layer,
@@ -275,6 +279,8 @@ const publishingOver = <E, R, E2, R2, E3, R3, H, R4, R5, R6, E7, R7, E8, R8>(
 /**
  * The publishing context's use cases (`PostBatches`, `PostChecks`,
  * `PostDrafts`, `PostOutcomes`, `PostQueries`, `PostSearch`,
+ * `PostExternalIds`, `PostFreshness`, which stamps a write's answer with
+ * when it changed,
  * `PostScheduling`, `PostFollowUp`, `PostTags`, `Signatures`, `ChannelSets`,
  * `Queues`, `ChannelDefaults`, for the handlers, and `PostPresets`, which fills a
  * new post in from them; `HeldPosts`, for the
@@ -448,7 +454,8 @@ export const PublishingLive = publishingOver(
   Layer.mergeAll(
     ChannelAccessCredentials,
     AdsLivePostHolds,
-    ToldLivePostEvents
+    // The posts, for their callers' own ids.
+    ToldLivePostEvents.pipe(Layer.provide(DrizzlePostRepository))
   ),
   // Recycling rules: the workspace context says who a starter is now, and
   // the notices tell that a rule ended.

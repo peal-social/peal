@@ -19,7 +19,7 @@ import { SqlClient } from "effect/sql";
 import type { PostPosition } from "#publishing/application/post-listing.ts";
 import { PostRepository } from "#publishing/application/post-repository.ts";
 import type {
-  PostWithTargets,
+  FreshPost,
   StoredPost,
 } from "#publishing/application/post-repository.ts";
 import { ExecutionIdSchema } from "#publishing/application/publication-scheduler.ts";
@@ -45,7 +45,8 @@ import { ArticleBodySchema } from "#shared/domain/rich-text/rich-body.ts";
 import type { Schedule } from "#shared/domain/schedule.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
-import { pageConditions, pageOrder } from "./post-search-query.ts";
+import { pageConditions, pageOrder, positionOf } from "./post-search-query.ts";
+import { moved, movePosts } from "./post-updates.ts";
 import { posts, postTargets } from "./schema.ts";
 
 type PostRow = typeof posts.$inferSelect;
@@ -107,6 +108,7 @@ const toStored = (row: PostRow) =>
         poll: row.poll,
         text: row.text,
       },
+      externalId: Option.fromNullOr(row.externalId),
       id: row.id,
       occurrence:
         row.recyclingId === null || row.occurrence === null
@@ -441,21 +443,24 @@ const targetRow = (target: PostTarget) => ({
   round: target.round,
 });
 
-// Each post with its targets, in the order the posts came.
+// Each post with its targets and when it last changed, in the order the
+// posts came.
 const withTargets = (
   postRows: readonly PostRow[],
   targetRows: readonly TargetRow[]
 ) =>
   Effect.all(
-    postRows.map((row) =>
-      Effect.all({
-        post: toStored(row).pipe(Effect.map(({ post }) => post)),
-        targets: Effect.all(
-          targetRows.flatMap((target) =>
-            target.postId === row.id ? [toTarget(target)] : []
-          )
-        ),
-      })
+    postRows.map(
+      (row): Effect.Effect<FreshPost> =>
+        Effect.all({
+          post: toStored(row).pipe(Effect.map(({ post }) => post)),
+          targets: Effect.all(
+            targetRows.flatMap((target) =>
+              target.postId === row.id ? [toTarget(target)] : []
+            )
+          ),
+          updatedAt: Effect.succeed(DateTime.fromDateUnsafe(row.updatedAt)),
+        })
     )
   );
 
@@ -505,7 +510,7 @@ export const DrizzlePostRepository = Layer.effect(
     const withTargetsOf = (postRows: readonly PostRow[]) =>
       Effect.gen(function* postsWithTargets() {
         if (postRows.length === 0) {
-          const none: readonly PostWithTargets[] = [];
+          const none: readonly FreshPost[] = [];
 
           return none;
         }
@@ -523,6 +528,27 @@ export const DrizzlePostRepository = Layer.effect(
 
         return yield* withTargets(postRows, targetRows);
       });
+
+    // The post of the workspace, not cancelled, that has the external id.
+    const externalIdHolder = (workspaceId: WorkspaceId, externalId: string) =>
+      db
+        .select({ id: posts.id })
+        .from(posts)
+        .where(
+          and(
+            eq(posts.workspaceId, workspaceId),
+            eq(posts.externalId, externalId),
+            ne(posts.status, "cancelled")
+          )
+        )
+        .limit(1)
+        .pipe(
+          Effect.map(([row]) =>
+            Option.fromUndefinedOr(row).pipe(
+              Option.map(({ id }) => PostIdSchema.make(id))
+            )
+          )
+        );
 
     return PostRepository.of({
       amendText: (postId, index, channelId, text) =>
@@ -542,7 +568,9 @@ export const DrizzlePostRepository = Layer.effect(
             attribution: post.attribution,
             authorId: post.authorId,
             content: withTextOn(post.content, index, channelId, text),
+            externalId: post.externalId,
             id: post.id,
+            occurrence: post.occurrence,
             queueId: post.queueId,
             scheduleRevision: post.scheduleRevision,
             shortenLinks: post.shortenLinks,
@@ -552,11 +580,15 @@ export const DrizzlePostRepository = Layer.effect(
           });
 
           const { followUps, textOverrides } = contentColumns(amended);
+          const now = yield* DateTime.now;
 
           // The part's texts by channel, and nothing else of the post.
           yield* db
             .update(posts)
-            .set(index === 0 ? { textOverrides } : { followUps })
+            .set({
+              ...(index === 0 ? { textOverrides } : { followUps }),
+              updatedAt: moved(now),
+            })
             .where(eq(posts.id, postId))
             .pipe(Effect.mapError(failed));
 
@@ -639,11 +671,46 @@ export const DrizzlePostRepository = Layer.effect(
           Effect.mapError(failed),
           Effect.flatMap(targetFrom)
         ),
+      claimExternalId: (workspaceId, externalId) =>
+        Effect.gen(function* claimExternalId() {
+          // A transaction's advisory lock, in the two-key form: the first
+          // key names what it guards, the second the workspace and the id.
+          yield* client`SELECT pg_advisory_xact_lock(hashtext('peal-server/publishing/post-external-id'), hashtext(${`${workspaceId}:${externalId}`}))`;
+
+          return yield* externalIdHolder(workspaceId, externalId);
+        }).pipe(
+          Effect.mapError(failed),
+          Effect.withSpan("PostRepository.claimExternalId")
+        ),
+      externalIdHolder: (workspaceId, externalId) =>
+        externalIdHolder(workspaceId, externalId).pipe(Effect.mapError(failed)),
+      freshness: (postIds) =>
+        (postIds.length === 0
+          ? Effect.succeed([])
+          : db
+              .select({ id: posts.id, updatedAt: posts.updatedAt })
+              .from(posts)
+              .where(inArray(posts.id, [...postIds]))
+        ).pipe(
+          Effect.mapError(failed),
+          Effect.map(
+            (rows) =>
+              new Map(
+                rows.map(({ id, updatedAt }) => [
+                  PostIdSchema.make(id),
+                  DateTime.fromDateUnsafe(updatedAt),
+                ])
+              )
+          )
+        ),
       insert: (post, targets) =>
         Effect.gen(function* insert() {
+          const now = yield* DateTime.now;
+
           yield* db.insert(posts).values({
             ...postColumns(post),
             authorId: Option.getOrNull(post.authorId),
+            externalId: Option.getOrNull(post.externalId),
             id: post.id,
             ...Option.match(post.occurrence, {
               onNone: () => ({}),
@@ -654,6 +721,7 @@ export const DrizzlePostRepository = Layer.effect(
             }),
             queueId: Option.getOrNull(post.queueId),
             tagIds: [...post.tagIds],
+            updatedAt: date(now),
             workspaceId: post.workspaceId,
           });
 
@@ -749,8 +817,14 @@ export const DrizzlePostRepository = Layer.effect(
               isNull(postTargets.removedAt)
             )
           )
-          .returning({ id: postTargets.id })
+          .returning({ postId: postTargets.postId })
           .pipe(
+            Effect.tap((rows) =>
+              movePosts(
+                db,
+                rows.map(({ postId }) => PostIdSchema.make(postId))
+              )
+            ),
             Effect.mapError(failed),
             Effect.map((rows) => rows.length === 1)
           ),
@@ -765,8 +839,14 @@ export const DrizzlePostRepository = Layer.effect(
               isNull(postTargets.removedAt)
             )
           )
-          .returning({ id: postTargets.id })
+          .returning({ postId: postTargets.postId })
           .pipe(
+            Effect.tap((rows) =>
+              movePosts(
+                db,
+                rows.map(({ postId }) => PostIdSchema.make(postId))
+              )
+            ),
             Effect.mapError(failed),
             Effect.map((rows) => rows.length === 1)
           ),
@@ -800,14 +880,7 @@ export const DrizzlePostRepository = Layer.effect(
             items: yield* withTargetsOf(rows),
             next:
               postRows.length > page.limit && last !== undefined
-                ? Option.some<PostPosition>({
-                    postId: PostIdSchema.make(last.id),
-                    scheduledAt:
-                      last.scheduledAt === null
-                        ? null
-                        : DateTime.makeUnsafe(last.scheduledAt),
-                    sort: page.sort,
-                  })
+                ? Option.some<PostPosition>(positionOf(last, page.sort))
                 : Option.none(),
           };
         }).pipe(
@@ -829,12 +902,31 @@ export const DrizzlePostRepository = Layer.effect(
             Effect.mapError(failed),
             Effect.map((rows) => rows.length === 1)
           ),
+      setExternalId: (postId, externalId) =>
+        DateTime.now.pipe(
+          Effect.flatMap((now) =>
+            db
+              .update(posts)
+              .set({
+                externalId: Option.getOrNull(externalId),
+                updatedAt: moved(now),
+              })
+              .where(eq(posts.id, postId))
+          ),
+          Effect.mapError(failed),
+          Effect.asVoid
+        ),
       setTags: (postId, tagIds) =>
-        db
-          .update(posts)
-          .set({ tagIds: [...tagIds] })
-          .where(eq(posts.id, postId))
-          .pipe(Effect.mapError(failed), Effect.asVoid),
+        DateTime.now.pipe(
+          Effect.flatMap((now) =>
+            db
+              .update(posts)
+              .set({ tagIds: [...tagIds], updatedAt: moved(now) })
+              .where(eq(posts.id, postId))
+          ),
+          Effect.mapError(failed),
+          Effect.asVoid
+        ),
       setTargets: (postId, targets) =>
         Effect.gen(function* setTargets() {
           const kept = targets.map(({ id }) => id);
@@ -859,6 +951,8 @@ export const DrizzlePostRepository = Layer.effect(
                 target: postTargets.id,
               });
           }
+
+          yield* movePosts(db, [postId]);
         }).pipe(Effect.mapError(failed)),
       showing: (workspaceId, mediaId, statuses) =>
         db
@@ -886,30 +980,35 @@ export const DrizzlePostRepository = Layer.effect(
           Effect.flatMap(Effect.forEach(toTarget))
         ),
       update: (next, current) =>
-        db
-          .update(posts)
-          .set(
-            // The queue is written only when one placed it anew: a write
-            // that settles the post never names a queue deleted meanwhile.
-            Option.getOrNull(next.queueId) === Option.getOrNull(current.queueId)
-              ? postColumns(next)
-              : {
-                  ...postColumns(next),
-                  queueId: Option.getOrNull(next.queueId),
-                }
-          )
-          .where(
-            and(
-              eq(posts.id, current.id),
-              eq(posts.scheduleRevision, current.scheduleRevision),
-              eq(posts.status, statusName(current.status))
-            )
-          )
-          .returning({ id: posts.id })
-          .pipe(
-            Effect.mapError(failed),
-            Effect.map((rows) => rows.length === 1)
+        DateTime.now.pipe(
+          Effect.flatMap((now) =>
+            db
+              .update(posts)
+              .set({
+                // The queue is written only when one placed it anew: a
+                // write that settles the post never names a queue deleted
+                // meanwhile.
+                ...(Option.getOrNull(next.queueId) ===
+                Option.getOrNull(current.queueId)
+                  ? postColumns(next)
+                  : {
+                      ...postColumns(next),
+                      queueId: Option.getOrNull(next.queueId),
+                    }),
+                updatedAt: moved(now),
+              })
+              .where(
+                and(
+                  eq(posts.id, current.id),
+                  eq(posts.scheduleRevision, current.scheduleRevision),
+                  eq(posts.status, statusName(current.status))
+                )
+              )
+              .returning({ id: posts.id })
           ),
+          Effect.mapError(failed),
+          Effect.map((rows) => rows.length === 1)
+        ),
       updateTarget: (next, current) =>
         DateTime.now.pipe(
           Effect.flatMap((now) =>
@@ -928,8 +1027,14 @@ export const DrizzlePostRepository = Layer.effect(
                   eq(postTargets.status, statusName(current.status))
                 )
               )
-              .returning({ id: postTargets.id })
+              .returning({ postId: postTargets.postId })
               .pipe(
+                Effect.tap((rows) =>
+                  movePosts(
+                    db,
+                    rows.map(({ postId }) => PostIdSchema.make(postId))
+                  )
+                ),
                 Effect.mapError(failed),
                 Effect.map((rows) => rows.length === 1)
               )

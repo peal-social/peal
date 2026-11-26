@@ -10,6 +10,7 @@ import { forbidden } from "#shared/api/forbidden.ts";
 import {
   conflict,
   contentInvalid,
+  externalIdTaken,
   notFound,
   setNotFound,
   signatureNotFound,
@@ -20,13 +21,14 @@ import {
 import {
   channelIdsFrom,
   contentFrom,
+  draftExternalIdFrom,
   draftTagsFrom,
   optionsFrom,
   postIdFrom,
   postIdOption,
   presetsFrom,
 } from "./post-input.ts";
-import { postView } from "./post-view.ts";
+import { freshPostViews, postView } from "./post-view.ts";
 
 // A failure of the server's own (the database, a bug) is a defect: 500.
 export const PostDraftsHandlers = HttpApiBuilder.group(
@@ -35,6 +37,7 @@ export const PostDraftsHandlers = HttpApiBuilder.group(
   Effect.fn(function* postDraftsHandlers(handlers) {
     const drafts = yield* PostDrafts;
     const queries = yield* PostQueries;
+    const views = yield* freshPostViews;
 
     return handlers.handleAll({
       create: ({ payload }) =>
@@ -44,6 +47,7 @@ export const PostDraftsHandlers = HttpApiBuilder.group(
           const content = yield* contentFrom(payload.content);
           const options = yield* optionsFrom(payload.options ?? []);
           const filed = yield* draftTagsFrom(payload.tagIds);
+          const own = yield* draftExternalIdFrom(payload.externalId);
           const asked = yield* presetsFrom(payload);
 
           const created = yield* drafts
@@ -54,6 +58,7 @@ export const PostDraftsHandlers = HttpApiBuilder.group(
               presets: asked,
               shortenLinks: payload.shortenLinks,
               ...filed,
+              ...own,
             })
             .pipe(
               Effect.catchTags({
@@ -61,6 +66,7 @@ export const PostDraftsHandlers = HttpApiBuilder.group(
                 DatabaseError: Effect.die,
                 MissingPermission: forbidden,
                 PostContentRejected: contentInvalid,
+                PostExternalIdTaken: externalIdTaken,
                 SignatureNotFound: signatureNotFound,
                 UnknownChannels: unknownChannels,
                 UnknownMedia: unknownMedia,
@@ -68,7 +74,7 @@ export const PostDraftsHandlers = HttpApiBuilder.group(
               })
             );
 
-          return postView(created);
+          return yield* views.one(created);
         }),
       delete: ({ params }) =>
         Effect.gen(function* discard() {

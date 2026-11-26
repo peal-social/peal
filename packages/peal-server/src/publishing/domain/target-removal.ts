@@ -62,6 +62,7 @@ export const withoutChannelOf = (post: Post, channelId: ChannelId): Post =>
     attribution: post.attribution,
     authorId: post.authorId,
     content: withoutChannels(post.content, [channelId]),
+    externalId: post.externalId,
     id: post.id,
     occurrence: post.occurrence,
     queueId: post.queueId,

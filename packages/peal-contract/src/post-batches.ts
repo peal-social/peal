@@ -7,6 +7,7 @@ import { IdempotencyKeyReused } from "./idempotency-key-reused.ts";
 import { InvalidTimeZone } from "./invalid-time-zone.ts";
 import { PlanLimitReached } from "./plan-limit-reached.ts";
 import { PostContentInvalid } from "./post-content-invalid.ts";
+import { PostExternalIdTaken } from "./post-external-id-taken.ts";
 import { PostNotFound } from "./post-not-found.ts";
 import { QueueHasNoRoom } from "./queue-has-no-room.ts";
 import { QueueNotFound } from "./queue-not-found.ts";
@@ -46,6 +47,7 @@ export const PostRefusalSchema = Schema.Union([
   SignatureNotFound,
   QueueNotFound,
   QueueHasNoRoom,
+  PostExternalIdTaken,
 ]).annotate({ identifier: "PostRefusal" });
 
 export type PostRefusal = typeof PostRefusalSchema.Type;
@@ -59,6 +61,7 @@ export const importColumns = [
   "time_zone",
   "allow_duplicate",
   "idempotency_key",
+  "external_id",
 ] as const;
 
 /** A column of a CSV import. */

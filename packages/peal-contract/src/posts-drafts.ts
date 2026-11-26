@@ -11,6 +11,7 @@ import { Authentication } from "./authentication.ts";
 import { ChannelSetNotFound } from "./channel-set-not-found.ts";
 import { Forbidden } from "./forbidden.ts";
 import { PostContentInvalid } from "./post-content-invalid.ts";
+import { PostExternalIdTaken } from "./post-external-id-taken.ts";
 import { PostNotFound } from "./post-not-found.ts";
 import { PostStatusConflict } from "./post-status-conflict.ts";
 import {
@@ -44,6 +45,7 @@ export class PostDraftsApi extends HttpApiGroup.make("posts.drafts")
         UnknownTags,
         ChannelSetNotFound,
         SignatureNotFound,
+        PostExternalIdTaken,
       ],
       headers: workspaceHeaders,
 

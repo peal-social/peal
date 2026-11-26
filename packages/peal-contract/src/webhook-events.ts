@@ -129,6 +129,14 @@ const workspace = { workspaceId: Schema.String };
 
 const post = { ...workspace, postId: Schema.String };
 
+// A post as publishing tells of it: with its caller's own id for it
+// (`externalId`), when it has one; left out otherwise, and on events made
+// before it was told. An id, never a person's name or address.
+const ownPost = {
+  ...post,
+  externalId: Schema.optionalKey(Schema.String),
+};
+
 // One post on one channel, in the round it was sent: 1, and one more for
 // each repost.
 // `parts` says how many parts the post has on the channel (1 for a post
@@ -136,7 +144,7 @@ const post = { ...workspace, postId: Schema.String };
 // at the first that fails or has no confirmed outcome; left out of events
 // from before posts had parts.
 const postOnChannel = {
-  ...post,
+  ...ownPost,
   ...WebhookTargetSchema.fields,
   parts: Schema.optionalKey(
     Schema.Struct({ count: Schema.Int, live: Schema.Int }).annotate({
@@ -277,7 +285,7 @@ export const WebhookPayloadSchema = Schema.Union([
   Schema.Struct({
     ...envelope,
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       scheduledAt: Schema.DateTimeUtc,
       targets: Schema.Array(WebhookTargetSchema),
       timeZone: Schema.String,
@@ -288,7 +296,7 @@ export const WebhookPayloadSchema = Schema.Union([
   // to draft.
   Schema.Struct({
     ...envelope,
-    data: Schema.Struct(post),
+    data: Schema.Struct(ownPost),
     type: Schema.Literal("post.unscheduled"),
   }),
   // The post went live on the channel. `permalink` is its address on the
@@ -329,7 +337,7 @@ export const WebhookPayloadSchema = Schema.Union([
   Schema.Struct({
     ...envelope,
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       cancelledAt: Schema.DateTimeUtc,
       // What was cancelled: `post`, the post (on these channels: those it
       // had not reached), or `target`, one channel taken off a post that
@@ -347,7 +355,7 @@ export const WebhookPayloadSchema = Schema.Union([
   Schema.Struct({
     ...envelope,
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       finishedAt: Schema.DateTimeUtc,
       outcome: PostOutcomeSchema,
       round: Schema.Int,
@@ -362,7 +370,7 @@ export const WebhookPayloadSchema = Schema.Union([
   Schema.Struct({
     ...envelope,
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       ...WebhookTargetSchema.fields,
       alreadyGone: Schema.Boolean,
       removedAt: Schema.DateTimeUtc,
@@ -375,7 +383,7 @@ export const WebhookPayloadSchema = Schema.Union([
   Schema.Struct({
     ...envelope,
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       ...WebhookTargetSchema.fields,
       code: Schema.String,
       failedAt: Schema.DateTimeUtc,
@@ -389,7 +397,7 @@ export const WebhookPayloadSchema = Schema.Union([
   Schema.Struct({
     ...envelope,
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       ...WebhookTargetSchema.fields,
       editedAt: Schema.DateTimeUtc,
       part: Schema.Int,
@@ -405,7 +413,7 @@ export const WebhookPayloadSchema = Schema.Union([
   Schema.Struct({
     ...envelope,
     data: Schema.Struct({
-      ...post,
+      ...ownPost,
       ...WebhookTargetSchema.fields,
       code: Schema.String,
       failedAt: Schema.DateTimeUtc,

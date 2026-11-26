@@ -27,6 +27,7 @@ export interface SearchInput {
   readonly channelId?: string;
   readonly createdVia?: PostOriginVia;
   readonly cursor?: string;
+  readonly externalId?: string;
   readonly from?: DateTime.Utc;
   readonly limit?: number;
   readonly outcome?: PostOutcome;
@@ -38,6 +39,7 @@ export interface SearchInput {
   readonly status?: PostStatus;
   readonly tagId?: string;
   readonly to?: DateTime.Utc;
+  readonly updatedSince?: DateTime.Utc;
 }
 
 const decodeChannelId = Schema.decodeUnknownOption(ChannelIdSchema);
@@ -75,6 +77,7 @@ export const searchRequestFrom = (input: SearchInput): PostSearchRequest => ({
   ),
   createdVia: Option.fromUndefinedOr(input.createdVia),
   cursor: Option.fromUndefinedOr(input.cursor),
+  externalId: Option.fromUndefinedOr(input.externalId),
   from: Option.fromUndefinedOr(input.from),
   limit: input.limit ?? defaultPostPageSize,
   outcome: Option.fromUndefinedOr(input.outcome),
@@ -92,6 +95,7 @@ export const searchRequestFrom = (input: SearchInput): PostSearchRequest => ({
     Option.map((id) => Option.getOrElse(decodeTagId(id), () => noTag))
   ),
   to: Option.fromUndefinedOr(input.to),
+  updatedSince: Option.fromUndefinedOr(input.updatedSince),
 });
 
 /** What clients see of a page of posts. */

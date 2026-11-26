@@ -4,10 +4,13 @@ import { AnalyticsRecords } from "#analytics/application/analytics-records.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { EngagementRecords } from "#engagement/application/engagement-records.ts";
 import { LivePostEvents } from "#publishing/application/live-post-events.ts";
+import { PostRepository } from "#publishing/application/post-repository.ts";
 import type { LivePostChange } from "#publishing/domain/live-post-change.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { WebhookEvents } from "#webhooks/application/webhook-events.ts";
+
+import { postNamed } from "./webhook-post-events.ts";
 
 // A bug in telling must never stop the change from settling: it is logged,
 // and the database failing rolls the change back with it, to be retried.
@@ -36,6 +39,7 @@ export const ToldLivePostEvents = Layer.effect(
     const webhooks = yield* WebhookEvents;
     const analytics = yield* AnalyticsRecords;
     const engagement = yield* EngagementRecords;
+    const posts = yield* PostRepository;
 
     // The target as an event names it, with its channel's platform as the
     // channels context has it now: none once the channel is disconnected.
@@ -44,6 +48,8 @@ export const ToldLivePostEvents = Layer.effect(
       target: PostTarget
     ) {
       const channel = yield* channels.get(target.channelId);
+      // The post as it is now, for its caller's own id.
+      const found = yield* posts.find(change.postId);
 
       return {
         channelId: target.channelId,
@@ -51,7 +57,10 @@ export const ToldLivePostEvents = Layer.effect(
           Option.map(({ platform }) => platform),
           Option.getOrNull
         ),
-        postId: change.postId,
+        ...Option.match(found, {
+          onNone: () => ({ postId: change.postId }),
+          onSome: ({ post }) => postNamed(post),
+        }),
         targetId: target.id,
         workspaceId: change.workspaceId,
       };

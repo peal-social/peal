@@ -8,6 +8,7 @@ import { ChannelIdSchema, MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 import {
+  externalIdGiven,
   invalidBodiesOf,
   placementFrom,
   presetsFrom,
@@ -145,6 +146,7 @@ export const checkRequestFrom = (input: CheckInput) =>
             followUps: (content.followUps ?? []).map(wellFormed),
           })
         ),
+        ...(yield* externalIdGiven(input.externalId)),
         options: yield* decodeOptions(
           options.filter(({ channelId }) => isChannelId(channelId))
         ),

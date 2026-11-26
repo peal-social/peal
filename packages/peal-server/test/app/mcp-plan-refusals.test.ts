@@ -14,7 +14,9 @@ import { LivePostChanges } from "#publishing/application/live-post-changes.ts";
 import { PostBatches } from "#publishing/application/post-batches.ts";
 import { PostChecks } from "#publishing/application/post-checks.ts";
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
+import { PostExternalIds } from "#publishing/application/post-external-ids.ts";
 import { PostFollowUp } from "#publishing/application/post-follow-up.ts";
+import { PostFreshness } from "#publishing/application/post-freshness.ts";
 import { PostOutcomes } from "#publishing/application/post-outcomes.ts";
 import { PostQueries } from "#publishing/application/post-queries.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
@@ -214,7 +216,9 @@ describe("a plan's refusal, through the tools", () => {
                 Layer.mock(PostBatches, {}),
                 Layer.mock(PostChecks, {}),
                 Layer.mock(PostDrafts, {}),
+                Layer.mock(PostExternalIds, {}),
                 Layer.mock(PostFollowUp, {}),
+                Layer.mock(PostFreshness, {}),
                 Layer.mock(LivePostChanges, {}),
                 Layer.mock(PostOutcomes, {}),
                 Layer.mock(PostQueries, {}),

@@ -22,6 +22,7 @@ import type { Duplicate } from "#publishing/domain/duplicate-window.ts";
 import { referencedMedia } from "#publishing/domain/named-media.ts";
 import { partsOn } from "#publishing/domain/post-content.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
+import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import { scheduleGrace } from "#publishing/domain/post.ts";
 import { postingMonthOf } from "#publishing/domain/posting-month.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
@@ -34,6 +35,7 @@ import { authorize } from "#shared/domain/authorize.ts";
 import type {
   ChannelId,
   MediaAssetId,
+  PostId,
   WorkspaceId,
 } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
@@ -63,6 +65,8 @@ export interface CheckPostRequest {
   readonly allowDuplicate?: boolean;
   readonly channelIds: readonly ChannelId[];
   readonly content: PostContent;
+  /** Its caller's own id for it, if it would have one. */
+  readonly externalId?: PostExternalId;
   // The options it has on some channels, one at most per channel.
   readonly options?: readonly ChannelOptions[];
   /**
@@ -106,6 +110,12 @@ export interface PostCheck {
    * workspace no longer has them.
    */
   readonly dropped: readonly DroppedChannels[];
+  /**
+   * The post that is not cancelled and has its external id already, which
+   * sending refuses (PostExternalIdTaken) before anything else; none when
+   * no post has it, or it gives none.
+   */
+  readonly externalIdTakenBy: Option.Option<PostId>;
   /**
    * What was checked, once the sets and signatures it names are filled
    * in: the channels it would go to, what it would say and the options
@@ -184,6 +194,7 @@ export const isSendable = (check: PostCheck): boolean =>
   check.unknownChannels.length === 0 &&
   check.unknownMedia.length === 0 &&
   check.duplicates.length === 0 &&
+  Option.isNone(check.externalIdTakenBy) &&
   check.channels.every(({ violations }) => violations.length === 0) &&
   Option.isNone(check.planLimit) &&
   !Option.contains(check.schedule, "inPast") &&
@@ -280,9 +291,15 @@ export class PostChecks extends Context.Service<
 
       const check = Effect.fn("PostChecks.check")(function* check(
         actor: Actor,
-        { allowDuplicate = false, when, ...asked }: CheckPostRequest
+        { allowDuplicate = false, externalId, when, ...asked }: CheckPostRequest
       ) {
         yield* Effect.fromResult(authorize(actor, "post:read"));
+
+        // Read without a lock: as the rest, how things stand now.
+        const externalIdTakenBy =
+          externalId === undefined
+            ? Option.none<PostId>()
+            : yield* posts.externalIdHolder(actor.workspaceId, externalId);
 
         const now = yield* DateTime.now;
         const withPorts = Effect.provideContext(ports);
@@ -518,6 +535,7 @@ export class PostChecks extends Context.Service<
           ),
           dropped,
           duplicates,
+          externalIdTakenBy,
           filled: { channelIds: requested, content, options },
           planLimit,
           queueSlot: queue.pipe(

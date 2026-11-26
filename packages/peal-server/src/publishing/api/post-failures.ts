@@ -1,7 +1,8 @@
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import {
   ChannelSetNotFound,
   PostContentInvalid,
+  PostExternalIdTaken,
   PostNotFound,
   PostStatusConflict,
   SignatureNotFound,
@@ -12,6 +13,7 @@ import {
 
 import type { InvalidPostTransition } from "#publishing/domain/invalid-post-transition.ts";
 import type { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
+import type { PostExternalIdTaken as ExternalIdTakenError } from "#publishing/domain/post-external-id-taken.ts";
 
 // How the use cases' failures that a post's and a draft's handlers share
 // answer.
@@ -45,3 +47,10 @@ export const unknownTags = ({
 export const setNotFound = () => Effect.fail(new ChannelSetNotFound());
 
 export const signatureNotFound = () => Effect.fail(new SignatureNotFound());
+
+/** Another post has the external id: the post that has it, by its id. */
+export const externalIdTakenBy = ({ postId }: ExternalIdTakenError) =>
+  new PostExternalIdTaken({ postId: Option.getOrNull(postId) });
+
+export const externalIdTaken = (taken: ExternalIdTakenError) =>
+  Effect.fail(externalIdTakenBy(taken));

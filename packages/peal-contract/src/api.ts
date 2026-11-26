@@ -1428,6 +1428,8 @@ export type { ContentViolation } from "./post-content-invalid.ts";
 
 export { PostNotFound } from "./post-not-found.ts";
 
+export { PostExternalIdTaken } from "./post-external-id-taken.ts";
+
 export { PostStatusConflict } from "./post-status-conflict.ts";
 
 export { PostStatusSchema } from "./post-status.ts";
@@ -1645,11 +1647,14 @@ export {
   maxDraftPageSize,
   maxIdempotencyKeyLength,
   maxOutcomeWaitSeconds,
+  maxPostExternalIdLength,
   maxPostPageSize,
   MediaAttachmentSchema,
   NewPostSchema,
   PostContentSchema,
   PostDraftSchema,
+  PostExternalIdChangeSchema,
+  PostExternalIdSchema,
   PostTagsSchema,
   PostImportSchema,
   PostOriginSchema,
@@ -1671,6 +1676,7 @@ export {
   TargetPartsSchema,
   TextOverrideSchema,
   UnconfirmedReasonSchema,
+  updateSettleSeconds,
 } from "./posts.ts";
 
 export type {
@@ -1690,6 +1696,7 @@ export type {
   Post,
   PostContent,
   PostDraft,
+  PostExternalIdChange,
   PostTags,
   PostOrigin,
   PostOriginVia,

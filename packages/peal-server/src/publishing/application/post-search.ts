@@ -1,6 +1,7 @@
 import { Context, DateTime, Effect, Layer, Option, Schema } from "effect";
 
 import type { ChannelOnPlatform } from "#publishing/domain/content-rules.ts";
+import { PostExternalIdSchema } from "#publishing/domain/post-external-id.ts";
 import type {
   PostOutcome,
   PostStatusName,
@@ -20,7 +21,7 @@ import { InvalidTimeRange } from "./invalid-time-range.ts";
 import { PostPositionSchema } from "./post-listing.ts";
 import type { PostOriginVia, PostSort } from "./post-listing.ts";
 import { PostRepository } from "./post-repository.ts";
-import type { PostWithTargets } from "./post-repository.ts";
+import type { FreshPost } from "./post-repository.ts";
 import { WorkspaceChannels } from "./workspace-channels.ts";
 
 /** The most posts a page holds, and how many when not told. */
@@ -35,6 +36,11 @@ export interface PostSearchRequest {
   readonly createdVia: Option.Option<PostOriginVia>;
   /** The cursor the page before gave, if this is not the first. */
   readonly cursor: Option.Option<string>;
+  /**
+   * Posts that have this id of their caller's, exactly: none when it is
+   * no id a post can have.
+   */
+  readonly externalId: Option.Option<string>;
   /** Scheduled from this instant, included. */
   readonly from: Option.Option<DateTime.Utc>;
   readonly limit: number;
@@ -52,6 +58,8 @@ export interface PostSearchRequest {
   readonly tagId: Option.Option<TagId>;
   /** Scheduled before this instant, excluded. */
   readonly to: Option.Option<DateTime.Utc>;
+  /** Posts that last changed at this instant or after it. */
+  readonly updatedSince: Option.Option<DateTime.Utc>;
 }
 
 /** A page of posts, with what a client needs to show them. */
@@ -61,7 +69,7 @@ export interface PostPage {
    * still connected to the workspace.
    */
   readonly channels: readonly ChannelOnPlatform[];
-  readonly items: readonly PostWithTargets[];
+  readonly items: readonly FreshPost[];
   /** Pass it as the cursor for the next page, if there is one. */
   readonly next: Option.Option<string>;
 }
@@ -74,12 +82,17 @@ const CursorSchema = Schema.StringFromBase64Url.pipe(
 
 const decodeCursor = Schema.decodeUnknownEffect(CursorSchema);
 
+const decodeExternalId = Schema.decodeUnknownOption(PostExternalIdSchema);
+
 const encodeCursor = Schema.encodeEffect(CursorSchema);
 
 /**
  * Listing a workspace's posts, whatever their state: filtered by status,
- * outcome, channel, platform, tag, queue, scheduled time, author and how they
- * were created, ordered by creation or by scheduled time, a page at a time.
+ * outcome, channel, platform, tag, queue, scheduled time, author, how they
+ * were created, their caller's id and when they last changed, ordered by
+ * creation, by scheduled time or by change, a page at a time. A walk by
+ * change, oldest first, holds back what changed in the last seconds
+ * (`updateSettle`), so a sync that walks it never misses a change.
  * Needs post:read, and channel:read for the channels it names.
  *
  * A channel no longer connected has no platform any more: its posts are
@@ -150,12 +163,31 @@ export class PostSearch extends Context.Service<
             decodeCursor(cursor).pipe(
               Effect.mapError(() => new InvalidCursor()),
               Effect.filterOrFail(
-                (position) => position.sort === request.sort,
+                (position) =>
+                  position.sort === request.sort &&
+                  (position.updatedAt !== undefined ||
+                    (request.sort !== "updatedAsc" &&
+                      request.sort !== "updatedDesc")),
                 () => new InvalidCursor()
               ),
               Effect.asSome
             ),
         });
+
+        const externalId = request.externalId.pipe(
+          Option.map(decodeExternalId)
+        );
+
+        // An id no post can have is on no post.
+        if (Option.exists(externalId, Option.isNone)) {
+          const none: PostPage = {
+            channels: [],
+            items: [],
+            next: Option.none(),
+          };
+
+          return none;
+        }
 
         const onPlatform = yield* Option.match(request.platform, {
           onNone: () => Effect.succeed(Option.none<readonly ChannelId[]>()),
@@ -176,10 +208,12 @@ export class PostSearch extends Context.Service<
 
         const page = yield* posts.search({
           after,
+          asOf: yield* DateTime.now,
           filter: {
             authorId: request.authorId,
             channelIds,
             createdVia: request.createdVia,
+            externalId: Option.flatten(externalId),
             outcome: request.outcome,
             queueId: request.queueId,
             recyclingId: request.recyclingId,
@@ -188,6 +222,7 @@ export class PostSearch extends Context.Service<
             scheduledFrom: from,
             status: request.status,
             tagIds: request.tagId.pipe(Option.map((tagId) => [tagId])),
+            updatedSince: request.updatedSince,
           },
           limit: Math.min(Math.max(request.limit, 1), maxPostPageSize),
           sort: request.sort,
