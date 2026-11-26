@@ -258,6 +258,11 @@ layer(StoreTest, { excludeTestServices: true })("the accounts' store", (it) => {
       const second = yield* seedChannel(workspaceId, "@two@social.example");
       const mine: readonly string[] = [first, second].toSorted();
 
+      // A website's channel, which analytics never follows: never listed.
+      const site = yield* seedChannel(workspaceId, "journal.example.test", {
+        platform: "wordpress",
+      });
+
       // Other suites' channels are listed too: walk every page.
       const walked: string[] = [];
       let after = Option.none<ChannelId>();
@@ -278,9 +283,15 @@ layer(StoreTest, { excludeTestServices: true })("the accounts' store", (it) => {
         mine
       );
       assert.deepStrictEqual(walked, walked.toSorted());
+      assert.notInclude(walked, site);
 
       const everyChannel = yield* directory.after(Option.none(), 100_000);
       const listed = everyChannel.find(({ channelId }) => channelId === first);
+
+      assert.notInclude(
+        everyChannel.map(({ channelId }) => channelId),
+        site
+      );
 
       assert.deepStrictEqual(listed, {
         channelId: first,

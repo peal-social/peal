@@ -2,7 +2,7 @@ import { and, asc, eq, gt, inArray } from "drizzle-orm";
 import { Effect, Layer, Option, Schema } from "effect";
 
 import { ChannelDirectory } from "#channels/application/channel-directory.ts";
-import { platforms, PlatformSchema } from "#channels/domain/platform.ts";
+import { PlatformSchema, socialPlatforms } from "#channels/domain/platform.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import {
   ChannelConnectionSchema,
@@ -52,10 +52,11 @@ export const DrizzleChannelDirectory = Layer.effect(
               workspaceId: channels.workspaceId,
             })
             .from(channels)
-            // Social channels only: a website's is followed by none of them.
+            // No website's: analytics and the inbox follow none of them,
+            // and the release before cannot read one in their tables.
             .where(
               and(
-                inArray(channels.platform, [...platforms]),
+                inArray(channels.platform, [...socialPlatforms]),
                 last.pipe(
                   Option.map((id) => gt(channels.id, id)),
                   Option.getOrUndefined

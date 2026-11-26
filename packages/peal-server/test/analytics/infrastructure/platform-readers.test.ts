@@ -99,6 +99,32 @@ const statuses = {
   "110000000000000002": { favourites: 1, reblogs: 0, replies: 0 },
 };
 
+describe("reading counts on a website", () => {
+  it.live("answers unsupported, asking nothing and taking no token", () =>
+    Effect.gen(function* website() {
+      const account: ChannelAccount = {
+        accountId: "https://journal.example.test/wp-json/",
+        channelId,
+        connection: Option.none(),
+        platform: "wordpress",
+        scopes: [],
+      };
+
+      const { batch, handed } = yield* reading(
+        postsToRead("101"),
+        account,
+        { tokens: ["synthetic-site-credential"] }
+      );
+
+      assert.deepStrictEqual(
+        failureOf(batch),
+        Option.some(new ChannelUnreadable({ reason: "unsupported" }))
+      );
+      assert.deepStrictEqual(handed, []);
+    })
+  );
+});
+
 describe("reading counts on Mastodon", () => {
   it.live("reads with the token when the account may read statuses", () =>
     Effect.gen(function* withToken() {
