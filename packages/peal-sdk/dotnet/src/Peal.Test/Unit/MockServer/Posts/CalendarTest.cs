@@ -32,14 +32,22 @@ public class CalendarTest : BaseMockServerTest
                       ],
                       "overrides": [
                         {
+                          "body": {
+                            "content": [],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [],
-                          "text": "x"
+                          "text": "text"
                         },
                         {
+                          "body": {
+                            "content": [],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [],
-                          "text": "x"
+                          "text": "text"
                         }
                       ],
                       "text": "text"
@@ -58,14 +66,22 @@ public class CalendarTest : BaseMockServerTest
                       ],
                       "overrides": [
                         {
+                          "body": {
+                            "content": [],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [],
-                          "text": "x"
+                          "text": "text"
                         },
                         {
+                          "body": {
+                            "content": [],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [],
-                          "text": "x"
+                          "text": "text"
                         }
                       ],
                       "text": "text"
@@ -83,6 +99,17 @@ public class CalendarTest : BaseMockServerTest
                   ],
                   "overrides": [
                     {
+                      "body": {
+                        "content": [
+                          {
+                            "key": "value"
+                          },
+                          {
+                            "key": "value"
+                          }
+                        ],
+                        "type": "doc"
+                      },
                       "channelId": "channelId",
                       "media": [
                         {
@@ -94,9 +121,20 @@ public class CalendarTest : BaseMockServerTest
                           "mediaId": "mediaId"
                         }
                       ],
-                      "text": "x"
+                      "text": "text"
                     },
                     {
+                      "body": {
+                        "content": [
+                          {
+                            "key": "value"
+                          },
+                          {
+                            "key": "value"
+                          }
+                        ],
+                        "type": "doc"
+                      },
                       "channelId": "channelId",
                       "media": [
                         {
@@ -108,7 +146,7 @@ public class CalendarTest : BaseMockServerTest
                           "mediaId": "mediaId"
                         }
                       ],
-                      "text": "x"
+                      "text": "text"
                     }
                   ],
                   "poll": {
@@ -292,14 +330,22 @@ public class CalendarTest : BaseMockServerTest
                       ],
                       "overrides": [
                         {
+                          "body": {
+                            "content": [],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [],
-                          "text": "x"
+                          "text": "text"
                         },
                         {
+                          "body": {
+                            "content": [],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [],
-                          "text": "x"
+                          "text": "text"
                         }
                       ],
                       "text": "text"
@@ -318,14 +364,22 @@ public class CalendarTest : BaseMockServerTest
                       ],
                       "overrides": [
                         {
+                          "body": {
+                            "content": [],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [],
-                          "text": "x"
+                          "text": "text"
                         },
                         {
+                          "body": {
+                            "content": [],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [],
-                          "text": "x"
+                          "text": "text"
                         }
                       ],
                       "text": "text"
@@ -343,6 +397,17 @@ public class CalendarTest : BaseMockServerTest
                   ],
                   "overrides": [
                     {
+                      "body": {
+                        "content": [
+                          {
+                            "key": "value"
+                          },
+                          {
+                            "key": "value"
+                          }
+                        ],
+                        "type": "doc"
+                      },
                       "channelId": "channelId",
                       "media": [
                         {
@@ -354,9 +419,20 @@ public class CalendarTest : BaseMockServerTest
                           "mediaId": "mediaId"
                         }
                       ],
-                      "text": "x"
+                      "text": "text"
                     },
                     {
+                      "body": {
+                        "content": [
+                          {
+                            "key": "value"
+                          },
+                          {
+                            "key": "value"
+                          }
+                        ],
+                        "type": "doc"
+                      },
                       "channelId": "channelId",
                       "media": [
                         {
@@ -368,7 +444,7 @@ public class CalendarTest : BaseMockServerTest
                           "mediaId": "mediaId"
                         }
                       ],
-                      "text": "x"
+                      "text": "text"
                     }
                   ],
                   "poll": {

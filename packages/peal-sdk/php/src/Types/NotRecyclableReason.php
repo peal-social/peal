@@ -10,4 +10,5 @@ enum NotRecyclableReason: string
     case Repeating = "repeating";
     case Occurrence = "occurrence";
     case NoChannels = "noChannels";
+    case WebsitesOnly = "websitesOnly";
 }

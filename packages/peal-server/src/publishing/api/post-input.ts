@@ -2,6 +2,7 @@ import type { DateTime } from "effect";
 import { Array as Arr, Effect, Option, Schema } from "effect";
 import {
   InvalidTimeZone,
+  PostContentInvalid,
   PostNotFound,
   QueueNotFound,
   SignatureNotFound,
@@ -23,17 +24,26 @@ import type { PresetAsk } from "#publishing/application/post-presets.ts";
 import type { SendPostRequest } from "#publishing/application/post-scheduling.ts";
 import { ChannelOptionsListSchema } from "#publishing/domain/channel-options.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
+import { PostPart } from "#publishing/domain/post-part.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import { QueueIdSchema } from "#publishing/domain/queue-id.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
+import { richOverride } from "#publishing/domain/rich-override.ts";
 import { SignatureIdSchema } from "#publishing/domain/signature-id.ts";
 import { TagIdSchema } from "#publishing/domain/tag-id.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
+import { maxOverrideMedia } from "#publishing/domain/text-override.ts";
+import type { TextOverride } from "#publishing/domain/text-override.ts";
 import {
   ChannelIdSchema,
   MediaAssetIdSchema,
   PostIdSchema,
 } from "#shared/domain/ids.ts";
+import {
+  ArticleBodySchema,
+  bodyMediaOf,
+  NestedWithinSchema,
+} from "#shared/domain/rich-text/rich-body.ts";
 import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
@@ -76,7 +86,83 @@ export const channelIdsFrom = (raw: readonly string[]) => {
     : Effect.succeed(raw.flatMap((id) => Option.toArray(decodeChannelId(id))));
 };
 
-/** The post's content, with the ids of every part decoded. */
+// A rich text as the allow-list takes it: JSON no deeper than a body may
+// nest, read only then, showing no more different files than an override
+// gives its channel.
+const isNested = Schema.is(NestedWithinSchema);
+
+const decodeBody = Schema.decodeUnknownOption(ArticleBodySchema);
+
+/** A part's overrides as a request may give them, a body on some. */
+interface PartInput {
+  readonly overrides: readonly {
+    readonly body?: unknown;
+    readonly channelId: string;
+  }[];
+}
+
+/**
+ * Where a request's overrides give a rich text that does not decode:
+ * `bodyInvalid`, by channel and part (from 1 after the first).
+ */
+export const invalidBodiesOf = (
+  parts: readonly PartInput[]
+): readonly { readonly channelId: string; readonly part?: number }[] =>
+  parts.flatMap(({ overrides }, index) =>
+    overrides.flatMap(({ body, channelId }) => {
+      const decoded = isNested(body) ? decodeBody(body) : Option.none();
+
+      if (
+        body === undefined ||
+        Option.exists(
+          decoded,
+          (read) => bodyMediaOf(read).length <= maxOverrideMedia
+        )
+      ) {
+        return [];
+      }
+
+      return [index === 0 ? { channelId } : { channelId, part: index }];
+    })
+  );
+
+// Each override that has a body made again from it alone, its text and
+// media the body's, as every write of a body is (`richOverride`).
+const richOverrides = (
+  overrides: readonly TextOverride[]
+): readonly TextOverride[] =>
+  overrides.map((override) =>
+    override.body === undefined
+      ? override
+      : richOverride(override.channelId, override.body)
+  );
+
+/**
+ * The content with every rich text's override made with `richOverride`,
+ * whatever text and media the request gave beside it.
+ */
+export const withRichOverrides = (content: PostContent): PostContent =>
+  new PostContent({
+    followUps: content.followUps.map(
+      (part) =>
+        new PostPart({
+          delaySeconds: part.delaySeconds,
+          media: part.media,
+          overrides: richOverrides(part.overrides),
+          text: part.text,
+        })
+    ),
+    media: content.media,
+    overrides: richOverrides(content.overrides),
+    poll: content.poll,
+    text: content.text,
+  });
+
+/**
+ * The post's content, with the ids of every part decoded, and the rich
+ * texts of its overrides checked against the allow-list (PostContentInvalid
+ * `bodyInvalid`), then made into their overrides.
+ */
 export const contentFrom = (input: ContentInput) =>
   Effect.gen(function* decodingContent() {
     const parts = [input, ...(input.followUps ?? [])];
@@ -100,7 +186,15 @@ export const contentFrom = (input: ContentInput) =>
       parts.flatMap((part) => part.overrides.map(({ channelId }) => channelId))
     );
 
-    return yield* decodeContent(input).pipe(Effect.orDie);
+    const invalid = invalidBodiesOf(parts);
+
+    if (Arr.isReadonlyArrayNonEmpty(invalid)) {
+      return yield* new PostContentInvalid({
+        violations: invalid.map((at) => ({ _tag: "bodyInvalid", ...at })),
+      });
+    }
+
+    return withRichOverrides(yield* decodeContent(input).pipe(Effect.orDie));
   });
 
 /** The options a request gives on some channels, with their ids decoded. */

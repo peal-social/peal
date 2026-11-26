@@ -1,9 +1,9 @@
 import { Schema } from "effect";
 
 /**
- * The social networks (and chats) a channel can connect to, whose channels take posts. Channels connect accounts on
- * them and publishing checks posts against their rules, so the list lives in
- * the shared kernel.
+ * What a channel connects to, whose channels take posts: a social network,
+ * a chat or a website. Channels connect accounts on them and publishing
+ * checks posts against their rules, so the list lives in the shared kernel.
  */
 export const PlatformSchema = Schema.Literals([
   "x",
@@ -21,6 +21,10 @@ export const PlatformSchema = Schema.Literals([
   "telegram",
   "slack",
   "snapchat",
+  "wordpress",
+  "devto",
+  "hashnode",
+  "wordpressCom",
 ]);
 
 export type Platform = typeof PlatformSchema.Type;
@@ -41,7 +45,7 @@ export const isChatPlatform: (platform: Platform) => platform is ChatPlatform =
   Schema.is(ChatPlatformSchema);
 
 /**
- * Websites a channel can publish articles to: a WordPress site of its
+ * Websites a channel can publish to: a WordPress site of its
  * own (`wordpress`, an application password), or an account on a
  * publishing platform by the member's key: `devto` (an API key),
  * `hashnode` (a personal access token, and one of its publications), or a
@@ -71,20 +75,33 @@ export const isKeySitePlatform: (
   platform: SitePlatform
 ) => platform is KeySitePlatform = Schema.is(KeySitePlatformSchema);
 
-/** Whatever a channel connects to: a social network or a website. */
-export const ChannelPlatformSchema = Schema.Literals([
-  ...PlatformSchema.literals,
-  ...SitePlatformSchema.literals,
-]);
+/**
+ * Whatever a channel connects to: the same list as `PlatformSchema`, kept
+ * under its own name, which the contract's `Channel.platform` refers to.
+ */
+export const ChannelPlatformSchema = Schema.Literals(PlatformSchema.literals);
 
 export type ChannelPlatform = typeof ChannelPlatformSchema.Type;
 
-/** Whether a channel's platform is a social network, which takes posts. */
-export const isSocialPlatform: (
-  platform: ChannelPlatform
-) => platform is Platform = Schema.is(PlatformSchema);
+/** A platform that is no website: a social network or a chat. */
+export type SocialPlatform = Exclude<Platform, SitePlatform>;
 
-/** Whether a channel's platform is a website, which takes articles. */
-export const isSitePlatform = (
-  platform: ChannelPlatform
-): platform is SitePlatform => !isSocialPlatform(platform);
+/** Whether a channel's platform is a website. */
+export const isSitePlatform: (platform: Platform) => platform is SitePlatform =
+  Schema.is(SitePlatformSchema);
+
+/**
+ * Whether a channel's platform is no website's: a social network or a
+ * chat, which analytics, the inbox, connect links, the channel directory
+ * and channel moves serve.
+ */
+export const isSocialPlatform = (
+  platform: Platform
+): platform is SocialPlatform => !isSitePlatform(platform);
+
+/**
+ * The platforms that are no website's, in Peal's order: where analytics,
+ * the inbox and the automations' rules are listed.
+ */
+export const socialPlatforms: readonly SocialPlatform[] =
+  platforms.filter(isSocialPlatform);

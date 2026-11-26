@@ -1,5 +1,13 @@
-import { and, asc, eq, isNull, lt } from "drizzle-orm";
-import { DateTime, Duration, Effect, Layer, Option, Schema } from "effect";
+import { and, asc, eq, isNull, lt, or, sql } from "drizzle-orm";
+import {
+  Array as Arr,
+  DateTime,
+  Duration,
+  Effect,
+  Layer,
+  Option,
+  Schema,
+} from "effect";
 
 import { PublicationJournal } from "#publishing/application/publication-journal.ts";
 import type {
@@ -9,7 +17,9 @@ import type {
   RecordedAttempt,
 } from "#publishing/application/publication-journal.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
+import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import { earlierRefusalsOf } from "#publishing/domain/publication-policy.ts";
+import { SiteProgressSchema } from "#publishing/domain/site-progress.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { AttemptOutcomeSchema } from "#shared/domain/attempt-outcome.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
@@ -140,7 +150,40 @@ export const DrizzlePublicationJournal = Layer.effect(
       return start;
     });
 
+    const decodeProgress = Schema.decodeUnknownOption(
+      Schema.toCodecJson(SiteProgressSchema)
+    );
+
+    const committedBefore = Effect.fn("PublicationJournal.committedBefore")(
+      function* committedBefore(targetId: PostTargetId, round: number) {
+        const rows = yield* db
+          .select({ progress: publicationCalls.progress })
+          .from(publicationCalls)
+          .where(
+            and(
+              eq(publicationCalls.targetId, targetId),
+              lt(publicationCalls.round, round),
+              sql`${publicationCalls.progress}->>'_tag' = 'committing'`,
+              or(
+                isNull(publicationCalls.outcome),
+                sql`${publicationCalls.outcome}->>'_tag' = 'unconfirmed'`
+              )
+            )
+          )
+          .pipe(Effect.mapError(failed));
+
+        const committed = rows.flatMap(({ progress }) =>
+          Option.toArray(decodeProgress(progress)).map(({ at }) => at)
+        );
+
+        return Arr.isReadonlyArrayNonEmpty(committed)
+          ? Option.some(Arr.max(committed, DateTime.Order))
+          : Option.none<DateTime.Utc>();
+      }
+    );
+
     return PublicationJournal.of({
+      committedBefore,
       attemptsOf: (postId) =>
         db
           .select({ attempt: publicationAttempts })

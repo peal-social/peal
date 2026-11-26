@@ -82,12 +82,20 @@ const validationView = (
       isSendable(check) &&
       read.zoneKnown &&
       read.malformedChannels.length === 0 &&
-      read.malformedMedia.length === 0,
+      read.malformedMedia.length === 0 &&
+      read.invalidBodies.length === 0,
     // A channel whose id is none is said as unknown, and was left out
     // of what was checked: not again as a post for no channel.
-    violations: check.violations.filter(
-      ({ _tag }) => _tag !== "noChannels" || read.malformedChannels.length === 0
-    ),
+    violations: [
+      ...check.violations.filter(
+        ({ _tag }) =>
+          _tag !== "noChannels" || read.malformedChannels.length === 0
+      ),
+      ...read.invalidBodies.map((at) => ({
+        _tag: "bodyInvalid" as const,
+        ...at,
+      })),
+    ],
   };
 
   // The slot a queue would give it, or why it has none.

@@ -84,6 +84,10 @@ module Peal
       member -> { Peal::Types::ContentViolationAspectRatioUnsupported }, key: "aspectRatioUnsupported"
 
       member -> { Peal::Types::ContentViolationAltTextTooLong }, key: "altTextTooLong"
+
+      member -> { Peal::Types::ContentViolationBodyInvalid }, key: "bodyInvalid"
+
+      member -> { Peal::Types::ContentViolationBodyNotTaken }, key: "bodyNotTaken"
     end
   end
 end

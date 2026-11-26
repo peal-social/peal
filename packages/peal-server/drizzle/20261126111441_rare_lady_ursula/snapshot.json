@@ -1,0 +1,178 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "956a7817-8357-45ce-8b47-e653e607639a",
+  "prevIds": [
+    "14a6534a-40df-4916-952a-18a35dfbebad"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "publishing",
+        "site_files"
+      ],
+      "writes": [
+        "s|tbl|publishing.site_files",
+        "n|tbl|publishing.site_files",
+        "e|tbl|publishing.site_files",
+        "n|rel|publishing.site_files",
+        "n|type|publishing.site_files",
+        "n|rel|publishing.site_files_pkey"
+      ],
+      "reads": [
+        "n|sch|publishing"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "publishing",
+        "site_files"
+      ],
+      "writes": [
+        "s|fk|publishing.site_files.site_files_target_id_post_targets_id_fkey",
+        "n|fk|publishing.site_files.site_files_target_id_post_targets_id_fkey",
+        "e|fk|publishing.site_files.site_files_target_id_post_targets_id_fkey",
+        "n|con|publishing.site_files.site_files_target_id_post_targets_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|publishing.site_files",
+        "n|sch|publishing",
+        "n|tbl|publishing.post_targets",
+        "n|sch|publishing",
+        "n|col|publishing.site_files.target_id",
+        "n|col|publishing.post_targets.id",
+        "e|uniqueness|publishing.post_targets.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "name": "site_files",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "site_files",
+        "name": "featured_refused",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "site_files",
+        "name": "media_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "site_files",
+        "name": "site_media_id",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "site_files",
+        "name": "source_url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "site_files",
+        "name": "target_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "site_files",
+        "name": "site_files_target_id_post_targets_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "target_id"
+        ],
+        "schemaTo": "publishing",
+        "tableTo": "post_targets",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "site_files",
+        "name": "site_files_pkey",
+        "columns": [
+          "target_id",
+          "media_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

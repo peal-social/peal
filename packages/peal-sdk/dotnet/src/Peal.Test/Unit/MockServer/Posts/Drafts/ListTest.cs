@@ -35,12 +35,12 @@ public class ListTest : BaseMockServerTest
                           {
                             "channelId": "channelId",
                             "media": [],
-                            "text": "x"
+                            "text": "text"
                           },
                           {
                             "channelId": "channelId",
                             "media": [],
-                            "text": "x"
+                            "text": "text"
                           }
                         ],
                         "text": "text"
@@ -61,12 +61,12 @@ public class ListTest : BaseMockServerTest
                           {
                             "channelId": "channelId",
                             "media": [],
-                            "text": "x"
+                            "text": "text"
                           },
                           {
                             "channelId": "channelId",
                             "media": [],
-                            "text": "x"
+                            "text": "text"
                           }
                         ],
                         "text": "text"
@@ -84,6 +84,17 @@ public class ListTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -95,9 +106,20 @@ public class ListTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       },
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -109,7 +131,7 @@ public class ListTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       }
                     ],
                     "poll": {
@@ -295,12 +317,12 @@ public class ListTest : BaseMockServerTest
                           {
                             "channelId": "channelId",
                             "media": [],
-                            "text": "x"
+                            "text": "text"
                           },
                           {
                             "channelId": "channelId",
                             "media": [],
-                            "text": "x"
+                            "text": "text"
                           }
                         ],
                         "text": "text"
@@ -321,12 +343,12 @@ public class ListTest : BaseMockServerTest
                           {
                             "channelId": "channelId",
                             "media": [],
-                            "text": "x"
+                            "text": "text"
                           },
                           {
                             "channelId": "channelId",
                             "media": [],
-                            "text": "x"
+                            "text": "text"
                           }
                         ],
                         "text": "text"
@@ -344,6 +366,17 @@ public class ListTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -355,9 +388,20 @@ public class ListTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       },
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -369,7 +413,7 @@ public class ListTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       }
                     ],
                     "poll": {

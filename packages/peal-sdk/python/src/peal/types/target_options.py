@@ -19,6 +19,7 @@ from .linked_in_mention import LinkedInMention
 from .linked_in_visibility import LinkedInVisibility
 from .mastodon_quote_policy import MastodonQuotePolicy
 from .mastodon_visibility import MastodonVisibility
+from .site_status_option import SiteStatusOption
 from .threads_reply_control import ThreadsReplyControl
 from .tik_tok_privacy_level import TikTokPrivacyLevel
 from .x_reply_settings import XReplySettings
@@ -493,6 +494,112 @@ class TargetOptions_Snapchat(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+class TargetOptions_Wordpress(UniversalBaseModel):
+    """
+    What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.
+    """
+
+    platform: typing.Literal["wordpress"] = "wordpress"
+    cover_media_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="coverMediaId"), pydantic.Field(alias="coverMediaId")
+    ] = None
+    excerpt: typing.Optional[str] = None
+    site_status: typing_extensions.Annotated[
+        typing.Optional[SiteStatusOption], FieldMetadata(alias="siteStatus"), pydantic.Field(alias="siteStatus")
+    ] = None
+    tags: typing.Optional[typing.List[str]] = None
+    title: typing.Optional[str] = None
+    categories: typing.Optional[typing.List[str]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class TargetOptions_WordpressCom(UniversalBaseModel):
+    """
+    What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.
+    """
+
+    platform: typing.Literal["wordpressCom"] = "wordpressCom"
+    cover_media_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="coverMediaId"), pydantic.Field(alias="coverMediaId")
+    ] = None
+    excerpt: typing.Optional[str] = None
+    site_status: typing_extensions.Annotated[
+        typing.Optional[SiteStatusOption], FieldMetadata(alias="siteStatus"), pydantic.Field(alias="siteStatus")
+    ] = None
+    tags: typing.Optional[typing.List[str]] = None
+    title: typing.Optional[str] = None
+    categories: typing.Optional[typing.List[str]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class TargetOptions_Devto(UniversalBaseModel):
+    """
+    What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.
+    """
+
+    platform: typing.Literal["devto"] = "devto"
+    cover_media_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="coverMediaId"), pydantic.Field(alias="coverMediaId")
+    ] = None
+    excerpt: typing.Optional[str] = None
+    site_status: typing_extensions.Annotated[
+        typing.Optional[SiteStatusOption], FieldMetadata(alias="siteStatus"), pydantic.Field(alias="siteStatus")
+    ] = None
+    tags: typing.Optional[typing.List[str]] = None
+    title: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class TargetOptions_Hashnode(UniversalBaseModel):
+    """
+    What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.
+    """
+
+    platform: typing.Literal["hashnode"] = "hashnode"
+    cover_media_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="coverMediaId"), pydantic.Field(alias="coverMediaId")
+    ] = None
+    excerpt: typing.Optional[str] = None
+    site_status: typing_extensions.Annotated[
+        typing.Optional[SiteStatusOption], FieldMetadata(alias="siteStatus"), pydantic.Field(alias="siteStatus")
+    ] = None
+    tags: typing.Optional[typing.List[str]] = None
+    title: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 TargetOptions = typing_extensions.Annotated[
     typing.Union[
         TargetOptions_Youtube,
@@ -510,6 +617,10 @@ TargetOptions = typing_extensions.Annotated[
         TargetOptions_Telegram,
         TargetOptions_Slack,
         TargetOptions_Snapchat,
+        TargetOptions_Wordpress,
+        TargetOptions_WordpressCom,
+        TargetOptions_Devto,
+        TargetOptions_Hashnode,
     ],
     pydantic.Field(discriminator="platform"),
 ]

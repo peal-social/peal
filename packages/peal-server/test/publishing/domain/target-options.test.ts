@@ -86,6 +86,10 @@ describe("the platforms that take options", () => {
       "telegram",
       "slack",
       "snapchat",
+      "wordpress",
+      "devto",
+      "hashnode",
+      "wordpressCom",
     ]);
     expect(takesOptions("facebook")).toBeTruthy();
     expect(noOptionsOn("instagram")).toStrictEqual(

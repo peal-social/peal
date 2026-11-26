@@ -1,6 +1,6 @@
 pub use crate::prelude::*;
 
-/// A social network a channel connects to.
+/// What a channel connects to: a social network, a chat or a website.
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Platform {
@@ -19,6 +19,10 @@ pub enum Platform {
     Telegram,
     Slack,
     Snapchat,
+    Wordpress,
+    Devto,
+    Hashnode,
+    WordpressCom,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -42,6 +46,10 @@ impl Serialize for Platform {
             Self::Telegram => serializer.serialize_str("telegram"),
             Self::Slack => serializer.serialize_str("slack"),
             Self::Snapchat => serializer.serialize_str("snapchat"),
+            Self::Wordpress => serializer.serialize_str("wordpress"),
+            Self::Devto => serializer.serialize_str("devto"),
+            Self::Hashnode => serializer.serialize_str("hashnode"),
+            Self::WordpressCom => serializer.serialize_str("wordpressCom"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -66,6 +74,10 @@ impl<'de> Deserialize<'de> for Platform {
             "telegram" => Ok(Self::Telegram),
             "slack" => Ok(Self::Slack),
             "snapchat" => Ok(Self::Snapchat),
+            "wordpress" => Ok(Self::Wordpress),
+            "devto" => Ok(Self::Devto),
+            "hashnode" => Ok(Self::Hashnode),
+            "wordpressCom" => Ok(Self::WordpressCom),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -89,6 +101,10 @@ impl fmt::Display for Platform {
             Self::Telegram => write!(f, "telegram"),
             Self::Slack => write!(f, "slack"),
             Self::Snapchat => write!(f, "snapchat"),
+            Self::Wordpress => write!(f, "wordpress"),
+            Self::Devto => write!(f, "devto"),
+            Self::Hashnode => write!(f, "hashnode"),
+            Self::WordpressCom => write!(f, "wordpressCom"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

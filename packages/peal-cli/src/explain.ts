@@ -232,6 +232,8 @@ const notRecyclable: Readonly<Record<NotRecyclableReason, string>> = {
     "A recycling rule made this post: make its source repeat instead.",
   repeating:
     "Another rule repeats this post already: peal recycling list shows it, and peal recycling end stops it.",
+  websitesOnly:
+    "The post goes to websites only, and no rule repeats a post on a website.",
 };
 
 // What breaks a platform's rule, as the author fixes it.
@@ -239,6 +241,10 @@ const brokenRule = (violation: ContentViolation): string =>
   Match.valueTags(violation, {
     altTextTooLong: ({ length, maximum }) =>
       `its description has ${String(length)} characters, and the platform keeps ${String(maximum)}`,
+    bodyInvalid: () =>
+      "its rich text holds a node or a mark Peal does not take, or more than Peal keeps",
+    bodyNotTaken: () =>
+      "only a website takes a rich text, and only on the post's first part",
     aspectRatioUnsupported: ({ height, maximum, minimum, width }) =>
       `it is ${String(width)}×${String(height)}, and the platform takes a width over height from ${String(minimum)} to ${String(maximum)}`,
     empty: () => "the post would go out with no text and no media",

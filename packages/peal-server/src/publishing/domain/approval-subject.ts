@@ -29,18 +29,22 @@ const saidBy = ({
   text,
 }: Pick<PostContent, "media" | "overrides" | "text">) => ({
   media: media.map(({ altText, mediaId }) => ({ altText, mediaId })),
-  // An override's media are written only when it gives some, so a
-  // subject without any is written as it was before overrides had media.
+  // An override's media are written only when it gives some, and its
+  // body (a website's rich text) only when it has one, so a subject
+  // without either is written as it was before overrides had them.
   overrides: overrides
-    .map(({ channelId, media: own, text: override }) =>
-      own === undefined
-        ? { channelId, text: override }
-        : {
-            channelId,
-            media: own.map(({ altText, mediaId }) => ({ altText, mediaId })),
-            text: override,
-          }
-    )
+    .map(({ body, channelId, media: own, text: override }) => {
+      const said =
+        own === undefined
+          ? { channelId, text: override }
+          : {
+              channelId,
+              media: own.map(({ altText, mediaId }) => ({ altText, mediaId })),
+              text: override,
+            };
+
+      return body === undefined ? said : { ...said, body };
+    })
     .toSorted((left, right) => left.channelId.localeCompare(right.channelId)),
   text,
 });

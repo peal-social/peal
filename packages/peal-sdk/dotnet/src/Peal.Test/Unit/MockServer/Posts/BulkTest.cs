@@ -34,11 +34,11 @@ public class BulkTest : BaseMockServerTest
                     "overrides": [
                       {
                         "channelId": "channelId",
-                        "text": "x"
+                        "text": "text"
                       },
                       {
                         "channelId": "channelId",
-                        "text": "x"
+                        "text": "text"
                       }
                     ],
                     "text": "text"
@@ -66,11 +66,11 @@ public class BulkTest : BaseMockServerTest
                     "overrides": [
                       {
                         "channelId": "channelId",
-                        "text": "x"
+                        "text": "text"
                       },
                       {
                         "channelId": "channelId",
-                        "text": "x"
+                        "text": "text"
                       }
                     ],
                     "text": "text"
@@ -109,11 +109,11 @@ public class BulkTest : BaseMockServerTest
                           "overrides": [
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             },
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             }
                           ],
                           "text": "text"
@@ -133,11 +133,11 @@ public class BulkTest : BaseMockServerTest
                           "overrides": [
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             },
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             }
                           ],
                           "text": "text"
@@ -155,6 +155,17 @@ public class BulkTest : BaseMockServerTest
                       ],
                       "overrides": [
                         {
+                          "body": {
+                            "content": [
+                              {
+                                "key": "value"
+                              },
+                              {
+                                "key": "value"
+                              }
+                            ],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [
                             {
@@ -166,9 +177,20 @@ public class BulkTest : BaseMockServerTest
                               "mediaId": "mediaId"
                             }
                           ],
-                          "text": "x"
+                          "text": "text"
                         },
                         {
+                          "body": {
+                            "content": [
+                              {
+                                "key": "value"
+                              },
+                              {
+                                "key": "value"
+                              }
+                            ],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [
                             {
@@ -180,7 +202,7 @@ public class BulkTest : BaseMockServerTest
                               "mediaId": "mediaId"
                             }
                           ],
-                          "text": "x"
+                          "text": "text"
                         }
                       ],
                       "poll": {
@@ -370,11 +392,11 @@ public class BulkTest : BaseMockServerTest
                           "overrides": [
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             },
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             }
                           ],
                           "text": "text"
@@ -394,11 +416,11 @@ public class BulkTest : BaseMockServerTest
                           "overrides": [
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             },
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             }
                           ],
                           "text": "text"
@@ -416,6 +438,17 @@ public class BulkTest : BaseMockServerTest
                       ],
                       "overrides": [
                         {
+                          "body": {
+                            "content": [
+                              {
+                                "key": "value"
+                              },
+                              {
+                                "key": "value"
+                              }
+                            ],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [
                             {
@@ -427,9 +460,20 @@ public class BulkTest : BaseMockServerTest
                               "mediaId": "mediaId"
                             }
                           ],
-                          "text": "x"
+                          "text": "text"
                         },
                         {
+                          "body": {
+                            "content": [
+                              {
+                                "key": "value"
+                              },
+                              {
+                                "key": "value"
+                              }
+                            ],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [
                             {
@@ -441,7 +485,7 @@ public class BulkTest : BaseMockServerTest
                               "mediaId": "mediaId"
                             }
                           ],
-                          "text": "x"
+                          "text": "text"
                         }
                       ],
                       "poll": {
@@ -652,15 +696,17 @@ public class BulkTest : BaseMockServerTest
                             {
                                 new TextOverride
                                 {
+                                    Body = null,
                                     ChannelId = "channelId",
                                     Media = null,
-                                    Text = "x",
+                                    Text = "text",
                                 },
                                 new TextOverride
                                 {
+                                    Body = null,
                                     ChannelId = "channelId",
                                     Media = null,
-                                    Text = "x",
+                                    Text = "text",
                                 },
                             },
                             Poll = null,
@@ -693,15 +739,17 @@ public class BulkTest : BaseMockServerTest
                             {
                                 new TextOverride
                                 {
+                                    Body = null,
                                     ChannelId = "channelId",
                                     Media = null,
-                                    Text = "x",
+                                    Text = "text",
                                 },
                                 new TextOverride
                                 {
+                                    Body = null,
                                     ChannelId = "channelId",
                                     Media = null,
-                                    Text = "x",
+                                    Text = "text",
                                 },
                             },
                             Poll = null,

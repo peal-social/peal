@@ -142,6 +142,7 @@ const unknownMedia = ({ mediaIds }: { readonly mediaIds: readonly string[] }) =>
 const malformedPost = { PostNotFound: notFound } as const;
 
 const malformedContent = {
+  PostContentInvalid: contentRejected,
   UnknownChannels: unknownChannels,
   UnknownMedia: unknownMedia,
 } as const;

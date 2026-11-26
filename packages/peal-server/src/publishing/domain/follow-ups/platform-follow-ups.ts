@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { platforms } from "#shared/domain/platform.ts";
+import { socialPlatforms } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 import { followUpSupport } from "./follow-up-support.ts";
@@ -95,7 +95,7 @@ const repostOn = (
 export const followUpsOnPlatforms = (
   server: FollowUpServer
 ): readonly PlatformFollowUps[] =>
-  platforms.map((platform) => ({
+  socialPlatforms.map((platform) => ({
     comment: commentOn(platform, server),
     platform,
     repost: repostOn(platform, server),

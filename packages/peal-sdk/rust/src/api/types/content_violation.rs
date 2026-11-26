@@ -566,6 +566,27 @@ pub enum ContentViolation {
         maximum: i64,
     },
 
+    #[serde(rename = "bodyInvalid")]
+    #[non_exhaustive]
+    BodyInvalid {
+        #[serde(rename = "channelId")]
+        #[serde(default)]
+        channel_id: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        part: Option<i64>,
+    },
+
+    #[serde(rename = "bodyNotTaken")]
+    #[non_exhaustive]
+    BodyNotTaken {
+        #[serde(rename = "channelId")]
+        #[serde(default)]
+        channel_id: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        part: Option<i64>,
+        platform: Platform,
+    },
+
     /// Catch-all variant for unrecognized discriminant values.
     /// If the server sends a discriminant not recognized by the current SDK
     /// version, the raw payload is captured here so callers can still inspect it.
@@ -1073,6 +1094,21 @@ impl ContentViolation {
             media_id,
             length,
             maximum,
+        }
+    }
+
+    pub fn body_invalid(channel_id: String) -> Self {
+        Self::BodyInvalid {
+            channel_id,
+            part: None,
+        }
+    }
+
+    pub fn body_not_taken(channel_id: String, platform: Platform) -> Self {
+        Self::BodyNotTaken {
+            channel_id,
+            part: None,
+            platform,
         }
     }
 
@@ -1615,6 +1651,21 @@ impl ContentViolation {
             media_id,
             length,
             maximum,
+        }
+    }
+
+    pub fn body_invalid_with_part(channel_id: String, part: i64) -> Self {
+        Self::BodyInvalid {
+            channel_id,
+            part: Some(part),
+        }
+    }
+
+    pub fn body_not_taken_with_part(channel_id: String, part: i64, platform: Platform) -> Self {
+        Self::BodyNotTaken {
+            channel_id,
+            part: Some(part),
+            platform,
         }
     }
 

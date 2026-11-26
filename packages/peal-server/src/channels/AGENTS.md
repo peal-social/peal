@@ -47,16 +47,19 @@
   other a new connection; no plan limit is asked, as the pool holds as
   many accounts. An account the other workspace has is
   `ChannelAccountTaken`.
-- A channel connects a social network (`Platform`), whose channels take
-  posts, or a website (`SitePlatform`: `wordpress`), whose channels take
-  articles (`ChannelPlatform`, `#shared/domain/platform.ts`; the contract
-  copies all three). Only social channels reach posts, analytics, the
-  inbox, connect links and the channel directory: filter with
-  `isSocialPlatform` or `isSocialChannel` (`application/social-channels.ts`)
-  where a channel is read for them, in the query when it pages
-  (`DrizzleChannelDirectory`), so a website's row is never decoded as a
-  `Platform`. `ChannelAccess.withToken` and `account` answer a website's
-  channel `notFound`, `withSiteToken` a social one.
+- A channel connects a social network, a chat or a website (`Platform`,
+  of which `SitePlatform` is the websites: `wordpress`, `wordpressCom`,
+  `devto`, `hashnode`; `ChannelPlatform` keeps the same values under the
+  contract's own name, `#shared/domain/platform.ts`; the contract copies
+  them). Every channel takes posts, a website's as articles (and, until
+  the cutover, the articles context's articles too). Only channels that
+  are no website's reach analytics, the inbox, connect links, the
+  channel directory and channel moves: filter with `isSocialPlatform` or
+  `isSocialChannel` (`application/social-channels.ts`) where a channel is
+  read for them, in the query when it pages (`DrizzleChannelDirectory`).
+  `ChannelAccess.withToken` and `account` answer every channel, a
+  website's for its posts; `withSiteToken` answers a website's alone, for
+  articles, and a social one `notFound`.
   `ChannelDirectory.withAccount` finds one account's channels on a
   platform (`channels_platform_account`), every workspace's, for a
   platform's events: ids and platforms only, as `after`.

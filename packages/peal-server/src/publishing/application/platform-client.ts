@@ -3,6 +3,7 @@ import type { DateTime, Effect, Option } from "effect";
 
 import type { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import type { Poll } from "#publishing/domain/poll.ts";
+import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { TargetOptions } from "#publishing/domain/target-options.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
@@ -11,6 +12,7 @@ import type {
   PlatformPostId,
   PublishResult,
 } from "#shared/domain/publish-result.ts";
+import type { ArticleBody } from "#shared/domain/rich-text/rich-body.ts";
 
 /**
  * The posts a part after the first answers to, by the ids the platform
@@ -31,6 +33,13 @@ export interface ReplyReference {
 export interface OutgoingPost {
   /** The account's id on the platform, as the channel stores it. */
   readonly accountId: string;
+  /**
+   * The channel's own text as a rich text, on a website's first part
+   * (`TextOverride.body`); none elsewhere, and where the channel takes the
+   * post's text, which a website's client writes as a body
+   * (`bodyOfText`).
+   */
+  readonly body: Option.Option<ArticleBody>;
   readonly channelId: ChannelId;
   /** Unique to the attempt, and the same for every run of it. */
   readonly idempotencyKey: string;
@@ -56,8 +65,16 @@ export interface OutgoingPost {
    * `#publishing/domain/platform-rules.ts`) must read it.
    */
   readonly replyTo: Option.Option<ReplyReference>;
+  /**
+   * The target's round: 1 for its first, one more each time it is sent
+   * again. A website's client looks, in a new round, for a post an earlier
+   * round's call may have made.
+   */
+  readonly round: number;
   /** When the attempt's call started: the same for every run of it. */
   readonly startedAt: DateTime.Utc;
+  /** The target the attempt is of: what a website's files are kept by. */
+  readonly targetId: PostTargetId;
   /** The part's text on this channel: its own, or its override there. */
   readonly text: string;
   readonly workspaceId: WorkspaceId;

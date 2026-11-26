@@ -14,6 +14,7 @@ import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
+import { isSitePlatform } from "#shared/domain/platform.ts";
 
 import { ChannelDefaultsStore } from "./channel-defaults-store.ts";
 import { ChannelSetNotFound } from "./channel-set-not-found.ts";
@@ -33,6 +34,11 @@ export interface PresetAsk {
   readonly defaultSignatures: boolean;
   /** A signature to put under its text, on every channel. */
   readonly signatureId: Option.Option<SignatureId>;
+  /**
+   * Whether the sets' websites are left out (a feed's posts, whose items
+   * have no title to give an article), unreported.
+   */
+  readonly withoutSites?: boolean;
 }
 
 /** A request that names nothing saved. */
@@ -206,10 +212,21 @@ export class PostPresets extends Context.Service<
 
         const own = new Set<ChannelId>(request.channelIds);
 
+        // A set's websites, where the request leaves them out.
+        const sites = new Set<ChannelId>(
+          request.withoutSites === true
+            ? connected
+                .filter(({ platform }) => isSitePlatform(platform))
+                .map(({ channelId }) => channelId)
+            : []
+        );
+
         // What the post lists itself stays, connected or not; a set's
         // channels only while the workspace has them.
         const channelIds = asked.filter(
-          (channelId) => own.has(channelId) || known.has(channelId)
+          (channelId) =>
+            own.has(channelId) ||
+            (known.has(channelId) && !sites.has(channelId))
         );
 
         const dropped = chosen.flatMap((set): DroppedChannels[] => {

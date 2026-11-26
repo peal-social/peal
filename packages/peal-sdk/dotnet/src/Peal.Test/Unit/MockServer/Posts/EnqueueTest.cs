@@ -35,6 +35,17 @@ public class EnqueueTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -46,9 +57,20 @@ public class EnqueueTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       },
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -60,7 +82,7 @@ public class EnqueueTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       }
                     ],
                     "text": "text"
@@ -79,6 +101,17 @@ public class EnqueueTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -90,9 +123,20 @@ public class EnqueueTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       },
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -104,7 +148,7 @@ public class EnqueueTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       }
                     ],
                     "text": "text"
@@ -122,6 +166,17 @@ public class EnqueueTest : BaseMockServerTest
                 ],
                 "overrides": [
                   {
+                    "body": {
+                      "content": [
+                        {
+                          "key": "value"
+                        },
+                        {
+                          "key": "value"
+                        }
+                      ],
+                      "type": "doc"
+                    },
                     "channelId": "channelId",
                     "media": [
                       {
@@ -133,9 +188,20 @@ public class EnqueueTest : BaseMockServerTest
                         "mediaId": "mediaId"
                       }
                     ],
-                    "text": "x"
+                    "text": "text"
                   },
                   {
+                    "body": {
+                      "content": [
+                        {
+                          "key": "value"
+                        },
+                        {
+                          "key": "value"
+                        }
+                      ],
+                      "type": "doc"
+                    },
                     "channelId": "channelId",
                     "media": [
                       {
@@ -147,7 +213,7 @@ public class EnqueueTest : BaseMockServerTest
                         "mediaId": "mediaId"
                       }
                     ],
-                    "text": "x"
+                    "text": "text"
                   }
                 ],
                 "poll": {

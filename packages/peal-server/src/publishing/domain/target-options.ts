@@ -4,6 +4,7 @@ import { platforms } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 import { BlueskyOptions } from "./bluesky-options.ts";
+import { DevtoOptions } from "./devto-options.ts";
 import { DiscordOptions } from "./discord-options.ts";
 import { FacebookOptions } from "./facebook-options.ts";
 import { describeFields } from "./field-description.ts";
@@ -13,6 +14,7 @@ import type {
   UndescribedField,
 } from "./field-description.ts";
 import { GoogleBusinessOptions } from "./google-business-options.ts";
+import { HashnodeOptions } from "./hashnode-options.ts";
 import { InstagramOptions } from "./instagram-options.ts";
 import { LinkedInOptions } from "./linkedin-options.ts";
 import type { LookupName } from "./lookup.ts";
@@ -25,13 +27,15 @@ import { SnapchatOptions } from "./snapchat-options.ts";
 import { TelegramOptions } from "./telegram-options.ts";
 import { ThreadsOptions } from "./threads-options.ts";
 import { TikTokOptions } from "./tiktok-options.ts";
+import { WordPressComOptions } from "./wordpress-com-options.ts";
+import { WordPressOptions } from "./wordpress-options.ts";
 import { XOptions } from "./x-options.ts";
 import { YouTubeOptions } from "./youtube-options.ts";
 
 /**
  * What a post's target says that only its channel's platform knows, such as
  * a YouTube video's title, who sees a TikTok post or the board a Pinterest
- * Pin is saved to, tagged by `platform`.
+ * Pin is saved to, or a website's article's title, tagged by `platform`.
  * They are stored with the target and handed to the platform's adapter.
  *
  * A platform's options are one class, in a file of its own beside this one:
@@ -56,6 +60,10 @@ export const TargetOptionsSchema = Schema.Union([
   TelegramOptions,
   SlackOptions,
   SnapchatOptions,
+  WordPressOptions,
+  WordPressComOptions,
+  DevtoOptions,
+  HashnodeOptions,
 ]);
 
 export type TargetOptions = typeof TargetOptionsSchema.Type;

@@ -157,6 +157,42 @@ public record TargetOptions
     }
 
     /// <summary>
+    /// Create an instance of TargetOptions with <see cref="TargetOptions.Wordpress"/>.
+    /// </summary>
+    public TargetOptions(TargetOptions.Wordpress value)
+    {
+        Platform = "wordpress";
+        Value = value.Value;
+    }
+
+    /// <summary>
+    /// Create an instance of TargetOptions with <see cref="TargetOptions.WordpressCom"/>.
+    /// </summary>
+    public TargetOptions(TargetOptions.WordpressCom value)
+    {
+        Platform = "wordpressCom";
+        Value = value.Value;
+    }
+
+    /// <summary>
+    /// Create an instance of TargetOptions with <see cref="TargetOptions.Devto"/>.
+    /// </summary>
+    public TargetOptions(TargetOptions.Devto value)
+    {
+        Platform = "devto";
+        Value = value.Value;
+    }
+
+    /// <summary>
+    /// Create an instance of TargetOptions with <see cref="TargetOptions.Hashnode"/>.
+    /// </summary>
+    public TargetOptions(TargetOptions.Hashnode value)
+    {
+        Platform = "hashnode";
+        Value = value.Value;
+    }
+
+    /// <summary>
     /// Discriminant value
     /// </summary>
     [JsonPropertyName("platform")]
@@ -241,6 +277,26 @@ public record TargetOptions
     /// Returns true if <see cref="Platform"/> is "snapchat"
     /// </summary>
     public bool IsSnapchat => Platform == "snapchat";
+
+    /// <summary>
+    /// Returns true if <see cref="Platform"/> is "wordpress"
+    /// </summary>
+    public bool IsWordpress => Platform == "wordpress";
+
+    /// <summary>
+    /// Returns true if <see cref="Platform"/> is "wordpressCom"
+    /// </summary>
+    public bool IsWordpressCom => Platform == "wordpressCom";
+
+    /// <summary>
+    /// Returns true if <see cref="Platform"/> is "devto"
+    /// </summary>
+    public bool IsDevto => Platform == "devto";
+
+    /// <summary>
+    /// Returns true if <see cref="Platform"/> is "hashnode"
+    /// </summary>
+    public bool IsHashnode => Platform == "hashnode";
 
     /// <summary>
     /// Returns the value as a <see cref="Peal.YouTubeOptions"/> if <see cref="Platform"/> is 'youtube', otherwise throws an exception.
@@ -377,6 +433,42 @@ public record TargetOptions
             ? (Peal.SnapchatOptions)Value!
             : throw new global::System.Exception("TargetOptions.Platform is not 'snapchat'");
 
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.WordPressOptions"/> if <see cref="Platform"/> is 'wordpress', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'wordpress'.</exception>
+    public Peal.WordPressOptions AsWordpress() =>
+        IsWordpress
+            ? (Peal.WordPressOptions)Value!
+            : throw new global::System.Exception("TargetOptions.Platform is not 'wordpress'");
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.WordPressComOptions"/> if <see cref="Platform"/> is 'wordpressCom', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'wordpressCom'.</exception>
+    public Peal.WordPressComOptions AsWordpressCom() =>
+        IsWordpressCom
+            ? (Peal.WordPressComOptions)Value!
+            : throw new global::System.Exception("TargetOptions.Platform is not 'wordpressCom'");
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.DevtoOptions"/> if <see cref="Platform"/> is 'devto', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'devto'.</exception>
+    public Peal.DevtoOptions AsDevto() =>
+        IsDevto
+            ? (Peal.DevtoOptions)Value!
+            : throw new global::System.Exception("TargetOptions.Platform is not 'devto'");
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.HashnodeOptions"/> if <see cref="Platform"/> is 'hashnode', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'hashnode'.</exception>
+    public Peal.HashnodeOptions AsHashnode() =>
+        IsHashnode
+            ? (Peal.HashnodeOptions)Value!
+            : throw new global::System.Exception("TargetOptions.Platform is not 'hashnode'");
+
     public T Match<T>(
         Func<Peal.YouTubeOptions, T> onYoutube,
         Func<Peal.TikTokOptions, T> onTiktok,
@@ -393,6 +485,10 @@ public record TargetOptions
         Func<Peal.TelegramOptions, T> onTelegram,
         Func<Peal.SlackOptions, T> onSlack,
         Func<Peal.SnapchatOptions, T> onSnapchat,
+        Func<Peal.WordPressOptions, T> onWordpress,
+        Func<Peal.WordPressComOptions, T> onWordpressCom,
+        Func<Peal.DevtoOptions, T> onDevto,
+        Func<Peal.HashnodeOptions, T> onHashnode,
         Func<string, object?, T> onUnknown_
     )
     {
@@ -413,6 +509,10 @@ public record TargetOptions
             "telegram" => onTelegram(AsTelegram()),
             "slack" => onSlack(AsSlack()),
             "snapchat" => onSnapchat(AsSnapchat()),
+            "wordpress" => onWordpress(AsWordpress()),
+            "wordpressCom" => onWordpressCom(AsWordpressCom()),
+            "devto" => onDevto(AsDevto()),
+            "hashnode" => onHashnode(AsHashnode()),
             _ => onUnknown_(Platform, Value),
         };
     }
@@ -433,6 +533,10 @@ public record TargetOptions
         Action<Peal.TelegramOptions> onTelegram,
         Action<Peal.SlackOptions> onSlack,
         Action<Peal.SnapchatOptions> onSnapchat,
+        Action<Peal.WordPressOptions> onWordpress,
+        Action<Peal.WordPressComOptions> onWordpressCom,
+        Action<Peal.DevtoOptions> onDevto,
+        Action<Peal.HashnodeOptions> onHashnode,
         Action<string, object?> onUnknown_
     )
     {
@@ -482,6 +586,18 @@ public record TargetOptions
                 break;
             case "snapchat":
                 onSnapchat(AsSnapchat());
+                break;
+            case "wordpress":
+                onWordpress(AsWordpress());
+                break;
+            case "wordpressCom":
+                onWordpressCom(AsWordpressCom());
+                break;
+            case "devto":
+                onDevto(AsDevto());
+                break;
+            case "hashnode":
+                onHashnode(AsHashnode());
                 break;
             default:
                 onUnknown_(Platform, Value);
@@ -699,6 +815,62 @@ public record TargetOptions
         return false;
     }
 
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.WordPressOptions"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsWordpress(out Peal.WordPressOptions? value)
+    {
+        if (Platform == "wordpress")
+        {
+            value = (Peal.WordPressOptions)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.WordPressComOptions"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsWordpressCom(out Peal.WordPressComOptions? value)
+    {
+        if (Platform == "wordpressCom")
+        {
+            value = (Peal.WordPressComOptions)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.DevtoOptions"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsDevto(out Peal.DevtoOptions? value)
+    {
+        if (Platform == "devto")
+        {
+            value = (Peal.DevtoOptions)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.HashnodeOptions"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsHashnode(out Peal.HashnodeOptions? value)
+    {
+        if (Platform == "hashnode")
+        {
+            value = (Peal.HashnodeOptions)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator TargetOptions(TargetOptions.Youtube value) => new(value);
@@ -730,6 +902,14 @@ public record TargetOptions
     public static implicit operator TargetOptions(TargetOptions.Slack value) => new(value);
 
     public static implicit operator TargetOptions(TargetOptions.Snapchat value) => new(value);
+
+    public static implicit operator TargetOptions(TargetOptions.Wordpress value) => new(value);
+
+    public static implicit operator TargetOptions(TargetOptions.WordpressCom value) => new(value);
+
+    public static implicit operator TargetOptions(TargetOptions.Devto value) => new(value);
+
+    public static implicit operator TargetOptions(TargetOptions.Hashnode value) => new(value);
 
     [Serializable]
     internal sealed class JsonConverter : JsonConverter<TargetOptions>
@@ -805,6 +985,15 @@ public record TargetOptions
                     ?? throw new JsonException("Failed to deserialize Peal.SlackOptions"),
                 "snapchat" => jsonWithoutDiscriminator.Deserialize<Peal.SnapchatOptions?>(options)
                     ?? throw new JsonException("Failed to deserialize Peal.SnapchatOptions"),
+                "wordpress" => jsonWithoutDiscriminator.Deserialize<Peal.WordPressOptions?>(options)
+                    ?? throw new JsonException("Failed to deserialize Peal.WordPressOptions"),
+                "wordpressCom" => jsonWithoutDiscriminator.Deserialize<Peal.WordPressComOptions?>(
+                    options
+                ) ?? throw new JsonException("Failed to deserialize Peal.WordPressComOptions"),
+                "devto" => jsonWithoutDiscriminator.Deserialize<Peal.DevtoOptions?>(options)
+                    ?? throw new JsonException("Failed to deserialize Peal.DevtoOptions"),
+                "hashnode" => jsonWithoutDiscriminator.Deserialize<Peal.HashnodeOptions?>(options)
+                    ?? throw new JsonException("Failed to deserialize Peal.HashnodeOptions"),
                 _ => json.Deserialize<object?>(options),
             };
             return new TargetOptions(discriminator, value);
@@ -834,6 +1023,10 @@ public record TargetOptions
                     "telegram" => JsonSerializer.SerializeToNode(value.Value, options),
                     "slack" => JsonSerializer.SerializeToNode(value.Value, options),
                     "snapchat" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "wordpress" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "wordpressCom" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "devto" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "hashnode" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["platform"] = value.Platform;
@@ -1143,6 +1336,82 @@ public record TargetOptions
         public override string ToString() => Value.ToString() ?? "null";
 
         public static implicit operator TargetOptions.Snapchat(Peal.SnapchatOptions value) =>
+            new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for wordpress
+    /// </summary>
+    [Serializable]
+    public struct Wordpress
+    {
+        public Wordpress(Peal.WordPressOptions value)
+        {
+            Value = value;
+        }
+
+        internal Peal.WordPressOptions Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TargetOptions.Wordpress(Peal.WordPressOptions value) =>
+            new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for wordpressCom
+    /// </summary>
+    [Serializable]
+    public struct WordpressCom
+    {
+        public WordpressCom(Peal.WordPressComOptions value)
+        {
+            Value = value;
+        }
+
+        internal Peal.WordPressComOptions Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TargetOptions.WordpressCom(
+            Peal.WordPressComOptions value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for devto
+    /// </summary>
+    [Serializable]
+    public struct Devto
+    {
+        public Devto(Peal.DevtoOptions value)
+        {
+            Value = value;
+        }
+
+        internal Peal.DevtoOptions Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TargetOptions.Devto(Peal.DevtoOptions value) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for hashnode
+    /// </summary>
+    [Serializable]
+    public struct Hashnode
+    {
+        public Hashnode(Peal.HashnodeOptions value)
+        {
+            Value = value;
+        }
+
+        internal Peal.HashnodeOptions Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TargetOptions.Hashnode(Peal.HashnodeOptions value) =>
             new(value);
     }
 }

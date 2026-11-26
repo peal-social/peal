@@ -39,7 +39,7 @@ them:
 | Context         | Holds                                                                                                                                                           |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `publishing`    | posts, their channels and media, schedules, attempts, the platform adapters, and what a workspace saves to write and file them (tags, signatures, channel sets) |
-| `articles`      | articles for a workspace's websites, the sites' adapters, their job                                                                                             |
+| `articles`      | articles for a workspace's websites and their job, until websites take posts alone                                                                              |
 | `channels`      | connected accounts, connect flows, encrypted tokens and their renewal, the gates every platform call of a channel goes through                                  |
 | `media`         | uploads, storage, probing, alt text, files handed to platforms                                                                                                  |
 | `workspace`     | accounts, workspaces, members, roles, API keys, OAuth, partner accounts                                                                                         |
@@ -123,8 +123,10 @@ and no socket, for tests.
   own refusal codes), the article as a site gets it (`OutgoingArticle`,
   `SiteArticleContent`), and what a site's call needs
   (`application/site-call-journal.ts`, `site-search.ts`, `site-token.ts`).
-  It moves to `publishing/domain` and `publishing/application` at the
-  cutover, when the articles context goes.
+  The adapters are publishing's, behind its `SiteCalls` port, which the
+  articles context calls. It moves to `publishing/domain` and
+  `publishing/application` at the cutover, when the articles context
+  goes.
 - Take ids from the `Ids` port: `yield* newId(PostIdSchema)`. Tests provide
   `Ids.layerTest`, which issues `00000000-0000-7000-8000-000000000001`, then
   `…002`, from each build of the layer.
@@ -540,6 +542,14 @@ and no socket, for tests.
   reads channels (every workspace's collection jobs included), and the
   events and notices that name one: never roll back past them while any
   is stored; articles and their jobs it ignores (the runbook's checks).
+  Websites as post channels did too: a target whose options are a
+  website's, an override with an empty text or more than 20 files (which
+  the release before cannot decode where it reads the post, its job
+  included), an override's `body`, which it ignores, sending the plain
+  text, and the post events and usage rows that name a website:
+  never roll back past it while any is stored (the runbook's "Past
+  websites as post channels", which also checks that analytics follows
+  no website's channel).
   Chats did too: a channel of `discord` or `telegram`, a target with
   their options or failed as `forumThreadNameRequired` or `chatMigrated`,
   and the events and notices that name one: never roll back past them

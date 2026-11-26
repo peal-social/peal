@@ -9,7 +9,7 @@ import { platformRules } from "#publishing/domain/platform-rules.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
 import { ChannelIdSchema, MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
-import { PlatformSchema } from "#shared/domain/platform.ts";
+import { isSitePlatform, PlatformSchema } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import { mediaFile } from "#test/publishing/support.ts";
 
@@ -71,9 +71,11 @@ describe(mediaViolationsOn, () => {
 
     expect(withRules.toSorted()).toStrictEqual([
       "bluesky",
+      "devto",
       "discord",
       "facebook",
       "googleBusiness",
+      "hashnode",
       "instagram",
       "linkedin",
       "mastodon",
@@ -83,13 +85,17 @@ describe(mediaViolationsOn, () => {
       "telegram",
       "threads",
       "tiktok",
+      "wordpress",
+      "wordpressCom",
       "x",
       "youtube",
     ]);
 
-    // A Google Business Profile post and a Slack message take images only.
+    // A Google Business Profile post, a Slack message and a website's
+    // post take images only.
     for (const platform of withRules.filter(
-      (name) => name !== "googleBusiness" && name !== "slack"
+      (name) =>
+        name !== "googleBusiness" && name !== "slack" && !isSitePlatform(name)
     )) {
       expect(violations(platform, video(first))).toStrictEqual([]);
     }

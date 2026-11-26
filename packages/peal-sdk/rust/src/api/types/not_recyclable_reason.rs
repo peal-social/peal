@@ -9,6 +9,7 @@ pub enum NotRecyclableReason {
     Repeating,
     Occurrence,
     NoChannels,
+    WebsitesOnly,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -23,6 +24,7 @@ impl Serialize for NotRecyclableReason {
             Self::Repeating => serializer.serialize_str("repeating"),
             Self::Occurrence => serializer.serialize_str("occurrence"),
             Self::NoChannels => serializer.serialize_str("noChannels"),
+            Self::WebsitesOnly => serializer.serialize_str("websitesOnly"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -38,6 +40,7 @@ impl<'de> Deserialize<'de> for NotRecyclableReason {
             "repeating" => Ok(Self::Repeating),
             "occurrence" => Ok(Self::Occurrence),
             "noChannels" => Ok(Self::NoChannels),
+            "websitesOnly" => Ok(Self::WebsitesOnly),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -52,6 +55,7 @@ impl fmt::Display for NotRecyclableReason {
             Self::Repeating => write!(f, "repeating"),
             Self::Occurrence => write!(f, "occurrence"),
             Self::NoChannels => write!(f, "noChannels"),
+            Self::WebsitesOnly => write!(f, "websitesOnly"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

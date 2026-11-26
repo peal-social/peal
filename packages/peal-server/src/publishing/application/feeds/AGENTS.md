@@ -11,6 +11,10 @@ reach into it, as `test/lint-modules.ts` names them: `application/channel-sets.t
 through `FeedStore`) and `infrastructure/crons.ts` (the idempotency
 retention's run calls `Feeds.prune`).
 
+- A feed never posts to a website: its items have no title to give an
+  article, so saving a feed with a website's channel is refused
+  (`UnknownChannels`, `checkedTargets`), and the websites of the channel
+  set it names are left out of its posts (`PresetAsk.withoutSites`).
 - A feed (`domain/feeds/feed.ts`, `Feeds`, `publishing.feeds`) is a web feed a
   workspace follows: RSS 2.0, Atom 1.0 or JSON Feed 1.1, told from the
   body (never the content type), read through `FeedSource`

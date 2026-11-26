@@ -134,6 +134,7 @@ const onServer = Effect.fnUntraced(function* onServer(
       | "linkedinPage"
       | "linkedinProfile"
       | "mastodon"
+      | "wordpress"
       | "youtube";
   } = {}
 ) {
@@ -150,10 +151,22 @@ const onServer = Effect.fnUntraced(function* onServer(
 
   const accounts: Readonly<
     Record<
-      "facebook" | "linkedinPage" | "linkedinProfile" | "mastodon" | "youtube",
+      | "facebook"
+      | "linkedinPage"
+      | "linkedinProfile"
+      | "mastodon"
+      | "wordpress"
+      | "youtube",
       ChannelAccount
     >
   > = {
+    wordpress: {
+      accountId: "https://journal.example.test/wp-json/",
+      channelId: channelId(1),
+      connection: Option.none(),
+      platform: "wordpress",
+      scopes: [],
+    },
     facebook: {
       accountId: "102000000000001",
       channelId: channelId(1),
@@ -353,6 +366,36 @@ describe("the gate's reply sender", () => {
         );
         assert.lengthOf(server.requests(), 0);
       }).pipe(Effect.scoped)
+  );
+
+  it.effect("never reads a website's post: its comments are the site's", () =>
+    Effect.gen(function* website() {
+      const world = worldWith(attempted());
+
+      const { server, source } = yield* onServer(world, made, Option.none(), {
+        inbox: new Set(["facebook", "instagram"]),
+        platform: "wordpress",
+      });
+
+      const read = yield* source
+        .read({
+          channelId: channelId(1),
+          threads: [
+            {
+              platformPostId: PlatformPostIdSchema.make("101"),
+              threadId: threadId(1),
+            },
+          ],
+        })
+        .pipe(Effect.result);
+
+      assert.isTrue(
+        read._tag === "Failure" &&
+          read.failure._tag === "ChannelUnreadable" &&
+          read.failure.reason === "unsupported"
+      );
+      assert.lengthOf(server.requests(), 0);
+    }).pipe(Effect.scoped)
   );
 
   it.effect("never calls YouTube where the server does not read it", () =>

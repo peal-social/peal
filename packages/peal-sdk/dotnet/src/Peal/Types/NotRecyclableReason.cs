@@ -20,6 +20,8 @@ public readonly record struct NotRecyclableReason : IStringEnum
 
     public static readonly NotRecyclableReason NoChannels = new(Values.NoChannels);
 
+    public static readonly NotRecyclableReason WebsitesOnly = new(Values.WebsitesOnly);
+
     public NotRecyclableReason(string value)
     {
         Value = value;
@@ -127,5 +129,7 @@ public readonly record struct NotRecyclableReason : IStringEnum
         public const string Occurrence = "occurrence";
 
         public const string NoChannels = "noChannels";
+
+        public const string WebsitesOnly = "websitesOnly";
     }
 }

@@ -32,11 +32,11 @@ public class CreateTest : BaseMockServerTest
                 "overrides": [
                   {
                     "channelId": "channelId",
-                    "text": "x"
+                    "text": "text"
                   },
                   {
                     "channelId": "channelId",
-                    "text": "x"
+                    "text": "text"
                   }
                 ],
                 "text": "text"
@@ -63,6 +63,17 @@ public class CreateTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -74,9 +85,20 @@ public class CreateTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       },
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -88,7 +110,7 @@ public class CreateTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       }
                     ],
                     "text": "text"
@@ -107,6 +129,17 @@ public class CreateTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -118,9 +151,20 @@ public class CreateTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       },
                       {
+                        "body": {
+                          "content": [
+                            {
+                              "key": "value"
+                            },
+                            {
+                              "key": "value"
+                            }
+                          ],
+                          "type": "doc"
+                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -132,7 +176,7 @@ public class CreateTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "x"
+                        "text": "text"
                       }
                     ],
                     "text": "text"
@@ -150,6 +194,17 @@ public class CreateTest : BaseMockServerTest
                 ],
                 "overrides": [
                   {
+                    "body": {
+                      "content": [
+                        {
+                          "key": "value"
+                        },
+                        {
+                          "key": "value"
+                        }
+                      ],
+                      "type": "doc"
+                    },
                     "channelId": "channelId",
                     "media": [
                       {
@@ -161,9 +216,20 @@ public class CreateTest : BaseMockServerTest
                         "mediaId": "mediaId"
                       }
                     ],
-                    "text": "x"
+                    "text": "text"
                   },
                   {
+                    "body": {
+                      "content": [
+                        {
+                          "key": "value"
+                        },
+                        {
+                          "key": "value"
+                        }
+                      ],
+                      "type": "doc"
+                    },
                     "channelId": "channelId",
                     "media": [
                       {
@@ -175,7 +241,7 @@ public class CreateTest : BaseMockServerTest
                         "mediaId": "mediaId"
                       }
                     ],
-                    "text": "x"
+                    "text": "text"
                   }
                 ],
                 "poll": {
@@ -375,15 +441,17 @@ public class CreateTest : BaseMockServerTest
                     {
                         new TextOverride
                         {
+                            Body = null,
                             ChannelId = "channelId",
                             Media = null,
-                            Text = "x",
+                            Text = "text",
                         },
                         new TextOverride
                         {
+                            Body = null,
                             ChannelId = "channelId",
                             Media = null,
-                            Text = "x",
+                            Text = "text",
                         },
                     },
                     Poll = null,

@@ -14,7 +14,7 @@ import {
 import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
-import { platforms } from "#shared/domain/platform.ts";
+import { socialPlatforms } from "#shared/domain/platform.ts";
 
 const now = DateTime.makeUnsafe("2026-07-06T07:00:00Z");
 
@@ -139,7 +139,7 @@ describe("where comment rules answer", () => {
   it("names every platform once, in Peal's order", () => {
     expect(
       ruleSupportOn(new Set(), new Set()).map(({ platform }) => platform)
-    ).toStrictEqual(platforms);
+    ).toStrictEqual(socialPlatforms);
   });
 
   it("answers where the platform lets an app answer by itself", () => {

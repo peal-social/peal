@@ -26,6 +26,7 @@ import type {
 } from "#shared/domain/allowance-reached.ts";
 import { withinAllowance } from "#shared/domain/allowance.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
+import type { ChannelId } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
@@ -72,6 +73,16 @@ const meterRefusal = ({ reason }: AllowanceReached, live: number) =>
   new BadRequest({
     code: live > 0 ? ownRefusalCodes.xThreadCut : meterCodes[reason],
   });
+
+// A website's own rich text, on the post's first part only.
+const bodyOn = (post: Post, channelId: ChannelId, part: number) =>
+  Option.fromUndefinedOr(
+    part === 0
+      ? post.content.overrides.find(
+          (override) => override.channelId === channelId
+        )?.body
+      : undefined
+  );
 
 // When the post was due: the time it was scheduled for.
 const dueAt = (post: Post) =>
@@ -389,6 +400,7 @@ export const RoutedPlatformPublisher = Layer.effect(
 
       const sent: OutgoingPost = {
         accountId: account.accountId,
+        body: bodyOn(post, request.channelId, part.index),
         channelId: request.channelId,
         idempotencyKey: request.idempotencyKey,
         media: part.media,
@@ -396,7 +408,9 @@ export const RoutedPlatformPublisher = Layer.effect(
         part: part.index,
         poll,
         replyTo: yield* replyTargetOf(target.value, part.index),
+        round: target.value.round,
         startedAt: request.startedAt,
+        targetId: request.targetId,
         text: yield* textSent(post, request, account.platform, part.text),
         workspaceId: post.workspaceId,
       };

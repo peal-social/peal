@@ -84,7 +84,7 @@ layer(StorageTest)("a post's stored parts", (it) => {
         decoded.map((overrides) =>
           overrides.map(({ media }) => media?.length ?? null)
         ),
-        [[], [null], [1, 0]]
+        [[], [null], [1, 0], [1]]
       );
     })
   );

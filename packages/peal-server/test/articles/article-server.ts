@@ -15,11 +15,8 @@ import {
 } from "#articles/infrastructure/drizzle-article-store.ts";
 import { LibraryArticleMedia } from "#articles/infrastructure/library-article-media.ts";
 import { ListedSiteChannels } from "#articles/infrastructure/listed-site-channels.ts";
-import { devtoSiteAdapter } from "#articles/infrastructure/platforms/devto/devto-articles.ts";
-import { hashnodeSiteAdapter } from "#articles/infrastructure/platforms/hashnode/hashnode-articles.ts";
-import { wordpressSiteAdapter } from "#articles/infrastructure/platforms/wordpress/wordpress-articles.ts";
 import { PostingArticleGates } from "#articles/infrastructure/posting-article-gates.ts";
-import { routedSitePublisher } from "#articles/infrastructure/routed-site-publisher.ts";
+import { RoutedSitePublisher } from "#articles/infrastructure/routed-site-publisher.ts";
 import { SqlArticleSendTurns } from "#articles/infrastructure/sql-article-send-turns.ts";
 import { WorkflowArticleJobs } from "#articles/infrastructure/workflow-article-jobs.ts";
 import { PublishArticleV1Live } from "#articles/infrastructure/workflows/publish-article.ts";
@@ -34,6 +31,7 @@ import { SqlChannelLocks } from "#channels/infrastructure/sql-channel-locks.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
 import { AttachableMedia } from "#publishing/application/attachable-media.ts";
 import { PostAllowance } from "#publishing/application/post-allowance.ts";
+import { siteCallsWith } from "#publishing/infrastructure/platforms/sites/site-calls-live.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { newId } from "#shared/application/ids.ts";
 import { can } from "#shared/domain/access.ts";
@@ -258,27 +256,25 @@ export const testWordPressComHosts = { api: "http://127.0.0.1:9" };
 /** Where the Hashnode the test started listens, as `testDevToHosts`. */
 export const testHashnodeHosts = { api: "http://127.0.0.1:9/" };
 
-const SitePublisherTest = routedSitePublisher(
-  Effect.gen(function* siteAdapters() {
-    const wordpress = yield* wordpressSiteAdapter(testWordPressComHosts);
+// The sites' calls, as publishing makes them, at the fakes' addresses.
+const SiteCallsTest = siteCallsWith({
+  devto: testDevToHosts,
+  hashnode: testHashnodeHosts,
+  wordpressCom: testWordPressComHosts,
+}).pipe(
+  Layer.provide(mediaOf([coverImage, bodyImage])),
+  Layer.provide(Layer.mergeAll(FetchHttpClient.layer, SteeredOutboundGuard))
+);
 
-    return {
-      devto: yield* devtoSiteAdapter(testDevToHosts),
-      hashnode: yield* hashnodeSiteAdapter(testHashnodeHosts),
-      wordpress,
-      wordpressCom: wordpress,
-    };
-  })
-).pipe(
+const SitePublisherTest = RoutedSitePublisher.pipe(
   Layer.provide(
     Layer.mergeAll(
       SiteAccessTest,
-      mediaOf([coverImage, bodyImage]),
+      SiteCallsTest,
       DrizzleArticleStore,
       DrizzleArticleJournal
     )
-  ),
-  Layer.provide(Layer.mergeAll(FetchHttpClient.layer, SteeredOutboundGuard))
+  )
 );
 
 /**

@@ -3,7 +3,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { followUpSupport } from "#publishing/domain/follow-ups/follow-up-support.ts";
 import { followUpsOnPlatforms } from "#publishing/domain/follow-ups/platform-follow-ups.ts";
 import type { FollowUpServer } from "#publishing/domain/follow-ups/platform-follow-ups.ts";
-import { platforms } from "#shared/domain/platform.ts";
+import { socialPlatforms } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 // Where a follow-up rule can act on each platform, on a server that sends
@@ -28,16 +28,16 @@ const byPlatform = (on: FollowUpServer) =>
   );
 
 describe("where follow-up rules act", () => {
-  it("names every platform once, in Peal's order", () => {
+  it("names every platform but the websites once, in Peal's order", () => {
     expect(
       followUpsOnPlatforms(server()).map(({ platform }) => platform)
-    ).toStrictEqual(platforms);
+    ).toStrictEqual(socialPlatforms);
   });
 
   it("answers the platforms' own support where the server sends and counts everything", () => {
     const answered = byPlatform(server());
 
-    for (const platform of platforms) {
+    for (const platform of socialPlatforms) {
       expect(answered.get(platform)).toStrictEqual(followUpSupport[platform]);
     }
 

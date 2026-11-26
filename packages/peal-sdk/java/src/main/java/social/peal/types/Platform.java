@@ -23,7 +23,15 @@ public final class Platform {
 
     public static final Platform X = new Platform(Value.X, "x");
 
+    public static final Platform WORDPRESS = new Platform(Value.WORDPRESS, "wordpress");
+
+    public static final Platform DEVTO = new Platform(Value.DEVTO, "devto");
+
     public static final Platform INSTAGRAM = new Platform(Value.INSTAGRAM, "instagram");
+
+    public static final Platform WORDPRESS_COM = new Platform(Value.WORDPRESS_COM, "wordpressCom");
+
+    public static final Platform HASHNODE = new Platform(Value.HASHNODE, "hashnode");
 
     public static final Platform MASTODON = new Platform(Value.MASTODON, "mastodon");
 
@@ -84,8 +92,16 @@ public final class Platform {
                 return visitor.visitTelegram();
             case X:
                 return visitor.visitX();
+            case WORDPRESS:
+                return visitor.visitWordpress();
+            case DEVTO:
+                return visitor.visitDevto();
             case INSTAGRAM:
                 return visitor.visitInstagram();
+            case WORDPRESS_COM:
+                return visitor.visitWordpressCom();
+            case HASHNODE:
+                return visitor.visitHashnode();
             case MASTODON:
                 return visitor.visitMastodon();
             case THREADS:
@@ -123,8 +139,16 @@ public final class Platform {
                 return TELEGRAM;
             case "x":
                 return X;
+            case "wordpress":
+                return WORDPRESS;
+            case "devto":
+                return DEVTO;
             case "instagram":
                 return INSTAGRAM;
+            case "wordpressCom":
+                return WORDPRESS_COM;
+            case "hashnode":
+                return HASHNODE;
             case "mastodon":
                 return MASTODON;
             case "threads":
@@ -173,6 +197,14 @@ public final class Platform {
 
         SNAPCHAT,
 
+        WORDPRESS,
+
+        DEVTO,
+
+        HASHNODE,
+
+        WORDPRESS_COM,
+
         UNKNOWN
     }
 
@@ -206,6 +238,14 @@ public final class Platform {
         T visitSlack();
 
         T visitSnapchat();
+
+        T visitWordpress();
+
+        T visitDevto();
+
+        T visitHashnode();
+
+        T visitWordpressCom();
 
         T visitUnknown(String unknownType);
     }

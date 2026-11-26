@@ -14,6 +14,9 @@ public final class NotRecyclableReason {
 
     public static final NotRecyclableReason NO_CHANNELS = new NotRecyclableReason(Value.NO_CHANNELS, "noChannels");
 
+    public static final NotRecyclableReason WEBSITES_ONLY =
+            new NotRecyclableReason(Value.WEBSITES_ONLY, "websitesOnly");
+
     public static final NotRecyclableReason CANCELLED = new NotRecyclableReason(Value.CANCELLED, "cancelled");
 
     public static final NotRecyclableReason DRAFT = new NotRecyclableReason(Value.DRAFT, "draft");
@@ -58,6 +61,8 @@ public final class NotRecyclableReason {
                 return visitor.visitRepeating();
             case NO_CHANNELS:
                 return visitor.visitNoChannels();
+            case WEBSITES_ONLY:
+                return visitor.visitWebsitesOnly();
             case CANCELLED:
                 return visitor.visitCancelled();
             case DRAFT:
@@ -79,6 +84,8 @@ public final class NotRecyclableReason {
                 return REPEATING;
             case "noChannels":
                 return NO_CHANNELS;
+            case "websitesOnly":
+                return WEBSITES_ONLY;
             case "cancelled":
                 return CANCELLED;
             case "draft":
@@ -103,6 +110,8 @@ public final class NotRecyclableReason {
 
         NO_CHANNELS,
 
+        WEBSITES_ONLY,
+
         UNKNOWN
     }
 
@@ -118,6 +127,8 @@ public final class NotRecyclableReason {
         T visitOccurrence();
 
         T visitNoChannels();
+
+        T visitWebsitesOnly();
 
         T visitUnknown(String unknownType);
     }

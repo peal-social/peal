@@ -86,6 +86,22 @@ public final class TargetOptions {
         return new TargetOptions(new SnapchatValue(value));
     }
 
+    public static TargetOptions wordpress(WordPressOptions value) {
+        return new TargetOptions(new WordpressValue(value));
+    }
+
+    public static TargetOptions wordpressCom(WordPressComOptions value) {
+        return new TargetOptions(new WordpressComValue(value));
+    }
+
+    public static TargetOptions devto(DevtoOptions value) {
+        return new TargetOptions(new DevtoValue(value));
+    }
+
+    public static TargetOptions hashnode(HashnodeOptions value) {
+        return new TargetOptions(new HashnodeValue(value));
+    }
+
     public boolean isYoutube() {
         return value instanceof YoutubeValue;
     }
@@ -144,6 +160,22 @@ public final class TargetOptions {
 
     public boolean isSnapchat() {
         return value instanceof SnapchatValue;
+    }
+
+    public boolean isWordpress() {
+        return value instanceof WordpressValue;
+    }
+
+    public boolean isWordpressCom() {
+        return value instanceof WordpressComValue;
+    }
+
+    public boolean isDevto() {
+        return value instanceof DevtoValue;
+    }
+
+    public boolean isHashnode() {
+        return value instanceof HashnodeValue;
     }
 
     public boolean _isUnknown() {
@@ -255,6 +287,34 @@ public final class TargetOptions {
         return Optional.empty();
     }
 
+    public Optional<WordPressOptions> getWordpress() {
+        if (isWordpress()) {
+            return Optional.of(((WordpressValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<WordPressComOptions> getWordpressCom() {
+        if (isWordpressCom()) {
+            return Optional.of(((WordpressComValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<DevtoOptions> getDevto() {
+        if (isDevto()) {
+            return Optional.of(((DevtoValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<HashnodeOptions> getHashnode() {
+        if (isHashnode()) {
+            return Optional.of(((HashnodeValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<Object> _getUnknown() {
         if (_isUnknown()) {
             return Optional.of(((_UnknownValue) value).value);
@@ -314,6 +374,14 @@ public final class TargetOptions {
 
         T visitSnapchat(SnapchatOptions snapchat);
 
+        T visitWordpress(WordPressOptions wordpress);
+
+        T visitWordpressCom(WordPressComOptions wordpressCom);
+
+        T visitDevto(DevtoOptions devto);
+
+        T visitHashnode(HashnodeOptions hashnode);
+
         T _visitUnknown(Object unknownType);
     }
 
@@ -333,7 +401,11 @@ public final class TargetOptions {
         @JsonSubTypes.Type(DiscordValue.class),
         @JsonSubTypes.Type(TelegramValue.class),
         @JsonSubTypes.Type(SlackValue.class),
-        @JsonSubTypes.Type(SnapchatValue.class)
+        @JsonSubTypes.Type(SnapchatValue.class),
+        @JsonSubTypes.Type(WordpressValue.class),
+        @JsonSubTypes.Type(WordpressComValue.class),
+        @JsonSubTypes.Type(DevtoValue.class),
+        @JsonSubTypes.Type(HashnodeValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
@@ -926,6 +998,166 @@ public final class TargetOptions {
         }
 
         private boolean equalTo(SnapchatValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TargetOptions{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("wordpress")
+    @JsonIgnoreProperties("platform")
+    private static final class WordpressValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "platform", allowSetters = true)
+        private WordPressOptions value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private WordpressValue() {}
+
+        private WordpressValue(WordPressOptions value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitWordpress(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof WordpressValue && equalTo((WordpressValue) other);
+        }
+
+        private boolean equalTo(WordpressValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TargetOptions{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("wordpressCom")
+    @JsonIgnoreProperties("platform")
+    private static final class WordpressComValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "platform", allowSetters = true)
+        private WordPressComOptions value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private WordpressComValue() {}
+
+        private WordpressComValue(WordPressComOptions value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitWordpressCom(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof WordpressComValue && equalTo((WordpressComValue) other);
+        }
+
+        private boolean equalTo(WordpressComValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TargetOptions{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("devto")
+    @JsonIgnoreProperties("platform")
+    private static final class DevtoValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "platform", allowSetters = true)
+        private DevtoOptions value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private DevtoValue() {}
+
+        private DevtoValue(DevtoOptions value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitDevto(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof DevtoValue && equalTo((DevtoValue) other);
+        }
+
+        private boolean equalTo(DevtoValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TargetOptions{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("hashnode")
+    @JsonIgnoreProperties("platform")
+    private static final class HashnodeValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "platform", allowSetters = true)
+        private HashnodeOptions value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private HashnodeValue() {}
+
+        private HashnodeValue(HashnodeOptions value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitHashnode(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof HashnodeValue && equalTo((HashnodeValue) other);
+        }
+
+        private boolean equalTo(HashnodeValue other) {
             return value.equals(other.value);
         }
 

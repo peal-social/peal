@@ -7,7 +7,13 @@ import { PostContent } from "#publishing/domain/post-content.ts";
 import { ChannelIdSchema, MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
-import { placementFrom, presetsFrom, zoneOf } from "./post-input.ts";
+import {
+  invalidBodiesOf,
+  placementFrom,
+  presetsFrom,
+  withRichOverrides,
+  zoneOf,
+} from "./post-input.ts";
 
 // A post to check names channels and media as strings. An id that is not
 // even of the right form names nothing here: it is answered with the
@@ -34,6 +40,14 @@ const decodeOptions = Schema.decodeUnknownEffect(ChannelOptionsListSchema);
 
 /** A post to check, and what it names that no id is written like. */
 export interface CheckInputRead {
+  /**
+   * The overrides whose rich text does not decode, left out of the rest
+   * of the check (their text kept): `bodyInvalid` violations.
+   */
+  readonly invalidBodies: readonly {
+    readonly channelId: string;
+    readonly part?: number;
+  }[];
   readonly malformedChannels: readonly string[];
   readonly malformedMedia: readonly string[];
   readonly request: CheckPostRequest;
@@ -58,12 +72,16 @@ export const checkRequestFrom = (input: CheckInput) =>
       ...options.map(({ channelId }) => channelId),
     ];
 
+    const invalidBodies = invalidBodiesOf(parts);
+
     const wellFormed = <
       Part extends {
         readonly media: readonly { readonly mediaId: string }[];
         readonly overrides: readonly {
+          readonly body?: unknown;
           readonly channelId: string;
           readonly media?: readonly { readonly mediaId: string }[];
+          readonly text: string;
         }[];
       },
     >(
@@ -76,13 +94,29 @@ export const checkRequestFrom = (input: CheckInput) =>
           return [];
         }
 
-        return override.media === undefined
-          ? [override]
-          : [{ ...override, media: wellFormedMedia(override.media) }];
+        // A rich text that does not decode is said apart (`bodyInvalid`),
+        // and the override checked on its text alone, or left out of the
+        // check when it has no text beside the body.
+        const { body, ...rest } = override;
+
+        const invalid =
+          body !== undefined &&
+          invalidBodiesOf([{ overrides: [override] }]).length > 0;
+
+        if (invalid && rest.text === "") {
+          return [];
+        }
+
+        const read = body === undefined || invalid ? rest : override;
+
+        return read.media === undefined
+          ? [read]
+          : [{ ...read, media: wellFormedMedia(read.media) }];
       }),
     });
 
     const read: CheckInputRead = {
+      invalidBodies,
       malformedChannels: [
         ...new Set(named.filter((channelId) => !isChannelId(channelId))),
       ],
@@ -101,14 +135,16 @@ export const checkRequestFrom = (input: CheckInput) =>
         channelIds: yield* decodeChannelIds(
           input.channelIds.filter(isChannelId)
         ),
-        content: yield* decodeContent({
-          ...wellFormed({
-            media: content.media,
-            overrides: content.overrides,
-            text: content.text,
-          }),
-          followUps: (content.followUps ?? []).map(wellFormed),
-        }),
+        content: withRichOverrides(
+          yield* decodeContent({
+            ...wellFormed({
+              media: content.media,
+              overrides: content.overrides,
+              text: content.text,
+            }),
+            followUps: (content.followUps ?? []).map(wellFormed),
+          })
+        ),
         options: yield* decodeOptions(
           options.filter(({ channelId }) => isChannelId(channelId))
         ),

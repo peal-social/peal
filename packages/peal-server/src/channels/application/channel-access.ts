@@ -16,7 +16,7 @@ import {
   renewToken,
 } from "#channels/domain/channel.ts";
 import type { Channel } from "#channels/domain/channel.ts";
-import { isSitePlatform, isSocialPlatform } from "#channels/domain/platform.ts";
+import { isSitePlatform } from "#channels/domain/platform.ts";
 import type {
   ChannelPlatform,
   Platform,
@@ -126,7 +126,7 @@ const isDue = (channel: Channel, now: DateTime.Utc): boolean =>
 const sameToken = (left: Redacted.Redacted, right: Redacted.Redacted) =>
   Redacted.value(left) === Redacted.value(right);
 
-type AnyChannelToken = ChannelToken<ChannelPlatform>;
+type AnyChannelToken = ChannelToken;
 
 const tokenOf = (channel: Channel, tokens: StoredTokens): AnyChannelToken => {
   const token: AnyChannelToken = {
@@ -166,8 +166,8 @@ export class ChannelAccess extends Context.Service<
       channelId: ChannelId
     ) => Effect.Effect<Option.Option<WorkspaceId>, DatabaseError>;
     /**
-     * The social platform of a channel connected to a workspace, usable or
-     * not; none once it is disconnected, and for a website.
+     * The platform of a channel connected to a workspace, usable or not;
+     * none once it is disconnected.
      */
     readonly platformOf: (
       channelId: ChannelId
@@ -193,7 +193,8 @@ export class ChannelAccess extends Context.Service<
      * The same for a website's channel, to publish articles: its stored
      * credentials, which nothing renews, so a refused one marks the channel
      * to reconnect at once. A channel of a social network is `notFound`
-     * here, as a website's is to `withToken` and `account`.
+     * here. `withToken` and `account` answer a website's channel too, for
+     * its posts, the same way.
      */
     readonly withSiteToken: <A, E, R>(
       channelId: ChannelId,
@@ -536,16 +537,7 @@ export class ChannelAccess extends Context.Service<
         channelId: ChannelId,
         use: (token: ChannelToken) => Effect.Effect<A, E | TokenRejected, R>
       ): Effect.Effect<A, AccessFailure | Exclude<E, TokenRejected>, R> =>
-        withAnyToken(
-          channelId,
-          (token): Effect.Effect<A, ChannelUnusable | E | TokenRejected, R> => {
-            const { platform } = token;
-
-            return isSocialPlatform(platform)
-              ? use({ ...token, platform })
-              : Effect.fail(otherKind(channelId));
-          }
-        );
+        withAnyToken(channelId, use);
 
       const withSiteToken = <A, E, R>(
         channelId: ChannelId,
@@ -570,10 +562,6 @@ export class ChannelAccess extends Context.Service<
         const channel = yield* usable(channelId);
         const { platform } = channel;
 
-        if (!isSocialPlatform(platform)) {
-          return yield* otherKind(channelId);
-        }
-
         const found: ChannelAccount = {
           accountId: channel.accountId,
           channelId: channel.id,
@@ -593,15 +581,7 @@ export class ChannelAccess extends Context.Service<
       const platformOf = (channelId: ChannelId) =>
         channels
           .get(channelId)
-          .pipe(
-            Effect.map(
-              Option.flatMap(({ platform }) =>
-                isSocialPlatform(platform)
-                  ? Option.some(platform)
-                  : Option.none()
-              )
-            )
-          );
+          .pipe(Effect.map(Option.map(({ platform }) => platform)));
 
       return ChannelAccess.of({
         account,

@@ -24,6 +24,13 @@ export const maxAltTextLength = 5000;
 /** The most images and videos a post, or one of its parts, holds. */
 export const maxMediaPerPost = 20;
 
+/**
+ * The most images and videos a channel's override gives it: a website's
+ * rich text may show many more than a part does; every other platform's
+ * own `maxMedia` still refuses more when the post is scheduled.
+ */
+export const maxOverrideMedia = 100;
+
 /** The most parts that follow a post's first: 25 parts in all. */
 export const maxFollowUps = 24;
 
@@ -551,6 +558,27 @@ const firstComment = (
   maximum: 1,
 });
 
+// A website's post is an article: no text limit counted here (its rich
+// text's bounds are the server's), images only, up to 100, alt text kept,
+// one part and no poll. Hashnode takes images of 8 MiB at most.
+const siteRulesWith = (image: FormatLimits): PlatformRules => ({
+  maxMedia: 100,
+  media: {
+    formats: {
+      "image/gif": image,
+      "image/jpeg": image,
+      "image/png": image,
+      "image/webp": image,
+    },
+    mixesKinds: false,
+    showsAltText: true,
+  },
+  mediaRequired: false,
+  textLimits: [],
+});
+
+const wordpressSite = siteRulesWith({});
+
 export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
   bluesky: {
     followUps: thread,
@@ -574,6 +602,7 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     ],
   },
   // Text in Discord's markdown; up to 10 files, images and videos together.
+  devto: siteRulesWith({}),
   discord: {
     followUps: thread,
     maxMedia: 10,
@@ -627,6 +656,7 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     mediaRequired: false,
     textLimits: [{ maximum: 1500, unit: "codePoints" }],
   },
+  hashnode: siteRulesWith({ maxByteSize: 8 * mebibyte }),
   instagram: {
     followUps: firstComment([{ maximum: 2200, unit: "codePoints" }]),
     maxHashtags: 30,
@@ -817,6 +847,8 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     mediaRequired: true,
     textLimits: [{ maximum: 2200, unit: "utf16Units" }],
   },
+  wordpress: wordpressSite,
+  wordpressCom: wordpressSite,
   x: {
     poll: {
       choiceLimit: shortChoices,
@@ -967,12 +999,17 @@ export const maxShortenedLinkLength = 2048;
  * read 2026-11-12) says "we don't allow certain redirects or URL
  * shorteners"; Instagram and TikTok, whose captions make no link
  * clickable, so a short address would only be less readable and could
- * count no click.
+ * count no click; and every website, whose article is the member's own
+ * page, its links theirs to keep as they wrote them.
  */
 const linksAsWritten: ReadonlySet<Platform> = new Set([
   "pinterest",
   "instagram",
   "tiktok",
+  "wordpress",
+  "wordpressCom",
+  "devto",
+  "hashnode",
 ]);
 
 /** Whether a platform's posts take their links as written. */
@@ -988,9 +1025,11 @@ export const keepsLinksAsWritten = (platform: Platform): boolean =>
  */
 const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   bluesky: ["bsky.app"],
+  devto: [],
   discord: [],
   facebook: ["facebook.com", "fb.com", "fb.me", "fb.watch"],
   googleBusiness: [],
+  hashnode: [],
   instagram: ["instagram.com"],
   linkedin: ["linkedin.com", "lnkd.in"],
   mastodon: [],
@@ -1000,6 +1039,8 @@ const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   telegram: [],
   threads: ["threads.net", "threads.com"],
   tiktok: ["tiktok.com"],
+  wordpress: [],
+  wordpressCom: [],
   x: ["x.com", "twitter.com"],
   youtube: ["youtube.com", "youtu.be"],
 };

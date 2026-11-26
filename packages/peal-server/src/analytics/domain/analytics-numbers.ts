@@ -38,9 +38,11 @@ const basics = ["likes", "reposts", "replies"] as const;
  */
 export const postCounts: Readonly<Record<Platform, readonly PostCount[]>> = {
   bluesky: [...basics, "quotes"],
+  devto: [],
   discord: [],
   facebook: basics,
   googleBusiness: [],
+  hashnode: [],
   instagram: [...basics, "impressions"],
   linkedin: [...basics, "impressions", "clicks", "reach"],
   mastodon: [...basics, "quotes"],
@@ -50,6 +52,8 @@ export const postCounts: Readonly<Record<Platform, readonly PostCount[]>> = {
   telegram: [],
   threads: [...basics, "quotes", "impressions"],
   tiktok: [...basics, "impressions"],
+  wordpress: [],
+  wordpressCom: [],
   x: [...basics, "quotes", "impressions", "saves"],
   youtube: [...basics, "impressions"],
 };
@@ -63,9 +67,11 @@ export const accountNumbers: Readonly<
   Record<Platform, readonly AccountNumber[]>
 > = {
   bluesky: ["followers", "following", "posts"],
+  devto: [],
   discord: [],
   facebook: ["followers"],
   googleBusiness: [],
+  hashnode: [],
   instagram: ["followers", "following", "posts"],
   linkedin: ["followers", "views", "reach"],
   mastodon: ["followers", "following", "posts"],
@@ -75,6 +81,8 @@ export const accountNumbers: Readonly<
   telegram: [],
   threads: ["followers"],
   tiktok: ["followers", "following", "posts"],
+  wordpress: [],
+  wordpressCom: [],
   x: ["followers", "following", "posts"],
   youtube: ["followers", "posts"],
 };

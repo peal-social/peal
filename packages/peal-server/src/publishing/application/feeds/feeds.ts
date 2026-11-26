@@ -1,4 +1,5 @@
 import {
+  Array as Arr,
   Context,
   DateTime,
   Duration,
@@ -25,7 +26,7 @@ import {
   notImpersonating,
   starterOf,
 } from "#publishing/application/started-by.ts";
-import type { UnknownChannels } from "#publishing/application/unknown-channels.ts";
+import { UnknownChannels } from "#publishing/application/unknown-channels.ts";
 import type { UnknownMedia } from "#publishing/application/unknown-media.ts";
 import type { UnknownTags } from "#publishing/application/unknown-tags.ts";
 import type { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
@@ -84,6 +85,7 @@ import type { Actor } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
 import type { ChannelId, PostId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
+import { isSitePlatform } from "#shared/domain/platform.ts";
 
 import { FeedNotFound } from "./feed-not-found.ts";
 import { FeedNotices } from "./feed-notices.ts";
@@ -433,7 +435,18 @@ export class Feeds extends Context.Service<
             readonly queueId: Option.Option<QueueId>;
           }
         ) {
-          yield* channelsFor(actor, targets.channelIds);
+          const channels = yield* channelsFor(actor, targets.channelIds);
+
+          // A feed's items have no title to give a website's post (owner's
+          // decision: feeds do not reach websites): its channel is refused
+          // as one the feed cannot post to.
+          const sites = channels
+            .filter(({ platform }) => isSitePlatform(platform))
+            .map(({ channelId }) => channelId);
+
+          yield* Arr.isReadonlyArrayNonEmpty(sites)
+            ? Effect.fail(new UnknownChannels({ channelIds: sites }))
+            : Effect.void;
 
           if (Option.isSome(targets.channelSetId)) {
             const setId = targets.channelSetId.value;
@@ -855,6 +868,7 @@ export class Feeds extends Context.Service<
                 channelSets: [setId],
                 defaultSignatures: false,
                 signatureId: Option.none(),
+                withoutSites: true,
               },
             }),
           }),
@@ -985,6 +999,7 @@ export class Feeds extends Context.Service<
                   channelSets: [setId],
                   defaultSignatures: false,
                   signatureId: Option.none(),
+                  withoutSites: true,
                 },
               }),
             }),

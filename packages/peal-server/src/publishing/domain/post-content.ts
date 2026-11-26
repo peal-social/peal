@@ -228,17 +228,24 @@ export const overriddenChannels = (
   ),
 ];
 
-// A part's overrides with their text alone: what a channel's copy keeps.
+// A part's overrides with their text alone, and the body a channel has
+// as its text: what a channel's copy keeps.
 const textsOnly = (
   overrides: readonly TextOverride[]
 ): readonly TextOverride[] =>
-  overrides.map(({ channelId, text }) => new TextOverride({ channelId, text }));
+  overrides.map(
+    ({ body, channelId, text }) =>
+      new TextOverride(
+        body === undefined ? { channelId, text } : { body, channelId, text }
+      )
+  );
 
 /**
  * The post as it goes out on a channel: each part with the media it shows
  * there (`partsOn`), and the texts it has on its channels. What the
  * platforms' rules read when they check the post on that channel, so each
- * channel is checked on the media it receives.
+ * channel is checked on the media it receives, against its platform's
+ * rules (`maxMedia`, else a part's `maxMediaPerPost`).
  */
 export const sentTo = (
   content: PostContent,

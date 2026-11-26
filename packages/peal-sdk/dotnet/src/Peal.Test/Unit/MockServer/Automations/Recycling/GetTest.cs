@@ -53,6 +53,17 @@ public class GetTest : BaseMockServerTest
                 {
                   "overrides": [
                     {
+                      "body": {
+                        "content": [
+                          {
+                            "key": "value"
+                          },
+                          {
+                            "key": "value"
+                          }
+                        ],
+                        "type": "doc"
+                      },
                       "channelId": "channelId",
                       "media": [
                         {
@@ -64,9 +75,20 @@ public class GetTest : BaseMockServerTest
                           "mediaId": "mediaId"
                         }
                       ],
-                      "text": "x"
+                      "text": "text"
                     },
                     {
+                      "body": {
+                        "content": [
+                          {
+                            "key": "value"
+                          },
+                          {
+                            "key": "value"
+                          }
+                        ],
+                        "type": "doc"
+                      },
                       "channelId": "channelId",
                       "media": [
                         {
@@ -78,7 +100,7 @@ public class GetTest : BaseMockServerTest
                           "mediaId": "mediaId"
                         }
                       ],
-                      "text": "x"
+                      "text": "text"
                     }
                   ],
                   "text": "text"
@@ -86,6 +108,17 @@ public class GetTest : BaseMockServerTest
                 {
                   "overrides": [
                     {
+                      "body": {
+                        "content": [
+                          {
+                            "key": "value"
+                          },
+                          {
+                            "key": "value"
+                          }
+                        ],
+                        "type": "doc"
+                      },
                       "channelId": "channelId",
                       "media": [
                         {
@@ -97,9 +130,20 @@ public class GetTest : BaseMockServerTest
                           "mediaId": "mediaId"
                         }
                       ],
-                      "text": "x"
+                      "text": "text"
                     },
                     {
+                      "body": {
+                        "content": [
+                          {
+                            "key": "value"
+                          },
+                          {
+                            "key": "value"
+                          }
+                        ],
+                        "type": "doc"
+                      },
                       "channelId": "channelId",
                       "media": [
                         {
@@ -111,7 +155,7 @@ public class GetTest : BaseMockServerTest
                           "mediaId": "mediaId"
                         }
                       ],
-                      "text": "x"
+                      "text": "text"
                     }
                   ],
                   "text": "text"
