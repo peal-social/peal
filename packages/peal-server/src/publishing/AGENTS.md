@@ -207,8 +207,13 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   which mirrors the body's plain text (`textOfBody`) and images
   (`bodyAttachmentsOf`) on the override's `text` and `media`, so every
   reader of a channel's text and files reads the body's; an override's
-  `media` may hold `maxOverrideMedia` (100), and its `text` may be empty
-  only beside a body. A request's body is checked against the allow-list
+  `media` may hold `maxOverrideMedia` (100), as may a part in the domain
+  (requests hold a part's own to 20), so the copy a channel gets
+  (`sentTo`) holds what its override gives, and a platform that states no
+  `maxMedia` is held to a part's 20 when the post is scheduled. Its
+  `text` may be empty only beside a body (the contract refuses one
+  without either); a body is stored in `text_overrides` with the
+  override. A request's body is checked against the allow-list
   where requests are read (`contentFrom`, `checkRequestFrom`:
   `bodyInvalid`), then made with `richOverride`; a body on a platform
   that is no website's, or on a later part, is `bodyNotTaken`, on a draft
@@ -229,7 +234,10 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   mark on the call's progress (`SiteProgressSchema`, `committing` and
   its time, persisted contract: `fixtures/persisted/publication-calls`),
   the files in `publishing.site_files` by target (`SiteFiles`), never sent
-  twice, and `RecordedPosts`. A resumed run with no mark sends anew, one
+  twice, and `RecordedPosts` with `RecordedArticles` (the articles'
+  posts, a port the articles context backs until the cutover), never
+  adopted. A resumed run with no mark sent nothing, and is tried again as
+  a new attempt (`PlatformUnavailable`), through the plan's check; one
   with it looks for the post from then; a new round first looks for the
   post of an earlier round's call left unconfirmed
   (`PublicationJournal.committedBefore`: adopted, `severalOnSite`, or
@@ -241,7 +249,9 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   WordPress's trash, DEV a draft, Hashnode's removal); edits are not made
   yet (`unverified`). Recycling leaves websites out of a rule's copies (a
   source on websites only is `PostNotRecyclable` `websitesOnly`), feeds
-  refuse a website's channel when saved (`UnknownChannels`), and
+  refuse a website's channel when saved (`UnknownChannels`) and leave
+  their channel set's websites out of their posts
+  (`PresetAsk.withoutSites`), and
   follow-up rules say `noApi` there; analytics, the inbox, ads, comment
   rules, connect links and channel moves leave websites out as before.
   A website's post counts as a post and tells what any target tells.

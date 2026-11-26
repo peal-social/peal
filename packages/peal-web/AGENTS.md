@@ -1560,6 +1560,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   channel. The composer's posts read social channels only
   (`workspaceChannels` filters with `isSocialChannel`, and the posts area
   types its channels `SocialChannel`); a website's are `workspaceSites`.
+  A post may go to a website through the API, which the composer does
+  not show yet: `ExistingPost` shows a notice instead of the composer
+  for one (`goesToWebsite`, over `websiteChannelIds`), so saving it here
+  never drops its website.
   The body's editor (`rich-text-editor.tsx`) is StarterKit with only
   what the server's allow-list takes (headings 2 to 4, no underline,
   links on http, https or mailto) and `ArticleImage`, a library file by
