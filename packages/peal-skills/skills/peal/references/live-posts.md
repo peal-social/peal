@@ -54,13 +54,14 @@ peal posts edit <post-id> --channel <channel-id> --text "The corrected text." --
 peal posts edit <post-id> --channel <channel-id> --part 1 --text "The second part, corrected." --json
 ```
 
-On a website the edit replaces the article: its text, or a rich text
-(`--body`, the web editor's JSON document), and its options (`--options`,
+On a website the edit replaces the article: its text, or its body from a
+Markdown file (`--markdown-file`, as [websites.md](websites.md) writes one)
+or as the web editor's JSON document (`--body`), and its options (`--options`,
 the website's, whole, as JSON tagged by its platform: an option left out is
 removed on the site, but a `siteStatus` left out stays the target's). What
 is left out of the command stays as it is, and the site keeps its status
 and its date. A `--text` replaces a rich text with plain paragraphs: when
-the article has formatting, send `--body` instead, or ask the user first.
+the article has formatting, send `--markdown-file` instead, or ask the user first.
 
 ```sh
 peal posts edit <post-id> --channel <channel-id> --options '{"platform":"wordpress","title":"Doors open at 7 pm"}' --json
