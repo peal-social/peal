@@ -13,7 +13,9 @@ public class EditTargetTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string requestJson = """
-            {}
+            {
+              "text": "x"
+            }
             """;
 
         const string mockResponse = """
@@ -52,10 +54,8 @@ public class EditTargetTest : BaseMockServerTest
             {
                 PostId = "postId",
                 TargetId = "targetId",
-                Body = null,
-                Options = null,
                 Part = null,
-                Text = null,
+                Text = "x",
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -65,7 +65,9 @@ public class EditTargetTest : BaseMockServerTest
     public async Task MockServerTest_2()
     {
         const string requestJson = """
-            {}
+            {
+              "text": "text"
+            }
             """;
 
         const string mockResponse = """
@@ -100,7 +102,12 @@ public class EditTargetTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.EditTargetAsync(
-            new LivePostEdit { PostId = "postId", TargetId = "targetId" }
+            new LivePostEdit
+            {
+                PostId = "postId",
+                TargetId = "targetId",
+                Text = "text",
+            }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

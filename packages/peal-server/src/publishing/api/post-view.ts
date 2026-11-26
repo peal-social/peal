@@ -136,21 +136,15 @@ const saidBy = ({
   text,
 }: Pick<PostContent, "media" | "overrides" | "text">) => ({
   media: media.map(({ altText, mediaId }) => ({ altText, mediaId })),
-  // An override's media only when it gives some, its rich text only
-  // when it has one.
-  overrides: overrides.map(
-    ({ body, channelId, media: own, text: override }) => {
-      const said =
-        own === undefined
-          ? { channelId, text: override }
-          : {
-              channelId,
-              media: own.map(({ altText, mediaId }) => ({ altText, mediaId })),
-              text: override,
-            };
-
-      return body === undefined ? said : { ...said, body };
-    }
+  // An override's media only when it gives some.
+  overrides: overrides.map(({ channelId, media: own, text: override }) =>
+    own === undefined
+      ? { channelId, text: override }
+      : {
+          channelId,
+          media: own.map(({ altText, mediaId }) => ({ altText, mediaId })),
+          text: override,
+        }
   ),
   text,
 });

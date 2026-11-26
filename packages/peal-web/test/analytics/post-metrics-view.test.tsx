@@ -3,7 +3,6 @@ import { DateTime, Duration } from "effect";
 import { NextIntlClientProvider } from "next-intl";
 import type {
   Platform,
-  SocialPlatform,
   PostAnalytics,
   PostTarget,
   SocialChannel,
@@ -28,7 +27,7 @@ const ago = (duration: Duration.Duration) =>
 const channel = (
   id: string,
   handle: string,
-  platform: SocialPlatform,
+  platform: Platform,
   connection: SocialChannel["connection"] = null
 ): SocialChannel => ({
   avatarUrl: null,

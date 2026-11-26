@@ -7,7 +7,6 @@ import {
   defaultConnectLinkHours,
   maxConnectLinkHours,
   minConnectLinkHours,
-  isSocialPlatform,
   PlatformSchema,
 } from "peal-contract";
 import type { ConnectLink, HostedConnectFailure } from "peal-contract";
@@ -20,10 +19,6 @@ import { inWorkspace, workspaceFlag } from "#workspace.ts";
 
 const decodePlatform = Schema.decodeUnknownOption(PlatformSchema);
 
-// The platforms a connect link connects: no website, which connects with
-// its address, a key or its own sign-in.
-const linkPlatforms = PlatformSchema.literals.filter(isSocialPlatform);
-
 const decodeLocale = Schema.decodeUnknownOption(ConnectLinkLocaleSchema);
 
 // `--platform`, one platform Peal knows or several separated by commas,
@@ -31,13 +26,11 @@ const decodeLocale = Schema.decodeUnknownOption(ConnectLinkLocaleSchema);
 const platformsOf = Effect.fnUntraced(function* platformsOf(given: string) {
   const named = given.split(",").map((name) => name.trim());
 
-  const known = named.flatMap((name) =>
-    Option.toArray(decodePlatform(name).pipe(Option.filter(isSocialPlatform)))
-  );
+  const known = named.flatMap((name) => Option.toArray(decodePlatform(name)));
 
   if (known.length !== named.length) {
     return yield* new Refused({
-      reason: `--platform takes one of these: ${linkPlatforms.join(", ")}; or several, separated by commas.`,
+      reason: `--platform takes one of these: ${PlatformSchema.literals.join(", ")}; or several, separated by commas.`,
     });
   }
 
@@ -145,7 +138,7 @@ const create = Command.make(
     platform: Flag.String("platform").pipe(
       Flag.withMetavar("<platform>"),
       Flag.withDescription(
-        `The platform of the account to connect, or several separated by commas, each connected once: ${linkPlatforms.join(", ")}.`
+        `The platform of the account to connect, or several separated by commas, each connected once: ${PlatformSchema.literals.join(", ")}.`
       )
     ),
     returnUrl: Flag.String("return-url").pipe(

@@ -1,7 +1,7 @@
 import type { DateTime } from "effect";
 import { Effect, Option } from "effect";
 import { Atom } from "effect/reactivity";
-import { isSiteChannel, isSocialChannel, forWorkspace } from "peal-contract";
+import { isSocialChannel, forWorkspace } from "peal-contract";
 import type { SocialChannel } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -38,21 +38,6 @@ export const workspaceChannels = Atom.family((workspaceId: string) =>
       reactivityKeys: ["channels"],
     }),
     (channels): readonly SocialChannel[] => channels.filter(isSocialChannel)
-  )
-);
-
-/**
- * The workspace's websites' channels, by id: a post may go to one through
- * the API, which the composer does not show yet.
- */
-export const websiteChannelIds = Atom.family((workspaceId: string) =>
-  Atom.mapResult(
-    PealApi.query("channels", "list", {
-      headers: forWorkspace(workspaceId),
-      reactivityKeys: ["channels"],
-    }),
-    (channels): ReadonlySet<string> =>
-      new Set(channels.filter(isSiteChannel).map(({ id }) => id))
   )
 );
 

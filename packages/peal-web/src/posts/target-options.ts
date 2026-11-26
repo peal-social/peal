@@ -3,13 +3,6 @@ import type { useTranslations } from "next-intl";
 import {
   instagramCoverTypes,
   LinkedInMentionSchema,
-  maxArticleExcerptLength,
-  maxArticleTerms,
-  maxArticleTitleLength,
-  maxDevtoTags,
-  maxDevtoTitleLength,
-  maxHashnodeImageByteSize,
-  maxHashnodeTags,
   maxBlueskyLanguages,
   maxFacebookVideoTitleLength,
   maxGoogleBusinessTitleLength,
@@ -30,7 +23,6 @@ import {
   maxYouTubeTagsLength,
   maxYouTubeThumbnailByteSize,
   maxYouTubeTitleLength,
-  siteCoverTypes,
   TargetOptionsSchema,
   youTubeThumbnailTypes,
 } from "peal-contract";
@@ -141,12 +133,12 @@ export interface TextField extends Described {
 
 /**
  * A file of the workspace's library, by its id: one of `contentTypes`,
- * `maxByteSize` bytes at most where the platform sets a bound.
+ * `maxByteSize` bytes at most.
  */
 export interface MediaField extends Described {
   readonly contentTypes: readonly string[];
   readonly kind: "media";
-  readonly maxByteSize?: number;
+  readonly maxByteSize: number;
 }
 
 /** Tags, typed separated by commas: `maximum` of them at most. */
@@ -264,94 +256,7 @@ const repliesLimited = { name: "replies", values: ["limited"] } as const;
  * The fields of each platform that takes options, in the order the composer
  * shows them. A platform's options added to the contract need an entry here.
  */
-
-// A website's post is an article: its title, an excerpt, a featured image,
-// its tags (and, on WordPress, its categories) by name, and what the site
-// makes of it. Its body is the post's text on the channel.
-const siteFields = (limits: {
-  readonly categories: boolean;
-  readonly coverBytes?: number;
-  readonly tags: number;
-  readonly title: number;
-}): readonly OptionField[] => {
-  const cover: MediaField = {
-    contentTypes: siteCoverTypes,
-    hint:
-      limits.coverBytes === undefined
-        ? "site.coverHint"
-        : "site.coverHintSized",
-    invalid: "site.coverInvalid",
-    kind: "media",
-    label: "site.cover",
-    name: "coverMediaId",
-  };
-
-  const fields: readonly OptionField[] = [
-    {
-      hint: "site.titleHint",
-      kind: "text",
-      label: "site.title",
-      maxLength: limits.title,
-      name: "title",
-      required: true,
-    },
-    {
-      hint: "site.excerptHint",
-      kind: "text",
-      label: "site.excerpt",
-      maxLength: maxArticleExcerptLength,
-      name: "excerpt",
-    },
-    limits.coverBytes === undefined
-      ? cover
-      : { ...cover, maxByteSize: limits.coverBytes },
-    {
-      hint: "site.tagsHint",
-      invalid: "site.tagsInvalid",
-      kind: "tags",
-      label: "site.tags",
-      maximum: limits.tags,
-      name: "tags",
-    },
-    {
-      choices: [
-        { label: "site.statusPublish", value: "publish" },
-        { label: "site.statusDraft", value: "draft" },
-      ],
-      hint: "site.statusHint",
-      kind: "choice",
-      label: "site.status",
-      name: "siteStatus",
-    },
-  ];
-
-  return limits.categories
-    ? [
-        ...fields,
-        {
-          hint: "site.categoriesHint",
-          invalid: "site.categoriesInvalid",
-          kind: "tags",
-          label: "site.categories",
-          maximum: maxArticleTerms,
-          name: "categories",
-        },
-      ]
-    : fields;
-};
-
-const wordpressFields = siteFields({
-  categories: true,
-  tags: maxArticleTerms,
-  title: maxArticleTitleLength,
-});
-
 export const optionFields = {
-  devto: siteFields({
-    categories: false,
-    tags: maxDevtoTags,
-    title: maxDevtoTitleLength,
-  }),
   bluesky: [
     {
       hint: "bluesky.languagesHint",
@@ -564,12 +469,6 @@ export const optionFields = {
       shownWith: offered,
     },
   ],
-  hashnode: siteFields({
-    categories: false,
-    coverBytes: maxHashnodeImageByteSize,
-    tags: maxHashnodeTags,
-    title: maxArticleTitleLength,
-  }),
   instagram: [
     {
       // A feed post, left out, is the first choice (`none`).
@@ -975,8 +874,6 @@ export const optionFields = {
       shownFor: "photos",
     },
   ],
-  wordpress: wordpressFields,
-  wordpressCom: wordpressFields,
   x: [
     {
       choices: [

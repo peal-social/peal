@@ -37,17 +37,6 @@ public class ConfirmTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
-                        "body": {
-                          "content": [
-                            {
-                              "key": "value"
-                            },
-                            {
-                              "key": "value"
-                            }
-                          ],
-                          "type": "doc"
-                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -59,20 +48,9 @@ public class ConfirmTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "text"
+                        "text": "x"
                       },
                       {
-                        "body": {
-                          "content": [
-                            {
-                              "key": "value"
-                            },
-                            {
-                              "key": "value"
-                            }
-                          ],
-                          "type": "doc"
-                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -84,7 +62,7 @@ public class ConfirmTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "text"
+                        "text": "x"
                       }
                     ],
                     "text": "text"
@@ -103,17 +81,6 @@ public class ConfirmTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
-                        "body": {
-                          "content": [
-                            {
-                              "key": "value"
-                            },
-                            {
-                              "key": "value"
-                            }
-                          ],
-                          "type": "doc"
-                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -125,20 +92,9 @@ public class ConfirmTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "text"
+                        "text": "x"
                       },
                       {
-                        "body": {
-                          "content": [
-                            {
-                              "key": "value"
-                            },
-                            {
-                              "key": "value"
-                            }
-                          ],
-                          "type": "doc"
-                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -150,7 +106,7 @@ public class ConfirmTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "text"
+                        "text": "x"
                       }
                     ],
                     "text": "text"
@@ -168,17 +124,6 @@ public class ConfirmTest : BaseMockServerTest
                 ],
                 "overrides": [
                   {
-                    "body": {
-                      "content": [
-                        {
-                          "key": "value"
-                        },
-                        {
-                          "key": "value"
-                        }
-                      ],
-                      "type": "doc"
-                    },
                     "channelId": "channelId",
                     "media": [
                       {
@@ -190,20 +135,9 @@ public class ConfirmTest : BaseMockServerTest
                         "mediaId": "mediaId"
                       }
                     ],
-                    "text": "text"
+                    "text": "x"
                   },
                   {
-                    "body": {
-                      "content": [
-                        {
-                          "key": "value"
-                        },
-                        {
-                          "key": "value"
-                        }
-                      ],
-                      "type": "doc"
-                    },
                     "channelId": "channelId",
                     "media": [
                       {
@@ -215,7 +149,7 @@ public class ConfirmTest : BaseMockServerTest
                         "mediaId": "mediaId"
                       }
                     ],
-                    "text": "text"
+                    "text": "x"
                   }
                 ],
                 "poll": {

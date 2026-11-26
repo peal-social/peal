@@ -187,20 +187,6 @@ export const ContentViolationSchema = Schema.Union([
     length: Schema.Int,
     maximum: Schema.Int,
   }),
-  // The override's `body` on the channel does not decode as a rich text:
-  // a node or a mark Peal does not take, or past its bounds.
-  Schema.TaggedStruct("bodyInvalid", {
-    channelId: Schema.String,
-    part: Schema.optionalKey(
-      Schema.Int.check(Schema.isGreaterThanOrEqualTo(1))
-    ),
-  }),
-  // The override gives a `body` on a channel that takes none: only a
-  // website's first part does.
-  Schema.TaggedStruct("bodyNotTaken", onChannel),
-  // An edit of a live post gives options on a channel whose options Peal
-  // does not change once it is live: only a website's are.
-  Schema.TaggedStruct("optionsNotTaken", onChannel),
 ]).annotate({ identifier: "ContentViolation" });
 
 export type ContentViolation = typeof ContentViolationSchema.Type;

@@ -3,6 +3,5 @@
 import typing
 
 NotRecyclableReason = typing.Union[
-    typing.Literal["draft", "awaitingApproval", "cancelled", "repeating", "occurrence", "noChannels", "websitesOnly"],
-    typing.Any,
+    typing.Literal["draft", "awaitingApproval", "cancelled", "repeating", "occurrence", "noChannels"], typing.Any
 ]

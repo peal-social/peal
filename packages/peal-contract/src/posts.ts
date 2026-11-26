@@ -46,7 +46,6 @@ import {
   maxAltTextLength,
   maxFollowUps,
   maxMediaPerPost,
-  maxOverrideMedia,
   maxPartDelaySeconds,
   maxPostTextLength,
 } from "./post-text.ts";
@@ -54,7 +53,6 @@ import { PostValidationSchema } from "./post-validation.ts";
 import { QueueHasNoRoom } from "./queue-has-no-room.ts";
 import { QueueNotFound } from "./queue-not-found.ts";
 import { queueHorizonDays } from "./queues.ts";
-import { RichTextSchema } from "./rich-text.ts";
 import { ScheduleInPast } from "./schedule-in-past.ts";
 import { SignatureNotFound } from "./signature-not-found.ts";
 import { maxTagsPerPost, PostTagIdsSchema } from "./tags.ts";
@@ -111,46 +109,21 @@ const PartMediaSchema = Schema.Array(MediaAttachmentSchema).check(
   )
 );
 
-// The media an override gives its channel, in order: each file once, up
-// to `maxOverrideMedia` (a website's rich text shows many).
-const OverrideMediaSchema = Schema.Array(MediaAttachmentSchema).check(
-  Schema.isMaxLength(maxOverrideMedia),
-  uniqueBy(
-    (attachment: MediaAttachment) => attachment.mediaId,
-    "each media attached once"
-  )
-);
-
 /**
  * What a part of a post has on one of its channels instead of its own: its
  * text there, and, when `media` is given, the images and videos it shows
  * there instead of the part's, in order (an empty list shows none there).
  * Left out, the channel shows the part's own media; Peal answers `media`
  * only on an override that gives some. Each channel is checked on the
- * media it receives. `text` is never empty but beside a `body`: to give a
- * channel media alone, send the post's text, which then stays the
- * channel's when the post's text changes, unless the client changes it
- * too.
- *
- * With `body`, a rich text, the channel's own text is that document: only
- * a website's first part takes one (PostContentInvalid `bodyNotTaken`).
- * Peal answers `text` as the body's plain text and `media` as its images,
- * in order, whatever the request said of them: send `text: ""`.
+ * media it receives. `text` is never empty: to give a channel media alone,
+ * send the post's text, which then stays the channel's when the post's
+ * text changes, unless the client changes it too.
  */
 export const TextOverrideSchema = Schema.Struct({
-  body: Schema.optionalKey(RichTextSchema),
   channelId: Schema.String,
-  media: Schema.optionalKey(OverrideMediaSchema),
-  text: PostTextSchema,
-})
-  .check(
-    Schema.makeFilter(
-      ({ body, text }: { readonly body?: unknown; readonly text: string }) =>
-        body !== undefined || text !== "",
-      { expected: "a text, unless a body is given" }
-    )
-  )
-  .annotate({ identifier: "TextOverride" });
+  media: Schema.optionalKey(PartMediaSchema),
+  text: PostTextSchema.check(Schema.isNonEmpty()),
+}).annotate({ identifier: "TextOverride" });
 
 export type TextOverride = typeof TextOverrideSchema.Type;
 
@@ -1254,7 +1227,6 @@ export class PostsApi extends HttpApiGroup.make("posts")
         PostNotFound,
         LivePostNotChangeable,
         PostContentInvalid,
-        UnknownMedia,
       ],
       headers: workspaceHeaders,
       params: target,
@@ -1263,7 +1235,7 @@ export class PostsApi extends HttpApiGroup.make("posts")
       success: LivePostChangeSchema.pipe(HttpApiSchema.status(202)),
     }).annotateMerge(
       OpenApi.annotations({
-        description: `Replaces the text of one part of the post (\`part\`, from 0, the post itself by default) on one channel's platform, for everyone: on a social network or a chat, only the text changes, never the media, the options or the time (a \`body\` there is PostContentInvalid \`bodyNotTaken\`, and \`options\` \`optionsNotTaken\`). On a website, the edit replaces what the site shows, as the post's text (\`text\`, which replaces a rich text there with plain paragraphs: send \`body\` to keep its formatting) or a rich text (\`body\`), and its options (\`options\`, its platform's, whole), each kept when left out; the site status and the date never change (\`siteStatus\` left out is the target's, another is PostContentInvalid \`optionInvalid\`), and a file the site has already is not sent again. The change is public at once. The capabilities' \`livePost.edit\` say where Peal edits, and \`editBlockedBy\` why not elsewhere. The text, the body and the options are checked as that channel's are when a post is scheduled (PostContentInvalid, a Mastodon content warning counted; a website's title needed), the text must not be empty, and the files must be the workspace's and ready (UnknownMedia). The request is accepted (202) and a job makes the edit, one call at a time with the channel's other calls; a call that fails is tried again as a deletion is, after which the change is \`failed\` with its \`code\` (\`postGone\` when the platform no longer has the post, \`pollNotEditable\` for a Mastodon post with a poll, which the edit would remove, \`permissionDenied\` for a Mastodon channel to reconnect) and may be asked again. \`wait\` waits up to that many seconds (${maxOutcomeWaitSeconds} at most) for it to end. Once done, the text (or the body) is that part's own text on that channel in Peal (the other channels keep theirs), a website's new options are its target's, the target has its \`editedAt\`, and Peal keeps no earlier text. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted, Peal has no id for that part, the platform does not let Peal edit it, another change of it is pending, the channel cannot be used, or your posts need an approval (\`approvalRequired\`: an approver makes the edit). Webhooks hear \`post.edited\` or \`post.edit_failed\`. Needs post:publish; an OAuth client needs the scope workspace:publish.`,
+        description: `Replaces the text of one part of the post (\`part\`, from 0, the post itself by default) on one channel's platform, for everyone: only the text changes, never the media, the options or the time. The change is public at once. Peal edits on Mastodon and Google Business Profile; the capabilities' \`livePost.edit\` say where, and \`editBlockedBy\` why not elsewhere. The text is checked as that channel's text is when a post is scheduled (PostContentInvalid, a Mastodon content warning counted), and must not be empty. The request is accepted (202) and a job makes the edit, one call at a time with the channel's other calls; a call that fails is tried again as a deletion is, after which the change is \`failed\` with its \`code\` (\`postGone\` when the platform no longer has the post, \`pollNotEditable\` for a Mastodon post with a poll, which the edit would remove, \`permissionDenied\` for a Mastodon channel to reconnect) and may be asked again. \`wait\` waits up to that many seconds (${maxOutcomeWaitSeconds} at most) for it to end. Once done, the text is that part's own text on that channel in Peal (the other channels keep theirs), the target has its \`editedAt\`, and Peal keeps no earlier text. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted, Peal has no id for that part, the platform does not let Peal edit it, another change of it is pending, the channel cannot be used, or your posts need an approval (\`approvalRequired\`: an approver makes the edit). Webhooks hear \`post.edited\` or \`post.edit_failed\`. Needs post:publish; an OAuth client needs the scope workspace:publish.`,
         summary: "Edit a published post on a channel",
       })
     ),

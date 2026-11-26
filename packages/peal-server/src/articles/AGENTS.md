@@ -9,9 +9,9 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `isSitePlatform`), and how it lands there (`siteStatus`: `publish`,
   `draft`, or `future`, which the site publishes itself at the article's
   time, Peal sending it at once: `sendAt`). Its body is the composer's
-  editor document kept to an allow-list (`#shared/domain/rich-text/rich-body.ts`: what
+  editor document kept to an allow-list (`domain/article-body.ts`: what
   does not decode is refused, `bodyInvalid` in the contract), and its
-  HTML is written by `rich-body-html.ts` alone, every text and
+  HTML is written by `domain/article-html.ts` alone, every text and
   attribute escaped. It takes the posts' permissions (`post:create`,
   `post:update`, `post:delete`, `post:schedule`, `post:publish` for a
   change on the site, `post:read`) and counts in no month's posts. Articles
@@ -83,13 +83,7 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   0: the cover alone is then sent once more, over that post, and one the
   site drops again is not offered any more
   (`article_files.featured_refused`).
-- The site adapters are publishing's now
-  (`#publishing/infrastructure/platforms/{wordpress,devto,hashnode}/`,
-  behind its application port `SiteCalls`,
-  `#publishing/application/site-calls.ts`), shared by posts and
-  articles: this context reaches them through that port alone, which the
-  composition root provides with `PostingServicesLive`. WordPress's
-  adapter (`wordpress/wordpress-articles.ts`)
+- WordPress's adapter (`platforms/wordpress/wordpress-articles.ts`)
   sends each file the article shows to `/wp/v2/media` (the bytes as the
   body, `Content-Disposition` naming the file, streamed), finds tags and
   categories by name whatever their case (WordPress answers names with
@@ -102,11 +96,7 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   article of the channel holds or its call answered
   (`ArticleStore.recordedOn`), else unconfirmed. A request the guard
   refused never left: a name that did not resolve for now is the site
-  unavailable, any other refusal a failure. A WordPress code that is one
-  of Peal's own words (`channelDisconnected`, `mediaUnavailable`,
-  `planLimit`, `channelDisabled`, `sitePlanRequired`) is kept as
-  `wordpress:<code>`, so no site reads as Peal's own reason, for an
-  article or a post. Only a 401 with WordPress's
+  unavailable, any other refusal a failure. Only a 401 with WordPress's
   own error is a refused
   credential; nothing renews one, so the channel is marked to reconnect.
   Unpublishing is `DELETE` without `force` (the site's trash; gone
@@ -116,26 +106,12 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   took for the article (`publishing.article_files`, `ArticleJournal`) is
   never sent again, across attempts and updates. Only an http or https
   `link` is kept as the permalink.
-- `SitePublisher` is `RoutedSitePublisher`: it reads the article and
-  the channel's credential once, then calls publishing's `SiteCalls`
-  (the adapter of the platform the credential names) with the article as
-  its site gets it
-  (`OutgoingArticle`: the content, and `publishAt` for `future` once
-  scheduled) and the article's journal as the call needs it
-  (`SiteCallJournal` for a publish: `committing`, the files sent from
-  `ArticleJournal`, and `ArticleStore.recordedOn`; a search, a resume or
-  an update gets the files and the records alone, `SiteFileJournal`),
-  both in the shared kernel. The adapters import nothing of this
-  context: their token (`SiteToken`), their search (`SiteSearch`) and the
-  two refusal codes they write (`siteRefusalCodes`, which
-  `articleRefusalCodes` takes its two from) are the kernel's too, and
-  publishing calls them for posts with its own journal (its guide's
-  website targets). Until the cutover an article's job and a post's may
-  call one site at once, as they hold different locks: DEV's spacing of
-  writes is in the adapter, which both share. WordPress's adapter serves `wordpress` and
+- `SitePublisher` is `routedSitePublisher`: it reads the article and
+  the channel's credential once, then calls the `SiteAdapter` of the
+  channel's platform. WordPress's adapter serves `wordpress` and
   `wordpressCom` (`siteRouteUrl`, `withSiteToken`: WordPress.com's
   `/wp/v2/sites/{id}/` with a bearer token). DEV's (`devto/`, Forem's API
-  v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a 200) take Markdown written by `rich-body-markdown.ts` alone, where
+  v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a 200) take Markdown written by `domain/article-markdown.ts` alone, where
   a member's text stays text: ASCII punctuation escaped, `& < >` as
   entities, `[` escaped (no link or embed). Hashnode reads CommonMark
   (`{ }` as entities too); DEV Forem's dialect (`"forem"`): Redcarpet,
@@ -160,8 +136,8 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   come from a cache, so `find` waits a minute past the earlier call; a
   commit answered with an undocumented code is looked for; it cannot
   publish at a time (`siteStatusNotTaken`) and refuses all without its
-  Pro plan (`siteRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
-  `#shared/domain/rich-text/site-rules.ts`, checked by `articleViolations` with the
+  Pro plan (`articleRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
+  `domain/site-rules.ts`, checked by `articleViolations` with the
   channel's rules. Tests set the fakes' addresses on
   `testDevToHosts`, `testHashnodeHosts`, `testWordPressComHosts`.
 - Erasing a workspace erases its articles (`ArticleRecords`, refused

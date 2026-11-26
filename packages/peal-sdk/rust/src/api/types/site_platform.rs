@@ -1,6 +1,6 @@
 pub use crate::prelude::*;
 
-/// A kind of website a channel publishes to.
+/// A kind of website a channel publishes articles to.
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SitePlatform {

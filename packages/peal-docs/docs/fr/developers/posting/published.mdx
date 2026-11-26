@@ -194,18 +194,16 @@ Avant d’appeler la plateforme, Peal refuse une requête impossible avec 409 `l
 
 ## Modifier une publication en ligne [#edit-live]
 
-`POST …/posts/{postId}/targets/{targetId}/edit` remplace le texte d’une partie d’une publication en ligne sur la plateforme d’un canal, pour tout le monde ([Modifier une publication en ligne](/guides/posts/published#edit-live)). `livePost.edit` dans les capacités dit où Peal modifie.
+`POST …/posts/{postId}/targets/{targetId}/edit` remplace le texte d’une partie d’une publication en ligne sur la plateforme d’un canal, pour tout le monde ([Modifier une publication en ligne](/guides/posts/published#edit-live)). Peal modifie sur Mastodon et Google Business Profile.
 
-Le corps prend ces champs, au moins `text`, `body` ou `options` :
+Le corps prend deux champs :
 
-| Champ     | Ce qu’il contient                                                                   |
-| --------- | ----------------------------------------------------------------------------------- |
-| `text`    | Le nouveau texte                                                                    |
-| `part`    | La partie, comptée depuis 0. Omise, c’est la publication elle-même (la partie 0).   |
-| `body`    | Sur un site web, un texte enrichi qui remplace le texte ([plus bas](#edit-website)) |
-| `options` | Sur un site web, ses options désormais, entières ([plus bas](#edit-website))        |
+| Champ  | Ce qu’il contient                                                                 |
+| ------ | --------------------------------------------------------------------------------- |
+| `text` | Le nouveau texte                                                                  |
+| `part` | La partie, comptée depuis 0. Omise, c’est la publication elle-même (la partie 0). |
 
-Sur un réseau social ou une messagerie, seul le texte change, jamais les médias, les options ni l’heure. Il faut post:publish, et un client OAuth a besoin du scope `workspace:publish`. Quelqu’un qui doit faire approuver ses publications ([approbations](/guides/posts/review)) ne peut pas modifier une publication en ligne.
+Seul le texte change, jamais les médias, les options ni l’heure. Il faut post:publish, et un client OAuth a besoin du scope `workspace:publish`. Quelqu’un qui doit faire approuver ses publications ([approbations](/guides/posts/review)) ne peut pas modifier une publication en ligne.
 
 <CodeGroup>
 
@@ -232,7 +230,7 @@ change, err := client.Posts.EditTarget(context.TODO(), &peal.LivePostEdit{
 	PostID:   "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
 	TargetID: "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
 	Wait:     peal.String("30"),
-	Text:     peal.String("Doors open at 7 pm, not 6."),
+	Text:     "Doors open at 7 pm, not 6.",
 })
 ```
 
@@ -309,26 +307,6 @@ peal posts edit <post-id> --channel <channel-id> --text "Doors open at 7 pm, not
 Peal vérifie le texte comme il vérifie le texte de ce canal quand une publication est programmée, avertissement de contenu Mastodon compris. Un texte que la plateforme refuserait répond 422 `post_content_invalid` avec chaque violation, tout comme un texte fait seulement d’espaces. Un `text` vide répond 400 `invalid_request`.
 
 La requête est acceptée (202) avec le changement (`kind: "edit"`). Une tâche fait la modification, et la relance comme une suppression. `?wait=<secondes>` attend qu’elle se termine. Le changement ne contient jamais le texte.
-
-### Modifier une publication sur un site web [#edit-website]
-
-Sur WordPress, WordPress.com, DEV et Hashnode, la modification remplace l’article que le site affiche. Donnez l’un de ces champs, et ce que vous ne donnez pas reste tel quel :
-
-- `text`, le nouveau texte, que le site reçoit en paragraphes avec les images de la publication, comme à sa publication. Il remplace un texte enrichi par des paragraphes simples : envoyez `body` pour garder la mise en forme.
-- `body`, un texte enrichi (le `RichText` de la référence de l’API), qui remplace le texte. Peal répond le `text` du canal comme son texte brut, et ses `media` comme ses images.
-- `options`, les options du site désormais, entières, avec leur `platform`. Une option absente est retirée sur le site : sans `coverMediaId`, l’article perd sa couverture. Un `siteStatus` absent est celui de la cible.
-
-```json
-{
-  "options": {
-    "platform": "wordpress",
-    "title": "Doors open at 7 pm",
-    "tags": ["Events"]
-  }
-}
-```
-
-Le site garde le statut de l’article et sa date : un brouillon y reste un brouillon. Un `siteStatus` autre que celui de la cible répond 422 `post_content_invalid` avec `optionInvalid`. La modification est vérifiée comme la programmation vérifie la publication : le titre reste nécessaire, les fichiers que le site n’a pas encore doivent être ceux de l’espace de travail et prêts (422 `unknown_media` sinon), sur un réseau social, un `body` est `bodyNotTaken` et des `options` sont `optionsNotTaken`. Un fichier que le site a déjà reçu pour cette publication n’est pas envoyé de nouveau. Un refus du site garde son code, précédé de la plateforme (`wordpress:rest_cannot_edit`).
 
 ### Quand la modification aboutit ou échoue [#edit-result]
 

@@ -16,35 +16,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.jetbrains.annotations.NotNull;
 import social.peal.core.ObjectMappers;
-import social.peal.types.RichText;
-import social.peal.types.TargetOptions;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = LivePostEdit.Builder.class)
 public final class LivePostEdit {
     private final Optional<String> wait;
 
-    private final Optional<RichText> body;
-
-    private final Optional<TargetOptions> options;
-
     private final Optional<Integer> part;
 
-    private final Optional<String> text;
+    private final String text;
 
     private final Map<String, Object> additionalProperties;
 
     private LivePostEdit(
-            Optional<String> wait,
-            Optional<RichText> body,
-            Optional<TargetOptions> options,
-            Optional<Integer> part,
-            Optional<String> text,
-            Map<String, Object> additionalProperties) {
+            Optional<String> wait, Optional<Integer> part, String text, Map<String, Object> additionalProperties) {
         this.wait = wait;
-        this.body = body;
-        this.options = options;
         this.part = part;
         this.text = text;
         this.additionalProperties = additionalProperties;
@@ -55,23 +43,13 @@ public final class LivePostEdit {
         return wait;
     }
 
-    @JsonProperty("body")
-    public Optional<RichText> getBody() {
-        return body;
-    }
-
-    @JsonProperty("options")
-    public Optional<TargetOptions> getOptions() {
-        return options;
-    }
-
     @JsonProperty("part")
     public Optional<Integer> getPart() {
         return part;
     }
 
     @JsonProperty("text")
-    public Optional<String> getText() {
+    public String getText() {
         return text;
     }
 
@@ -87,16 +65,12 @@ public final class LivePostEdit {
     }
 
     private boolean equalTo(LivePostEdit other) {
-        return wait.equals(other.wait)
-                && body.equals(other.body)
-                && options.equals(other.options)
-                && part.equals(other.part)
-                && text.equals(other.text);
+        return wait.equals(other.wait) && part.equals(other.part) && text.equals(other.text);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.wait, this.body, this.options, this.part, this.text);
+        return Objects.hash(this.wait, this.part, this.text);
     }
 
     @java.lang.Override
@@ -104,110 +78,105 @@ public final class LivePostEdit {
         return ObjectMappers.stringify(this);
     }
 
-    public static Builder builder() {
+    public static TextStage builder() {
         return new Builder();
     }
 
+    public interface TextStage {
+        _FinalStage text(@NotNull String text);
+
+        Builder from(LivePostEdit other);
+    }
+
+    public interface _FinalStage {
+        LivePostEdit build();
+
+        _FinalStage additionalProperty(String key, Object value);
+
+        _FinalStage additionalProperties(Map<String, Object> additionalProperties);
+
+        _FinalStage wait(Optional<String> wait);
+
+        _FinalStage wait(String wait);
+
+        _FinalStage part(Optional<Integer> part);
+
+        _FinalStage part(Integer part);
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder {
-        private Optional<String> wait = Optional.empty();
-
-        private Optional<RichText> body = Optional.empty();
-
-        private Optional<TargetOptions> options = Optional.empty();
+    public static final class Builder implements TextStage, _FinalStage {
+        private String text;
 
         private Optional<Integer> part = Optional.empty();
 
-        private Optional<String> text = Optional.empty();
+        private Optional<String> wait = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
 
+        @java.lang.Override
         public Builder from(LivePostEdit other) {
             wait(other.getWait());
-            body(other.getBody());
-            options(other.getOptions());
             part(other.getPart());
             text(other.getText());
             return this;
         }
 
-        @JsonSetter(value = "wait", nulls = Nulls.SKIP)
-        public Builder wait(Optional<String> wait) {
-            this.wait = wait;
+        @java.lang.Override
+        @JsonSetter("text")
+        public _FinalStage text(@NotNull String text) {
+            this.text = Objects.requireNonNull(text, "text must not be null");
             return this;
         }
 
-        public Builder wait(String wait) {
-            this.wait = Optional.ofNullable(wait);
-            return this;
-        }
-
-        @JsonSetter(value = "body", nulls = Nulls.SKIP)
-        public Builder body(Optional<RichText> body) {
-            this.body = body;
-            return this;
-        }
-
-        public Builder body(RichText body) {
-            this.body = Optional.ofNullable(body);
-            return this;
-        }
-
-        @JsonSetter(value = "options", nulls = Nulls.SKIP)
-        public Builder options(Optional<TargetOptions> options) {
-            this.options = options;
-            return this;
-        }
-
-        public Builder options(TargetOptions options) {
-            this.options = Optional.ofNullable(options);
-            return this;
-        }
-
-        @JsonSetter(value = "part", nulls = Nulls.SKIP)
-        public Builder part(Optional<Integer> part) {
-            this.part = part;
-            return this;
-        }
-
-        public Builder part(Integer part) {
+        @java.lang.Override
+        public _FinalStage part(Integer part) {
             this.part = Optional.ofNullable(part);
             return this;
         }
 
-        @JsonSetter(value = "text", nulls = Nulls.SKIP)
-        public Builder text(Optional<String> text) {
-            this.text = text;
+        @java.lang.Override
+        @JsonSetter(value = "part", nulls = Nulls.SKIP)
+        public _FinalStage part(Optional<Integer> part) {
+            this.part = part;
             return this;
         }
 
-        public Builder text(String text) {
-            this.text = Optional.ofNullable(text);
+        @java.lang.Override
+        public _FinalStage wait(String wait) {
+            this.wait = Optional.ofNullable(wait);
             return this;
         }
 
+        @java.lang.Override
+        @JsonSetter(value = "wait", nulls = Nulls.SKIP)
+        public _FinalStage wait(Optional<String> wait) {
+            this.wait = wait;
+            return this;
+        }
+
+        @java.lang.Override
         public LivePostEdit build() {
-            return new LivePostEdit(wait, body, options, part, text, additionalProperties);
+            return new LivePostEdit(wait, part, text, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("body")
-                    || key.equalsIgnoreCase("options")
-                    || key.equalsIgnoreCase("part")
-                    || key.equalsIgnoreCase("text")) {
+            if (key.equalsIgnoreCase("part") || key.equalsIgnoreCase("text")) {
                 return;
             }
             this.additionalProperties.put(key, value);
         }
 
+        @java.lang.Override
         public Builder additionalProperty(String key, Object value) {
             this.additionalProperties.put(key, value);
             return this;
         }
 
+        @java.lang.Override
         public Builder additionalProperties(Map<String, Object> additionalProperties) {
             this.additionalProperties.putAll(additionalProperties);
             return this;

@@ -26,9 +26,11 @@ import {
   ListChannels,
   maxChannelPageSize,
 } from "#channels/application/list-channels.ts";
+import { isSocialChannel } from "#channels/application/social-channels.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
+import { SitePlatformSchema } from "#shared/domain/platform.ts";
 import { makeDatabasePing } from "#shared/infrastructure/database-ping.ts";
 import { userPrincipalOf } from "#workspace/api/principal.ts";
 import { AccountDirectory } from "#workspace/application/account-directory.ts";
@@ -169,7 +171,10 @@ const BasicToolsLive = BasicTools.toLayer(
               .list(actor)
               .pipe(Effect.catchTags(readingFailures));
 
-            return { channels: found.map(toChannelView) };
+            // Websites take articles, which no tool writes yet.
+            return {
+              channels: found.filter(isSocialChannel).map(toChannelView),
+            };
           }
 
           // Every page of those that match: a tool's answer has no cursor.
@@ -197,7 +202,44 @@ const BasicToolsLive = BasicTools.toLayer(
 
           const { counts, items } = yield* matching(Option.none());
 
-          return { channels: items.map(toChannelView), counts };
+          // Without a platform asked, the counts leave every website
+          // out, as the list does.
+          const siteCounts =
+            platform === undefined
+              ? yield* Effect.all(
+                  SitePlatformSchema.literals.map((site) =>
+                    listChannels
+                      .search(actor, {
+                        after: Option.none(),
+                        limit: 1,
+                        platform: Option.some(site),
+                        query: Option.fromUndefinedOr(search),
+                        status: Option.fromUndefinedOr(status),
+                      })
+                      .pipe(
+                        Effect.map((page) => page.counts),
+                        Effect.catchTags(readingFailures)
+                      )
+                  )
+                )
+              : [];
+
+          const websites = { active: 0, disabled: 0, refreshNeeded: 0 };
+
+          for (const each of siteCounts) {
+            websites.active += each.active;
+            websites.disabled += each.disabled;
+            websites.refreshNeeded += each.refreshNeeded;
+          }
+
+          return {
+            channels: items.filter(isSocialChannel).map(toChannelView),
+            counts: {
+              active: counts.active - websites.active,
+              disabled: counts.disabled - websites.disabled,
+              refreshNeeded: counts.refreshNeeded - websites.refreshNeeded,
+            },
+          };
         }),
       list_workspaces: () =>
         Effect.gen(function* workspaces() {

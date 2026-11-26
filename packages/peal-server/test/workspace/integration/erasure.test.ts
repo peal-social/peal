@@ -292,8 +292,6 @@ const workspaceRows = {
     sql`SELECT count(*)::int AS count FROM publishing.recycling_rules WHERE workspace_id = ${id}`,
   "publishing.signatures": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM publishing.signatures WHERE workspace_id = ${id}`,
-  "publishing.site_files": (sql, id) =>
-    sql`SELECT count(*)::int AS count FROM publishing.site_files f JOIN publishing.post_targets t ON t.id = f.target_id JOIN publishing.posts p ON p.id = t.post_id WHERE p.workspace_id = ${id}`,
   "publishing.tags": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM publishing.tags WHERE workspace_id = ${id}`,
   "publishing.upload_sessions": (sql, id) =>
@@ -718,10 +716,6 @@ const fill = Effect.fn("fill")(function* fill(
 
   yield* sql`INSERT INTO publishing.upload_sessions (idempotency_key, byte_size, opened_at, video_id)
     VALUES (${callKey}, 2048, now(), 'synthetic-video')`;
-
-  // A file the target sent to its website.
-  yield* sql`INSERT INTO publishing.site_files (target_id, media_id, site_media_id, source_url)
-    VALUES (${targetId}, ${uuid7()}, 102, 'https://site.example/wp-content/uploads/synthetic-post.png')`;
 
   // The post's review: the policy the user chose, a link they made, a
   // comment they wrote and resolved, a visitor's with a name and an

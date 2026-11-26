@@ -1114,7 +1114,6 @@ export {
   maxChatSecretLength,
   SiteSignInCallbackSchema,
   StartSiteSignInSchema,
-  isSiteChannel,
   isSocialChannel,
   maxSiteAddressLength,
 } from "./channels.ts";
@@ -1136,7 +1135,6 @@ export type {
   ConnectSiteWithKey,
   ConnectChat,
   SiteSignInCallback,
-  SiteChannel,
   StartSiteSignIn,
   SocialChannel,
 } from "./channels.ts";
@@ -1364,10 +1362,6 @@ export { SpendCeilingNotOffered } from "./spend-ceiling-not-offered.ts";
 
 export type { AllowanceReason } from "./usage-allowance-reached.ts";
 
-export { RichTextSchema } from "./rich-text.ts";
-
-export type { RichText } from "./rich-text.ts";
-
 export {
   ChannelConnectionSchema,
   ChannelPlatformSchema,
@@ -1378,8 +1372,6 @@ export {
   OAuthSitePlatformSchema,
   PlatformSchema,
   SitePlatformSchema,
-  isSitePlatform,
-  isSocialPlatform,
 } from "./platform.ts";
 
 export type {
@@ -1392,7 +1384,6 @@ export type {
   OAuthSitePlatform,
   Platform,
   SitePlatform,
-  SocialPlatform,
 } from "./platform.ts";
 
 export {
@@ -1777,16 +1768,6 @@ export {
   maxYouTubeThumbnailByteSize,
   YouTubeLicenseSchema,
   youTubeThumbnailTypes,
-  DevtoOptionsSchema,
-  HashnodeOptionsSchema,
-  maxDevtoTags,
-  maxDevtoTitleLength,
-  maxHashnodeImageByteSize,
-  maxHashnodeTags,
-  siteCoverTypes,
-  SiteStatusOptionSchema,
-  WordPressComOptionsSchema,
-  WordPressOptionsSchema,
 } from "./target-options.ts";
 
 export type {
@@ -1820,11 +1801,6 @@ export type {
   InstagramOptions,
   InstagramTrialReel,
   YouTubeLicense,
-  DevtoOptions,
-  HashnodeOptions,
-  SiteStatusOption,
-  WordPressComOptions,
-  WordPressOptions,
 } from "./target-options.ts";
 
 export { PostTargetStatusSchema } from "./post-target-status.ts";

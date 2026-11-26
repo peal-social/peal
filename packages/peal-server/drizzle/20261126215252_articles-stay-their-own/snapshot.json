@@ -1,0 +1,107 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "b0565827-511d-403a-b503-9c4d13afc2b2",
+  "prevIds": [
+    "4bbd4a5b-d935-4758-811b-62ff3f99ac0f"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_table",
+      "statementTarget": [
+        "table",
+        "publishing",
+        "site_files"
+      ],
+      "writes": [
+        "s|tbl|publishing.site_files",
+        "n|tbl|publishing.site_files",
+        "e|tbl|publishing.site_files",
+        "n|rel|publishing.site_files",
+        "n|type|publishing.site_files"
+      ],
+      "reads": [
+        "n|sch|publishing"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "publishing",
+        "live_post_changes",
+        "body"
+      ],
+      "writes": [
+        "s|col|publishing.live_post_changes.body",
+        "n|col|publishing.live_post_changes.body",
+        "e|col|publishing.live_post_changes.body"
+      ],
+      "reads": [
+        "n|tbl|publishing.live_post_changes",
+        "n|sch|publishing"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "publishing",
+        "live_post_changes",
+        "options"
+      ],
+      "writes": [
+        "s|col|publishing.live_post_changes.options",
+        "n|col|publishing.live_post_changes.options",
+        "e|col|publishing.live_post_changes.options"
+      ],
+      "reads": [
+        "n|tbl|publishing.live_post_changes",
+        "n|sch|publishing"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"publishing\",\"site_files\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"publishing\",\"site_files\",\"featured_refused\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"publishing\",\"site_files\",\"media_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"publishing\",\"site_files\",\"site_media_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"publishing\",\"site_files\",\"source_url\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"publishing\",\"site_files\",\"target_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"publishing\",\"live_post_changes\",\"body\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"publishing\",\"live_post_changes\",\"options\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"publishing\",\"site_files\",\"site_files_target_id_post_targets_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"publishing\",\"site_files\",\"site_files_pkey\"]"
+    }
+  ]
+}

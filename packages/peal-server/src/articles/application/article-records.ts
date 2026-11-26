@@ -1,12 +1,12 @@
 import { Context, Effect, Layer, Option, Schema } from "effect";
 
+import { ArticleBodySchema } from "#articles/domain/article-body.ts";
 import { ArticleStateSchema } from "#articles/domain/article.ts";
 import type { Article } from "#articles/domain/article.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { ArticleRecord } from "#shared/application/personal-data.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
-import { ArticleBodySchema } from "#shared/domain/rich-text/rich-body.ts";
 
 import { ArticleJobs } from "./article-jobs.ts";
 import { ArticleJournal } from "./article-journal.ts";

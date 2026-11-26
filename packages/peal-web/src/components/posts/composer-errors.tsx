@@ -87,12 +87,6 @@ export const useViolationText = (
   const violationText = (violation: ContentViolation) =>
     Match.valueTags(violation, {
       ...mediaTexts,
-      bodyInvalid: ({ channelId }) =>
-        t("violation.bodyInvalid", { channel: channelName(channelId) }),
-      bodyNotTaken: ({ channelId }) =>
-        t("violation.bodyNotTaken", { channel: channelName(channelId) }),
-      optionsNotTaken: ({ channelId }) =>
-        t("violation.optionsNotTaken", { channel: channelName(channelId) }),
       empty: ({ channelId }) =>
         t("violation.empty", { channel: channelName(channelId) }),
       forbiddenCharacters: ({ channelId, characters }) =>

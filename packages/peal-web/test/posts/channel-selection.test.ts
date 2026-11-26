@@ -1,11 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import type { SocialChannel, Post } from "peal-contract";
 
-import {
-  connectedTargets,
-  everyChannel,
-  goesToWebsite,
-} from "#posts/channel-selection.ts";
+import { connectedTargets, everyChannel } from "#posts/channel-selection.ts";
 
 const active: SocialChannel["status"] = { _tag: "active" };
 
@@ -91,29 +87,6 @@ describe(connectedTargets, () => {
 
   it("starts a new post on no channel", () => {
     expect(connectedTargets(undefined, [channel("a")])).toStrictEqual([]);
-  });
-});
-
-describe(goesToWebsite, () => {
-  it("tells a post that goes to a website, which the composer keeps off", () => {
-    const sites = new Set(["site"]);
-
-    expect(goesToWebsite(draftFor("a", "site"), sites)).toBeTruthy();
-    expect(goesToWebsite(draftFor("a"), sites)).toBeFalsy();
-
-    const dropped = draftFor("a", "site");
-
-    expect(
-      goesToWebsite(
-        {
-          ...dropped,
-          targets: dropped.targets.map((target) =>
-            target.channelId === "site" ? { ...target, dropped: true } : target
-          ),
-        },
-        sites
-      )
-    ).toBeFalsy();
   });
 });
 

@@ -26,8 +26,8 @@ import { ExecutionIdSchema } from "#publishing/application/publication-scheduler
 import type { ExecutionId } from "#publishing/application/publication-scheduler.ts";
 import { LivePartSchema } from "#publishing/domain/live-part.ts";
 import type { LivePart } from "#publishing/domain/live-part.ts";
-import { withEditOn } from "#publishing/domain/live-post-edit.ts";
 import type { MediaAttachment } from "#publishing/domain/media-attachment.ts";
+import { withTextOn } from "#publishing/domain/post-content.ts";
 import type { PostStatus } from "#publishing/domain/post-status.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTargetStatus } from "#publishing/domain/post-target-status.ts";
@@ -41,7 +41,6 @@ import type { TextOverride } from "#publishing/domain/text-override.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { ChannelIdSchema, PostIdSchema } from "#shared/domain/ids.ts";
 import type { MediaAssetId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
-import { ArticleBodySchema } from "#shared/domain/rich-text/rich-body.ts";
 import type { Schedule } from "#shared/domain/schedule.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
@@ -207,22 +206,14 @@ const scheduleColumns = (schedule: Option.Option<Schedule>) =>
     }),
   });
 
-// A rich text as JSON, as the allow-list's schema writes it.
-const encodeBody = Schema.encodeSync(ArticleBodySchema);
-
 const mediaColumn = (media: readonly MediaAttachment[]) =>
   media.map(({ altText, mediaId }) => ({ altText, mediaId }));
 
-// An override as its column holds it: its media only when it gives some,
-// its rich text (a website's) only when it has one.
-const overrideColumn = ({ body, channelId, media, text }: TextOverride) => {
-  const column =
-    media === undefined
-      ? { channelId, text }
-      : { channelId, media: mediaColumn(media), text };
-
-  return body === undefined ? column : { ...column, body: encodeBody(body) };
-};
+// An override as its column holds it: its media only when it gives some.
+const overrideColumn = ({ channelId, media, text }: TextOverride) =>
+  media === undefined
+    ? { channelId, text }
+    : { channelId, media: mediaColumn(media), text };
 
 // What the post says, as its columns hold it.
 const contentColumns = ({ content }: Post) => ({
@@ -525,7 +516,7 @@ export const DrizzlePostRepository = Layer.effect(
       });
 
     return PostRepository.of({
-      amendText: (postId, index, channelId, edit) =>
+      amendText: (postId, index, channelId, text) =>
         Effect.gen(function* amendText() {
           const stored = yield* selectPost(postId).pipe(
             Effect.mapError(failed),
@@ -541,7 +532,7 @@ export const DrizzlePostRepository = Layer.effect(
           const amended = new Post({
             attribution: post.attribution,
             authorId: post.authorId,
-            content: withEditOn(post.content, index, channelId, edit),
+            content: withTextOn(post.content, index, channelId, text),
             id: post.id,
             queueId: post.queueId,
             scheduleRevision: post.scheduleRevision,
@@ -562,12 +553,6 @@ export const DrizzlePostRepository = Layer.effect(
 
           return Option.some(amended);
         }),
-      amendOptions: (targetId, options) =>
-        db
-          .update(postTargets)
-          .set({ options: encodeOptions(options) })
-          .where(eq(postTargets.id, targetId))
-          .pipe(Effect.mapError(failed), Effect.asVoid),
       channelsUsed: (workspaceId) =>
         db
           .selectDistinct({ channelId: postTargets.channelId })

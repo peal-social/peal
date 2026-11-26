@@ -24,11 +24,9 @@ type Locale = (typeof locales)[number];
 // The slug of each platform's page, and its name.
 const pages: Readonly<Record<Platform, { name: string; slug: string }>> = {
   bluesky: { name: "Bluesky", slug: "bluesky" },
-  devto: { name: "DEV", slug: "devto" },
   discord: { name: "Discord", slug: "discord" },
   facebook: { name: "Facebook", slug: "facebook" },
   googleBusiness: { name: "Google Business Profile", slug: "google-business" },
-  hashnode: { name: "Hashnode", slug: "hashnode" },
   instagram: { name: "Instagram", slug: "instagram" },
   linkedin: { name: "LinkedIn", slug: "linkedin" },
   mastodon: { name: "Mastodon", slug: "mastodon" },
@@ -38,8 +36,6 @@ const pages: Readonly<Record<Platform, { name: string; slug: string }>> = {
   telegram: { name: "Telegram", slug: "telegram" },
   threads: { name: "Threads", slug: "threads" },
   tiktok: { name: "TikTok", slug: "tiktok" },
-  wordpress: { name: "WordPress", slug: "wordpress" },
-  wordpressCom: { name: "WordPress.com", slug: "wordpress-com" },
   x: { name: "X", slug: "x" },
   youtube: { name: "YouTube", slug: "youtube" },
 };

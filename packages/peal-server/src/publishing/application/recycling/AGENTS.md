@@ -21,9 +21,7 @@ the posts' own, not this module's.
   made once the latest one's time (`lastDueAt`) passed: one ahead. Each
   occurrence is a new post (`posts.recycling_id` and `occurrence`, unique
   together), copied with `copyOf` (`application/post-copies.ts`, which `duplicate`
-  shares) without the source's websites (`recycled`: a copy on a blog is
-  a duplicate article; a source on websites alone is `PostNotRecyclable`
-  `websitesOnly`) and sent by `PostScheduling.sendOccurrence`: no preset, signature
+  shares) and sent by `PostScheduling.sendOccurrence`: no preset, signature
   or default option filled in, `remember` instead of the duplicate refusal,
   a queue's slot at or after the due instant (from a millisecond before),
   the rule's lock (`claimed`) first in the transaction and the rule written

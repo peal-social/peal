@@ -51,8 +51,6 @@ export interface PostRecord {
     }[];
     readonly text: string;
     readonly textOverrides: readonly {
-      /** A website's rich text on that channel, as stored, when it has one. */
-      readonly body?: unknown;
       readonly channelId: string;
       /** The media it shows on that channel instead, when it gives some. */
       readonly media?: readonly {
@@ -114,8 +112,6 @@ export interface PostRecord {
   }[];
   readonly text: string;
   readonly textOverrides: readonly {
-    /** A website's rich text on that channel, as stored, when it has one. */
-    readonly body?: unknown;
     readonly channelId: string;
     /** The media it shows on that channel instead, when it gives some. */
     readonly media?: readonly {

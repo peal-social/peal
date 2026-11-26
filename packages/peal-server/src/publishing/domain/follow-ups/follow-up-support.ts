@@ -51,20 +51,15 @@ export type FollowUpSupport = "available" | FollowUpBlocker;
  * - Snapchat: Snap's Public Profile API has no call that comments under
  *   a Spotlight or shares one again (developers.snap.com, Public Profile
  *   API, Profile Asset Management, read 2026-11-26).
- * - Websites (WordPress, WordPress.com, DEV, Hashnode): an article has no
- *   repost, and Peal reads no counts there (owner's decision: follow-up
- *   rules do not reach websites).
  * - LinkedIn forbids both: its API Terms (3.1) refuse using the APIs "to
  *   automate posting on the LinkedIn Services", and its User Agreement
  *   (8.2) bots that "comment on, like, share, or re-share posts".
  */
 export const followUpSupport = {
   bluesky: { comment: "available", repost: "available" },
-  devto: { comment: "noApi", repost: "noApi" },
   discord: { comment: "noApi", repost: "noApi" },
   facebook: { comment: "notBuilt", repost: "noApi" },
   googleBusiness: { comment: "noApi", repost: "noApi" },
-  hashnode: { comment: "noApi", repost: "noApi" },
   instagram: { comment: "notBuilt", repost: "noApi" },
   linkedin: { comment: "notAllowed", repost: "notAllowed" },
   mastodon: { comment: "available", repost: "available" },
@@ -74,8 +69,6 @@ export const followUpSupport = {
   telegram: { comment: "noApi", repost: "noApi" },
   threads: { comment: "review", repost: "notBuilt" },
   tiktok: { comment: "noApi", repost: "noApi" },
-  wordpress: { comment: "noApi", repost: "noApi" },
-  wordpressCom: { comment: "noApi", repost: "noApi" },
   x: { comment: "available", repost: "notBuilt" },
   youtube: { comment: "notBuilt", repost: "noApi" },
 } as const satisfies {

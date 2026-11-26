@@ -118,13 +118,6 @@ const mediaAssetId = MediaAssetIdSchema.make(
 // One violation of each kind. Both records are typed by the other's tags, so
 // a kind added on one side only fails to compile.
 const violations: Record<ContractViolation["_tag"], ContentViolation> = {
-  bodyInvalid: { _tag: "bodyInvalid", channelId, part: 1 },
-  bodyNotTaken: { _tag: "bodyNotTaken", channelId, platform: "mastodon" },
-  optionsNotTaken: {
-    _tag: "optionsNotTaken",
-    channelId,
-    platform: "mastodon",
-  },
   altTextTooLong: {
     _tag: "altTextTooLong",
     channelId,
@@ -363,9 +356,6 @@ const violations: Record<ContractViolation["_tag"], ContentViolation> = {
 };
 
 const contractTags: Record<ContentViolation["_tag"], true> = {
-  bodyInvalid: true,
-  bodyNotTaken: true,
-  optionsNotTaken: true,
   altTextTooLong: true,
   aspectRatioUnsupported: true,
   empty: true,

@@ -361,33 +361,6 @@ public record ContentViolation
     }
 
     /// <summary>
-    /// Create an instance of ContentViolation with <see cref="ContentViolation.BodyInvalid"/>.
-    /// </summary>
-    public ContentViolation(ContentViolation.BodyInvalid value)
-    {
-        Type = "bodyInvalid";
-        Value = value.Value;
-    }
-
-    /// <summary>
-    /// Create an instance of ContentViolation with <see cref="ContentViolation.BodyNotTaken"/>.
-    /// </summary>
-    public ContentViolation(ContentViolation.BodyNotTaken value)
-    {
-        Type = "bodyNotTaken";
-        Value = value.Value;
-    }
-
-    /// <summary>
-    /// Create an instance of ContentViolation with <see cref="ContentViolation.OptionsNotTaken"/>.
-    /// </summary>
-    public ContentViolation(ContentViolation.OptionsNotTaken value)
-    {
-        Type = "optionsNotTaken";
-        Value = value.Value;
-    }
-
-    /// <summary>
     /// Discriminant value
     /// </summary>
     [JsonPropertyName("_tag")]
@@ -587,21 +560,6 @@ public record ContentViolation
     /// Returns true if <see cref="Type"/> is "altTextTooLong"
     /// </summary>
     public bool IsAltTextTooLong => Type == "altTextTooLong";
-
-    /// <summary>
-    /// Returns true if <see cref="Type"/> is "bodyInvalid"
-    /// </summary>
-    public bool IsBodyInvalid => Type == "bodyInvalid";
-
-    /// <summary>
-    /// Returns true if <see cref="Type"/> is "bodyNotTaken"
-    /// </summary>
-    public bool IsBodyNotTaken => Type == "bodyNotTaken";
-
-    /// <summary>
-    /// Returns true if <see cref="Type"/> is "optionsNotTaken"
-    /// </summary>
-    public bool IsOptionsNotTaken => Type == "optionsNotTaken";
 
     /// <summary>
     /// Returns the value as a <see cref="Peal.ContentViolationNoChannels"/> if <see cref="Type"/> is 'noChannels', otherwise throws an exception.
@@ -969,33 +927,6 @@ public record ContentViolation
             ? (Peal.ContentViolationAltTextTooLong)Value!
             : throw new global::System.Exception("ContentViolation.Type is not 'altTextTooLong'");
 
-    /// <summary>
-    /// Returns the value as a <see cref="Peal.ContentViolationBodyInvalid"/> if <see cref="Type"/> is 'bodyInvalid', otherwise throws an exception.
-    /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'bodyInvalid'.</exception>
-    public Peal.ContentViolationBodyInvalid AsBodyInvalid() =>
-        IsBodyInvalid
-            ? (Peal.ContentViolationBodyInvalid)Value!
-            : throw new global::System.Exception("ContentViolation.Type is not 'bodyInvalid'");
-
-    /// <summary>
-    /// Returns the value as a <see cref="Peal.ContentViolationBodyNotTaken"/> if <see cref="Type"/> is 'bodyNotTaken', otherwise throws an exception.
-    /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'bodyNotTaken'.</exception>
-    public Peal.ContentViolationBodyNotTaken AsBodyNotTaken() =>
-        IsBodyNotTaken
-            ? (Peal.ContentViolationBodyNotTaken)Value!
-            : throw new global::System.Exception("ContentViolation.Type is not 'bodyNotTaken'");
-
-    /// <summary>
-    /// Returns the value as a <see cref="Peal.ContentViolationOptionsNotTaken"/> if <see cref="Type"/> is 'optionsNotTaken', otherwise throws an exception.
-    /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'optionsNotTaken'.</exception>
-    public Peal.ContentViolationOptionsNotTaken AsOptionsNotTaken() =>
-        IsOptionsNotTaken
-            ? (Peal.ContentViolationOptionsNotTaken)Value!
-            : throw new global::System.Exception("ContentViolation.Type is not 'optionsNotTaken'");
-
     public T Match<T>(
         Func<Peal.ContentViolationNoChannels, T> onNoChannels,
         Func<Peal.ContentViolationOverrideWithoutChannel, T> onOverrideWithoutChannel,
@@ -1035,9 +966,6 @@ public record ContentViolation
         Func<Peal.ContentViolationMediaTotalTooLarge, T> onMediaTotalTooLarge,
         Func<Peal.ContentViolationAspectRatioUnsupported, T> onAspectRatioUnsupported,
         Func<Peal.ContentViolationAltTextTooLong, T> onAltTextTooLong,
-        Func<Peal.ContentViolationBodyInvalid, T> onBodyInvalid,
-        Func<Peal.ContentViolationBodyNotTaken, T> onBodyNotTaken,
-        Func<Peal.ContentViolationOptionsNotTaken, T> onOptionsNotTaken,
         Func<string, object?, T> onUnknown_
     )
     {
@@ -1081,9 +1009,6 @@ public record ContentViolation
             "mediaTotalTooLarge" => onMediaTotalTooLarge(AsMediaTotalTooLarge()),
             "aspectRatioUnsupported" => onAspectRatioUnsupported(AsAspectRatioUnsupported()),
             "altTextTooLong" => onAltTextTooLong(AsAltTextTooLong()),
-            "bodyInvalid" => onBodyInvalid(AsBodyInvalid()),
-            "bodyNotTaken" => onBodyNotTaken(AsBodyNotTaken()),
-            "optionsNotTaken" => onOptionsNotTaken(AsOptionsNotTaken()),
             _ => onUnknown_(Type, Value),
         };
     }
@@ -1127,9 +1052,6 @@ public record ContentViolation
         Action<Peal.ContentViolationMediaTotalTooLarge> onMediaTotalTooLarge,
         Action<Peal.ContentViolationAspectRatioUnsupported> onAspectRatioUnsupported,
         Action<Peal.ContentViolationAltTextTooLong> onAltTextTooLong,
-        Action<Peal.ContentViolationBodyInvalid> onBodyInvalid,
-        Action<Peal.ContentViolationBodyNotTaken> onBodyNotTaken,
-        Action<Peal.ContentViolationOptionsNotTaken> onOptionsNotTaken,
         Action<string, object?> onUnknown_
     )
     {
@@ -1248,15 +1170,6 @@ public record ContentViolation
                 break;
             case "altTextTooLong":
                 onAltTextTooLong(AsAltTextTooLong());
-                break;
-            case "bodyInvalid":
-                onBodyInvalid(AsBodyInvalid());
-                break;
-            case "bodyNotTaken":
-                onBodyNotTaken(AsBodyNotTaken());
-                break;
-            case "optionsNotTaken":
-                onOptionsNotTaken(AsOptionsNotTaken());
                 break;
             default:
                 onUnknown_(Type, Value);
@@ -1798,48 +1711,6 @@ public record ContentViolation
         return false;
     }
 
-    /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.ContentViolationBodyInvalid"/> and returns true if successful.
-    /// </summary>
-    public bool TryAsBodyInvalid(out Peal.ContentViolationBodyInvalid? value)
-    {
-        if (Type == "bodyInvalid")
-        {
-            value = (Peal.ContentViolationBodyInvalid)Value!;
-            return true;
-        }
-        value = null;
-        return false;
-    }
-
-    /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.ContentViolationBodyNotTaken"/> and returns true if successful.
-    /// </summary>
-    public bool TryAsBodyNotTaken(out Peal.ContentViolationBodyNotTaken? value)
-    {
-        if (Type == "bodyNotTaken")
-        {
-            value = (Peal.ContentViolationBodyNotTaken)Value!;
-            return true;
-        }
-        value = null;
-        return false;
-    }
-
-    /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.ContentViolationOptionsNotTaken"/> and returns true if successful.
-    /// </summary>
-    public bool TryAsOptionsNotTaken(out Peal.ContentViolationOptionsNotTaken? value)
-    {
-        if (Type == "optionsNotTaken")
-        {
-            value = (Peal.ContentViolationOptionsNotTaken)Value!;
-            return true;
-        }
-        value = null;
-        return false;
-    }
-
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator ContentViolation(ContentViolation.NoChannels value) =>
@@ -1958,15 +1829,6 @@ public record ContentViolation
     ) => new(value);
 
     public static implicit operator ContentViolation(ContentViolation.AltTextTooLong value) =>
-        new(value);
-
-    public static implicit operator ContentViolation(ContentViolation.BodyInvalid value) =>
-        new(value);
-
-    public static implicit operator ContentViolation(ContentViolation.BodyNotTaken value) =>
-        new(value);
-
-    public static implicit operator ContentViolation(ContentViolation.OptionsNotTaken value) =>
         new(value);
 
     [Serializable]
@@ -2266,25 +2128,6 @@ public record ContentViolation
                         ?? throw new JsonException(
                             "Failed to deserialize Peal.ContentViolationAltTextTooLong"
                         ),
-                "bodyInvalid" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.ContentViolationBodyInvalid?>(options)
-                        ?? throw new JsonException(
-                            "Failed to deserialize Peal.ContentViolationBodyInvalid"
-                        ),
-                "bodyNotTaken" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.ContentViolationBodyNotTaken?>(
-                        options
-                    )
-                        ?? throw new JsonException(
-                            "Failed to deserialize Peal.ContentViolationBodyNotTaken"
-                        ),
-                "optionsNotTaken" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.ContentViolationOptionsNotTaken?>(
-                        options
-                    )
-                        ?? throw new JsonException(
-                            "Failed to deserialize Peal.ContentViolationOptionsNotTaken"
-                        ),
                 _ => json.Deserialize<object?>(options),
             };
             return new ContentViolation(discriminator, value);
@@ -2349,9 +2192,6 @@ public record ContentViolation
                         options
                     ),
                     "altTextTooLong" => JsonSerializer.SerializeToNode(value.Value, options),
-                    "bodyInvalid" => JsonSerializer.SerializeToNode(value.Value, options),
-                    "bodyNotTaken" => JsonSerializer.SerializeToNode(value.Value, options),
-                    "optionsNotTaken" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["_tag"] = value.Type;
@@ -3136,66 +2976,6 @@ public record ContentViolation
 
         public static implicit operator ContentViolation.AltTextTooLong(
             Peal.ContentViolationAltTextTooLong value
-        ) => new(value);
-    }
-
-    /// <summary>
-    /// Discriminated union type for bodyInvalid
-    /// </summary>
-    [Serializable]
-    public struct BodyInvalid
-    {
-        public BodyInvalid(Peal.ContentViolationBodyInvalid value)
-        {
-            Value = value;
-        }
-
-        internal Peal.ContentViolationBodyInvalid Value { get; set; }
-
-        public override string ToString() => Value.ToString() ?? "null";
-
-        public static implicit operator ContentViolation.BodyInvalid(
-            Peal.ContentViolationBodyInvalid value
-        ) => new(value);
-    }
-
-    /// <summary>
-    /// Discriminated union type for bodyNotTaken
-    /// </summary>
-    [Serializable]
-    public struct BodyNotTaken
-    {
-        public BodyNotTaken(Peal.ContentViolationBodyNotTaken value)
-        {
-            Value = value;
-        }
-
-        internal Peal.ContentViolationBodyNotTaken Value { get; set; }
-
-        public override string ToString() => Value.ToString() ?? "null";
-
-        public static implicit operator ContentViolation.BodyNotTaken(
-            Peal.ContentViolationBodyNotTaken value
-        ) => new(value);
-    }
-
-    /// <summary>
-    /// Discriminated union type for optionsNotTaken
-    /// </summary>
-    [Serializable]
-    public struct OptionsNotTaken
-    {
-        public OptionsNotTaken(Peal.ContentViolationOptionsNotTaken value)
-        {
-            Value = value;
-        }
-
-        internal Peal.ContentViolationOptionsNotTaken Value { get; set; }
-
-        public override string ToString() => Value.ToString() ?? "null";
-
-        public static implicit operator ContentViolation.OptionsNotTaken(
-            Peal.ContentViolationOptionsNotTaken value
         ) => new(value);
     }
 }

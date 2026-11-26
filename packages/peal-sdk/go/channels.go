@@ -2187,7 +2187,7 @@ func (o OAuthSitePlatform) Ptr() *OAuthSitePlatform {
 	return &o
 }
 
-// A kind of website a channel publishes to.
+// A kind of website a channel publishes articles to.
 type SitePlatform string
 
 const (

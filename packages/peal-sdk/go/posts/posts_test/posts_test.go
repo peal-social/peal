@@ -737,6 +737,7 @@ func TestPostsEditTargetWithWireMock(
 	request := &peal.LivePostEdit{
 		PostID:   "postId",
 		TargetID: "targetId",
+		Text:     "text",
 	}
 	_, invocationErr := client.Posts.EditTarget(
 		context.TODO(),

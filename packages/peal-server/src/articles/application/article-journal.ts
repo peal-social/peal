@@ -4,7 +4,6 @@ import type { DateTime, Effect, Option } from "effect";
 import type { ArticleId } from "#articles/domain/article-id.ts";
 import type { ArticleEarlierRefusals } from "#articles/domain/article-policy.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
-import type { SiteFile } from "#shared/application/site-call-journal.ts";
 import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 
@@ -22,6 +21,14 @@ export interface UnfinishedCall {
   readonly idempotencyKey: string;
   /** When the post's call left, if it did: it may be on the site. */
   readonly committedAt: Option.Option<DateTime.Utc>;
+}
+
+/** A file as the site keeps it: its id there, and its address. */
+export interface SiteFile {
+  readonly id: number;
+  readonly sourceUrl: string;
+  /** The site dropped it as the featured image, even sent again. */
+  readonly featuredRefused?: boolean;
 }
 
 /** What the journal knew of a call when it was about to be made. */

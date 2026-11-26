@@ -15,17 +15,11 @@ public record LivePostEdit
     [JsonIgnore]
     public string? Wait { get; set; }
 
-    [JsonPropertyName("body")]
-    public RichText? Body { get; set; }
-
-    [JsonPropertyName("options")]
-    public TargetOptions? Options { get; set; }
-
     [JsonPropertyName("part")]
     public int? Part { get; set; }
 
     [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    public required string Text { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

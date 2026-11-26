@@ -18,10 +18,6 @@ On a post's page, **Unpublish** deletes the post from that channel's platform, f
 | Discord                 | Yes       | Yes  |                                                                                                           |
 | Telegram                | Yes       | Yes  | Telegram deletes a message only within 48 hours of sending it                                             |
 | Slack                   | Yes       | Yes  | A Slack workspace can stop messages being edited after a while                                            |
-| WordPress               | Yes       | Yes  | Unpublishing moves the post to the site's trash                                                           |
-| WordPress.com           | Yes       | Yes  | Unpublishing moves the post to the site's trash                                                           |
-| DEV                     | Yes       | Yes  | Unpublishing makes the article a draft again on DEV                                                       |
-| Hashnode                | Yes       | Yes  |                                                                                                           |
 | Bluesky                 | Yes       | No   | Bluesky has no call to edit a post                                                                        |
 | X                       | Yes       | No   | X doesn't say which posts may be edited, or on which access                                               |
 | Pinterest               | Yes       | No   | Editing a Pin is in beta, not open to every app                                                           |
@@ -68,7 +64,7 @@ Statistics stop too. Analytics no longer reads the post and keeps the counts it 
 
 ## Edit a published post [#edit-live]
 
-On Mastodon, Google Business Profile, Discord, Telegram and Slack, you can correct the text of a post that went out. On a website, an edit replaces the article ([below](#edit-website)).
+On Mastodon, Google Business Profile, Discord, Telegram and Slack, you can correct the text of a post that went out.
 
 <Steps>
 <Step title="Click Edit">
@@ -90,19 +86,6 @@ peal posts edit <post-id> --channel <channel-id> --text "Doors open at 7 pm, not
 ```
 
 Only the text changes. The media, the options, the audience and the time stay as they are.
-
-### Edit a post on a website [#edit-website]
-
-On WordPress, WordPress.com, DEV and Hashnode, an edit replaces the article the site shows: its text, or a rich text, and its options (the title, the excerpt, the cover, the tags and the categories). What you leave out stays as it is. The site keeps the post's status and its date, so a draft stays a draft there, and the edit can't change **Site status**. A new text replaces a rich text with plain paragraphs: send the rich text (`body`) to keep its formatting.
-
-From the API, send `text` or `body`, and `options` with the website's whole options, to `POST …/posts/{postId}/targets/{targetId}/edit` ([Edit a published post](/developers/posting/published#edit-live)). An option left out of `options` is removed on the site, as a cover you take away is. On the command line, `--options` takes the same JSON:
-
-```sh
-peal posts edit <post-id> --channel <channel-id> \
-  --options '{"platform":"wordpress","title":"Doors open at 7 pm"}'
-```
-
-The edit is checked the way scheduling checks the post, so the title is still needed, and every file must be in the library and ready. A file the site already took for this post isn't sent again.
 
 <Callout type="warning" title="An edit is public at once">
   Whoever can unpublish can edit (`post:publish`), except a member whose posts

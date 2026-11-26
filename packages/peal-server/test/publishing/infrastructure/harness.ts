@@ -36,7 +36,6 @@ import type { SchedulePostRequest } from "#publishing/application/post-schedulin
 import { PublicationJournal } from "#publishing/application/publication-journal.ts";
 import { PublicationScheduler } from "#publishing/application/publication-scheduler.ts";
 import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
-import type { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import type { Post } from "#publishing/domain/post.ts";
@@ -71,7 +70,6 @@ import { RecordingOperatorAlerts } from "#test/publishing/infrastructure/recorde
 import { RecordingPublicationOutcomes } from "#test/publishing/infrastructure/recorded-outcomes.ts";
 import {
   actorIn,
-  anyChannelOn,
   ReferencesTest,
   syntheticContent,
 } from "#test/publishing/support.ts";
@@ -156,9 +154,7 @@ export const journalWith = (
 export const deployWith = <S, E, R, EP, RP, RJ>(
   storage: Layer.Layer<S, E, R>,
   platforms: Layer.Layer<PlatformPublisher, EP, RP>,
-  journal: Layer.Layer<PublicationJournal, never, RJ>,
-  // Whose channels the posts' are: Mastodon's unless a test says.
-  channels: Layer.Layer<WorkspaceChannels> = anyChannelOn()
+  journal: Layer.Layer<PublicationJournal, never, RJ>
 ) =>
   publishingWorkers(platforms).pipe(
     Layer.provideMerge(PostScheduling.layer),
@@ -180,7 +176,6 @@ export const deployWith = <S, E, R, EP, RP, RJ>(
         RecordingPublicationOutcomes,
         WorkflowPublicationScheduler,
         ReferencesTest,
-        channels,
         AccountRules.none,
         ApprovalGate.open,
         RecyclingActors.none,
@@ -196,9 +191,8 @@ export const deployWith = <S, E, R, EP, RP, RJ>(
 /** One server with the journal in Postgres (see `deployWith`). */
 export const deploy = <S, E, R, EP, RP>(
   storage: Layer.Layer<S, E, R>,
-  platforms: Layer.Layer<PlatformPublisher, EP, RP>,
-  channels: Layer.Layer<WorkspaceChannels> = anyChannelOn()
-) => deployWith(storage, platforms, DrizzlePublicationJournal, channels);
+  platforms: Layer.Layer<PlatformPublisher, EP, RP>
+) => deployWith(storage, platforms, DrizzlePublicationJournal);
 
 /**
  * A server with its own in-memory storage and fake platform, and `journal`.

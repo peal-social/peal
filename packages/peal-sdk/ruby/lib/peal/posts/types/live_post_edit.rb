@@ -10,13 +10,9 @@ module Peal
 
         field :wait, -> { String }, optional: true, nullable: false
 
-        field :body, -> { Peal::Types::RichText }, optional: true, nullable: false
-
-        field :options, -> { Peal::Types::TargetOptions }, optional: true, nullable: false
-
         field :part, -> { Integer }, optional: true, nullable: false
 
-        field :text, -> { String }, optional: true, nullable: false
+        field :text, -> { String }, optional: false, nullable: false
       end
     end
   end

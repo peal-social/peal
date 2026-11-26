@@ -5,7 +5,7 @@ import { AsyncResult } from "effect/reactivity";
 import { NextIntlClientProvider } from "next-intl";
 import type { Locale } from "next-intl";
 import { PostContentInvalid } from "peal-contract";
-import type { SocialChannel, Media, SocialPlatform } from "peal-contract";
+import type { SocialChannel, Media, Platform } from "peal-contract";
 import { maxMediaPerPost } from "peal-contract/post-text";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -63,7 +63,7 @@ const attached: readonly AttachedMedia[] = [
   { altText: "", media: Option.some(clip), mediaId: clip.id },
 ];
 
-const channel = (platform: SocialPlatform): SocialChannel => ({
+const channel = (platform: Platform): SocialChannel => ({
   avatarUrl: null,
   connection: null,
   displayName: null,
@@ -102,7 +102,7 @@ const render = async (locale: Locale, children: ReactNode) => {
   );
 };
 
-const list = (platforms: readonly SocialPlatform[], disabled = false) => (
+const list = (platforms: readonly Platform[], disabled = false) => (
   <MediaAttachments
     attached={attached}
     canBrowse

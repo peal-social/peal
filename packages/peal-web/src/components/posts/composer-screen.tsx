@@ -5,7 +5,6 @@ import { DateTime } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import type { SocialChannel, Permission } from "peal-contract";
-import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { useCallback } from "react";
@@ -22,12 +21,7 @@ import { PostReviewSection } from "#components/review/post-review-section.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
 import { useRefreshWhileVisible } from "#notices/use-refresh-while-visible.ts";
-import {
-  websiteChannelIds,
-  workspaceChannels,
-  workspacePost,
-} from "#posts/api.ts";
-import { goesToWebsite } from "#posts/channel-selection.ts";
+import { workspaceChannels, workspacePost } from "#posts/api.ts";
 import { isDue } from "#posts/publish-now.ts";
 import { useMounted } from "#posts/use-mounted.ts";
 import { reviewSettings } from "#review/api.ts";
@@ -106,7 +100,6 @@ const ExistingPost = ({
   const retry = useAtomRefresh(query);
   const approvalPolicy = useApprovalPolicy(workspaceId);
   const tAds = useTranslations("Ads.boost");
-  const websites = useAtomValue(websiteChannelIds(workspaceId));
 
   const refreshDue = useCallback(() => {
     if (
@@ -133,24 +126,17 @@ const ExistingPost = ({
           post={post}
           workspaceId={workspaceId}
         />
-        {AsyncResult.isSuccess(websites) &&
-        goesToWebsite(post, websites.value) ? (
-          <Alert>
-            <AlertDescription>{t("websiteNotShown")}</AlertDescription>
-          </Alert>
-        ) : (
-          <Composer
-            key={`${post.id}/${String(
-              post.targets.filter(({ dropped }) => dropped === true).length
-            )}`}
-            approvalPolicy={approvalPolicy}
-            channels={channels}
-            permissions={permissions}
-            post={post}
-            userId={userId}
-            workspaceId={workspaceId}
-          />
-        )}
+        <Composer
+          key={`${post.id}/${String(
+            post.targets.filter(({ dropped }) => dropped === true).length
+          )}`}
+          approvalPolicy={approvalPolicy}
+          channels={channels}
+          permissions={permissions}
+          post={post}
+          userId={userId}
+          workspaceId={workspaceId}
+        />
         <PostChannels
           approvalPolicy={approvalPolicy}
           channels={channels}

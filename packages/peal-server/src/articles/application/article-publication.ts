@@ -16,7 +16,6 @@ import type { ArticleId } from "#articles/domain/article-id.ts";
 import { articleDecide } from "#articles/domain/article-policy.ts";
 import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
 import { claimed, settled } from "#articles/domain/article.ts";
-import type { SiteSearch } from "#shared/application/site-search.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
@@ -29,7 +28,7 @@ import { ArticleJournal } from "./article-journal.ts";
 import { ArticleSendTurns } from "./article-send-turns.ts";
 import { ArticleStore } from "./article-store.ts";
 import { SitePublisher } from "./site-publisher.ts";
-import type { SitePublishRequest } from "./site-publisher.ts";
+import type { SitePublishRequest, SiteSearch } from "./site-publisher.ts";
 
 // The steps of the job that sends an article (`PublishArticleV1`): claim
 // it, make attempts until one settles it, record how it ended. Their

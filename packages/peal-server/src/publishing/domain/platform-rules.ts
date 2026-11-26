@@ -551,40 +551,6 @@ const firstComment = (
   maximum: 1,
 });
 
-// A website's post is an article: its body is the post's text, or a rich
-// text of the channel's own, whose bounds (`maxBodyText`, `maxBodyNodes`)
-// are checked when it is decoded, so no text limit is counted here. Its
-// images are those the site's adapter uploads to the site's library
-// (WordPress's `/wp/v2/media`, DEV's `/api/images`, Hashnode's upload
-// address), up to `maxOverrideMedia`, alt text kept; no video. A website
-// takes a post alone: no thread, no poll.
-const siteMedia = (image: FormatLimits): MediaRules => ({
-  formats: {
-    "image/gif": image,
-    "image/jpeg": image,
-    "image/png": image,
-    "image/webp": image,
-  },
-  mixesKinds: false,
-  showsAltText: true,
-});
-
-// The most images a website's post shows (`maxOverrideMedia`, the bound of
-// a channel's own media).
-const siteMaxMedia = 100;
-
-const siteRulesWith = (image: FormatLimits): PlatformRules => ({
-  maxMedia: siteMaxMedia,
-  media: siteMedia(image),
-  mediaRequired: false,
-  textLimits: [],
-});
-
-// WordPress, WordPress.com and DEV state no limit on an uploaded image
-// that Peal knows of; Hashnode takes images of 8 MB at most, read as
-// mebibytes, and no SVG (which Peal does not store).
-const wordpressSite = siteRulesWith({});
-
 export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
   bluesky: {
     followUps: thread,
@@ -607,7 +573,6 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
       { maximum: 3000, unit: "utf8Bytes" },
     ],
   },
-  devto: siteRulesWith({}),
   discord: {
     followUps: thread,
     maxMedia: 10,
@@ -661,7 +626,6 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     mediaRequired: false,
     textLimits: [{ maximum: 1500, unit: "codePoints" }],
   },
-  hashnode: siteRulesWith({ maxByteSize: 8 * mebibyte }),
   instagram: {
     followUps: firstComment([{ maximum: 2200, unit: "codePoints" }]),
     maxHashtags: 30,
@@ -848,8 +812,6 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     mediaRequired: true,
     textLimits: [{ maximum: 2200, unit: "utf16Units" }],
   },
-  wordpress: wordpressSite,
-  wordpressCom: wordpressSite,
   x: {
     poll: {
       choiceLimit: shortChoices,

@@ -19,7 +19,6 @@ import type {
   RemovalAttempt,
   RemovalDecision,
 } from "#publishing/domain/removal-decision.ts";
-import type { TargetOptions } from "#publishing/domain/target-options.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 
 import { remember } from "./duplicate-guard.ts";
@@ -211,21 +210,19 @@ export type ChangeEnding =
   | { readonly _tag: "done"; readonly parts: readonly number[] }
   | { readonly _tag: "failed"; readonly code: string };
 
-// The target with its published status's notes changed, and the options
-// an edit gave it: still published.
+// The target with its published status's notes changed: still published.
 const publishedWith = (
   target: PostTarget,
   notes:
     | { readonly editedAt: DateTime.Utc }
-    | { readonly removedAt: DateTime.Utc },
-  options: Option.Option<TargetOptions> = target.options
+    | { readonly removedAt: DateTime.Utc }
 ) =>
   target.status._tag === "published"
     ? new PostTarget({
         channelId: target.channelId,
         id: target.id,
         liveParts: target.liveParts,
-        options,
+        options: target.options,
         postId: target.postId,
         round: target.round,
         status: { ...target.status, ...notes },
@@ -235,11 +232,10 @@ const publishedWith = (
 /**
  * Records how the change ended, in one transaction under the post's, the
  * target's and the change's locks, in that order. A removal done gives
- * the target its `removedAt`; an edit done makes its text, or a website's
- * rich text, the part's own on the channel (`amendText`), a website's new
- * options the target's (`amendOptions`), gives the target its `editedAt`
- * and keeps the target's new content digest (`remember`); either way an
- * edit's text, body and options leave the change. Failed, the parts left stay for a member who
+ * the target its `removedAt`; an edit done makes its text the part's own
+ * on the channel (`amendText`), gives the target its `editedAt` and keeps
+ * the target's new content digest (`remember`); either way an edit's
+ * text leaves the change. Failed, the parts left stay for a member who
  * asks again. Tells LivePostEvents either way. Run again, it answers what
  * the first run recorded.
  */
@@ -307,27 +303,20 @@ export const settleChangeRun = Effect.fn("LivePostRemoval.settle")(
             change.postId,
             editedPart,
             change.channelId,
-            { body: change.body, text }
+            text
           );
-
-          // A website's new options, whole, written alone.
-          if (Option.isSome(change.options)) {
-            yield* posts.amendOptions(change.targetId, change.options.value);
-          }
 
           yield* posts.markEdited(change.targetId, now);
 
-          const edited = publishedWith(
-            target.value,
-            { editedAt: now },
-            Option.orElse(change.options, () => target.value.options)
-          );
-
           if (Option.isSome(amended)) {
-            yield* remember(amended.value, [edited]);
+            yield* remember(amended.value, [target.value]);
           }
 
-          yield* events.edited(next, edited, editedPart);
+          yield* events.edited(
+            next,
+            publishedWith(target.value, { editedAt: now }),
+            editedPart
+          );
         } else if (change.kind === "edit") {
           yield* events.editFailed(next, target.value, editedPart);
         } else if (ending._tag === "done") {

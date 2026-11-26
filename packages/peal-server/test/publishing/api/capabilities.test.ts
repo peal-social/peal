@@ -45,8 +45,8 @@ import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
-import { isSitePlatform, platforms } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
+import { platforms } from "#shared/domain/platform.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
 import { memberOf } from "#test/channels/support.ts";
@@ -884,13 +884,9 @@ describe("the capabilities and the contract's copy of the rules", () => {
             rules.media === undefined
               ? null
               : Object.keys(rules.media.formats).length,
-          // A website's files come with its rich text, up to an
-          // override's bound; a part's elsewhere.
           maxCount: Math.min(
             rules.maxMedia ?? ContractText.maxMediaPerPost,
-            isSitePlatform(view.platform)
-              ? ContractText.maxOverrideMedia
-              : ContractText.maxMediaPerPost
+            ContractText.maxMediaPerPost
           ),
           maxVideos: rules.media?.maxVideos ?? null,
           mixesKinds: rules.media?.mixesKinds ?? null,

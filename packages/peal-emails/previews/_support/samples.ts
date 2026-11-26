@@ -331,13 +331,6 @@ export const noticeSamples = {
   postChangesRequested: { _tag: "PostChangesRequested", by: "visitor", postId },
   postCommented: { _tag: "PostCommented", by: "application", postId },
   postFailed: failed,
-  postFailedOnWebsite: {
-    ...failed,
-    channel: Option.some({
-      handle: "journal.example.test",
-      platform: "wordpress",
-    }),
-  },
   postPublished: {
     _tag: "PostPublished",
     channel: Option.some(channel),

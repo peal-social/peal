@@ -16,8 +16,6 @@ import type {
 } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
-import { ArticleBodySchema } from "#shared/domain/rich-text/rich-body.ts";
-import type { ArticleBody } from "#shared/domain/rich-text/rich-body.ts";
 
 import { InvalidChangeTransition } from "./invalid-change-transition.ts";
 import type { ChangeAction } from "./invalid-change-transition.ts";
@@ -31,8 +29,6 @@ import type { PostTargetId } from "./post-target-id.ts";
 import { livePartsOf } from "./post-target.ts";
 import type { PostTarget } from "./post-target.ts";
 import { PostTextSchema } from "./post-text.ts";
-import { TargetOptionsSchema } from "./target-options.ts";
-import type { TargetOptions } from "./target-options.ts";
 
 /**
  * What it takes to change a post that is live: the permission that
@@ -120,9 +116,7 @@ export type LivePostRefusal = typeof LivePostRefusalSchema.Type;
  * leaves a shorter thread that still reads from its start. An edit has
  * one part left, the one whose text it replaces with `text`, which the
  * change holds only while it is pending: Peal keeps no text of a change
- * that ended, and none of the text it replaced. An edit of a website's
- * post may hold a rich text too (`body`, whose plain text `text` is) and
- * the target's new options (`options`), kept as long as `text` is.
+ * that ended, and none of the text it replaced.
  *
  * | From    | To                                         |
  * | ------- | ------------------------------------------ |
@@ -153,13 +147,8 @@ export class LivePostChange extends Schema.Class<LivePostChange>(
   status: LivePostChangeStatusSchema,
   targetId: PostTargetIdSchema,
   // The new text of an edit while it is pending; none for a removal, and
-  // once the change ended. Every pending edit has one: a website's edit
-  // of its options alone holds the text the channel has.
+  // once the change ended.
   text: Schema.Option(PostTextSchema),
-  // A website's new rich text, while its edit is pending.
-  body: Schema.Option(ArticleBodySchema),
-  // A website's new options, whole, while its edit is pending.
-  options: Schema.Option(TargetOptionsSchema),
   workspaceId: WorkspaceIdSchema,
 }) {}
 
@@ -183,10 +172,8 @@ const withFields = (
     Pick<
       LivePostChange,
       | "alreadyGone"
-      | "body"
       | "failureCode"
       | "finishedAt"
-      | "options"
       | "partsLeft"
       | "status"
       | "text"
@@ -195,13 +182,11 @@ const withFields = (
 ): LivePostChange =>
   new LivePostChange({
     alreadyGone: fields.alreadyGone ?? change.alreadyGone,
-    body: fields.body ?? change.body,
     channelId: change.channelId,
     failureCode: fields.failureCode ?? change.failureCode,
     finishedAt: fields.finishedAt ?? change.finishedAt,
     id: change.id,
     kind: change.kind,
-    options: fields.options ?? change.options,
     partsLeft: fields.partsLeft ?? change.partsLeft,
     postId: change.postId,
     requestedAt: change.requestedAt,
@@ -293,13 +278,11 @@ export const requestUnpublish = (request: {
 }): LivePostChange =>
   new LivePostChange({
     alreadyGone: false,
-    body: Option.none(),
     channelId: request.channelId,
     failureCode: Option.none(),
     finishedAt: Option.none(),
     id: request.id,
     kind: "unpublish",
-    options: Option.none(),
     partsLeft: request.parts,
     postId: request.postId,
     requestedAt: request.now,
@@ -358,17 +341,11 @@ export const editable = (
   });
 };
 
-/**
- * A request to replace the text of `part` of a live post with `text`, and,
- * on a website, its rich text with `body` and its options with `options`
- * (none, the default: kept as they are).
- */
+/** A request to replace the text of `part` of a live post with `text`. */
 export const requestEdit = (request: {
-  readonly body?: Option.Option<ArticleBody>;
   readonly channelId: ChannelId;
   readonly id: LivePostChangeId;
   readonly now: DateTime.Utc;
-  readonly options?: Option.Option<TargetOptions>;
   readonly part: PartToRemove;
   readonly postId: PostId;
   readonly requestedBy: Option.Option<UserId>;
@@ -379,13 +356,11 @@ export const requestEdit = (request: {
 }): LivePostChange =>
   new LivePostChange({
     alreadyGone: false,
-    body: request.body ?? Option.none(),
     channelId: request.channelId,
     failureCode: Option.none(),
     finishedAt: Option.none(),
     id: request.id,
     kind: "edit",
-    options: request.options ?? Option.none(),
     partsLeft: [request.part],
     postId: request.postId,
     requestedAt: request.now,
@@ -445,7 +420,7 @@ export const partEdited = (
 
 /**
  * Every part is off the platform, or edited: the change is done, and
- * keeps no text, no body and no options.
+ * keeps no text.
  */
 export const finishChange = (
   change: LivePostChange,
@@ -454,9 +429,7 @@ export const finishChange = (
   change.status === "pending" && change.partsLeft.length === 0
     ? Result.succeed(
         withFields(change, {
-          body: Option.none(),
           finishedAt: Option.some(now),
-          options: Option.none(),
           status: "done",
           text: Option.none(),
         })
@@ -465,8 +438,7 @@ export const finishChange = (
 
 /**
  * The job gave up, with `code`: the parts left stay, for a member who asks
- * again, and an edit's text, body and options go (asking again gives
- * them anew).
+ * again, and an edit's text goes (asking again gives it anew).
  */
 export const failChange = (
   change: LivePostChange,
@@ -476,10 +448,8 @@ export const failChange = (
   change.status === "pending"
     ? Result.succeed(
         withFields(change, {
-          body: Option.none(),
           failureCode: Option.some(code),
           finishedAt: Option.some(now),
-          options: Option.none(),
           status: "failed",
           text: Option.none(),
         })
