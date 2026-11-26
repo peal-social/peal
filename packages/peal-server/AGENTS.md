@@ -116,7 +116,13 @@ and no socket, for tests.
   in UTC and the zone it was chosen in), how a platform call can end
   (`PublishResult`, `PublishFailure`, and `TokenRejected` for a token the
   platform refused before doing anything), and how an attempt ended
-  (`AttemptOutcome`: a `PublishResult` or a `PublishFailure`).
+  (`AttemptOutcome`: a `PublishResult` or a `PublishFailure`). Until
+  websites are post channels, it also holds what both the articles and
+  publishing send to a website: the rich text (`domain/rich-text/`: the
+  allow-listed body, its HTML and Markdown writers, each site's rules),
+  the article as a site gets it (`OutgoingArticle`, `SiteArticleContent`)
+  and what a site's call needs of whoever journals it
+  (`application/site-call-journal.ts`: `SiteCallJournal`, `SiteFile`).
 - Take ids from the `Ids` port: `yield* newId(PostIdSchema)`. Tests provide
   `Ids.layerTest`, which issues `00000000-0000-7000-8000-000000000001`, then
   `…002`, from each build of the layer.

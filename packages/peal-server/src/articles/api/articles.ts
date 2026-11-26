@@ -25,10 +25,6 @@ import type {
   SiteChangeFailure,
 } from "#articles/application/articles.ts";
 import { Articles } from "#articles/application/articles.ts";
-import {
-  ArticleBodySchema,
-  NestedWithinSchema,
-} from "#articles/domain/article-body.ts";
 import { ArticleContent } from "#articles/domain/article-content.ts";
 import { ArticleIdSchema } from "#articles/domain/article-id.ts";
 import { actorOf } from "#shared/api/actor.ts";
@@ -36,6 +32,10 @@ import { forbidden } from "#shared/api/forbidden.ts";
 import { limitRefusal } from "#shared/api/limit-reached.ts";
 import type { LimitRefusal } from "#shared/api/limit-reached.ts";
 import { ChannelIdSchema, MediaAssetIdSchema } from "#shared/domain/ids.ts";
+import {
+  ArticleBodySchema,
+  NestedWithinSchema,
+} from "#shared/domain/rich-text/rich-body.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 import { articleView } from "./article-view.ts";

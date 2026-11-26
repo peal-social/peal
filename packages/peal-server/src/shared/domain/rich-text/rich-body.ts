@@ -8,7 +8,7 @@ import type { MediaAssetId } from "#shared/domain/ids.ts";
 // their `content` and `attrs`, text with its `marks`), kept to the nodes
 // and marks of the allow-list below. Anything else does not decode, so
 // nothing a member pastes reaches a website but what the list holds; what
-// is sent is written from the document by `article-html.ts`.
+// is sent is written from the document by `rich-body-html.ts`.
 
 /** The longest address a link takes. */
 export const maxLinkLength = 2048;
