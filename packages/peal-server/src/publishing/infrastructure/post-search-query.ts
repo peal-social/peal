@@ -49,13 +49,14 @@ const past = (
 
   // A list by change keys on when each post changed, which a position of
   // that list always holds.
+  // As a row comparison, which the index on (workspace_id, updated_at, id)
+  // starts its scan from: a walk of many pages reads each row once.
   if (byUpdated(sort) && updatedAt !== undefined) {
-    const at = date(updatedAt);
+    const at = date(updatedAt).toISOString();
 
-    return or(
-      further(posts.updatedAt, at),
-      and(eq(posts.updatedAt, at), further(posts.id, postId))
-    );
+    return descending(sort)
+      ? sql`(${posts.updatedAt}, ${posts.id}) < (${at}::timestamptz, ${postId}::uuid)`
+      : sql`(${posts.updatedAt}, ${posts.id}) > (${at}::timestamptz, ${postId}::uuid)`;
   }
 
   if (!byScheduled(sort) || scheduledAt === null) {
