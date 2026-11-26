@@ -743,8 +743,6 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     textLimits: [{ maximum: 4000, unit: "escapedUtf16Units" }],
     textLimitsWithMedia: [{ maximum: 3000, unit: "escapedUtf16Units" }],
   },
-  // Plain text; a text with media is a caption, of 1,024 at most. One
-  // file, or an album of 2 to 10 photos and videos; a GIF alone.
   snapchat: {
     maxMedia: 1,
     media: {
@@ -756,6 +754,8 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     mediaRequired: true,
     textLimits: [{ maximum: 160, unit: "utf16Units" }],
   },
+  // Plain text; a text with media is a caption, of 1,024 at most. One
+  // file, or an album of 2 to 10 photos and videos; a GIF alone.
   telegram: {
     followUps: thread,
     maxMedia: 10,
