@@ -164,20 +164,20 @@ Peal sends each image or video in the form the platform needs, and some platform
 
 Peal checks only in ways that can't post twice:
 
-| Platform                | How Peal checks                                                                                                                                                         |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bluesky                 | Reads the post back.                                                                                                                                                    |
-| Mastodon                | Sends it again under the same key, and Mastodon answers with the post it already made.                                                                                  |
-| X                       | Looks for it among the account's recent posts, by its text, links and files. It never sends it to X again.                                                              |
-| Threads and Instagram   | Asks whether the post they were handed was published.                                                                                                                   |
-| Facebook Pages          | Looks for it among the Page's recent posts, by its text.                                                                                                                |
-| TikTok                  | Follows the post TikTok already took, by the id TikTok gave.                                                                                                            |
-| YouTube                 | Asks how far the upload got. It never uploads the video twice.                                                                                                          |
-| Pinterest               | Looks for the Pin among those made on its board since, by title, description, link and kind of media. It never creates it again.                                        |
-| Google Business Profile | Looks for the post among the location's posts, by its type, text and event title.                                                                                       |
-| LinkedIn company page   | Looks for the post among the page's newest, by its text.                                                                                                                |
-| LinkedIn profile        | Can't check: LinkedIn doesn't let Peal read a member's posts or send one twice safely, so the post shows **To check** at once.                                          |
-| Snapchat | Can't check: Peal doesn't look the Spotlight up on Snapchat, so the post shows **To check** at once, also when the server restarted while the video was being sent. |
+| Platform                | How Peal checks                                                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bluesky                 | Reads the post back.                                                                                                                                                |
+| Mastodon                | Sends it again under the same key, and Mastodon answers with the post it already made.                                                                              |
+| X                       | Looks for it among the account's recent posts, by its text, links and files. It never sends it to X again.                                                          |
+| Threads and Instagram   | Asks whether the post they were handed was published.                                                                                                               |
+| Facebook Pages          | Looks for it among the Page's recent posts, by its text.                                                                                                            |
+| TikTok                  | Follows the post TikTok already took, by the id TikTok gave.                                                                                                        |
+| YouTube                 | Asks how far the upload got. It never uploads the video twice.                                                                                                      |
+| Pinterest               | Looks for the Pin among those made on its board since, by title, description, link and kind of media. It never creates it again.                                    |
+| Google Business Profile | Looks for the post among the location's posts, by its type, text and event title.                                                                                   |
+| LinkedIn company page   | Looks for the post among the page's newest, by its text.                                                                                                            |
+| LinkedIn profile        | Can't check: LinkedIn doesn't let Peal read a member's posts or send one twice safely, so the post shows **To check** at once.                                      |
+| Snapchat                | Can't check: Peal doesn't look the Spotlight up on Snapchat, so the post shows **To check** at once, also when the server restarted while the video was being sent. |
 
 Peal tries three times, over about two and a half minutes. If the server stops in the middle of a post, it checks the same way when it starts again. Only when none of that settles it does the post show **To check**. Peal never posts it again by itself.
 
