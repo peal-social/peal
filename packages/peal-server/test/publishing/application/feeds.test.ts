@@ -4,6 +4,7 @@ import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
+import { ChannelSets } from "#publishing/application/channel-sets.ts";
 import { FeedStore } from "#publishing/application/feeds/feed-store.ts";
 import type { CreateFeedRequest } from "#publishing/application/feeds/feeds.ts";
 import { Feeds } from "#publishing/application/feeds/feeds.ts";
@@ -397,6 +398,58 @@ describe("a feed in draft mode", () => {
           assert.isTrue(draft?.shortenLinks);
         }),
         ShorteningFeedsServer
+      ),
+    timeout
+  );
+
+  it.effect(
+    "never names a website, and leaves its set's websites out of its posts",
+    () =>
+      onServer(
+        Effect.gen(function* websites() {
+          const workspaceId = yield* freshWorkspace;
+          const mastodon = yield* connect(workspaceId, "mastodon");
+          const site = yield* connect(workspaceId, "wordpress");
+
+          yield* serveItems(blog, []);
+
+          // A website named by the feed itself is refused when it is saved.
+          const refused = yield* created(workspaceId, {
+            channelIds: [site],
+          }).pipe(Effect.flip);
+
+          assert.strictEqual(refused._tag, "UnknownChannels");
+
+          // One in the set it names is left out of every post it makes.
+          const { set } = yield* ChannelSets.use((sets) =>
+            sets.create(actorIn(workspaceId), {
+              channelIds: [mastodon, site],
+              name: "Everywhere",
+              options: [],
+            })
+          );
+
+          yield* created(workspaceId, { channelSetId: Option.some(set.id) });
+          yield* serveItems(blog, [{ n: 1, title: "Kept social" }]);
+          yield* later();
+          yield* poll;
+
+          const [draft] = yield* postsOf(workspaceId);
+
+          assert.strictEqual(draft?.status, "draft");
+
+          const channels = yield* SqlClient.SqlClient.use(
+            (sql) =>
+              sql<{
+                readonly channelId: string;
+              }>`SELECT channel_id AS "channelId" FROM publishing.post_targets WHERE post_id = ${draft?.id ?? ""}`
+          ).pipe(Effect.orDie);
+
+          assert.deepStrictEqual(
+            channels.map(({ channelId }) => channelId),
+            [mastodon]
+          );
+        })
       ),
     timeout
   );
