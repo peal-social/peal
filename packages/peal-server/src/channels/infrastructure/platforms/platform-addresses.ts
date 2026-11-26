@@ -15,6 +15,7 @@ import { instagramCallbackPath } from "./meta/instagram-login-authorizer.ts";
 import { threadsCallbackPath } from "./meta/threads-authorizer.ts";
 import { pinterestCallbackPath } from "./pinterest/pinterest-authorizer.ts";
 import { slackCallbackPath } from "./slack/slack-authorizer.ts";
+import { snapchatCallbackPath } from "./snapchat/snapchat-authorizer.ts";
 import { tiktokCallbackPath } from "./tiktok/tiktok-authorizer.ts";
 import { wordpressComCallbackPath } from "./wordpress-com/wordpress-com-authorizer.ts";
 import { xCallbackPath } from "./x/x-authorizer.ts";
@@ -52,6 +53,7 @@ export interface PlatformRegistration {
     | "metaAds"
     | "pinterest"
     | "slack"
+    | "snapchat"
     | "threads"
     | "tiktok"
     | "wordpressCom"
@@ -353,6 +355,18 @@ export const platformRegistrations = (
       platforms: ["slack"],
       registeredBy: "operator",
       settings: ["SLACK_CLIENT_ID", "SLACK_CLIENT_SECRET"],
+    },
+    {
+      addresses: [redirect("Redirect URI", snapchatCallbackPath)],
+      id: "snapchat",
+      name: "Snapchat: an OAuth app in Business Manager (Business Details)",
+      notes: [
+        "Make the app in Business Manager, not in Snap's Developer Portal, whose client ids the Public Profile API refuses.",
+        "Snap allowlists each client id for the Public Profile API: send it the id, never the secret.",
+      ],
+      platforms: ["snapchat"],
+      registeredBy: "operator",
+      settings: ["SNAPCHAT_CLIENT_ID", "SNAPCHAT_CLIENT_SECRET"],
     },
   ];
 };

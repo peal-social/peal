@@ -175,6 +175,23 @@ export const tokenPolicies = {
     lifetime: Option.none(),
     refresh: { _tag: "none" },
   }),
+  // "The Access Token is valid for 3600 seconds = 60 minutes", and the
+  // refresh token is "long-lived", with no figure (developers.snap.com,
+  // Marketing API, Authentication, read 2026-11-26). Every refresh answer
+  // holds a refresh token, and nothing says the one sent still works after
+  // it: read as rotating, so a refresh runs alone on its channel and its
+  // answer is saved first. Access is renewed when a post needs it; an idle
+  // channel is renewed after seven days, where the other short tokens wait
+  // thirty, as Snap gives the refresh token no lifetime and one refresh a
+  // week costs nothing.
+  snapchat: new TokenPolicy({
+    lifetime: Option.some(Duration.hours(1)),
+    refresh: {
+      _tag: "refreshToken",
+      rotates: true,
+      sweep: { _tag: "keepAlive", unused: Duration.days(7) },
+    },
+  }),
   // Long-lived tokens last 60 days, and are renewed once at least a day old.
   threads: new TokenPolicy({
     lifetime: Option.some(Duration.days(60)),

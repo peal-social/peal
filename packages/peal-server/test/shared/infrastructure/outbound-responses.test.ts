@@ -249,6 +249,8 @@ describe("the service of a host", () => {
       "public.api.bsky.app": "bluesky",
       "rupload.facebook.com": "meta",
       "slack.com": "slack",
+      "accounts.snapchat.com": "snapchat",
+      "businessapi.snapchat.com": "snapchat",
       "upload.x.com": "x",
       "video.bsky.app": "bluesky",
       "www.googleapis.com": "youtube",
