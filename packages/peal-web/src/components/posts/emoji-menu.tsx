@@ -17,6 +17,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "peal-ui/components/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "peal-ui/components/tooltip";
 import { useRef, useState } from "react";
 
 import {
@@ -31,13 +36,20 @@ import {
 const resolveEmojiData: EmojiDataResolver = async (locale, options) =>
   withCategoryGroups(await defaultEmojiDataResolver(locale, options));
 
+// An editor that is still there and shown: a channel's row keeps its text
+// mounted, hidden, once closed, and an emoji never goes into a text the
+// member cannot see.
 const live = (editor: Editor | null) =>
-  editor === null || editor.isDestroyed ? undefined : editor;
+  editor === null ||
+  editor.isDestroyed ||
+  editor.view.dom.closest("[hidden]") !== null
+    ? undefined
+    : editor;
 
 /**
  * Which of the composer's texts an emoji goes into: the one that last had
- * the focus (the text for all channels, a channel's own text, a part), else
- * the text for all channels.
+ * the focus (the text for all channels, a channel's own text, a part) while
+ * it is shown, else the text for all channels.
  */
 export const useEmojiTarget = () => {
   const editors = useRef<{ focused: Editor | null; main: Editor | null }>({
@@ -108,19 +120,26 @@ export const EmojiMenu = ({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label={t("open")}
-            disabled={disabled}
-            focusableWhenDisabled
-          />
-        }
-      >
-        <SmileIcon aria-hidden />
-      </PopoverTrigger>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t("open")}
+                  disabled={disabled}
+                  focusableWhenDisabled
+                />
+              }
+            />
+          }
+        >
+          <SmileIcon aria-hidden />
+        </TooltipTrigger>
+        <TooltipContent>{t("open")}</TooltipContent>
+      </Tooltip>
       <PopoverContent
         align="start"
         className="w-fit"

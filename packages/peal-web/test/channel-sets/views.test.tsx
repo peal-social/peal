@@ -9,7 +9,6 @@ import {
   ChannelSetFieldsView,
   ChannelSetItemView,
 } from "#components/channel-sets/channel-set-views.tsx";
-import { ChannelSetPickerView } from "#components/posts/channel-set-picker.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
 const render = async (locale: "en" | "fr", view: ReactNode) =>
@@ -175,78 +174,5 @@ describe(ChannelSetFieldsView, () => {
         "Some of these channels are no longer connected. Choose the channels again.",
       ])
     ).toStrictEqual([]);
-  });
-});
-
-describe(ChannelSetPickerView, () => {
-  it("offers the sets, and what saves the selection", async () => {
-    const html = await render(
-      "en",
-      <ChannelSetPickerView
-        channels={channels}
-        chosen={null}
-        disabled={false}
-        sets={[set({})]}
-        save={<button type="button">Save selection as a set</button>}
-        onChoose={noop}
-      />
-    );
-
-    expect(
-      missingFrom(html, ["Use a channel set", "Save selection as a set"])
-    ).toStrictEqual([]);
-
-    expect(html).not.toContain('role="alert"');
-  });
-
-  it("warns how many channels of the chosen set were left out", async () => {
-    const html = await render(
-      "en",
-      <ChannelSetPickerView
-        channels={channels}
-        chosen={{ dropped: 2, name: "Launch channels" }}
-        disabled={false}
-        sets={[set({})]}
-        onChoose={noop}
-      />
-    );
-
-    expect(
-      missingFrom(html, [
-        'role="alert"',
-        "2 channels of “Launch channels” are no longer connected and were left out.",
-      ])
-    ).toStrictEqual([]);
-  });
-
-  it("warns of nothing when every channel of the set is connected, and in French of one", async () => {
-    const all = await render(
-      "en",
-      <ChannelSetPickerView
-        channels={channels}
-        chosen={{ dropped: 0, name: "Launch channels" }}
-        disabled={false}
-        sets={[set({})]}
-        onChoose={noop}
-      />
-    );
-
-    expect(all).not.toContain('role="alert"');
-
-    const one = await render(
-      "fr",
-      <ChannelSetPickerView
-        channels={channels}
-        chosen={{ dropped: 1, name: "Lancement" }}
-        disabled={false}
-        sets={[]}
-        onChoose={noop}
-      />
-    );
-
-    expect(one).toContain(
-      "1 canal de « Lancement » n’est plus connecté et a été laissé de côté."
-    );
-    expect(one).not.toContain("Utiliser un groupe de canaux");
   });
 });

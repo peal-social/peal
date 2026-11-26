@@ -365,11 +365,11 @@ describe(SendWeeklyDigests, () => {
         );
         assert.include(
           french.text,
-          `Ouvrir mon calendrier : https://app.example.test/fr/${workspaceId}/calendar`
+          `Ouvrir mon calendrier : https://app.example.test/fr/${workspaceId}/posts?layout=calendar`
         );
         assert.include(
           french.text,
-          `https://app.example.test/fr/${workspaceId}/calendar`
+          `https://app.example.test/fr/${workspaceId}/posts?layout=calendar`
         );
         // A workspace with nothing in its fortnight is left out.
         assert.notInclude(french.text, "Quiet corner");

@@ -1623,7 +1623,6 @@
       "channelNeedsReconnect": "À reconnecter",
       "channelDisabled": "Désactivé",
       "textLegend": "Texte",
-      "allChannels": "Tous les canaux",
       "textLabel": "Texte pour tous les canaux",
       "textPlaceholder": "Que voulez-vous dire ?",
       "textHint": "Texte brut. Les mentions et les hashtags restent tels que vous les tapez.",
@@ -1637,7 +1636,6 @@
       "ownMediaList": "Images et vidéos sur {handle}",
       "ownMediaBlocks": "Les images et vidéos propres sur {handles} ont besoin d’un texte pour partir : écrivez-en un sur ce canal, ou pour tous les canaux, avant d’enregistrer ou de programmer.",
       "ownMediaNeedsText": "Écrivez un texte pour ce canal, ou pour tous les canaux : ses images et vidéos propres partent avec un texte, et la publication n’est pas enregistrée sans lui.",
-      "countersLegend": "Longueur sur chaque canal",
       "countersEmpty": "Choisissez des canaux pour voir si le texte leur convient.",
       "count": "{length} sur {maximum} {unit, select, utf8Bytes {octets} other {caractères}}",
       "noLimit": "Aucune limite connue",
@@ -1770,7 +1768,34 @@
       "phraseHint": "Écrivez une date en toutes lettres, puis appuyez sur Entrée : « demain 9h », « vendredi 10h30 », « dans 3 jours », « 27 nov ».",
       "phraseUnread": "Date non comprise. Essayez « demain 9h », « vendredi 10h30 », « dans 3 jours » ou « 27 nov ».",
       "phrasePast": "{at} est passé : choisissez une heure à venir.",
-      "phraseRead": "{at}, {distance}. Appuyez sur Entrée pour la garder."
+      "phraseRead": "{at}, {distance}. Appuyez sur Entrée pour la garder.",
+      "groupChosen": "{chosen}/{total}",
+      "searchChannels": "Rechercher un canal",
+      "noChannelFound": "Aucun canal ne correspond à « {query} ».",
+      "eachChannelTitle": "Chaque canal",
+      "eachChannelEmpty": "Choisissez les canaux de la publication. Chacun s’affiche ici, avec ce qu’il en accepte.",
+      "ownTextShort": "Texte propre",
+      "ownMediaShort": "Images et vidéos propres",
+      "optionsChosen": "{count, plural, one {# option choisie} other {# options choisies}}",
+      "sameAsPost": "Comme la publication",
+      "needsAttention": "À corriger",
+      "needsFields": "Manque : {fields}",
+      "useForEvery": "{count, plural, one {Appliquer ces options à l’autre canal {platform}} other {Appliquer ces options aux # autres canaux {platform}}}",
+      "optionsCopied": "{count, plural, one {Options appliquées à l’autre canal {platform}.} other {Options appliquées aux # autres canaux {platform}.}}",
+      "countShort": "{length, number}/{maximum, number}{unit, select, utf8Bytes { octets} other {}}",
+      "ownTextRow": "Texte",
+      "writeOwn": "Écrire le sien",
+      "writeOwnFor": "Écrire un texte propre à {handle}",
+      "ownMediaRow": "Images et vidéos",
+      "ownMediaToggle": "Les siennes, au lieu de celles de la publication",
+      "pickChannels": "Choisir des canaux…",
+      "everyChannel": "Tous les canaux",
+      "addChannels": "Ajouter des canaux",
+      "channelsCount": "{count, plural, one {# canal} other {# canaux}}",
+      "propertiesLabel": "Détails de la publication",
+      "whenQueued": "Prochain créneau libre d’une file",
+      "fixOptionsFirst": "Corrigez d’abord les options des canaux",
+      "whenQueuedIn": "Prochain créneau libre de la file {queue}"
     },
     "Parts": {
       "legend": "Fil et premier commentaire",
@@ -1818,7 +1843,6 @@
       "withMedia": "{channel} : un sondage part sans image ni vidéo. Retirez les médias, ou le sondage."
     },
     "Options": {
-      "section": "Options des plateformes",
       "legend": "{channel} : options",
       "description": "Ce que {platform} demande pour cette publication. La programmer exige les champs marqués obligatoires.",
       "required": "{label} (obligatoire)",
@@ -2146,7 +2170,7 @@
     },
     "Calendar": {
       "title": "Calendrier",
-      "views": "Vues",
+      "views": "Vues du calendrier",
       "week": "Semaine",
       "month": "Mois",
       "today": "Aujourd’hui",
@@ -2237,7 +2261,9 @@
       "approveLabel": "Approuver « {post} »",
       "requestChanges": "Demander des modifications",
       "requestChangesLabel": "Demander des modifications sur « {post} »",
-      "approvalChanged": "Cette publication a changé depuis le chargement de la liste. Rien n’a été décidé : ouvrez-la pour la relire."
+      "approvalChanged": "Cette publication a changé depuis le chargement de la liste. Rien n’a été décidé : ouvrez-la pour la relire.",
+      "layoutCalendar": "Calendrier",
+      "layoutList": "Liste"
     },
     "Import": {
       "title": "Importer des publications",
@@ -2347,7 +2373,7 @@
       "updating": "Mise à jour des aperçus…",
       "failed": "Les aperçus n’ont pas pu être mis à jour. Rédiger et enregistrer fonctionnent toujours.",
       "retry": "Réessayer",
-      "refused": "Serait refusée en l’état : voyez les longueurs et les options plus bas.",
+      "refused": "Serait refusée en l’état : ouvrez sa ligne sous Chaque canal pour voir pourquoi.",
       "noText": "Pas de texte sur ce canal.",
       "textNotSent": "Ce format part sans le texte.",
       "part": "Partie {position}",
@@ -2360,7 +2386,9 @@
         "xPaymentFailed": "X facture chaque publication, que Peal refacture aux tarifs de X, et le dernier paiement du compte de facturation a échoué : les parties de cette publication sur X échoueraient à leur heure, sans rien envoyer, sauf si le moyen de paiement est mis à jour sur la page de facturation.",
         "xPerAccountPricing": "X facture chaque publication, que Peal refacture aux tarifs de X, et l’abonnement de cet espace de travail est antérieur au tarif par compte : les parties de cette publication sur X échoueraient à leur heure, sans rien envoyer.",
         "xPaymentMethod": "X facture chaque publication, que Peal refacture aux tarifs de X, et le compte de facturation n’a pas de moyen de paiement : les parties de cette publication sur X échoueraient à leur heure, sans rien envoyer, sauf s’il en ajoute un sur la page de facturation."
-      }
+      },
+      "open": "Aperçu",
+      "close": "Fermer"
     },
     "Selection": {
       "label": "Publications sélectionnées",
@@ -4782,7 +4810,8 @@
     "postEmpty": "Aucune étiquette.",
     "postEdit": "Choisir les étiquettes",
     "postCreate": "Nouvelle étiquette",
-    "postFull": "Une publication a au plus {max, number} étiquettes. Décochez-en une pour en choisir une autre."
+    "postFull": "Une publication a au plus {max, number} étiquettes. Décochez-en une pour en choisir une autre.",
+    "postAdd": "Ajouter des étiquettes"
   },
   "Signatures": {
     "description": "Une signature est un texte que l’espace de travail garde pour terminer ses publications : une formule de fin, une mention obligatoire, une série de hashtags. Insérez-en une en écrivant une publication, ou faites-en une signature par défaut : une signature par défaut est ajoutée aux nouvelles publications à leur premier enregistrement. La signature par défaut d’une plateforme ou d’un canal y remplace celle de l’espace de travail.",
@@ -5722,6 +5751,7 @@
     "properties": "Propriétés",
     "values": "Valeurs",
     "display": "Affichage",
+    "layout": "Disposition",
     "ordering": "Tri",
     "direction": "{direction, select, asc {Ordre croissant} other {Ordre décroissant}}",
     "filters": "Filtres",

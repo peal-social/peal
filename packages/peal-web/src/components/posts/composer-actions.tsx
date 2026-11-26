@@ -105,7 +105,9 @@ const notOffered: PublishNow = { _tag: "none" };
 const noChannels: readonly SocialChannel[] = [];
 
 // Save, schedule, publish now, move, take back to draft, discard or cancel,
-// as the post's status and the member's role allow. Buttons stay focusable while
+// as the post's status and the member's role allow, in one bar: what leaves
+// the post as it is or takes it away at the start, then saving and what
+// sends it, the page's main action last. Buttons stay focusable while
 // something runs.
 export const ComposerActions = ({
   blocked,
@@ -144,57 +146,7 @@ export const ComposerActions = ({
       {blocked === undefined ? null : (
         <output className="text-destructive text-sm">{blocked}</output>
       )}
-      <div className="flex flex-wrap gap-2">
-        {canSave ? (
-          <Button
-            variant="outline"
-            disabled={running || !savable}
-            focusableWhenDisabled
-            onClick={() => {
-              onAction("save");
-            }}
-          >
-            {busy === "save" ? t("saving") : t("saveDraft")}
-          </Button>
-        ) : null}
-        {canSchedule ? (
-          <Button
-            disabled={running || !publishable}
-            focusableWhenDisabled
-            onClick={() => {
-              onAction("schedule");
-            }}
-          >
-            {busy === "schedule"
-              ? t(willWait ? "askingApproval" : "scheduling")
-              : t(willWait ? "askApproval" : "schedule")}
-          </Button>
-        ) : null}
-        {now("draft")}
-        {canReschedule ? (
-          <Button
-            disabled={running}
-            focusableWhenDisabled
-            onClick={() => {
-              onAction("reschedule");
-            }}
-          >
-            {busy === "reschedule" ? t("rescheduling") : t("reschedule")}
-          </Button>
-        ) : null}
-        {now("scheduled")}
-        {canUnschedule ? (
-          <Button
-            variant="outline"
-            disabled={running}
-            focusableWhenDisabled
-            onClick={() => {
-              onAction("unschedule");
-            }}
-          >
-            {busy === "unschedule" ? t("unscheduling") : t("unschedule")}
-          </Button>
-        ) : null}
+      <div className="flex flex-wrap items-center gap-2">
         {extra}
         {canDiscard ? <DiscardDraft busy={busy} onAction={onAction} /> : null}
         {canCancel ? (
@@ -224,6 +176,57 @@ export const ComposerActions = ({
               </DialogFooter>
             </DialogContent>
           </Dialog>
+        ) : null}
+        {canUnschedule ? (
+          <Button
+            variant="outline"
+            disabled={running}
+            focusableWhenDisabled
+            onClick={() => {
+              onAction("unschedule");
+            }}
+          >
+            {busy === "unschedule" ? t("unscheduling") : t("unschedule")}
+          </Button>
+        ) : null}
+        <span className="flex-1" />
+        {canSave ? (
+          <Button
+            variant="outline"
+            disabled={running || !savable}
+            focusableWhenDisabled
+            onClick={() => {
+              onAction("save");
+            }}
+          >
+            {busy === "save" ? t("saving") : t("saveDraft")}
+          </Button>
+        ) : null}
+        {now("draft")}
+        {canSchedule ? (
+          <Button
+            disabled={running || !publishable}
+            focusableWhenDisabled
+            onClick={() => {
+              onAction("schedule");
+            }}
+          >
+            {busy === "schedule"
+              ? t(willWait ? "askingApproval" : "scheduling")
+              : t(willWait ? "askApproval" : "schedule")}
+          </Button>
+        ) : null}
+        {now("scheduled")}
+        {canReschedule ? (
+          <Button
+            disabled={running}
+            focusableWhenDisabled
+            onClick={() => {
+              onAction("reschedule");
+            }}
+          >
+            {busy === "reschedule" ? t("rescheduling") : t("reschedule")}
+          </Button>
         ) : null}
       </div>
     </div>

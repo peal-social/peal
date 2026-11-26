@@ -383,3 +383,13 @@ export const showsAltText = (
   platform: Platform,
   options?: TargetOptions
 ): boolean => rulesFor(platform, options).media?.showsAltText ?? false;
+
+/**
+ * Whether the post shows photos alone, each read already: TikTok posts
+ * them as photos.
+ */
+export const showsPhotosOnly = (attached: readonly AttachedMedia[]): boolean =>
+  attached.length > 0 &&
+  attached.every(({ media }) =>
+    Option.exists(media, ({ kind }) => kind === "image")
+  );

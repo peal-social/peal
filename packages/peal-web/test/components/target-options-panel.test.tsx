@@ -19,7 +19,6 @@ import {
   PinterestOptionsFields,
   takesOptions,
   TargetOptionsPanel,
-  TargetOptionsSection,
   TikTokOptionsFields,
 } from "#components/posts/target-options-panel.tsx";
 import type {
@@ -373,7 +372,7 @@ describe(TargetOptionsPanel, () => {
     }
   });
 
-  it("shows what the API would refuse as it is typed, and says nothing goes out until fixed", async () => {
+  it("shows what the API would refuse as it is typed, in a channel's row", async () => {
     const bluesky = channel(
       "00000000-0000-7000-8000-000000000012",
       "bluesky",
@@ -385,10 +384,11 @@ describe(TargetOptionsPanel, () => {
 
       return renderToStaticMarkup(
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <TargetOptionsSection
+          <TargetOptionsPanel
+            bare
             channels={[bluesky]}
             disabled={false}
-            failure={null}
+            violations={[]}
             valuesOf={() => ({
               ...initialValues("bluesky"),
               languages: "en, fr, de, es",
@@ -405,10 +405,11 @@ describe(TargetOptionsPanel, () => {
     const english = await typed("en");
 
     expect(english).toContain("4 given: 3 at most.");
-    expect(english).toContain(
-      "Fix the options marked below: the post cannot be saved or scheduled until then."
-    );
     expect(english).toContain('aria-invalid="true"');
+    // In a row that names the channel already, its legend is for screen
+    // readers only, and the fields have no frame of their own.
+    expect(english).toContain('class="sr-only"');
+    expect(english).not.toContain("rounded-lg border p-4");
     await expect(typed("fr")).resolves.toContain("4 indiqués : 3 au plus.");
   });
 

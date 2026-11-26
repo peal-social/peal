@@ -179,7 +179,13 @@ const pages: Readonly<Record<Page, PageRule>> = {
     path: "/billing",
     section: "settings",
   },
-  calendar: { may: anyone, mode: "studio", path: "/calendar" },
+  // The posts page in its calendar layout: no line in the sidebar, but a
+  // page of the command menu and of its key.
+  calendar: {
+    may: needs("post:read", "channel:read"),
+    mode: "studio",
+    path: "/posts?layout=calendar",
+  },
   channelSets: {
     may: needs("post:read", "channel:read"),
     mode: "studio",
@@ -332,7 +338,7 @@ const layout: Readonly<
   ],
   studio: [
     { group: null, pages: ["home", "agent", "channels"] },
-    { group: "studio", pages: ["editor", "posts", "calendar", "media"] },
+    { group: "studio", pages: ["editor", "posts", "media"] },
     { group: "engage", pages: ["inbox", "analytics", "ads"] },
   ],
 };
@@ -531,10 +537,12 @@ export interface PageLink {
 }
 
 // Every page in the order the menu lists them: PealCreative's top level
-// with its sections' pages after it, then PealAPI's.
+// with the calendar (the posts page in its calendar layout) and its
+// sections' pages after it, then PealAPI's.
 const menuOrder: readonly Page[] = [
-  ...new Set([
+  ...new Set<Page>([
     ...layout.studio.flatMap(({ pages: listed }) => listed),
+    "calendar",
     ...sectionPages("posts"),
     ...sectionPages("settings"),
     ...layout.api.flatMap(({ pages: listed }) => listed),

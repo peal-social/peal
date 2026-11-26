@@ -25,6 +25,8 @@ import type { ComponentType, ReactNode } from "react";
 
 import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { PlatformMark } from "#components/channels/platform-mark.tsx";
+import { DisplayMenu } from "#components/lists/display-menu.tsx";
+import type { Layouts } from "#components/lists/display-menu.tsx";
 import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import type { FilterProperty } from "#components/lists/filter-menu.tsx";
 import { isFiltering, noFilter } from "#posts/calendar-filter.ts";
@@ -59,16 +61,17 @@ export type ViewLink = ComponentType<{
 /**
  * The calendar's toolbar (DESIGN.md, "Filters and display"): its views
  * (Day, Week, Month) as tabs, then the way through time (the period
- * before, Today, the one after) and Filter, whose channels, tags and
- * queues each keep several at once; under it, a chip for each, Clear and
- * how many posts on screen the filter hides. A kind the workspace has
- * none of is left out.
+ * before, Today, the one after), Filter, whose channels, tags and queues
+ * each keep several at once, and Display with the posts page's layouts;
+ * under it, a chip for each, Clear and how many posts on screen the
+ * filter hides. A kind the workspace has none of is left out.
  */
 export const CalendarToolbar = ({
   channels,
   filter,
   hidden,
   hrefOf,
+  layouts,
   link: Link,
   labels,
   onFilter,
@@ -84,6 +87,8 @@ export const CalendarToolbar = ({
   readonly hidden: number;
   /** The address of the calendar in another view. */
   readonly hrefOf: (view: CalendarView) => string;
+  /** The posts page's layouts, which Display offers. */
+  readonly layouts?: Layouts;
   /** The app's link, which keeps the page where it is. */
   readonly link: ViewLink;
   /** The names of the period before and the one after, for the arrows. */
@@ -223,6 +228,9 @@ export const CalendarToolbar = ({
                 }
               }}
             />
+          )}
+          {layouts === undefined ? null : (
+            <DisplayMenu active={false} layouts={layouts} />
           )}
         </ListToolbarEnd>
       </ListToolbar>

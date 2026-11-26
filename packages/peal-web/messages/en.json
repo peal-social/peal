@@ -1623,7 +1623,6 @@
       "channelNeedsReconnect": "Reconnect needed",
       "channelDisabled": "Turned off",
       "textLegend": "Text",
-      "allChannels": "All channels",
       "textLabel": "Text for all channels",
       "textPlaceholder": "What do you want to say?",
       "textHint": "Plain text. Mentions and hashtags stay as you type them.",
@@ -1637,7 +1636,6 @@
       "ownMediaList": "Images and videos on {handle}",
       "ownMediaBlocks": "Images and videos of its own on {handles} need a text to go out with: write one there, or for all channels, before you save or schedule.",
       "ownMediaNeedsText": "Write a text for this channel, or for all channels: its own images and videos go out with a text, and the post is not saved without one.",
-      "countersLegend": "Length on each channel",
       "countersEmpty": "Pick channels to see how the text fits each one.",
       "count": "{length} of {maximum} {unit, select, utf8Bytes {bytes} other {characters}}",
       "noLimit": "No limit known",
@@ -1770,7 +1768,34 @@
       "phraseHint": "Type a date in words, then press Enter: “tomorrow 9am”, “friday 10:30”, “in 3 days”, “nov 27”.",
       "phraseUnread": "Not understood. Try “tomorrow 9am”, “friday 10:30”, “in 3 days” or “nov 27”.",
       "phrasePast": "{at} has passed: choose a time to come.",
-      "phraseRead": "{at}, {distance}. Press Enter to use it."
+      "phraseRead": "{at}, {distance}. Press Enter to use it.",
+      "groupChosen": "{chosen}/{total}",
+      "searchChannels": "Search channels",
+      "noChannelFound": "No channel matches “{query}”.",
+      "eachChannelTitle": "Each channel",
+      "eachChannelEmpty": "Pick the channels the post goes to. Each one shows here, with how the post fits it.",
+      "ownTextShort": "Own text",
+      "ownMediaShort": "Own images and videos",
+      "optionsChosen": "{count, plural, one {# option set} other {# options set}}",
+      "sameAsPost": "Same as the post",
+      "needsAttention": "To fix",
+      "needsFields": "Needs {fields}",
+      "useForEvery": "{count, plural, one {Use these options on the other {platform} channel} other {Use these options on the # other {platform} channels}}",
+      "optionsCopied": "{count, plural, one {Options used on the other {platform} channel.} other {Options used on the # other {platform} channels.}}",
+      "countShort": "{length, number}/{maximum, number}{unit, select, utf8Bytes { bytes} other {}}",
+      "ownTextRow": "Text",
+      "writeOwn": "Write its own",
+      "writeOwnFor": "Write a text of its own for {handle}",
+      "ownMediaRow": "Images and videos",
+      "ownMediaToggle": "Its own, instead of the post's",
+      "pickChannels": "Choose channels…",
+      "everyChannel": "All channels",
+      "addChannels": "Add channels",
+      "channelsCount": "{count, plural, one {# channel} other {# channels}}",
+      "propertiesLabel": "Post details",
+      "whenQueued": "Next free slot of a queue",
+      "fixOptionsFirst": "Fix the channels’ options first",
+      "whenQueuedIn": "Next free slot in {queue}"
     },
     "Parts": {
       "legend": "Thread and first comment",
@@ -1818,7 +1843,6 @@
       "withMedia": "{channel}: a poll goes out with no image or video. Remove the media, or the poll."
     },
     "Options": {
-      "section": "Platform options",
       "legend": "{channel}: options",
       "description": "What {platform} asks of this post. Scheduling needs the fields marked required.",
       "required": "{label} (required)",
@@ -2146,7 +2170,7 @@
     },
     "Calendar": {
       "title": "Calendar",
-      "views": "Views",
+      "views": "Calendar views",
       "week": "Week",
       "month": "Month",
       "today": "Today",
@@ -2237,7 +2261,9 @@
       "approveLabel": "Approve “{post}”",
       "requestChanges": "Request changes",
       "requestChangesLabel": "Request changes on “{post}”",
-      "approvalChanged": "This post changed after the list loaded. Nothing was decided: open it and read it again."
+      "approvalChanged": "This post changed after the list loaded. Nothing was decided: open it and read it again.",
+      "layoutCalendar": "Calendar",
+      "layoutList": "List"
     },
     "Import": {
       "title": "Import posts",
@@ -2347,7 +2373,7 @@
       "updating": "Updating the previews…",
       "failed": "The previews could not be updated. Writing and saving still work.",
       "retry": "Try again",
-      "refused": "Would be refused as it is: see the lengths and options below.",
+      "refused": "Would be refused as it is: open its row under Each channel to see why.",
       "noText": "No text on this channel.",
       "textNotSent": "This format goes out without the text.",
       "part": "Part {position}",
@@ -2360,7 +2386,9 @@
         "xPaymentFailed": "X bills each post, which Peal passes on at X’s rates, and the billing account’s last payment failed: this post’s parts on X would fail when due, nothing sent, unless the payment method is updated on the billing page.",
         "xPerAccountPricing": "X bills each post, which Peal passes on at X’s rates, and this workspace’s plan is one from before per-account pricing: this post’s parts on X would fail when due, nothing sent.",
         "xPaymentMethod": "X bills each post, which Peal passes on at X’s rates, and the billing account has no payment method: this post’s parts on X would fail when due, nothing sent, unless one is added on the billing page."
-      }
+      },
+      "open": "Preview",
+      "close": "Close"
     },
     "Selection": {
       "label": "Selected posts",
@@ -4782,7 +4810,8 @@
     "postEmpty": "No tag.",
     "postEdit": "Choose tags",
     "postCreate": "New tag",
-    "postFull": "A post has {max, number} tags at most. Untick one to choose another."
+    "postFull": "A post has {max, number} tags at most. Untick one to choose another.",
+    "postAdd": "Add tags"
   },
   "Signatures": {
     "description": "A signature is text the workspace keeps to end its posts with: a sign-off, a disclosure, a set of hashtags. Insert one while you write a post, or make it a default: a default signature is added to new posts when they are first saved. A platform’s or a channel’s own default replaces the workspace’s there.",
@@ -5722,6 +5751,7 @@
     "properties": "Properties",
     "values": "Values",
     "display": "Display",
+    "layout": "Layout",
     "ordering": "Ordering",
     "direction": "{direction, select, asc {Ascending order} other {Descending order}}",
     "filters": "Filters",

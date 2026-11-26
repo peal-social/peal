@@ -188,7 +188,10 @@ export const usePostCommands = ({
       onNone: () => [],
       onSome: (date) => [
         {
-          href: workspaceHref(workspaceId, `/calendar?date=${date}`),
+          href: workspaceHref(
+            workspaceId,
+            `/posts?layout=calendar&date=${date}`
+          ),
           icon: CalendarDaysIcon,
           id: "calendar",
           label: t("onCalendar"),
