@@ -17,6 +17,7 @@ import type {
 import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
+import { asItIs } from "#shared/domain/rich-text/site-standing.ts";
 
 // Peal's own refusal for an article it cannot read any more.
 const articleGone = new BadRequest({
@@ -138,14 +139,18 @@ export const RoutedSitePublisher = Layer.effect(
       resume: requested((adapter, request, article, calls, token) =>
         adapter.resume(request, article, calls, token)
       ),
+      // What the article says, its status and date left as they stand.
       update: (article, platformPostId) =>
         onSite(article, (adapter, token) =>
-          adapter.update(
-            outgoingOf(article),
-            filesOf(article),
-            platformPostId,
-            token
-          )
+          adapter
+            .update(
+              outgoingOf(article),
+              filesOf(article),
+              platformPostId,
+              token,
+              asItIs
+            )
+            .pipe(Effect.asVoid)
         ),
     });
   })

@@ -16,6 +16,7 @@ import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import { isSitePlatform } from "#shared/domain/platform.ts";
 import type { SitePlatform } from "#shared/domain/platform.ts";
+import { asItIs } from "#shared/domain/rich-text/site-standing.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 
 // A site's refusal of a removal, its code as the target keeps a site's.
@@ -109,7 +110,8 @@ export const siteLiveEdit =
           credential: token.accessToken,
           platform,
           root: token.accountId,
-        }
+        },
+        asItIs
       )
       .pipe(
         Effect.as("edited" as const),

@@ -1,9 +1,12 @@
-import { DateTime, Duration, Effect, Option, Schema } from "effect";
+import { DateTime, Duration, Effect, Match, Option, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
-import type { SiteAdapter } from "#publishing/application/site-calls.ts";
+import type {
+  SiteAdapter,
+  SiteChange,
+} from "#publishing/application/site-calls.ts";
 import type {
   SiteCallJournal,
   SiteCallRequest,
@@ -30,6 +33,7 @@ import {
 } from "#shared/domain/rich-text/rich-body-html.ts";
 import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
 import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
+import type { SiteStanding } from "#shared/domain/rich-text/site-standing.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
 import {
@@ -57,7 +61,9 @@ import type { WordPressComHosts } from "#shared/infrastructure/platforms/wordpre
 // looked for among the user's posts changed since the attempt began, by
 // its title, and adopted only when exactly one, not another article's,
 // matches. `DELETE /wp/v2/posts/{id}` without `force` moves it to the
-// trash; `POST /wp/v2/posts/{id}` sends it again.
+// trash; `POST /wp/v2/posts/{id}` sends it again, with its `status` and
+// `date_gmt` when a hand-over asks for them: `future` at a time for the
+// site to publish it itself, `draft` taken back, or out now.
 
 // Uploads take longer than the API's calls.
 const uploadTimeout = Duration.minutes(10);
@@ -243,6 +249,12 @@ interface PostFields {
   readonly status?: string;
   readonly tags?: readonly number[];
   readonly title: string;
+}
+
+/** How a post stands on the site, as `/wp/v2/posts` takes it. */
+interface StandingFields {
+  readonly date_gmt?: string;
+  readonly status?: string;
 }
 
 /**
@@ -754,16 +766,18 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
       );
     });
 
-    // Sends what the article says over its post, and what the site made
-    // of its featured image.
+    // Sends what the article says over its post, with how it stands when
+    // that changes, and what the site made of its featured image.
     const changePost = (
       token: SiteToken,
       article: OutgoingArticle,
       journal: SiteFileJournal,
       platformPostId: string,
-      call: "newPostChange" | "change"
+      call: "newPostChange" | "change",
+      standing: StandingFields = {}
     ) =>
       fieldsOf(token, article, journal, call).pipe(
+        Effect.map((said): PostFields => ({ ...said, ...standing })),
         Effect.flatMap((fields) =>
           execute(
             api,
@@ -822,14 +836,16 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         token: SiteToken,
         article: OutgoingArticle,
         journal: SiteFileJournal,
-        platformPostId: string
+        platformPostId: string,
+        standing: StandingFields
       ) {
         const first = yield* changePost(
           token,
           article,
           journal,
           platformPostId,
-          "change"
+          "change",
+          standing
         );
 
         if (lostCover(first.fields, first.post)) {
@@ -837,16 +853,60 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
             newPost: false,
           });
         }
+
+        return first.post;
       }
     );
 
-    // What it says, never how it stands: the site keeps its status.
-    const update = (
+    // What it says, and how it stands when a hand-over asks: as it is (an
+    // edit keeps the site's status and date), held for a time, a draft,
+    // or out now, dated now, as WordPress would hold a post published
+    // with a date ahead (`future`) rather than show it.
+    const update = Effect.fn("WordPressArticles.update")(function* update(
       article: OutgoingArticle,
       journal: SiteFileJournal,
       platformPostId: string,
-      token: SiteToken
-    ) => updatePost(token, article, journal, platformPostId);
+      token: SiteToken,
+      standing: SiteStanding
+    ) {
+      const now = yield* DateTime.now;
+
+      const fields: StandingFields = Match.valueTags(standing, {
+        asItIs: () => ({}),
+        draft: () => ({ status: "draft" }),
+        hold: ({ at }) => ({ date_gmt: isoGmt(at), status: "future" }),
+        publish: () =>
+          article.content.siteStatus === "draft"
+            ? { status: "draft" }
+            : { date_gmt: isoGmt(now), status: "publish" },
+      });
+
+      const changed = updatePost(
+        token,
+        article,
+        journal,
+        platformPostId,
+        fields
+      ).pipe(
+        Effect.map((post): SiteChange => ({
+          _tag: "changed",
+          permalink: Option.fromUndefinedOr(webAddress(post.link)),
+        }))
+      );
+
+      // A post the site no longer has, as its author deleted it there:
+      // nothing is left for a hand-over to change. An edit still says so.
+      return yield* standing._tag === "asItIs"
+        ? changed
+        : changed.pipe(
+            Effect.catchIf(
+              (failure) =>
+                failure._tag === "BadRequest" &&
+                failure.code === "rest_post_invalid_id",
+              (): Effect.Effect<SiteChange> => Effect.succeed({ _tag: "gone" })
+            )
+          );
+    });
 
     const adapter: SiteAdapter = {
       find,

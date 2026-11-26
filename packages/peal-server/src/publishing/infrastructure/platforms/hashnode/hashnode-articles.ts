@@ -2,7 +2,10 @@ import { DateTime, Duration, Effect, Option, Schema } from "effect";
 import { HttpClientRequest } from "effect/http";
 
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
-import type { SiteAdapter } from "#publishing/application/site-calls.ts";
+import type {
+  SiteAdapter,
+  SiteChange,
+} from "#publishing/application/site-calls.ts";
 import type {
   SiteCallJournal,
   SiteCallRequest,
@@ -26,6 +29,7 @@ import { articleMarkdown } from "#shared/domain/rich-text/rich-body-markdown.ts"
 import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
 import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
 import { hashnodeSlugOf } from "#shared/domain/rich-text/site-rules.ts";
+import type { SiteStanding } from "#shared/domain/rich-text/site-standing.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
   hashnodeAnswerOf,
@@ -623,11 +627,15 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
         : yield* lookedUp(token, article, journal, committedAt, "noResponse");
     });
 
+    // What it says. Hashnode publishes nothing at a time itself
+    // (`schedulesItself` false), so no hand-over asks it anything else:
+    // the post stands as it is.
     const update = Effect.fn("HashnodeArticles.update")(function* update(
       article: OutgoingArticle,
       journal: SiteFileJournal,
       platformPostId: string,
-      token: SiteToken
+      token: SiteToken,
+      _standing: SiteStanding
     ) {
       const { addresses } = yield* filesOf(token, article, journal, true);
       const content = contentOf(article, addresses);
@@ -650,6 +658,13 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
             { input: { ...postInput(content), id: platformPostId } },
             Schema.Unknown
           );
+
+      const changed: SiteChange = {
+        _tag: "changed",
+        permalink: Option.none(),
+      };
+
+      return changed;
     });
 
     // Removed from the publication; one gone already is done.

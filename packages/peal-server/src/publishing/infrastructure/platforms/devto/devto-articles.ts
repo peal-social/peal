@@ -3,6 +3,7 @@ import {
   DateTime,
   Duration,
   Effect,
+  Match,
   Option,
   Ref,
   Schema,
@@ -12,7 +13,10 @@ import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
-import type { SiteAdapter } from "#publishing/application/site-calls.ts";
+import type {
+  SiteAdapter,
+  SiteChange,
+} from "#publishing/application/site-calls.ts";
 import type {
   SiteCallJournal,
   SiteFile,
@@ -34,6 +38,7 @@ import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.
 import { articleMarkdown } from "#shared/domain/rich-text/rich-body-markdown.ts";
 import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
 import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
+import type { SiteStanding } from "#shared/domain/rich-text/site-standing.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
   devtoErrorOf,
@@ -68,7 +73,10 @@ import { retryAfterOf } from "#shared/infrastructure/platforms/retry-after.ts";
 // publishes itself, by its body, which DEV keeps as sent, and adopted
 // only when exactly one, not another article's, matches; one of the
 // title (by its letters and digits) with another body is never sent
-// again. `PUT /api/articles/{id}` sends it again; DEV has no way to
+// again. `PUT /api/articles/{id}` sends it again (with `published` and
+// `published_at` when a hand-over moves it: ahead, a draft, or now, as
+// Forem lets a scheduled article's time change until it is out); DEV
+// has no way to
 // delete an article, so unpublishing makes it a draft there
 // (`published` false). DEV takes one write a second from an address:
 // every write of the process goes one at a time, and a short
@@ -705,25 +713,61 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
       )
     );
 
+  // What it says, and how it stands when a hand-over asks: as it is (an
+  // edit keeps DEV's status and date), published with a `published_at`
+  // ahead for DEV to publish it then, a draft again, or out now. A post
+  // DEV no longer has is gone, but for an edit, which says so.
   const update = Effect.fn("DevToArticles.update")(function* update(
     article: OutgoingArticle,
     journal: SiteFileJournal,
     platformPostId: string,
-    token: SiteToken
+    token: SiteToken,
+    standing: SiteStanding
   ) {
     const { addresses } = yield* filesOf(token, article, journal, {
       send: true,
     });
 
-    const response = yield* put(
-      token,
-      platformPostId,
-      contentOf(article, addresses)
-    );
+    const now = yield* DateTime.now;
 
-    return yield* response.status === 200
-      ? Effect.void
-      : refusalOf(response, false);
+    const stands: Partial<ArticleFields> = Match.valueTags(standing, {
+      asItIs: () => ({}),
+      draft: () => ({ published: false }),
+      hold: ({ at }) => ({ published: true, published_at: isoOf(at) }),
+      // Dated now: an article DEV holds for a time keeps it otherwise.
+      publish: () =>
+        article.content.siteStatus === "draft"
+          ? { published: false }
+          : { published: true, published_at: isoOf(now) },
+    });
+
+    const response = yield* put(token, platformPostId, {
+      ...contentOf(article, addresses),
+      ...stands,
+    });
+
+    if (response.status === 404 && standing._tag !== "asItIs") {
+      const gone: SiteChange = { _tag: "gone" };
+
+      return gone;
+    }
+
+    if (response.status !== 200) {
+      return yield* refusalOf(response, false);
+    }
+
+    const post = yield* HttpClientResponse.schemaBodyJson(CreatedSchema)(
+      response
+    ).pipe(Effect.option);
+
+    const changed: SiteChange = {
+      _tag: "changed",
+      permalink: post.pipe(
+        Option.flatMap(({ url }) => Option.fromUndefinedOr(webAddress(url)))
+      ),
+    };
+
+    return changed;
   });
 
   // DEV deletes no article: unpublished, it is a draft there again. One

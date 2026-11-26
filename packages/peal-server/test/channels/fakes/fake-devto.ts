@@ -389,9 +389,14 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
                 ? article.main_image
                 : given.main_image,
             published: given.published ?? article.published,
+            // A time given moves it, as Forem lets a scheduled article's
+            // time change while it is ahead; published without one, it
+            // keeps its own, or is out now.
             published_at:
               given.published === true
-                ? (article.published_at ?? new Date(now()).toISOString())
+                ? (given.published_at ??
+                  article.published_at ??
+                  new Date(now()).toISOString())
                 : article.published_at,
             tags:
               given.tags === undefined

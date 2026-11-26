@@ -261,6 +261,24 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
         const pretty = options.pretty ?? true;
         const received: FakeWordPressRequest[] = [];
         const posts = new Map<number, FakeWordPressPost>();
+
+        // The site's own scheduler, on the test's clock: a `future` post
+        // whose date has come is published, as WordPress's scheduler
+        // publishes it at the next page load once its time passed.
+        const publishDue = () => {
+          const now = stampOf(clock);
+
+          for (const post of posts.values()) {
+            if (
+              post.status === "future" &&
+              post.date_gmt !== null &&
+              post.date_gmt <= now
+            ) {
+              post.status = "publish";
+            }
+          }
+        };
+
         const files: FakeWordPressMedia[] = [];
         const tags = new Map<number, string>();
         const categories = new Map<number, string>([[1, "Uncategorized"]]);
@@ -724,6 +742,7 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
           };
 
           received.push(request);
+          publishDue();
 
           const intercepted = options.intercept?.(request);
 
@@ -819,7 +838,11 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
             }
           },
           media: () => [...files],
-          posts: () => [...posts.values()],
+          posts: () => {
+            publishDue();
+
+            return [...posts.values()];
+          },
           requests: () => [...received],
           root: rootUrl(),
           tags: () => new Map(tags),

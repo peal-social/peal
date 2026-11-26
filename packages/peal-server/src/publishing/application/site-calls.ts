@@ -1,5 +1,5 @@
 import { Context } from "effect";
-import type { Effect } from "effect";
+import type { Effect, Option } from "effect";
 
 import type {
   SiteCallJournal,
@@ -11,6 +11,7 @@ import type { SiteToken } from "#shared/application/site-token.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
 import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
+import type { SiteStanding } from "#shared/domain/rich-text/site-standing.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 
 /**
@@ -53,14 +54,30 @@ export interface SiteAdapter {
     platformPostId: string,
     token: SiteToken
   ) => Effect.Effect<void, PublishFailure | TokenRejected>;
-  /** Sends the article's content again over its post on the site. */
+  /**
+   * Sends the article's content again over its post on the site, and
+   * makes the post stand as `standing` says: as it stands (`asItIs`, its
+   * status and date kept, as an edit of a live post), held for the site
+   * to publish it itself at a time, a draft, or out now. Safe to repeat.
+   * Asked anything but `asItIs`, a post the site no longer has answers
+   * `gone` rather than fail: it cannot be used again.
+   */
   readonly update: (
     article: OutgoingArticle,
     journal: SiteFileJournal,
     platformPostId: string,
-    token: SiteToken
-  ) => Effect.Effect<void, PublishFailure | TokenRejected>;
+    token: SiteToken,
+    standing: SiteStanding
+  ) => Effect.Effect<SiteChange, PublishFailure | TokenRejected>;
 }
+
+/**
+ * What the site made of a post Peal changed there: changed, with its
+ * address when the site gave one, or gone from the site.
+ */
+export type SiteChange =
+  | { readonly _tag: "changed"; readonly permalink: Option.Option<string> }
+  | { readonly _tag: "gone" };
 
 /**
  * The websites' calls, by the platform the credential names: what

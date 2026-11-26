@@ -55,12 +55,13 @@ export const siteCallsWith = (hosts: SiteHosts) =>
           adapters[token.platform].remove(platformPostId, token),
         resume: (request, article, journal, token) =>
           adapters[token.platform].resume(request, article, journal, token),
-        update: (article, journal, platformPostId, token) =>
+        update: (article, journal, platformPostId, token, standing) =>
           adapters[token.platform].update(
             article,
             journal,
             platformPostId,
-            token
+            token,
+            standing
           ),
       });
     })
