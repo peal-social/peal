@@ -160,7 +160,7 @@ export const articleViolations = (
       rules.maxCategories,
       takesTerm
     ),
-    ...(content.siteStatus === "future" && !rules.takesFuture
+    ...(content.siteStatus === "future" && !rules.schedulesItself
       ? [{ _tag: "siteStatusNotTaken", status: "future" } as const]
       : []),
     // The site publishes it itself: its time must be ahead.

@@ -9,8 +9,12 @@ export interface SiteRules {
   readonly maxCategories: number;
   readonly maxTags: number;
   readonly maxTitleLength: number;
-  /** Whether the site publishes an article at a time itself. */
-  readonly takesFuture: boolean;
+  /**
+   * Whether the site publishes a post at a time itself: Peal hands it a
+   * post scheduled for later as soon as it is scheduled (publishing's
+   * `site-hold.ts`), and an article's `future` status asks for it.
+   */
+  readonly schedulesItself: boolean;
   /** Whether the site takes a tag of this name, as it is written. */
   readonly takesTag: (name: string) => boolean;
 }
@@ -49,7 +53,7 @@ const wordpressRules: SiteRules = {
   maxCategories: maxArticleTerms,
   maxTags: maxArticleTerms,
   maxTitleLength: maxArticleTitleLength,
-  takesFuture: true,
+  schedulesItself: true,
   takesTag: (name) => name.trim() !== "" && name.length <= maxTermLength,
 };
 
@@ -59,14 +63,14 @@ export const siteRules: Readonly<Record<SitePlatform, SiteRules>> = {
     maxCategories: 0,
     maxTags: 4,
     maxTitleLength: 128,
-    takesFuture: true,
+    schedulesItself: true,
     takesTag: (name) => devtoTag.test(name.trim()),
   },
   hashnode: {
     maxCategories: 0,
     maxTags: hashnodeMaxTags,
     maxTitleLength: maxArticleTitleLength,
-    takesFuture: false,
+    schedulesItself: false,
     takesTag: (name) => hashnodeSlugOf(name) !== "" && name.length <= 100,
   },
   wordpress: wordpressRules,

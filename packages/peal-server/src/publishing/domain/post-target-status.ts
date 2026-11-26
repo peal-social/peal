@@ -104,6 +104,10 @@ const PublishingSchema = Schema.TaggedStruct("publishing", {
 });
 
 const PublishedSchema = Schema.TaggedStruct("published", {
+  // A website published it itself at the post's time, as Peal handed it
+  // over ahead (`./site-hold.ts`): Peal counts it published then without
+  // reading the site back. Absent on every other target.
+  bySite: Schema.optionalKey(Schema.Boolean),
   // When Peal last replaced the text of a part of it on the platform, at
   // a member's request (`./live-post-change.ts`). Absent until then.
   editedAt: Schema.optionalKey(Schema.DateTimeUtc),

@@ -1,0 +1,115 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "96d9d2a5-0aca-4298-83c9-bbc1ac76c156",
+  "prevIds": [
+    "4bbd4a5b-d935-4758-811b-62ff3f99ac0f"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "publishing",
+        "post_targets",
+        "published_by_site"
+      ],
+      "writes": [
+        "s|col|publishing.post_targets.published_by_site",
+        "n|col|publishing.post_targets.published_by_site",
+        "e|col|publishing.post_targets.published_by_site"
+      ],
+      "reads": [
+        "n|tbl|publishing.post_targets",
+        "n|sch|publishing"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "publishing",
+        "post_targets",
+        "site_hand_overs"
+      ],
+      "writes": [
+        "s|col|publishing.post_targets.site_hand_overs",
+        "n|col|publishing.post_targets.site_hand_overs",
+        "e|col|publishing.post_targets.site_hand_overs"
+      ],
+      "reads": [
+        "n|tbl|publishing.post_targets",
+        "n|sch|publishing"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "publishing",
+        "post_targets",
+        "site_publish_at"
+      ],
+      "writes": [
+        "s|col|publishing.post_targets.site_publish_at",
+        "n|col|publishing.post_targets.site_publish_at",
+        "e|col|publishing.post_targets.site_publish_at"
+      ],
+      "reads": [
+        "n|tbl|publishing.post_targets",
+        "n|sch|publishing"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "post_targets",
+        "name": "published_by_site",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "post_targets",
+        "name": "site_hand_overs",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "post_targets",
+        "name": "site_publish_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

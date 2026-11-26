@@ -33,6 +33,7 @@ import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTargetStatus } from "#publishing/domain/post-target-status.ts";
 import { PostTarget } from "#publishing/domain/post-target.ts";
 import { Post } from "#publishing/domain/post.ts";
+import type { SitePostSchema } from "#publishing/domain/site-post.ts";
 import {
   mediaOptionFields,
   TargetOptionsSchema,
@@ -139,6 +140,7 @@ const targetStatusOf = (row: TargetRow) => {
   // A target's notes, each only when it holds: a status is
   // decoded from this, and keeps no note it lacks.
   let noted: typeof status & {
+    readonly bySite?: true;
     readonly dropped?: true;
     readonly editedAt?: DateTime.Utc;
     readonly keptPrivate?: true;
@@ -171,7 +173,37 @@ const targetStatusOf = (row: TargetRow) => {
     noted = { ...noted, partsLeftOut: true };
   }
 
+  if (row.publishedBySite) {
+    noted = { ...noted, bySite: true };
+  }
+
   return noted;
+};
+
+// The post a website holds for a target that did not go out yet: its id
+// and address there, kept in the columns a published target's are in,
+// and until when the site holds it to publish itself.
+const sitePostOf = (row: TargetRow) => {
+  if (row.status === "published" || row.platformPostId === null) {
+    return {};
+  }
+
+  let onSite: typeof SitePostSchema.Encoded = {
+    platformPostId: row.platformPostId,
+  };
+
+  if (row.permalink !== null) {
+    onSite = { ...onSite, permalink: row.permalink };
+  }
+
+  if (row.sitePublishAt !== null) {
+    onSite = {
+      ...onSite,
+      publishAt: DateTime.fromDateUnsafe(row.sitePublishAt),
+    };
+  }
+
+  return { onSite };
 };
 
 // The parts that went live, as their column holds them: JSON.
@@ -186,6 +218,7 @@ const decodeTargetRow = (row: TargetRow, liveParts: readonly LivePart[]) =>
     channelId: row.channelId,
     id: row.id,
     liveParts,
+    ...sitePostOf(row),
     options: Option.fromNullOr(row.options),
     postId: row.postId,
     round: row.round,
@@ -312,7 +345,9 @@ const targetColumns = (status: PostTargetStatus) => {
     partsLeftOut: false,
     permalink: null,
     platformPostId: null,
+    publishedBySite: false,
     removedAt: null,
+    sitePublishAt: null,
     startedAt: null,
     status: status._tag,
     thumbnailNotSet: false,
@@ -333,6 +368,7 @@ const targetColumns = (status: PostTargetStatus) => {
     }),
     pending: () => cleared,
     published: ({
+      bySite,
       editedAt,
       keptPrivate,
       partsLeftOut,
@@ -352,6 +388,7 @@ const targetColumns = (status: PostTargetStatus) => {
       partsLeftOut: partsLeftOut === true,
       permalink: Option.getOrNull(permalink),
       platformPostId: Option.getOrNull(platformPostId),
+      publishedBySite: bySite === true,
       removedAt: removedAt === undefined ? null : date(removedAt),
       thumbnailNotSet: thumbnailNotSet === true,
     }),
@@ -367,6 +404,19 @@ const targetColumns = (status: PostTargetStatus) => {
     }),
   });
 };
+
+// The columns of the post a website holds for a target that did not go
+// out, as `sitePostOf` reads them: none on a published target, whose
+// columns are its own post's.
+const sitePostColumns = ({ onSite, status }: PostTarget) =>
+  status._tag === "published"
+    ? {}
+    : {
+        permalink: onSite?.permalink ?? null,
+        platformPostId: onSite?.platformPostId ?? null,
+        sitePublishAt:
+          onSite?.publishAt === undefined ? null : date(onSite.publishAt),
+      };
 
 /**
  * When a target that becomes `next` is listed among the publications from:
@@ -433,6 +483,7 @@ const optionsColumn = (target: PostTarget) =>
 
 const targetRow = (target: PostTarget) => ({
   ...targetColumns(target.status),
+  ...sitePostColumns(target),
   channelId: target.channelId,
   id: target.id,
   liveParts: encodeLiveParts(target.liveParts),
@@ -744,6 +795,54 @@ export const DrizzlePostRepository = Layer.effect(
             )
           )
           .pipe(Effect.mapError(failed), Effect.asVoid),
+      nextHandOver: (targetId) =>
+        db
+          .update(postTargets)
+          .set({ siteHandOvers: sql`${postTargets.siteHandOvers} + 1` })
+          .where(eq(postTargets.id, targetId))
+          .returning({ count: postTargets.siteHandOvers })
+          .pipe(
+            Effect.mapError(failed),
+            Effect.flatMap(([row]) =>
+              row === undefined
+                ? Effect.die(`Target ${targetId} is missing`)
+                : Effect.succeed(row.count)
+            )
+          ),
+      setSitePost: (targetId, onSite) =>
+        db
+          .update(postTargets)
+          .set({
+            permalink: Option.getOrNull(
+              onSite.pipe(
+                Option.flatMap(({ permalink }) =>
+                  Option.fromUndefinedOr(permalink)
+                )
+              )
+            ),
+            platformPostId: Option.getOrNull(
+              onSite.pipe(Option.map(({ platformPostId }) => platformPostId))
+            ),
+            sitePublishAt: Option.getOrNull(
+              onSite.pipe(
+                Option.flatMap(({ publishAt }) =>
+                  Option.fromUndefinedOr(publishAt)
+                ),
+                Option.map(date)
+              )
+            ),
+          })
+          .where(
+            and(
+              eq(postTargets.id, targetId),
+              ne(postTargets.status, "published")
+            )
+          )
+          .returning({ id: postTargets.id })
+          .pipe(
+            Effect.mapError(failed),
+            Effect.map((rows) => rows.length === 1)
+          ),
       markEdited: (targetId, editedAt) =>
         db
           .update(postTargets)
@@ -923,6 +1022,7 @@ export const DrizzlePostRepository = Layer.effect(
               .update(postTargets)
               .set({
                 ...targetColumns(next.status),
+                ...sitePostColumns(next),
                 listedAt: listedOf(next, current, now),
                 liveParts: encodeLiveParts(next.liveParts),
                 round: next.round,

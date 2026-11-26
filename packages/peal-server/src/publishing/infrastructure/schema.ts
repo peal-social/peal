@@ -161,7 +161,11 @@ export const posts = publishing.table(
  * went live there, in order (each part's place, the platform's id and
  * address for it, and when: never content), kept from round to round;
  * empty on rows from before parts were kept. `platform_post_id` and
- * `permalink` are the first part's.
+ * `permalink` are the first part's; on a target that did not go out yet,
+ * the post its website already holds for it, if any (`site_publish_at`
+ * says until when the site holds it to publish itself), which
+ * `RecordedPosts` reads too, so a search on the site never adopts it for
+ * another target.
  */
 export const postTargets = publishing.table(
   "post_targets",
@@ -202,11 +206,23 @@ export const postTargets = publishing.table(
     // go out (a first comment, the rest of a thread): it is published as
     // the parts that are live.
     partsLeftOut: boolean("parts_left_out").notNull().default(false),
+    // True on a target a website published itself at the post's time, as
+    // Peal handed it over ahead: Peal did not read the site back.
+    publishedBySite: boolean("published_by_site").notNull().default(false),
     // When Peal deleted it from the platform at a member's request, every
     // part of it (`live_post_changes`); it stays published. Null while it
     // is there.
     removedAt: instant("removed_at"),
     round: integer("round").notNull().default(1),
+    // How many times its website was asked to follow the post
+    // (`SiteHoldV1`): the n-th hand-over journals its calls at part n of
+    // round 0, apart from the target's own rounds.
+    siteHandOvers: integer("site_hand_overs").notNull().default(0),
+    // When the website holds the post to publish it itself, on a target
+    // that did not go out yet: the site's post is `platform_post_id` (and
+    // `permalink`) then. Null when the site holds none, or keeps it as a
+    // draft Peal took back.
+    sitePublishAt: instant("site_publish_at"),
     startedAt: instant("started_at"),
     status: text("status").notNull(),
     thumbnailNotSet: boolean("thumbnail_not_set").notNull().default(false),

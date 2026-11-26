@@ -1,5 +1,4 @@
-import type { DateTime } from "effect";
-import { Match, Option, Result, Schema } from "effect";
+import { DateTime, Match, Option, Result, Schema } from "effect";
 
 import { ChannelIdSchema, PostIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, PostId } from "#shared/domain/ids.ts";
@@ -13,6 +12,8 @@ import { PostTargetIdSchema } from "./post-target-id.ts";
 import type { PostTargetId } from "./post-target-id.ts";
 import { PostTargetStatusSchema } from "./post-target-status.ts";
 import type { PostTargetStatus } from "./post-target-status.ts";
+import { SitePostSchema } from "./site-post.ts";
+import type { SitePost } from "./site-post.ts";
 import { TargetOptionsSchema } from "./target-options.ts";
 import type { TargetOptions } from "./target-options.ts";
 import type { TargetSettlement } from "./target-settlement.ts";
@@ -54,19 +55,30 @@ export class PostTarget extends Schema.Class<PostTarget>(
   channelId: ChannelIdSchema,
   id: PostTargetIdSchema,
   liveParts: Schema.Array(LivePartSchema),
+  // The post a website holds for it before it went out (`./site-post.ts`),
+  // kept whatever its status until the target is published, the site
+  // takes it off, or Peal removes it there. Absent everywhere else.
+  onSite: Schema.optionalKey(SitePostSchema),
   options: Schema.Option(TargetOptionsSchema),
   postId: PostIdSchema,
   round: Schema.Int.check(Schema.isGreaterThanOrEqualTo(1)),
   status: PostTargetStatusSchema,
 }) {}
 
+// The site's post, as a constructor takes it: left out when there is none.
+const siteOf = (onSite: SitePost | undefined) =>
+  onSite === undefined ? {} : { onSite };
+
 type Transition = Result.Result<PostTarget, InvalidTargetTransition>;
 
+// The target in another status. Once published, the site's post it held
+// is the post that went out: it is no longer kept apart.
 const withStatus = (target: PostTarget, status: PostTargetStatus): PostTarget =>
   new PostTarget({
     channelId: target.channelId,
     id: target.id,
     liveParts: target.liveParts,
+    ...siteOf(status._tag === "published" ? undefined : target.onSite),
     options: target.options,
     postId: target.postId,
     round: target.round,
@@ -114,6 +126,7 @@ export const withOptions = (
     channelId: target.channelId,
     id: target.id,
     liveParts: target.liveParts,
+    ...siteOf(target.onSite),
     options,
     postId: target.postId,
     round: target.round,
@@ -173,6 +186,7 @@ export const recordLivePart = (
           channelId: target.channelId,
           id: target.id,
           liveParts: [...target.liveParts, part],
+          ...siteOf(target.onSite),
           options: target.options,
           postId: target.postId,
           round: target.round,
@@ -389,6 +403,7 @@ export const confirmPublished = (
       channelId: target.channelId,
       id: target.id,
       liveParts,
+      ...siteOf(next._tag === "published" ? undefined : target.onSite),
       options: target.options,
       postId: target.postId,
       round: target.round,
@@ -465,6 +480,7 @@ export const repostTarget = (target: PostTarget): Transition =>
           channelId: target.channelId,
           id: target.id,
           liveParts: target.liveParts,
+          ...siteOf(target.onSite),
           options: target.options,
           postId: target.postId,
           round: target.round + 1,
@@ -491,3 +507,102 @@ export const confirmNotPublished = (
         })
       )
     : rejected(target, "confirmNotPublished");
+
+/**
+ * Whether the target's website holds it to publish itself at `at`, the
+ * post's time: the site was handed it ahead (`./site-hold.ts`), and no
+ * call is made then.
+ */
+export const heldOnSite = (target: PostTarget, at: DateTime.Utc): boolean =>
+  (target.status._tag === "pending" || target.status._tag === "publishing") &&
+  target.onSite?.publishAt !== undefined &&
+  DateTime.Equivalence(target.onSite.publishAt, at);
+
+/**
+ * The target with the post its website now holds for it, or none once the
+ * site no longer does. Only a target that did not go out keeps one.
+ */
+export const withSitePost = (
+  target: PostTarget,
+  onSite: Option.Option<SitePost>
+): PostTarget =>
+  new PostTarget({
+    channelId: target.channelId,
+    id: target.id,
+    liveParts: target.liveParts,
+    ...siteOf(
+      target.status._tag === "published"
+        ? undefined
+        : Option.getOrUndefined(onSite)
+    ),
+    options: target.options,
+    postId: target.postId,
+    round: target.round,
+    status: target.status,
+  });
+
+/**
+ * The site took the target's post back to a draft: it no longer holds it
+ * for a time, and keeps it for the next hand-over to change, unless it
+ * said the post cannot be used again (`reusable` false), when Peal
+ * forgets it.
+ */
+export const takenBack = (target: PostTarget, reusable: boolean): PostTarget =>
+  withSitePost(
+    target,
+    reusable
+      ? Option.fromUndefinedOr(target.onSite).pipe(
+          Option.map(({ permalink, platformPostId }): SitePost =>
+            permalink === undefined
+              ? { platformPostId }
+              : { permalink, platformPostId }
+          )
+        )
+      : Option.none()
+  );
+
+/**
+ * The website published the target itself at the time it held it for:
+ * it is published then, as the site's post, `bySite`, its first part
+ * live from then. Peal did not read the site back. Refused on a target
+ * the site holds for no time, or that went out otherwise.
+ */
+export const publishedBySite = (target: PostTarget): Transition => {
+  const { onSite, status } = target;
+
+  if (
+    (status._tag !== "pending" && status._tag !== "publishing") ||
+    onSite?.publishAt === undefined
+  ) {
+    return rejected(target, "publishBySite");
+  }
+
+  const permalink = Option.fromUndefinedOr(onSite.permalink);
+  const platformPostId = Option.some(onSite.platformPostId);
+
+  return Result.succeed(
+    new PostTarget({
+      channelId: target.channelId,
+      id: target.id,
+      liveParts: [
+        {
+          index: 0,
+          permalink,
+          platformPostId,
+          publishedAt: onSite.publishAt,
+          round: target.round,
+        },
+      ],
+      options: target.options,
+      postId: target.postId,
+      round: target.round,
+      status: {
+        _tag: "published",
+        bySite: true,
+        permalink,
+        platformPostId,
+        publishedAt: onSite.publishAt,
+      },
+    })
+  );
+};

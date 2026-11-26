@@ -7,6 +7,7 @@ import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import type { Post } from "#publishing/domain/post.ts";
 import type { PostingMonth } from "#publishing/domain/posting-month.ts";
+import type { SitePost } from "#publishing/domain/site-post.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
 import type { TargetOptions } from "#publishing/domain/target-options.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -123,6 +124,28 @@ export class PostRepository extends Context.Service<
     readonly markFirstComment: (
       targetId: PostTargetId
     ) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Records the post the target's website now holds for it, or that it
+     * holds none (`./site-hold.ts`), as the site answered a hand-over's
+     * call, and nothing else of the target, whatever its round: a call of
+     * an earlier round that made a post there must never lose it. False
+     * when the target is gone, or went out meanwhile. Run inside the
+     * channel's gate, alone: one row's write, which waits for whoever
+     * holds the target's lock.
+     */
+    readonly setSitePost: (
+      targetId: PostTargetId,
+      onSite: Option.Option<SitePost>
+    ) => Effect.Effect<boolean, DatabaseError>;
+    /**
+     * Counts one more hand-over of the target to its website
+     * (`SiteHoldV1`), and answers its number, from 1: the part of the
+     * hand-overs' round its calls are journaled at. Run under the
+     * target's lock.
+     */
+    readonly nextHandOver: (
+      targetId: PostTargetId
+    ) => Effect.Effect<number, DatabaseError>;
     readonly markEdited: (
       targetId: PostTargetId,
       editedAt: DateTime.Utc
