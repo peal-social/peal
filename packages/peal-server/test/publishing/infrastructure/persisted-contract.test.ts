@@ -477,6 +477,12 @@ describe("the persisted contract", () => {
       schema: PartsClaimSchema,
       workflow: "PublishTargetV2",
     },
+    // A target its website held for the post's time, since hand-overs.
+    {
+      file: "claim-target-held.json",
+      schema: PartsClaimSchema,
+      workflow: "PublishTargetV2",
+    },
     {
       file: "publish.json",
       schema: PublicationDecisionSchema,

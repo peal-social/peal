@@ -23,9 +23,11 @@ import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
 import { publishingWorkers } from "#app/publishing-workers.ts";
+import { UnreadComments, UnreadMetrics } from "#channels/container.ts";
 import { AccountRules } from "#publishing/application/account-rules.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
 import { ChannelHealth } from "#publishing/application/channel-health.ts";
+import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import { LivePostEvents } from "#publishing/application/live-post-events.ts";
 import type { PlatformPublisher } from "#publishing/application/platform-publisher.ts";
 import { PostEvents } from "#publishing/application/post-events.ts";
@@ -153,14 +155,17 @@ export const journalWith = (
  * Sharding over `storage`, calling `platforms`, with `journal`. Several
  * deploys over one storage are restarts.
  */
-export const deployWith = <S, E, R, EP, RP, RJ>(
+export const deployWith = <S, E, R, EP, RP, RJ, EL = never, RL = never>(
   storage: Layer.Layer<S, E, R>,
   platforms: Layer.Layer<PlatformPublisher, EP, RP>,
   journal: Layer.Layer<PublicationJournal, never, RJ>,
   // Whose channels the posts' are: Mastodon's unless a test says.
-  channels: Layer.Layer<WorkspaceChannels> = anyChannelOn()
+  channels: Layer.Layer<WorkspaceChannels> = anyChannelOn(),
+  // What changes live posts, and takes a website's post off: nothing
+  // unless a test says.
+  live: Layer.Layer<LivePostClients, EL, RL> = LivePostClients.none
 ) =>
-  publishingWorkers(platforms).pipe(
+  publishingWorkers(platforms, UnreadMetrics, UnreadComments, live).pipe(
     Layer.provideMerge(PostScheduling.layer),
     Layer.provideMerge(PostPresets.layer),
     Layer.provideMerge(
@@ -194,11 +199,12 @@ export const deployWith = <S, E, R, EP, RP, RJ>(
   );
 
 /** One server with the journal in Postgres (see `deployWith`). */
-export const deploy = <S, E, R, EP, RP>(
+export const deploy = <S, E, R, EP, RP, EL = never, RL = never>(
   storage: Layer.Layer<S, E, R>,
   platforms: Layer.Layer<PlatformPublisher, EP, RP>,
-  channels: Layer.Layer<WorkspaceChannels> = anyChannelOn()
-) => deployWith(storage, platforms, DrizzlePublicationJournal, channels);
+  channels: Layer.Layer<WorkspaceChannels> = anyChannelOn(),
+  live: Layer.Layer<LivePostClients, EL, RL> = LivePostClients.none
+) => deployWith(storage, platforms, DrizzlePublicationJournal, channels, live);
 
 /**
  * A server with its own in-memory storage and fake platform, and `journal`.

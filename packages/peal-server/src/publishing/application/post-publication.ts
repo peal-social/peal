@@ -4,15 +4,19 @@ import { isOperatorRefusal } from "#publishing/domain/own-refusals.ts";
 import type { PostOutcome } from "#publishing/domain/post-status.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import {
+  heldOnSite,
   isCancelRequested,
   isSettled,
   missTarget,
+  publishedBySite,
   settleTarget,
+  startTarget,
 } from "#publishing/domain/post-target.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import { finishPost, outcomeOf } from "#publishing/domain/post.ts";
 import type { Post } from "#publishing/domain/post.ts";
 import type {
+  PartsClaim,
   PostClaim,
   TargetClaim,
   TargetOutcome,
@@ -56,6 +60,9 @@ const found = <A>(row: Option.Option<A>, what: string) =>
 
 const applied = (written: boolean) =>
   written ? Effect.void : Effect.die("A row changed under its lock");
+
+// How a round ends for a target that is gone: as one sent again since.
+const erased: TargetOutcome = "superseded";
 
 const settledOutcome = (target: PostTarget): Effect.Effect<TargetOutcome> => {
   const { status } = target;
@@ -132,12 +139,21 @@ export const claimPostRun = Effect.fn("Publishing.claimPost")(
         ) {
           const targets = yield* posts.lockTargets(postId);
 
+          const due = yield* scheduleOf(publishing);
+
           // A target taken off the post before its time stays cancelled.
+          // One its website held for this time was published there, by
+          // the site, whatever became of the server: that is what the
+          // hand-over is for.
           const missed = yield* Effect.all(
             targets.map((target) =>
               isSettled(target)
                 ? Effect.succeed(target)
-                : Effect.fromResult(missTarget(target, now)).pipe(
+                : Effect.fromResult(
+                    heldOnSite(target, due.at)
+                      ? publishedBySite(target)
+                      : missTarget(target, now)
+                  ).pipe(
                     Effect.orDie,
                     Effect.tap((next) =>
                       posts
@@ -305,6 +321,118 @@ export const claimTargetRun = Effect.fn("Publishing.claimTarget")(
               .pipe(Effect.flatMap(applied), Effect.andThen(claimed(started))),
           superseded: () => Effect.succeed<TargetClaim>({ _tag: "superseded" }),
         });
+      })
+    );
+  }
+);
+
+/**
+ * A target's job started for `round` at the post's time: when its website
+ * holds the post to publish it itself at that very time, the target is
+ * started, and answered `held`, as no call is to be made; none otherwise,
+ * for the job to claim it as any target. Run in the claim's transaction,
+ * under the target's lock.
+ */
+export const claimHeldRun = Effect.fn("Publishing.claimHeld")(
+  function* claimHeldRun(targetId: PostTargetId, round: number) {
+    const posts = yield* PostRepository;
+    const unlocked = yield* posts.findTarget(targetId);
+
+    if (Option.isNone(unlocked) || unlocked.value.round !== round) {
+      return Option.none<PartsClaim>();
+    }
+
+    const stored = yield* posts.find(unlocked.value.postId);
+
+    if (
+      Option.isNone(stored) ||
+      stored.value.post.status._tag !== "publishing"
+    ) {
+      return Option.none<PartsClaim>();
+    }
+
+    const { at } = stored.value.post.status.schedule;
+    const locked = yield* posts.lockTarget(targetId);
+
+    if (
+      Option.isNone(locked) ||
+      locked.value.round !== round ||
+      locked.value.status._tag !== "pending" ||
+      !heldOnSite(locked.value, at)
+    ) {
+      return Option.none<PartsClaim>();
+    }
+
+    const target = locked.value;
+
+    const started = yield* Effect.fromResult(
+      startTarget(target, yield* DateTime.now)
+    ).pipe(Effect.orDie);
+
+    yield* applied(yield* posts.updateTarget(started, target));
+
+    const held: PartsClaim = {
+      _tag: "held",
+      channelId: target.channelId,
+      postId: target.postId,
+      publishAt: at,
+    };
+
+    return Option.some(held);
+  }
+);
+
+/**
+ * A target its website held for the post's time is published, by the
+ * site, at that time, with no call: Peal trusts the site, as it never
+ * reads it back. Told as any settled target (the notice, `post.published`),
+ * and the last target to settle finishes the post, in one transaction
+ * under the post's then the target's locks. Run again, it answers what
+ * the first run recorded.
+ */
+export const recordHeldRun = Effect.fn("Publishing.recordHeld")(
+  function* recordHeldRun(targetId: PostTargetId, round: number) {
+    const posts = yield* PostRepository;
+    const outcomes = yield* PublicationOutcomes;
+    const { transaction } = yield* TransactionRunner;
+
+    return yield* transaction(
+      Effect.gen(function* recordInTransaction() {
+        const unlocked = yield* posts.findTarget(targetId);
+
+        if (Option.isNone(unlocked)) {
+          return erased;
+        }
+
+        // The post first, then the target, as every use case locks them.
+        const locked = yield* posts.lock(unlocked.value.postId);
+        const held = yield* posts.lockTarget(targetId);
+
+        if (Option.isNone(locked) || Option.isNone(held)) {
+          return erased;
+        }
+
+        const target = held.value;
+
+        if (target.round !== round) {
+          const outcome: TargetOutcome = "superseded";
+
+          return outcome;
+        }
+
+        if (isSettled(target)) {
+          return yield* settledOutcome(target);
+        }
+
+        const published = yield* Effect.fromResult(
+          publishedBySite(target)
+        ).pipe(Effect.orDie);
+
+        yield* applied(yield* posts.updateTarget(published, target));
+        yield* outcomes.settled(published);
+        yield* finishIfSettled(locked.value.post);
+
+        return yield* settledOutcome(published);
       })
     );
   }
@@ -523,9 +651,6 @@ export const publishAttemptRun = Effect.fn("Publishing.publishAttempt")(
  * ended. The last target of a post to settle finishes it, as a reposted
  * round has no post job to do so.
  */
-// How a round ends for a target that is gone: as one sent again since.
-const erased: TargetOutcome = "superseded";
-
 export const recordTargetRun = Effect.fn("Publishing.recordTarget")(
   function* recordTargetRun(
     targetId: PostTargetId,

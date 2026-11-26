@@ -99,6 +99,14 @@ export const PartsClaimSchema = Schema.Union([
   Schema.TaggedStruct("superseded", {}),
   Schema.TaggedStruct("cancelled", {}),
   Schema.TaggedStruct("settled", { outcome: TargetOutcomeSchema }),
+  // The target's website holds the post to publish it itself at this very
+  // time (`publishAt`, the post's): it is publishing, and recorded
+  // published by the site, with no call (`./site-hold.ts`).
+  Schema.TaggedStruct("held", {
+    channelId: ChannelIdSchema,
+    postId: PostIdSchema,
+    publishAt: Schema.DateTimeUtc,
+  }),
 ]);
 
 export type PartsClaim = typeof PartsClaimSchema.Type;

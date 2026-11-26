@@ -8,6 +8,7 @@ import {
 } from "#publishing/application/part-publication.ts";
 import {
   publishAttemptRun,
+  recordHeldRun,
   recordTargetRun,
 } from "#publishing/application/post-publication.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
@@ -191,6 +192,15 @@ export const PublishTargetV2Live = PublishTargetV2.toLayer(
             }).annotate(ClusterSchema.WithTransaction, true)
           )
         ),
+      // Its website publishes it itself at this time: recorded so, with no
+      // call (a claim stored by a release before this one is never
+      // `held`).
+      held: () =>
+        Activity.make({
+          execute: recordHeldRun(targetId, round).pipe(retryingDatabase),
+          name: "record-outcome",
+          success: TargetOutcomeSchema,
+        }).annotate(ClusterSchema.WithTransaction, true),
       settled: ({ outcome }) => Effect.succeed(outcome),
       superseded: () => Effect.succeed<TargetOutcome>("superseded"),
     });

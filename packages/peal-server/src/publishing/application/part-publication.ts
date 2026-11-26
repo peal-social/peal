@@ -10,7 +10,7 @@ import type {
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { Published } from "#shared/domain/publish-result.ts";
 
-import { claimTargetRun } from "./post-publication.ts";
+import { claimHeldRun, claimTargetRun } from "./post-publication.ts";
 import { PostRepository } from "./post-repository.ts";
 
 // The steps of publishing a post part by part, beside those of
@@ -24,7 +24,8 @@ import { PostRepository } from "./post-repository.ts";
  * not. The parts are those after the last that went live, so a round that
  * follows a failed or unconfirmed part starts there, and each comes with
  * the wait before it; the first of them goes at once, as the round was
- * asked for now.
+ * asked for now. A target its website holds for the post's very time is
+ * started and answered `held` (`claimHeldRun`): nothing is sent.
  */
 export const claimPartsRun = Effect.fn("Publishing.claimParts")(
   function* claimPartsRun(targetId: PostTargetId, round: number) {
@@ -33,6 +34,14 @@ export const claimPartsRun = Effect.fn("Publishing.claimParts")(
 
     return yield* transaction(
       Effect.gen(function* claimInTransaction() {
+        // A target its website holds for this very time goes out there,
+        // with no call.
+        const held = yield* claimHeldRun(targetId, round);
+
+        if (Option.isSome(held)) {
+          return held.value;
+        }
+
         const claim = yield* claimTargetRun(targetId, round);
 
         if (claim._tag !== "claimed") {
