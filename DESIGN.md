@@ -807,7 +807,7 @@ it. There is no bar across the top.
   name, 14 px, 500, the page's `h1`) and at its end the page's actions
   as small ghost buttons ("+ New post"). A page nested under another
   is reached back through the breadcrumb, never a "Back" link of its own
-  ("Channels › New channel › Mastodon"; "Posts › Articles › Article").
+  ("Channels › New channel › Mastodon"; "Posts › Article").
   A page draws no title of its own under it, and no description: what a
   page holds is said by its empty state.
 - **Content** under the header: a list's toolbar first (its views and
@@ -862,8 +862,8 @@ PealCreative holds, in this order: Home, Agent and Channels without a
 label; then **Studio**, what makes and plans the posts: Editor, Posts
 and Media; then **Engage**, what answers and measures them: Inbox,
 Analytics and Ads. Posts drills down to the posts list (its states as
-tabs, or the calendar, a layout its Display chooses), Articles and
-Import. Automations (Queues, Repeating
+tabs, or the calendar, a layout its Display chooses), which holds the
+workspace's articles beside its posts, and Import. Automations (Queues, Repeating
 posts, Follow-ups, Feeds and Comment rules) are in Settings. The creator
 tools are the composer, which New post (C) opens full-bleed with the
 writing assistant, the media library and the signatures inside it, and
@@ -1286,7 +1286,8 @@ way, so a person who learns one screen knows them all.
   approval cannot be taken back), **Request changes** (R, the same posts;
   a dialog asks for the one comment their authors are told), **Back to
   draft** (U, scheduled or awaiting approval) and **Cancel** (⇧⌫, not yet
-  out).
+  out). An article's row is not chosen: it has no checkbox, and J, K and
+  ⌘A pass over it.
 
 ### Menus, dialogs and sheets
 
@@ -1579,6 +1580,18 @@ destructive button is in its confirmation only.
     what takes the post away or keeps it as it is (Duplicate, Discard,
     Cancel, Back to draft), at its end **Save as draft** (outline),
     **Publish now**, and **Schedule** (primary) last.
+- **Posts** shows a workspace's articles beside its posts. In the list,
+  an article's row is a post's row: its title, its time, its state as a
+  status badge in the article's own words (Draft, Scheduled, Sending, On
+  the site, In the site's trash, Failed, To check), then its website
+  where a post names its channels, the website's platform mark before
+  its name. It opens the article's editor. On the calendar, an article
+  is a chip like a post's, in its state's tint, with a newspaper icon
+  (12 px, muted) that names its website, and no handle: its time
+  changes in its editor. Filter's **Type** (Post, Article) keeps one
+  kind, in both layouts; a channel, tag or queue filter leaves articles
+  out, as they have none. In the header, **New post** opens the
+  composer and **New article** beside it opens the article's editor.
 - **Channels** is a list like any other: views (All, Needs reconnecting,
   Turned off, with how many each holds), Filter by Platform, Type and
   Feature, Display ordering by date connected (the default), name,
