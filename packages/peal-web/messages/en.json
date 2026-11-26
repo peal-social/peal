@@ -1793,7 +1793,9 @@
       "addChannels": "Add channels",
       "channelsCount": "{count, plural, one {# channel} other {# channels}}",
       "propertiesLabel": "Post details",
-      "whenQueued": "Next free slot of a queue"
+      "whenQueued": "Next free slot of a queue",
+      "fixOptionsFirst": "Fix the channels’ options first",
+      "whenQueuedIn": "Next free slot in {queue}"
     },
     "Parts": {
       "legend": "Thread and first comment",

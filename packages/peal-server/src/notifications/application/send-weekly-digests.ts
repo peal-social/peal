@@ -151,14 +151,14 @@ export class SendWeeklyDigests extends Context.Service<
           );
 
         const email = yield* renderer.weeklyDigest({
-          calendarUrl: pageOf("/calendar"),
+          calendarUrl: pageOf("/posts?layout=calendar"),
           locale,
           preferencesUrl: pageOf("/settings/notifications"),
           week,
           workspaces: told.map((workspace) => ({
             ...workspace,
             calendarUrl: appLinks.url(
-              `/${workspace.workspaceId}/calendar`,
+              `/${workspace.workspaceId}/posts?layout=calendar`,
               locale
             ),
           })),

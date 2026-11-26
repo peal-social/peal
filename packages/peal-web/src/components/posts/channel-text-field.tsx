@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import type { SocialChannel } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { PropertyRow } from "peal-ui/components/property";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { PlainTextEditor } from "#components/posts/plain-text-editor.tsx";
 
@@ -24,7 +24,10 @@ interface ChannelTextFieldProps {
 /**
  * A channel's text, as a row of its property list: the post's, with
  * **Write its own**, or a text of its own, which **Use the post's text**
- * takes back (a fresh editor).
+ * takes back (a fresh editor). Once written, the editor stays while its
+ * text is emptied, to be typed again; only **Use the post's text** folds
+ * it. The focus follows: into the editor that **Write its own** opens,
+ * back to **Write its own** once the post's text is used again.
  */
 export const ChannelTextField = ({
   channel,
@@ -35,8 +38,10 @@ export const ChannelTextField = ({
   value,
 }: ChannelTextFieldProps) => {
   const t = useTranslations("Posts.Composer");
-  const [writing, setWriting] = useState(false);
+  const [writing, setWriting] = useState(value !== "");
   const [resets, setResets] = useState(0);
+  // Where the focus goes once the row has changed under it.
+  const focusNext = useRef<"editor" | "write" | null>(null);
   const labelId = `override-label-${channel.id}`;
   const own = writing || value !== "";
 
@@ -64,9 +69,16 @@ export const ChannelTextField = ({
             readOnly={readOnly}
             value={value}
             onChange={(text) => {
+              setWriting(true);
               onOverride(channel.id, text);
             }}
             onEditorFocus={onEditorFocus}
+            onEditorReady={(editor) => {
+              if (focusNext.current === "editor") {
+                focusNext.current = null;
+                editor.commands.focus("end");
+              }
+            }}
             onPasteFiles={onPasteFiles}
           />
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -78,6 +90,7 @@ export const ChannelTextField = ({
                 variant="ghost"
                 size="xs"
                 onClick={() => {
+                  focusNext.current = "write";
                   onOverride(channel.id, undefined);
                   setWriting(false);
                   setResets((count) => count + 1);
@@ -95,10 +108,17 @@ export const ChannelTextField = ({
           </span>
           {readOnly ? null : (
             <Button
+              ref={(node: HTMLButtonElement | null) => {
+                if (node !== null && focusNext.current === "write") {
+                  focusNext.current = null;
+                  node.focus();
+                }
+              }}
               variant="ghost"
               size="xs"
               aria-label={t("writeOwnFor", { handle: channel.handle })}
               onClick={() => {
+                focusNext.current = "editor";
                 setWriting(true);
               }}
             >

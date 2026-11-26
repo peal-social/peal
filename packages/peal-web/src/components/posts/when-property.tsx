@@ -15,6 +15,7 @@ import {
 } from "peal-ui/components/property";
 import { useId } from "react";
 
+import { useQueueName } from "#components/posts/queue-choice.tsx";
 import type { Placement } from "#components/posts/queue-choice.tsx";
 import { instantOfChoice } from "#components/posts/schedule-fields.tsx";
 import type { ScheduleChoice } from "#components/posts/schedule-fields.tsx";
@@ -25,7 +26,8 @@ import { browserTimeZone } from "#posts/zoned-time.ts";
 /**
  * When the post goes out, as a property of the composer's column: the
  * time chosen, on its zone's clock (named when it is not the browser's),
- * or the queue's next free slot, which opens the fields that change it.
+ * or the next free slot of the queue, named once the workspace's queues
+ * are read, which opens the fields that change it.
  */
 export const WhenProperty = ({
   choice,
@@ -48,8 +50,16 @@ export const WhenProperty = ({
   const labelId = useId();
   const queued = placement._tag === "queue";
 
+  const queueName = useQueueName(
+    workspaceId,
+    placement._tag === "queue" ? placement.queueId : ""
+  );
+
   const value = queued
-    ? t("whenQueued")
+    ? Option.match(queueName, {
+        onNone: () => t("whenQueued"),
+        onSome: (queue) => t("whenQueuedIn", { queue }),
+      })
     : Option.match(instantOfChoice(choice), {
         onNone: () => t("invalidTime"),
         onSome: (at) =>

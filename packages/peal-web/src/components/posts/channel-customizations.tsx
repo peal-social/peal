@@ -129,7 +129,7 @@ const ChannelItem = ({
           className="text-muted-foreground size-4 shrink-0 transition-transform duration-200 group-aria-expanded/channel:rotate-90 motion-reduce:transition-none"
         />
         <ChannelAvatar channel={channel} marked />
-        <span className="flex min-w-0 shrink-0 basis-auto items-baseline gap-2 sm:max-w-[45%]">
+        <span className="flex max-w-[45%] min-w-0 shrink-0 basis-auto items-baseline gap-2">
           <span className="truncate text-sm font-medium">{title}</span>
           {channel.handle === title ? null : (
             <span className="text-muted-foreground truncate text-xs max-sm:hidden">
@@ -160,7 +160,8 @@ const ChannelItem = ({
         hidden={!open}
         className="flex flex-col gap-3 border-t px-4 py-4 sm:ps-12"
       >
-        {problems.length < 2 ? null : (
+        {/* In full, as the line may cut them short. */}
+        {problems.length === 0 ? null : (
           <ul className="text-destructive-text flex flex-col gap-1 text-xs">
             {problems.map((problem) => (
               <li key={problem}>{problem}</li>
@@ -222,6 +223,18 @@ export const ChannelCustomizations = ({
       ...current,
       ...Object.fromEntries(joined.map((id) => [id, true])),
     }));
+  }
+
+  // A channel taken off the post forgets its row: chosen again, it starts
+  // as a new one does (a TikTok row open).
+  const chosen = new Set(entries.map(({ channel }) => channel.id));
+
+  if (Object.keys(toggled).some((id) => !chosen.has(id))) {
+    setToggled((current) =>
+      Object.fromEntries(
+        Object.entries(current).filter(([id]) => chosen.has(id))
+      )
+    );
   }
 
   const ordered = platformGroupsOf(

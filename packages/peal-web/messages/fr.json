@@ -1793,7 +1793,9 @@
       "addChannels": "Ajouter des canaux",
       "channelsCount": "{count, plural, one {# canal} other {# canaux}}",
       "propertiesLabel": "Détails de la publication",
-      "whenQueued": "Prochain créneau libre d’une file"
+      "whenQueued": "Prochain créneau libre d’une file",
+      "fixOptionsFirst": "Corrigez d’abord les options des canaux",
+      "whenQueuedIn": "Prochain créneau libre de la file {queue}"
     },
     "Parts": {
       "legend": "Fil et premier commentaire",

@@ -85,6 +85,11 @@ interface ChannelChoicesProps {
   readonly onChange: (channelIds: readonly string[]) => void;
   /** Saves the channels chosen as a set; none for who may not. */
   readonly onSaveSet?: (() => void) | undefined;
+  /**
+   * A chosen channel's options hold a problem, which a set could not
+   * keep: saving waits until it is fixed.
+   */
+  readonly saveSetBlocked?: boolean | undefined;
   readonly selected: readonly string[];
   /** The workspace's channel sets, to start from one. */
   readonly sets: readonly ChannelSet[];
@@ -95,13 +100,16 @@ interface ChannelChoicesProps {
  * search, then "All channels", the channel sets, and the channels under
  * their platform, each platform's line ticking all of its channels that
  * publish (those the search shows, while searching). It stays open while
- * channels are ticked; the selection keeps the list's order.
+ * channels are ticked; the selection keeps the list's order. Each line
+ * says whether it is ticked (`aria-checked`, a platform's and All
+ * channels' "mixed" while some are), as its box shows.
  */
 export const ChannelChoices = ({
   channels,
   onApplySet,
   onChange,
   onSaveSet,
+  saveSetBlocked = false,
   selected,
   sets,
 }: ChannelChoicesProps) => {
@@ -148,6 +156,7 @@ export const ChannelChoices = ({
           <CommandItem
             value="every"
             label={t("Composer.everyChannel")}
+            aria-checked={everyCheck}
             onSelect={() => {
               onChange(allChosen ? [] : all);
             }}
@@ -158,7 +167,7 @@ export const ChannelChoices = ({
               <span className="tabular-nums">
                 {t("Composer.groupChosen", {
                   chosen: selected.length,
-                  total: channels.length,
+                  total: all.length,
                 })}
               </span>
             </CommandItemEnd>
@@ -200,12 +209,15 @@ export const ChannelChoices = ({
             answersSearch(channel, platformName, query)
           );
 
+          const groupCheck = checkOf(groupChoiceOf(shown, selected));
+
           return (
             <CommandGroup key={group.platform} aria-label={platformName}>
               <CommandSeparator />
               <CommandItem
                 value={`platform:${group.platform}`}
                 label={platformName}
+                aria-checked={groupCheck}
                 onSelect={() => {
                   onChange(
                     withGroup(
@@ -217,9 +229,7 @@ export const ChannelChoices = ({
                   );
                 }}
               >
-                <CommandItemCheck
-                  checked={checkOf(groupChoiceOf(shown, selected))}
-                />
+                <CommandItemCheck checked={groupCheck} />
                 <CommandItemIcon>
                   <PlatformMark platform={group.platform} />
                 </CommandItemIcon>
@@ -254,6 +264,7 @@ export const ChannelChoices = ({
                     key={channel.id}
                     value={`channel:${channel.id}`}
                     label={title}
+                    aria-checked={selected.includes(channel.id)}
                     keywords={[
                       channel.handle,
                       platformName,
@@ -286,13 +297,18 @@ export const ChannelChoices = ({
             <CommandItem
               value="save-set"
               label={tSets("saveSelection")}
-              disabled={selected.length === 0}
+              disabled={selected.length === 0 || saveSetBlocked}
               onSelect={onSaveSet}
             >
               <CommandItemIcon>
                 <BookmarkPlusIcon />
               </CommandItemIcon>
               <CommandItemText>{tSets("saveSelection")}</CommandItemText>
+              {saveSetBlocked && selected.length > 0 ? (
+                <CommandItemHint>
+                  {t("Composer.fixOptionsFirst")}
+                </CommandItemHint>
+              ) : null}
             </CommandItem>
           </CommandGroup>
         )}

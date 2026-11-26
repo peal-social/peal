@@ -1090,6 +1090,7 @@ export const Composer = ({
                 sets={channelSets}
                 onApplySet={applySet}
                 onChange={setChannelIds}
+                saveSetBlocked={!optionsTaken}
                 onSaveSet={savesSet(canWrite, permissions, () => {
                   setSavingSet(true);
                 })}

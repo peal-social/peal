@@ -103,6 +103,11 @@ describe(ChannelCustomizations, () => {
 
     expect(html).toContain("Own text · Own images and videos · 2 options set");
     expect(html).toContain("Needs Title and Made for kids");
+    // One reason the platform refuses (YouTube without its video) is
+    // written in full in the row's panel too, as the line may cut it short.
+    await expect(render([entry(youtube, "Menu")])).resolves.toMatch(
+      /<li>[^<]+<\/li>/u
+    );
     // A channel that takes the post as it is says nothing more.
     await expect(render([entry(news, "Menu")])).resolves.not.toContain(
       "Same as the post"

@@ -64,12 +64,14 @@ const render = async (locale: Locale, node: ReactNode) =>
 
 const choices = async ({
   locale = "en",
+  saveSetBlocked = false,
   selected = [],
   sets = [],
   onSaveSet,
 }: {
   readonly locale?: Locale;
   readonly onSaveSet?: () => void;
+  readonly saveSetBlocked?: boolean;
   readonly selected?: readonly string[];
   readonly sets?: readonly ChannelSet[];
 }) =>
@@ -77,6 +79,7 @@ const choices = async ({
     locale,
     <ChannelChoices
       channels={workspace}
+      saveSetBlocked={saveSetBlocked}
       selected={selected}
       sets={sets}
       onApplySet={ignore}
@@ -157,8 +160,27 @@ describe(ChannelChoices, () => {
     const html = await choices({});
 
     expect(html).toContain("All channels");
-    expect(html).toContain("0/4");
+    // The channel to reconnect is not one "All channels" ticks.
+    expect(html).toContain("0/3");
     expect(html).toContain("Reconnect needed");
+  });
+
+  it("says which lines are ticked, a platform's and All channels' mixed while some are", async () => {
+    const html = await choices({ selected: ["m2"] });
+
+    expect(html.match(/aria-checked="mixed"/gu)).toHaveLength(2);
+    expect(html.match(/aria-checked="true"/gu)).toHaveLength(1);
+  });
+
+  it("waits to save a set while a chosen channel's options need fixing", async () => {
+    const html = await choices({
+      onSaveSet: ignore,
+      saveSetBlocked: true,
+      selected: ["m1"],
+    });
+
+    expect(html).toContain("Fix the channels’ options first");
+    expect(html).toMatch(/option-save-set"[^>]*data-disabled|data-disabled[^>]*option-save-set"/u);
   });
 
   it("offers the sets, and saving the selection for who may", async () => {
