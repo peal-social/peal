@@ -142,7 +142,15 @@ export const TextOverrideSchema = Schema.Struct({
   channelId: Schema.String,
   media: Schema.optionalKey(OverrideMediaSchema),
   text: PostTextSchema,
-}).annotate({ identifier: "TextOverride" });
+})
+  .check(
+    Schema.makeFilter(
+      ({ body, text }: { readonly body?: unknown; readonly text: string }) =>
+        body !== undefined || text !== "",
+      { expected: "a text, unless a body is given" }
+    )
+  )
+  .annotate({ identifier: "TextOverride" });
 
 export type TextOverride = typeof TextOverrideSchema.Type;
 

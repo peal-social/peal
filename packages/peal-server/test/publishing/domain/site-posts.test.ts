@@ -318,6 +318,41 @@ const target = new PostTarget({
   status: { _tag: "pending" },
 });
 
+describe("a platform that states no count of files", () => {
+  it("is held to what a part holds, whatever an override gives it", () => {
+    const facebook = { channelId: mastodon, platform: "facebook" as const };
+
+    const many = Array.from(
+      { length: 21 },
+      (_, index) =>
+        new MediaAttachment({
+          altText: "",
+          mediaId: MediaAssetIdSchema.make(
+            `00000000-0000-7000-8000-${String(index + 1).padStart(12, "0")}`
+          ),
+        })
+    );
+
+    const content = new PostContent({
+      media: [],
+      overrides: [
+        new TextOverride({ channelId: mastodon, media: many, text: "Many" }),
+      ],
+      text: "Many",
+    });
+
+    expect(
+      violationsOn(sentTo(content, mastodon), facebook).map(({ _tag }) => _tag)
+    ).toContain("tooManyMedia");
+    expect(
+      violationsOn(sentTo(content, mastodon), {
+        channelId: mastodon,
+        platform: "googleBusiness",
+      }).map(({ _tag }) => _tag)
+    ).toContain("tooManyMedia");
+  });
+});
+
 describe("the approval subject and the duplicate digest", () => {
   it("of a post without a body are what they were", () => {
     const plain = contentOf("Launch day");

@@ -1792,7 +1792,7 @@
     },
     "lookups": [],
     "maxAltTextLength": 5000,
-    "maxMedia": 20,
+    "maxMedia": 100,
     "optionConstraints": [],
     "options": [
       {
@@ -1881,7 +1881,7 @@
     },
     "lookups": [],
     "maxAltTextLength": 5000,
-    "maxMedia": 20,
+    "maxMedia": 100,
     "optionConstraints": [],
     "options": [
       {
@@ -1964,7 +1964,7 @@
     },
     "lookups": [],
     "maxAltTextLength": 5000,
-    "maxMedia": 20,
+    "maxMedia": 100,
     "optionConstraints": [],
     "options": [
       {
@@ -2055,7 +2055,7 @@
     },
     "lookups": [],
     "maxAltTextLength": 5000,
-    "maxMedia": 20,
+    "maxMedia": 100,
     "optionConstraints": [],
     "options": [
       {

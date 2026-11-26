@@ -95,7 +95,10 @@ export const previewOn = (
       links: { count: countLinks(text), maximum: rules.maxLinks },
       // Peal's own limit where the platform takes more, or says nothing:
       // the number its capabilities give.
-      media: { count: media.length, maximum: mediaLimitOf(rules) },
+      media: {
+        count: media.length,
+        maximum: mediaLimitOf(rules, channel.platform),
+      },
       mentions: { count: countMentions(text), maximum: rules.maxMentions },
       text,
       textCounts: sendsText

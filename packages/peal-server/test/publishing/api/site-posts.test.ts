@@ -1,8 +1,13 @@
-import { assert, describe, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { assert, describe, expect, it } from "@effect/vitest";
+import { Effect, Layer, Option, Schema } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, PostContentInvalid, forWorkspace } from "peal-contract";
+import {
+  Api,
+  PostContentInvalid,
+  TextOverrideSchema,
+  forWorkspace,
+} from "peal-contract";
 import type { PostContent } from "peal-contract";
 
 import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
@@ -206,6 +211,106 @@ describe("a post to a website", () => {
             elsewhere.violations.map(({ _tag }) => _tag),
             ["bodyNotTaken"]
           );
+        })
+      ),
+    timeout
+  );
+});
+
+describe("what a request may not crash on", () => {
+  it("refuses an override with no text and no body as it is read", () => {
+    expect(
+      Option.isNone(
+        Schema.decodeUnknownOption(TextOverrideSchema)({
+          channelId: "00000000-0000-7000-8000-0000000000d1",
+          text: "",
+        })
+      )
+    ).toBeTruthy();
+  });
+
+  it.effect(
+    "answers a later part's 21 files on a channel as too many, and a rich text of 101 files as invalid",
+    () =>
+      onPostsWithLibraryAt(
+        start,
+        Effect.gen(function* bounds() {
+          const workspaceId = yield* freshWorkspace;
+          const facebook = yield* connect(workspaceId, "facebook");
+          const site = yield* connect(workspaceId, "wordpress");
+          const client = yield* editorIn(workspaceId);
+
+          const photos = yield* Effect.forEach(Array.from({ length: 21 }), () =>
+            storeMedia(workspaceId)
+          );
+
+          const many = photos.map((mediaId) => ({
+            altText: "A synthetic picture",
+            mediaId,
+          }));
+
+          const checked = yield* client.posts.validate({
+            headers: forWorkspace(workspaceId),
+            payload: {
+              channelIds: [facebook],
+              content: {
+                followUps: [
+                  {
+                    delaySeconds: 0,
+                    media: [],
+                    overrides: [
+                      { channelId: facebook, media: many, text: "Later" },
+                    ],
+                    text: "Later",
+                  },
+                ],
+                media: [],
+                overrides: [
+                  { channelId: facebook, media: many, text: "First" },
+                ],
+                text: "First",
+              },
+            },
+          });
+
+          assert.isFalse(checked.valid);
+          assert.include(
+            checked.channels[0]?.violations.map(({ _tag }) => _tag) ?? [],
+            "tooManyMedia"
+          );
+
+          const images = Array.from({ length: 101 }, (_, index) => ({
+            attrs: {
+              alt: "",
+              mediaId: `01900000-0000-7000-8000-${String(index + 1).padStart(12, "0")}`,
+            },
+            type: "image",
+          }));
+
+          const crowded = yield* client["posts.drafts"]
+            .create({
+              headers: forWorkspace(workspaceId),
+              payload: {
+                channelIds: [site],
+                content: {
+                  media: [],
+                  overrides: [
+                    {
+                      body: { content: images, type: "doc" },
+                      channelId: site,
+                      text: "",
+                    },
+                  ],
+                  text: "Plain",
+                },
+              },
+            })
+            .pipe(Effect.flip);
+
+          assert(crowded instanceof PostContentInvalid);
+          assert.deepStrictEqual(crowded.violations, [
+            { _tag: "bodyInvalid", channelId: site },
+          ]);
         })
       ),
     timeout

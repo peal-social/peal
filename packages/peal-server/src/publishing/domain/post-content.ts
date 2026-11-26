@@ -244,32 +244,28 @@ const textsOnly = (
  * The post as it goes out on a channel: each part with the media it shows
  * there (`partsOn`), and the texts it has on its channels. What the
  * platforms' rules read when they check the post on that channel, so each
- * channel is checked on the media it receives. A website's body may show
- * more files than a part holds (`maxOverrideMedia`): its platform's own
- * `maxMedia` judges them, so the copy is not held to a part's bound.
+ * channel is checked on the media it receives, against its platform's
+ * rules (`maxMedia`, else a part's `maxMediaPerPost`).
  */
 export const sentTo = (
   content: PostContent,
   channelId: ChannelId
 ): PostContent =>
-  new PostContent(
-    {
-      followUps: content.followUps.map(
-        (part) =>
-          new PostPart({
-            delaySeconds: part.delaySeconds,
-            media: mediaAmong(part.overrides, channelId, part.media),
-            overrides: textsOnly(part.overrides),
-            text: part.text,
-          })
-      ),
-      media: mediaAmong(content.overrides, channelId, content.media),
-      overrides: textsOnly(content.overrides),
-      poll: content.poll,
-      text: content.text,
-    },
-    { disableChecks: true }
-  );
+  new PostContent({
+    followUps: content.followUps.map(
+      (part) =>
+        new PostPart({
+          delaySeconds: part.delaySeconds,
+          media: mediaAmong(part.overrides, channelId, part.media),
+          overrides: textsOnly(part.overrides),
+          text: part.text,
+        })
+    ),
+    media: mediaAmong(content.overrides, channelId, content.media),
+    overrides: textsOnly(content.overrides),
+    poll: content.poll,
+    text: content.text,
+  });
 
 /**
  * The post's content without what any part has on these channels: their

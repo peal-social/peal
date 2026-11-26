@@ -29,6 +29,7 @@ import type {
 } from "./platform-rules.ts";
 import { PostContentRejected } from "./post-content-rejected.ts";
 import {
+  maxMediaPerPost,
   emptyContent,
   overriddenChannels,
   partAlone,
@@ -519,7 +520,15 @@ export const violationsOn = (
           },
         ]
       : []),
-    ...atMost("tooManyMedia", channel, media, rules.maxMedia),
+    // A platform that states no count takes what a part holds: an
+    // override may give a channel more (a website's rich text), which only
+    // a platform that says so takes.
+    ...atMost(
+      "tooManyMedia",
+      channel,
+      media,
+      rules.maxMedia ?? maxMediaPerPost
+    ),
     ...(rules.mediaRequired && media === 0
       ? [{ _tag: "mediaRequired" as const, ...channel }]
       : []),

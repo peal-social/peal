@@ -2,7 +2,7 @@ import type { Option } from "effect";
 
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import type { Platform } from "#shared/domain/platform.ts";
-import { platforms } from "#shared/domain/platform.ts";
+import { isSitePlatform, platforms } from "#shared/domain/platform.ts";
 
 import type { AccountStanding } from "./account-restriction.ts";
 import { isDescribed } from "./field-description.ts";
@@ -24,6 +24,7 @@ import { PostFormatSchema } from "./post-format.ts";
 import type { PostFormat } from "./post-format.ts";
 import { maxPostTextLength } from "./post-text.ts";
 import { describeOptionsOn, optionConstraintsOn } from "./target-options.ts";
+import { maxOverrideMedia } from "./text-override.ts";
 
 /**
  * The version of the description clients read. It goes up when a field
@@ -120,11 +121,18 @@ export const ownTextLimit: TextLimit = {
 /**
  * The most images, videos and documents together a post takes on a
  * platform: the platform's, or Peal's own where the platform takes more or
- * its count is not known. What the description of a platform says and
- * what a check counts a post against are both this.
+ * its count is not known. On a website, whose files come with its own
+ * rich text (an override's, up to `maxOverrideMedia`), its own. What the
+ * description of a platform says and what a check counts a post against
+ * are both this.
  */
-export const mediaLimitOf = (rules: PlatformRules): number =>
-  Math.min(rules.maxMedia ?? maxMediaPerPost, maxMediaPerPost);
+export const mediaLimitOf = (
+  rules: PlatformRules,
+  platform?: Platform
+): number =>
+  platform !== undefined && isSitePlatform(platform)
+    ? Math.min(rules.maxMedia ?? maxMediaPerPost, maxOverrideMedia)
+    : Math.min(rules.maxMedia ?? maxMediaPerPost, maxMediaPerPost);
 
 const describedOptionsOn = (platform: Platform) =>
   describeOptionsOn(platform).filter(isDescribed);
@@ -222,7 +230,7 @@ export const capabilitiesOf = (
     livePost: livePostSupport[platform],
     lookups: optionLookupsOn(platform, connection),
     maxAltTextLength: altTextLimitOf(rules),
-    maxMedia: mediaLimitOf(rules),
+    maxMedia: mediaLimitOf(rules, platform),
     optionConstraints: optionConstraintsOn(platform),
     options: describedOptionsOn(platform),
     platform,

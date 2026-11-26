@@ -32,6 +32,7 @@ import { richOverride } from "#publishing/domain/rich-override.ts";
 import { SignatureIdSchema } from "#publishing/domain/signature-id.ts";
 import { TagIdSchema } from "#publishing/domain/tag-id.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
+import { maxOverrideMedia } from "#publishing/domain/text-override.ts";
 import type { TextOverride } from "#publishing/domain/text-override.ts";
 import {
   ChannelIdSchema,
@@ -40,6 +41,7 @@ import {
 } from "#shared/domain/ids.ts";
 import {
   ArticleBodySchema,
+  bodyMediaOf,
   NestedWithinSchema,
 } from "#shared/domain/rich-text/rich-body.ts";
 import { Schedule } from "#shared/domain/schedule.ts";
@@ -85,7 +87,8 @@ export const channelIdsFrom = (raw: readonly string[]) => {
 };
 
 // A rich text as the allow-list takes it: JSON no deeper than a body may
-// nest, read only then.
+// nest, read only then, showing no more different files than an override
+// gives its channel.
 const isNested = Schema.is(NestedWithinSchema);
 
 const decodeBody = Schema.decodeUnknownOption(ArticleBodySchema);
@@ -107,9 +110,14 @@ export const invalidBodiesOf = (
 ): readonly { readonly channelId: string; readonly part?: number }[] =>
   parts.flatMap(({ overrides }, index) =>
     overrides.flatMap(({ body, channelId }) => {
+      const decoded = isNested(body) ? decodeBody(body) : Option.none();
+
       if (
         body === undefined ||
-        (isNested(body) && Option.isSome(decodeBody(body)))
+        Option.exists(
+          decoded,
+          (read) => bodyMediaOf(read).length <= maxOverrideMedia
+        )
       ) {
         return [];
       }
