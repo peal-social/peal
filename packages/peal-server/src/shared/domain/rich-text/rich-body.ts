@@ -419,3 +419,72 @@ export const bodyWithout = (
 
   return { ...body, content: blocks(body.content) };
 };
+
+/** The body's images, in order, each as often as it shows. */
+export const bodyImagesOf = (body: ArticleBody): readonly Image[] => {
+  const found: Image[] = [];
+  const waiting = body.content.toReversed();
+
+  for (let next = waiting.pop(); next !== undefined; next = waiting.pop()) {
+    if (next.type === "image") {
+      found.push(next);
+    }
+
+    waiting.push(...childrenOf(next).toReversed());
+  }
+
+  return found;
+};
+
+const inlineText = (content: readonly Inline[] | undefined): string =>
+  (content ?? [])
+    .map((node) => (node.type === "text" ? node.text : "\n"))
+    .join("");
+
+/**
+ * What a block says as plain text: its lines, a list's items each on its
+ * own, a quote's and a list item's blocks a blank line apart. Bodies nest
+ * no deeper than `maxBodyDepth`, so the walk may recurse.
+ */
+const plainOf: (block: Block) => string = Match.type<Block>().pipe(
+  Match.discriminatorsExhaustive("type")({
+    blockquote: ({ content }) => blocksText(content),
+    bulletList: ({ content }) =>
+      content.map((item) => blocksText(item.content)).join("\n"),
+    codeBlock: ({ content }) =>
+      (content ?? []).map(({ text }) => text).join(""),
+    heading: ({ content }) => inlineText(content),
+    horizontalRule: () => "",
+    image: () => "",
+    orderedList: ({ content }) =>
+      content.map((item) => blocksText(item.content)).join("\n"),
+    paragraph: ({ content }) => inlineText(content),
+  })
+);
+
+// Blocks as plain text, a blank line between two that say something.
+const blocksText = (blocks: readonly Block[]): string =>
+  blocks
+    .flatMap((block) => {
+      const text = plainOf(block);
+
+      return text.trim() === "" ? [] : [text];
+    })
+    .join("\n\n");
+
+/**
+ * What the body says as plain text: its blocks a blank line apart, a
+ * hard break as a line break, its images left out, cut at `maximum`
+ * UTF-16 code units, never inside a character.
+ */
+export const textOfBody = (body: ArticleBody, maximum: number): string => {
+  const text = blocksText(body.content);
+
+  if (text.length <= maximum) {
+    return text;
+  }
+
+  const cut = text.slice(0, maximum);
+
+  return cut.isWellFormed() ? cut : cut.slice(0, -1);
+};

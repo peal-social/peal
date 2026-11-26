@@ -741,6 +741,134 @@ export const SlackOptionsSchema = Schema.Struct({
 
 export type SlackOptions = typeof SlackOptionsSchema.Type;
 
+/**
+ * The longest title a website's post takes, in characters (code points):
+ * WordPress's and Hashnode's; DEV takes 128.
+ */
+export const maxArticleTitleLength = 500;
+
+/** The longest excerpt a website's post takes, in characters. */
+export const maxArticleExcerptLength = 1000;
+
+/**
+ * The most tags, and the most categories, a website's post names:
+ * WordPress's; DEV takes 4 tags, Hashnode 15, and neither takes
+ * categories.
+ */
+export const maxArticleTerms = 20;
+
+/** The longest name of a tag or a category. */
+export const maxArticleTermLength = 200;
+
+/** The longest title DEV takes, in characters. */
+export const maxDevtoTitleLength = 128;
+
+/** The most tags DEV takes, each letters and digits, 30 at most. */
+export const maxDevtoTags = 4;
+
+/** The most tags Hashnode takes. */
+export const maxHashnodeTags = 15;
+
+/** The image types a website's featured image may be, of those Peal stores. */
+export const siteCoverTypes = [
+  "image/gif",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+/** The largest image Hashnode takes, in bytes (8 MB, read as mebibytes). */
+export const maxHashnodeImageByteSize = 8 * 1024 * 1024;
+
+/**
+ * What the site makes of a post once it shows it: `publish`ed, or a
+ * `draft` someone finishes on the site. Peal sends it at the post's time
+ * either way.
+ */
+export const SiteStatusOptionSchema = Schema.Literals([
+  "publish",
+  "draft",
+]).annotate({
+  description:
+    "What the site makes of a post once it shows it: published, or a draft to finish there.",
+  identifier: "SiteStatusOption",
+});
+
+export type SiteStatusOption = typeof SiteStatusOptionSchema.Type;
+
+const TermsSchema = Schema.Array(OptionTextSchema).check(
+  Schema.isMaxLength(maxArticleTerms)
+);
+
+// The fields every website's post has: the post's body is its text on the
+// channel, or the rich text its override gives there (`body`).
+const siteFields = {
+  // An image of the workspace's library, the site's featured image.
+  coverMediaId: Schema.optionalKey(MediaIdSchema),
+  // A summary, which the site shows in lists of posts: at most
+  // `maxArticleExcerptLength` characters.
+  excerpt: Schema.optionalKey(OptionTextSchema),
+  // Published when left out.
+  siteStatus: Schema.optionalKey(SiteStatusOptionSchema),
+  // By name, as the site shows them: found there, or made.
+  tags: Schema.optionalKey(TermsSchema),
+  // Required to schedule: at most `maxArticleTitleLength` characters (DEV
+  // 128).
+  title: Schema.optionalKey(OptionTextSchema),
+};
+
+/** A post on a WordPress site of its own: an article, its body the post's. */
+export const WordPressOptionsSchema = Schema.Struct({
+  ...siteFields,
+  // By name, as the site shows them: found there, or made.
+  categories: Schema.optionalKey(TermsSchema),
+  platform: Schema.Literal("wordpress"),
+}).annotate({
+  description:
+    "How a post goes out on a WordPress site, as an article. Scheduling needs `title`; `coverMediaId` names an image of the library, the featured image.",
+  identifier: "WordPressOptions",
+});
+
+export type WordPressOptions = typeof WordPressOptionsSchema.Type;
+
+/** A post on a site on WordPress.com: an article, its body the post's. */
+export const WordPressComOptionsSchema = Schema.Struct({
+  ...siteFields,
+  // By name, as the site shows them: found there, or made.
+  categories: Schema.optionalKey(TermsSchema),
+  platform: Schema.Literal("wordpressCom"),
+}).annotate({
+  description:
+    "How a post goes out on a site on WordPress.com, as an article. Scheduling needs `title`; `coverMediaId` names an image of the library, the featured image.",
+  identifier: "WordPressComOptions",
+});
+
+export type WordPressComOptions = typeof WordPressComOptionsSchema.Type;
+
+/** A post on DEV: an article, its body the post's, as Markdown. */
+export const DevtoOptionsSchema = Schema.Struct({
+  ...siteFields,
+  platform: Schema.Literal("devto"),
+}).annotate({
+  description:
+    "How a post goes out on DEV, as an article. Scheduling needs `title`; at most 4 tags, each letters and digits.",
+  identifier: "DevtoOptions",
+});
+
+export type DevtoOptions = typeof DevtoOptionsSchema.Type;
+
+/** A post on a Hashnode publication: an article, its body the post's. */
+export const HashnodeOptionsSchema = Schema.Struct({
+  ...siteFields,
+  platform: Schema.Literal("hashnode"),
+}).annotate({
+  description:
+    "How a post goes out on a Hashnode publication, as an article. Scheduling needs `title`; at most 15 tags.",
+  identifier: "HashnodeOptions",
+});
+
+export type HashnodeOptions = typeof HashnodeOptionsSchema.Type;
+
 export const TargetOptionsSchema = Schema.Union([
   YouTubeOptionsSchema,
   TikTokOptionsSchema,
@@ -756,6 +884,10 @@ export const TargetOptionsSchema = Schema.Union([
   DiscordOptionsSchema,
   TelegramOptionsSchema,
   SlackOptionsSchema,
+  WordPressOptionsSchema,
+  WordPressComOptionsSchema,
+  DevtoOptionsSchema,
+  HashnodeOptionsSchema,
 ]).annotate({
   description:
     "What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.",

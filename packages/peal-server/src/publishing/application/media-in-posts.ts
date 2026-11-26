@@ -9,12 +9,14 @@ import { withOptions } from "#publishing/domain/post-target.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import { editDraft } from "#publishing/domain/post.ts";
 import type { Post } from "#publishing/domain/post.ts";
+import { richOverride } from "#publishing/domain/rich-override.ts";
 import {
   changedOverride,
   TextOverride,
 } from "#publishing/domain/text-override.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { MediaAssetId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
+import { bodyWithout } from "#shared/domain/rich-text/rich-body.ts";
 
 import { PostRepository } from "./post-repository.ts";
 
@@ -80,12 +82,20 @@ const remaining = (media: readonly MediaAttachment[], mediaId: MediaAssetId) =>
 // The overrides with the media taken off those that give a channel some.
 // One whose only files it took shows the part's media again, as the
 // channel did before it had any of its own: a channel that chose to show
-// none keeps showing none.
+// none keeps showing none. A website's rich text loses the file's images,
+// and is made again from what is left (`richOverride`).
 const overridesWithout = (
   overrides: readonly TextOverride[],
   mediaId: MediaAssetId
 ) =>
   overrides.map((override) => {
+    if (override.body !== undefined) {
+      return richOverride(
+        override.channelId,
+        bodyWithout(override.body, mediaId)
+      );
+    }
+
     if (
       override.media === undefined ||
       !override.media.some((attachment) => attachment.mediaId === mediaId)

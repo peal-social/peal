@@ -3,7 +3,6 @@ import { Effect, Layer, Option } from "effect";
 import { ListChannels } from "#channels/application/list-channels.ts";
 import { ChannelConnections } from "#publishing/application/channel-connections.ts";
 import { connectionOf } from "#shared/domain/channel-connection.ts";
-import { isSocialPlatform } from "#shared/domain/platform.ts";
 
 /**
  * Each channel's way in as the channels context lists it for the actor: a
@@ -25,9 +24,7 @@ export const ListedChannelConnections = Layer.effect(
                 channels.find(({ id }) => id === channelId)
               ).pipe(
                 Option.flatMap(({ connection, platform }) =>
-                  isSocialPlatform(platform)
-                    ? connectionOf(platform, connection)
-                    : Option.none()
+                  connectionOf(platform, connection)
                 )
               )
             )

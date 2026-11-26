@@ -446,6 +446,10 @@ describe("live post support", () => {
       "discord",
       "telegram",
       "slack",
+      "wordpress",
+      "devto",
+      "hashnode",
+      "wordpressCom",
     ]);
   });
 });
@@ -631,6 +635,10 @@ describe("live post editing support", () => {
       "discord",
       "telegram",
       "slack",
+      "wordpress",
+      "devto",
+      "hashnode",
+      "wordpressCom",
     ]);
   });
 });

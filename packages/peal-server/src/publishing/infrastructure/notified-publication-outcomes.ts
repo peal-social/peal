@@ -1,7 +1,6 @@
 import { Effect, Layer, Match, Metric, Option } from "effect";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
-import { isSocialChannel } from "#channels/application/social-channels.ts";
 import { Notify } from "#notifications/application/notify.ts";
 import type { NoticeRequest } from "#notifications/application/notify.ts";
 import { PostRepository } from "#publishing/application/post-repository.ts";
@@ -9,7 +8,6 @@ import { PublicationOutcomes } from "#publishing/application/publication-outcome
 import { followUpsOn } from "#publishing/domain/platform-rules.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
-import { isSocialPlatform } from "#shared/domain/platform.ts";
 
 type NoticeEvent = NoticeRequest["event"];
 
@@ -27,9 +25,7 @@ const notSentOf = (
     : Option.some(
         Option.exists(
           channel,
-          ({ platform }) =>
-            isSocialPlatform(platform) &&
-            followUpsOn(platform)?.kind === "comment"
+          ({ platform }) => followUpsOn(platform)?.kind === "comment"
         )
           ? "firstComment"
           : "laterParts"
@@ -127,7 +123,6 @@ export const NotifiedPublicationOutcomes = Layer.effect(
       const found = yield* posts.find(target.postId);
 
       const channel = (yield* channels.get(target.channelId)).pipe(
-        Option.filter(isSocialChannel),
         Option.map(({ handle, platform }) => ({ handle, platform }))
       );
 

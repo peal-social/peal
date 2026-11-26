@@ -228,37 +228,48 @@ export const overriddenChannels = (
   ),
 ];
 
-// A part's overrides with their text alone: what a channel's copy keeps.
+// A part's overrides with their text alone, and the body a channel has
+// as its text: what a channel's copy keeps.
 const textsOnly = (
   overrides: readonly TextOverride[]
 ): readonly TextOverride[] =>
-  overrides.map(({ channelId, text }) => new TextOverride({ channelId, text }));
+  overrides.map(
+    ({ body, channelId, text }) =>
+      new TextOverride(
+        body === undefined ? { channelId, text } : { body, channelId, text }
+      )
+  );
 
 /**
  * The post as it goes out on a channel: each part with the media it shows
  * there (`partsOn`), and the texts it has on its channels. What the
  * platforms' rules read when they check the post on that channel, so each
- * channel is checked on the media it receives.
+ * channel is checked on the media it receives. A website's body may show
+ * more files than a part holds (`maxOverrideMedia`): its platform's own
+ * `maxMedia` judges them, so the copy is not held to a part's bound.
  */
 export const sentTo = (
   content: PostContent,
   channelId: ChannelId
 ): PostContent =>
-  new PostContent({
-    followUps: content.followUps.map(
-      (part) =>
-        new PostPart({
-          delaySeconds: part.delaySeconds,
-          media: mediaAmong(part.overrides, channelId, part.media),
-          overrides: textsOnly(part.overrides),
-          text: part.text,
-        })
-    ),
-    media: mediaAmong(content.overrides, channelId, content.media),
-    overrides: textsOnly(content.overrides),
-    poll: content.poll,
-    text: content.text,
-  });
+  new PostContent(
+    {
+      followUps: content.followUps.map(
+        (part) =>
+          new PostPart({
+            delaySeconds: part.delaySeconds,
+            media: mediaAmong(part.overrides, channelId, part.media),
+            overrides: textsOnly(part.overrides),
+            text: part.text,
+          })
+      ),
+      media: mediaAmong(content.overrides, channelId, content.media),
+      overrides: textsOnly(content.overrides),
+      poll: content.poll,
+      text: content.text,
+    },
+    { disableChecks: true }
+  );
 
 /**
  * The post's content without what any part has on these channels: their

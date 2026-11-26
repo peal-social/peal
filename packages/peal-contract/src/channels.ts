@@ -25,8 +25,10 @@ import {
   KeySitePlatformSchema,
   OAuthSitePlatformSchema,
   SitePlatformSchema,
+  isSitePlatform,
+  isSocialPlatform,
 } from "./platform.ts";
-import type { Platform } from "./platform.ts";
+import type { SitePlatform, SocialPlatform } from "./platform.ts";
 import { SiteConnectLimited } from "./site-connect-limited.ts";
 import { SiteNotConnected } from "./site-not-connected.ts";
 import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
@@ -90,16 +92,21 @@ export const ChannelSchema = Schema.Struct({
 export type Channel = typeof ChannelSchema.Type;
 
 /**
- * A channel of a social network, which takes posts; a website's takes
- * articles instead.
+ * A channel of a social network or a chat: no website's. Analytics, the
+ * inbox and connect links serve these alone.
  */
-export type SocialChannel = Channel & { readonly platform: Platform };
+export type SocialChannel = Channel & { readonly platform: SocialPlatform };
 
-/** Whether the channel takes posts: a social network's, not a website's. */
-const isPlatform = Schema.is(PlatformSchema);
+/** A website's channel. */
+export type SiteChannel = Channel & { readonly platform: SitePlatform };
 
+/** Whether the channel is no website's: a social network's or a chat's. */
 export const isSocialChannel = (channel: Channel): channel is SocialChannel =>
-  isPlatform(channel.platform);
+  isSocialPlatform(channel.platform);
+
+/** Whether the channel is a website's. */
+export const isSiteChannel = (channel: Channel): channel is SiteChannel =>
+  isSitePlatform(channel.platform);
 
 /** What a workspace changes of a channel it keeps: its name there. */
 export const ChannelUpdateSchema = Schema.Struct({

@@ -39,9 +39,11 @@ export const repostRegistryWith = Effect.fn("PlatformReposts.registry")(
 
     const registry: Registry = {
       bluesky: yield* blueskyRepost({ api }),
+      devto: notReposting,
       discord: notReposting,
       facebook: notReposting,
       googleBusiness: notReposting,
+      hashnode: notReposting,
       instagram: notReposting,
       linkedin: notReposting,
       mastodon: yield* mastodonRepost({ api, scheme: settings.mastodonScheme }),
@@ -50,6 +52,8 @@ export const repostRegistryWith = Effect.fn("PlatformReposts.registry")(
       telegram: notReposting,
       threads: notReposting,
       tiktok: notReposting,
+      wordpress: notReposting,
+      wordpressCom: notReposting,
       x: notReposting,
       youtube: notReposting,
     };

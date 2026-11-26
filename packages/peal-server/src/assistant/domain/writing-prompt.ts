@@ -53,9 +53,11 @@ export const maxSuggestedHashtags = 8;
 // Platforms as the instructions name them.
 const platformNames: Readonly<Record<Platform, string>> = {
   bluesky: "Bluesky",
+  devto: "DEV",
   discord: "Discord",
   facebook: "Facebook",
   googleBusiness: "Google Business Profile",
+  hashnode: "Hashnode",
   instagram: "Instagram",
   linkedin: "LinkedIn",
   mastodon: "Mastodon",
@@ -64,6 +66,8 @@ const platformNames: Readonly<Record<Platform, string>> = {
   telegram: "Telegram",
   threads: "Threads",
   tiktok: "TikTok",
+  wordpress: "WordPress",
+  wordpressCom: "WordPress.com",
   x: "X",
   youtube: "YouTube",
 };

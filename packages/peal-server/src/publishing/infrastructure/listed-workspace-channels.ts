@@ -2,12 +2,11 @@ import { Effect, Layer, Option } from "effect";
 
 import { ListChannels } from "#channels/application/list-channels.ts";
 import { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
-import { isSocialPlatform } from "#shared/domain/platform.ts";
 
 /**
  * The workspace's channels as the channels context lists them for the actor,
- * so a post goes only where the actor can see a channel. A website's
- * channel takes articles, never posts: it is none of a post's.
+ * so a post goes only where the actor can see a channel: a social
+ * network's, a chat's or a website's.
  */
 export const ListedWorkspaceChannels = Layer.effect(
   WorkspaceChannels,
@@ -19,7 +18,7 @@ export const ListedWorkspaceChannels = Layer.effect(
         listChannels.list(actor).pipe(
           Effect.map((channels) =>
             channels.flatMap(({ connection, id, platform }) =>
-              channelIds.includes(id) && isSocialPlatform(platform)
+              channelIds.includes(id)
                 ? [
                     Option.match(connection, {
                       onNone: () => ({ channelId: id, platform }),

@@ -1772,5 +1772,357 @@
         "unit": "utf16Units"
       }
     ]
+  },
+  {
+    "counted": {
+      "account": [],
+      "post": []
+    },
+    "countsPosts": true,
+    "livePost": {
+      "edit": {
+        "_id": "Option",
+        "_tag": "Some",
+        "value": "unverified"
+      },
+      "unpublish": {
+        "_id": "Option",
+        "_tag": "None"
+      }
+    },
+    "lookups": [],
+    "maxAltTextLength": 5000,
+    "maxMedia": 20,
+    "optionConstraints": [],
+    "options": [
+      {
+        "maximum": 20,
+        "name": "categories",
+        "required": false,
+        "type": "textList",
+        "values": []
+      },
+      {
+        "contentTypes": ["image/gif", "image/jpeg", "image/png", "image/webp"],
+        "name": "coverMediaId",
+        "required": false,
+        "type": "media",
+        "values": []
+      },
+      {
+        "maxLength": 1000,
+        "name": "excerpt",
+        "required": false,
+        "type": "text",
+        "values": []
+      },
+      {
+        "ifLeftOut": "publish",
+        "name": "siteStatus",
+        "required": false,
+        "type": "choice",
+        "values": ["publish", "draft"]
+      },
+      {
+        "maximum": 20,
+        "name": "tags",
+        "required": false,
+        "type": "textList",
+        "values": []
+      },
+      {
+        "maxLength": 500,
+        "name": "title",
+        "required": true,
+        "type": "text",
+        "values": []
+      }
+    ],
+    "platform": "wordpress",
+    "rules": {
+      "maxMedia": 100,
+      "media": {
+        "formats": {
+          "image/gif": {},
+          "image/jpeg": {},
+          "image/png": {},
+          "image/webp": {}
+        },
+        "mixesKinds": false,
+        "showsAltText": true
+      },
+      "mediaRequired": false,
+      "textLimits": []
+    },
+    "textLimits": [
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ],
+    "version": 1
+  },
+  {
+    "counted": {
+      "account": [],
+      "post": []
+    },
+    "countsPosts": true,
+    "livePost": {
+      "edit": {
+        "_id": "Option",
+        "_tag": "Some",
+        "value": "unverified"
+      },
+      "unpublish": {
+        "_id": "Option",
+        "_tag": "None"
+      }
+    },
+    "lookups": [],
+    "maxAltTextLength": 5000,
+    "maxMedia": 20,
+    "optionConstraints": [],
+    "options": [
+      {
+        "contentTypes": ["image/gif", "image/jpeg", "image/png", "image/webp"],
+        "name": "coverMediaId",
+        "required": false,
+        "type": "media",
+        "values": []
+      },
+      {
+        "maxLength": 1000,
+        "name": "excerpt",
+        "required": false,
+        "type": "text",
+        "values": []
+      },
+      {
+        "ifLeftOut": "publish",
+        "name": "siteStatus",
+        "required": false,
+        "type": "choice",
+        "values": ["publish", "draft"]
+      },
+      {
+        "maximum": 4,
+        "pattern": "^[\\p{L}\\p{N}]{1,30}$",
+        "name": "tags",
+        "required": false,
+        "type": "textList",
+        "values": []
+      },
+      {
+        "maxLength": 128,
+        "name": "title",
+        "required": true,
+        "type": "text",
+        "values": []
+      }
+    ],
+    "platform": "devto",
+    "rules": {
+      "maxMedia": 100,
+      "media": {
+        "formats": {
+          "image/gif": {},
+          "image/jpeg": {},
+          "image/png": {},
+          "image/webp": {}
+        },
+        "mixesKinds": false,
+        "showsAltText": true
+      },
+      "mediaRequired": false,
+      "textLimits": []
+    },
+    "textLimits": [
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ],
+    "version": 1
+  },
+  {
+    "counted": {
+      "account": [],
+      "post": []
+    },
+    "countsPosts": true,
+    "livePost": {
+      "edit": {
+        "_id": "Option",
+        "_tag": "Some",
+        "value": "unverified"
+      },
+      "unpublish": {
+        "_id": "Option",
+        "_tag": "None"
+      }
+    },
+    "lookups": [],
+    "maxAltTextLength": 5000,
+    "maxMedia": 20,
+    "optionConstraints": [],
+    "options": [
+      {
+        "contentTypes": ["image/gif", "image/jpeg", "image/png", "image/webp"],
+        "maxByteSize": 8388608,
+        "name": "coverMediaId",
+        "required": false,
+        "type": "media",
+        "values": []
+      },
+      {
+        "maxLength": 1000,
+        "name": "excerpt",
+        "required": false,
+        "type": "text",
+        "values": []
+      },
+      {
+        "ifLeftOut": "publish",
+        "name": "siteStatus",
+        "required": false,
+        "type": "choice",
+        "values": ["publish", "draft"]
+      },
+      {
+        "maximum": 15,
+        "name": "tags",
+        "required": false,
+        "type": "textList",
+        "values": []
+      },
+      {
+        "maxLength": 500,
+        "name": "title",
+        "required": true,
+        "type": "text",
+        "values": []
+      }
+    ],
+    "platform": "hashnode",
+    "rules": {
+      "maxMedia": 100,
+      "media": {
+        "formats": {
+          "image/gif": {
+            "maxByteSize": 8388608
+          },
+          "image/jpeg": {
+            "maxByteSize": 8388608
+          },
+          "image/png": {
+            "maxByteSize": 8388608
+          },
+          "image/webp": {
+            "maxByteSize": 8388608
+          }
+        },
+        "mixesKinds": false,
+        "showsAltText": true
+      },
+      "mediaRequired": false,
+      "textLimits": []
+    },
+    "textLimits": [
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ],
+    "version": 1
+  },
+  {
+    "counted": {
+      "account": [],
+      "post": []
+    },
+    "countsPosts": true,
+    "livePost": {
+      "edit": {
+        "_id": "Option",
+        "_tag": "Some",
+        "value": "unverified"
+      },
+      "unpublish": {
+        "_id": "Option",
+        "_tag": "None"
+      }
+    },
+    "lookups": [],
+    "maxAltTextLength": 5000,
+    "maxMedia": 20,
+    "optionConstraints": [],
+    "options": [
+      {
+        "maximum": 20,
+        "name": "categories",
+        "required": false,
+        "type": "textList",
+        "values": []
+      },
+      {
+        "contentTypes": ["image/gif", "image/jpeg", "image/png", "image/webp"],
+        "name": "coverMediaId",
+        "required": false,
+        "type": "media",
+        "values": []
+      },
+      {
+        "maxLength": 1000,
+        "name": "excerpt",
+        "required": false,
+        "type": "text",
+        "values": []
+      },
+      {
+        "ifLeftOut": "publish",
+        "name": "siteStatus",
+        "required": false,
+        "type": "choice",
+        "values": ["publish", "draft"]
+      },
+      {
+        "maximum": 20,
+        "name": "tags",
+        "required": false,
+        "type": "textList",
+        "values": []
+      },
+      {
+        "maxLength": 500,
+        "name": "title",
+        "required": true,
+        "type": "text",
+        "values": []
+      }
+    ],
+    "platform": "wordpressCom",
+    "rules": {
+      "maxMedia": 100,
+      "media": {
+        "formats": {
+          "image/gif": {},
+          "image/jpeg": {},
+          "image/png": {},
+          "image/webp": {}
+        },
+        "mixesKinds": false,
+        "showsAltText": true
+      },
+      "mediaRequired": false,
+      "textLimits": []
+    },
+    "textLimits": [
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ],
+    "version": 1
   }
 ]

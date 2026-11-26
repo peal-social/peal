@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
+import type { ChannelOnPlatform } from "#publishing/domain/content-rules.ts";
 import type { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import {
   keepingMedia,
@@ -11,6 +12,7 @@ import { PostPart } from "#publishing/domain/post-part.ts";
 import { isDropped } from "#publishing/domain/post-target.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import type { Post } from "#publishing/domain/post.ts";
+import { richOverrideKeeping } from "#publishing/domain/rich-override.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
 import { changedOverride } from "#publishing/domain/text-override.ts";
 import type { Actor } from "#shared/domain/access.ts";
@@ -24,6 +26,8 @@ import { optionsOfTargets } from "./workspace-posts.ts";
 /** What a copy of a post says, and where it goes. */
 export interface PostCopy {
   readonly channelIds: readonly ChannelId[];
+  /** Channels still connected that the caller left out of the copy. */
+  readonly leftOut: readonly ChannelId[];
   readonly content: PostContent;
   readonly options: readonly ChannelOptions[];
   /** As the post asks: each copy's links get short addresses of their own. */
@@ -38,21 +42,29 @@ export interface PostCopy {
  * file gone since left out (`keepingMedia`), and its tags still kept. What
  * the post became (its time, its outcome, its targets' states, a removal
  * from a platform, a channel taken off it) is not copied. Duplicating a post and a recycling
- * rule's occurrences copy through it.
+ * rule's occurrences copy through it. A channel `keeps` answers false for
+ * is left out (`leftOut`), as recycling leaves out websites.
  */
 export const copyOf = Effect.fn("Publishing.copyOf")(function* copyOf(
   actor: Actor,
   post: Post,
-  targets: readonly PostTarget[]
+  targets: readonly PostTarget[],
+  keeps: (channel: ChannelOnPlatform) => boolean = () => true
 ) {
   const { content } = post;
   // A channel taken off the post before it went out is not copied.
   const kept = targets.filter((target) => !isDropped(target));
   const named = kept.map(({ channelId }) => channelId);
 
-  const channels = yield* WorkspaceChannels.use((workspace) =>
+  const connected = yield* WorkspaceChannels.use((workspace) =>
     workspace.lookUp(actor, named)
   );
+
+  const channels = connected.filter(keeps);
+
+  const leftOut = connected
+    .filter((channel) => !keeps(channel))
+    .map(({ channelId }) => channelId);
 
   // Every file it depends on: those it shows, in any of its parts, and
   // those its options name.
@@ -80,17 +92,27 @@ export const copyOf = Effect.fn("Publishing.copyOf")(function* copyOf(
     media: stillThere(part.media),
     overrides: part.overrides
       .filter(({ channelId }) => channelIds.includes(channelId))
-      .map((override) =>
-        override.media === undefined
+      .map((override) => {
+        // A website's rich text loses the images of files gone.
+        if (override.body !== undefined) {
+          return richOverrideKeeping(
+            override.channelId,
+            override.body,
+            (mediaId) => mediaIds.has(mediaId)
+          );
+        }
+
+        return override.media === undefined
           ? override
           : changedOverride(override, {
               media: stillThere(override.media),
-            })
-      ),
+            });
+      }),
   });
 
   const copy: PostCopy = {
     channelIds,
+    leftOut,
     content: new PostContent({
       ...keptOf(content),
       followUps: content.followUps.map(

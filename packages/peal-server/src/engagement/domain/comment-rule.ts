@@ -10,7 +10,7 @@ import {
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { InboxMessagePlatforms } from "#shared/domain/inbox-message-platform.ts";
 import type { InboxPlatforms } from "#shared/domain/inbox-platform.ts";
-import { platforms } from "#shared/domain/platform.ts";
+import { socialPlatforms } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 import { CommentRuleEndReasonSchema } from "./comment-rule-end-reason.ts";
@@ -287,14 +287,16 @@ export const endCommentRule = (
  * person's consent before an automated reply; LinkedIn's User Agreement
  * forbids bots that "comment on … posts"; YouTube's developer policies
  * forbid automating comments "without the user's prior specific and
- * express consent" to each. Those are `notAllowed`; the other platforms
- * have no comments Peal reads.
+ * express consent" to each. Those are `notAllowed`; the other platforms,
+ * websites included, have no comments Peal reads.
  */
 export const commentRuleSupport = {
   bluesky: "notAllowed",
+  devto: "noApi",
   discord: "noApi",
   facebook: "available",
   googleBusiness: "noApi",
+  hashnode: "noApi",
   instagram: "available",
   linkedin: "notAllowed",
   mastodon: "available",
@@ -303,6 +305,8 @@ export const commentRuleSupport = {
   telegram: "noApi",
   threads: "noApi",
   tiktok: "noApi",
+  wordpress: "noApi",
+  wordpressCom: "noApi",
   x: "notAllowed",
   youtube: "notAllowed",
 } as const satisfies {
@@ -371,7 +375,7 @@ export const ruleSupportOn = (
   inbox: InboxPlatforms,
   messages: InboxMessagePlatforms
 ): readonly PlatformRuleSupport[] =>
-  platforms.map((platform) => {
+  socialPlatforms.map((platform) => {
     const support = commentRuleSupport[platform];
     const reads = readsCommentsOn(platform, inbox);
 

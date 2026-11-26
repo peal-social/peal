@@ -22,14 +22,17 @@ import { useId, useState } from "react";
 import type { ReactNode } from "react";
 import {
   siBluesky,
+  siDevdotto,
   siDiscord,
   siFacebook,
+  siHashnode,
   siInstagram,
   siMastodon,
   siPinterest,
   siTelegram,
   siThreads,
   siTiktok,
+  siWordpress,
   siX,
   siYoutube,
 } from "simple-icons";
@@ -47,9 +50,11 @@ import type { PlatformRow } from "#platforms/rows.ts";
 // simple-icons' marks, and peal-ui's for the brands it does not hold.
 const marks: Readonly<Record<Platform, Brand>> = {
   bluesky: siBluesky,
+  devto: siDevdotto,
   discord: siDiscord,
   facebook: siFacebook,
   googleBusiness: googleBusinessProfileBrand,
+  hashnode: siHashnode,
   instagram: siInstagram,
   linkedin: linkedinBrand,
   mastodon: siMastodon,
@@ -58,6 +63,8 @@ const marks: Readonly<Record<Platform, Brand>> = {
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,
+  wordpress: siWordpress,
+  wordpressCom: siWordpress,
   x: siX,
   youtube: siYoutube,
 };

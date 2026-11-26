@@ -27,7 +27,9 @@ export const maxArticleTitleLength = 500;
 // DEV (Forem): four tags at most, each letters and digits only, 30
 // characters at most (`Article::MAX_TAG_LIST_SIZE`, `Tag` validations);
 // a title of 128 characters at most; no categories.
-const devtoTag = /^[\p{L}\p{N}]{1,30}$/u;
+
+/** A tag's name DEV takes, once trimmed. */
+export const devtoTag = /^[\p{L}\p{N}]{1,30}$/u;
 
 // Hashnode: 15 tags at most, each named by a slug; no categories; no way
 // for its API to publish a post at a time (Peal sends it then instead).

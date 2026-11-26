@@ -1,8 +1,6 @@
 import { Effect, Layer, Option } from "effect";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
-import { isSocialChannel } from "#channels/application/social-channels.ts";
-import type { SocialChannel } from "#channels/application/social-channels.ts";
 import { HeldPosts } from "#publishing/application/held-posts.ts";
 import { plainOptions } from "#publishing/application/plain-options.ts";
 import {
@@ -89,10 +87,7 @@ export const PublishingReviewedPosts = Layer.effect(
           channels.get(target.channelId).pipe(
             // Only a channel of the post's workspace is named.
             Effect.map(
-              Option.filter(
-                (known): known is SocialChannel =>
-                  known.workspaceId === workspaceId && isSocialChannel(known)
-              )
+              Option.filter((known) => known.workspaceId === workspaceId)
             ),
             Effect.map((channel) => ({
               channelId: target.channelId,

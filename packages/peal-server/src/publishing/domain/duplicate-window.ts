@@ -60,13 +60,22 @@ export const contentOn = (
 
   const parted = later.length === 0 ? first : { ...first, parts: later };
 
+  // A website's rich text, only where the channel has one, so the digests
+  // of posts without stay as they were: the same plain text set otherwise
+  // is another post.
+  const body = content.overrides.find(
+    (override) => override.channelId === channelId
+  )?.body;
+
+  const bodied = body === undefined ? parted : { ...parted, body };
+
   // A poll's choices and time, only on a post that asks one, so the
   // digests of posts without stay as they were: the same words asking a
   // poll and not are two posts.
   const read = Option.match(content.poll, {
-    onNone: () => parted,
+    onNone: () => bodied,
     onSome: ({ choices, durationMinutes, multipleChoice }) => ({
-      ...parted,
+      ...bodied,
       poll: { choices, durationMinutes, multipleChoice },
     }),
   });

@@ -5,8 +5,9 @@ import { PostIdSchema } from "#shared/domain/ids.ts";
 /**
  * Why a post cannot be the source of a rule: it never went out and is not
  * on its way (`draft`, `awaitingApproval`, `cancelled`), another rule
- * repeats it (`repeating`), a rule made it (`occurrence`), or none of its
- * channels is connected any more (`noChannels`).
+ * repeats it (`repeating`), a rule made it (`occurrence`), none of its
+ * channels is connected any more (`noChannels`), or it goes to websites
+ * only, which no rule repeats on (`websitesOnly`).
  */
 export const NotRecyclableReasonSchema = Schema.Literals([
   "draft",
@@ -15,6 +16,7 @@ export const NotRecyclableReasonSchema = Schema.Literals([
   "repeating",
   "occurrence",
   "noChannels",
+  "websitesOnly",
 ]);
 
 export type NotRecyclableReason = typeof NotRecyclableReasonSchema.Type;

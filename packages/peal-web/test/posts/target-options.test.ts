@@ -188,6 +188,48 @@ describe("the options fields", () => {
     ["telegram", { linkPreview: false, silent: true }],
     ["slack", { unfurlLinks: true }],
     [
+      "wordpress",
+      {
+        categories: "news, releases",
+        coverMediaId: "019a0000-0000-7000-8000-000000000001",
+        excerpt: "A synthetic summary",
+        siteStatus: "draft",
+        tags: "launch, release",
+        title: "A synthetic launch",
+      },
+    ],
+    [
+      "wordpressCom",
+      {
+        categories: "news",
+        coverMediaId: "019a0000-0000-7000-8000-000000000001",
+        excerpt: "A synthetic summary",
+        siteStatus: "draft",
+        tags: "launch, release",
+        title: "A synthetic launch",
+      },
+    ],
+    [
+      "devto",
+      {
+        coverMediaId: "019a0000-0000-7000-8000-000000000001",
+        excerpt: "A synthetic summary",
+        siteStatus: "draft",
+        tags: "launch, release",
+        title: "A synthetic launch",
+      },
+    ],
+    [
+      "hashnode",
+      {
+        coverMediaId: "019a0000-0000-7000-8000-000000000001",
+        excerpt: "A synthetic summary",
+        siteStatus: "draft",
+        tags: "launch, release",
+        title: "A synthetic launch",
+      },
+    ],
+    [
       "x",
       {
         communityId: "1700000000000000001",
@@ -220,9 +262,11 @@ describe("the options fields", () => {
   it("cover every platform that takes options in the test above", () => {
     expect([...optionsPlatforms].toSorted()).toStrictEqual([
       "bluesky",
+      "devto",
       "discord",
       "facebook",
       "googleBusiness",
+      "hashnode",
       "instagram",
       "linkedin",
       "mastodon",
@@ -231,6 +275,8 @@ describe("the options fields", () => {
       "telegram",
       "threads",
       "tiktok",
+      "wordpress",
+      "wordpressCom",
       "x",
       "youtube",
     ]);

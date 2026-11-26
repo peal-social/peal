@@ -2,6 +2,7 @@ import { Array as Arr, Duration, Match, Option, Result, Schema } from "effect";
 
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
 import type { ChannelId, MediaAssetId } from "#shared/domain/ids.ts";
+import { isSitePlatform } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 
 import { optionsOn } from "./channel-options.ts";
@@ -384,6 +385,32 @@ const connectionViolationsOn = (
     : [];
 
 /**
+ * Where the post gives the channel a rich text (`TextOverride.body`) it
+ * does not take: on a platform that is no website's, or on a part after
+ * the first, which no website takes.
+ */
+export const bodyViolationsOn = (
+  content: PostContent,
+  channel: ChannelOnPlatform
+): readonly ContentViolation[] =>
+  [content, ...content.followUps].flatMap(({ overrides }, index) => {
+    const rich = overrides.some(
+      (override) =>
+        override.channelId === channel.channelId && override.body !== undefined
+    );
+
+    if (!rich || (index === 0 && isSitePlatform(channel.platform))) {
+      return [];
+    }
+
+    return [
+      index === 0
+        ? { _tag: "bodyNotTaken" as const, ...channel }
+        : { _tag: "bodyNotTaken" as const, ...channel, part: index },
+    ];
+  });
+
+/**
  * What a draft for these channels must hold: text overrides and options
  * only for some of them, and options of their own platforms. The platforms'
  * rules wait until it is scheduled, so a draft can be longer than they take,
@@ -399,9 +426,10 @@ export const checkDraft = (
   return checked(content, [
     ...overridesWithoutChannel(content, channelIds),
     ...optionsWithoutChannel(options, channelIds),
-    ...channels.flatMap((channel) =>
-      otherPlatform(named(channel), optionsOn(options, channel.channelId))
-    ),
+    ...channels.flatMap((channel) => [
+      ...otherPlatform(named(channel), optionsOn(options, channel.channelId)),
+      ...bodyViolationsOn(content, named(channel)),
+    ]),
   ]);
 };
 
@@ -965,6 +993,7 @@ export const checkPublishable = (
         ...optionViolationsOn(channel, chosen),
         ...mediaOptionViolationsOn(sent, channel, chosen, files),
         ...connectionViolationsOn(connected, chosen),
+        ...bodyViolationsOn(content, channel),
       ];
     }),
   ]);
