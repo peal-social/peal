@@ -1,0 +1,58 @@
+---
+title: Snapchat
+description: "Connect a Snapchat Public Profile to Peal, what a Spotlight may hold, and the option it takes."
+sidebar:
+  icon: /platform-marks/snapchat.svg
+---
+
+A post to Snapchat goes out as a Spotlight, a video on Snapchat's Spotlight. Snapchat decides whether it also shows on the account's Public Profile, and the account's owner can show or hide it there in the Snapchat app. Peal doesn't post Stories.
+
+## At a glance [#at-a-glance]
+
+Here's what a Spotlight can hold:
+
+|                   |                                  |
+| ----------------- | -------------------------------- |
+| Text              | {{platform-snapchat-text-en}}    |
+| Images and videos | {{platform-snapchat-media-en}}   |
+| Parts             | {{platform-snapchat-parts-en}}   |
+| Formats           | {{platform-snapchat-formats-en}} |
+| Alt text          | {{platform-snapchat-alt-en}}     |
+
+What each file type must be is in [Images and videos](/guides/media#platforms).
+
+## Connect an account [#connect]
+
+Under **Snapchat**, click **Connect Snapchat**, sign in on Snapchat and allow Peal. It asks for access to the account's Public Profile.
+
+The account needs a Public Profile: a sign-in with an account that has none connects nothing. Peal connects the profile of the account that signs in, not a profile you only have a role on.
+
+**Channels** offers Snapchat once the Peal server is set up for it (see [On your own server](#self-hosting)).
+
+## What goes out [#spotlight]
+
+A Spotlight is one MP4 video. The post's text is its description.
+
+Snapchat reviews every Spotlight before it shows it. **Published** in Peal means Snapchat accepted the video, and Peal doesn't hear of a later rejection. Peal keeps no link to the Spotlight.
+
+If the server restarts while a video is being sent, or Snapchat doesn't answer when the Spotlight is made, the post shows **To check**. Peal never sends it again by itself: see [when a platform doesn't answer](/guides/posts/schedule#publishing).
+
+## Options [#options]
+
+The composer offers this option. **API name** is the option's name in the API.
+
+| Option                   | API name | In the composer                             |
+| ------------------------ | -------- | ------------------------------------------- |
+| **Language and country** | `locale` | As `en_US`. Left empty, Peal sends `en_US`. |
+
+A channel's [default options](/guides/posts/organise#defaults) can hold it once for every post.
+
+## After it's out [#after]
+
+Peal doesn't [unpublish](/guides/posts/published#unpublish) or edit a Spotlight, and reads no counts and no comments there yet.
+
+Disconnecting the channel deletes the tokens Peal holds. It doesn't tell Snapchat.
+
+## On your own server [#self-hosting]
+
+A self-hosted server offers Snapchat once its app is made and Snap has allowlisted it: see [Snapchat](/self-hosting/platforms#snapchat). Until then, **Channels** doesn't offer it.

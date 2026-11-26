@@ -71,7 +71,7 @@ Here's what it does today:
 
 ## Platforms
 
-Peal posts to 11 social networks and 3 chats, publishes articles to 4 kinds
+Peal posts to 12 social networks and 3 chats, publishes articles to 4 kinds
 of website, and reads ad accounts on 2 ad networks. Each platform's limits
 and media rules are in the docs' [Platforms](https://docs.peal.social/platforms)
 page.
@@ -94,6 +94,7 @@ says what Peal reads there and what you can answer:
 | TikTok                  |    ✓    |          ✓          |                                                     |
 | YouTube                 |    ✓    |          ✓          | Comments (awaiting Google)                          |
 | Pinterest               |    ✓    |          ✓          |                                                     |
+| Snapchat                |    ✓    |                     |                                                     |
 | Google Business Profile |    ✓    |                     | Reviews (awaiting Google)                           |
 
 "Awaiting" means the feature is built but stays off until the platform has

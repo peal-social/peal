@@ -614,6 +614,17 @@ Voici ce qu’accepte Pinterest :
 
 Pinterest recommande des images en 2:3, comme 1 000 sur 1 500 pixels. Il demande aux images d’un carrousel d’être carrées ou en 2:3, et le vérifie lui-même.
 
+### Snapchat [#platforms-snapchat]
+
+Voici ce qu’accepte un Spotlight Snapchat :
+
+| Limite                           | Snapchat                                                                         |
+| -------------------------------- | -------------------------------------------------------------------------------- |
+| Images et vidéos par publication | Une vidéo, obligatoire                                                           |
+| Images                           | Non acceptées                                                                    |
+| Vidéos                           | MP4, jusqu’à 1 Go (1 000 000 000 octets), de 5 secondes à 5 minutes, toute forme |
+| Texte alternatif                 | Pas envoyé : le texte de la publication la décrit                                |
+
 ### Google Business Profile [#platforms-google-business]
 
 Voici ce qu’accepte Google Business Profile :
@@ -706,6 +717,11 @@ Chaque plateforme reçoit les fichiers à sa façon :
     elle. Peal la lit dans le stockage des médias à mesure qu’il l’envoie, et ne
     la garde jamais entière en mémoire. Pinterest la traite ensuite, d’ordinaire
     en quelques secondes.
+  </AccordionItem>
+  <AccordionItem title="Snapchat">
+    Peal chiffre la vidéo comme Snapchat le demande et l’envoie en plusieurs
+    parties, lues une à une dans le stockage des médias, puis termine l’envoi et
+    crée le Spotlight.
   </AccordionItem>
   <AccordionItem title="Google Business Profile">
     Peal donne à Google un lien vers chaque photo dans le stockage des médias,

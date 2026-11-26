@@ -43,12 +43,13 @@ Three platforms need more than a connected account:
 | Facebook Pages | Reactions, comments and shares are read with what Peal asks for today. A post's views and clicks are a Page's insights, which need `read_insights`, a permission Meta grants after a review. Peal reads them for a Page connected with it, and shows none otherwise.                                                                                                                                                            |
 | X              | X bills the app for each post a read returns. Peal reads nothing there unless the server's operator turned it on ([`X_ANALYTICS`](/self-hosting/environment-variables)). Each workspace then has a number of reads a day, and past it, counts wait for the next day. On Peal Cloud, reads are billed at X's rates, only for a workspace whose billing managers turned them on ([X, at X's rates](/guides/workspace/billing#x)). |
 
-Peal reads no counts on two platforms:
+Peal reads no counts on three platforms:
 
 - LinkedIn profiles, because LinkedIn opens them to few apps.
 - Google Business Profile, because Google withdrew its post insights in 2023 and now counts views and clicks for a location as a whole, not for each post.
+- Snapchat, because Peal doesn't read Snapchat's counts yet.
 
-Peal finds this out the first time it reads a post there. It stops, and leaves the post out of **Analytics** rather than show it with no counts.
+On the first two, Peal finds this out the first time it reads a post there. It stops, and leaves the post out of **Analytics** rather than show it with no counts.
 
 Instagram and Facebook [stories](/guides/posts#formats) disappear after 24 hours. Peal reads no counts of them, and they aren't in **Analytics**.
 

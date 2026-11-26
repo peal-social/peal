@@ -609,6 +609,17 @@ Here's what Pinterest takes:
 
 Pinterest recommends images of 2:3, such as 1,000 by 1,500 pixels. It asks a carousel's images to be square or 2:3, and checks that itself.
 
+### Snapchat [#platforms-snapchat]
+
+Here's what a Snapchat Spotlight takes:
+
+| Limit                         | Snapchat                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| Images and videos in one post | One video, required                                                      |
+| Images                        | Not taken                                                                |
+| Videos                        | MP4, up to 1 GB (1,000,000,000 bytes), 5 seconds to 5 minutes, any shape |
+| Alt text                      | Not sent: the post's text is the description                             |
+
 ### Google Business Profile [#platforms-google-business]
 
 Here's what Google Business Profile takes:
@@ -700,6 +711,11 @@ Each platform takes the files its own way:
     one request to the address Pinterest gives for it. Peal reads it from the
     media store as it sends it, and never holds it whole in memory. Pinterest
     then processes it, usually within seconds.
+  </AccordionItem>
+  <AccordionItem title="Snapchat">
+    Peal encrypts the video as Snapchat asks and sends it in parts, read one at
+    a time from the media store, then finishes the upload and makes the
+    Spotlight.
   </AccordionItem>
   <AccordionItem title="Google Business Profile">
     Peal gives Google a link to each photo in the media store, valid for two

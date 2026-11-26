@@ -43,12 +43,13 @@ Trois plateformes demandent plus qu’un compte connecté :
 | Pages Facebook | Réactions, commentaires et partages sont lus avec ce que Peal demande aujourd’hui. Les vues et les clics d’une publication sont des statistiques de la Page, qui demandent `read_insights`, une permission que Meta accorde après examen. Peal les lit pour une Page connectée avec elle, et n’en montre aucune sinon.                                                                                                                                                                                                             |
 | X              | X facture à l’application chaque publication qu’une lecture renvoie. Peal n’y lit rien tant que l’exploitant du serveur ne l’a pas activé ([`X_ANALYTICS`](/self-hosting/environment-variables)). Chaque espace de travail a alors un nombre de lectures par jour, et au-delà, les chiffres attendent le lendemain. Sur Peal Cloud, les lectures sont facturées aux tarifs de X, seulement pour un espace de travail dont les responsables de la facturation les ont activées ([X, aux tarifs de X](/guides/workspace/billing#x)). |
 
-Peal ne relève aucun chiffre sur deux plateformes :
+Peal ne relève aucun chiffre sur trois plateformes :
 
 - Les profils LinkedIn, car LinkedIn les ouvre à peu d’applications.
 - Google Business Profile, car Google a retiré ses statistiques de publication en 2023 et compte désormais les vues et les clics d’un établissement entier, pas de chaque publication.
+- Snapchat, car Peal ne relève pas encore les chiffres de Snapchat.
 
-Peal le constate au premier relevé d’une publication sur ces plateformes. Il s’arrête là, et laisse la publication hors des **Statistiques** plutôt que de l’afficher sans chiffres.
+Sur les deux premières, Peal le constate au premier relevé d’une publication. Il s’arrête là, et laisse la publication hors des **Statistiques** plutôt que de l’afficher sans chiffres.
 
 Les [stories](/guides/posts#formats) Instagram et Facebook disparaissent après 24 heures. Peal n’en relève aucun chiffre, et elles ne sont pas dans les **Statistiques**.
 
