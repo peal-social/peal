@@ -797,3 +797,35 @@ role keeps the keys they made until someone revokes them. No migration;
 nothing to check before rolling back. Once this release is back, a key
 made while the release before ran has no maker, and stays as keys made
 before it do.
+
+## Past websites as post channels
+
+The release that sends posts to websites (WordPress, WordPress.com, DEV,
+Hashnode) adds one table, `publishing.site_files` (the files a website's
+target sent to its site), which the release before never reads, and
+stores in existing JSON what the release before cannot read:
+
+- a post's target with a website's options
+  (`publishing.post_targets.options` of `platform` `wordpress`,
+  `wordpressCom`, `devto` or `hashnode`), which the release before fails
+  to decode where it reads the post, its job included;
+- a channel's override with an empty text beside a rich text
+  (`publishing.posts.text_overrides`, `follow_ups[].overrides`), which it
+  fails to decode the same way, and an override's `body`, which it
+  ignores, sending the override's plain text instead of the rich text;
+- the events and notices that name a website among a post's targets,
+  which name platforms it already knows from the channels, so they decode.
+
+1. **Posts with a website target, or a rich text:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT t.id, t.post_id FROM publishing.post_targets t WHERE t.options->>'platform' IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')"
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id FROM publishing.posts WHERE jsonb_path_exists(text_overrides, '$[*].body')"
+   ```
+
+2. **Either lists a row:** do not roll back past this release while a
+   post has a website target; release a fix forward instead. Never change
+   the rows by hand. The table `publishing.site_files` stays: the release
+   before neither reads nor writes it.
