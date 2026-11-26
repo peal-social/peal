@@ -42,5 +42,26 @@
       ],
       "text": "A synthetic article"
     }
+  ],
+  [
+    {
+      "body": {
+        "content": [
+          {
+            "attrs": { "language": "typescript" },
+            "content": [{ "text": "const synthetic = 1;", "type": "text" }],
+            "type": "codeBlock"
+          },
+          {
+            "attrs": { "language": null },
+            "content": [{ "text": "plain code", "type": "text" }],
+            "type": "codeBlock"
+          }
+        ],
+        "type": "doc"
+      },
+      "channelId": "0190f3a0-0000-7000-8000-0000000000d3",
+      "text": "const synthetic = 1;\n\nplain code"
+    }
   ]
 ]

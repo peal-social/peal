@@ -1,6 +1,7 @@
 import { Match } from "effect";
 
 import type { ImageAddresses } from "./rich-body-html.ts";
+import { languageOf } from "./rich-body.ts";
 import type {
   ArticleBody,
   Block,
@@ -407,11 +408,14 @@ const blockMarkdown = (
           .map((line) => (line === "" ? ">" : `> ${line}`))
           .join("\n"),
       bulletList: ({ content }) => items(content, () => "- "),
-      codeBlock: ({ content }) => {
-        const code = (content ?? []).map(({ text }) => text).join("");
+      codeBlock: (codeBlock) => {
+        const code = (codeBlock.content ?? []).map(({ text }) => text).join("");
+
         const fence = "`".repeat(Math.max(3, longestRun(code, "`") + 1));
 
-        return `${fence}\n${code}\n${fence}`;
+        // Its language is the fence's info: a word of `CodeLanguageSchema`,
+        // which neither Markdown nor Liquid reads anything of.
+        return `${fence}${languageOf(codeBlock) ?? ""}\n${code}\n${fence}`;
       },
       heading: ({ attrs, content }) =>
         `${"#".repeat(attrs.level)} ${inlines(content, " ", dialect)}`,

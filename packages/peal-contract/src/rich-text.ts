@@ -8,7 +8,9 @@ import { Schema } from "effect";
  * `text` (with `marks`: `bold`, `italic`, `strike`, `code`, `link` with
  * `attrs.href` on http, https or mailto) and `hardBreak`; `bulletList` and
  * `orderedList` (`attrs.start`) of `listItem`s; `blockquote`;
- * `horizontalRule`; `codeBlock` of plain text; `image` with
+ * `horizontalRule`; `codeBlock` of plain text, with `attrs.language` when
+ * it names one (1 to 32 of `A-Z a-z 0-9 _ + # . -`, or null for none),
+ * which the site gets as its highlighting; `image` with
  * `attrs.mediaId`, a file of the workspace's library, and `attrs.alt`.
  * Anything else is refused (PostContentInvalid `bodyInvalid`); the server
  * writes what the site gets from the document alone. The server's
@@ -19,7 +21,7 @@ export const RichTextSchema = Schema.Struct({
   type: Schema.Literal("doc"),
 }).annotate({
   description:
-    "The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code and images.",
+    "The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code (with its language) and images.",
   identifier: "RichText",
 });
 

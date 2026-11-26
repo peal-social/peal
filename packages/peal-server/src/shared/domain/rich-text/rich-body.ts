@@ -111,7 +111,26 @@ const ImageSchema = Schema.Struct({
   type: Schema.Literal("image"),
 });
 
+/**
+ * The language a code block is written in, as the sites highlight it:
+ * 1 to 32 letters, digits and `_+#.-` (`typescript`, `c++`, `F#`). No
+ * space, brace, quote or backtick, so it is a word wherever a writer puts
+ * it: a class in HTML, a fence's info in Markdown, Liquid's text on DEV.
+ */
+export const CodeLanguageSchema = Schema.String.check(
+  Schema.isPattern(/^[A-Za-z0-9_+#.-]{1,32}$/u, {
+    expected: "1 to 32 letters, digits and _+#.-",
+  })
+);
+
+// The editor writes `language: null` on a block it has none for, which is
+// kept as it came: a body stored before languages were taken has none.
 const CodeBlockSchema = Schema.Struct({
+  attrs: Schema.optionalKey(
+    Schema.Struct({
+      language: Schema.optionalKey(Schema.NullOr(CodeLanguageSchema)),
+    })
+  ),
   content: Schema.optionalKey(
     Schema.Array(
       Schema.Struct({ text: TextSchema, type: Schema.Literal("text") })
@@ -129,6 +148,10 @@ export type HorizontalRule = typeof HorizontalRuleSchema.Type;
 export type Image = typeof ImageSchema.Type;
 
 export type CodeBlock = typeof CodeBlockSchema.Type;
+
+/** The language a code block names, if it names one. */
+export const languageOf = (block: CodeBlock): string | undefined =>
+  block.attrs?.language ?? undefined;
 
 // The containers, over the image as decoded or as stored: the only node
 // whose stored form differs (its file's id is branded once decoded).

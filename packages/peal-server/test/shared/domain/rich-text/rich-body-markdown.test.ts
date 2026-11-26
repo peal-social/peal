@@ -255,3 +255,21 @@ describe("Markdown that would show its syntax", () => {
     );
   });
 });
+
+describe("a code block's language in Markdown", () => {
+  const fenced = body(
+    {
+      attrs: { language: "c++" },
+      content: [text("int main() { return 0; }")],
+      type: "codeBlock",
+    },
+    { attrs: { language: null }, content: [text("plain")], type: "codeBlock" }
+  );
+
+  it("is the fence's info, in both dialects, and none without one", () => {
+    const expected = "```c++\nint main() { return 0; }\n```\n\n```\nplain\n```";
+
+    expect(articleMarkdown(fenced, none)).toBe(expected);
+    expect(articleMarkdown(fenced, none, "forem")).toBe(expected);
+  });
+});

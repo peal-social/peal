@@ -36,6 +36,12 @@ const text = (value: string, marks?: Written) =>
 
 const paragraph = (...content: Written[]) => ({ content, type: "paragraph" });
 
+const code = (attrs: Written) => ({
+  attrs,
+  content: [text("let x = 1;")],
+  type: "codeBlock",
+});
+
 describe("an article's body", () => {
   it("takes the editor's headings, lists, quotes, links and images", () => {
     expect(
@@ -107,6 +113,41 @@ describe("an article's body", () => {
       [{ attrs: { alt: "", mediaId: "not an id" }, type: "image" }],
     ]) {
       expect(Option.isNone(decode({ content, type: "doc" }))).toBeTruthy();
+    }
+  });
+
+  it("keeps a code block's language, and the editor's empty one", () => {
+    expect(body([code({ language: "typescript" })]).content).toStrictEqual([
+      code({ language: "typescript" }),
+    ]);
+    expect(body([code({ language: null })]).content).toStrictEqual([
+      code({ language: null }),
+    ]);
+
+    for (const language of ["c++", "objective-c", "F#", "a.b_c"]) {
+      expect(
+        Option.isSome(decode({ content: [code({ language })], type: "doc" }))
+      ).toBeTruthy();
+    }
+  });
+
+  it("refuses a language that is no word of code: a space, a brace, a quote or too long", () => {
+    for (const language of [
+      "",
+      "type script",
+      "{% raw %}",
+      'a"b',
+      "x".repeat(33),
+      3,
+    ]) {
+      expect(
+        Option.isNone(
+          decode({
+            content: [{ attrs: { language }, type: "codeBlock" }],
+            type: "doc",
+          })
+        )
+      ).toBeTruthy();
     }
   });
 
@@ -276,5 +317,29 @@ describe("an article's HTML", () => {
 
     expect(bodyMediaOf(without)).toStrictEqual([kept]);
     expect(Schema.is(ArticleBodySchema)(without)).toBeTruthy();
+  });
+});
+
+describe("a code block's language in HTML", () => {
+  it("is the class the code gets, and none without one", () => {
+    expect(
+      articleHtml(
+        body([
+          {
+            attrs: { language: "typescript" },
+            content: [text("a < b")],
+            type: "codeBlock",
+          },
+          {
+            attrs: { language: null },
+            content: [text("plain")],
+            type: "codeBlock",
+          },
+        ]),
+        new Map()
+      )
+    ).toBe(
+      '<pre><code class="language-typescript">a &lt; b</code></pre>\n<pre><code>plain</code></pre>'
+    );
   });
 });

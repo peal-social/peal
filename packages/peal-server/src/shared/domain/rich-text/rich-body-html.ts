@@ -2,9 +2,11 @@ import { Match } from "effect";
 
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 
+import { languageOf } from "./rich-body.ts";
 import type {
   ArticleBody,
   Block,
+  CodeBlock,
   Inline,
   ListItem,
   Mark,
@@ -79,6 +81,15 @@ const inlineHtml = (node: Inline): string => {
 const inlinesHtml = (content: readonly Inline[] | undefined) =>
   (content ?? []).map(inlineHtml).join("");
 
+// A code block's opening tag, its language as the class highlighters read.
+const codeTag = (block: CodeBlock): string => {
+  const language = languageOf(block);
+
+  return language === undefined
+    ? "<code>"
+    : `<code class="language-${escapeHtml(language)}">`;
+};
+
 /** Where the site keeps each file the body shows, by the library's id. */
 export type ImageAddresses = ReadonlyMap<MediaAssetId, string>;
 
@@ -94,8 +105,8 @@ const blockHtml = (block: Block, images: ImageAddresses): string => {
       blockquote: ({ content }) =>
         `<blockquote>${children(content)}</blockquote>`,
       bulletList: ({ content }) => `<ul>${items(content)}</ul>`,
-      codeBlock: ({ content }) =>
-        `<pre><code>${(content ?? [])
+      codeBlock: (code) =>
+        `<pre>${codeTag(code)}${(code.content ?? [])
           .map(({ text }) => escapeHtml(text))
           .join("")}</code></pre>`,
       heading: ({ attrs, content }) =>

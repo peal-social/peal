@@ -84,7 +84,15 @@ layer(StorageTest)("a post's stored parts", (it) => {
         decoded.map((overrides) =>
           overrides.map(({ media }) => media?.length ?? null)
         ),
-        [[], [null], [1, 0], [1]]
+        [[], [null], [1, 0], [1], [null]]
+      );
+
+      // A code block's language, and the editor's empty one, as stored.
+      assert.deepStrictEqual(
+        decoded[4]?.[0]?.body?.content.map((block) =>
+          block.type === "codeBlock" ? block.attrs : undefined
+        ),
+        [{ language: "typescript" }, { language: null }]
       );
     })
   );
