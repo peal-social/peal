@@ -418,6 +418,7 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           "send_test_webhook",
           "server_health",
           "set_channel_defaults",
+          "set_post_external_id",
           "start_comment_rule",
           "start_follow_up_rule",
           "stop_boost",

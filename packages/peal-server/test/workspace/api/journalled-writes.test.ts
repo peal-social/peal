@@ -122,6 +122,7 @@ const journalled = [
   "posts.repost POST /api/v1/posts/:postId/targets/:targetId/repost",
   "posts.reschedule POST /api/v1/posts/:postId/reschedule",
   "posts.schedule POST /api/v1/posts/:postId/schedule",
+  "posts.setExternalId PUT /api/v1/posts/:postId/external-id",
   "posts.setTags PUT /api/v1/posts/:postId/tags",
   "posts.signatures.create POST /api/v1/posts/signatures",
   "posts.signatures.delete DELETE /api/v1/posts/signatures/:signatureId",
@@ -197,7 +198,7 @@ describe("the writes kept", () => {
     ).toStrictEqual([]);
   });
 
-  it("journals the connection of the seventy-nine writes that change content", () => {
+  it("journals the connection of the eighty writes that change content", () => {
     expect(
       writes
         .flatMap(({ journalled: kept, route }) => (kept ? [route] : []))
@@ -206,8 +207,8 @@ describe("the writes kept", () => {
   });
 
   it("logs every workspace write but the four checks, the journalled ones among them", () => {
-    expect(writes.filter((write) => write.inWorkspace)).toHaveLength(158);
-    expect(writes.filter((write) => write.logged)).toHaveLength(154);
+    expect(writes.filter((write) => write.inWorkspace)).toHaveLength(159);
+    expect(writes.filter((write) => write.logged)).toHaveLength(155);
     expect(
       writes.filter((write) => write.journalled && !write.logged)
     ).toStrictEqual([]);

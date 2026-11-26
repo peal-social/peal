@@ -166,6 +166,7 @@ describe("the tools' areas", () => {
         "unpublish_post",
         "edit_published_post",
         "list_post_changes",
+        "set_post_external_id",
         "list_tags",
         "create_tag",
         "update_tag",
