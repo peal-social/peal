@@ -543,11 +543,13 @@ and no socket, for tests.
   events and notices that name one: never roll back past them while any
   is stored; articles and their jobs it ignores (the runbook's checks).
   Websites as post channels did too: a target whose options are a
-  website's, or an override with an empty text (which the release before
-  cannot decode where it reads the post, its job included), and an
-  override's `body`, which it ignores, sending the plain text: never roll
-  back past it while a post has a website target (the runbook's "Past
-  websites as post channels").
+  website's, an override with an empty text or more than 20 files (which
+  the release before cannot decode where it reads the post, its job
+  included), an override's `body`, which it ignores, sending the plain
+  text, and the events, notices and usage rows that name a website:
+  never roll back past it while any is stored (the runbook's "Past
+  websites as post channels", which also checks that analytics follows
+  no website's channel).
   Chats did too: a channel of `discord` or `telegram`, a target with
   their options or failed as `forumThreadNameRequired` or `chatMigrated`,
   and the events and notices that name one: never roll back past them
