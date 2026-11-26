@@ -194,16 +194,18 @@ Before calling the platform, Peal refuses a request it can't carry out with 409 
 
 ## Edit a published post [#edit-live]
 
-`POST …/posts/{postId}/targets/{targetId}/edit` replaces the text of one part of a published post on one channel's platform, for everyone ([Edit a published post](/guides/posts/published#edit-live)). Peal edits on Mastodon and Google Business Profile.
+`POST …/posts/{postId}/targets/{targetId}/edit` replaces the text of one part of a published post on one channel's platform, for everyone ([Edit a published post](/guides/posts/published#edit-live)). `livePost.edit` in the capabilities says where Peal edits.
 
-The body takes two fields:
+The body takes these fields, `text`, `body` or `options` at least:
 
-| Field  | What it holds                                                      |
-| ------ | ------------------------------------------------------------------ |
-| `text` | The new text                                                       |
-| `part` | The part, counted from 0. Left out, it's the post itself (part 0). |
+| Field     | What it holds                                                             |
+| --------- | ------------------------------------------------------------------------- |
+| `text`    | The new text                                                              |
+| `part`    | The part, counted from 0. Left out, it's the post itself (part 0).        |
+| `body`    | On a website, a rich text that replaces the text ([below](#edit-website)) |
+| `options` | On a website, its options from now on, whole ([below](#edit-website))     |
 
-Only the text changes, never the media, the options or the time. It needs post:publish, and an OAuth client needs the scope `workspace:publish`. Someone whose posts need an [approval](/guides/posts/review) can't edit a published post.
+On a social network or a chat, only the text changes, never the media, the options or the time. It needs post:publish, and an OAuth client needs the scope `workspace:publish`. Someone whose posts need an [approval](/guides/posts/review) can't edit a published post.
 
 <CodeGroup>
 
@@ -230,7 +232,7 @@ change, err := client.Posts.EditTarget(context.TODO(), &peal.LivePostEdit{
 	PostID:   "019a6f3e-8c2a-7b1e-9f40-3d5a1c2b4e01",
 	TargetID: "019a6f3e-8c2b-7d02-8a11-6e2f9b0c7d15",
 	Wait:     peal.String("30"),
-	Text:     "Doors open at 7 pm, not 6.",
+	Text:     peal.String("Doors open at 7 pm, not 6."),
 })
 ```
 
@@ -307,6 +309,26 @@ peal posts edit <post-id> --channel <channel-id> --text "Doors open at 7 pm, not
 Peal checks the text the way it checks that channel's text when a post is scheduled, with a Mastodon content warning counted. A text the platform would refuse answers 422 `post_content_invalid` with every violation, and so does a text made only of spaces. An empty `text` answers 400 `invalid_request`.
 
 The request is accepted (202) with the change (`kind: "edit"`). A job makes the edit, and retries it the way a deletion is retried. `?wait=<seconds>` waits for it to finish. The change never holds the text.
+
+### Edit a post on a website [#edit-website]
+
+On WordPress, WordPress.com, DEV and Hashnode, the edit replaces the article the site shows. Give any of these, and what you leave out stays as it is:
+
+- `text`, the new text, which the site gets as paragraphs with the post's images, as when it was published
+- `body`, a rich text (the API reference's `RichText`), which replaces the text. Peal answers the channel's `text` as its plain text and its `media` as its images.
+- `options`, the website's options from now on, whole, with their `platform`. An option left out is removed on the site: leave out `coverMediaId` and the article loses its cover.
+
+```json
+{
+  "options": {
+    "platform": "wordpress",
+    "title": "Doors open at 7 pm",
+    "tags": ["Events"]
+  }
+}
+```
+
+The site keeps the article's status and its date, so a draft there stays a draft. A `siteStatus` other than the target's answers 422 `post_content_invalid` with `optionInvalid`. The edit is checked the way scheduling checks the post: the title is still needed, the files must be the workspace's and ready (422 `unknown_media` otherwise), and a `body` on a social network is `bodyNotTaken`, where `options` are refused 409 `notSupported`. A file the site already took for this post isn't sent again. A site's refusal keeps its code, prefixed with the platform (`wordpress:rest_cannot_edit`).
 
 ### When the edit is done or fails [#edit-result]
 

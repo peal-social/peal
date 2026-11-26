@@ -18,13 +18,13 @@ Sur la page d’une publication, **Dépublier** la supprime de la plateforme de 
 | Discord                 | Oui       | Oui      |                                                                                                                        |
 | Telegram                | Oui       | Oui      | Telegram ne supprime un message que dans les 48 heures qui suivent son envoi                                           |
 | Slack                   | Oui       | Oui      | Un espace de travail Slack peut interdire de modifier les messages au-delà d’un délai                                  |
+| WordPress               | Oui       | Oui      | Dépubliée, la publication va dans la corbeille du site                                                                 |
+| WordPress.com           | Oui       | Oui      | Dépubliée, la publication va dans la corbeille du site                                                                 |
+| DEV                     | Oui       | Oui      | Dépublié, l’article redevient un brouillon sur DEV                                                                     |
+| Hashnode                | Oui       | Oui      |                                                                                                                        |
 | Bluesky                 | Oui       | Non      | Bluesky n’a aucun appel pour modifier une publication                                                                  |
 | X                       | Oui       | Non      | X ne dit pas quelles publications peuvent être modifiées, ni avec quel accès                                           |
 | Pinterest               | Oui       | Non      | Modifier une épingle est en bêta, pas ouvert à toutes les applications                                                 |
-| WordPress               | Oui       | Non      | La publication va dans la corbeille du site. Modifiez-la sur le site pour l’instant.                                   |
-| WordPress.com           | Oui       | Non      | La publication va dans la corbeille du site. Modifiez-la sur le site pour l’instant.                                   |
-| DEV                     | Oui       | Non      | DEV garde l’article en brouillon. Modifiez-le sur DEV pour l’instant.                                                  |
-| Hashnode                | Oui       | Non      | Modifiez-la sur Hashnode pour l’instant                                                                                |
 | LinkedIn                | Non       | Non      | LinkedIn ne dit pas quelle permission une suppression ou une modification demande                                      |
 | Facebook Pages          | Non       | Non      | Meta indique que seules certaines applications peuvent supprimer, et pas quelle permission une modification demande    |
 | Threads                 | Non       | Non      | Supprimer demande une permission que Meta accorde après examen. Threads n’a aucun appel pour modifier.                 |
@@ -72,7 +72,7 @@ Le suivi s’arrête aussi. Les statistiques ne lisent plus la publication et ga
 
 ## Modifier une publication en ligne [#edit-live]
 
-Sur Mastodon, Google Business Profile, Discord, Telegram et Slack, vous pouvez corriger le texte d’une publication partie.
+Sur Mastodon, Google Business Profile, Discord, Telegram et Slack, vous pouvez corriger le texte d’une publication partie. Sur un site web, une modification remplace l’article ([plus bas](#edit-website)).
 
 <Steps>
 <Step title="Cliquez sur Modifier">
@@ -94,6 +94,19 @@ peal posts edit <post-id> --channel <channel-id> --text "Doors open at 7 pm, not
 ```
 
 Seul le texte change. Les médias, les options, l’audience et l’heure restent tels quels.
+
+### Modifier une publication sur un site web [#edit-website]
+
+Sur WordPress, WordPress.com, DEV et Hashnode, une modification remplace l’article que le site affiche : son texte, ou un texte enrichi, et ses options (le titre, l’extrait, l’image de couverture, les étiquettes et les catégories). Ce que vous ne donnez pas reste tel quel. Le site garde le statut de la publication et sa date : un brouillon y reste un brouillon, et la modification ne peut pas changer le **Statut sur le site**.
+
+Depuis l’API, envoyez `text` ou `body`, et `options` avec toutes les options du site, à `POST …/posts/{postId}/targets/{targetId}/edit` ([Modifier une publication en ligne](/developers/posting/published#edit-live)). Une option absente d’`options` est retirée sur le site, comme une couverture que vous enlevez. En ligne de commande, `--options` prend le même JSON :
+
+```sh
+peal posts edit <post-id> --channel <channel-id> \
+  --options '{"platform":"wordpress","title":"Doors open at 7 pm"}'
+```
+
+La modification est vérifiée comme la programmation vérifie la publication : le titre reste nécessaire, et chaque fichier doit être dans la médiathèque et prêt. Un fichier que le site a déjà reçu pour cette publication n’est pas envoyé de nouveau.
 
 <Callout type="warning" title="Une modification est publique tout de suite">
   Qui peut dépublier peut modifier (`post:publish`), sauf un membre dont les

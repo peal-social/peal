@@ -244,10 +244,12 @@ Quand une publication a échoué ou que Peal n’a pas pu la confirmer sur un ca
 
 Sans `--channel`, elle supprime la publication de chaque canal où c’est possible. Avec `--channel`, elle la supprime d’un seul canal, désigné par son identifiant, son nom d’utilisateur exact, ou sa plateforme et son nom d’utilisateur, comme dans `--channel "bluesky studio.example"`. Un nom d’utilisateur que partagent deux canaux de la publication est refusé, et `peal` les liste. `--wait <secondes>`, avec `--channel`, attend la fin de la suppression.
 
-`peal posts edit` remplace le texte d’une publication en ligne sur un canal, sur Mastodon et Google Business Profile ([Modifier une publication en ligne](/guides/posts/published#edit-live)). Seul le texte change, et la modification est publique immédiatement. La commande prend ces options :
+`peal posts edit` remplace le texte d’une publication en ligne sur un canal, là où `peal channels capabilities` dit que Peal modifie ([Modifier une publication en ligne](/guides/posts/published#edit-live)). Sur un réseau social ou une messagerie, seul le texte change. Sur un site web, la modification remplace l’article : son texte, ou un texte enrichi, et ses options ([Modifier une publication sur un site web](/guides/posts/published#edit-website)). La modification est publique immédiatement. Il faut au moins `--text`, `--body` ou `--options`. La commande prend ces options :
 
 - `--channel` désigne le canal, comme pour `peal posts unpublish`.
 - `--text` est le nouveau texte.
+- `--body <json>`, sur un site web, est un texte enrichi, le document JSON de l’éditeur web, qui remplace le texte.
+- `--options <json>`, sur un site web, sont ses options désormais, entières, en JSON marqué par sa plateforme : `'{"platform":"wordpress","title":"Doors open at 7 pm"}'`.
 - `--part <n>` est la partie d’un fil, depuis 0 pour la publication elle-même.
 - `--wait <secondes>` attend la fin de la modification.
 

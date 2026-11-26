@@ -239,10 +239,12 @@ When a post failed or Peal couldn't confirm it on a channel, you have three comm
 
 Without `--channel`, it deletes the post from every channel it can. With `--channel`, it deletes it from one channel, named by its id, its exact handle, or its platform and handle, as in `--channel "bluesky studio.example"`. A handle two of the post's channels share is refused, and `peal` lists them. `--wait <seconds>`, with `--channel`, waits for the deletion to end.
 
-`peal posts edit` replaces the text of a published post on one channel, on Mastodon and Google Business Profile ([Edit a published post](/guides/posts/published#edit-live)). Only the text changes, and the change is public at once. It takes these flags:
+`peal posts edit` replaces the text of a published post on one channel, where `peal channels capabilities` says Peal edits ([Edit a published post](/guides/posts/published#edit-live)). On a social network or a chat, only the text changes. On a website, the edit replaces the article: its text, or a rich text, and its options ([Edit a post on a website](/guides/posts/published#edit-website)). The change is public at once. It takes these flags, `--text`, `--body` or `--options` at least:
 
 - `--channel` names the channel, as `peal posts unpublish` does.
 - `--text` is the new text.
+- `--body <json>`, on a website, is a rich text, the web editor's JSON document, which replaces the text.
+- `--options <json>`, on a website, is its options from now on, whole, as JSON tagged by its platform: `'{"platform":"wordpress","title":"Doors open at 7 pm"}'`.
 - `--part <n>` is the part of a thread, from 0 for the post itself.
 - `--wait <seconds>` waits for the edit to end.
 
