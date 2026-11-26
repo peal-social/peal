@@ -435,7 +435,8 @@ copy run without Pulumi, and for what Pulumi does in their place.
 ### The platforms' apps
 
 Each environment has its own apps on the platforms (LinkedIn, X, Meta's
-three use cases, TikTok, a Google OAuth client for YouTube), each given
+three use cases, TikTok, a Google OAuth client for YouTube, Snapchat's once
+Snap allowlists it), each given
 that environment's addresses: where the platform sends people back and,
 for Meta, where its servers call. Print them, and copy them from what is
 printed, never by hand:
