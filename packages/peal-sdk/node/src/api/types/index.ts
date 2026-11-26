@@ -701,6 +701,7 @@ export * from "./Slideshows.js";
 export * from "./SlideshowStatus.js";
 export * from "./SlideTransition.js";
 export * from "./SlotTime.js";
+export * from "./SnapchatOptions.js";
 export * from "./SpecialAdCategory.js";
 export * from "./SpendCeilingExceededEncoded.js";
 export * from "./SpendGroup.js";

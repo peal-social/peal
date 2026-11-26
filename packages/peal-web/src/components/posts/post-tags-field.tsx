@@ -3,6 +3,7 @@
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
+import { TagIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { maxTagsPerPost, forWorkspace } from "peal-contract";
 import type { Permission, Tag } from "peal-contract";
@@ -14,6 +15,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "peal-ui/components/popover";
+import {
+  Property,
+  PropertyLabel,
+  PropertyValue,
+} from "peal-ui/components/property";
 import { TagDot } from "peal-ui/components/tag";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
@@ -115,9 +121,71 @@ export const TagChoicesView = ({
   );
 };
 
+/**
+ * A post's tags as a property of the composer's column: their names, or
+ * what it asks for, which opens the tags to choose (`choices`) for a
+ * member who may change them.
+ */
+export const TagsPropertyView = ({
+  choices,
+  disabled,
+  tags,
+}: {
+  /** The tags to tick, in the popover the value opens; none to read only. */
+  readonly choices: ReactNode | undefined;
+  readonly disabled: boolean;
+  readonly tags: readonly Tag[];
+}) => {
+  const t = useTranslations("Tags");
+  const labelId = useId();
+
+  const value = (
+    <span
+      id={`${labelId}-value`}
+      className="flex min-w-0 flex-wrap items-center gap-x-3"
+    >
+      {tags.length === 0
+        ? t(choices === undefined ? "postEmpty" : "postAdd")
+        : tags.map((tag) => (
+            <span key={tag.id} className="inline-flex items-center gap-1.5">
+              <TagDot colour={tag.colour} />
+              <span className="truncate">{tag.name}</span>
+            </span>
+          ))}
+    </span>
+  );
+
+  return (
+    <Property aria-labelledby={labelId}>
+      <PropertyLabel id={labelId}>{t("postTitle")}</PropertyLabel>
+      {choices === undefined ? (
+        <p className="text-muted-foreground px-2 py-1 text-sm">{value}</p>
+      ) : (
+        <Popover>
+          <PopoverTrigger
+            disabled={disabled}
+            render={
+              <PropertyValue
+                aria-labelledby={`${labelId} ${labelId}-value`}
+                {...(tags.length === 0 ? { "data-empty": "" } : {})}
+              />
+            }
+          >
+            {tags.length === 0 ? <TagIcon aria-hidden /> : null}
+            {value}
+          </PopoverTrigger>
+          <PopoverContent align="end">{choices}</PopoverContent>
+        </Popover>
+      )}
+    </Property>
+  );
+};
+
 interface PostTagsFieldProps {
   /** Whether the tags can be changed now. */
   readonly disabled: boolean;
+  /** Drawn as a property of the composer's column. */
+  readonly property?: boolean;
   /** Hears of the post's tags once the member changed them. */
   readonly onChange: (tagIds: readonly string[]) => void;
   readonly permissions: readonly Permission[];
@@ -136,6 +204,7 @@ const LoadedTags = ({
   disabled,
   onChange,
   permissions,
+  property = false,
   savedOn,
   tagIds,
   tags,
@@ -184,6 +253,53 @@ const LoadedTags = ({
     return null;
   }
 
+  const choices = (
+    <div className="flex flex-col gap-4">
+      <TagChoicesView
+        disabled={disabled || isSaving}
+        idPrefix={idPrefix}
+        tagIds={tagIds}
+        tags={tags}
+        onToggle={(tagId, chosen) => {
+          change(withTag(tagIds, tags, tagId, chosen));
+        }}
+      />
+      {mayManage ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="self-start"
+          aria-expanded={creating}
+          onClick={() => {
+            setCreating(!creating);
+          }}
+        >
+          {t("postCreate")}
+        </Button>
+      ) : null}
+      {mayManage && creating ? (
+        <CreateTagForm
+          idPrefix={idPrefix}
+          workspaceId={workspaceId}
+          onCreated={(tag) => {
+            setCreating(false);
+            change(withTag(tagIds, [...tags, tag], tag.id, true));
+          }}
+        />
+      ) : null}
+    </div>
+  );
+
+  if (property) {
+    return (
+      <TagsPropertyView
+        choices={editable ? choices : undefined}
+        disabled={disabled}
+        tags={tagsOf(tagIds, tags)}
+      />
+    );
+  }
+
   const editor = editable ? (
     <Popover>
       <PopoverTrigger
@@ -192,42 +308,7 @@ const LoadedTags = ({
       >
         {t("postEdit")}
       </PopoverTrigger>
-      <PopoverContent align="start">
-        <div className="flex flex-col gap-4">
-          <TagChoicesView
-            disabled={disabled || isSaving}
-            idPrefix={idPrefix}
-            tagIds={tagIds}
-            tags={tags}
-            onToggle={(tagId, chosen) => {
-              change(withTag(tagIds, tags, tagId, chosen));
-            }}
-          />
-          {mayManage ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="self-start"
-              aria-expanded={creating}
-              onClick={() => {
-                setCreating(!creating);
-              }}
-            >
-              {t("postCreate")}
-            </Button>
-          ) : null}
-          {mayManage && creating ? (
-            <CreateTagForm
-              idPrefix={idPrefix}
-              workspaceId={workspaceId}
-              onCreated={(tag) => {
-                setCreating(false);
-                change(withTag(tagIds, [...tags, tag], tag.id, true));
-              }}
-            />
-          ) : null}
-        </div>
-      </PopoverContent>
+      <PopoverContent align="start">{choices}</PopoverContent>
     </Popover>
   ) : undefined;
 

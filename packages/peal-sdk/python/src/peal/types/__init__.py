@@ -993,6 +993,7 @@ if typing.TYPE_CHECKING:
     from .slideshow_status import SlideshowStatus
     from .slideshows import Slideshows
     from .slot_time import SlotTime
+    from .snapchat_options import SnapchatOptions
     from .special_ad_category import SpecialAdCategory
     from .spend_ceiling_exceeded_encoded import SpendCeilingExceededEncoded
     from .spend_group import SpendGroup
@@ -1025,6 +1026,7 @@ if typing.TYPE_CHECKING:
         TargetOptions_Mastodon,
         TargetOptions_Pinterest,
         TargetOptions_Slack,
+        TargetOptions_Snapchat,
         TargetOptions_Telegram,
         TargetOptions_Threads,
         TargetOptions_Tiktok,
@@ -2151,6 +2153,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SlideshowStatus": ".slideshow_status",
     "Slideshows": ".slideshows",
     "SlotTime": ".slot_time",
+    "SnapchatOptions": ".snapchat_options",
     "SpecialAdCategory": ".special_ad_category",
     "SpendCeilingExceededEncoded": ".spend_ceiling_exceeded_encoded",
     "SpendGroup": ".spend_group",
@@ -2186,6 +2189,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "TargetOptions_Mastodon": ".target_options",
     "TargetOptions_Pinterest": ".target_options",
     "TargetOptions_Slack": ".target_options",
+    "TargetOptions_Snapchat": ".target_options",
     "TargetOptions_Telegram": ".target_options",
     "TargetOptions_Threads": ".target_options",
     "TargetOptions_Tiktok": ".target_options",
@@ -3335,6 +3339,7 @@ __all__ = [
     "SlideshowStatus",
     "Slideshows",
     "SlotTime",
+    "SnapchatOptions",
     "SpecialAdCategory",
     "SpendCeilingExceededEncoded",
     "SpendGroup",
@@ -3370,6 +3375,7 @@ __all__ = [
     "TargetOptions_Mastodon",
     "TargetOptions_Pinterest",
     "TargetOptions_Slack",
+    "TargetOptions_Snapchat",
     "TargetOptions_Telegram",
     "TargetOptions_Threads",
     "TargetOptions_Tiktok",

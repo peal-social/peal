@@ -8,6 +8,7 @@ import {
   siInstagram,
   siMastodon,
   siPinterest,
+  siSnapchat,
   siTelegram,
   siThreads,
   siTiktok,
@@ -24,6 +25,10 @@ import {
 } from "#components/shell/brand-mark.tsx";
 import type { Brand } from "#components/shell/brand-mark.tsx";
 
+// simple-icons draws Snapchat's ghost in its yellow, which cannot be seen
+// on the white tile: the same path in ink (DESIGN.md, "Icons").
+const snapchatMark: Brand = { ...siSnapchat, hex: "0C0A09" };
+
 // simple-icons' marks, and peal-ui's for the brands it does not hold
 // (DESIGN.md, "Icons"). Both kinds of WordPress site show WordPress's.
 const marks: Readonly<Record<ChannelPlatform, Brand>> = {
@@ -38,6 +43,7 @@ const marks: Readonly<Record<ChannelPlatform, Brand>> = {
   mastodon: siMastodon,
   pinterest: siPinterest,
   slack: slackBrand,
+  snapchat: snapchatMark,
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,

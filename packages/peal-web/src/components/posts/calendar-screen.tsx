@@ -31,6 +31,7 @@ import { CalendarDayView } from "#components/posts/calendar-day-view.tsx";
 import { CalendarToolbar } from "#components/posts/calendar-toolbar.tsx";
 import type { ViewLink } from "#components/posts/calendar-toolbar.tsx";
 import { ChipTags } from "#components/posts/chip-tags.tsx";
+import { usePostsLayouts } from "#components/posts/posts-layouts.ts";
 import { useQueueName } from "#components/posts/queue-choice.tsx";
 import { useMovePost } from "#components/posts/use-move-post.ts";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
@@ -51,6 +52,7 @@ import {
   slotStartOf,
 } from "#posts/day-rows.ts";
 import { isRemovedEverywhere } from "#posts/live-post.ts";
+import { calendarLayoutQuery } from "#posts/posts-layout.ts";
 import { isAhead, startAtOf, startTimeOn } from "#posts/start-time.ts";
 import { useMounted } from "#posts/use-mounted.ts";
 import {
@@ -630,12 +632,16 @@ const CalendarView = ({
 
   const anchor = Option.getOrElse(state.date, () => initialDate ?? today);
 
-  // The calendar with something changed, written to the address, the page
-  // staying where it is.
+  // The posts page's calendar layout, its own Display panel offering the
+  // list again.
+  const layouts = usePostsLayouts("calendar");
+
+  // The calendar with something changed, written to the address behind
+  // its layout, the page staying where it is.
   const go = (changes: Partial<CalendarState>) => {
     const written = calendarQueryOf({ ...state, ...changes }, today);
 
-    router.replace(written === "" ? pathname : `${pathname}?${written}`, {
+    router.replace(`${pathname}?${calendarLayoutQuery(written)}`, {
       scroll: false,
     });
   };
@@ -910,7 +916,7 @@ const CalendarView = ({
   const hrefOf = (next: View) => {
     const written = calendarQueryOf({ ...state, view: next }, today);
 
-    return written === "" ? pathname : `${pathname}?${written}`;
+    return `${pathname}?${calendarLayoutQuery(written)}`;
   };
 
   return (
@@ -921,6 +927,7 @@ const CalendarView = ({
         hidden={hidden}
         hrefOf={hrefOf}
         labels={labels}
+        layouts={layouts}
         link={ViewTabLink}
         queues={queues}
         tags={tags}

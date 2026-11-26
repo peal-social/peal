@@ -50,17 +50,26 @@ describe(pageLinksOf, () => {
       ({ page }) => page
     );
 
-    expect(pages).toContain("calendar");
+    expect(pages).toContain("media");
+    expect(pages).not.toContain("calendar");
     expect(pages).not.toContain("inbox");
     expect(pages).not.toContain("apiKeys");
   });
 
   it("gives each page its address in the workspace", () => {
-    const calendar = pageLinksOf({ permissions: [], workspace }).find(
-      ({ page }) => page === "calendar"
-    );
+    const links = pageLinksOf({
+      permissions: ["post:read", "channel:read"],
+      workspace,
+    });
 
-    expect(calendar?.href).toBe(`/${workspace}/calendar`);
+    expect(
+      ["media", "calendar"].map(
+        (name) => links.find(({ page }) => page === name)?.href
+      )
+    ).toStrictEqual([
+      `/${workspace}/media`,
+      `/${workspace}/posts?layout=calendar`,
+    ]);
   });
 });
 

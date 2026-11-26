@@ -24,6 +24,7 @@ import type { InstagramConnection } from "#shared/domain/instagram-connection.ts
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import { pinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { slackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
+import { snapchatHosts } from "#shared/infrastructure/platforms/snapchat-api.ts";
 import { tiktokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 import {
   instagramApp,
@@ -59,6 +60,8 @@ const settings = (apps: { readonly threads: boolean }) =>
       publicUrl: "https://peal.test",
       slack: Option.none(),
       slackHosts,
+      snapchat: Option.none(),
+      snapchatHosts,
       threads: apps.threads ? Option.some(threadsApp) : Option.none(),
       tiktok: Option.none(),
       tiktokHosts,

@@ -631,8 +631,9 @@ chips (stroke 2), in `currentColor`. An icon-only button has an
 `aria-label`. Platforms are shown by their own marks: simple-icons', or,
 for a brand it does not hold (LinkedIn, Slack, Google Business Profile),
 the file its owner publishes, kept in peal-ui's `src/brand-marks` with
-where it came from; a lettered tile only for a brand with neither. Never
-draw a platform's logo from memory.
+where it came from; a lettered tile only for a brand with neither. A mark
+whose brand colour cannot be seen on the tile (Snapchat's yellow) is drawn
+in ink. Never draw a platform's logo from memory.
 
 A sign-in provider's button is an `lg` button the column's width, the
 provider's own mark at 16 px, as Google sets its 20 px G in a 40 px
@@ -701,6 +702,19 @@ reader: a post that waits for an approval offers **Approve** and
 phone they take a line of their own under the item's text, aligned with
 it, and wrap there, so the text keeps the row's width.
 
+**`property`** — An item's property in the column beside it: its
+name in `{typography.caption}`,
+muted, 8 px in, over its value, a row as wide as the column, 34 px at
+least, `{rounded.md}`, no fill until hovered (`accent`, as while what it
+opens is open), its icon muted, then the value; an empty value reads as
+what it asks for, in muted text ("Add tags"). The value opens what
+changes it (a menu or a popover).
+
+**`property-row`** — One row of a property list that opens in place
+(a channel's own fields in the composer): its label at the start, 10 rem
+wide, the value beside it, under it on a phone; a field's hint shows
+while the field has the focus.
+
 **`table-row`** — About 44 px; headers in `{typography.caption}`, upper
 case, muted.
 
@@ -723,8 +737,8 @@ high, the 4 px radius. Two pressed one after the other read "G then C",
 the word in muted text and in the reader's language.
 
 - **C** opens a new post; **G then** a letter opens the pages people open
-  most (H home, C calendar, P posts, I inbox, M media, Y analytics, S
-  settings) and two tabs of the posts list (D Drafts, A Needs approval).
+  most (H home, C the posts' calendar, P posts, I inbox, M media, Y
+  analytics, S settings) and two tabs of the posts list (D Drafts, A Needs approval).
   Letters are the same in every language. **⌘J** (Ctrl+J) opens the
   agent's panel on a new chat, or hides it.
 - A letter never runs while focus is in a field or while a dialog is
@@ -845,10 +859,11 @@ it. There is no bar across the top.
   moves. The pages are at `/login` and `/signup`.
 
 PealCreative holds, in this order: Home, Agent and Channels without a
-label; then **Studio**, what makes and plans the posts: Editor, Posts,
-Calendar and Media; then **Engage**, what answers and measures them:
-Inbox, Analytics and Ads. Posts drills down to the posts list (its
-states as tabs), Articles and Import. Automations (Queues, Repeating
+label; then **Studio**, what makes and plans the posts: Editor, Posts
+and Media; then **Engage**, what answers and measures them: Inbox,
+Analytics and Ads. Posts drills down to the posts list (its states as
+tabs, or the calendar, a layout its Display chooses), Articles and
+Import. Automations (Queues, Repeating
 posts, Follow-ups, Feeds and Comment rules) are in Settings. The creator
 tools are the composer, which New post (C) opens full-bleed with the
 writing assistant, the media library and the signatures inside it, and
@@ -1195,9 +1210,15 @@ way, so a person who learns one screen knows them all.
   and the chip says "is any of" with the names joined ("Tag is any of
   Launch, News"). Properties add up.
 - **Display** opens a small panel (level 3, 288 px, 12 px inside):
-  **Ordering** (what the list is sorted by) with a button that turns its
-  direction, and where a screen has them, grouping and its other views
-  (list, calendar).
+  first, where a screen shows its items in several layouts (the posts as
+  a list or a calendar), a **`display-layout`** tile each, side by side,
+  56 px high, `{rounded.md}`, a hairline, its icon over its name in
+  `{typography.caption}` at 500, muted, the one shown lifted to
+  `accent` in `ink`; then **Ordering** (what the list is sorted by) with
+  a button that turns its direction, and grouping where a screen has it.
+  A layout lives in the address (`?layout=calendar`), and choosing
+  another keeps the filters both layouts read. A layout is not a page:
+  it has no line in the sidebar, and the page keeps its name.
 - **`period-menu`** — Wherever a screen shows a span of days (usage),
   **Period** chooses it (an analytics widget chooses its own in its
   Filter, see Analytics board): a small outline button (30 px)
@@ -1508,8 +1529,56 @@ destructive button is in its confirmation only.
     **Write a post** (primary) and **Go to Home** (outline). When none
     was, **Start over** (primary), which brings back Choose, and **Go to
     Home**.
-- **The composer** writes one text with a tab per channel, counts each
-  platform's limit, and shows a preview beside it.
+- **The composer** (a new post, a draft, a scheduled post) is laid out
+  as an item's page: the writing in a main column, its
+  properties in a column 17 rem wide beside it, no line between them,
+  and the actions in a bar held at the panel's foot. Under 1024 px the
+  properties come first, then the writing. Nothing shows that the post
+  does not use yet.
+  - **Properties** (`property`, below): **Channels** (the chosen
+    channels' pictures, overlapping, and how many, or "Add channels"),
+    **When** (the time, its zone named when it is not the browser's, or
+    the queue's next free slot) and **Tags**. Each opens what changes it:
+    Channels a menu that stays open while ticking (`menu`, 320 px): a search
+    line ("Choose channels…", every word in a name, a handle or a
+    platform), **All channels**, the channel sets, then each platform's
+    line (its mark, its name, how many are chosen) over its channels
+    (picture, name, handle or why it does not post), each with a box
+    that is ticked, empty or a dash for some, which stays open while
+    channels are ticked, and **Save selection as a set** last; a
+    platform's line acts on the channels the search shows. When opens
+    its fields in a popover; Tags its list.
+  - **The writing**: the text for all channels, with no field's border,
+    its images and videos under it, then a toolbar of `icon-sm` ghost
+    buttons, each named in its tooltip: the library, upload, emoji,
+    **Add a poll**, **Add a part**, signatures, and the writing assistant
+    at its end. No drop zone: files come from upload or a paste. A poll
+    and the parts after the post show once added.
+  - **Each channel**, once the post goes somewhere: one bordered list,
+    a line each (44 px), ordered by platform:
+    a chevron, the channel's picture with its platform's mark, its name
+    and handle, then at the end what its platform would refuse (in
+    `destructive` text), else what it still needs ("Needs Title and Made
+    for kids") or what it has of its own ("Own text · 2 options set"),
+    in muted text, and its counter ("107/2,200", red past the limit). A
+    line opens in place to a property list (`property-row`): Text (the
+    post's, with **Write its own**), Images and videos (its own, or the
+    post's), then its platform's options, a hint showing only while its
+    field has the focus, and where several channels of the platform are
+    chosen, **Use these options on the other … channels** (`xs` ghost;
+    never TikTok's, which each account limits). A line whose options
+    were refused, or would be as filled in, opens by itself, and a
+    TikTok channel's starts open: TikTok asks that the creator's name
+    and its consent line show before the post goes.
+  - **Preview**, in the panel's header, a toggle (pressed while on), puts
+    the previews in the properties' place, docked beside the writing:
+    no backdrop, the post in reach beside them,
+    each channel a small card (its picture and name, what it receives,
+    its counts in muted text), asked only while they show.
+  - **The action bar**, white with a hairline above it: at its start
+    what takes the post away or keeps it as it is (Duplicate, Discard,
+    Cancel, Back to draft), at its end **Save as draft** (outline),
+    **Publish now**, and **Schedule** (primary) last.
 - **Channels** is a list like any other: views (All, Needs reconnecting,
   Turned off, with how many each holds), Filter by Platform, Type and
   Feature, Display ordering by date connected (the default), name,

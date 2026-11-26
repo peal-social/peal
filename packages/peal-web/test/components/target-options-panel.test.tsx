@@ -19,7 +19,6 @@ import {
   PinterestOptionsFields,
   takesOptions,
   TargetOptionsPanel,
-  TargetOptionsSection,
   TikTokOptionsFields,
 } from "#components/posts/target-options-panel.tsx";
 import type {
@@ -175,6 +174,50 @@ describe(TargetOptionsPanel, () => {
     expect(html).toContain("Required to schedule.");
     expect(html).toContain("120 of 100 characters.");
     expect(html).toContain('aria-invalid="true"');
+  });
+
+  it("shows a Spotlight's locale, and what scheduling refused of it, in both languages", async () => {
+    const snapchat = channel(
+      "00000000-0000-7000-8000-000000000020",
+      "snapchat",
+      "@peal_spotlights"
+    );
+
+    const rendered = async (locale: Locale) => {
+      const messages = await loadMessages(locale);
+
+      return renderToStaticMarkup(
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <TargetOptionsPanel
+            channels={[snapchat]}
+            disabled={false}
+            valuesOf={() => ({ ...initialValues("snapchat"), locale: "fr" })}
+            violations={[
+              {
+                _tag: "optionInvalid",
+                channelId: snapchat.id,
+                field: "locale",
+                platform: "snapchat",
+              },
+            ]}
+            onChange={() => {
+              // Rendered once, never changed.
+            }}
+          />
+        </NextIntlClientProvider>
+      );
+    };
+
+    const english = await rendered("en");
+
+    expect(english).toContain("@peal_spotlights on Snapchat: options");
+    expect(english).toContain("Language and country");
+    expect(english).toContain(
+      "Two lower-case letters, an underscore and two capitals, as fr_FR."
+    );
+    await expect(rendered("fr")).resolves.toContain(
+      "Deux minuscules, un tiret bas et deux majuscules, comme fr_FR."
+    );
   });
 
   it("shows whose brand once the disclosure is on", async () => {
@@ -373,7 +416,7 @@ describe(TargetOptionsPanel, () => {
     }
   });
 
-  it("shows what the API would refuse as it is typed, and says nothing goes out until fixed", async () => {
+  it("shows what the API would refuse as it is typed, in a channel's row", async () => {
     const bluesky = channel(
       "00000000-0000-7000-8000-000000000012",
       "bluesky",
@@ -385,10 +428,11 @@ describe(TargetOptionsPanel, () => {
 
       return renderToStaticMarkup(
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <TargetOptionsSection
+          <TargetOptionsPanel
+            bare
             channels={[bluesky]}
             disabled={false}
-            failure={null}
+            violations={[]}
             valuesOf={() => ({
               ...initialValues("bluesky"),
               languages: "en, fr, de, es",
@@ -405,10 +449,11 @@ describe(TargetOptionsPanel, () => {
     const english = await typed("en");
 
     expect(english).toContain("4 given: 3 at most.");
-    expect(english).toContain(
-      "Fix the options marked below: the post cannot be saved or scheduled until then."
-    );
     expect(english).toContain('aria-invalid="true"');
+    // In a row that names the channel already, its legend is for screen
+    // readers only, and the fields have no frame of their own.
+    expect(english).toContain('class="sr-only"');
+    expect(english).not.toContain("rounded-lg border p-4");
     await expect(typed("fr")).resolves.toContain("4 indiqués : 3 au plus.");
   });
 

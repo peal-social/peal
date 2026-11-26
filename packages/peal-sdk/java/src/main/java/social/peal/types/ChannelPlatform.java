@@ -17,6 +17,8 @@ public final class ChannelPlatform {
 
     public static final ChannelPlatform GOOGLE_BUSINESS = new ChannelPlatform(Value.GOOGLE_BUSINESS, "googleBusiness");
 
+    public static final ChannelPlatform SNAPCHAT = new ChannelPlatform(Value.SNAPCHAT, "snapchat");
+
     public static final ChannelPlatform TELEGRAM = new ChannelPlatform(Value.TELEGRAM, "telegram");
 
     public static final ChannelPlatform X = new ChannelPlatform(Value.X, "x");
@@ -85,6 +87,8 @@ public final class ChannelPlatform {
                 return visitor.visitDiscord();
             case GOOGLE_BUSINESS:
                 return visitor.visitGoogleBusiness();
+            case SNAPCHAT:
+                return visitor.visitSnapchat();
             case TELEGRAM:
                 return visitor.visitTelegram();
             case X:
@@ -130,6 +134,8 @@ public final class ChannelPlatform {
                 return DISCORD;
             case "googleBusiness":
                 return GOOGLE_BUSINESS;
+            case "snapchat":
+                return SNAPCHAT;
             case "telegram":
                 return TELEGRAM;
             case "x":
@@ -190,6 +196,8 @@ public final class ChannelPlatform {
 
         SLACK,
 
+        SNAPCHAT,
+
         WORDPRESS,
 
         DEVTO,
@@ -229,6 +237,8 @@ public final class ChannelPlatform {
         T visitTelegram();
 
         T visitSlack();
+
+        T visitSnapchat();
 
         T visitWordpress();
 

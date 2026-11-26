@@ -16,6 +16,7 @@ import {
   PinterestOptions,
 } from "#publishing/domain/pinterest-options.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
+import { SnapchatOptions } from "#publishing/domain/snapchat-options.ts";
 import {
   noOptionsOn,
   optionsPlatforms,
@@ -84,6 +85,7 @@ describe("the platforms that take options", () => {
       "discord",
       "telegram",
       "slack",
+      "snapchat",
       "wordpress",
       "devto",
       "hashnode",
@@ -298,6 +300,23 @@ describe("Pinterest's options", () => {
   });
 });
 
+// What Snap would refuse in a post's locale, left out when none is given.
+const snapchatProblems = (locale?: string) =>
+  new SnapchatOptions(locale === undefined ? {} : { locale }).problems();
+
+describe("Snapchat's options", () => {
+  it("take a locale as Snap writes it, a language and a country", () => {
+    expect(snapchatProblems()).toStrictEqual([]);
+    expect(snapchatProblems("fr_FR")).toStrictEqual([]);
+
+    for (const locale of ["fr", "fr-FR", "FR_fr"]) {
+      expect(snapchatProblems(locale)).toStrictEqual([
+        { _tag: "invalid", field: "locale" },
+      ]);
+    }
+  });
+});
+
 describe("TikTok's options", () => {
   it("need who sees the post, with no default", () => {
     expect(optionViolationsOn(tiktok, Option.none())).toStrictEqual([
@@ -370,6 +389,18 @@ describe("options on a post's channels", () => {
         _tag: "optionsForOtherPlatform",
         ...mastodon,
         optionsPlatform: "tiktok",
+      },
+    ]);
+    expect(
+      optionViolationsOn(
+        mastodon,
+        Option.some(new SnapchatOptions({ locale: "fr_FR" }))
+      )
+    ).toStrictEqual([
+      {
+        _tag: "optionsForOtherPlatform",
+        ...mastodon,
+        optionsPlatform: "snapchat",
       },
     ]);
   });

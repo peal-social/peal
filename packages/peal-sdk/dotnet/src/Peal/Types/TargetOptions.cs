@@ -148,6 +148,15 @@ public record TargetOptions
     }
 
     /// <summary>
+    /// Create an instance of TargetOptions with <see cref="TargetOptions.Snapchat"/>.
+    /// </summary>
+    public TargetOptions(TargetOptions.Snapchat value)
+    {
+        Platform = "snapchat";
+        Value = value.Value;
+    }
+
+    /// <summary>
     /// Create an instance of TargetOptions with <see cref="TargetOptions.Wordpress"/>.
     /// </summary>
     public TargetOptions(TargetOptions.Wordpress value)
@@ -263,6 +272,11 @@ public record TargetOptions
     /// Returns true if <see cref="Platform"/> is "slack"
     /// </summary>
     public bool IsSlack => Platform == "slack";
+
+    /// <summary>
+    /// Returns true if <see cref="Platform"/> is "snapchat"
+    /// </summary>
+    public bool IsSnapchat => Platform == "snapchat";
 
     /// <summary>
     /// Returns true if <see cref="Platform"/> is "wordpress"
@@ -411,6 +425,15 @@ public record TargetOptions
             : throw new global::System.Exception("TargetOptions.Platform is not 'slack'");
 
     /// <summary>
+    /// Returns the value as a <see cref="Peal.SnapchatOptions"/> if <see cref="Platform"/> is 'snapchat', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'snapchat'.</exception>
+    public Peal.SnapchatOptions AsSnapchat() =>
+        IsSnapchat
+            ? (Peal.SnapchatOptions)Value!
+            : throw new global::System.Exception("TargetOptions.Platform is not 'snapchat'");
+
+    /// <summary>
     /// Returns the value as a <see cref="Peal.WordPressOptions"/> if <see cref="Platform"/> is 'wordpress', otherwise throws an exception.
     /// </summary>
     /// <exception cref="Exception">Thrown when <see cref="Platform"/> is not 'wordpress'.</exception>
@@ -461,6 +484,7 @@ public record TargetOptions
         Func<Peal.DiscordOptions, T> onDiscord,
         Func<Peal.TelegramOptions, T> onTelegram,
         Func<Peal.SlackOptions, T> onSlack,
+        Func<Peal.SnapchatOptions, T> onSnapchat,
         Func<Peal.WordPressOptions, T> onWordpress,
         Func<Peal.WordPressComOptions, T> onWordpressCom,
         Func<Peal.DevtoOptions, T> onDevto,
@@ -484,6 +508,7 @@ public record TargetOptions
             "discord" => onDiscord(AsDiscord()),
             "telegram" => onTelegram(AsTelegram()),
             "slack" => onSlack(AsSlack()),
+            "snapchat" => onSnapchat(AsSnapchat()),
             "wordpress" => onWordpress(AsWordpress()),
             "wordpressCom" => onWordpressCom(AsWordpressCom()),
             "devto" => onDevto(AsDevto()),
@@ -507,6 +532,7 @@ public record TargetOptions
         Action<Peal.DiscordOptions> onDiscord,
         Action<Peal.TelegramOptions> onTelegram,
         Action<Peal.SlackOptions> onSlack,
+        Action<Peal.SnapchatOptions> onSnapchat,
         Action<Peal.WordPressOptions> onWordpress,
         Action<Peal.WordPressComOptions> onWordpressCom,
         Action<Peal.DevtoOptions> onDevto,
@@ -557,6 +583,9 @@ public record TargetOptions
                 break;
             case "slack":
                 onSlack(AsSlack());
+                break;
+            case "snapchat":
+                onSnapchat(AsSnapchat());
                 break;
             case "wordpress":
                 onWordpress(AsWordpress());
@@ -773,6 +802,20 @@ public record TargetOptions
     }
 
     /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.SnapchatOptions"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsSnapchat(out Peal.SnapchatOptions? value)
+    {
+        if (Platform == "snapchat")
+        {
+            value = (Peal.SnapchatOptions)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
     /// Attempts to cast the value to a <see cref="Peal.WordPressOptions"/> and returns true if successful.
     /// </summary>
     public bool TryAsWordpress(out Peal.WordPressOptions? value)
@@ -858,6 +901,8 @@ public record TargetOptions
 
     public static implicit operator TargetOptions(TargetOptions.Slack value) => new(value);
 
+    public static implicit operator TargetOptions(TargetOptions.Snapchat value) => new(value);
+
     public static implicit operator TargetOptions(TargetOptions.Wordpress value) => new(value);
 
     public static implicit operator TargetOptions(TargetOptions.WordpressCom value) => new(value);
@@ -938,6 +983,8 @@ public record TargetOptions
                     ?? throw new JsonException("Failed to deserialize Peal.TelegramOptions"),
                 "slack" => jsonWithoutDiscriminator.Deserialize<Peal.SlackOptions?>(options)
                     ?? throw new JsonException("Failed to deserialize Peal.SlackOptions"),
+                "snapchat" => jsonWithoutDiscriminator.Deserialize<Peal.SnapchatOptions?>(options)
+                    ?? throw new JsonException("Failed to deserialize Peal.SnapchatOptions"),
                 "wordpress" => jsonWithoutDiscriminator.Deserialize<Peal.WordPressOptions?>(options)
                     ?? throw new JsonException("Failed to deserialize Peal.WordPressOptions"),
                 "wordpressCom" => jsonWithoutDiscriminator.Deserialize<Peal.WordPressComOptions?>(
@@ -975,6 +1022,7 @@ public record TargetOptions
                     "discord" => JsonSerializer.SerializeToNode(value.Value, options),
                     "telegram" => JsonSerializer.SerializeToNode(value.Value, options),
                     "slack" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "snapchat" => JsonSerializer.SerializeToNode(value.Value, options),
                     "wordpress" => JsonSerializer.SerializeToNode(value.Value, options),
                     "wordpressCom" => JsonSerializer.SerializeToNode(value.Value, options),
                     "devto" => JsonSerializer.SerializeToNode(value.Value, options),
@@ -1270,6 +1318,25 @@ public record TargetOptions
         public override string ToString() => Value.ToString() ?? "null";
 
         public static implicit operator TargetOptions.Slack(Peal.SlackOptions value) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for snapchat
+    /// </summary>
+    [Serializable]
+    public struct Snapchat
+    {
+        public Snapchat(Peal.SnapchatOptions value)
+        {
+            Value = value;
+        }
+
+        internal Peal.SnapchatOptions Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator TargetOptions.Snapchat(Peal.SnapchatOptions value) =>
+            new(value);
     }
 
     /// <summary>

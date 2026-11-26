@@ -39,6 +39,8 @@ module Peal
 
       member -> { Peal::Types::SlackOptions }, key: "slack"
 
+      member -> { Peal::Types::SnapchatOptions }, key: "snapchat"
+
       member -> { Peal::Types::WordPressOptions }, key: "wordpress"
 
       member -> { Peal::Types::WordPressComOptions }, key: "wordpressCom"

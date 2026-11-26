@@ -20,6 +20,7 @@ export const PlatformSchema = Schema.Literals([
   "discord",
   "telegram",
   "slack",
+  "snapchat",
   "wordpress",
   "devto",
   "hashnode",

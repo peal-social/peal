@@ -23,11 +23,12 @@ Each platform takes its own settings, and several need the platform's approval b
 | [Pinterest](#pinterest)                     | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | Pinterest's Standard access                     |
 | [Google Business Profile](#google-business) | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | Google's access to the Business Profile APIs    |
 | [Slack](#slack)                             | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`                                                                             | Public distribution, which you turn on at Slack |
+| [Snapchat](#snapchat)                       | `SNAPCHAT_CLIENT_ID`, `SNAPCHAT_CLIENT_SECRET`                                                                       | Snap's allowlisting of the app                  |
 | [WordPress websites](#wordpress)            | None: each member gives their site's application password                                                            | Nothing to register                             |
 | [WordPress.com](#wordpress-com)             | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Nothing known to review                         |
 | [DEV and Hashnode](#devto-hashnode)         | None: each member gives a key of their own                                                                           | Nothing to register                             |
 
-For LinkedIn, X, YouTube, Pinterest, Google Business Profile, Slack and WordPress.com, setting one of the two settings without the other stops the server at startup. Without both, **Channels** doesn't offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
+For LinkedIn, X, YouTube, Pinterest, Google Business Profile, Slack, Snapchat and WordPress.com, setting one of the two settings without the other stops the server at startup. Without both, **Channels** doesn't offer the platform. [Environment variables](/self-hosting/environment-variables#channels) lists every platform setting, with its default.
 
 ### Token keys [#token-keys]
 
@@ -52,22 +53,23 @@ To publish an image or a video, the server reads the whole file from the media s
 
 For each platform, the server calls these hosts and sends media this way:
 
-| Platform                | The server calls                                                                                                                                      | Media                                                                                        |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Mastodon                | Each account's Mastodon server                                                                                                                        | Images and videos read whole                                                                 |
-| Bluesky                 | The Bluesky server that holds each account, and Bluesky's video service, `https://video.bsky.app`, for videos                                         | Images and videos read whole: a Bluesky video can take up to 300 MB                          |
-| LinkedIn                | `www.linkedin.com`, `api.linkedin.com` and the upload addresses LinkedIn gives                                                                        | Videos in parts of 4 MiB, one held at a time                                                 |
-| X                       | `api.x.com`                                                                                                                                           | Videos in parts of 4 MiB, one held at a time                                                 |
-| TikTok                  | `open.tiktokapis.com` and the upload addresses TikTok gives                                                                                           | Videos in parts of 10 MB, one held at a time, unless TikTok fetches them ([TikTok](#tiktok)) |
-| Meta                    | `graph.facebook.com`, `graph.instagram.com`, `api.instagram.com` and `graph.threads.com`                                                              | Images and videos fetched by Meta from the media store                                       |
-| YouTube                 | `oauth2.googleapis.com` and `www.googleapis.com`                                                                                                      | Videos in parts of 8 MiB, one held at a time                                                 |
-| Pinterest               | `api.pinterest.com` (or the Sandbox), and the address Pinterest names for each video, an object store's                                               | Videos sent as they're read, never held whole; images fetched by Pinterest                   |
-| Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` and `mybusiness.googleapis.com` | Photos fetched by Google from the media store                                                |
-| Google Ads              | `oauth2.googleapis.com` and `googleads.googleapis.com`, when `PEAL_ADS_NETWORKS` names `google`                                                       | None, because it only reads                                                                  |
-| Slack                   | `slack.com`, and `files.slack.com`, where Slack has each image uploaded                                                                               | Images sent as they're read, never held whole                                                |
-| WordPress.com           | `public-api.wordpress.com`, whose API serves each site's core routes                                                                                  | Images read whole                                                                            |
-| DEV                     | `dev.to`                                                                                                                                              | Images read whole                                                                            |
-| Hashnode                | `gql-beta.hashnode.com`, and the upload address Hashnode gives for each image                                                                         | Images sent as they're read                                                                  |
+| Platform                | The server calls                                                                                                                                      | Media                                                                                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mastodon                | Each account's Mastodon server                                                                                                                        | Images and videos read whole                                                                                                                                           |
+| Bluesky                 | The Bluesky server that holds each account, and Bluesky's video service, `https://video.bsky.app`, for videos                                         | Images and videos read whole: a Bluesky video can take up to 300 MB                                                                                                    |
+| LinkedIn                | `www.linkedin.com`, `api.linkedin.com` and the upload addresses LinkedIn gives                                                                        | Videos in parts of 4 MiB, one held at a time                                                                                                                           |
+| X                       | `api.x.com`                                                                                                                                           | Videos in parts of 4 MiB, one held at a time                                                                                                                           |
+| TikTok                  | `open.tiktokapis.com` and the upload addresses TikTok gives                                                                                           | Videos in parts of 10 MB, one held at a time, unless TikTok fetches them ([TikTok](#tiktok))                                                                           |
+| Meta                    | `graph.facebook.com`, `graph.instagram.com`, `api.instagram.com` and `graph.threads.com`                                                              | Images and videos fetched by Meta from the media store                                                                                                                 |
+| YouTube                 | `oauth2.googleapis.com` and `www.googleapis.com`                                                                                                      | Videos in parts of 8 MiB, one held at a time                                                                                                                           |
+| Pinterest               | `api.pinterest.com` (or the Sandbox), and the address Pinterest names for each video, an object store's                                               | Videos sent as they're read, never held whole; images fetched by Pinterest                                                                                             |
+| Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` and `mybusiness.googleapis.com` | Photos fetched by Google from the media store                                                                                                                          |
+| Google Ads              | `oauth2.googleapis.com` and `googleads.googleapis.com`, when `PEAL_ADS_NETWORKS` names `google`                                                       | None, because it only reads                                                                                                                                            |
+| Slack                   | `slack.com`, and `files.slack.com`, where Slack has each image uploaded                                                                               | Images sent as they're read, never held whole                                                                                                                          |
+| Snapchat                | `accounts.snapchat.com` and `businessapi.snapchat.com`                                                                                                | Videos encrypted and sent in parts of 32 MiB, as Snap's sample splits them; one part and its encrypted copy held at a time, so a video of 32 MiB or less is held whole |
+| WordPress.com           | `public-api.wordpress.com`, whose API serves each site's core routes                                                                                  | Images read whole                                                                                                                                                      |
+| DEV                     | `dev.to`                                                                                                                                              | Images read whole                                                                                                                                                      |
+| Hashnode                | `gql-beta.hashnode.com`, and the upload address Hashnode gives for each image                                                                         | Images sent as they're read                                                                                                                                            |
 
 The platforms send people back to `PUBLIC_URL/connect/<platform>/callback`, through their browser. They never call the server themselves, apart from Bluesky reading Peal's client description, and Meta's data deletion requests and events.
 
@@ -622,6 +624,42 @@ Members add the app to their Slack workspace, and on Slack's page they pick the 
 The bot's token doesn't expire. If Slack refuses it, as it does once the app is removed from the workspace, the channel shows **Reconnect**. Disconnecting a channel revokes nothing, because the same token serves every channel of that Slack workspace.
 
 These settings have nothing to do with `SLACK_ALERTS_WEBHOOK_URL`, where the monitoring sends its alerts.
+
+## Snapchat [#snapchat]
+
+To connect Snapchat Public Profiles, make an OAuth app in Snap's Business Manager, ask Snap to allowlist it for its Public Profile API, and set its credentials once Snap has.
+
+<Steps>
+<Step title="Make a business account">
+
+In Snap's Ads Manager, make a business account (an organization) for your service. Ads Manager offers to make the Snapchat account you sign in with the business's Public Profile (**Create Public Profile**). To try your server, you need a Snapchat account that has a Public Profile.
+
+</Step>
+<Step title="Make the OAuth app">
+
+In Business Manager, under **Business Details**, open **OAuth Apps** and click **+ OAuth App**. Only an Organization Admin sees it, and the first time Snap asks you to accept the Snap Developer Terms and the Snap Business Tools Terms for the organization. Don't make the app in Snap's Developer Portal: the Public Profile API refuses its client ids.
+
+Give it a name and, under **Snap Redirect URIs**, the address [the command](#platform-addresses) prints, `PUBLIC_URL/connect/snapchat/callback`, such as `https://peal.example.com/connect/snapchat/callback`. The field takes one address a line, up to 10, so one app can serve several servers. Check them first: Snap warns that the name and the redirect URIs can't be changed once the app is made.
+
+</Step>
+<Step title="Keep the credentials">
+
+Snap shows the client id and the client secret once the app is made, and the secret only then: keep both somewhere safe. Don't set them on the server yet.
+
+</Step>
+<Step title="Ask Snap to allowlist the app">
+
+The Public Profile API takes only the client ids Snap has allowlisted. Send your Snap contact the client id and what your service does with the API, never the secret.
+
+</Step>
+<Step title="Set the credentials">
+
+Once Snap says it has allowlisted the id, put it in `SNAPCHAT_CLIENT_ID` and the secret in `SNAPCHAT_CLIENT_SECRET`. The server offers Snapchat as soon as both are set, so set them only then: before, every sign-in fails, and the server's log says Snap refused the client.
+
+</Step>
+</Steps>
+
+Members sign in on Snapchat and allow Peal to reach their Public Profile. Peal asks for the one scope `snapchat-profile-api`. Access lasts an hour, and Peal renews it. Snap documents no call that revokes access, so disconnecting a channel deletes Peal's tokens and tells Snapchat nothing.
 
 ## WordPress websites [#wordpress]
 

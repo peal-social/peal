@@ -14,12 +14,12 @@ Schedule a post once its text and channels are ready ([Write a post](/guides/pos
 <Steps>
 <Step title="Pick the date and time">
 
-Under **When**, set the **Date**, **Time** and **Time zone**. The time zone starts as your browser's.
+Click **When**, beside the text, and set the **Date**, **Time** and **Time zone**. The time zone starts as your browser's.
 
 </Step>
 <Step title="Schedule it">
 
-Click **Schedule**. If you can't, the post breaks a limit on one of its channels, and the composer lists what to fix. Once you click it, the composer also lists any [platform options](/guides/posts#options) a channel still lacks, and shows them under their fields.
+Click **Schedule**. If you can't, the post breaks a limit on one of its channels, and the composer lists what to fix. Once you click it, the composer also lists any [platform options](/guides/posts#options) a channel still lacks, and opens that channel's row to show them under their fields.
 
 </Step>
 </Steps>
@@ -96,7 +96,7 @@ peal posts remove-target <post-id> <target-id>
 
 ## The calendar [#calendar]
 
-In a workspace, click **Calendar** in the sidebar. The calendar shows scheduled posts by **Day**, **Week** or **Month**, at their times in your browser's time zone, with each post's status. The line beside the dates names that zone.
+In a workspace, click **Posts** in the sidebar, then **Display**, and choose **Calendar**. **List** brings the list back. The calendar shows scheduled posts by **Day**, **Week** or **Month**, at their times in your browser's time zone, with each post's status. The line beside the dates names that zone.
 
 From the calendar, you can:
 
@@ -111,7 +111,7 @@ In the month view, a day with more posts than fit opens in the day view.
 
 Times follow your language's clock. To switch between a 12-hour and a 24-hour clock, set **Time format** on your account page. The choice is kept in your browser.
 
-To open the calendar on a given week, add `?date=` and any day of that week to its address, such as `?date=2026-11-09`.
+The calendar's address is the posts page's with `?layout=calendar`. To open it on a given week, add `&date=` and any day of that week, such as `?layout=calendar&date=2026-11-09`.
 
 ## When a post comes due [#publishing]
 
@@ -164,19 +164,20 @@ Peal sends each image or video in the form the platform needs, and some platform
 
 Peal checks only in ways that can't post twice:
 
-| Platform                | How Peal checks                                                                                                                  |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Bluesky                 | Reads the post back.                                                                                                             |
-| Mastodon                | Sends it again under the same key, and Mastodon answers with the post it already made.                                           |
-| X                       | Looks for it among the account's recent posts, by its text, links and files. It never sends it to X again.                       |
-| Threads and Instagram   | Asks whether the post they were handed was published.                                                                            |
-| Facebook Pages          | Looks for it among the Page's recent posts, by its text.                                                                         |
-| TikTok                  | Follows the post TikTok already took, by the id TikTok gave.                                                                     |
-| YouTube                 | Asks how far the upload got. It never uploads the video twice.                                                                   |
-| Pinterest               | Looks for the Pin among those made on its board since, by title, description, link and kind of media. It never creates it again. |
-| Google Business Profile | Looks for the post among the location's posts, by its type, text and event title.                                                |
-| LinkedIn company page   | Looks for the post among the page's newest, by its text.                                                                         |
-| LinkedIn profile        | Can't check: LinkedIn doesn't let Peal read a member's posts or send one twice safely, so the post shows **To check** at once.   |
+| Platform                | How Peal checks                                                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bluesky                 | Reads the post back.                                                                                                                                                |
+| Mastodon                | Sends it again under the same key, and Mastodon answers with the post it already made.                                                                              |
+| X                       | Looks for it among the account's recent posts, by its text, links and files. It never sends it to X again.                                                          |
+| Threads and Instagram   | Asks whether the post they were handed was published.                                                                                                               |
+| Facebook Pages          | Looks for it among the Page's recent posts, by its text.                                                                                                            |
+| TikTok                  | Follows the post TikTok already took, by the id TikTok gave.                                                                                                        |
+| YouTube                 | Asks how far the upload got. It never uploads the video twice.                                                                                                      |
+| Pinterest               | Looks for the Pin among those made on its board since, by title, description, link and kind of media. It never creates it again.                                    |
+| Google Business Profile | Looks for the post among the location's posts, by its type, text and event title.                                                                                   |
+| LinkedIn company page   | Looks for the post among the page's newest, by its text.                                                                                                            |
+| LinkedIn profile        | Can't check: LinkedIn doesn't let Peal read a member's posts or send one twice safely, so the post shows **To check** at once.                                      |
+| Snapchat                | Can't check: Peal doesn't look the Spotlight up on Snapchat, so the post shows **To check** at once, also when the server restarted while the video was being sent. |
 
 Peal tries three times, over about two and a half minutes. If the server stops in the middle of a post, it checks the same way when it starts again. Only when none of that settles it does the post show **To check**. Peal never posts it again by itself.
 

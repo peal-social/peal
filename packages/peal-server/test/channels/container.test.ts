@@ -110,6 +110,8 @@ const withoutApps = {
   PINTEREST_APP_SECRET: "",
   SLACK_CLIENT_ID: "",
   SLACK_CLIENT_SECRET: "",
+  SNAPCHAT_CLIENT_ID: "",
+  SNAPCHAT_CLIENT_SECRET: "",
   TIKTOK_CLIENT_KEY: "",
   TIKTOK_CLIENT_SECRET: "",
   X_CLIENT_ID: "",
@@ -230,6 +232,7 @@ layer(channelsWith(""))("the channels context on a local server", (it) => {
           "linkedin",
           "pinterest",
           "slack",
+          "snapchat",
           "threads",
           "tiktok",
           "x",
@@ -260,6 +263,8 @@ layer(DatabaseTest)(
                 PINTEREST_APP_SECRET: "synthetic-pinterest-secret",
                 SLACK_CLIENT_ID: "1000000000001.2000000000001",
                 SLACK_CLIENT_SECRET: "synthetic-slack-secret",
+                SNAPCHAT_CLIENT_ID: "synthetic-snapchat-client",
+                SNAPCHAT_CLIENT_SECRET: "synthetic-snapchat-secret",
                 TIKTOK_CLIENT_KEY: "awsynthetic",
                 TIKTOK_CLIENT_SECRET: "synthetic-tiktok-secret",
                 X_CLIENT_ID: "c3ludGhldGlj",
@@ -301,6 +306,11 @@ layer(DatabaseTest)(
             "slack"
           );
           assert.isFalse(authorizers.unconfigured.has("slack"));
+          assert.strictEqual(
+            Option.getOrThrow(authorizers.for("snapchat")).platform,
+            "snapchat"
+          );
+          assert.isFalse(authorizers.unconfigured.has("snapchat"));
           // The first app connects profiles, and no page.
           assert.deepStrictEqual(authorizers.linkedinConnections, [
             "linkedinProfile",
@@ -415,6 +425,10 @@ layer(DatabaseTest)(
           [
             "slack",
             { ...withoutApps, SLACK_CLIENT_ID: "1000000000001.2000000000001" },
+          ],
+          [
+            "snapchat",
+            { ...withoutApps, SNAPCHAT_CLIENT_ID: "synthetic-snapchat-client" },
           ],
         ] as const) {
           const failure = yield* Layer.build(

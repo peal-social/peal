@@ -301,6 +301,13 @@ pub enum TargetOptions {
         unfurl_links: Option<bool>,
     },
 
+    #[serde(rename = "snapchat")]
+    #[non_exhaustive]
+    Snapchat {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
+    },
+
     #[serde(rename = "wordpress")]
     #[non_exhaustive]
     Wordpress {
@@ -530,6 +537,10 @@ impl TargetOptions {
 
     pub fn slack() -> Self {
         Self::Slack { unfurl_links: None }
+    }
+
+    pub fn snapchat() -> Self {
+        Self::Snapchat { locale: None }
     }
 
     pub fn wordpress() -> Self {
@@ -2377,6 +2388,12 @@ impl TargetOptions {
     pub fn slack_with_unfurl_links(unfurl_links: bool) -> Self {
         Self::Slack {
             unfurl_links: Some(unfurl_links),
+        }
+    }
+
+    pub fn snapchat_with_locale(locale: String) -> Self {
+        Self::Snapchat {
+            locale: Some(locale),
         }
     }
 

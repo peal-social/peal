@@ -7,6 +7,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   TriangleAlertIcon,
+  UploadIcon,
   XIcon,
 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
@@ -17,8 +18,13 @@ import { Label } from "peal-ui/components/label";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { Textarea } from "peal-ui/components/textarea";
 import { toast } from "peal-ui/components/toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "peal-ui/components/tooltip";
 import { useId, useRef, useState } from "react";
-import type { Ref } from "react";
+import type { ReactNode, RefObject } from "react";
 import { flushSync } from "react-dom";
 
 import { MediaThumbnail } from "#components/media/media-thumbnail.tsx";
@@ -200,6 +206,89 @@ const AttachmentRow = ({
   );
 };
 
+/**
+ * The composer's toolbar under its text: its own tools around the
+ * library's and upload's icon buttons, and the uploads under way, the
+ * uploader's file input opened by its button or a paste.
+ */
+const AttachmentsToolbar = ({
+  attached,
+  canBrowse,
+  canGenerate,
+  canUpload,
+  disabled,
+  files,
+  onPick,
+  onUploaded,
+  room,
+  toolbar,
+  workspaceId,
+}: {
+  readonly attached: readonly AttachedMedia[];
+  readonly canBrowse: boolean;
+  readonly canGenerate: boolean;
+  readonly canUpload: boolean;
+  readonly disabled: boolean;
+  readonly files: RefObject<MediaUploaderHandle | null>;
+  readonly onPick: (media: readonly Media[]) => void;
+  readonly onUploaded: (media: Media) => void;
+  readonly room: number;
+  readonly toolbar: { readonly end?: ReactNode; readonly start?: ReactNode };
+  readonly workspaceId: string;
+}) => {
+  const tMedia = useTranslations("Media");
+  const full = disabled || room === 0;
+
+  return (
+    <>
+      {canUpload ? (
+        <MediaUploader
+          ref={files}
+          compact="hidden"
+          disabled={full}
+          workspaceId={workspaceId}
+          onUploaded={onUploaded}
+        />
+      ) : null}
+      <div className="flex flex-wrap items-center gap-0.5">
+        {toolbar.start}
+        {canBrowse ? (
+          <MediaPicker
+            compact
+            attached={attached.map(({ mediaId }) => mediaId)}
+            canGenerate={canGenerate}
+            disabled={disabled}
+            room={room}
+            workspaceId={workspaceId}
+            onPick={onPick}
+          />
+        ) : null}
+        {canUpload ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={tMedia("uploader.choose")}
+                  disabled={full}
+                  onClick={() => {
+                    files.current?.choose();
+                  }}
+                />
+              }
+            >
+              <UploadIcon aria-hidden />
+            </TooltipTrigger>
+            <TooltipContent>{tMedia("uploader.choose")}</TooltipContent>
+          </Tooltip>
+        ) : null}
+        {toolbar.end}
+      </div>
+    </>
+  );
+};
+
 interface MediaAttachmentsProps {
   /** The post's attachments, with their media once loaded. */
   readonly attached: readonly AttachedMedia[];
@@ -238,7 +327,16 @@ interface MediaAttachmentsProps {
    */
   readonly platforms: readonly Platform[];
   /** Where files pasted into the post's texts are handed to the uploader. */
-  readonly uploader?: Ref<MediaUploaderHandle> | undefined;
+  readonly uploader?: RefObject<MediaUploaderHandle | null> | undefined;
+  /**
+   * In the composer's text: the toolbar under it, whose own tools go
+   * before (`start`) and after (`end`) the library's and upload's icon
+   * buttons. The list then says nothing while empty, and no drop zone
+   * shows: files come from the upload button or a paste.
+   */
+  readonly toolbar?:
+    | { readonly end?: ReactNode; readonly start?: ReactNode }
+    | undefined;
   readonly workspaceId: string;
 }
 
@@ -263,6 +361,7 @@ export const MediaAttachments = ({
   label,
   onChange,
   platforms,
+  toolbar,
   uploader,
   workspaceId,
 }: MediaAttachmentsProps) => {
@@ -272,6 +371,10 @@ export const MediaAttachments = ({
   const [announcement, setAnnouncement] = useState("");
   const list = useRef<HTMLOListElement>(null);
   const region = useRef<HTMLDivElement>(null);
+  // The uploader, for the toolbar's upload button: the one `uploader`
+  // names, or the list's own.
+  const own = useRef<MediaUploaderHandle | null>(null);
+  const files = uploader ?? own;
 
   const room = roomLeft(attached);
   const count = attached.length;
@@ -352,9 +455,11 @@ export const MediaAttachments = ({
       tabIndex={-1}
       className="flex flex-col gap-4 outline-none"
     >
-      <p className="text-muted-foreground text-sm">
-        {t("count", { count, maximum: maxMediaPerPost })}
-      </p>
+      {toolbar !== undefined && count === 0 ? null : (
+        <p className="text-muted-foreground text-sm">
+          {t("count", { count, maximum: maxMediaPerPost })}
+        </p>
+      )}
       {count === 0 ? null : (
         <ol
           ref={list}
@@ -384,7 +489,22 @@ export const MediaAttachments = ({
         </ol>
       )}
       <output className="sr-only">{announcement}</output>
-      {editable ? (
+      {toolbar === undefined ? null : (
+        <AttachmentsToolbar
+          attached={attached}
+          canBrowse={editable && canBrowse}
+          canGenerate={canGenerate}
+          canUpload={editable && canUpload}
+          disabled={disabled}
+          files={files}
+          room={room}
+          toolbar={toolbar}
+          workspaceId={workspaceId}
+          onPick={add}
+          onUploaded={handleUploaded}
+        />
+      )}
+      {editable && toolbar === undefined ? (
         <div className="flex flex-col gap-3">
           {canBrowse ? (
             <div>
@@ -401,6 +521,7 @@ export const MediaAttachments = ({
           {canUpload ? (
             <MediaUploader
               ref={uploader}
+              compact
               disabled={disabled || room === 0}
               workspaceId={workspaceId}
               onUploaded={handleUploaded}

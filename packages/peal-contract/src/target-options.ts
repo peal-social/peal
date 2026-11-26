@@ -742,6 +742,23 @@ export const SlackOptionsSchema = Schema.Struct({
 export type SlackOptions = typeof SlackOptionsSchema.Type;
 
 /**
+ * A post on a Snapchat Public Profile: it goes out as a Spotlight, the text
+ * its description.
+ */
+export const SnapchatOptionsSchema = Schema.Struct({
+  // The Spotlight's language and country, as Snap's `locale` takes them:
+  // `en_US`. Left out: `en_US`.
+  locale: Schema.optionalKey(OptionTextSchema),
+  platform: Schema.Literal("snapchat"),
+}).annotate({
+  description:
+    "How a post goes out on a Snapchat Public Profile, as a Spotlight. Scheduling needs none of them; `locale` is the Spotlight's language and country, as Snap's `locale` takes them (`en_US`), and `en_US` when left out.",
+  identifier: "SnapchatOptions",
+});
+
+export type SnapchatOptions = typeof SnapchatOptionsSchema.Type;
+
+/**
  * The longest title a website's post takes, in characters (code points):
  * WordPress's and Hashnode's; DEV takes 128.
  */
@@ -884,6 +901,7 @@ export const TargetOptionsSchema = Schema.Union([
   DiscordOptionsSchema,
   TelegramOptionsSchema,
   SlackOptionsSchema,
+  SnapchatOptionsSchema,
   WordPressOptionsSchema,
   WordPressComOptionsSchema,
   DevtoOptionsSchema,

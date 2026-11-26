@@ -32,6 +32,8 @@ import { pinterestHostsConfig } from "#shared/infrastructure/platforms/pinterest
 import type { PinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { slackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
 import type { SlackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
+import { snapchatHosts } from "#shared/infrastructure/platforms/snapchat-api.ts";
+import type { SnapchatHosts } from "#shared/infrastructure/platforms/snapchat-api.ts";
 import { tiktokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 import type { TikTokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 
@@ -102,6 +104,10 @@ export interface ChannelPlatformSettings {
   readonly slack: Option.Option<OAuthClient>;
   /** Where Slack's Web API and install page are. */
   readonly slackHosts: SlackHosts;
+  /** Peal's Snapchat app, if the operator made one and Snap allowlisted it. */
+  readonly snapchat: Option.Option<OAuthClient>;
+  /** Where Snap's sign-in page, tokens and Business API are. */
+  readonly snapchatHosts: SnapchatHosts;
   /** The app's Threads credentials; none when this server has none. */
   readonly threads: Option.Option<MetaApp>;
   /** Peal's TikTok app (its client key and secret), if the operator has one. */
@@ -262,6 +268,10 @@ const blueskyModeOf = Effect.fnUntraced(function* blueskyModeOf(settings: {
  *   registered on Slack (api.slack.com/apps), with its bot's scopes and
  *   public distribution, for Slack channels. Not the alerts' webhook
  *   (`SLACK_ALERTS_WEBHOOK_URL`). One half alone stops the server.
+ * - `SNAPCHAT_CLIENT_ID` and `SNAPCHAT_CLIENT_SECRET`: the OAuth app the
+ *   operator made in Snap's Business Manager (Business Details), whose
+ *   client id Snap allowlisted for the Public Profile API. Without them,
+ *   Snapchat is not offered; one alone stops the server.
  */
 export const channelPlatformsConfig = Effect.gen(function* settings() {
   const publicUrl = yield* publicUrlConfig;
@@ -307,6 +317,7 @@ export const channelPlatformsConfig = Effect.gen(function* settings() {
 
   const pinterestHosts = yield* pinterestHostsConfig;
   const slack = yield* oauthClientConfig("slack", "SLACK");
+  const snapchat = yield* oauthClientConfig("snapchat", "SNAPCHAT");
 
   const googleBusiness = yield* oauthClientConfig(
     "googleBusiness",
@@ -336,6 +347,8 @@ export const channelPlatformsConfig = Effect.gen(function* settings() {
     publicUrl,
     slack,
     slackHosts,
+    snapchat,
+    snapchatHosts,
     threads,
     tiktok,
     tiktokHosts,

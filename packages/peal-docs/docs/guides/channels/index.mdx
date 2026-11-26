@@ -9,11 +9,12 @@ A channel is a social account connected to a workspace. Posts go to channels, so
 
 To see a workspace's channels, open the workspace and click **Channels** in the sidebar. Every member sees them. Only owners and admins can connect, reconnect and disconnect them.
 
-<Callout type="note" title="Peal connects fourteen platforms so far">
+<Callout type="note" title="Peal connects fifteen platforms so far">
   Peal connects Mastodon, Bluesky, LinkedIn, X, Threads, Instagram, TikTok and
-  Pinterest accounts, Facebook Pages, YouTube channels, Google Business Profile
-  locations, and Discord, Telegram and Slack channels. **Channels** offers only
-  the platforms the Peal server is set up for.
+  Pinterest accounts, Snapchat Public Profiles, Facebook Pages, YouTube
+  channels, Google Business Profile locations, and Discord, Telegram and Slack
+  channels. **Channels** offers only the platforms the Peal server is set up
+  for.
 </Callout>
 
 A WordPress site connects too, with an application password, so you can publish articles to it. See [Websites and articles](/guides/channels/websites).
@@ -65,7 +66,7 @@ The platform sends you back to Peal, which finishes the connection.
 
 If the workspace already has the account, connecting it again reconnects its channel instead of adding a second one. Several workspaces can connect the same account.
 
-Each platform's page says how to connect an account there: [Mastodon](/platforms/mastodon#connect), [Bluesky](/platforms/bluesky#connect), [Threads](/platforms/threads#connect), [X](/platforms/x#connect), [LinkedIn](/platforms/linkedin#connect), [Facebook Pages](/platforms/facebook#connect), [Instagram](/platforms/instagram#connect), [TikTok](/platforms/tiktok#connect), [YouTube](/platforms/youtube#connect), [Pinterest](/platforms/pinterest#connect), [Google Business Profile](/platforms/google-business#connect), [Discord](/platforms/discord#connect), [Telegram](/platforms/telegram#connect), [Slack](/platforms/slack#connect).
+Each platform's page says how to connect an account there: [Mastodon](/platforms/mastodon#connect), [Bluesky](/platforms/bluesky#connect), [Threads](/platforms/threads#connect), [X](/platforms/x#connect), [LinkedIn](/platforms/linkedin#connect), [Facebook Pages](/platforms/facebook#connect), [Instagram](/platforms/instagram#connect), [TikTok](/platforms/tiktok#connect), [YouTube](/platforms/youtube#connect), [Pinterest](/platforms/pinterest#connect), [Snapchat](/platforms/snapchat#connect), [Google Business Profile](/platforms/google-business#connect), [Discord](/platforms/discord#connect), [Telegram](/platforms/telegram#connect), [Slack](/platforms/slack#connect).
 
 ## Let someone else connect their account [#connect-links]
 
@@ -133,6 +134,7 @@ Peal renews each account's access by itself before it runs out. Here's how it wo
 | Bluesky                                                         | Refreshes the session a month before it would lapse.                                                                                                                                                                                                                            |
 | Threads, and Instagram accounts connected with Instagram        | The access lasts 60 days. Peal renews it a week before.                                                                                                                                                                                                                         |
 | Pinterest                                                       | The access lasts 30 days. Peal renews it a week before. Pinterest lets it keep renewing for as long as each renewal comes within 60 days of the last.                                                                                                                           |
+| Snapchat                                                        | The access lasts an hour. Peal renews it whenever it posts, and at least once a week for an account it does nothing with. The channel asks to be reconnected only if Snapchat refuses the renewal.                                                                              |
 | X                                                               | The access lasts two hours. Peal renews it whenever it posts or reads the posts' counts, and at least once a month for an account it does nothing with, so the platform never drops it.                                                                                         |
 | TikTok                                                          | The access lasts a day or less, and is renewed like X's. TikTok lets Peal renew it for 180 days after you connected the account. After that, the channel asks to be reconnected.                                                                                                |
 | YouTube                                                         | The access lasts an hour, and is renewed like X's. Google ends it when the owner removes Peal from their Google account, or six months after Peal last used it. On a self-hosted server whose Google project is in testing, it ends seven days after the channel was connected. |
@@ -228,6 +230,13 @@ One image makes an image Pin, and two to five make a carousel, which Pinterest f
 Pinterest gives Peal no way to tell a Pin it already made from one it didn't. When its answer is lost, Peal looks for the Pin on the board, and never sends it twice.
 
 </AccordionItem>
+<AccordionItem title="Snapchat">
+
+Peal posts a Spotlight for the account's Public Profile. The Spotlight's description is the post's text, and its language and country come from the post's [platform options](/guides/posts#options), `en_US` when you set none.
+
+Peal encrypts the video as Snapchat asks and sends it in parts, then makes the Spotlight. Peal doesn't look the Spotlight up on Snapchat: when the answer is lost, the post shows **To check**, and Peal never sends it twice.
+
+</AccordionItem>
 </Accordion>
 
 ## Name a channel [#name]
@@ -283,7 +292,7 @@ Click **Disconnect** next to the channel and confirm. Peal deletes the tokens it
   apps. Google ends access to every YouTube channel and Business Profile
   location of the same Google account at once, so Peal leaves it in place. On
   Google and the other platforms, revoke Peal's access in the account's settings
-  there.
+  there: on Snapchat, at `accounts.snapchat.com`, under **Manage Apps**.
 </Callout>
 
 ## When connecting fails [#errors]

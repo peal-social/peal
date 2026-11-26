@@ -68,18 +68,23 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
-    await screen.getByRole("checkbox", handle).check();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", handle).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await screen.getByRole("textbox", "Text for all channels").fill(first);
+
+    // The text's toolbar adds the first part, and its section shows.
+    await screen.getByRole("button", "Add a part").tap();
 
     const thread = screen.getByRole("region", "Thread and first comment");
 
-    await thread.getByRole("button", "Add a part").tap();
     await thread.getByRole("textbox", "Part 2").fill(second);
 
     // The post asks a poll, which Mastodon takes.
+    await screen.getByRole("button", "Add a poll").tap();
+
     const poll = screen.getByRole("region", "Poll");
 
-    await poll.getByRole("button", "Add a poll").tap();
     await poll.getByRole("textbox", "Choice 1").fill("Mornings");
     await poll.getByRole("textbox", "Choice 2").fill("Evenings");
     await screen.getByRole("button", "Save as draft").tap();

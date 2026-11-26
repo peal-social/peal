@@ -29,6 +29,7 @@ import {
   siInstagram,
   siMastodon,
   siPinterest,
+  siSnapchat,
   siTelegram,
   siThreads,
   siTiktok,
@@ -47,6 +48,10 @@ import type { Brand } from "#components/shell/brand-mark.tsx";
 import { rowMatches } from "#platforms/rows.ts";
 import type { PlatformRow } from "#platforms/rows.ts";
 
+// simple-icons draws Snapchat's ghost in its yellow, which cannot be seen
+// on the white tile: the same path in ink (DESIGN.md, "Icons").
+const snapchatMark: Brand = { ...siSnapchat, hex: "0C0A09" };
+
 // simple-icons' marks, and peal-ui's for the brands it does not hold.
 const marks: Readonly<Record<Platform, Brand>> = {
   bluesky: siBluesky,
@@ -60,6 +65,7 @@ const marks: Readonly<Record<Platform, Brand>> = {
   mastodon: siMastodon,
   pinterest: siPinterest,
   slack: slackBrand,
+  snapchat: snapchatMark,
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,

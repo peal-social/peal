@@ -2,10 +2,9 @@ import { describe, expect, it } from "@effect/vitest";
 import type { SocialChannel, Post } from "peal-contract";
 
 import {
-  goesToWebsite,
   connectedTargets,
   everyChannel,
-  offersEveryChannel,
+  goesToWebsite,
 } from "#posts/channel-selection.ts";
 
 const active: SocialChannel["status"] = { _tag: "active" };
@@ -149,14 +148,5 @@ describe(everyChannel, () => {
         ["off"]
       )
     ).toStrictEqual(["off", "a"]);
-  });
-});
-
-describe(offersEveryChannel, () => {
-  it("offers to select them all from three channels up", () => {
-    expect(offersEveryChannel([channel("a"), channel("b")])).toBeFalsy();
-    expect(
-      offersEveryChannel([channel("a"), channel("b"), channel("c")])
-    ).toBeTruthy();
   });
 });

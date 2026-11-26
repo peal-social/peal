@@ -415,6 +415,7 @@ describe("peal channels capabilities", () => {
         shown,
         "lookups: youtubeVideoCategories, youtubePlaylists"
       );
+      assert.include(shown, "options: locale");
       assert.include(shown, "* required to schedule");
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );

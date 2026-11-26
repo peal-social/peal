@@ -302,6 +302,7 @@ export const commentRuleSupport = {
   mastodon: "available",
   pinterest: "noApi",
   slack: "noApi",
+  snapchat: "noApi",
   telegram: "noApi",
   threads: "noApi",
   tiktok: "noApi",

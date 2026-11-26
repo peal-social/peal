@@ -479,8 +479,9 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   server without a base, and an edit of a live post, send the text as
   written. Tests take `LinkShortener.none` unless they test this.
 - Platform adapters live in `publishing/infrastructure/platforms/<platform>/`
-  (Mastodon, Bluesky, LinkedIn, X, TikTok, YouTube, Pinterest and Google
-  Business Profile, and Threads, Instagram and Facebook Pages in `meta/`),
+  (Mastodon, Bluesky, LinkedIn, X, TikTok, YouTube, Pinterest, Google
+  Business Profile and Snapchat, and Threads, Instagram and Facebook Pages
+  in `meta/`),
   and implement the steps of
   `publishing/application/publication-steps.ts`, which `sequenced` runs:
   `prepare` uploads the media (safe to repeat: media alone shows nowhere),
@@ -631,6 +632,41 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   answers `found` or `unknown`, never `absent`. Refusals are read from the
   status and whether the body is Pinterest's own (`pinterest-refusal.ts`):
   only a 401 with it is `TokenRejected`.
+- Snapchat's adapter (`platforms/snapchat/`) posts a Spotlight through
+  Snap's Public Profile API: one MP4, refused unsent otherwise, as is an
+  account id that is not a profile's UUID (`snapchat:invalidProfileId`).
+  `prepare` draws a key and an IV for the run (`SecureRandom`), makes the
+  media object with them (`POST …/media`, the one body that holds them:
+  its client errors are typed where they happen, and neither value is
+  ever logged or traced), sends the video encrypted with AES-256-CBC
+  (`snapchat-encryption.ts`, `Cipher`: the whole file's encryption, cut
+  as Snap's sample cuts it, `split -b 32m`: one part when it takes 32 MiB
+  or less, else parts of exactly 32 MiB (`snapchatPartSize`) and a last of
+  what is left, 30 parts at most for the largest video, 999,999,984 bytes,
+  whose encryption is Snap's 1 GB; one part of the file and its
+  ciphertext held at a time, so a video of 32 MiB or less is held whole;
+  whether Snap reads its samples so stays to be seen: a video of several
+  parts uploaded from the sandbox and played on Snapchat is a condition
+  of merging) to the answer's `add_path`, a
+  multipart form a part (`action=ADD`, `part_number`, then the file), and
+  finishes it at `finalize_path` (a form too); both paths are followed
+  only on the API's origin and under the profile's media object. Every
+  request is its own `withToken`, so a token that lapses sends one part
+  again. An answer is a success only when it is 2xx and says `SUCCESS`.
+  `commit` posts the Spotlight with the options' `locale` (`en_US` left
+  out) and the text as its description, published under `spotlight_id`
+  without a permalink while Snap reviews it. Confirmation is `none`: a
+  5xx, a lost or unreadable answer, a bare status of a server on the way
+  and `MEDIA_POSTING_ALREADY_IN_PROGRESS` are unconfirmed, and a resumed
+  run, the upload's included, `interrupted`. `snapchat-refusal.ts` reads
+  the status, `WWW-Authenticate` and whether the body is Snap's envelope,
+  never its messages: a 401 naming `invalid_token`, or any 401 that is
+  not Snap's envelope (its gateway answered a bad token a bare
+  `unauthorized` in plain text on 2026-11-26), is `TokenRejected`, renewed
+  once, then asking to reconnect; a 401 or a 403 in Snap's envelope fails
+  the post (`snapchat:<code>`), a bare 403 is `PlatformUnavailable`; a
+  `MEDIA_` code, or any code on a part or the finish, is the media's
+  refusal.
 - A confirmation that searches the platform (Pinterest's board, a LinkedIn
   page's newest posts, a location's local posts) adopts a post only through
   `attemptAmong` (`platforms/attempt-match.ts`): the one match the channel
@@ -642,7 +678,9 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
 - No adapter holds a whole file: large uploads go in parts read one at a
   time from the media stream (`inParts` in `platforms/byte-parts.ts`:
   LinkedIn's video parts, X's 4 MiB appends, TikTok's and YouTube's
-  chunks), and a file a platform takes in one request is streamed with
+  chunks, Snapchat's 32 MiB parts, which hold a video of 32 MiB or less
+  whole, as Snap's sample splits only past that, so its read takes an
+  upload slot from 4 MiB on, `open`'s `largeFrom`: `largeHeldUpload`), and a file a platform takes in one request is streamed with
   `streamedBody` (`#shared/infrastructure/platforms/public-http.ts`), in a
   form with `multipartBody` (Mastodon, Pinterest's videos; LinkedIn's
   documents go as they are), never `Stream.mkUint8Array` or
@@ -652,8 +690,10 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   sent chunked is refused by some servers. `limitedUploads`
   (`publishing/infrastructure/upload-slots.ts`) opens so many files above
   16 MiB at once (`PEAL_MAX_CONCURRENT_UPLOADS`, by default one per GiB of
-  memory, 2 to 8); the others wait inside their gate, where no timeout
-  runs before the upload begins. LinkedIn calls name `Linkedin-Version`
+  memory, 2 to 8), and Snapchat's above 4 MiB; the others wait inside
+  their gate, where no timeout runs before the upload begins. A slot holds
+  about 100 MiB at most (a Snapchat part, its ciphertext and Web Crypto's
+  copy), an upload without one about 16 MiB. LinkedIn calls name `Linkedin-Version`
   (`LINKEDIN_API_VERSION`, a default a test keeps within ten months, read
   from `#shared/infrastructure/platforms/linkedin-version.ts` by every
   context that calls LinkedIn), and

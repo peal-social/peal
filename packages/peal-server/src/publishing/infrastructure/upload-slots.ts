@@ -24,11 +24,26 @@ const gibibyte = 1024 * mebibyte;
 export const largeUpload = 16 * mebibyte + 1;
 
 /**
+ * From this size on, a file an adapter holds in parts larger than a
+ * streamed one takes an upload slot (`open`'s `largeFrom`): Snapchat's,
+ * whose 32 MiB parts hold a video of 32 MiB or less whole, with its
+ * ciphertext. Below it, such a read holds about 12 MiB, as much as the
+ * small reads of the other platforms.
+ */
+export const largeHeldUpload = 4 * mebibyte + 1;
+
+/**
  * How many large files a server with `memory` bytes sends at once when
  * `PEAL_MAX_CONCURRENT_UPLOADS` is not set: one per gibibyte, 2 at least
  * and 8 at most. An upload is streamed and holds a part of its file at a
- * time, 10 MB at most with what is on its way, so this bounds the memory
- * of the busiest minute to a few hundred megabytes, and the bandwidth and
+ * time, 10 MB at most with what is on its way, but for Snapchat's, whose
+ * parts are 32 MiB of the file (Snap's sample's `split -b 32m`): it holds
+ * a part, its ciphertext and Web Crypto's copy of the part while it
+ * encrypts, about 100 MiB at the most, and takes a slot from 4 MiB on
+ * (`largeHeldUpload`). So the large uploads of the busiest minute hold a
+ * few hundred megabytes, under a gigabyte when the eight slots of a server
+ * of 8 GiB or more each send a Snapchat video, and every upload without a
+ * slot holds about 16 MiB at most; the slots also bound the bandwidth and
  * store connections they share.
  */
 export const defaultUploadSlots = (memory: number): number =>
@@ -146,13 +161,13 @@ export const limitedUploads = Layer.effect(
           ),
           Effect.andThen(media.heldInTurn(workspaceId, mediaIds))
         ),
-      open: (workspaceId, mediaId) =>
+      open: (workspaceId, mediaId, options) =>
         Stream.unwrap(
           media
             .describe(workspaceId, mediaId)
             .pipe(
               Effect.map(({ byteSize }) =>
-                byteSize >= largeUpload
+                byteSize >= (options?.largeFrom ?? largeUpload)
                   ? Stream.scoped(
                       Stream.fromEffect(slot).pipe(
                         Stream.flatMap(() => media.open(workspaceId, mediaId))

@@ -118,6 +118,8 @@
     "videoTitle": "A synthetic reel title"
   },
   { "format": "feed", "platform": "facebook" },
+  { "platform": "snapchat" },
+  { "locale": "fr_FR", "platform": "snapchat" },
   {
     "categories": ["News"],
     "coverMediaId": "00000000-0000-7000-8000-0000000000b2",

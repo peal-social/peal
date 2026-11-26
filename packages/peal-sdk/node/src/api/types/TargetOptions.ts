@@ -20,6 +20,7 @@ export type TargetOptions =
     | Peal.TargetOptions.Discord
     | Peal.TargetOptions.Telegram
     | Peal.TargetOptions.Slack
+    | Peal.TargetOptions.Snapchat
     | Peal.TargetOptions.Wordpress
     | Peal.TargetOptions.WordpressCom
     | Peal.TargetOptions.Devto
@@ -80,6 +81,10 @@ export namespace TargetOptions {
 
     export interface Slack extends Peal.SlackOptions {
         platform: "slack";
+    }
+
+    export interface Snapchat extends Peal.SnapchatOptions {
+        platform: "snapchat";
     }
 
     export interface Wordpress extends Peal.WordPressOptions {

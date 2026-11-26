@@ -24,6 +24,7 @@ import type { ReactNode } from "react";
 import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { PlatformMark } from "#components/channels/platform-mark.tsx";
 import { DisplayMenu } from "#components/lists/display-menu.tsx";
+import type { Layouts } from "#components/lists/display-menu.tsx";
 import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import type { FilterProperty } from "#components/lists/filter-menu.tsx";
 import {
@@ -81,6 +82,7 @@ export const PostListToolbar = ({
   actions,
   channels,
   filters,
+  layouts,
   onChange,
   queues,
   tags,
@@ -89,6 +91,8 @@ export const PostListToolbar = ({
   readonly actions: ReactNode;
   readonly channels: readonly SocialChannel[];
   readonly filters: PostListFilters;
+  /** The posts page's layouts, which Display offers first. */
+  readonly layouts?: Layouts;
   readonly onChange: (filters: PostListFilters) => void;
   readonly queues: readonly Queue[];
   readonly tags: readonly Tag[];
@@ -265,17 +269,22 @@ export const PostListToolbar = ({
           />
           <DisplayMenu
             active={filters.sort !== noFilters.sort}
-            direction={ordering.direction}
-            field={ordering.field}
-            fields={[
-              { id: "created", label: t("orderCreated") },
-              { id: "scheduled", label: t("orderScheduled") },
-            ]}
-            onChange={(field, direction) => {
-              const ordered: PostOrdering =
-                field === "scheduled" ? "scheduled" : "created";
+            layouts={layouts}
+            ordering={{
+              direction: ordering.direction,
+              field: ordering.field,
+              fields: [
+                { id: "created", label: t("orderCreated") },
+                { id: "scheduled", label: t("orderScheduled") },
+              ],
+              onChange: (field, direction) => {
+                const ordered: PostOrdering =
+                  field === "scheduled" ? "scheduled" : "created";
 
-              onChange(withFilter(filters, "sort", sortOf(ordered, direction)));
+                onChange(
+                  withFilter(filters, "sort", sortOf(ordered, direction))
+                );
+              },
             }}
           />
           {actions}

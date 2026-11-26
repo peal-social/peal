@@ -187,6 +187,7 @@ describe("the options fields", () => {
     ],
     ["telegram", { linkPreview: false, silent: true }],
     ["slack", { unfurlLinks: true }],
+    ["snapchat", { ...initialValues("snapchat"), locale: "fr_FR" }],
     [
       "wordpress",
       {
@@ -272,6 +273,7 @@ describe("the options fields", () => {
       "mastodon",
       "pinterest",
       "slack",
+      "snapchat",
       "telegram",
       "threads",
       "tiktok",

@@ -61,14 +61,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   assistant:use), `…/platforms` (PealAPI's, for channel:read),
   `[workspaceId]/channels`, `…/editor` (the Studio's video editor, for
   assistant:use and media:upload: not-found otherwise), `…/media`,
-  `…/calendar`,
   `…/analytics`, `…/inbox` (a split view, its layout the list, for
   `engagement:read`: not-found otherwise, as for staff acting as a member)
   with `…/inbox/[threadId]`, `…/inbox/reviews/[threadId]` and
   `…/inbox/messages/[conversationId]` beside it, `…/ads`,
   `…/posts` (every post, whatever its state, for post:read and
   channel:read; its tabs are the drafts and the posts that need an
-  approval, and `…/drafts` and `…/approvals` only redirect to them),
+  approval, and `…/drafts` and `…/approvals` only redirect to them; with
+  `?layout=calendar`, the calendar, which `…/calendar` only redirects to,
+  its query kept),
   `…/posts/import` (a CSV file's posts, for
   post:schedule, post:read and channel:read), `…/posts/new`,
   `…/posts/[postId]`, which opens
@@ -561,8 +562,49 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   contract), and the composer neither schedules nor publishes until it
   fits (`pollFitsOn`, folded into `partsFit`). `PollView` shows a poll in
   `PostDetail` and on both review screens, as an approval covers it.
-- The composer's options come from `TargetOptionsSection`
-  (`components/posts/target-options-panel.tsx`), which renders the fields
+- The composer is laid out as DESIGN.md's "The composer" says: the
+  writing in the main column, its properties (peal-ui's `Property`,
+  `PropertyLabel` and `PropertyValue`) in the side column, the actions
+  in a bar held at the panel's foot. `ChannelsProperty`
+  (`channel-picker.tsx`) opens `ChannelChoices`, the command menu's
+  parts in `FilterMenuContent`: a search (`answersSearch`'s rule: every
+  word in a name, the handle or the platform), **All channels**
+  (`everyChannel`: never a channel off or to reconnect), the channel sets
+  (`useChannelSets`, applied with `appliedSet`, a toast naming the
+  channels no longer connected), the channels grouped by platform
+  (`platformGroupsOf`, `#posts/channel-groups.ts`, tested), each
+  platform's line ticking its channels that publish among those the
+  search shows (`withGroup`, a dash through `groupChoiceOf`), and **Save
+  selection as a set** (`SaveSelectionDialog`, for post:update).
+  `WhenProperty` opens `SchedulePlacementFields` in a popover, and
+  `PostTagsField`'s `property` draws the tags as one (`TagsPropertyView`).
+  The text's toolbar is `MediaAttachments`' `toolbar` (the library's and
+  upload's icon buttons, the uploader's file input with no drop zone,
+  `compact="hidden"`, opened by its button or a paste), with the emoji,
+  `AddToPost`, signatures and the assistant around them.
+  `ChannelCustomizations` lists the channels chosen, once there is one,
+  a line each (`ChannelEntry`), ordered by platform: what its platform
+  would refuse (`useFitProblems`), else the required fields still empty
+  (`missingRequired`, `#posts/option-rows.ts`, tested), else what it has
+  of its own, and its counter (`countShort`). A row
+  mounts its fields the first time it opens and keeps them, hidden, once
+  closed, so an upload on its way outlives closing it. A row opens by
+  itself when its channel joins those whose options need fixing (a
+  refusal names it, `refusedChannelsOf`, or an option filled in is one
+  the API would refuse), never again once the member closed it while it
+  stays there; a TikTok channel's row starts open, so its creator's name
+  and consent line (`TikTokChannelOptions`) show before Schedule.
+  An open row is a property list (peal-ui's `PropertyRow`): the
+  channel's own text (`ChannelTextField`, the post's until **Write its
+  own**), its own media (`ChannelMediaField`) and its options, and, where several channels
+  of the platform are chosen, gives them to the others (`copiedOptions`:
+  never a lookup or a library file, which are the account's, and never
+  TikTok's, `copiesOptions`). The poll and the parts are added from the
+  text's toolbar (`AddToPost`) and show once they hold something.
+- The composer's options come from `TargetOptionsPanel`
+  (`components/posts/target-options-panel.tsx`, `bare` inside a channel's
+  row: its fields as `PropertyRow`s through `FieldFrame`, each hint shown
+  while its field has the focus), which renders the fields
   `#posts/target-options.ts` describes for each selected channel's platform
   (text, number, tags, choice, yes or no, toggle, and `lookup`, a choice
   among what a lookup answers for the account, shown `under` another once
@@ -702,8 +744,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   that is off or must be connected again, with its fix on the Channels
   page (`heldChannelsOf`), else one line says where rules answer. The
   form waits for both answers (`ruleFormStateOf`). The name is Peal's (`Channel.label`, `RenameChannel`,
-  `labelUpdateOf`) and never hides the handle. The text tabs still show
-  the handle alone. `ChannelPower` turns a channel off, after a
+  `labelUpdateOf`) and never hides the handle. A channel's own text is
+  still labelled with the handle alone. `ChannelPower` turns a channel off, after a
   confirmation, and back on: every string about a channel that is off
   says to turn it back on, on the Channels page, not to reconnect it.
 - `DuplicatePost` (post:read and post:create, `#posts/duplicate.ts`) copies
@@ -734,24 +776,26 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   taken only when the clipboard holds no text or HTML: a spreadsheet puts
   a picture beside its cells, which paste as text (`#posts/paste.ts`). `EmojiMenu` (peal-ui's
   `emoji-picker`, on frimousse) inserts at the caret of the editor that
-  last had the focus (`useEmojiTarget`) through Tiptap's commands. Its
+  last had the focus while it is shown (`useEmojiTarget`: a closed
+  channel row's text, kept mounted, is never the target) through
+  Tiptap's commands. Its
   data is emojibase-data's, served by the app itself at
   `/emoji-data/<locale>/<file>` (a static route handler, prerendered at
   build): never point the picker at another host. Categories are named
-  from the catalogues (`withCategoryGroups`). `ChannelPicker` offers
-  **Select all** (`everyChannel`: never a channel off or to reconnect)
-  from three channels up. Every place that shows a post's text as text
+  from the catalogues (`withCategoryGroups`). Every place that shows a post's text as text
   gives its element `dir="auto"`, and the editor `textDirection: "auto"`.
-- `PostPreviews`, beside the composer's text, asks `posts.validate`
+- `PostPreviews` is the composer's **Preview**: `PreviewToggle`, in the
+  panel's header (`PageActions`, pressed while on), docks it in the side
+  column in the properties' place, and it asks `posts.validate`
   (`validatePost`) for the request a save sends (`previewRequestOf` of the
   composer's one `draft`, tags left out: a test fails when the draft and
   the check's request part ways), a second after the last change and only
-  while the post can be written, goes to a channel and its options are
-  taken. `previewed` lets the latest request win and `previewOf` dims the
+  while it shows, the post can be written, goes to a channel and
+  its options are taken. `previewed` lets the latest request win and `previewOf` dims the
   last answer from the moment the post changes; a failure offers "Try
   again", a `Forbidden` hides the previews. It draws the text with
   `PreviewedText`, as the review page does, and repeats no violation: it
-  marks the channel and points down to the counters. Never imitate a platform's look.
+  marks the channel and points to its row under Each channel. Never imitate a platform's look.
 - The posts list (`…/posts`, `PostList`, views in `post-list-views.tsx`)
   keeps its filters in the query string (`#posts/post-list-filter.ts`:
   `filtersOf`, `queryOf`, `withFilter`), so a link shows the same list,
@@ -794,6 +838,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - A pending invitation's **Copy link** (`#settings/invitation-link.ts`)
   copies the emailed link, which Better Auth lets only a session of the
   invited, verified address accept: there is no open invitation link.
+- The posts page has two layouts (`#posts/posts-layout.ts`, tested): the
+  list and the calendar, `?layout=calendar` in the address. Display
+  offers them first (`DisplayMenu`'s `layouts`, peal-ui's
+  `DisplayLayouts`, through `usePostsLayouts`), in both layouts' toolbars;
+  choosing one writes `layoutQuery`, which carries the channel, tag and
+  queue filters both read (the list keeping the first of several) and
+  leaves the rest. The calendar writes its own query behind its layout
+  (`calendarLayoutQuery`). `PostsActions` are the page's actions in both.
+  The calendar has no line in the sidebar: the command menu and G then C
+  open it (`navigation.ts`'s `calendar`, its path the posts page's with
+  the layout).
 - The calendar filters the posts it loaded in the browser
   (`#posts/calendar-filter.ts`) through `CalendarToolbar`, the list
   toolbar of DESIGN.md (views as tabs, the way through time, the Filter
@@ -843,9 +898,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   yet, with Upload (`MediaUploaderHandle.choose` opens the uploader's
   picker), or, while a search narrows the library, none matching, the
   strip counting the whole library's first page as hidden, and Clear.
-- A channel's tab in `TextTabs` takes `renderChannelMedia`: the composer
-  puts `ChannelMediaField` there, a channel's own media (`MediaAttachments`
-  with a `label` of its own), started from the post's. `#posts/channel-media.ts`
+- A channel's row holds `ChannelMediaField`, a channel's own media
+  (`MediaAttachments` with a `label` of its own), started from the post's. `#posts/channel-media.ts`
   (tested) turns the texts and media by channel into overrides: a channel
   with media and no text of its own sends the post's text, and reads back
   as following it (`channelTextsOf`); with no text at all its media are
@@ -1570,7 +1624,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `mediaId` shown through the media API's address, never one kept in the
   article: add a node or a mark to the server's `rich-body.ts`
   (`src/shared/domain/rich-text/`) first.
-  Slack connects with a sign-in button, as Pinterest does
+  Slack connects with a sign-in button, as Pinterest and Snapchat do
   (`buttonPlatforms`), the channel picked on Slack's page.
   A chat connects with `ChatFields` (`connect-chat.tsx`), offered from
   the connectable platforms' `chats`: Discord's webhook address, or

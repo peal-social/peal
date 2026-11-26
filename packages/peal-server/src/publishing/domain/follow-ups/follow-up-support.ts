@@ -48,6 +48,9 @@ export type FollowUpSupport = "available" | FollowUpBlocker;
  *   app can make of its own post.
  * - Discord and Telegram: a chat has no repost, and Peal reads no counts
  *   there, so no rule's threshold is ever met.
+ * - Snapchat: Snap's Public Profile API has no call that comments under
+ *   a Spotlight or shares one again (developers.snap.com, Public Profile
+ *   API, Profile Asset Management, read 2026-11-26).
  * - Websites (WordPress, WordPress.com, DEV, Hashnode): an article has no
  *   repost, and Peal reads no counts there (owner's decision: follow-up
  *   rules do not reach websites).
@@ -67,6 +70,7 @@ export const followUpSupport = {
   mastodon: { comment: "available", repost: "available" },
   pinterest: { comment: "noApi", repost: "noApi" },
   slack: { comment: "noApi", repost: "noApi" },
+  snapchat: { comment: "noApi", repost: "noApi" },
   telegram: { comment: "noApi", repost: "noApi" },
   threads: { comment: "review", repost: "notBuilt" },
   tiktok: { comment: "noApi", repost: "noApi" },

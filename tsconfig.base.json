@@ -87,6 +87,7 @@
           "effect/cluster/SqlMessageStorage",
           "effect/cluster/SqlRunnerStorage",
           "effect/crypto/Aead",
+          "effect/crypto/Cipher",
           "effect/crypto/Digest",
           "effect/crypto/Mac",
           "effect/crypto/SecureRandom",

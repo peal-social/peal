@@ -9,12 +9,12 @@ Un canal est un compte social connecté à un espace de travail. Les publication
 
 Pour voir les canaux d’un espace de travail, ouvrez l’espace et cliquez sur **Canaux** dans la barre latérale. Chaque membre les voit. Seuls les propriétaires et les administrateurs peuvent les connecter, les reconnecter et les déconnecter.
 
-<Callout type="note" title="Peal connecte quatorze plateformes pour l’instant">
+<Callout type="note" title="Peal connecte quinze plateformes pour l’instant">
   Peal connecte les comptes Mastodon, Bluesky, LinkedIn, X, Threads, Instagram,
-  TikTok et Pinterest, les Pages Facebook, les chaînes YouTube, les
-  établissements Google Business Profile, et les canaux Discord, Telegram et
-  Slack. **Canaux** ne propose que les plateformes pour lesquelles le serveur
-  Peal est configuré.
+  TikTok et Pinterest, les profils publics Snapchat, les Pages Facebook, les
+  chaînes YouTube, les établissements Google Business Profile, et les canaux
+  Discord, Telegram et Slack. **Canaux** ne propose que les plateformes pour
+  lesquelles le serveur Peal est configuré.
 </Callout>
 
 Un site WordPress se connecte aussi, avec un mot de passe d’application, pour que vous puissiez y publier des articles. Voyez [Sites web et articles](/guides/channels/websites).
@@ -67,7 +67,7 @@ La plateforme vous renvoie vers Peal, qui termine la connexion.
 
 Si l’espace de travail a déjà le compte, le connecter de nouveau reconnecte son canal au lieu d’en ajouter un second. Plusieurs espaces de travail peuvent connecter le même compte.
 
-La page de chaque plateforme dit comment y connecter un compte : [Mastodon](/platforms/mastodon#connect), [Bluesky](/platforms/bluesky#connect), [Threads](/platforms/threads#connect), [X](/platforms/x#connect), [LinkedIn](/platforms/linkedin#connect), [Pages Facebook](/platforms/facebook#connect), [Instagram](/platforms/instagram#connect), [TikTok](/platforms/tiktok#connect), [YouTube](/platforms/youtube#connect), [Pinterest](/platforms/pinterest#connect), [Google Business Profile](/platforms/google-business#connect), [Discord](/platforms/discord#connect), [Telegram](/platforms/telegram#connect), [Slack](/platforms/slack#connect).
+La page de chaque plateforme dit comment y connecter un compte : [Mastodon](/platforms/mastodon#connect), [Bluesky](/platforms/bluesky#connect), [Threads](/platforms/threads#connect), [X](/platforms/x#connect), [LinkedIn](/platforms/linkedin#connect), [Pages Facebook](/platforms/facebook#connect), [Instagram](/platforms/instagram#connect), [TikTok](/platforms/tiktok#connect), [YouTube](/platforms/youtube#connect), [Pinterest](/platforms/pinterest#connect), [Snapchat](/platforms/snapchat#connect), [Google Business Profile](/platforms/google-business#connect), [Discord](/platforms/discord#connect), [Telegram](/platforms/telegram#connect), [Slack](/platforms/slack#connect).
 
 ## Laisser quelqu’un d’autre connecter son compte [#connect-links]
 
@@ -135,6 +135,7 @@ Peal renouvelle de lui-même l’accès de chaque compte avant qu’il n’expir
 | Bluesky                                                     | Il rafraîchit la session un mois avant qu’elle ne tombe.                                                                                                                                                                                                                                             |
 | Threads, et comptes Instagram connectés avec Instagram      | L’accès dure 60 jours. Peal le renouvelle une semaine avant.                                                                                                                                                                                                                                         |
 | Pinterest                                                   | L’accès dure 30 jours. Peal le renouvelle une semaine avant. Pinterest le laisse continuer aussi longtemps que chaque renouvellement arrive dans les 60 jours du précédent.                                                                                                                          |
+| Snapchat                                                    | L’accès dure une heure. Peal le renouvelle chaque fois qu’il publie, et au moins une fois par semaine pour un compte dont il ne fait rien. Le canal ne demande à être reconnecté que si Snapchat refuse le renouvellement.                                                                           |
 | X                                                           | L’accès dure deux heures. Peal le renouvelle chaque fois qu’il publie ou lit les chiffres des publications, et au moins une fois par mois pour un compte dont il ne fait rien, pour que la plateforme ne le perde jamais.                                                                            |
 | TikTok                                                      | L’accès dure un jour ou moins, et se renouvelle comme celui de X. TikTok laisse Peal le renouveler pendant 180 jours après la connexion du compte. Ensuite, le canal demande à être reconnecté.                                                                                                      |
 | YouTube                                                     | L’accès dure une heure, et se renouvelle comme celui de X. Google y met fin quand le titulaire retire Peal de son compte Google, ou six mois après le dernier usage de Peal. Sur un serveur auto-hébergé dont le projet Google est en test, il prend fin sept jours après la connexion de la chaîne. |
@@ -230,6 +231,13 @@ Une image donne une épingle image, et deux à cinq un carrousel, que Pinterest 
 Pinterest ne donne à Peal aucun moyen de distinguer une épingle déjà créée d’une épingle qui ne l’a pas été. Quand sa réponse se perd, Peal cherche l’épingle sur le tableau, et ne l’envoie jamais deux fois.
 
 </AccordionItem>
+<AccordionItem title="Snapchat">
+
+Peal publie un Spotlight pour le profil public du compte. La description du Spotlight est le texte de la publication, et sa langue et son pays viennent des [options de la plateforme](/guides/posts#options) de la publication, `en_US` si vous n’en réglez aucun.
+
+Peal chiffre la vidéo comme Snapchat le demande et l’envoie en plusieurs parties, puis crée le Spotlight. Peal ne recherche pas le Spotlight sur Snapchat : quand la réponse se perd, la publication indique **À vérifier**, et Peal ne l’envoie jamais deux fois.
+
+</AccordionItem>
 </Accordion>
 
 ## Nommer un canal [#name]
@@ -289,7 +297,8 @@ Cliquez sur **Déconnecter** à côté du canal et confirmez. Peal supprime les 
   applications connectées du compte. Google retire l’accès à toutes les chaînes
   YouTube et à tous les établissements Business Profile d’un même compte Google
   à la fois, donc Peal le laisse en place. Sur Google et les autres plateformes,
-  révoquez l’accès de Peal dans les réglages du compte.
+  révoquez l’accès de Peal dans les réglages du compte : sur Snapchat, sur
+  `accounts.snapchat.com`, sous **Manage Apps**.
 </Callout>
 
 ## Quand la connexion échoue [#errors]

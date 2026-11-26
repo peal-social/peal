@@ -247,7 +247,7 @@ const Controls = ({
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <p id={hintId} className="sr-only">
         {t("worksOn")}
       </p>
@@ -255,7 +255,7 @@ const Controls = ({
         <DropdownMenuTrigger
           render={
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               disabled={disabled}
               focusableWhenDisabled

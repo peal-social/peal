@@ -34,6 +34,7 @@ const pages: Readonly<Record<Platform, { name: string; slug: string }>> = {
   mastodon: { name: "Mastodon", slug: "mastodon" },
   pinterest: { name: "Pinterest", slug: "pinterest" },
   slack: { name: "Slack", slug: "slack" },
+  snapchat: { name: "Snapchat", slug: "snapchat" },
   telegram: { name: "Telegram", slug: "telegram" },
   threads: { name: "Threads", slug: "threads" },
   tiktok: { name: "TikTok", slug: "tiktok" },

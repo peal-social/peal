@@ -17,6 +17,7 @@ import {
   siInstagram,
   siMastodon,
   siPinterest,
+  siSnapchat,
   siTelegram,
   siThreads,
   siTiktok,
@@ -37,6 +38,10 @@ const brandFile = (name: string): Mark => ({
   file: fileURLToPath(import.meta.resolve(`peal-ui/brand-marks/${name}`)),
 });
 
+// simple-icons draws Snapchat's ghost in its yellow, which cannot be seen
+// on a white tile: the same path in ink, as the web app draws it.
+const snapchat: Mark = { ...siSnapchat, hex: "0C0A09" };
+
 const marks = {
   bluesky: siBluesky,
   discord: siDiscord,
@@ -47,6 +52,7 @@ const marks = {
   mastodon: siMastodon,
   pinterest: siPinterest,
   slack: brandFile("slack-color.svg"),
+  snapchat,
   telegram: siTelegram,
   threads: siThreads,
   tiktok: siTiktok,

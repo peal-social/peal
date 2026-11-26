@@ -1,41 +1,36 @@
-import { Option, Schema } from "effect";
+import { Schema } from "effect";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 
-import { CalendarScreen } from "#components/posts/calendar-screen.tsx";
+import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
-import { membershipOf } from "#posts/membership.ts";
-import { DateKeySchema, parseDate } from "#posts/zoned-time.ts";
-import { workspacePageTitle } from "#shell/page-title.ts";
+import { calendarLayoutQuery } from "#posts/posts-layout.ts";
+import { workspacePath } from "#shell/workspace-path.ts";
 
-const decodeDateKey = Schema.decodeUnknownOption(DateKeySchema);
+const isText = Schema.is(Schema.String);
 
-// The workspace's scheduled posts, by week or by month. `?date=YYYY-MM-DD`
-// opens on the week of that date.
+// The calendar is the posts page's calendar layout: an older link to it
+// (a bookmark, an email) opens there, with its view, date and filters.
 const CalendarPage = async ({
   params,
   searchParams,
 }: PageProps<"/[locale]/[workspaceId]/calendar">) => {
   const { locale, workspaceId } = await params;
-  const { date } = await searchParams;
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
 
-  const membership = await membershipOf(locale, workspaceId);
+  const query = new URLSearchParams(
+    Object.entries(await searchParams).flatMap(([name, value]) =>
+      isText(value) && name !== "layout" ? [[name, value]] : []
+    )
+  ).toString();
 
-  return (
-    <CalendarScreen
-      initialDate={Option.getOrUndefined(
-        decodeDateKey(date).pipe(Option.flatMap(parseDate))
-      )}
-      permissions={membership.permissions}
-      workspaceId={membership.id}
-    />
-  );
+  return redirect({
+    href: workspacePath(workspaceId, `/posts?${calendarLayoutQuery(query)}`),
+    locale,
+  });
 };
-
-export const generateMetadata = workspacePageTitle("calendar");
 
 export default CalendarPage;

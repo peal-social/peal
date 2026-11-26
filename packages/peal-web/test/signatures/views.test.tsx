@@ -225,7 +225,7 @@ describe(SignatureMenuView, () => {
       />
     );
 
-    expect(html).toContain("Signature</button>");
+    expect(html).toContain('aria-label="Signature"');
     expect(html).toContain('aria-haspopup="menu"');
   });
 });

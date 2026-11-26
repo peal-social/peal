@@ -30,9 +30,9 @@ Pour commencer, cliquez sur **Publications** dans la barre latérale d’un espa
 <Steps>
 <Step title="Choisissez les canaux">
 
-Sous **Canaux**, cochez les comptes où part la publication. La liste reprend les [canaux](/guides/channels) de l’espace de travail.
+Cliquez sur **Canaux**, à côté du texte, et cochez les comptes où part la publication. La liste reprend les [canaux](/guides/channels) de l’espace de travail, regroupés par plateforme, et vous pouvez y chercher par nom, identifiant ou plateforme en tapant.
 
-À partir de trois canaux, **Tout sélectionner** coche chaque canal qui publie, sans ceux qui sont désactivés ou à reconnecter. **Effacer** les décoche tous.
+**Tous les canaux** coche chaque canal qui publie, sans ceux qui sont désactivés ou à reconnecter, et les décoche tous une fois qu’ils sont tous cochés. La ligne d’une plateforme coche tous ses canaux qui publient (ceux que montre votre recherche). Un groupe de canaux coche ses canaux.
 
 </Step>
 <Step title="Écrivez le texte">
@@ -42,7 +42,7 @@ Saisissez le texte dans **Texte pour tous les canaux**. Les mentions, les hashta
 </Step>
 <Step title="Changez le texte d’un canal, si vous le souhaitez">
 
-Ouvrez l’onglet du canal et écrivez-y son propre texte. Si vous le laissez vide, le canal reprend le texte de tous les canaux.
+Sous **Chaque canal**, ouvrez la ligne du canal, cliquez sur **Écrire le sien** et écrivez-y son texte. Si vous le laissez vide, le canal reprend le texte de tous les canaux.
 
 </Step>
 <Step title="Ajoutez des images et des vidéos">
@@ -52,14 +52,16 @@ Sous **Images et vidéos**, ajoutez des images ou des vidéos de la médiathèqu
 </Step>
 <Step title="Donnez d’autres images et vidéos à un canal, si vous le souhaitez">
 
-Dans l’onglet du canal, cochez **Images et vidéos propres**. Le canal part des images et vidéos de la publication, et vous pouvez les ajouter, les retirer, les réordonner et les décrire à cet endroit.
+Dans la ligne du canal, à côté d’**Images et vidéos**, cochez **Les siennes, au lieu de celles de la publication**. Le canal part des images et vidéos de la publication, et vous pouvez les ajouter, les retirer, les réordonner et les décrire à cet endroit.
 
 Le canal est alors vérifié, compté et envoyé avec elles, et les autres canaux gardent celles de la publication. Décochez la case pour reprendre celles de la publication. Pour partir avec des images et vidéos propres, un canal a besoin d’un texte, le sien ou le texte de tous les canaux.
 
 </Step>
 <Step title="Remplissez les options des plateformes">
 
-Quand la plateforme d’un canal en demande plus, comme le titre d’une vidéo YouTube, remplissez ses champs sous **Options des plateformes**. Voyez [Options des plateformes](#options).
+Quand la plateforme d’un canal en demande plus, comme le titre d’une vidéo YouTube, la ligne du canal dit quels champs il lui manque. Ouvrez la ligne et remplissez-les. Voyez [Options des plateformes](#options).
+
+Quand la publication part sur plusieurs canaux d’une même plateforme, la ligne d’un canal a un bouton qui donne aux autres les mêmes choix, comme **Appliquer ces options aux 2 autres canaux Instagram**. Chacun garde ce que son compte a en propre, comme un tableau Pinterest. Les options de TikTok se règlent canal par canal.
 
 </Step>
 <Step title="Enregistrez le brouillon">
@@ -75,7 +77,7 @@ Cliquez sur **Enregistrer le brouillon** pour garder la publication sans heure. 
 L’écriture et le collage fonctionnent ainsi :
 
 - Chaque ligne prend le sens de sa première lettre. Un texte en arabe ou en hébreu se lit donc de droite à gauche.
-- Le bouton en forme de sourire, à côté de l’assistant, ouvre un sélecteur d’emoji dans votre langue. L’emoji s’insère là où était votre curseur, dans le dernier texte où vous avez écrit (le texte pour tous les canaux, le texte propre à un canal ou une partie), et l’annulation le retire. Les données du sélecteur viennent de Peal lui-même, jamais d’un autre site.
+- Le bouton en forme de sourire, dans la barre d’outils sous le texte, ouvre un sélecteur d’emoji dans votre langue. L’emoji s’insère là où était votre curseur, dans le dernier texte où vous avez écrit (le texte pour tous les canaux, le texte propre à un canal ou une partie), et l’annulation le retire. Les données du sélecteur viennent de Peal lui-même, jamais d’un autre site.
 - Une image ou une vidéo collée seule dans un texte est importée et jointe comme si vous l’aviez déposée là (à sa partie, si vous la collez dans une partie), avec les mêmes limites.
 - Un collage qui contient aussi du texte, comme des cellules copiées d’un tableur, qui viennent avec une image d’elles-mêmes, colle seulement le texte.
 
@@ -85,7 +87,7 @@ L’écriture et le collage fonctionnent ainsi :
 
 ### Vérifier la longueur sur chaque canal [#length]
 
-Sous **Longueur sur chaque canal**, vous voyez la place que laisse la plateforme de chaque canal, et ce qu’elle refuserait d’autre, images et vidéos comprises. Les plateformes ne comptent pas de la même façon, et un même texte peut tenir sur l’une et pas sur l’autre :
+Sous **Chaque canal**, la ligne de chaque canal montre la place que laisse sa plateforme, et ce qu’elle refuserait d’autre, images et vidéos comprises. Les plateformes ne comptent pas de la même façon, et un même texte peut tenir sur l’une et pas sur l’autre :
 
 | Plateforme              | Limite du texte                                                                                                                                             | Images et vidéos        |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
@@ -98,6 +100,7 @@ Sous **Longueur sur chaque canal**, vous voyez la place que laisse la plateforme
 | TikTok                  | 2 200, où la plupart des emoji comptent 2 (unités de code UTF-16). Une image ou une vidéo est obligatoire.                                                  | Une vidéo, ou 35 photos |
 | YouTube                 | Une description de 5 000 octets, sans `<` ni `>`. Une vidéo est obligatoire.                                                                                | 1                       |
 | Pinterest               | Une description de 800 caractères. Une image ou une vidéo est obligatoire.                                                                                  | Une vidéo, ou 5 images  |
+| Snapchat                | Une description de 160, où la plupart des emoji comptent 2 (unités de code UTF-16). Une vidéo est obligatoire.                                              | Une vidéo               |
 | Google Business Profile | 1 500 caractères                                                                                                                                            | Des photos seulement    |
 
 <Callout type="info" title="Les limites sont vérifiées à la programmation">
@@ -121,19 +124,19 @@ Certaines plateformes comptent à leur manière :
 
 ### Prévisualiser [#previews]
 
-À côté du texte (en dessous sur un écran étroit), **Aperçus** montre ce que recevra chaque canal où part la publication :
+**Aperçu**, en haut de l’éditeur, affiche **Aperçus** à côté du texte, à la place des détails de la publication, jusqu’à ce que vous cliquiez à nouveau dessus. Il montre ce que recevra chaque canal où part la publication :
 
 - son nom et sa plateforme
 - le texte qu’il reçoit, en texte brut, compté comme sa plateforme le compte
 - ses images et vidéos, et les parties qui suivent
 
-Peal demande les aperçus une seconde après votre dernière frappe, par la même vérification que `posts.validate` dans l’API. Chaque aperçu est la publication telle qu’elle serait enregistrée, signatures et options comprises. Il n’imite pas la plateforme, qui met la publication en page à sa façon.
+Tant qu’ils s’affichent, Peal demande les aperçus une seconde après votre dernière frappe, par la même vérification que `posts.validate` dans l’API. Chaque aperçu est la publication telle qu’elle serait enregistrée, signatures et options comprises. Il n’imite pas la plateforme, qui met la publication en page à sa façon.
 
-Un canal qui refuserait la publication est signalé, et ce qu’il faut corriger apparaît plus bas, avec les longueurs et les options. Si les liens raccourcis sont activés, les liens apparaissent tels que vous les avez écrits, car ils ne sont raccourcis qu’au départ de la publication.
+Un canal qui refuserait la publication est signalé, et sa ligne sous **Chaque canal** dit quoi corriger. Si les liens raccourcis sont activés, les liens apparaissent tels que vous les avez écrits, car ils ne sont raccourcis qu’au départ de la publication.
 
 ## Écrire un fil [#threads]
 
-Une publication peut avoir des parties à sa suite. Pour en ajouter une, cliquez sur **Ajouter une partie** sous **Fil et premier commentaire**. Chaque partie a son texte, ses images et vidéos et un compteur pour chaque canal. Elle peut aussi attendre après la partie précédente, d’une minute à un jour. Les boutons d’une partie la montent, la descendent ou la retirent. Une publication a au plus 24 parties après la première.
+Une publication peut avoir des parties à sa suite. Pour ajouter la première, cliquez sur **Ajouter une partie** dans la barre d’outils sous le texte. **Fil et premier commentaire** s’affiche alors en dessous, avec **Ajouter une partie** pour les suivantes. Chaque partie a son texte, ses images et vidéos et un compteur pour chaque canal. Elle peut aussi attendre après la partie précédente, d’une minute à un jour. Les boutons d’une partie la montent, la descendent ou la retirent. Une publication a au plus 24 parties après la première.
 
 Sur les plateformes qui ont des fils, chaque partie part en réponse à la précédente :
 
@@ -223,7 +226,7 @@ Aucune de ces plateformes ne garde de clé qui distinguerait un commentaire envo
 
 ## Ajouter un sondage [#polls]
 
-Une publication peut poser un sondage, et son texte en est la question. Sous **Sondage**, cliquez sur **Ajouter un sondage**, puis écrivez de deux à quatre choix. Choisissez combien de temps il reste ouvert et si les lecteurs peuvent choisir plusieurs réponses.
+Une publication peut poser un sondage, et son texte en est la question. Cliquez sur **Ajouter un sondage** dans la barre d’outils sous le texte, puis écrivez de deux à quatre choix sous **Sondage**. Choisissez combien de temps il reste ouvert et si les lecteurs peuvent choisir plusieurs réponses.
 
 Trois plateformes acceptent les sondages de Peal :
 
@@ -241,7 +244,7 @@ Une approbation couvre le sondage : ses choix, sa durée et la possibilité de 
 
 ## Options des plateformes [#options]
 
-Certaines plateformes demandent à chaque publication plus que son texte et ses médias. Quand la publication part sur un canal de l’une d’elles, **Options des plateformes** montre les champs de ce canal. Un brouillon les garde tels quels, inachevés. Pour programmer, il vous faut ceux marqués obligatoires, et chaque champ montre ce que sa plateforme refuserait.
+Certaines plateformes demandent à chaque publication plus que son texte et ses médias. Quand la publication part sur un canal de l’une d’elles, la ligne de ce canal sous **Chaque canal** montre ses champs, et nomme ceux obligatoires encore vides. Un brouillon les garde tels quels, inachevés. Pour programmer, il vous faut ceux marqués obligatoires, et chaque champ montre ce que sa plateforme refuserait.
 
 Voici les options de chaque plateforme :
 
@@ -251,13 +254,14 @@ Voici les options de chaque plateforme :
 | TikTok                  | **Qui peut voir cette publication** (obligatoire, sans valeur par défaut), **Autoriser les commentaires**, **Autoriser le Duo** et **Autoriser le Collage** (désactivés tant que vous ne les activez pas), divulgation d’un contenu commercial, contenu généré par IA, et [d’autres](/platforms/tiktok#options)                                                                                                               |
 | LinkedIn                | **Qui peut voir cette publication** (tout le monde sauf choix contraire, relations uniquement pour un profil), **Empêcher les autres de republier cette publication**, **Pages à mentionner** (des pages d’entreprise, chacune écrite `@Nom` dans le texte), **Lien à afficher sous forme de carte** avec son **Titre du lien** (obligatoire avec un lien) et sa **Description du lien**, **Titre du document** (pour un PDF) |
 | Pinterest               | **Tableau** (obligatoire, l’un de ceux du compte), **Section du tableau**, **Titre** (100 caractères au plus), **Lien** (là où mène un clic sur l’épingle, commençant par `http://` ou `https://`), **Couverture de la vidéo, à la seconde** (la première image sauf choix contraire), **Couleur dominante** (comme `#6E7874`)                                                                                                |
+| Snapchat                | **Langue et pays** (comme `en_US` ; `en_US` laissé vide)                                                                                                                                                                                                                                                                                                                                                                      |
 | Instagram               | Les réglages d’un reel et les **Collaborateurs** (voir [Instagram](/platforms/instagram#options))                                                                                                                                                                                                                                                                                                                             |
 | Facebook                | Le **Titre de la vidéo** d’une vidéo (voir [Facebook](/platforms/facebook#options))                                                                                                                                                                                                                                                                                                                                           |
 | Google Business Profile | **Type de publication** (une actualité, sauf si vous choisissez un événement ou une offre), **Titre**, **Début** et **Fin** (obligatoires pour un événement ou une offre, avec un titre de 58 caractères au plus), **Bouton** et son **Lien du bouton** (sur une actualité ou un événement), **Code promotionnel**, **Lien pour profiter de l’offre** et **Conditions générales** (sur une offre)                             |
 
-La page de chaque plateforme liste toutes ses options : [Mastodon](/platforms/mastodon#options), [Bluesky](/platforms/bluesky#options), [Threads](/platforms/threads#options), [X](/platforms/x#options), [LinkedIn](/platforms/linkedin#options), [Pages Facebook](/platforms/facebook#options), [Instagram](/platforms/instagram#options), [TikTok](/platforms/tiktok#options), [YouTube](/platforms/youtube#options), [Pinterest](/platforms/pinterest#options), [Google Business Profile](/platforms/google-business#options).
+La page de chaque plateforme liste toutes ses options : [Mastodon](/platforms/mastodon#options), [Bluesky](/platforms/bluesky#options), [Threads](/platforms/threads#options), [X](/platforms/x#options), [LinkedIn](/platforms/linkedin#options), [Pages Facebook](/platforms/facebook#options), [Instagram](/platforms/instagram#options), [TikTok](/platforms/tiktok#options), [YouTube](/platforms/youtube#options), [Pinterest](/platforms/pinterest#options), [Snapchat](/platforms/snapchat#options), [Google Business Profile](/platforms/google-business#options).
 
-Le texte de la publication devient la description de la vidéo YouTube, la légende de la publication TikTok, la description de l’épingle Pinterest, le commentaire de la publication LinkedIn et la description de la publication Google Business Profile. Séparez les tags par des virgules. YouTube compte les virgules, et deux caractères de plus pour un tag qui contient une espace.
+Le texte de la publication devient la description de la vidéo YouTube, la légende de la publication TikTok, la description de l’épingle Pinterest, la description du Spotlight Snapchat, le commentaire de la publication LinkedIn et la description de la publication Google Business Profile. Séparez les tags par des virgules. YouTube compte les virgules, et deux caractères de plus pour un tag qui contient une espace.
 
 ### Miniatures et couvertures [#thumbnails]
 

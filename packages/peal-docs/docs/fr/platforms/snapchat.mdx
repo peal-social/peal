@@ -1,0 +1,58 @@
+---
+title: Snapchat
+description: "Connecter un profil public Snapchat à Peal, ce qu’un Spotlight peut contenir, et l’option qu’il prend."
+sidebar:
+  icon: /platform-marks/snapchat.svg
+---
+
+Sur Snapchat, une publication part comme un Spotlight, une vidéo sur le Spotlight de Snapchat. Snapchat décide s’il apparaît aussi sur le profil public du compte, et le titulaire du compte peut l’y afficher ou l’y masquer dans l’application Snapchat. Peal ne publie pas de Stories.
+
+## En bref [#at-a-glance]
+
+Voici ce qu’un Spotlight peut contenir :
+
+|                  |                                  |
+| ---------------- | -------------------------------- |
+| Texte            | {{platform-snapchat-text-fr}}    |
+| Images et vidéos | {{platform-snapchat-media-fr}}   |
+| Parties          | {{platform-snapchat-parts-fr}}   |
+| Formats          | {{platform-snapchat-formats-fr}} |
+| Texte alternatif | {{platform-snapchat-alt-fr}}     |
+
+Ce que doit être chaque type de fichier est dans [Images et vidéos](/guides/media#platforms).
+
+## Connecter un compte [#connect]
+
+Sous **Snapchat**, cliquez sur **Connecter Snapchat**, connectez-vous sur Snapchat et autorisez Peal. Il demande l’accès au profil public du compte.
+
+Le compte doit avoir un profil public : une connexion avec un compte qui n’en a pas ne connecte rien. Peal connecte le profil du compte qui se connecte, pas un profil sur lequel vous avez seulement un rôle.
+
+**Canaux** propose Snapchat une fois le serveur Peal configuré pour lui (voir [Sur votre propre serveur](#self-hosting)).
+
+## Ce qui part [#spotlight]
+
+Un Spotlight est une vidéo MP4. Le texte de la publication en est la description.
+
+Snapchat examine chaque Spotlight avant de le montrer. **Publié** dans Peal veut dire que Snapchat a pris la vidéo ; son examen vient ensuite, et Peal n’apprend pas un refus. Peal ne garde aucun lien vers le Spotlight.
+
+Si le serveur redémarre pendant l’envoi d’une vidéo, ou si Snapchat ne répond pas quand le Spotlight est créé, la publication indique **À vérifier**. Peal ne l’envoie jamais de lui-même une seconde fois : voir [quand une plateforme ne répond pas](/guides/posts/schedule#publishing).
+
+## Options [#options]
+
+L’éditeur propose cette option. **Nom dans l’API** est le nom de l’option dans l’API.
+
+| Option             | Nom dans l’API | Dans l’éditeur                                   |
+| ------------------ | -------------- | ------------------------------------------------ |
+| **Langue et pays** | `locale`       | Comme `en_US`. Laissé vide, Peal envoie `en_US`. |
+
+Les [options par défaut](/guides/posts/organise#defaults) d’un canal peuvent la régler une fois pour toutes les publications.
+
+## Après la publication [#after]
+
+Peal ne [dépublie](/guides/posts/published#unpublish) ni ne modifie un Spotlight, et n’y lit encore ni chiffres ni commentaires.
+
+Déconnecter le canal supprime les jetons que Peal détient. Snapchat n’en est pas informé : pour y retirer l’accès de Peal, ouvrez **Manage Apps** sur `accounts.snapchat.com` et révoquez Peal.
+
+## Sur votre propre serveur [#self-hosting]
+
+Sur un serveur auto-hébergé, **Canaux** propose Snapchat une fois les deux réglages de son application définis. Les connexions échouent tant que Snap n’a pas autorisé l’application, alors définissez-les seulement à ce moment-là : voir [Snapchat](/self-hosting/platforms#snapchat).

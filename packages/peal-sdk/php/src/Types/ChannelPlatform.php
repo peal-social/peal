@@ -18,6 +18,7 @@ enum ChannelPlatform: string
     case Discord = "discord";
     case Telegram = "telegram";
     case Slack = "slack";
+    case Snapchat = "snapchat";
     case Wordpress = "wordpress";
     case Devto = "devto";
     case Hashnode = "hashnode";

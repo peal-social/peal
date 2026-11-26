@@ -105,9 +105,9 @@
   UTC (`digestWeekOf`), as readers' zones are not known. Its links are
   the web app's workspace pages, named by the workspace's id as the
   server's other links are (the web app sends them on to the slug): each
-  workspace's calendar, and, for its button and its footer's preferences,
-  the calendar and `settings/notifications` of the first workspace with
-  news.
+  workspace's calendar (`posts?layout=calendar`), and, for its button and
+  its footer's preferences, the calendar and `settings/notifications` of
+  the first workspace with news.
 - A reader is taken before being read (`claimDigest`: a lease in
   `weekly_digest_lease`, stale after `DigestPaceRef.lease`, refused once
   they no longer want it), and the week is marked

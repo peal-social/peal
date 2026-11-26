@@ -217,9 +217,9 @@ export const ScheduleFields = ({
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="@container flex flex-col gap-4">
       <SchedulePhrase disabled={disabled} onChange={onChange} value={value} />
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 @lg:grid-cols-3">
         <div className="flex flex-col gap-2">
           <Label id="schedule-date-label">{t("dateLabel")}</Label>
           <Popover open={open} onOpenChange={setOpen}>
@@ -263,7 +263,7 @@ export const ScheduleFields = ({
             }}
           />
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="col-span-2 flex flex-col gap-2 @lg:col-span-1">
           <Label id="schedule-zone-label">{t("timeZoneLabel")}</Label>
           <Select
             value={value.timeZone}

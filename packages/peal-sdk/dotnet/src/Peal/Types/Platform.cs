@@ -36,6 +36,8 @@ public readonly record struct Platform : IStringEnum
 
     public static readonly Platform Slack = new(Values.Slack);
 
+    public static readonly Platform Snapchat = new(Values.Snapchat);
+
     public static readonly Platform Wordpress = new(Values.Wordpress);
 
     public static readonly Platform Devto = new(Values.Devto);
@@ -165,6 +167,8 @@ public readonly record struct Platform : IStringEnum
         public const string Telegram = "telegram";
 
         public const string Slack = "slack";
+
+        public const string Snapchat = "snapchat";
 
         public const string Wordpress = "wordpress";
 
