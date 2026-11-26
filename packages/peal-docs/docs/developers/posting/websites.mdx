@@ -11,15 +11,15 @@ A post goes to a website through the same requests as to a social network. Its b
 
 On WordPress, WordPress.com, DEV and Hashnode, the post's text on the channel is the site's article, and its options are the article's other fields:
 
-| Field                        | Where                       | What it holds                                                                        |
-| ---------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
-| `bodyMarkdown`               | the channel's override      | The article's body, as Markdown ([below](#markdown)). Never answered.                |
-| `body`                       | the channel's override      | The same body as the editor's JSON document (`RichText` in the reference)            |
-| `text`                       | the channel's override      | `""` beside a body. Peal answers it as the body's plain text.                        |
-| `title`                      | the channel's `options`     | The title the site shows above the article. Needed to schedule the post.             |
-| `excerpt`, `coverMediaId`    | the channel's `options`     | The summary the site shows in lists, and a featured image from the media library     |
-| `tags`, `categories`         | the channel's `options`     | Names, as the site shows them. Categories are WordPress's alone.                     |
-| `siteStatus`                 | the channel's `options`     | `publish`, the default, or `draft`, which leaves the article as a draft on the site  |
+| Field                     | Where                   | What it holds                                                                       |
+| ------------------------- | ----------------------- | ----------------------------------------------------------------------------------- |
+| `bodyMarkdown`            | the channel's override  | The article's body, as Markdown ([below](#markdown)). Never answered.               |
+| `body`                    | the channel's override  | The same body as the editor's JSON document (`RichText` in the reference)           |
+| `text`                    | the channel's override  | `""` beside a body. Peal answers it as the body's plain text.                       |
+| `title`                   | the channel's `options` | The title the site shows above the article. Needed to schedule the post.            |
+| `excerpt`, `coverMediaId` | the channel's `options` | The summary the site shows in lists, and a featured image from the media library    |
+| `tags`, `categories`      | the channel's `options` | Names, as the site shows them. Categories are WordPress's alone.                    |
+| `siteStatus`              | the channel's `options` | `publish`, the default, or `draft`, which leaves the article as a draft on the site |
 
 Each site's limits for the title and the tags are in [What each site takes](/guides/channels/websites#sites). Without a body, the site gets the channel's text as paragraphs, with the post's images after them.
 
@@ -312,19 +312,19 @@ peal post "Sow your peas early this year." \
 
 ### What Peal reads [#taken]
 
-| Markdown                                                                        | In the body                                                                                    |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| A paragraph, a line break inside it                                             | A paragraph, the line break read as a space                                                    |
-| `**bold**`, `*italic*`, `~~struck~~`, `` `code` ``                              | The same marks, nested as written                                                              |
-| Two spaces or a backslash before a line's end, `<br>`                           | A line break                                                                                   |
-| `##` to `####`                                                                  | A heading of level 2 to 4                                                                      |
-| `-` and `1.` lists, nested; a task item                                         | Bulleted and numbered lists (from their first number); `[ ]` or `[x]` stays as the item's text |
-| `>`                                                                             | A quote                                                                                        |
-| `***`                                                                           | A separator                                                                                    |
-| A fenced or indented code block                                                 | A code block, with its language when it's 1 to 32 letters, digits or `_+#.-` (`ts`, `c++`)    |
-| `[text](address)`, `<address>`, a bare address, a reference and its definition  | A link, to an http, https or mailto address of 2,048 characters at most                        |
-| `![alt](media:<mediaId>)`                                                       | An image of the workspace's library, with its alt text. A paragraph is cut around it.          |
-| An HTML comment, a link's or an image's title                                   | Left out: nothing shows them                                                                   |
+| Markdown                                                                       | In the body                                                                                    |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| A paragraph, a line break inside it                                            | A paragraph, the line break read as a space                                                    |
+| `**bold**`, `*italic*`, `~~struck~~`, `` `code` ``                             | The same marks, nested as written                                                              |
+| Two spaces or a backslash before a line's end, `<br>`                          | A line break                                                                                   |
+| `##` to `####`                                                                 | A heading of level 2 to 4                                                                      |
+| `-` and `1.` lists, nested; a task item                                        | Bulleted and numbered lists (from their first number); `[ ]` or `[x]` stays as the item's text |
+| `>`                                                                            | A quote                                                                                        |
+| `***`                                                                          | A separator                                                                                    |
+| A fenced or indented code block                                                | A code block, with its language when it's 1 to 32 letters, digits or `_+#.-` (`ts`, `c++`)     |
+| `[text](address)`, `<address>`, a bare address, a reference and its definition | A link, to an http, https or mailto address of 2,048 characters at most                        |
+| `![alt](media:<mediaId>)`                                                      | An image of the workspace's library, with its alt text. A paragraph is cut around it.          |
+| An HTML comment, a link's or an image's title                                  | Left out: nothing shows them                                                                   |
 
 A code block's language reaches the sites as their highlighting: a `language-…` class on WordPress, the fence's language on DEV and Hashnode. A language that isn't one word of those characters is left out, and the code kept.
 
@@ -332,17 +332,17 @@ A code block's language reaches the sites as their highlighting: a `language-…
 
 Peal refuses a body that holds any of these, with each problem's kind and place, so nothing you wrote is dropped or reaches the site as stray characters:
 
-| Markdown                                                                      | `problem`      | Do instead                                                    |
-| ----------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------- |
-| A heading of level 1, 5 or 6 (`#`, `=====` under a line)                      | `headingLevel` | Put the title in the `title` option, and start at `##`        |
-| Raw HTML, a block or inline, but a comment or `<br>`                          | `html`         | Write it as Markdown                                          |
-| A table                                                                       | `table`        | Write it as a list, or as an image                            |
-| A footnote                                                                    | `footnote`     | Write it as a paragraph or a link                             |
-| Front matter (`---` on the first line, closed by `---`)                       | `frontMatter`  | Put the title and the tags in the channel's `options`         |
-| An image at an address, or with an id that is no media's, in a heading or a link | `image`     | [Import it](#images) first, and write `media:<mediaId>`       |
-| A link on another scheme, or a relative address                               | `link`         | Write the whole http, https or mailto address                 |
-| More than a body holds                                                        | `tooLarge`     | Keep to 200,000 characters of text, 8 levels of lists and quotes, 100 files |
-| Anything else a body doesn't hold                                             | `notTaken`     | Write it with what [Peal reads](#taken)                       |
+| Markdown                                                                         | `problem`      | Do instead                                                                  |
+| -------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------------- |
+| A heading of level 1, 5 or 6 (`#`, `=====` under a line)                         | `headingLevel` | Put the title in the `title` option, and start at `##`                      |
+| Raw HTML, a block or inline, but a comment or `<br>`                             | `html`         | Write it as Markdown                                                        |
+| A table                                                                          | `table`        | Write it as a list, or as an image                                          |
+| A footnote                                                                       | `footnote`     | Write it as a paragraph or a link                                           |
+| Front matter (`---` on the first line, closed by `---`)                          | `frontMatter`  | Put the title and the tags in the channel's `options`                       |
+| An image at an address, or with an id that is no media's, in a heading or a link | `image`        | [Import it](#images) first, and write `media:<mediaId>`                     |
+| A link on another scheme, or a relative address                                  | `link`         | Write the whole http, https or mailto address                               |
+| More than a body holds                                                           | `tooLarge`     | Keep to 200,000 characters of text, 8 levels of lists and quotes, 100 files |
+| Anything else a body doesn't hold                                                | `notTaken`     | Write it with what [Peal reads](#taken)                                     |
 
 Text that looks like a reference without its definition (`[like this]`) is text in CommonMark, and stays text.
 

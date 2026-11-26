@@ -198,13 +198,13 @@ Avant d’appeler la plateforme, Peal refuse une requête impossible avec 409 `l
 
 Le corps prend ces champs, au moins `text`, `bodyMarkdown`, `body` ou `options` :
 
-| Champ          | Ce qu’il contient                                                                         |
-| -------------- | ----------------------------------------------------------------------------------------- |
-| `text`         | Le nouveau texte                                                                          |
-| `part`         | La partie, comptée depuis 0. Omise, c’est la publication elle-même (la partie 0).         |
+| Champ          | Ce qu’il contient                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| `text`         | Le nouveau texte                                                                         |
+| `part`         | La partie, comptée depuis 0. Omise, c’est la publication elle-même (la partie 0).        |
 | `bodyMarkdown` | Sur un site web, le corps en Markdown, qui remplace le texte ([plus bas](#edit-website)) |
-| `body`         | Sur un site web, un texte enrichi qui remplace le texte ([plus bas](#edit-website))       |
-| `options`      | Sur un site web, ses options désormais, entières ([plus bas](#edit-website))              |
+| `body`         | Sur un site web, un texte enrichi qui remplace le texte ([plus bas](#edit-website))      |
+| `options`      | Sur un site web, ses options désormais, entières ([plus bas](#edit-website))             |
 
 Sur un réseau social ou une messagerie, seul le texte change, jamais les médias, les options ni l’heure. Il faut post:publish, et un client OAuth a besoin du scope `workspace:publish`. Quelqu’un qui doit faire approuver ses publications ([approbations](/guides/posts/review)) ne peut pas modifier une publication en ligne.
 

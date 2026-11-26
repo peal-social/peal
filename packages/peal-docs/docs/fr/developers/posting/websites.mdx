@@ -11,15 +11,15 @@ Une publication va à un site web par les mêmes requêtes qu’à un réseau so
 
 Sur WordPress, WordPress.com, DEV et Hashnode, le texte de la publication sur le canal est l’article du site, et ses options sont les autres champs de l’article :
 
-| Champ                     | Où                            | Ce qu’il contient                                                                          |
-| ------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------ |
-| `bodyMarkdown`            | la surcharge du canal         | Le corps de l’article, en Markdown ([plus bas](#markdown)). Jamais répondu.                |
-| `body`                    | la surcharge du canal         | Le même corps en document JSON de l’éditeur (`RichText` dans la référence)                 |
-| `text`                    | la surcharge du canal         | `""` à côté d’un corps. Peal le répond comme le texte brut du corps.                       |
-| `title`                   | les `options` du canal        | Le titre que le site affiche au-dessus de l’article. Nécessaire pour programmer.           |
-| `excerpt`, `coverMediaId` | les `options` du canal        | Le résumé que le site affiche dans ses listes, et une image mise en avant de la médiathèque |
-| `tags`, `categories`      | les `options` du canal        | Des noms, tels que le site les affiche. Les catégories ne sont qu’à WordPress.             |
-| `siteStatus`              | les `options` du canal        | `publish`, par défaut, ou `draft`, qui laisse l’article en brouillon sur le site           |
+| Champ                     | Où                     | Ce qu’il contient                                                                           |
+| ------------------------- | ---------------------- | ------------------------------------------------------------------------------------------- |
+| `bodyMarkdown`            | la surcharge du canal  | Le corps de l’article, en Markdown ([plus bas](#markdown)). Jamais répondu.                 |
+| `body`                    | la surcharge du canal  | Le même corps en document JSON de l’éditeur (`RichText` dans la référence)                  |
+| `text`                    | la surcharge du canal  | `""` à côté d’un corps. Peal le répond comme le texte brut du corps.                        |
+| `title`                   | les `options` du canal | Le titre que le site affiche au-dessus de l’article. Nécessaire pour programmer.            |
+| `excerpt`, `coverMediaId` | les `options` du canal | Le résumé que le site affiche dans ses listes, et une image mise en avant de la médiathèque |
+| `tags`, `categories`      | les `options` du canal | Des noms, tels que le site les affiche. Les catégories ne sont qu’à WordPress.              |
+| `siteStatus`              | les `options` du canal | `publish`, par défaut, ou `draft`, qui laisse l’article en brouillon sur le site            |
 
 Les limites de chaque site pour le titre et les étiquettes sont dans [Ce que prend chaque site](/guides/channels/websites#sites). Sans corps, le site reçoit le texte du canal en paragraphes, suivis des images de la publication.
 
@@ -312,19 +312,19 @@ peal post "Sow your peas early this year." \
 
 ### Ce que Peal lit [#taken]
 
-| Markdown                                                                          | Dans le corps                                                                                          |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Un paragraphe, un retour à la ligne à l’intérieur                                 | Un paragraphe, le retour à la ligne lu comme une espace                                                |
-| `**gras**`, `*italique*`, `~~barré~~`, `` `code` ``                               | Les mêmes marques, imbriquées comme écrites                                                            |
-| Deux espaces ou une barre oblique inverse en fin de ligne, `<br>`                 | Un saut de ligne                                                                                       |
-| `##` à `####`                                                                     | Un titre de niveau 2 à 4                                                                               |
-| Les listes `-` et `1.`, imbriquées ; une tâche                                    | Des listes à puces et numérotées (depuis leur premier numéro) ; `[ ]` ou `[x]` reste le texte de l’élément |
-| `>`                                                                               | Une citation                                                                                           |
-| `***`                                                                             | Un séparateur                                                                                          |
-| Un bloc de code clôturé ou indenté                                                | Un bloc de code, avec son langage quand il fait 1 à 32 lettres, chiffres ou `_+#.-` (`ts`, `c++`)      |
-| `[texte](adresse)`, `<adresse>`, une adresse nue, une référence et sa définition  | Un lien, vers une adresse http, https ou mailto de 2 048 caractères au plus                            |
-| `![alt](media:<mediaId>)`                                                         | Une image de la médiathèque de l’espace de travail, avec son texte alternatif. Un paragraphe est coupé autour. |
-| Un commentaire HTML, le titre d’un lien ou d’une image                            | Laissé de côté : rien ne l’affiche                                                                     |
+| Markdown                                                                         | Dans le corps                                                                                                  |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Un paragraphe, un retour à la ligne à l’intérieur                                | Un paragraphe, le retour à la ligne lu comme une espace                                                        |
+| `**gras**`, `*italique*`, `~~barré~~`, `` `code` ``                              | Les mêmes marques, imbriquées comme écrites                                                                    |
+| Deux espaces ou une barre oblique inverse en fin de ligne, `<br>`                | Un saut de ligne                                                                                               |
+| `##` à `####`                                                                    | Un titre de niveau 2 à 4                                                                                       |
+| Les listes `-` et `1.`, imbriquées ; une tâche                                   | Des listes à puces et numérotées (depuis leur premier numéro) ; `[ ]` ou `[x]` reste le texte de l’élément     |
+| `>`                                                                              | Une citation                                                                                                   |
+| `***`                                                                            | Un séparateur                                                                                                  |
+| Un bloc de code clôturé ou indenté                                               | Un bloc de code, avec son langage quand il fait 1 à 32 lettres, chiffres ou `_+#.-` (`ts`, `c++`)              |
+| `[texte](adresse)`, `<adresse>`, une adresse nue, une référence et sa définition | Un lien, vers une adresse http, https ou mailto de 2 048 caractères au plus                                    |
+| `![alt](media:<mediaId>)`                                                        | Une image de la médiathèque de l’espace de travail, avec son texte alternatif. Un paragraphe est coupé autour. |
+| Un commentaire HTML, le titre d’un lien ou d’une image                           | Laissé de côté : rien ne l’affiche                                                                             |
 
 Le langage d’un bloc de code arrive aux sites comme leur coloration : une classe `language-…` sur WordPress, le langage de la clôture sur DEV et Hashnode. Un langage qui n’est pas un seul mot de ces caractères est laissé de côté, et le code gardé.
 
@@ -332,17 +332,17 @@ Le langage d’un bloc de code arrive aux sites comme leur coloration : une cla
 
 Peal refuse un corps qui contient l’un de ces éléments, avec le type et la place de chaque problème, pour que rien de ce que vous avez écrit ne soit perdu ni n’arrive au site en caractères parasites :
 
-| Markdown                                                                             | `problem`      | À faire à la place                                                         |
-| ------------------------------------------------------------------------------------ | -------------- | -------------------------------------------------------------------------- |
-| Un titre de niveau 1, 5 ou 6 (`#`, `=====` sous une ligne)                           | `headingLevel` | Mettre le titre dans l’option `title`, et commencer à `##`                 |
-| Du HTML brut, en bloc ou en ligne, sauf un commentaire ou `<br>`                     | `html`         | L’écrire en Markdown                                                       |
-| Un tableau                                                                           | `table`        | L’écrire en liste, ou en image                                             |
-| Une note de bas de page                                                              | `footnote`     | L’écrire en paragraphe ou en lien                                          |
-| Un en-tête (`---` sur la première ligne, fermé par `---`)                            | `frontMatter`  | Mettre le titre et les étiquettes dans les `options` du canal              |
-| Une image à une adresse, ou avec un identifiant qui n’est pas celui d’un média, dans un titre ou un lien | `image` | L’[importer](#images) d’abord, et écrire `media:<mediaId>` |
-| Un lien vers un autre schéma, ou une adresse relative                                | `link`         | Écrire l’adresse http, https ou mailto entière                             |
-| Plus que ce que contient un corps                                                    | `tooLarge`     | S’en tenir à 200 000 caractères de texte, 8 niveaux de listes et de citations, 100 fichiers |
-| Tout autre élément qu’un corps ne contient pas                                       | `notTaken`     | L’écrire avec ce que [Peal lit](#taken)                                    |
+| Markdown                                                                                                 | `problem`      | À faire à la place                                                                          |
+| -------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------- |
+| Un titre de niveau 1, 5 ou 6 (`#`, `=====` sous une ligne)                                               | `headingLevel` | Mettre le titre dans l’option `title`, et commencer à `##`                                  |
+| Du HTML brut, en bloc ou en ligne, sauf un commentaire ou `<br>`                                         | `html`         | L’écrire en Markdown                                                                        |
+| Un tableau                                                                                               | `table`        | L’écrire en liste, ou en image                                                              |
+| Une note de bas de page                                                                                  | `footnote`     | L’écrire en paragraphe ou en lien                                                           |
+| Un en-tête (`---` sur la première ligne, fermé par `---`)                                                | `frontMatter`  | Mettre le titre et les étiquettes dans les `options` du canal                               |
+| Une image à une adresse, ou avec un identifiant qui n’est pas celui d’un média, dans un titre ou un lien | `image`        | L’[importer](#images) d’abord, et écrire `media:<mediaId>`                                  |
+| Un lien vers un autre schéma, ou une adresse relative                                                    | `link`         | Écrire l’adresse http, https ou mailto entière                                              |
+| Plus que ce que contient un corps                                                                        | `tooLarge`     | S’en tenir à 200 000 caractères de texte, 8 niveaux de listes et de citations, 100 fichiers |
+| Tout autre élément qu’un corps ne contient pas                                                           | `notTaken`     | L’écrire avec ce que [Peal lit](#taken)                                                     |
 
 Un texte qui ressemble à une référence sans sa définition (`[comme ceci]`) est du texte en CommonMark, et le reste.
 

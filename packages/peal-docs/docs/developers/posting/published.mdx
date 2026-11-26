@@ -198,13 +198,13 @@ Before calling the platform, Peal refuses a request it can't carry out with 409 
 
 The body takes these fields, `text`, `bodyMarkdown`, `body` or `options` at least:
 
-| Field          | What it holds                                                                         |
-| -------------- | ------------------------------------------------------------------------------------- |
-| `text`         | The new text                                                                          |
-| `part`         | The part, counted from 0. Left out, it's the post itself (part 0).                    |
+| Field          | What it holds                                                                        |
+| -------------- | ------------------------------------------------------------------------------------ |
+| `text`         | The new text                                                                         |
+| `part`         | The part, counted from 0. Left out, it's the post itself (part 0).                   |
 | `bodyMarkdown` | On a website, the body as Markdown, which replaces the text ([below](#edit-website)) |
-| `body`         | On a website, a rich text that replaces the text ([below](#edit-website))             |
-| `options`      | On a website, its options from now on, whole ([below](#edit-website))                 |
+| `body`         | On a website, a rich text that replaces the text ([below](#edit-website))            |
+| `options`      | On a website, its options from now on, whole ([below](#edit-website))                |
 
 On a social network or a chat, only the text changes, never the media, the options or the time. It needs post:publish, and an OAuth client needs the scope `workspace:publish`. Someone whose posts need an [approval](/guides/posts/review) can't edit a published post.
 
