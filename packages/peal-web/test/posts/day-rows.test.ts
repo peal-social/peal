@@ -145,8 +145,6 @@ describe(queueSlotsOn, () => {
   });
 });
 
-const post = (id: string, queueId: string | null) => ({ id, queueId });
-
 const slot = (iso: string, queueId: string) => ({
   at: utc(iso),
   queueId,
@@ -157,9 +155,9 @@ describe(dayRows, () => {
   it("lists posts and slots by time, a slot its own post holds once", () => {
     const rows = dayRows(
       [
-        { at: utc("2026-03-29T09:00:00Z"), post: post("late", null) },
-        { at: utc("2026-03-29T07:00:00Z"), post: post("queued", "a") },
-        { at: utc("2026-03-29T07:00:00Z"), post: post("same-time", null) },
+        { at: utc("2026-03-29T09:00:00Z"), id: "late" },
+        { at: utc("2026-03-29T07:00:00Z"), id: "queued" },
+        { at: utc("2026-03-29T07:00:00Z"), id: "same-time" },
       ],
       [
         slot("2026-03-29T07:00:00Z", "a"),
@@ -174,7 +172,7 @@ describe(dayRows, () => {
         at: DateTime.formatIso(at),
         held: heldSlots.map(({ queueId }) => queueId),
         open: openSlots.map(({ queueId }) => queueId),
-        posts: posts.map((placed) => placed.post.id),
+        posts: posts.map((placed) => placed.id),
       }))
     ).toStrictEqual([
       {

@@ -14,7 +14,7 @@ const stateOf = (query: string) => calendarStateOf(new URLSearchParams(query));
 describe(calendarStateOf, () => {
   it("reads the view, the date and each filter's ids", () => {
     const state = stateOf(
-      "view=month&date=2026-12-03&channel=a,b&tag=t&queue=q"
+      "view=month&date=2026-12-03&channel=a,b&tag=t&queue=q&type=article"
     );
 
     expect([
@@ -24,12 +24,19 @@ describe(calendarStateOf, () => {
     ]).toStrictEqual([
       "month",
       { day: 3, month: 12, year: 2026 },
-      { channelIds: ["a", "b"], queueIds: ["q"], tagIds: ["t"] },
+      {
+        channelIds: ["a", "b"],
+        queueIds: ["q"],
+        tagIds: ["t"],
+        type: "article",
+      },
     ]);
   });
 
   it("falls back to the week around today on what it does not know", () => {
-    expect(stateOf("view=year&date=tomorrow&channel=,a,a")).toStrictEqual({
+    expect(
+      stateOf("view=year&date=tomorrow&channel=,a,a&type=reel")
+    ).toStrictEqual({
       ...defaultState,
       filter: { ...defaultState.filter, channelIds: ["a"] },
     });
@@ -41,7 +48,12 @@ describe(calendarQueryOf, () => {
     const query = calendarQueryOf(
       {
         date: Option.some({ day: 3, month: 12, year: 2026 }),
-        filter: { channelIds: ["a", "b"], queueIds: [], tagIds: ["t"] },
+        filter: {
+          channelIds: ["a", "b"],
+          queueIds: [],
+          tagIds: ["t"],
+          type: "post",
+        },
         view: "day",
       },
       today
@@ -53,10 +65,10 @@ describe(calendarQueryOf, () => {
       calendarQueryOf({ ...defaultState, date: Option.some(today) }, today),
       stateOf(query).filter,
     ]).toStrictEqual([
-      "view=day&date=2026-12-03&channel=a%2Cb&tag=t",
+      "view=day&date=2026-12-03&channel=a%2Cb&tag=t&type=post",
       "",
       "",
-      { channelIds: ["a", "b"], queueIds: [], tagIds: ["t"] },
+      { channelIds: ["a", "b"], queueIds: [], tagIds: ["t"], type: "post" },
     ]);
   });
 });

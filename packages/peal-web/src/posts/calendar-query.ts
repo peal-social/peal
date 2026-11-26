@@ -1,5 +1,6 @@
 import { Option, Schema } from "effect";
 
+import { PostsTypeSchema } from "#posts/articles-among-posts.ts";
 import { noFilter } from "#posts/calendar-filter.ts";
 import type { CalendarFilter } from "#posts/calendar-filter.ts";
 import { DateKeySchema, dateKey, parseDate } from "#posts/zoned-time.ts";
@@ -35,6 +36,7 @@ interface QueryString {
 
 const decodeView = Schema.decodeUnknownOption(CalendarViewSchema);
 const decodeDateKey = Schema.decodeUnknownOption(DateKeySchema);
+const decodeType = Schema.decodeUnknownOption(PostsTypeSchema);
 
 // A list of ids, comma separated, each once; an empty one is none.
 const idsOf = (value: string | null): readonly string[] =>
@@ -47,15 +49,25 @@ const idsOf = (value: string | null): readonly string[] =>
  * written by hand may hold, is left out: an unknown view is the week, a
  * date that is no date is today.
  */
-export const calendarStateOf = (query: QueryString): CalendarState => ({
-  date: decodeDateKey(query.get("date")).pipe(Option.flatMap(parseDate)),
-  filter: {
+export const calendarStateOf = (query: QueryString): CalendarState => {
+  const filter: CalendarFilter = {
     channelIds: idsOf(query.get("channel")),
     queueIds: idsOf(query.get("queue")),
     tagIds: idsOf(query.get("tag")),
-  },
-  view: Option.getOrElse(decodeView(query.get("view")), () => "week" as const),
-});
+  };
+
+  return {
+    date: decodeDateKey(query.get("date")).pipe(Option.flatMap(parseDate)),
+    filter: Option.match(decodeType(query.get("type")), {
+      onNone: () => filter,
+      onSome: (type) => ({ ...filter, type }),
+    }),
+    view: Option.getOrElse(
+      decodeView(query.get("view")),
+      () => "week" as const
+    ),
+  };
+};
 
 const sameDate = (left: CalendarDate, right: CalendarDate): boolean =>
   dateKey(left) === dateKey(right);
@@ -84,4 +96,5 @@ export const calendarQueryOf = (
     ...(state.filter.queueIds.length === 0
       ? []
       : [["queue", state.filter.queueIds.join(",")]]),
+    ...(state.filter.type === undefined ? [] : [["type", state.filter.type]]),
   ]).toString();

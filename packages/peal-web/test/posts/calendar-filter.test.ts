@@ -6,6 +6,7 @@ import {
   knownFilter,
   matchesFilter,
   noFilter,
+  showsArticles,
   withChoice,
 } from "#posts/calendar-filter.ts";
 
@@ -114,9 +115,30 @@ describe(filtered, () => {
   });
 });
 
+describe("the type", () => {
+  it("keeps the posts alone, or the articles alone", () => {
+    expect(matchesFilter({ ...noFilter, type: "post" }, launch)).toBeTruthy();
+    expect(matchesFilter({ ...noFilter, type: "article" }, launch)).toBeFalsy();
+    expect([
+      showsArticles(noFilter),
+      showsArticles({ ...noFilter, type: "article" }),
+      showsArticles({ ...noFilter, type: "post" }),
+    ]).toStrictEqual([true, true, false]);
+  });
+
+  it("leaves articles out for a channel, a tag or a queue, as they have none", () => {
+    expect([
+      showsArticles({ ...noFilter, channelIds: ["mastodon"] }),
+      showsArticles({ ...noFilter, tagIds: ["news"] }),
+      showsArticles({ ...noFilter, queueIds: ["evergreen"] }),
+    ]).toStrictEqual([false, false, false]);
+  });
+});
+
 describe(isFiltering, () => {
-  it("is true once a tag or a channel is chosen", () => {
+  it("is true once a type, a tag or a channel is chosen", () => {
     expect(isFiltering(noFilter)).toBeFalsy();
+    expect(isFiltering({ ...noFilter, type: "article" })).toBeTruthy();
     expect(
       isFiltering({ channelIds: [], queueIds: [], tagIds: ["news"] })
     ).toBeTruthy();
@@ -143,6 +165,7 @@ describe(knownFilter, () => {
           channelIds: ["mastodon", "gone"],
           queueIds: [],
           tagIds: ["deleted", "news"],
+          type: "post",
         },
         {
           channelIds: ["mastodon", "bluesky"],
@@ -154,6 +177,7 @@ describe(knownFilter, () => {
       channelIds: ["mastodon"],
       queueIds: [],
       tagIds: ["news"],
+      type: "post",
     });
   });
 });

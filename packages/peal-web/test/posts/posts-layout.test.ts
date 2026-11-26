@@ -23,19 +23,21 @@ describe(layoutQuery, () => {
   it("carries the shared filters to the calendar, and leaves the list's own", () => {
     expect(
       layoutQuery(
-        query("status=draft&sort=created-asc&channel=a&tag=t"),
+        query("status=draft&sort=created-asc&channel=a&tag=t&type=article"),
         "calendar"
       )
-    ).toBe("layout=calendar&channel=a&tag=t");
+    ).toBe("layout=calendar&type=article&channel=a&tag=t");
   });
 
   it("keeps the first of the calendar's ids for the list, and leaves its view and date", () => {
     expect(
       layoutQuery(
-        query("layout=calendar&view=month&date=2026-12-03&channel=a,b&queue=q"),
+        query(
+          "layout=calendar&view=month&date=2026-12-03&channel=a,b&queue=q&type=post"
+        ),
         "list"
       )
-    ).toBe("channel=a&queue=q");
+    ).toBe("type=post&channel=a&queue=q");
   });
 
   it("writes nothing for the list when nothing is shared", () => {

@@ -9,11 +9,14 @@ import {
   GripVerticalIcon,
   ImagesIcon,
   ListOrderedIcon,
+  NewspaperIcon,
   PlusIcon,
 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import type {
+  ArticleSummary,
+  Channel,
   SocialChannel,
   Permission,
   Post,
@@ -26,6 +29,8 @@ import { cn } from "peal-ui/lib/utils";
 import { useState } from "react";
 import type { ReactNode } from "react";
 
+import { scheduledArticles, workspaceSites } from "#articles/api.ts";
+import { channelName } from "#channels/channel-name.ts";
 import { TimeZoneLine } from "#components/lists/time-zone-line.tsx";
 import { CalendarDayView } from "#components/posts/calendar-day-view.tsx";
 import { CalendarToolbar } from "#components/posts/calendar-toolbar.tsx";
@@ -38,7 +43,12 @@ import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
 import { Link, usePathname, useRouter } from "#i18n/navigation.ts";
 import { scheduledPosts, workspaceChannels } from "#posts/api.ts";
-import { filtered, knownFilter } from "#posts/calendar-filter.ts";
+import { articleStatusOf } from "#posts/articles-among-posts.ts";
+import {
+  filtered,
+  knownFilter,
+  showsArticles,
+} from "#posts/calendar-filter.ts";
 import type { CalendarFilter } from "#posts/calendar-filter.ts";
 import { calendarQueryOf, calendarStateOf } from "#posts/calendar-query.ts";
 import type {
@@ -96,13 +106,28 @@ const todayIn = (timeZone: string): CalendarDate =>
     onSome: ({ date }) => date,
   });
 
-/** A post where the viewer's clock shows it. */
-interface Placed {
+/** Where the viewer's clock shows an item of the calendar. */
+interface Place {
   readonly at: DateTime.Utc;
   readonly date: CalendarDate;
   readonly hour: number;
+  readonly id: string;
+}
+
+/** A post where the viewer's clock shows it. */
+interface Placed extends Place {
+  readonly _tag: "post";
   readonly post: Post;
 }
+
+/** An article where the viewer's clock shows it. */
+interface PlacedArticle extends Place {
+  readonly _tag: "article";
+  readonly article: ArticleSummary;
+}
+
+/** What the calendar places: a post or an article. */
+type CalendarItem = Placed | PlacedArticle;
 
 const placedIn = (posts: readonly Post[], timeZone: string): Placed[] =>
   posts.flatMap((post) => {
@@ -114,7 +139,37 @@ const placedIn = (posts: readonly Post[], timeZone: string): Placed[] =>
     }
 
     return Option.toArray(wallClockOf(schedule.at, timeZone)).map(
-      ({ date, time }) => ({ at: schedule.at, date, hour: time.hour, post })
+      ({ date, time }) => ({
+        _tag: "post" as const,
+        at: schedule.at,
+        date,
+        hour: time.hour,
+        id: post.id,
+        post,
+      })
+    );
+  });
+
+const articlesPlacedIn = (
+  articles: readonly ArticleSummary[],
+  timeZone: string
+): PlacedArticle[] =>
+  articles.flatMap((article) => {
+    const { state } = article;
+
+    if (state._tag === "draft") {
+      return [];
+    }
+
+    return Option.toArray(wallClockOf(state.scheduledAt, timeZone)).map(
+      ({ date, time }) => ({
+        _tag: "article" as const,
+        article,
+        at: state.scheduledAt,
+        date,
+        hour: time.hour,
+        id: article.id,
+      })
     );
   });
 
@@ -266,6 +321,79 @@ const PostChip = ({
   );
 };
 
+interface ArticleChipProps {
+  readonly placed: PlacedArticle;
+  /** The workspace's websites, which name the article's. */
+  readonly sites: readonly Channel[];
+  readonly timeZone: string;
+  readonly workspaceId: string;
+}
+
+// An article on the calendar: a post's chip in its state's tint, a link to
+// its editor, a mark that names its website, and no handle: its time
+// changes in its editor.
+const ArticleChip = ({
+  placed,
+  sites,
+  timeZone,
+  workspaceId,
+}: ArticleChipProps) => {
+  const workspaceHref = useWorkspaceHref();
+  const t = useTranslations("Posts.Calendar");
+  const tArticles = useTranslations("Articles.list");
+  const format = useFormatter();
+  const timeOptions = useTimeOptions();
+  const { article } = placed;
+  const site = sites.find(({ id }) => id === article.channelId);
+
+  const removed =
+    article.state._tag === "published" && article.state.removedAt !== null;
+
+  const time = format.dateTime(DateTime.toDate(placed.at), {
+    timeStyle: "short",
+    timeZone,
+    ...timeOptions,
+  });
+
+  const title = article.title.trim();
+  const shown = title === "" ? tArticles("untitled") : title;
+
+  const mark = t("articleMark", {
+    site: site === undefined ? article.channelId : channelName(site),
+  });
+
+  const label = t("postLabel", {
+    status: removed
+      ? tArticles("removed")
+      : tArticles(`state.${article.state._tag}`),
+    text: shown,
+    time,
+  });
+
+  return (
+    <div
+      className={cn(
+        "flex min-w-0 items-center gap-1 rounded-md px-1 py-0.5 text-xs",
+        chipTone[articleStatusOf(article).status],
+        // In the site's trash: kept, dimmed.
+        removed ? "opacity-60" : null
+      )}
+    >
+      <Link
+        href={workspaceHref(workspaceId, `/articles/${article.id}`)}
+        className="min-w-0 flex-1 truncate underline-offset-2 hover:underline"
+        aria-label={`${label} ${mark}`}
+      >
+        {t("post", { text: shown, time })}
+      </Link>
+      <span title={mark} className="text-muted-foreground shrink-0">
+        <NewspaperIcon aria-hidden className="size-3" />
+        <span className="sr-only">{mark}</span>
+      </span>
+    </div>
+  );
+};
+
 interface DropCellProps {
   readonly children: ReactNode;
   readonly className?: string;
@@ -343,7 +471,9 @@ const NewPostLink = ({
 interface GridProps {
   readonly days: readonly CalendarDate[];
   readonly movable: boolean;
-  readonly placed: readonly Placed[];
+  readonly placed: readonly CalendarItem[];
+  /** The workspace's websites, which name the articles'. */
+  readonly sites: readonly Channel[];
   /**
    * The time a new post would start at on a day, or in one of its hours:
    * none for a time that has passed, or a member who may not write posts.
@@ -358,6 +488,37 @@ interface GridProps {
   readonly today: CalendarDate;
   readonly workspaceId: string;
 }
+
+// An item's chip: a post's, which moves when it may, or an article's.
+const ItemChip = ({
+  item,
+  movable,
+  sites,
+  tags,
+  timeZone,
+  workspaceId,
+}: Pick<
+  GridProps,
+  "movable" | "sites" | "tags" | "timeZone" | "workspaceId"
+> & {
+  readonly item: CalendarItem;
+}) =>
+  item._tag === "post" ? (
+    <PostChip
+      movable={movable && hasMovableTime(item.post)}
+      placed={item}
+      tags={tags}
+      timeZone={timeZone}
+      workspaceId={workspaceId}
+    />
+  ) : (
+    <ArticleChip
+      placed={item}
+      sites={sites}
+      timeZone={timeZone}
+      workspaceId={workspaceId}
+    />
+  );
 
 // The link that starts a post at a day or an hour, when one can.
 const startLink = (
@@ -382,6 +543,7 @@ const WeekGrid = ({
   days,
   movable,
   placed,
+  sites,
   startOf,
   tags,
   timeZone,
@@ -454,10 +616,11 @@ const WeekGrid = ({
                           dateKey(item.date) === dateKey(day)
                       )
                       .map((item) => (
-                        <PostChip
-                          key={item.post.id}
-                          movable={movable && hasMovableTime(item.post)}
-                          placed={item}
+                        <ItemChip
+                          key={item.id}
+                          item={item}
+                          movable={movable}
+                          sites={sites}
                           tags={tags}
                           timeZone={timeZone}
                           workspaceId={workspaceId}
@@ -488,6 +651,7 @@ const MonthGrid = ({
   movable,
   onOpenDay,
   placed,
+  sites,
   startOf,
   tags,
   timeZone,
@@ -559,10 +723,11 @@ const MonthGrid = ({
                         {startLink({ startOf, workspaceId }, day, undefined)}
                       </span>
                       {onDay.slice(0, shownPerDay).map((item) => (
-                        <PostChip
-                          key={item.post.id}
-                          movable={movable && hasMovableTime(item.post)}
-                          placed={item}
+                        <ItemChip
+                          key={item.id}
+                          item={item}
+                          movable={movable}
+                          sites={sites}
                           tags={tags}
                           timeZone={timeZone}
                           workspaceId={workspaceId}
@@ -683,6 +848,23 @@ const CalendarView = ({
     (): readonly Post[] => []
   );
 
+  // The articles scheduled in the same range, and the websites that name
+  // them; the grid waits for them with the posts.
+  const articlesQuery = scheduledArticles(workspaceId, range.from, range.to);
+  const articlesResult = useAtomValue(articlesQuery);
+  const retryArticles = useAtomRefresh(articlesQuery);
+  const sitesResult = useAtomValue(workspaceSites(workspaceId));
+
+  const articles = Option.match(AsyncResult.value(articlesResult), {
+    onNone: (): readonly ArticleSummary[] => [],
+    onSome: ({ items }) => items,
+  });
+
+  const sites = Option.getOrElse(
+    AsyncResult.value(sitesResult),
+    (): readonly Channel[] => []
+  );
+
   // The workspace's tags and channels, for the filters and the chips; none
   // while they load, or for a member who may not read them.
   const tags = Option.getOrElse(
@@ -707,7 +889,16 @@ const CalendarView = ({
   });
 
   const loaded = placedIn(posts, timeZone);
-  const { hidden, shown: placed } = filtered(filter, loaded);
+  const { hidden, shown: shownPosts } = filtered(filter, loaded);
+
+  // The posts the filter shows and the articles it does, by time.
+  const placed: readonly CalendarItem[] = [
+    ...shownPosts,
+    ...(showsArticles(filter) ? articlesPlacedIn(articles, timeZone) : []),
+  ].toSorted(
+    (left, right) =>
+      DateTime.toEpochMillis(left.at) - DateTime.toEpochMillis(right.at)
+  );
 
   const mayCreate = permissions.includes("post:create");
   const now = DateTime.nowUnsafe();
@@ -827,7 +1018,10 @@ const CalendarView = ({
   })();
 
   const grid = (() => {
-    if (AsyncResult.isInitial(result)) {
+    if (
+      AsyncResult.isInitial(result) ||
+      AsyncResult.isInitial(articlesResult)
+    ) {
       return (
         <div aria-busy="true" className="flex flex-col gap-2">
           <span className="sr-only">{t("loading")}</span>
@@ -836,11 +1030,21 @@ const CalendarView = ({
       );
     }
 
-    if (AsyncResult.isFailure(result)) {
+    if (
+      AsyncResult.isFailure(result) ||
+      AsyncResult.isFailure(articlesResult)
+    ) {
       return (
         <div className="flex flex-col items-start gap-3" role="alert">
           <p className="text-sm">{t("loadFailed")}</p>
-          <Button variant="outline" size="sm" onClick={retry}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              retry();
+              retryArticles();
+            }}
+          >
             {t("retry")}
           </Button>
         </div>
@@ -851,6 +1055,7 @@ const CalendarView = ({
       days,
       movable,
       placed,
+      sites,
       startOf,
       tags,
       timeZone,
@@ -873,9 +1078,10 @@ const CalendarView = ({
           date={anchor}
           dayStart={startLink({ startOf, workspaceId }, anchor, undefined)}
           renderPost={(item) => (
-            <PostChip
+            <ItemChip
+              item={item}
               movable={false}
-              placed={item}
+              sites={sites}
               tags={tags}
               timeZone={timeZone}
               workspaceId={workspaceId}

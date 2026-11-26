@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BlocksIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ListOrderedIcon,
@@ -29,24 +30,40 @@ import { DisplayMenu } from "#components/lists/display-menu.tsx";
 import type { Layouts } from "#components/lists/display-menu.tsx";
 import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import type { FilterProperty } from "#components/lists/filter-menu.tsx";
+import { PostsTypeSchema } from "#posts/articles-among-posts.ts";
 import { isFiltering, noFilter } from "#posts/calendar-filter.ts";
 import type { CalendarFilter } from "#posts/calendar-filter.ts";
 import type { CalendarView } from "#posts/calendar-query.ts";
 
-// The calendar's properties, by the address's names.
-type CalendarProperty = "channel" | "queue" | "tag";
+// The calendar's properties of several ids, by the address's names.
+type IdsProperty = "channel" | "queue" | "tag";
+
+// Every property, the type, one at most, among them.
+type CalendarProperty = IdsProperty | "type";
 
 const keyOf = {
   channel: "channelIds",
   queue: "queueIds",
   tag: "tagIds",
-} as const satisfies Readonly<Record<CalendarProperty, keyof CalendarFilter>>;
+} as const satisfies Readonly<Record<IdsProperty, keyof CalendarFilter>>;
 
 const icons = {
   channel: RadioTowerIcon,
   queue: ListOrderedIcon,
   tag: TagIcon,
+  type: BlocksIcon,
 } satisfies Readonly<Record<CalendarProperty, LucideIcon>>;
+
+// The filter with the type chosen, or none.
+const withType = (
+  filter: CalendarFilter,
+  type: string | undefined
+): CalendarFilter => {
+  const { type: _chosen, ...rest } = filter;
+  const known = PostsTypeSchema.literals.find((each) => each === type);
+
+  return known === undefined ? rest : { ...rest, type: known };
+};
 
 const views: readonly CalendarView[] = ["day", "week", "month"];
 
@@ -61,8 +78,9 @@ export type ViewLink = ComponentType<{
 /**
  * The calendar's toolbar (DESIGN.md, "Filters and display"): its views
  * (Day, Week, Month) as tabs, then the way through time (the period
- * before, Today, the one after), Filter, whose channels, tags and queues
- * each keep several at once, and Display with the posts page's layouts;
+ * before, Today, the one after), Filter, whose type keeps posts or
+ * articles and whose channels, tags and queues each keep several at once,
+ * and Display with the posts page's layouts;
  * under it, a chip for each, Clear and how many posts on screen the
  * filter hides. A kind the workspace has none of is left out.
  */
@@ -107,6 +125,15 @@ export const CalendarToolbar = ({
   const menu = useFilterMenu();
 
   const properties: (FilterProperty & { readonly id: CalendarProperty })[] = [
+    {
+      icon: BlocksIcon,
+      id: "type",
+      label: list("type"),
+      values: PostsTypeSchema.literals.map((type) => ({
+        id: type,
+        label: list("typeValue", { type }),
+      })),
+    },
     ...(channels.length === 0
       ? []
       : [
@@ -157,6 +184,7 @@ export const CalendarToolbar = ({
     channel: filter.channelIds,
     queue: filter.queueIds,
     tag: filter.tagIds,
+    type: filter.type === undefined ? [] : [filter.type],
   } satisfies Readonly<Record<CalendarProperty, readonly string[]>>;
 
   // What a chip shows of its values: their names, joined.
@@ -169,10 +197,14 @@ export const CalendarToolbar = ({
   };
 
   const choose = (property: CalendarProperty, values: readonly string[]) => {
-    onFilter({ ...filter, [keyOf[property]]: values });
+    onFilter(
+      property === "type"
+        ? withType(filter, values[0])
+        : { ...filter, [keyOf[property]]: values }
+    );
   };
 
-  const chips = (["channel", "tag", "queue"] as const).filter(
+  const chips = (["type", "channel", "tag", "queue"] as const).filter(
     (property) => chosen[property].length > 0
   );
 

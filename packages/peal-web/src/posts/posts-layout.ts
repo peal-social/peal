@@ -20,8 +20,9 @@ export const layoutOf = (query: QueryString): PostsLayout =>
   Option.getOrElse(decodeLayout(query.get("layout")), () => "list" as const);
 
 // The filters both layouts read, under the same names: the calendar takes
-// several ids each, comma-separated, the list one.
-const sharedFilters = ["channel", "tag", "queue"] as const;
+// several ids each, comma-separated, the list one; the type is one in
+// both.
+const sharedFilters = ["type", "channel", "tag", "queue"] as const;
 
 const keptValue = (
   value: string | null,

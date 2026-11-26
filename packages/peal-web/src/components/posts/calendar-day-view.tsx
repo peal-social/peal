@@ -10,7 +10,7 @@ import type { CalendarDate } from "#posts/zoned-time.ts";
 
 interface DayPlaced {
   readonly at: DateTime.Utc;
-  readonly post: { readonly id: string; readonly queueId: string | null };
+  readonly id: string;
 }
 
 export interface CalendarDayViewProps<Placed extends DayPlaced> {
@@ -77,7 +77,7 @@ export const CalendarDayView = <Placed extends DayPlaced>({
               </time>
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 {row.posts.map((placed) => (
-                  <div key={placed.post.id}>{renderPost(placed)}</div>
+                  <div key={placed.id}>{renderPost(placed)}</div>
                 ))}
                 {row.openSlots.map((slot) => (
                   <div

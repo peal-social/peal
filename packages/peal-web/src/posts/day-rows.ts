@@ -88,10 +88,10 @@ export const queueSlotsOn = (
         .toSorted((left, right) => byInstant(left.at, right.at)),
   });
 
-/** What the rows read of a post placed on the day. */
+/** What the rows read of a post or an article placed on the day. */
 interface DayPlaced {
   readonly at: DateTime.Utc;
-  readonly post: { readonly id: string; readonly queueId: string | null };
+  readonly id: string;
 }
 
 /**
@@ -157,7 +157,7 @@ export const dayRows = <Placed extends DayPlaced>(
   slots: readonly DaySlot[],
   holders: readonly SlotHolder[]
 ): readonly DayRow<Placed>[] => {
-  const shown = new Set(placed.map(({ post }) => post.id));
+  const shown = new Set(placed.map(({ id }) => id));
 
   const holderOf = (slot: DaySlot) =>
     holders.find(

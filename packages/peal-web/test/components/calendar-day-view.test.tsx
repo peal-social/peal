@@ -30,10 +30,12 @@ const queues = [
 const placed = [
   {
     at: utc("2026-03-29T07:00:00Z"),
+    id: "p-queued",
     post: { id: "p-queued", queueId: "q1", text: "Queued at nine" },
   },
   {
     at: utc("2026-03-29T00:30:00Z"),
+    id: "p-early",
     post: { id: "p-early", queueId: null, text: "Before the jump" },
   },
 ];
@@ -101,6 +103,7 @@ describe(CalendarDayView, () => {
       [
         {
           at: utc("2026-03-30T07:00:00Z"),
+          id: "p1",
           post: { id: "p1", queueId: null, text: "Lundi" },
         },
       ],
