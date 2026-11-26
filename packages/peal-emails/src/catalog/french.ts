@@ -404,6 +404,7 @@ export const french: EmailCatalog = {
     linkedin: "LinkedIn",
     mastodon: "Mastodon",
     pinterest: "Pinterest",
+    snapchat: "Snapchat",
     telegram: "Telegram",
     threads: "Threads",
     tiktok: "TikTok",

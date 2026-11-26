@@ -37,6 +37,8 @@ const threads = channel("6", "threads");
 
 const youtube = channel("7", "youtube");
 
+const snapchat = channel("8", "snapchat");
+
 // Different links, one per path.
 const links = (count: number) =>
   Array.from(
@@ -226,6 +228,40 @@ describe(violationsOn, () => {
     ]);
     expect(violationsOn(contentOf("No video"), youtube)).toStrictEqual([
       { _tag: "mediaRequired", ...youtube },
+    ]);
+  });
+
+  it("holds a Spotlight's description to 160 UTF-16 units, and asks for a video", () => {
+    const video = { media: media(1) };
+
+    expect(
+      violationsOn(contentOf("a".repeat(160), video), snapchat)
+    ).toStrictEqual([]);
+    expect(
+      violationsOn(contentOf("a".repeat(161), video), snapchat)
+    ).toStrictEqual([
+      {
+        _tag: "textTooLong",
+        ...snapchat,
+        length: 161,
+        maximum: 160,
+        unit: "utf16Units",
+      },
+    ]);
+    // 81 emoji of two units each.
+    expect(
+      violationsOn(contentOf("\u{1F47B}".repeat(81), video), snapchat)
+    ).toStrictEqual([
+      {
+        _tag: "textTooLong",
+        ...snapchat,
+        length: 162,
+        maximum: 160,
+        unit: "utf16Units",
+      },
+    ]);
+    expect(violationsOn(contentOf("No video"), snapchat)).toStrictEqual([
+      { _tag: "mediaRequired", ...snapchat },
     ]);
   });
 

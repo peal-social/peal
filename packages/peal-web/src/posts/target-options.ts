@@ -712,6 +712,16 @@ export const optionFields = {
       name: "unfurlLinks",
     },
   ],
+  snapchat: [
+    {
+      hint: "snapchat.localeHint",
+      invalid: "snapchat.localeInvalid",
+      kind: "text",
+      label: "snapchat.locale",
+      maxLength: 5,
+      name: "locale",
+    },
+  ],
   telegram: [
     {
       hint: "telegram.linkPreviewHint",

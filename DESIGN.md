@@ -631,8 +631,9 @@ chips (stroke 2), in `currentColor`. An icon-only button has an
 `aria-label`. Platforms are shown by their own marks: simple-icons', or,
 for a brand it does not hold (LinkedIn, Slack, Google Business Profile),
 the file its owner publishes, kept in peal-ui's `src/brand-marks` with
-where it came from; a lettered tile only for a brand with neither. Never
-draw a platform's logo from memory.
+where it came from; a lettered tile only for a brand with neither. A mark
+whose brand colour cannot be seen on the tile (Snapchat's yellow) is drawn
+in ink. Never draw a platform's logo from memory.
 
 A sign-in provider's button is an `lg` button the column's width, the
 provider's own mark at 16 px, as Google sets its 20 px G in a 40 px

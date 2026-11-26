@@ -79,6 +79,7 @@ describe(mediaViolationsOn, () => {
       "mastodon",
       "pinterest",
       "slack",
+      "snapchat",
       "telegram",
       "threads",
       "tiktok",
@@ -93,8 +94,10 @@ describe(mediaViolationsOn, () => {
       expect(violations(platform, video(first))).toStrictEqual([]);
     }
 
-    // YouTube takes videos only.
-    for (const platform of withRules.filter((name) => name !== "youtube")) {
+    // YouTube and Snapchat take videos only.
+    for (const platform of withRules.filter(
+      (name) => name !== "youtube" && name !== "snapchat"
+    )) {
       expect(violations(platform, mediaFile(first))).toStrictEqual([]);
     }
   });
@@ -454,6 +457,61 @@ describe(mediaViolationsOn, () => {
         )
       )
     ).toStrictEqual([["aspectRatioUnsupported"], ["aspectRatioUnsupported"]]);
+  });
+
+  it("holds a Spotlight to one MP4 of 5 to 300 seconds, 1 GB at most", () => {
+    expect(violations("snapchat", lasting(5000))).toStrictEqual([]);
+    expect(violations("snapchat", lasting(300_000))).toStrictEqual([]);
+    expect(
+      violations("snapchat", video(first, { byteSize: 1_000_000_000 }))
+    ).toStrictEqual([]);
+
+    expect(violations("snapchat", lasting(4000))).toStrictEqual([
+      {
+        _tag: "videoTooShort",
+        ...on("snapchat"),
+        durationMs: 4000,
+        mediaId: first,
+        minimumMs: 5000,
+      },
+    ]);
+    expect(violations("snapchat", lasting(301_000))).toStrictEqual([
+      {
+        _tag: "videoTooLong",
+        ...on("snapchat"),
+        durationMs: 301_000,
+        maximumMs: 300_000,
+        mediaId: first,
+      },
+    ]);
+    expect(
+      violations("snapchat", video(first, { byteSize: 1_000_000_001 })).map(
+        ({ _tag }) => _tag
+      )
+    ).toStrictEqual(["mediaTooLarge"]);
+    expect(
+      violations("snapchat", video(first, { contentType: "video/quicktime" }))
+    ).toStrictEqual([
+      {
+        _tag: "mediaTypeUnsupported",
+        ...on("snapchat"),
+        contentType: "video/quicktime",
+        mediaId: first,
+      },
+    ]);
+    expect(violations("snapchat", mediaFile(first))).toStrictEqual([
+      {
+        _tag: "mediaTypeUnsupported",
+        ...on("snapchat"),
+        contentType: "image/jpeg",
+        mediaId: first,
+      },
+    ]);
+    expect(
+      violations("snapchat", video(first), video(second)).map(
+        ({ _tag }) => _tag
+      )
+    ).toStrictEqual(["tooManyVideos"]);
   });
 
   it("takes JPEG and PNG photos of 10,240 bytes to 5 MiB on Google Business Profile, and no video", () => {

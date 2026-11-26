@@ -105,4 +105,15 @@ describe("the links a platform treats natively", () => {
     // Elsewhere they are shortened as any other.
     expect(linksToShorten(own, "linkedin", addresses)).toHaveLength(1);
   });
+
+  it("shorten a link in a Snapchat Spotlight, and leave Snapchat's own as written", () => {
+    const own = "https://www.snapchat.com/spotlight/synthetic-spotlight-id-1234";
+
+    expect(keepsLinksAsWritten("snapchat")).toBeFalsy();
+    expect(linksToShorten(long, "snapchat", addresses)).toStrictEqual(
+      linksToShorten(long, "mastodon", addresses)
+    );
+    expect(linksToShorten(long, "snapchat", addresses)).toHaveLength(1);
+    expect(linksToShorten(own, "snapchat", addresses)).toStrictEqual([]);
+  });
 });

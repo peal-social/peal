@@ -47,6 +47,7 @@ export const repostRegistryWith = Effect.fn("PlatformReposts.registry")(
       mastodon: yield* mastodonRepost({ api, scheme: settings.mastodonScheme }),
       pinterest: notReposting,
       slack: notReposting,
+      snapchat: notReposting,
       telegram: notReposting,
       threads: notReposting,
       tiktok: notReposting,

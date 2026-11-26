@@ -34,6 +34,7 @@ const names = new Map<string, Platform>([
   ["Mastodon", "mastodon"],
   ["Pinterest", "pinterest"],
   ["Slack", "slack"],
+  ["Snapchat", "snapchat"],
   ["Telegram", "telegram"],
   ["Threads", "threads"],
   ["TikTok", "tiktok"],

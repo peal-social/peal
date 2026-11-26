@@ -400,6 +400,18 @@ const telegramPhoto: FormatLimits = {
 // block's `alt_text` 2,000.
 const slackImage: FormatLimits = { maxByteSize: 50 * mebibyte };
 
+// Snap's "Post Spotlight" (developers.snap.com, Public Profile API,
+// Profile Asset Management, read 2026-11-26): one MP4 of 5 to 300
+// seconds ("Video Duration : 5-300 seconds"); "A file of upto 1 GB",
+// read as 10^9 bytes, the smaller; a description that "can be up to a
+// 160 characters", counted in UTF-16 units, the strictest reading. "Any
+// video resolution and aspect ratio": no ratio is checked.
+const snapchatVideo: FormatLimits = {
+  maxByteSize: 1_000_000_000,
+  maxDurationMs: 5 * minute,
+  minDurationMs: 5 * second,
+};
+
 // Post formats, from Meta's references (read 2026-11-12):
 //
 // - Instagram story (the IG User Media reference,
@@ -725,6 +737,17 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
     mediaRequired: false,
     textLimits: [{ maximum: 4000, unit: "escapedUtf16Units" }],
     textLimitsWithMedia: [{ maximum: 3000, unit: "escapedUtf16Units" }],
+  },
+  snapchat: {
+    maxMedia: 1,
+    media: {
+      formats: { "video/mp4": snapchatVideo },
+      maxVideos: 1,
+      mixesKinds: false,
+      showsAltText: false,
+    },
+    mediaRequired: true,
+    textLimits: [{ maximum: 160, unit: "utf16Units" }],
   },
   telegram: {
     followUps: thread,

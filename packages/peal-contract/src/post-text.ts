@@ -424,6 +424,14 @@ const telegramPhoto: FormatLimits = {
 // block's `alt_text` 2,000.
 const slackImage: FormatLimits = { maxByteSize: 50 * mebibyte };
 
+// Snapchat's Spotlight (the server's platform rules cite Snap's page): one
+// MP4 of 5 to 300 seconds, 1 GB at most.
+const snapchatVideo: FormatLimits = {
+  maxByteSize: 1_000_000_000,
+  maxDurationMs: 5 * minute,
+  minDurationMs: 5 * second,
+};
+
 const youtubeVideo: FormatLimits = {
   maxByteSize: 256 * 1024 * mebibyte,
   maxDurationMs: 12 * 60 * minute,
@@ -736,6 +744,17 @@ export const platformRules: Readonly<Record<Platform, PlatformRules>> = {
   },
   // Plain text; a text with media is a caption, of 1,024 at most. One
   // file, or an album of 2 to 10 photos and videos; a GIF alone.
+  snapchat: {
+    maxMedia: 1,
+    media: {
+      formats: { "video/mp4": snapchatVideo },
+      maxVideos: 1,
+      mixesKinds: false,
+      showsAltText: false,
+    },
+    mediaRequired: true,
+    textLimits: [{ maximum: 160, unit: "utf16Units" }],
+  },
   telegram: {
     followUps: thread,
     maxMedia: 10,
@@ -976,6 +995,7 @@ const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   mastodon: [],
   pinterest: ["pinterest.com", "pin.it"],
   slack: ["slack.com"],
+  snapchat: ["snapchat.com"],
   telegram: [],
   threads: ["threads.net", "threads.com"],
   tiktok: ["tiktok.com"],

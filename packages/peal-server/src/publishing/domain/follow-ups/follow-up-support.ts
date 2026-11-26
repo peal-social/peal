@@ -48,6 +48,9 @@ export type FollowUpSupport = "available" | FollowUpBlocker;
  *   app can make of its own post.
  * - Discord and Telegram: a chat has no repost, and Peal reads no counts
  *   there, so no rule's threshold is ever met.
+ * - Snapchat: Snap's Public Profile API has no call that comments under
+ *   a Spotlight or shares one again (developers.snap.com, Public Profile
+ *   API, Profile Asset Management, read 2026-11-26).
  * - LinkedIn forbids both: its API Terms (3.1) refuse using the APIs "to
  *   automate posting on the LinkedIn Services", and its User Agreement
  *   (8.2) bots that "comment on, like, share, or re-share posts".
@@ -62,6 +65,7 @@ export const followUpSupport = {
   mastodon: { comment: "available", repost: "available" },
   pinterest: { comment: "noApi", repost: "noApi" },
   slack: { comment: "noApi", repost: "noApi" },
+  snapchat: { comment: "noApi", repost: "noApi" },
   telegram: { comment: "noApi", repost: "noApi" },
   threads: { comment: "review", repost: "notBuilt" },
   tiktok: { comment: "noApi", repost: "noApi" },

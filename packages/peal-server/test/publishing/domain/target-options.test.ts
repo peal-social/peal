@@ -16,6 +16,7 @@ import {
   PinterestOptions,
 } from "#publishing/domain/pinterest-options.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
+import { SnapchatOptions } from "#publishing/domain/snapchat-options.ts";
 import {
   noOptionsOn,
   optionsPlatforms,
@@ -84,6 +85,7 @@ describe("the platforms that take options", () => {
       "discord",
       "telegram",
       "slack",
+      "snapchat",
     ]);
     expect(takesOptions("facebook")).toBeTruthy();
     expect(noOptionsOn("instagram")).toStrictEqual(
@@ -294,6 +296,21 @@ describe("Pinterest's options", () => {
   });
 });
 
+describe("Snapchat's options", () => {
+  it("take a locale as Snap writes it, a language and a country", () => {
+    const problems = (locale?: string) =>
+      new SnapchatOptions(locale === undefined ? {} : { locale }).problems();
+
+    expect(problems()).toStrictEqual([]);
+    expect(problems("fr_FR")).toStrictEqual([]);
+    for (const locale of ["fr", "fr-FR", "FR_fr"]) {
+      expect(problems(locale)).toStrictEqual([
+        { _tag: "invalid", field: "locale" },
+      ]);
+    }
+  });
+});
+
 describe("TikTok's options", () => {
   it("need who sees the post, with no default", () => {
     expect(optionViolationsOn(tiktok, Option.none())).toStrictEqual([
@@ -366,6 +383,18 @@ describe("options on a post's channels", () => {
         _tag: "optionsForOtherPlatform",
         ...mastodon,
         optionsPlatform: "tiktok",
+      },
+    ]);
+    expect(
+      optionViolationsOn(
+        mastodon,
+        Option.some(new SnapchatOptions({ locale: "fr_FR" }))
+      )
+    ).toStrictEqual([
+      {
+        _tag: "optionsForOtherPlatform",
+        ...mastodon,
+        optionsPlatform: "snapchat",
       },
     ]);
   });

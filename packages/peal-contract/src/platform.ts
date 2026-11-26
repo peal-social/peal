@@ -19,6 +19,7 @@ export const PlatformSchema = Schema.Literals([
   "discord",
   "telegram",
   "slack",
+  "snapchat",
 ]).annotate({
   description: "A social network a channel connects to.",
   identifier: "Platform",
