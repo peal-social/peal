@@ -372,12 +372,10 @@ describe("the gate's reply sender", () => {
     Effect.gen(function* website() {
       const world = worldWith(attempted());
 
-      const { server, source } = yield* onServer(
-        world,
-        made,
-        Option.none(),
-        { inbox: new Set(["facebook", "instagram"]), platform: "wordpress" }
-      );
+      const { server, source } = yield* onServer(world, made, Option.none(), {
+        inbox: new Set(["facebook", "instagram"]),
+        platform: "wordpress",
+      });
 
       const read = yield* source
         .read({

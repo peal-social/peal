@@ -110,11 +110,9 @@ describe("reading counts on a website", () => {
         scopes: [],
       };
 
-      const { batch, handed } = yield* reading(
-        postsToRead("101"),
-        account,
-        { tokens: ["synthetic-site-credential"] }
-      );
+      const { batch, handed } = yield* reading(postsToRead("101"), account, {
+        tokens: ["synthetic-site-credential"],
+      });
 
       assert.deepStrictEqual(
         failureOf(batch),
