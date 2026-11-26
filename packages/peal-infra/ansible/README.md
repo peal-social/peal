@@ -110,12 +110,12 @@ assistant answers within 90, so the tunnel needs no timeout of its own.
 
 ### Playbooks
 
-| Playbook        | When                                                                            |
-| --------------- | ------------------------------------------------------------------------------- |
-| `bootstrap.yml` | Once on a new server, as the account its image lets in: it creates `ops`        |
-| `site.yml`      | Any time; it converges the server to this folder                                |
-| `release.yml`   | To deploy `main`, or another branch, tag or commit with `-e peal_version=<ref>` |
-| `uptime.yml`    | Any time, on the uptime server alone; it converges it to this folder            |
+| Playbook               | When                                                                              |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `bootstrap.yml`        | Once on a new server, as the account its image lets in: it creates `ops`          |
+| `site.yml`             | Any time; it converges the server to this folder                                  |
+| `release.yml`          | To deploy `main`, or another branch, tag or commit with `-e peal_version=<ref>`   |
+| `uptime.yml`           | Any time, on the uptime server alone; it converges it to this folder              |
 | `posts-updated-at.yml` | Once, when the roll-back runbook says so: every post's `updated_at` moves forward |
 
 Run each with `--limit production` or `--limit sandbox` (`--limit uptime` for
