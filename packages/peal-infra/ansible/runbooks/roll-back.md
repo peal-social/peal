@@ -637,6 +637,45 @@ read:
 3. **Either lists a row:** do not roll back past this release; release a
    fix forward instead. Never change the rows by hand.
 
+## Past Snapchat
+
+The release that posts to Snapchat (no migration: platforms and options
+are text and JSON) stores what the release before cannot read:
+
+- a channel of Snapchat (`channels.channels.platform` `snapchat`): the
+  release before does not know the platform, so the workspace's channels,
+  and the jobs that walk every channel (analytics' collection, the
+  inbox's, the warnings that a channel must be reconnected soon), fail on
+  that row for every workspace;
+- analytics' row for that channel (`analytics.tracked_channels.platform`
+  `snapchat`), which the release before decodes with its platform list
+  where it walks the channels it reads;
+- a post's target with Snapchat's options (`publishing.post_targets.options`
+  of `platform` `snapchat`), which the release before fails to decode
+  where it reads the post;
+- the events and notices that name Snapchat, at their top
+  (`data.platform`) or among a post's targets (`data.targets[].platform`),
+  which it fails to decode where it reads them.
+
+1. **Channels of Snapchat, and analytics' rows for them:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM channels.channels WHERE platform = 'snapchat'"
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT channel_id, workspace_id FROM analytics.tracked_channels WHERE platform = 'snapchat'"
+   ```
+
+2. **Posts, events and notices that name Snapchat:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT 'target' AS kind, id FROM publishing.post_targets WHERE options->>'platform' = 'snapchat' UNION ALL SELECT 'event', id FROM webhooks.events WHERE data->>'platform' = 'snapchat' OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'targets') = 'array' THEN data->'targets' ELSE '[]' END) t WHERE t->>'platform' = 'snapchat') UNION ALL SELECT 'notice', id FROM notifications.notices WHERE event->'channel'->>'platform' = 'snapchat' OR event->'channel'->'value'->>'platform' = 'snapchat'"
+   ```
+
+3. **Either lists a row:** do not roll back past this release; release a
+   fix forward instead. Never change the rows by hand.
+
 ## Past Messenger's and Instagram's direct messages
 
 The release that reads Facebook Pages' and Instagram's direct messages
