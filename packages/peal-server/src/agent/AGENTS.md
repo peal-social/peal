@@ -115,7 +115,9 @@
   parameter the tool takes (`shownParameters`, one list per tool that
   waits, which `test/app/agent-toolbox.test.ts` keeps equal to the MCP
   tool's: a tool missing there, a parameter not in it or one that reads
-  otherwise is never asked), and what the call names, read as the
+  otherwise is never asked; `edit_published_post`'s `body` and `options`,
+  a website's, are left out on purpose until a card shows them: the
+  agent edits a website's text alone), and what the call names, read as the
   person may read it when it is asked (`requested`, in the run): the post
   whole through `get_post` (`PublishablePostSchema`: text, media, poll,
   each channel's own text and media, the parts after it with their

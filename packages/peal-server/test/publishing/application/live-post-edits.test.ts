@@ -1234,6 +1234,7 @@ describe("editing a website's live post", () => {
             Option.some("After")
           );
 
+          yield* eventually("the job waits to try again", isWaiting(change.id));
           yield* TestClock.adjust(Duration.minutes(2));
           yield* eventually("the edit is done", hasStatus(change.id, "done"));
 
