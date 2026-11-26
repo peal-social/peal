@@ -1796,7 +1796,7 @@ _, err := client.Posts.UnpublishTarget(
 <dl>
 <dd>
 
-Replaces the text of one part of the post (`part`, from 0, the post itself by default) on one channel's platform, for everyone: only the text changes, never the media, the options or the time. The change is public at once. Peal edits on Mastodon and Google Business Profile; the capabilities' `livePost.edit` say where, and `editBlockedBy` why not elsewhere. The text is checked as that channel's text is when a post is scheduled (PostContentInvalid, a Mastodon content warning counted), and must not be empty. The request is accepted (202) and a job makes the edit, one call at a time with the channel's other calls; a call that fails is tried again as a deletion is, after which the change is `failed` with its `code` (`postGone` when the platform no longer has the post, `pollNotEditable` for a Mastodon post with a poll, which the edit would remove, `permissionDenied` for a Mastodon channel to reconnect) and may be asked again. `wait` waits up to that many seconds (60 at most) for it to end. Once done, the text is that part's own text on that channel in Peal (the other channels keep theirs), the target has its `editedAt`, and Peal keeps no earlier text. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted, Peal has no id for that part, the platform does not let Peal edit it, another change of it is pending, the channel cannot be used, or your posts need an approval (`approvalRequired`: an approver makes the edit). Webhooks hear `post.edited` or `post.edit_failed`. Needs post:publish; an OAuth client needs the scope workspace:publish.
+Replaces the text of one part of the post (`part`, from 0, the post itself by default) on one channel's platform, for everyone: on a social network or a chat, only the text changes, never the media, the options or the time (a `body` there is PostContentInvalid `bodyNotTaken`, and `options` are refused `notSupported`). On a website, the edit replaces what the site shows, as the post's text (`text`) or a rich text (`body`), and its options (`options`, its platform's, whole), each kept when left out; the site status and the date never change (another `siteStatus` is PostContentInvalid `optionInvalid`), and a file the site has already is not sent again. The change is public at once. The capabilities' `livePost.edit` say where Peal edits, and `editBlockedBy` why not elsewhere. The text, the body and the options are checked as that channel's are when a post is scheduled (PostContentInvalid, a Mastodon content warning counted; a website's title needed), the text must not be empty, and the files must be the workspace's and ready (UnknownMedia). The request is accepted (202) and a job makes the edit, one call at a time with the channel's other calls; a call that fails is tried again as a deletion is, after which the change is `failed` with its `code` (`postGone` when the platform no longer has the post, `pollNotEditable` for a Mastodon post with a poll, which the edit would remove, `permissionDenied` for a Mastodon channel to reconnect) and may be asked again. `wait` waits up to that many seconds (60 at most) for it to end. Once done, the text (or the body) is that part's own text on that channel in Peal (the other channels keep theirs), a website's new options are its target's, the target has its `editedAt`, and Peal keeps no earlier text. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted, Peal has no id for that part, the platform does not let Peal edit it, another change of it is pending, the channel cannot be used, or your posts need an approval (`approvalRequired`: an approver makes the edit). Webhooks hear `post.edited` or `post.edit_failed`. Needs post:publish; an OAuth client needs the scope workspace:publish.
 </dd>
 </dl>
 </dd>
@@ -1814,7 +1814,6 @@ Replaces the text of one part of the post (`part`, from 0, the post itself by de
 request := &peal.LivePostEdit{
     PostID: "postId",
     TargetID: "targetId",
-    Text: "text",
 }
 _, err := client.Posts.EditTarget(
     context.TODO(),
@@ -1858,6 +1857,22 @@ _, err := client.Posts.EditTarget(
 <dl>
 <dd>
 
+**body:** `*peal.RichText` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**options:** `*peal.TargetOptions` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **part:** `*int` 
     
 </dd>
@@ -1866,7 +1881,7 @@ _, err := client.Posts.EditTarget(
 <dl>
 <dd>
 
-**text:** `string` 
+**text:** `*string` 
     
 </dd>
 </dl>

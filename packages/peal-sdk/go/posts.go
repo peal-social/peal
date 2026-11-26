@@ -411,16 +411,20 @@ var (
 	livePostEditFieldPostID   = big.NewInt(1 << 0)
 	livePostEditFieldTargetID = big.NewInt(1 << 1)
 	livePostEditFieldWait     = big.NewInt(1 << 2)
-	livePostEditFieldPart     = big.NewInt(1 << 3)
-	livePostEditFieldText     = big.NewInt(1 << 4)
+	livePostEditFieldBody     = big.NewInt(1 << 3)
+	livePostEditFieldOptions  = big.NewInt(1 << 4)
+	livePostEditFieldPart     = big.NewInt(1 << 5)
+	livePostEditFieldText     = big.NewInt(1 << 6)
 )
 
 type LivePostEdit struct {
-	PostID   string  `json:"-" url:"-"`
-	TargetID string  `json:"-" url:"-"`
-	Wait     *string `json:"-" url:"wait,omitempty"`
-	Part     *int    `json:"part,omitempty" url:"-"`
-	Text     string  `json:"text" url:"-"`
+	PostID   string         `json:"-" url:"-"`
+	TargetID string         `json:"-" url:"-"`
+	Wait     *string        `json:"-" url:"wait,omitempty"`
+	Body     *RichText      `json:"body,omitempty" url:"-"`
+	Options  *TargetOptions `json:"options,omitempty" url:"-"`
+	Part     *int           `json:"part,omitempty" url:"-"`
+	Text     *string        `json:"text,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -456,6 +460,20 @@ func (l *LivePostEdit) SetWait(wait *string) {
 	l.require(livePostEditFieldWait)
 }
 
+// SetBody sets the Body field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *LivePostEdit) SetBody(body *RichText) {
+	l.Body = body
+	l.require(livePostEditFieldBody)
+}
+
+// SetOptions sets the Options field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *LivePostEdit) SetOptions(options *TargetOptions) {
+	l.Options = options
+	l.require(livePostEditFieldOptions)
+}
+
 // SetPart sets the Part field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (l *LivePostEdit) SetPart(part *int) {
@@ -465,7 +483,7 @@ func (l *LivePostEdit) SetPart(part *int) {
 
 // SetText sets the Text field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LivePostEdit) SetText(text string) {
+func (l *LivePostEdit) SetText(text *string) {
 	l.Text = text
 	l.require(livePostEditFieldText)
 }
