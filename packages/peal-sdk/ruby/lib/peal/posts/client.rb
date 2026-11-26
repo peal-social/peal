@@ -1233,10 +1233,11 @@ module Peal
 
       # Replaces the text of one part of the post (`part`, from 0, the post itself by default) on one channel's
       # platform, for everyone: on a social network or a chat, only the text changes, never the media, the options or
-      # the time (a `body` there is PostContentInvalid `bodyNotTaken`, and `options` are refused `notSupported`). On a
-      # website, the edit replaces what the site shows, as the post's text (`text`) or a rich text (`body`), and its
-      # options (`options`, its platform's, whole), each kept when left out; the site status and the date never change
-      # (another `siteStatus` is PostContentInvalid `optionInvalid`), and a file the site has already is not sent again.
+      # the time (a `body` there is PostContentInvalid `bodyNotTaken`, and `options` `optionsNotTaken`). On a website,
+      # the edit replaces what the site shows, as the post's text (`text`, which replaces a rich text there with plain
+      # paragraphs: send `body` to keep its formatting) or a rich text (`body`), and its options (`options`, its
+      # platform's, whole), each kept when left out; the site status and the date never change (`siteStatus` left out is
+      # the target's, another is PostContentInvalid `optionInvalid`), and a file the site has already is not sent again.
       # The change is public at once. The capabilities' `livePost.edit` say where Peal edits, and `editBlockedBy` why
       # not elsewhere. The text, the body and the options are checked as that channel's are when a post is scheduled
       # (PostContentInvalid, a Mastodon content warning counted; a website's title needed), the text must not be empty,
