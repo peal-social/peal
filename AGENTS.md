@@ -58,6 +58,8 @@ one per tool under `packages/peal-infra/`:
 - `peal-e2e`: end-to-end browser tests with the e2e runner (`e2e`,
   `@e2e-dev/web`). Each run starts the server and the web app's production
   build itself (`scripts/serve.ts`).
+- `peal-load`: load tests by hand, never in CI: k6 against the server on a
+  `…scale` database, publishing to a fake Mastodon instance.
 - `peal-infra`: Peal's own infrastructure, one Nx project per tool:
   `pulumi` (`peal-infra-pulumi`) keeps what Peal has at Cloudflare as code,
   and `ansible` (`peal-infra-ansible`) configures Peal's servers, production
@@ -96,6 +98,8 @@ several:
 - [`packages/peal-sdk/AGENTS.md`](packages/peal-sdk/AGENTS.md): the SDKs.
 - [`packages/peal-e2e/AGENTS.md`](packages/peal-e2e/AGENTS.md): the end-to-end
   tests.
+- [`packages/peal-load/AGENTS.md`](packages/peal-load/AGENTS.md): the load
+  tests, and how to read their figures.
 - [`packages/peal-docs/AGENTS.md`](packages/peal-docs/AGENTS.md): how a docs
   page is written.
 - [`packages/peal-blog/AGENTS.md`](packages/peal-blog/AGENTS.md): the blog,

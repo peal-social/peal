@@ -55,7 +55,8 @@ These settings size the connections and the job records:
 
 | Setting                  | Default   | What it does                                                                                                        |
 | ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`           | none      | The Postgres database. Each server process opens up to 10 connections to it.                                        |
+| `DATABASE_URL`           | none      | The Postgres database. Each server process opens up to `DATABASE_POOL_MAX` connections to it.                       |
+| `DATABASE_POOL_MAX`      | `20`      | The connections each server process opens to it at most, for the API and the jobs.                                  |
 | `AUTH_DB_POOL_MAX`       | `5`       | The connections each server process opens on top of those, for sign-in.                                             |
 | `PEAL_CLUSTER_RETENTION` | `30 days` | A daily cleanup deletes the records of jobs that finished longer ago than this. Jobs still waiting are always kept. |
 

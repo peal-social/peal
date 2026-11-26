@@ -421,7 +421,14 @@ and no socket, for tests.
   (`shared/application`) saves rows and starts a workflow in one transaction.
   The runner's name comes from `HOSTNAME`, never `HOST` or `PORT`; shards are
   held with session advisory locks, storage is polled every 2 seconds, and
-  shutdown waits up to 60 seconds for platform calls in flight, as the HTTP
+  it holds `maxResidentEntities` (100,000) entities in memory at once:
+  past them it starts nothing new, publishing included, however idle the
+  server is. Every channel a collection reads keeps its gate there ten
+  minutes, so the limit must stay above the channels read in that time
+  (Effect's 10,000 was not: `peal-load`'s guide). Never shorten a gate's
+  idle time to make room: a call that meets a gate as it stops is lost,
+  and a lost publish is a post left unconfirmed. Shutdown
+  waits up to 60 seconds for platform calls in flight, as the HTTP
   server does for requests (Bun then closes them; Effect's default is 20):
   both in `src/app/shutdown.ts`, which `test/app/shutdown.test.ts` keeps
   10 seconds inside the server's `stop_grace_period` (75 s).
@@ -486,9 +493,9 @@ and no socket, for tests.
 
 - The server reads `DATABASE_URL` (required) with `Config.Redacted`.
   `DatabaseLive` in `#shared/infrastructure/database.ts` provides `PgClient`,
-  Effect's `SqlClient` and the `Drizzle` service on one pool, which the
-  cluster shares. Better Auth runs on a small pool of its own
-  (`AUTH_DB_POOL_MAX`). Repositories use `Drizzle`, or `SqlClient` for raw
+  Effect's `SqlClient` and the `Drizzle` service on one pool
+  (`DATABASE_POOL_MAX`, 20), which the cluster shares. Better Auth runs on
+  a small pool of its own (`AUTH_DB_POOL_MAX`). Repositories use `Drizzle`, or `SqlClient` for raw
   SQL.
 - Each context keeps its tables in a Postgres schema named after it
   (`publishing`, `channels`, `media`, `notifications`, `assistant`,
@@ -513,7 +520,8 @@ and no socket, for tests.
   gets its plan read on a database of the size it will meet:
   `packages/peal-server/scripts/seed-scale.ts` fills an empty, migrated
   database whose name ends in `scale` with synthetic rows for so many users
-  (10,000 by default: 40,000 channels, 900,000 posts, 2.25 million targets).
+  (10,000 by default: 41,000 channels, 40,000 of them the users' and 1,000 a
+  partner's customers', 900,000 posts, 2.25 million targets).
   A job that takes "everything due" pages by cursor and says what it left;
   it never stops at a fixed count.
 - The server applies pending migrations before it listens, under an advisory
