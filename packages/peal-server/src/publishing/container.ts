@@ -102,6 +102,7 @@ import { ListedChannelConnections } from "#publishing/infrastructure/listed-chan
 import { ListedWorkspaceChannels } from "#publishing/infrastructure/listed-workspace-channels.ts";
 import { LoggedChannelHealth } from "#publishing/infrastructure/logged-channel-health.ts";
 import { LoggedOperatorAlerts } from "#publishing/infrastructure/logged-operator-alerts.ts";
+import { MdastMarkdownBodies } from "#publishing/infrastructure/markdown/mdast-markdown-bodies.ts";
 import { meteredOutcomes } from "#publishing/infrastructure/metered-publication-outcomes.ts";
 import { MeteredXPostsLive } from "#publishing/infrastructure/metered-x-posts.ts";
 import { NamedPostOrigins } from "#publishing/infrastructure/named-post-origins.ts";
@@ -255,6 +256,7 @@ const publishingOver = <E, R, E2, R2, E3, R3, H, R4, R5, R6, E7, R7, E8, R8>(
         DrizzleSiteFiles,
         DrizzleTagStore,
         DrizzleWorkspacePostStore,
+        MdastMarkdownBodies,
         LoggedChannelHealth,
         LoggedOperatorAlerts,
         WorkflowPublicationScheduler,

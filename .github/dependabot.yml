@@ -77,6 +77,14 @@ updates:
       tiptap:
         patterns:
           - "@tiptap/*"
+      # The Markdown reader of a website's body (the server and the command
+      # line): the parser, GitHub's extensions to it and the tree's types,
+      # which one release of the syntax tree moves together.
+      markdown:
+        patterns:
+          - mdast-util-*
+          - micromark-*
+          - "@types/mdast"
       # peal-ui's behaviour (ui-sdk): its packages are released together.
       # It is in beta, and its releases go to the `beta` dist-tag while
       # `latest` lags behind. Dependabot reads `latest` and may not offer
