@@ -672,6 +672,116 @@ describe("the editing endpoint", () => {
   );
 
   it.effect(
+    "edits a website's body from Markdown, and names each problem of one it refuses",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* markdown() {
+          const workspaceId = yield* freshId;
+          const editor = yield* clientAs(yield* freshId, workspaceId, "editor");
+          const wordpress = yield* connect(workspaceId, "wordpress");
+
+          const sent = yield* sentOn(
+            editor,
+            workspaceId,
+            [wordpress],
+            "Live on the site",
+            [
+              {
+                channelId: wordpress,
+                options: { platform: "wordpress", title: "Live" },
+              },
+            ]
+          );
+
+          const [target] = sent.targets;
+
+          assert(target !== undefined);
+
+          const params = { postId: sent.id, targetId: target.id };
+
+          const refused = yield* editor.posts
+            .editTarget({
+              headers: forWorkspace(workspaceId),
+              params,
+              payload: { bodyMarkdown: "Fine\n\n# Title twice" },
+              query: {},
+            })
+            .pipe(Effect.flip);
+
+          assert.instanceOf(refused, PostContentInvalid);
+          assert.deepStrictEqual(
+            refused instanceof PostContentInvalid ? refused.violations : [],
+            [
+              {
+                _tag: "bodyInvalid",
+                channelId: wordpress,
+                problems: [{ column: 1, line: 3, problem: "headingLevel" }],
+              },
+            ]
+          );
+
+          yield* editor.posts.editTarget({
+            headers: forWorkspace(workspaceId),
+            params,
+            payload: { bodyMarkdown: "## Corrected\n\nNow *right*." },
+            query: {},
+          });
+
+          yield* eventually(
+            "the edit is done",
+            editor.posts
+              .changes({
+                headers: forWorkspace(workspaceId),
+                params: { postId: sent.id },
+              })
+              .pipe(
+                Effect.map(({ items }) =>
+                  items.some(({ status }) => status === "done")
+                )
+              )
+          );
+
+          const after = yield* editor.posts.get({
+            headers: forWorkspace(workspaceId),
+            params: { postId: sent.id },
+          });
+
+          assert.deepStrictEqual(after.content.overrides, [
+            {
+              body: {
+                content: [
+                  {
+                    attrs: { level: 2 },
+                    content: [{ text: "Corrected", type: "text" }],
+                    type: "heading",
+                  },
+                  {
+                    content: [
+                      { text: "Now ", type: "text" },
+                      {
+                        marks: [{ type: "italic" }],
+                        text: "right",
+                        type: "text",
+                      },
+                      { text: ".", type: "text" },
+                    ],
+                    type: "paragraph",
+                  },
+                ],
+                type: "doc",
+              },
+              channelId: wordpress,
+              media: [],
+              text: "Corrected\n\nNow right.",
+            },
+          ]);
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
     "finds no target of another post, nor a post of another workspace",
     () =>
       onPostsServerAt(

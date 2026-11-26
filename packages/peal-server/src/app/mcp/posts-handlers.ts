@@ -68,6 +68,7 @@ import { reshuffleView } from "#publishing/api/queue-view.ts";
 import { ruleView } from "#publishing/api/recycling/recycling-view.ts";
 import { tiktokAccountView } from "#publishing/api/tiktok-account-view.ts";
 import { LivePostChanges } from "#publishing/application/live-post-changes.ts";
+import { MarkdownBodies } from "#publishing/application/markdown-bodies.ts";
 import { PostBatches } from "#publishing/application/post-batches.ts";
 import { PostChecks } from "#publishing/application/post-checks.ts";
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
@@ -172,6 +173,7 @@ export const PostToolsLive = PostTools.toLayer(
 
     const actor = CurrentMember.pipe(Effect.map(actorOf));
     const live = yield* LivePostChanges;
+    const markdown = yield* MarkdownBodies;
     const queues = yield* Queues;
     const recycling = yield* Recycling;
 
@@ -416,7 +418,7 @@ export const PostToolsLive = PostTools.toLayer(
           const created = yield* drafts
             .create(yield* actor, {
               channelIds: yield* channelIdsFrom(channelIds),
-              content: yield* contentFrom(content),
+              content: yield* contentFrom(content, markdown),
               options: Option.getOrElse(given, () => []),
               presets: yield* presetsFrom(saved),
               shortenLinks,
@@ -446,6 +448,7 @@ export const PostToolsLive = PostTools.toLayer(
         Effect.gen(function* createPost() {
           const request = yield* sendRequestFrom(
             { ...post, when: yield* timingOf(yield* actor, post.when) },
+            markdown,
             idempotencyKey
           );
 
@@ -504,7 +507,8 @@ export const PostToolsLive = PostTools.toLayer(
             posts.map(({ idempotencyKey: own, ...post }, index) =>
               readPost(
                 { ...post, when: timings[index] ?? { _tag: "queue" } },
-                keyAt(own, idempotencyKey, "bulk", index)
+                keyAt(own, idempotencyKey, "bulk", index),
+                markdown
               )
             )
           );
@@ -613,7 +617,7 @@ export const PostToolsLive = PostTools.toLayer(
           });
 
           // What the tool takes of an edit is the API's.
-          const edit = yield* liveEditFrom(asked);
+          const edit = yield* liveEditFrom(asked, markdown);
 
           const change = yield* live.editTarget(member, id, target, edit).pipe(
             Effect.catchTags({
@@ -1060,7 +1064,7 @@ export const PostToolsLive = PostTools.toLayer(
           const updated = yield* drafts
             .update(yield* actor, id, {
               channelIds: channels,
-              content: yield* contentFrom(content),
+              content: yield* contentFrom(content, markdown),
               options: kept,
               presets: yield* presetsFrom(saved),
               shortenLinks,
@@ -1125,7 +1129,8 @@ export const PostToolsLive = PostTools.toLayer(
           const read = yield* checkRequestFrom(
             when === undefined
               ? post
-              : { ...post, when: yield* timingOf(yield* actor, when) }
+              : { ...post, when: yield* timingOf(yield* actor, when) },
+            markdown
           );
 
           const check = yield* checks.check(yield* actor, read.request).pipe(

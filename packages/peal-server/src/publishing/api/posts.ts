@@ -25,6 +25,7 @@ import type {
 
 import { LivePostChanges } from "#publishing/application/live-post-changes.ts";
 import type { LivePostNotChangeable as LivePostNotChangeableError } from "#publishing/application/live-post-not-changeable.ts";
+import { MarkdownBodies } from "#publishing/application/markdown-bodies.ts";
 import { PostBatches } from "#publishing/application/post-batches.ts";
 import { PostChecks } from "#publishing/application/post-checks.ts";
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
@@ -133,6 +134,7 @@ export const PostsHandlers = HttpApiBuilder.group(
     const tags = yield* PostTags;
     const presets = yield* PostPresets;
     const live = yield* LivePostChanges;
+    const markdown = yield* MarkdownBodies;
     const limitReached = yield* limitRefusal;
 
     const toValidation = validationOf(limitReached);
@@ -161,7 +163,13 @@ export const PostsHandlers = HttpApiBuilder.group(
             payload.posts.map(({ idempotencyKey, ...post }, index) =>
               readPost(
                 post,
-                keyAt(idempotencyKey, headers["idempotency-key"], "bulk", index)
+                keyAt(
+                  idempotencyKey,
+                  headers["idempotency-key"],
+                  "bulk",
+                  index
+                ),
+                markdown
               )
             )
           );
@@ -272,7 +280,7 @@ export const PostsHandlers = HttpApiBuilder.group(
           const postId = yield* postIdFrom(params.postId);
           const targetId = yield* targetIdFrom(params.targetId);
 
-          const edit = yield* liveEditFrom(payload);
+          const edit = yield* liveEditFrom(payload, markdown);
 
           const change = yield* live
             .editTarget(actor, postId, targetId, edit)
@@ -392,7 +400,8 @@ export const PostsHandlers = HttpApiBuilder.group(
                       headers["idempotency-key"],
                       "import",
                       row
-                    )
+                    ),
+                    markdown
                   ).pipe(Effect.asSome),
               })
             )
@@ -683,6 +692,7 @@ export const PostsHandlers = HttpApiBuilder.group(
 
           const request = yield* sendRequestFrom(
             payload,
+            markdown,
             headers["idempotency-key"]
           );
 
@@ -791,7 +801,7 @@ export const PostsHandlers = HttpApiBuilder.group(
           const actor = actorOf(yield* CurrentMember);
           const postId = yield* postIdFrom(params.postId);
           const channelIds = yield* channelIdsFrom(payload.channelIds);
-          const content = yield* contentFrom(payload.content);
+          const content = yield* contentFrom(payload.content, markdown);
           const options = yield* optionsFrom(payload.options ?? []);
           const filed = yield* draftTagsFrom(payload.tagIds);
           const asked = yield* presetsFrom(payload);
@@ -825,7 +835,7 @@ export const PostsHandlers = HttpApiBuilder.group(
       validate: ({ payload }) =>
         Effect.gen(function* validate() {
           const actor = actorOf(yield* CurrentMember);
-          const read = yield* checkRequestFrom(payload);
+          const read = yield* checkRequestFrom(payload, markdown);
 
           const check = yield* checks.check(actor, read.request).pipe(
             Effect.catchTags({

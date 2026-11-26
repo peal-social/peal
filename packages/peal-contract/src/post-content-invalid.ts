@@ -1,5 +1,6 @@
 import { Schema } from "effect";
 
+import { BodyProblemSchema, maxBodyProblems } from "./body-problem.ts";
 import { errorEnvelope } from "./error-envelope.ts";
 import { ByteCountSchema } from "./int64.ts";
 import { MediaContentTypeSchema } from "./media.ts";
@@ -188,11 +189,15 @@ export const ContentViolationSchema = Schema.Union([
     maximum: Schema.Int,
   }),
   // The override's `body` on the channel does not decode as a rich text:
-  // a node or a mark Peal does not take, or past its bounds.
+  // a node or a mark Peal does not take, or past its bounds. Sent as
+  // `bodyMarkdown`, `problems` says what Peal does not take and where.
   Schema.TaggedStruct("bodyInvalid", {
     channelId: Schema.String,
     part: Schema.optionalKey(
       Schema.Int.check(Schema.isGreaterThanOrEqualTo(1))
+    ),
+    problems: Schema.optionalKey(
+      Schema.Array(BodyProblemSchema).check(Schema.isMaxLength(maxBodyProblems))
     ),
   }),
   // The override gives a `body` on a channel that takes none: only a

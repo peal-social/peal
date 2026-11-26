@@ -1420,6 +1420,14 @@ export type {
 export { LivePostNotChangeable } from "./live-post-not-changeable.ts";
 
 export {
+  BodyProblemKindSchema,
+  BodyProblemSchema,
+  maxBodyProblems,
+} from "./body-problem.ts";
+
+export type { BodyProblem, BodyProblemKind } from "./body-problem.ts";
+
+export {
   ContentViolationSchema,
   PostContentInvalid,
 } from "./post-content-invalid.ts";

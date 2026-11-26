@@ -9,6 +9,7 @@ import {
   Semaphore,
 } from "effect";
 
+import type { BodyProblem } from "#publishing/domain/body-problem.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import type { ChannelOnPlatform } from "#publishing/domain/content-rules.ts";
 import type { ContentViolation } from "#publishing/domain/content-violation.ts";
@@ -88,6 +89,8 @@ export const invalidBody = "invalidBody";
  */
 export interface TextEditRequest {
   readonly body?: ArticleBody | typeof invalidBody;
+  /** Why a body sent as Markdown is `invalidBody`, with their places. */
+  readonly bodyProblems?: readonly BodyProblem[];
   readonly options?: TargetOptions;
   readonly part: number;
   readonly text?: string;
@@ -107,12 +110,16 @@ const rejected = (violations: readonly ContentViolation[]) => {
 const bodyViolation = (
   tag: "bodyInvalid" | "bodyNotTaken",
   channel: ChannelOnPlatform,
-  part: number
+  part: number,
+  problems?: readonly BodyProblem[]
 ): ContentViolation => {
   if (tag === "bodyInvalid") {
-    return part === 0
-      ? { _tag: tag, channelId: channel.channelId }
-      : { _tag: tag, channelId: channel.channelId, part };
+    const at =
+      part === 0
+        ? { _tag: tag, channelId: channel.channelId }
+        : { _tag: tag, channelId: channel.channelId, part };
+
+    return problems === undefined ? at : { ...at, problems };
   }
 
   const named = { channelId: channel.channelId, platform: channel.platform };
@@ -491,7 +498,14 @@ export class LivePostChanges extends Context.Service<
           };
 
           if (edit.body === invalidBody) {
-            yield* rejected([bodyViolation("bodyInvalid", channel, edit.part)]);
+            yield* rejected([
+              bodyViolation(
+                "bodyInvalid",
+                channel,
+                edit.part,
+                edit.bodyProblems
+              ),
+            ]);
           }
 
           const asked = isSitePlatform(platform.value)

@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { maxPostTextLength } from "./post-text.ts";
+import { maxBodyMarkdownLength, maxPostTextLength } from "./post-text.ts";
 import { RichTextSchema } from "./rich-text.ts";
 import { TargetOptionsSchema } from "./target-options.ts";
 
@@ -118,14 +118,25 @@ export type PostUnpublish = typeof PostUnpublishSchema.Type;
  * `text` for the part at `part` (from 0, the post itself, which it is when
  * left out), and only the text changes. On a website: its text there
  * (`text`, which replaces a rich text with plain paragraphs: send `body`
- * to keep its formatting, or a rich text, `body`) and its options
- * (`options`, its platform's, whole: an option left out of them is left
- * out on the site, but for `siteStatus`, which is the target's), each kept
- * as it is when left out; its site status and its date never change. One
- * of `text`, `body` or `options` at least.
+ * to keep its formatting, or a rich text, `body`, or the same as
+ * Markdown, `bodyMarkdown`, read as `TextOverride.bodyMarkdown` is) and
+ * its options (`options`, its platform's, whole: an option left out of
+ * them is left out on the site, but for `siteStatus`, which is the
+ * target's), each kept as it is when left out; its site status and its
+ * date never change. One of `text`, `body`, `bodyMarkdown` or `options`
+ * at least, and not both `body` and `bodyMarkdown`.
  */
 export const LivePostEditSchema = Schema.Struct({
   body: Schema.optionalKey(RichTextSchema),
+  bodyMarkdown: Schema.optionalKey(
+    Schema.String.check(
+      Schema.isMaxLength(maxBodyMarkdownLength),
+      Schema.makeFilter(
+        (text: string) => !text.includes("\u0000") && text.isWellFormed(),
+        { expected: "text without NUL characters or unpaired surrogates" }
+      )
+    )
+  ),
   options: Schema.optionalKey(TargetOptionsSchema),
   part: Schema.optionalKey(Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))),
   text: Schema.optionalKey(
@@ -139,14 +150,30 @@ export const LivePostEditSchema = Schema.Struct({
     Schema.makeFilter(
       ({
         body,
+        bodyMarkdown,
         options,
         text,
       }: {
         readonly body?: unknown;
+        readonly bodyMarkdown?: string;
         readonly options?: unknown;
         readonly text?: string;
-      }) => body !== undefined || options !== undefined || text !== undefined,
+      }) =>
+        body !== undefined ||
+        bodyMarkdown !== undefined ||
+        options !== undefined ||
+        text !== undefined,
       { expected: "a text, a body or options" }
+    ),
+    Schema.makeFilter(
+      ({
+        body,
+        bodyMarkdown,
+      }: {
+        readonly body?: unknown;
+        readonly bodyMarkdown?: string;
+      }) => body === undefined || bodyMarkdown === undefined,
+      { expected: "a body or a body as Markdown, not both" }
     )
   )
   .annotate({ identifier: "LivePostEdit" });

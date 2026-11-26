@@ -2,6 +2,7 @@ import { Effect, Option } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/http-api";
 import { Api, CurrentMember, defaultDraftPageSize } from "peal-contract";
 
+import { MarkdownBodies } from "#publishing/application/markdown-bodies.ts";
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
 import { PostQueries } from "#publishing/application/post-queries.ts";
 import { actorOf } from "#shared/api/actor.ts";
@@ -35,13 +36,14 @@ export const PostDraftsHandlers = HttpApiBuilder.group(
   Effect.fn(function* postDraftsHandlers(handlers) {
     const drafts = yield* PostDrafts;
     const queries = yield* PostQueries;
+    const markdown = yield* MarkdownBodies;
 
     return handlers.handleAll({
       create: ({ payload }) =>
         Effect.gen(function* create() {
           const actor = actorOf(yield* CurrentMember);
           const channelIds = yield* channelIdsFrom(payload.channelIds);
-          const content = yield* contentFrom(payload.content);
+          const content = yield* contentFrom(payload.content, markdown);
           const options = yield* optionsFrom(payload.options ?? []);
           const filed = yield* draftTagsFrom(payload.tagIds);
           const asked = yield* presetsFrom(payload);

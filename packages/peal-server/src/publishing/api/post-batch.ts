@@ -5,6 +5,7 @@ import type {
   PostRefusal,
 } from "peal-contract";
 
+import type { MarkdownReader } from "#publishing/application/markdown-bodies.ts";
 import type { PostBatches } from "#publishing/application/post-batches.ts";
 import type {
   SendPostRequest,
@@ -43,9 +44,10 @@ export type ReadPost = Result.Result<SendPostRequest, PostRefusal>;
 /** A post as the contract writes one, with its key, read on its own. */
 export const readPost = (
   input: NewPostInput,
-  key: string | undefined
+  key: string | undefined,
+  markdown: MarkdownReader
 ): Effect.Effect<ReadPost> =>
-  sendRequestFrom(input, key).pipe(
+  sendRequestFrom(input, markdown, key).pipe(
     Effect.match({
       onFailure: (refusal): ReadPost => Result.fail(refusal),
       onSuccess: (request): ReadPost => Result.succeed(request),

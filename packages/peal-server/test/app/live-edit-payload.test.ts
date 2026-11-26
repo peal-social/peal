@@ -65,7 +65,12 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const owner = yield* signedUp("live-edit-payload");
         const workspaceId = yield* workspaceOf(owner, "Live edits");
 
-        for (const payload of ["{}", '{"part":0}']) {
+        // A rich text and the same as Markdown at once is no one edit.
+        for (const payload of [
+          "{}",
+          '{"part":0}',
+          '{"body":{"content":[],"type":"doc"},"bodyMarkdown":"Both"}',
+        ]) {
           assert.deepStrictEqual(
             yield* editWith(payload, owner.cookies, workspaceId),
             {

@@ -31,6 +31,12 @@ export const maxMediaPerPost = 20;
  */
 export const maxOverrideMedia = 100;
 
+/**
+ * The most characters a website's body sent as Markdown holds
+ * (`TextOverride.bodyMarkdown`).
+ */
+export const maxBodyMarkdownLength = 400_000;
+
 /** The most parts that follow a post's first: 25 parts in all. */
 export const maxFollowUps = 24;
 

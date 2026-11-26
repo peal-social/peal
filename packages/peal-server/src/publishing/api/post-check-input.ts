@@ -1,7 +1,9 @@
 import { Effect, Option, Schema } from "effect";
 import type { PostToValidate as CheckInput } from "peal-contract";
 
+import type { MarkdownReader } from "#publishing/application/markdown-bodies.ts";
 import type { CheckPostRequest } from "#publishing/application/post-checks.ts";
+import type { BodyProblem } from "#publishing/domain/body-problem.ts";
 import { ChannelOptionsListSchema } from "#publishing/domain/channel-options.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
 import { ChannelIdSchema, MediaAssetIdSchema } from "#shared/domain/ids.ts";
@@ -9,11 +11,13 @@ import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 import {
   invalidBodiesOf,
+  markdownRead,
   placementFrom,
   presetsFrom,
   withRichOverrides,
   zoneOf,
 } from "./post-input.ts";
+import type { InvalidBody } from "./post-input.ts";
 
 // A post to check names channels and media as strings. An id that is not
 // even of the right form names nothing here: it is answered with the
@@ -44,10 +48,7 @@ export interface CheckInputRead {
    * The overrides whose rich text does not decode, left out of the rest
    * of the check (their text kept): `bodyInvalid` violations.
    */
-  readonly invalidBodies: readonly {
-    readonly channelId: string;
-    readonly part?: number;
-  }[];
+  readonly invalidBodies: readonly InvalidBody[];
   readonly malformedChannels: readonly string[];
   readonly malformedMedia: readonly string[];
   readonly request: CheckPostRequest;
@@ -56,10 +57,11 @@ export interface CheckInputRead {
 }
 
 /** The post to check, with its ids decoded. */
-export const checkRequestFrom = (input: CheckInput) =>
+export const checkRequestFrom = (input: CheckInput, markdown: MarkdownReader) =>
   Effect.gen(function* decodingCheck() {
-    const { content, options = [], when } = input;
+    const { options = [], when } = input;
     const presets = yield* presetsFrom(input);
+    const content = markdownRead(input.content, markdown);
 
     // The post's parts, its first and those that follow, read alike.
     const parts = [content, ...(content.followUps ?? [])];
@@ -79,6 +81,7 @@ export const checkRequestFrom = (input: CheckInput) =>
         readonly media: readonly { readonly mediaId: string }[];
         readonly overrides: readonly {
           readonly body?: unknown;
+          readonly bodyProblems?: readonly BodyProblem[];
           readonly channelId: string;
           readonly media?: readonly { readonly mediaId: string }[];
           readonly text: string;
@@ -94,20 +97,19 @@ export const checkRequestFrom = (input: CheckInput) =>
           return [];
         }
 
-        // A rich text that does not decode is said apart (`bodyInvalid`),
-        // and the override checked on its text alone, or left out of the
-        // check when it has no text beside the body.
-        const { body, ...rest } = override;
+        // A rich text that does not decode, or Markdown that does not read
+        // as one, is said apart (`bodyInvalid`), and the override checked
+        // on its text alone, or left out of the check when it has no text
+        // beside the body.
+        const { body: _body, bodyProblems: _problems, ...rest } = override;
 
-        const invalid =
-          body !== undefined &&
-          invalidBodiesOf([{ overrides: [override] }]).length > 0;
+        const invalid = invalidBodiesOf([{ overrides: [override] }]).length > 0;
 
         if (invalid && rest.text === "") {
           return [];
         }
 
-        const read = body === undefined || invalid ? rest : override;
+        const read = invalid ? rest : override;
 
         return read.media === undefined
           ? [read]

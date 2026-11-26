@@ -22,6 +22,7 @@ import { PostSearch } from "#publishing/application/post-search.ts";
 import { Queues } from "#publishing/application/queues.ts";
 import { Recycling } from "#publishing/application/recycling/recycling.ts";
 import { TikTokCreatorInfo } from "#publishing/application/tiktok-creator-info.ts";
+import { MdastMarkdownBodies } from "#publishing/infrastructure/markdown/mdast-markdown-bodies.ts";
 import { UpgradePaths } from "#shared/application/upgrade-paths.ts";
 import { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
@@ -216,6 +217,7 @@ describe("a plan's refusal, through the tools", () => {
                 Layer.mock(PostDrafts, {}),
                 Layer.mock(PostFollowUp, {}),
                 Layer.mock(LivePostChanges, {}),
+                MdastMarkdownBodies,
                 Layer.mock(PostOutcomes, {}),
                 Layer.mock(PostQueries, {}),
                 Layer.mock(PostSearch, {}),

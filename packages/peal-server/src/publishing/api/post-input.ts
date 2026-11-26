@@ -1,5 +1,5 @@
 import type { DateTime, Types } from "effect";
-import { Array as Arr, Effect, Option, Schema } from "effect";
+import { Array as Arr, Effect, Option, Result, Schema } from "effect";
 import {
   InvalidTimeZone,
   PostContentInvalid,
@@ -22,9 +22,11 @@ import type {
 import type { KeyedRequest } from "#publishing/application/idempotency-keys.ts";
 import { invalidBody } from "#publishing/application/live-post-changes.ts";
 import type { TextEditRequest } from "#publishing/application/live-post-changes.ts";
+import type { MarkdownReader } from "#publishing/application/markdown-bodies.ts";
 import type { Placement } from "#publishing/application/placement.ts";
 import type { PresetAsk } from "#publishing/application/post-presets.ts";
 import type { SendPostRequest } from "#publishing/application/post-scheduling.ts";
+import type { BodyProblem } from "#publishing/domain/body-problem.ts";
 import { ChannelOptionsListSchema } from "#publishing/domain/channel-options.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
 import { PostPart } from "#publishing/domain/post-part.ts";
@@ -97,23 +99,41 @@ const isNested = Schema.is(NestedWithinSchema);
 
 const decodeBody = Schema.decodeUnknownOption(ArticleBodySchema);
 
-/** A part's overrides as a request may give them, a body on some. */
+/**
+ * A part's overrides as a request may give them, a body on some, and the
+ * problems of a body sent as Markdown that could not be read as one.
+ */
 interface PartInput {
   readonly overrides: readonly {
     readonly body?: unknown;
+    readonly bodyProblems?: readonly BodyProblem[];
     readonly channelId: string;
   }[];
 }
 
+/** Where a body is refused, and why when it was sent as Markdown. */
+export interface InvalidBody {
+  readonly channelId: string;
+  readonly part?: number;
+  readonly problems?: readonly BodyProblem[];
+}
+
 /**
- * Where a request's overrides give a rich text that does not decode:
- * `bodyInvalid`, by channel and part (from 1 after the first).
+ * Where a request's overrides give a rich text that does not decode, or
+ * Markdown that does not read as one: `bodyInvalid`, by channel and part
+ * (from 1 after the first), with the Markdown's problems.
  */
 export const invalidBodiesOf = (
   parts: readonly PartInput[]
-): readonly { readonly channelId: string; readonly part?: number }[] =>
+): readonly InvalidBody[] =>
   parts.flatMap(({ overrides }, index) =>
-    overrides.flatMap(({ body, channelId }) => {
+    overrides.flatMap(({ body, bodyProblems, channelId }): InvalidBody[] => {
+      const at = index === 0 ? { channelId } : { channelId, part: index };
+
+      if (bodyProblems !== undefined) {
+        return [{ ...at, problems: bodyProblems }];
+      }
+
       const decoded = isNested(body) ? decodeBody(body) : Option.none();
 
       if (
@@ -126,9 +146,73 @@ export const invalidBodiesOf = (
         return [];
       }
 
-      return [index === 0 ? { channelId } : { channelId, part: index }];
+      return [at];
     })
   );
+
+type OverrideInput = ContentInput["overrides"][number];
+
+/**
+ * An override as read: a body sent as Markdown made its `body`, or the
+ * problems that kept it from being one, which `invalidBodiesOf` says.
+ */
+export interface OverrideRead extends Omit<OverrideInput, "bodyMarkdown"> {
+  readonly bodyProblems?: readonly BodyProblem[];
+}
+
+type PartOf = NonNullable<ContentInput["followUps"]>[number];
+
+/** A request's content with each body sent as Markdown read. */
+export interface ContentRead extends Omit<
+  ContentInput,
+  "followUps" | "overrides"
+> {
+  readonly followUps?: readonly (Omit<PartOf, "overrides"> & {
+    readonly overrides: readonly OverrideRead[];
+  })[];
+  readonly overrides: readonly OverrideRead[];
+}
+
+const overridesRead = (
+  overrides: readonly OverrideInput[],
+  markdown: MarkdownReader
+): readonly OverrideRead[] =>
+  overrides.map(({ bodyMarkdown, ...override }): OverrideRead => {
+    if (bodyMarkdown === undefined) {
+      return override;
+    }
+
+    return Result.match(markdown.read(bodyMarkdown), {
+      onFailure: (bodyProblems) => ({ ...override, bodyProblems }),
+      onSuccess: (body) => ({ ...override, body }),
+    });
+  });
+
+/**
+ * The content with each override's body sent as Markdown read into its
+ * rich text (`MarkdownBodies`), the one form Peal keeps, or its problems
+ * kept for `invalidBodiesOf`: the Markdown itself goes no further.
+ */
+export const markdownRead = (
+  input: ContentInput,
+  markdown: MarkdownReader
+): ContentRead => {
+  const { followUps, ...first } = input;
+  const overrides = overridesRead(input.overrides, markdown);
+
+  if (followUps === undefined) {
+    return { ...first, overrides };
+  }
+
+  return {
+    ...first,
+    followUps: followUps.map((part) => ({
+      ...part,
+      overrides: overridesRead(part.overrides, markdown),
+    })),
+    overrides,
+  };
+};
 
 // Each override that has a body made again from it alone, its text and
 // media the body's, as every write of a body is (`richOverride`).
@@ -163,12 +247,14 @@ export const withRichOverrides = (content: PostContent): PostContent =>
   });
 
 /**
- * The post's content, with the ids of every part decoded, and the rich
- * texts of its overrides checked against the allow-list (PostContentInvalid
- * `bodyInvalid`), then made into their overrides.
+ * The post's content, with the ids of every part decoded, the bodies sent
+ * as Markdown read, and the rich texts of its overrides checked against
+ * the allow-list (PostContentInvalid `bodyInvalid`), then made into their
+ * overrides.
  */
-export const contentFrom = (input: ContentInput) =>
+export const contentFrom = (asked: ContentInput, markdown: MarkdownReader) =>
   Effect.gen(function* decodingContent() {
+    const input = markdownRead(asked, markdown);
     const parts = [input, ...(input.followUps ?? [])];
 
     // Each part's media, and those its overrides give some channels.
@@ -204,12 +290,12 @@ export const contentFrom = (input: ContentInput) =>
 const decodeTargetOptions = Schema.decodeUnknownEffect(TargetOptionsSchema);
 
 /**
- * An edit of a live post as a request gives it: its rich text checked
- * against the allow-list as a post's are (`invalidBody` where it does not
- * decode, which the use case names on the target's channel), its options
- * decoded.
+ * An edit of a live post as a request gives it: its rich text, or the
+ * Markdown read into one, checked against the allow-list as a post's are
+ * (`invalidBody` where it does not decode, with the Markdown's problems,
+ * which the use case names on the target's channel), its options decoded.
  */
-export const liveEditFrom = (input: LivePostEdit) =>
+export const liveEditFrom = (input: LivePostEdit, markdown: MarkdownReader) =>
   Effect.gen(function* decodingEdit() {
     const edit: Types.Mutable<TextEditRequest> = { part: input.part ?? 0 };
 
@@ -221,6 +307,18 @@ export const liveEditFrom = (input: LivePostEdit) =>
       edit.options = yield* decodeTargetOptions(input.options).pipe(
         Effect.orDie
       );
+    }
+
+    if (input.bodyMarkdown !== undefined) {
+      Result.match(markdown.read(input.bodyMarkdown), {
+        onFailure: (problems) => {
+          edit.body = invalidBody;
+          edit.bodyProblems = problems;
+        },
+        onSuccess: (body) => {
+          edit.body = body;
+        },
+      });
     }
 
     if (input.body !== undefined) {
@@ -410,7 +508,11 @@ const keyedFrom = (input: NewPostInput, key: string | undefined) =>
  * and the idempotency key its request came with, if any. A `now` without
  * a zone is in UTC.
  */
-export const sendRequestFrom = (input: NewPostInput, key?: string) =>
+export const sendRequestFrom = (
+  input: NewPostInput,
+  markdown: MarkdownReader,
+  key?: string
+) =>
   Effect.gen(function* decodingNewPost() {
     const channelIds = yield* channelIdsFrom(input.channelIds);
     const presets = yield* presetsFrom(input);
@@ -436,7 +538,7 @@ export const sendRequestFrom = (input: NewPostInput, key?: string) =>
     const request: SendPostRequest = {
       allowDuplicate: input.allowDuplicate ?? false,
       channelIds,
-      content: yield* contentFrom(input.content),
+      content: yield* contentFrom(input.content, markdown),
       idempotency: yield* keyedFrom(input, key),
       options: yield* optionsFrom(input.options ?? []),
       placement: yield* placementFrom(when),

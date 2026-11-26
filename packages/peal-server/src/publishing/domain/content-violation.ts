@@ -3,6 +3,7 @@ import { Schema } from "effect";
 import { ChannelIdSchema, MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import { PlatformSchema } from "#shared/domain/platform.ts";
 
+import { BodyProblemSchema, maxBodyProblems } from "./body-problem.ts";
 import { MediaContentTypeSchema } from "./media-file.ts";
 import { TextUnitSchema } from "./text-length.ts";
 
@@ -191,11 +192,15 @@ export const ContentViolationSchema = Schema.Union([
     maximum: Schema.Int,
   }),
   // The channel's own text is a rich text (`body`) that does not decode:
-  // a node or a mark off the allow-list, or past its bounds.
+  // a node or a mark off the allow-list, or past its bounds. Sent as
+  // Markdown, `problems` says what was not taken and where.
   Schema.TaggedStruct("bodyInvalid", {
     channelId: ChannelIdSchema,
     part: Schema.optionalKey(
       Schema.Int.check(Schema.isGreaterThanOrEqualTo(1))
+    ),
+    problems: Schema.optionalKey(
+      Schema.Array(BodyProblemSchema).check(Schema.isMaxLength(maxBodyProblems))
     ),
   }),
   // The channel's own text is a rich text, which only a website's first
