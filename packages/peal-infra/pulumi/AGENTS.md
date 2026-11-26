@@ -53,6 +53,11 @@ credentials and how to adopt what exists.
   (`clientErrorsPath`, which that test reads), and so have the pictures
   emails show, which mail services fetch: `access-email-assets`, on
   `/api/email-assets` alone (`emailAssetsPath`, which it reads too).
+- Access signs people in with Google (made in the dashboard) or the
+  one-time PIN, an emailed code (`access-one-time-pin`, the account's
+  stack), for scripted recordings, as Google refuses automated browsers.
+  A provider lets no one in by itself: the policies do, the owner's
+  address alone. Keep applications without `allowedIdps`, or name both.
 - Production is public but for its admin, Grafana and SSH: no Access
   application covers its app, site, docs or short links. Its admin
   application's paths (`adminPaths`) are the Ansible project's
