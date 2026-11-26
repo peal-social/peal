@@ -1,6 +1,7 @@
 import { Context } from "effect";
 import type { DateTime, Effect, Option } from "effect";
 
+import type { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
 import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import type { PostStatusName } from "#publishing/domain/post-status.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
@@ -24,6 +25,8 @@ import type { ExecutionId } from "./publication-scheduler.ts";
 export interface StoredPost {
   readonly execution: Option.Option<ExecutionId>;
   readonly post: Post;
+  /** When what the post's answer shows last changed, as the row read says. */
+  readonly updatedAt: DateTime.Utc;
 }
 
 /** A post and its targets, oldest target first. */
@@ -79,7 +82,7 @@ export class PostRepository extends Context.Service<
     readonly insert: (
       post: Post,
       targets: readonly PostTarget[]
-    ) => Effect.Effect<void, DatabaseError>;
+    ) => Effect.Effect<void, DatabaseError | PostExternalIdTaken>;
     /**
      * Holds back, until the transaction it runs in ends, any other
      * transaction that claims the same external id in the workspace, then
@@ -106,14 +109,16 @@ export class PostRepository extends Context.Service<
     readonly setExternalId: (
       postId: PostId,
       externalId: Option.Option<PostExternalId>
-    ) => Effect.Effect<void, DatabaseError>;
+    ) => Effect.Effect<void, DatabaseError | PostExternalIdTaken>;
     /**
-     * When what each post's answer shows last changed, for those that are
-     * still stored.
+     * The posts as they are stored now, with their targets and when they
+     * last changed, for those that are still stored. Each post's row is
+     * read before its targets, so its `updatedAt` is never newer than the
+     * targets beside it.
      */
-    readonly freshness: (
+    readonly current: (
       postIds: readonly PostId[]
-    ) => Effect.Effect<ReadonlyMap<PostId, DateTime.Utc>, DatabaseError>;
+    ) => Effect.Effect<ReadonlyMap<PostId, FreshPost>, DatabaseError>;
     readonly find: (
       postId: PostId
     ) => Effect.Effect<Option.Option<StoredPost>, DatabaseError>;

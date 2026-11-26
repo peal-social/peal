@@ -350,7 +350,7 @@ export const PostsHandlers = HttpApiBuilder.group(
             })
           );
 
-          return yield* views.one(found);
+          return postView(found);
         }),
       import: ({ headers, payload }) =>
         Effect.gen(function* importPosts() {

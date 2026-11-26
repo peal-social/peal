@@ -656,7 +656,7 @@ export const PostToolsLive = PostTools.toLayer(
               })
             );
 
-          return yield* views.one(found);
+          return postView(found);
         }).pipe(Effect.catchTags(malformedPost)),
       get_tiktok_creator: ({ channelId }) =>
         actor.pipe(

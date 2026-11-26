@@ -6,12 +6,13 @@ import { PostRepository } from "./post-repository.ts";
 import type { FreshPost, PostWithTargets } from "./post-repository.ts";
 
 /**
- * When what a post's answer shows last changed, for the answer of a write:
- * a use case answers the post from the entities it holds, which do not
- * know the instant its statements just wrote (`posts.updated_at`, moved
- * by the database). One read of the rows gives it, at the boundary, after
- * the write; a post gone meanwhile takes the current instant, as it changed
- * then.
+ * The answer of a write, as the post now stands: a use case holds the
+ * entities it wrote, which do not know the instant its statements gave
+ * `posts.updated_at`. Once it committed, one read takes the post's row,
+ * then its targets, so the answer's `updatedAt` is never newer than the
+ * state it shows beside it, and that state is at least the write's. What
+ * the write tells beside the post (a request's warnings, a replay) stays.
+ * A post gone meanwhile keeps what the write held, at the current instant.
  */
 export class PostFreshness extends Context.Service<
   PostFreshness,
@@ -31,16 +32,24 @@ export class PostFreshness extends Context.Service<
 
       const stampAll = <A extends PostWithTargets>(posts: readonly A[]) =>
         Effect.gen(function* stamping() {
-          const known = yield* repository.freshness(
+          const known = yield* repository.current(
             posts.map(({ post }) => post.id)
           );
 
           const now = yield* DateTime.now;
 
-          return posts.map((found): A & FreshPost => ({
-            ...found,
-            updatedAt: known.get(found.post.id) ?? now,
-          }));
+          return posts.map((written): A & FreshPost => {
+            const stored = known.get(written.post.id);
+
+            return stored === undefined
+              ? { ...written, updatedAt: now }
+              : {
+                  ...written,
+                  post: stored.post,
+                  targets: stored.targets,
+                  updatedAt: stored.updatedAt,
+                };
+          });
         });
 
       return PostFreshness.of({

@@ -3,10 +3,14 @@ import path from "node:path";
 
 import { assert, describe, it, layer } from "@effect/vitest";
 import { DateTime, Effect, Layer, Option } from "effect";
+import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
 import { PostRepository } from "#publishing/application/post-repository.ts";
 import { ExecutionIdSchema } from "#publishing/application/publication-scheduler.ts";
+import { QueueStore } from "#publishing/application/queue-store.ts";
+import { TagStore } from "#publishing/application/tag-store.ts";
+import { WorkspacePostStore } from "#publishing/application/workspace-post-store.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
 import { PostExternalIdSchema } from "#publishing/domain/post-external-id.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
@@ -16,9 +20,18 @@ import {
   editDraft,
   withExternalId,
 } from "#publishing/domain/post.ts";
+import { QueueIdSchema } from "#publishing/domain/queue-id.ts";
+import { TagIdSchema } from "#publishing/domain/tag-id.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
+import { DrizzleQueueStore } from "#publishing/infrastructure/drizzle-queue-store.ts";
+import { DrizzleTagStore } from "#publishing/infrastructure/drizzle-tag-store.ts";
+import { DrizzleWorkspacePostStore } from "#publishing/infrastructure/drizzle-workspace-post-store.ts";
 import { newId } from "#shared/application/ids.ts";
-import { ChannelIdSchema, PostIdSchema } from "#shared/domain/ids.ts";
+import {
+  ChannelIdSchema,
+  PostIdSchema,
+  UserIdSchema,
+} from "#shared/domain/ids.ts";
 import type { PostId } from "#shared/domain/ids.ts";
 import { DatabaseTest, freshWorkspace } from "#test/channels/support.ts";
 
@@ -26,9 +39,25 @@ import { DatabaseTest, freshWorkspace } from "#test/channels/support.ts";
 // writes a column a post's answer shows, its targets' included, moves it
 // forward, never back; those that write what no answer shows leave it.
 
-const StorageTest = DrizzlePostRepository.pipe(
-  Layer.provideMerge(DatabaseTest)
-);
+const StorageTest = Layer.mergeAll(
+  DrizzlePostRepository,
+  DrizzleQueueStore,
+  DrizzleTagStore,
+  DrizzleWorkspacePostStore
+).pipe(Layer.provideMerge(DatabaseTest));
+
+// A column of the post written by hand, as an earlier write would have.
+const writeRow = (postId: PostId, column: string, value: string) =>
+  SqlClient.SqlClient.use(
+    (sql) =>
+      sql`UPDATE publishing.posts SET ${sql(column)} = ${value} WHERE id = ${postId}`
+  ).pipe(Effect.orDie);
+
+const publishTargetByHand = (postId: PostId) =>
+  SqlClient.SqlClient.use(
+    (sql) =>
+      sql`UPDATE publishing.post_targets SET status = 'published', finished_at = '1970-01-01T00:00:01Z', platform_post_id = 'synthetic-1' WHERE post_id = ${postId}`
+  ).pipe(Effect.orDie);
 
 const source = path.join(import.meta.dirname, "..", "..", "..", "src");
 
@@ -142,16 +171,49 @@ describe("the statements that write posts", () => {
   });
 });
 
+// Writing a target moves its post's row, so whoever locks a target has
+// locked its post first, as every use case does: one that locked the
+// target alone would wait on the post a cancel holds while the cancel waits
+// on the target. A `lockTarget` must come after `.lock(` or
+// `lockInWorkspace(` in the function that holds it.
+describe("the use cases that lock a target", () => {
+  it("lock its post first", async () => {
+    const folder = path.join(source, "publishing", "application");
+    const files = await filesUnder(folder);
+
+    const texts = await Promise.all(
+      files.map(async (file) => await readFile(file, "utf-8"))
+    );
+
+    const alone: string[] = [];
+
+    for (const [index, file] of files.entries()) {
+      const text = texts[index] ?? "";
+
+      for (const match of text.matchAll(/lockTarget\(/gu)) {
+        const before = text.slice(0, match.index);
+        const scope = before.slice(before.lastIndexOf("function*"));
+
+        if (!/\.lock\(|lockInWorkspace\(/u.test(scope)) {
+          alone.push(`${path.relative(source, file)}:${String(match.index)}`);
+        }
+      }
+    }
+
+    assert.deepStrictEqual(alone, []);
+  });
+});
+
 const at = (instant: string) => DateTime.makeUnsafe(instant);
 
 const content = (text: string) =>
   new PostContent({ media: [], overrides: [], text });
 
 const updatedAtOf = (postId: PostId) =>
-  PostRepository.use((posts) => posts.freshness([postId])).pipe(
+  PostRepository.use((posts) => posts.current([postId])).pipe(
     Effect.map((known) =>
       Option.fromUndefinedOr(known.get(postId)).pipe(
-        Option.map(DateTime.formatIso),
+        Option.map(({ updatedAt }) => DateTime.formatIso(updatedAt)),
         Option.getOrElse(() => "gone")
       )
     )
@@ -238,14 +300,14 @@ layer(StorageTest)("a post's updated_at", (storage) => {
         seen.push(yield* updatedAtOf(postId));
       }
 
-      assert.deepStrictEqual(seen, [
-        "1970-01-01T00:02:00.000Z",
-        "1970-01-01T00:02:00.001Z",
-        "1970-01-01T00:02:00.002Z",
-        "1970-01-01T00:02:00.003Z",
-        "1970-01-01T00:02:00.004Z",
-        "1970-01-01T00:02:00.005Z",
-      ]);
+      // From the write's instant (plus what each statement spent before
+      // it wrote, a few milliseconds at most), each a millisecond past the
+      // one before at least, though the clock stood still.
+      assert.isTrue(
+        seen.every((each) => each.startsWith("1970-01-01T00:02:00."))
+      );
+      assert.deepStrictEqual(seen, [...seen].toSorted());
+      assert.strictEqual(new Set(seen).size, seen.length);
 
       // A write whose clock is behind the row still moves it forward.
       yield* TestClock.setTime(
@@ -253,13 +315,115 @@ layer(StorageTest)("a post's updated_at", (storage) => {
       );
       yield* posts.setTags(postId, []);
 
-      assert.strictEqual(
-        yield* updatedAtOf(postId),
-        "1970-01-01T00:02:00.006Z"
-      );
+      const behind = yield* updatedAtOf(postId);
+
+      assert.isTrue(behind > (seen.at(-1) ?? ""));
 
       yield* posts.remove(postId);
     })
+  );
+
+  storage.effect(
+    "moves with a live target's edit and removal, a queue or a tag deleted, and an author cleared",
+    () =>
+      Effect.gen(function* storeWrites() {
+        const posts = yield* PostRepository;
+
+        const { post, postId, target } = yield* draftAt(
+          "1970-01-01T00:04:00.000Z"
+        );
+
+        const queueId = yield* newId(QueueIdSchema);
+        const tagId = yield* newId(TagIdSchema);
+
+        const userId = UserIdSchema.make(
+          "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f"
+        );
+
+        yield* publishTargetByHand(postId);
+        yield* writeRow(postId, "queue_id", queueId);
+        yield* writeRow(postId, "author_id", userId);
+        yield* SqlClient.SqlClient.use(
+          (sql) =>
+            sql`UPDATE publishing.posts SET tag_ids = ARRAY[${tagId}]::uuid[] WHERE id = ${postId}`
+        ).pipe(Effect.orDie);
+
+        const steps = [
+          posts.markEdited(target.id, at("1970-01-01T00:04:01.000Z")),
+          posts.markRemoved(target.id, at("1970-01-01T00:04:01.000Z")),
+          QueueStore.use((queues) => queues.remove(post.workspaceId, queueId)),
+          TagStore.use((tags) => tags.remove(post.workspaceId, tagId)),
+          WorkspacePostStore.use((store) => store.clearAuthor(userId)),
+        ];
+
+        let before = yield* updatedAtOf(postId);
+
+        for (const step of steps) {
+          yield* step;
+
+          const after = yield* updatedAtOf(postId);
+
+          assert.isTrue(after > before, `${before} then ${after}`);
+          before = after;
+        }
+
+        yield* posts.remove(postId);
+      })
+  );
+
+  storage.effect(
+    "gives an external id claimed by two transactions at once to one post",
+    () =>
+      Effect.gen(function* together() {
+        const posts = yield* PostRepository;
+        const sql = yield* SqlClient.SqlClient;
+        const first = yield* draftAt("1970-01-01T00:05:00.000Z");
+        const externalId = PostExternalIdSchema.make("record-together");
+        const { workspaceId } = first.post;
+        const second = yield* newId(PostIdSchema);
+
+        // Each claims the id, then gives it to its own post.
+        const claim = (postId: PostId, make: boolean) =>
+          sql.withTransaction(
+            Effect.gen(function* claiming() {
+              const holder = yield* posts.claimExternalId(
+                workspaceId,
+                externalId
+              );
+
+              if (Option.isSome(holder)) {
+                return "taken" as const;
+              }
+
+              yield* make
+                ? posts.insert(
+                    withExternalId(
+                      createDraft(
+                        postId,
+                        workspaceId,
+                        content("Second"),
+                        Option.none()
+                      ),
+                      Option.some(externalId)
+                    ),
+                    []
+                  )
+                : posts.setExternalId(postId, Option.some(externalId));
+
+              return "given" as const;
+            })
+          );
+
+        const outcomes = yield* Effect.all(
+          [claim(first.postId, false), claim(second, true)],
+          { concurrency: 2 }
+        );
+
+        assert.deepStrictEqual(outcomes.toSorted(), ["given", "taken"]);
+
+        yield* posts.remove(first.postId);
+        yield* posts.remove(second);
+      })
   );
 
   storage.effect(
@@ -301,9 +465,10 @@ layer(StorageTest)("a post's updated_at", (storage) => {
             ),
             []
           )
-          .pipe(Effect.exit);
+          .pipe(Effect.flip);
 
-        assert.isTrue(inserted._tag === "Failure");
+        // Answered as the domain's refusal, never a server's error.
+        assert.strictEqual(inserted._tag, "PostExternalIdTaken");
 
         yield* posts.remove(first.postId);
         yield* posts.remove(other.postId);

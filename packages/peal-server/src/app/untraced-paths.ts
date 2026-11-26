@@ -113,10 +113,12 @@ export const SecretPathsLive = HttpRouter.middleware(
  * state, Meta's events' handshake the operator's verify token
  * (`/api/platform-events/meta/:app`), a token in any address, and the
  * code the person types to approve the command line's device sign-in
- * (`/api/auth/device?user_code=`).
+ * (`/api/auth/device?user_code=`), and a post's external id, the caller's
+ * content (`GET /api/v1/posts?externalId=`).
  */
 export const redactedQueryNames: readonly string[] = [
   "code",
+  "externalId",
   "state",
   "hub.verify_token",
   "token",

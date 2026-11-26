@@ -14,15 +14,19 @@ import { posts } from "./schema.ts";
 // of `posts` and `post_targets` and fails on one in neither list.
 
 /**
- * `updated_at` as a statement that writes `posts` sets it: `now`, or a
- * millisecond past what the row holds when that is later. So a post moves
- * forward with each change, never back, even when two transactions read
- * the clock in the other order than they commit, and a walker's cursor
- * never ends up past a change it has not read. Instants are kept in whole
- * milliseconds, as cursors hold them.
+ * `updated_at` as a statement that writes `posts` sets it: `now`, plus the
+ * time the statement itself spent before it wrote (waiting on a row
+ * another transaction holds: `clock_timestamp() - statement_timestamp()`),
+ * or a millisecond past what the row holds when that is later. So a post
+ * moves forward with each change, never back, even when two transactions
+ * read the clock in the other order than they commit, and a statement that
+ * waited on a lock writes the instant it wrote at, not the one it started
+ * at, which the walk's hold-back (`updateSettle`) could have passed. The
+ * application's clock stays the base, so tests keep their virtual time.
+ * Instants are kept in whole milliseconds, as cursors hold them.
  */
 export const moved = (now: DateTime.Utc) =>
-  sql`GREATEST(${posts.updatedAt} + interval '1 millisecond', ${DateTime.toDateUtc(now).toISOString()}::timestamptz)`;
+  sql`GREATEST(${posts.updatedAt} + interval '1 millisecond', date_trunc('milliseconds', ${DateTime.toDateUtc(now).toISOString()}::timestamptz + (clock_timestamp() - statement_timestamp())))`;
 
 /**
  * Moves the posts' `updated_at` as `moved` does, for a statement that

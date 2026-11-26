@@ -15,6 +15,10 @@ describe("the query parameters the tracer redacts", () => {
       expect.arrayContaining(["code", "state", "token", "user_code"])
     );
   });
+
+  it("redacts a post's external id, the caller's content", () => {
+    expect(redactedQueryNames).toContain("externalId");
+  });
 });
 
 // The paths the HTTP tracer leaves out: what their address holds is a

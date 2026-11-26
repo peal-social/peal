@@ -164,6 +164,7 @@ const ruleNow = (workspaceId: WorkspaceId, ruleId: RecyclingRuleId) =>
   ).pipe(Effect.map(({ rule }) => rule));
 
 interface OccurrenceRow {
+  readonly externalId: string | null;
   readonly id: PostId;
   readonly occurrence: number;
   readonly scheduledAt: Date;
@@ -174,7 +175,7 @@ interface OccurrenceRow {
 const occurrencesOf = (ruleId: RecyclingRuleId) =>
   SqlClient.SqlClient.use(
     (sql) =>
-      sql<OccurrenceRow>`SELECT id, occurrence, scheduled_at AS "scheduledAt", status, text FROM publishing.posts WHERE recycling_id = ${ruleId} ORDER BY occurrence`
+      sql<OccurrenceRow>`SELECT id, external_id AS "externalId", occurrence, scheduled_at AS "scheduledAt", status, text FROM publishing.posts WHERE recycling_id = ${ruleId} ORDER BY occurrence`
   );
 
 const atOf = (rows: readonly OccurrenceRow[]) =>
@@ -199,6 +200,12 @@ describe("making a rule's occurrences", () => {
           const workspaceId = yield* freshWorkspace;
           const channel = yield* connect(workspaceId, "mastodon");
           const source = yield* published(workspaceId, channel);
+
+          // The source's own id, its caller's, which no copy takes.
+          yield* SqlClient.SqlClient.use(
+            (sql) =>
+              sql`UPDATE publishing.posts SET external_id = 'record-source' WHERE id = ${source}`
+          );
 
           const rule = yield* started(
             workspaceId,
@@ -227,6 +234,7 @@ describe("making a rule's occurrences", () => {
           );
           assert.strictEqual(second?.occurrence, 2);
           assert.strictEqual(second?.text, "Open all summer, as before.");
+          assert.isNull(second?.externalId);
           assert.strictEqual(
             second?.scheduledAt.toISOString(),
             "2026-06-22T07:01:00.000Z"

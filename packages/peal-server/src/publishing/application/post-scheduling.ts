@@ -1111,7 +1111,8 @@ export class PostScheduling extends Context.Service<
           () => Effect.succeed(Option.none()),
           remember,
           () => Effect.void
-        );
+          // It has no external id to be taken.
+        ).pipe(Effect.catchTag("PostExternalIdTaken", Effect.die));
 
         return yield* Option.match(made, {
           onNone: () => Effect.die("A post scheduled anew was not made"),
@@ -1403,7 +1404,8 @@ export class PostScheduling extends Context.Service<
             // The same content may repeat: that is what a rule is for.
             remember,
             made
-          );
+            // An occurrence has no external id to be taken.
+          ).pipe(Effect.catchTag("PostExternalIdTaken", Effect.die));
 
           return yield* Option.match(sent, {
             onNone: () => Effect.die("An occurrence sent anew was not made"),

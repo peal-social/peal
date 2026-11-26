@@ -28,6 +28,7 @@ import { LivePartSchema } from "#publishing/domain/live-part.ts";
 import type { LivePart } from "#publishing/domain/live-part.ts";
 import type { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import { withTextOn } from "#publishing/domain/post-content.ts";
+import { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
 import type { PostStatus } from "#publishing/domain/post-status.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTargetStatus } from "#publishing/domain/post-target-status.ts";
@@ -93,6 +94,7 @@ const postStatusOf = (row: PostRow) => {
 
 const toStored = (row: PostRow) =>
   Effect.all({
+    updatedAt: Effect.succeed(DateTime.fromDateUnsafe(row.updatedAt)),
     execution: decodeExecution(row.executionId),
     post: decodePost({
       attribution: {
@@ -430,6 +432,38 @@ const storedFrom = (rows: readonly PostRow[]) => {
 
 const failed = (cause: unknown) => new DatabaseError({ cause });
 
+// Postgres's refusal of a second post with an external id in a workspace (a
+// unique violation on `posts_workspace_external_id`), as Effect's SQL client
+// reports it under Drizzle's error: the query's cause, whose reason names
+// the index.
+const UniqueViolationSchema = Schema.Struct({
+  error: Schema.Struct({
+    reason: Schema.Struct({
+      _tag: Schema.Literal("UniqueViolation"),
+      constraint: Schema.Literal("posts_workspace_external_id"),
+    }),
+  }),
+});
+
+const isUniqueViolation = Schema.is(UniqueViolationSchema);
+
+const QueryFailureSchema = Schema.Struct({
+  cause: Schema.Struct({ reasons: Schema.Array(Schema.Unknown) }),
+});
+
+const isQueryFailure = Schema.is(QueryFailureSchema);
+
+const isExternalIdTaken = (cause: unknown) =>
+  isQueryFailure(cause) && cause.cause.reasons.some(isUniqueViolation);
+
+// The index's refusal as the domain's, should a write reach it: the claim
+// (`claimExternalId`) keeps it from happening, and the transaction is over
+// once Postgres refused, so the post that has the id is not named.
+const takenOrFailed = (cause: unknown) =>
+  isExternalIdTaken(cause)
+    ? new PostExternalIdTaken({ postId: Option.none() })
+    : failed(cause);
+
 const optionsColumn = (target: PostTarget) =>
   target.options.pipe(Option.map(encodeOptions), Option.getOrNull);
 
@@ -683,25 +717,22 @@ export const DrizzlePostRepository = Layer.effect(
         ),
       externalIdHolder: (workspaceId, externalId) =>
         externalIdHolder(workspaceId, externalId).pipe(Effect.mapError(failed)),
-      freshness: (postIds) =>
-        (postIds.length === 0
-          ? Effect.succeed([])
-          : db
-              .select({ id: posts.id, updatedAt: posts.updatedAt })
-              .from(posts)
-              .where(inArray(posts.id, [...postIds]))
-        ).pipe(
-          Effect.mapError(failed),
-          Effect.map(
-            (rows) =>
-              new Map(
-                rows.map(({ id, updatedAt }) => [
-                  PostIdSchema.make(id),
-                  DateTime.fromDateUnsafe(updatedAt),
-                ])
-              )
-          )
-        ),
+      current: (postIds) =>
+        Effect.gen(function* current() {
+          if (postIds.length === 0) {
+            return new Map<PostId, FreshPost>();
+          }
+
+          // The rows first, then their targets (`withTargetsOf`).
+          const postRows = yield* db
+            .select()
+            .from(posts)
+            .where(inArray(posts.id, [...postIds]));
+
+          const found = yield* withTargetsOf(postRows);
+
+          return new Map(found.map((fresh) => [fresh.post.id, fresh]));
+        }).pipe(Effect.mapError(failed)),
       insert: (post, targets) =>
         Effect.gen(function* insert() {
           const now = yield* DateTime.now;
@@ -727,7 +758,7 @@ export const DrizzlePostRepository = Layer.effect(
           if (targets.length > 0) {
             yield* db.insert(postTargets).values(targets.map(targetRow));
           }
-        }).pipe(Effect.mapError(failed)),
+        }).pipe(Effect.mapError(takenOrFailed)),
       listDrafts: (workspaceId, { after, limit }) =>
         Effect.gen(function* listDrafts() {
           // One more than asked tells whether another page follows.
@@ -912,7 +943,7 @@ export const DrizzlePostRepository = Layer.effect(
               })
               .where(eq(posts.id, postId))
           ),
-          Effect.mapError(failed),
+          Effect.mapError(takenOrFailed),
           Effect.asVoid
         ),
       setTags: (postId, tagIds) =>

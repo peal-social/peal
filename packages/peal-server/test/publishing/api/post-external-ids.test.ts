@@ -133,6 +133,38 @@ describe("a post's external id", () => {
   );
 
   it.effect(
+    "makes one post of two creations sent together with one id",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* together() {
+          const { send } = yield* studio;
+
+          const outcomes = yield* Effect.all(
+            [
+              send("One", "2026-06-16T08:00:00Z", "record-together").pipe(
+                Effect.as("created"),
+                Effect.catchTag("PostExternalIdTaken", () =>
+                  Effect.succeed("taken")
+                )
+              ),
+              send("Two", "2026-06-17T08:00:00Z", "record-together").pipe(
+                Effect.as("created"),
+                Effect.catchTag("PostExternalIdTaken", () =>
+                  Effect.succeed("taken")
+                )
+              ),
+            ],
+            { concurrency: 2 }
+          );
+
+          assert.deepStrictEqual(outcomes.toSorted(), ["created", "taken"]);
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
     "is freed by a cancelled post and by a deleted draft",
     () =>
       onPostsServerAt(

@@ -78,7 +78,10 @@ export interface PostFilter {
  * given, and a sync that walks the list would never read it: holding back
  * the last seconds makes a walk show a change late, maybe twice, never not
  * at all, as long as no transaction takes longer between its write and its
- * commit (none calls a platform inside one).
+ * commit. Those that call a platform while they hold a post's row (a
+ * draft's scheduling asks the accounts' own rules) write the post once the
+ * answer came, just before they commit; a statement that waited on that
+ * row writes the instant it wrote at (`moved`).
  */
 export const updateSettle = Duration.seconds(5);
 

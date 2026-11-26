@@ -1071,7 +1071,11 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   (5 seconds) before the request's instant (`asOf`), so a sync that walks
   it from the last `updatedAt` it read reads a change late, maybe twice,
   never not at all, as long as no transaction takes longer than that
-  between its write and its commit (none calls a platform inside one).
+  between its write and its commit: a use case that calls a platform
+  while it holds a post's row (scheduling a draft asks the accounts' own
+  rules) writes the post after the answer, just before it commits, and a
+  statement that waited on the row writes the instant it wrote at
+  (`moved` adds the statement's own wait to `now`).
   `updatedSince` keeps the posts changed at or after an instant, in any
   order. Publishing stores no platform: the platform
   filter asks `WorkspaceChannels` about `PostRepository.channelsUsed`, so a
@@ -1095,16 +1099,23 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   the migrations hold none. Its default (the insert's instant in whole
   milliseconds, as cursors hold them) covers rows from before and an
   insert of the release before. A view of a post needs it (`FreshPost`):
-  the repository's reads carry it, and a write's answer is stamped by one
-  read after the write (`PostFreshness`, `freshPostViews` in
-  `api/post-view.ts`). `createdAt` is read from the id (`createdAtOf`).
+  the repository's reads carry the one of the row they read, read before
+  its targets, so it is never newer than the state beside it; a write's
+  answer is the post read again once the write committed, its row then
+  its targets (`PostFreshness`, `freshPostViews` in `api/post-view.ts`),
+  never the entities with an instant read apart. `createdAt` is read from
+  the id (`createdAtOf`). The list's `externalId` filter reads
+  `posts_workspace_external_ids`, cancelled posts included.
 - A post's external id (`Post.externalId`, `posts.external_id`,
   `domain/post-external-id.ts`) is its caller's own id for it: 1 to 255
   characters, compared exactly, unique in a workspace among posts that are
   not cancelled (the partial unique index `posts_workspace_external_id`),
   a second refused `PostExternalIdTaken` naming the post that has it
-  (409, `postId` null for an earlier row of the same file). A cancelled
-  post and a deleted draft free it. It is given by `send` (so `create`,
+  (409, `postId` null for an earlier row of the same file). A post whose
+  status is `cancelled` and a deleted draft free it; one cancelled while
+  publishing ends `finished` (outcome `cancelled`) and keeps it. A
+  statement that meets the index anyway answers `PostExternalIdTaken`
+  without a post (`takenOrFailed`), the transaction being over. It is given by `send` (so `create`,
   each item of `bulk`, a row of `import`, its `external_id` column) and a
   draft's create; a draft's update keeps it when the request says
   nothing, null removes it; `PostExternalIds.set` (`posts.setExternalId`,

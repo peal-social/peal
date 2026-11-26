@@ -167,6 +167,7 @@ const created = (
 
 interface PostRow {
   readonly authorId: string | null;
+  readonly externalId: string | null;
   readonly id: string;
   readonly queueId: string | null;
   readonly scheduledAt: Date | null;
@@ -178,7 +179,7 @@ interface PostRow {
 const postsOf = (workspaceId: WorkspaceId) =>
   SqlClient.SqlClient.use(
     (sql) =>
-      sql<PostRow>`SELECT id, author_id AS "authorId", queue_id AS "queueId", scheduled_at AS "scheduledAt", shorten_links AS "shortenLinks", status, text FROM publishing.posts WHERE workspace_id = ${workspaceId} ORDER BY id`
+      sql<PostRow>`SELECT id, author_id AS "authorId", external_id AS "externalId", queue_id AS "queueId", scheduled_at AS "scheduledAt", shorten_links AS "shortenLinks", status, text FROM publishing.posts WHERE workspace_id = ${workspaceId} ORDER BY id`
   ).pipe(Effect.orDie);
 
 const itemsOf = (workspaceId: WorkspaceId, feedId: FeedId) =>
@@ -359,6 +360,8 @@ describe("a feed in draft mode", () => {
           assert.strictEqual(draft?.status, "draft");
           assert.strictEqual(draft?.text, "New\n\nhttps://blog.example/new");
           assert.isNotNull(draft?.authorId);
+          // A feed's post has no id of a caller's.
+          assert.isNull(draft?.externalId);
 
           // Read again: the same item makes nothing more.
           yield* later();

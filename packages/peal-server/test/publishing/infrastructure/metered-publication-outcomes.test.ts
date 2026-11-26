@@ -168,7 +168,11 @@ const RepositoriesTest = Layer.mergeAll(
         Option.fromUndefinedOr(
           [post, thread].find((known) => known.id === id)
         ).pipe(
-          Option.map((known) => ({ execution: Option.none(), post: known }))
+          Option.map((known) => ({
+            execution: Option.none(),
+            post: known,
+            updatedAt: DateTime.makeUnsafe(0),
+          }))
         )
       ),
   })

@@ -13,7 +13,6 @@ import type {
   DraftPage,
   DraftPageRequest,
   FreshPost,
-  PostWithTargets,
 } from "./post-repository.ts";
 import { PublicationJournal } from "./publication-journal.ts";
 import type { RecordedAttempt } from "./publication-journal.ts";
@@ -47,7 +46,7 @@ export class PostQueries extends Context.Service<
       actor: Actor,
       postId: PostId
     ) => Effect.Effect<
-      PostWithTargets,
+      FreshPost,
       DatabaseError | MissingPermission | PostNotFound
     >;
     /**
@@ -97,11 +96,20 @@ export class PostQueries extends Context.Service<
       ) {
         yield* Effect.fromResult(authorize(actor, "post:read"));
 
-        const { post } = yield* findInWorkspace(actor.workspaceId, postId).pipe(
-          Effect.provideContext(ports)
-        );
+        // The row first, then its targets: its `updatedAt` is never newer
+        // than what the answer shows beside it.
+        const { post, updatedAt } = yield* findInWorkspace(
+          actor.workspaceId,
+          postId
+        ).pipe(Effect.provideContext(ports));
 
-        return { post, targets: yield* posts.targets(postId) };
+        const found: FreshPost = {
+          post,
+          targets: yield* posts.targets(postId),
+          updatedAt,
+        };
+
+        return found;
       });
 
       const listScheduled = Effect.fn("PostQueries.listScheduled")(
