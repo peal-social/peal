@@ -1076,7 +1076,7 @@ $client->posts->setTags(
 <dl>
 <dd>
 
-Gives a post your own id for it (`externalId`, at most 255 characters), instead of the one it had, or none with null. It says nothing to the platforms, so a post takes it whatever its status, sent or not: give ids to posts made before your system kept them, or take one off a post to free it. Another post that is not cancelled with the same id is refused (PostExternalIdTaken, naming it); a cancelled post frees its id. Needs post:update.
+Gives a post your own id for it (`externalId`, at most 255 characters), instead of the one it had, or none with null. It says nothing to the platforms, so a post takes it whatever its status, sent or not: give ids to posts made before your system kept them, or take one off a post to free it. Another post that is not cancelled with the same id is refused (PostExternalIdTaken, naming it); a post whose `status` is `cancelled` frees its id, and one cancelled while it was publishing ends `finished` and keeps it until it is taken off here. Needs post:update.
 </dd>
 </dl>
 </dd>
