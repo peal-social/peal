@@ -147,6 +147,19 @@ describe(fitOn, () => {
     expect(fit.problems).toContainEqual({ _tag: "mediaRequired" });
     expect(fits(fitOn("pinterest", "é".repeat(800), 1))).toBeTruthy();
   });
+
+  it("holds a Spotlight's description to 160 UTF-16 code units, and asks for a video", () => {
+    const fit = fitOn("snapchat", "👻".repeat(81), 0);
+
+    expect(fit.tightest).toStrictEqual({
+      length: 162,
+      maximum: 160,
+      remaining: -2,
+      unit: "utf16Units",
+    });
+    expect(fit.problems).toContainEqual({ _tag: "mediaRequired" });
+    expect(fits(fitOn("snapchat", "a".repeat(160), 1))).toBeTruthy();
+  });
 });
 
 describe("a chat's count", () => {

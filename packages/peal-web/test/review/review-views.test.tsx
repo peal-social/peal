@@ -380,12 +380,14 @@ describe(ChannelPreviewsView, () => {
       "Google Business Profile",
       "LinkedIn",
       "YouTube",
+      "Snapchat",
     ]) {
       expect(html).toContain(name);
     }
 
     // No platform falls back to its id.
     expect(html).not.toContain(">googleBusiness<");
+    expect(html).not.toContain(">snapchat<");
   });
 });
 
