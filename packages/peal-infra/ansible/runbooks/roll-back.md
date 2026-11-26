@@ -914,7 +914,7 @@ stores what the release before cannot read:
 The release that gives a post its caller's own id and says when it last
 changed adds two columns to `publishing.posts`, `external_id` and
 `updated_at` (with a default), a unique index on the first and an index
-on the second, and two more indexes on `external_id`. The release before
+on the second, and one more index on `external_id`. The release before
 runs against them: it reads neither column and writes neither, so while
 it runs
 
@@ -931,16 +931,23 @@ it runs
   request without the id and its fingerprint differs: no second post is
   made.
 
-Nothing to check before rolling back. Once this release is back, before
-anyone syncs again, move every post's `updated_at` forward once, as the
-server writes it (a millisecond past what the row holds at least, never
-back), so every program that syncs by change reads each post once more,
-those the release before changed included, and none has to do anything:
+Nothing to check before rolling back. Once this release is back, move
+every post's `updated_at` forward once, as the server writes it (a
+millisecond past what the row holds at least, never back), so every
+program that syncs by change reads each post once more, those the release
+before changed included, and no customer has to do anything. Run the
+one-off playbook from `packages/peal-infra/ansible`, its dry run first:
 
 ```sh
-sudo peal-compose exec postgres psql --username peal --dbname peal --command \
-  "UPDATE publishing.posts SET updated_at = GREATEST(updated_at + interval '1 millisecond', date_trunc('milliseconds', clock_timestamp()))"
+uv run ansible-playbook playbooks/posts-updated-at.yml --limit production --check --diff
+uv run ansible-playbook playbooks/posts-updated-at.yml --limit production --diff
 ```
+
+It writes one workspace's posts at a time, each in a short transaction
+that locks the rows, then reads the clock: one statement over every post
+would hold rows for longer than the five seconds a walk by change holds
+back, and a change committed behind a cursor already given would be
+missed. Running it again only has the syncs read every post once more.
 
 Then give an external id again to a post made meanwhile that needs one
 (`posts.setExternalId`), if a customer asks.

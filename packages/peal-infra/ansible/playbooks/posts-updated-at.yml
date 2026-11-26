@@ -1,0 +1,49 @@
+---
+# Moves every post's updated_at forward once, as the server writes it (a
+# millisecond past what the row holds at least, never back), so every
+# program that syncs by change reads each post once more. A one-off: run it
+# when the roll-back runbook says so ("Past posts' own ids and updatedAt"),
+# once a release that keeps updated_at is back after one that did not:
+#   ansible-playbook playbooks/posts-updated-at.yml --limit production --check --diff
+#   ansible-playbook playbooks/posts-updated-at.yml --limit production --diff
+# Running it again only has the syncs read every post once more. It writes
+# a workspace's posts at a time, each in a transaction of its own that
+# locks the rows first and then reads the clock (clock_timestamp()), so no
+# transaction holds posts long and none lands behind the five seconds a
+# walk by change holds back (`updateSettle`). --check runs nothing.
+- name: Move every post's updated_at forward once
+  hosts: servers
+  become: true
+  roles:
+    - peal_preflight
+  tasks:
+    - name: Move each workspace's posts forward, one transaction a workspace
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - --interactive
+          - "{{ peal_compose_project }}-postgres-1"
+          - psql
+          - --username
+          - peal
+          - --dbname
+          - peal
+          - --no-psqlrc
+          - --quiet
+          - --set
+          - ON_ERROR_STOP=1
+        stdin: |
+          SELECT
+            'BEGIN',
+            'SET LOCAL lock_timeout = ''30s''',
+            format('SELECT count(*) FROM (SELECT 1 FROM publishing.posts
+              WHERE workspace_id = %L ORDER BY id FOR UPDATE) AS held', workspace_id),
+            format('UPDATE publishing.posts SET updated_at = GREATEST(
+              updated_at + interval ''1 millisecond'',
+              date_trunc(''milliseconds'', clock_timestamp()))
+              WHERE workspace_id = %L', workspace_id),
+            'COMMIT'
+          FROM (SELECT DISTINCT workspace_id FROM publishing.posts) AS workspaces
+          \gexec
+      changed_when: true
