@@ -4,7 +4,7 @@ import { Schema } from "effect";
 import { PlatformSchema, platforms } from "#channels/domain/platform.ts";
 
 describe("the platform list", () => {
-  it("lists the fourteen platforms a channel can connect to", () => {
+  it("lists the eighteen platforms a channel can connect to", () => {
     expect(platforms).toStrictEqual([
       "x",
       "linkedin",
@@ -20,6 +20,10 @@ describe("the platform list", () => {
       "discord",
       "telegram",
       "slack",
+      "wordpress",
+      "devto",
+      "hashnode",
+      "wordpressCom",
     ]);
   });
 

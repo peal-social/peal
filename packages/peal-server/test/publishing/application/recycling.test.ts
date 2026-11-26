@@ -11,9 +11,11 @@ import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { Queues } from "#publishing/application/queues.ts";
 import type { StartRequest } from "#publishing/application/recycling/recycling.ts";
 import { Recycling } from "#publishing/application/recycling/recycling.ts";
+import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
 import type { RecyclingRuleId } from "#publishing/domain/recycling-rule-id.ts";
 import { RecyclingVariant } from "#publishing/domain/recycling/recycling-variant.ts";
+import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
 import { newId } from "#shared/application/ids.ts";
 import { Actor } from "#shared/domain/access.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -678,6 +680,50 @@ describe("making a rule's occurrences", () => {
           ).pipe(Effect.flip);
 
           assert.strictEqual(refused._tag, "PostNotRecyclable");
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "refuses a source that goes to websites only",
+    () =>
+      onServer(
+        Effect.gen(function* websitesOnly() {
+          const workspaceId = yield* freshWorkspace;
+          const site = yield* connect(workspaceId, "wordpress");
+          const editor = actorIn(workspaceId);
+          const at = DateTime.add(yield* DateTime.now, { days: 1 });
+
+          const { post } = yield* PostScheduling.use((scheduling) =>
+            scheduling.send(editor, {
+              channelIds: [site],
+              content: contentOf("A synthetic article, once."),
+              idempotency: Option.none(),
+              options: [
+                new ChannelOptions({
+                  channelId: site,
+                  options: new WordPressOptions({ title: "Once" }),
+                }),
+              ],
+              placement: { _tag: "at", at },
+              timeZone: paris,
+            })
+          );
+
+          const refused = yield* started(workspaceId, weekly(post.id)).pipe(
+            Effect.flip
+          );
+
+          assert.deepInclude(refused, {
+            _tag: "PostNotRecyclable",
+            reason: "websitesOnly",
+          });
+
+          // No job is left for another run's servers.
+          yield* PostScheduling.use((scheduling) =>
+            scheduling.cancel(editor, post.id)
+          );
         })
       ),
     timeout
