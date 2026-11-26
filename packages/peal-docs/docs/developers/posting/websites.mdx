@@ -1,0 +1,393 @@
+---
+title: Post to a website
+description: Send a post to a WordPress site, WordPress.com, DEV or Hashnode through the API, its body written as Markdown, and read why Peal refuses one.
+sidebar:
+  icon: newspaper
+---
+
+A post goes to a website through the same requests as to a social network. Its body can be written as Markdown, which Peal turns into the formatted body the site gets.
+
+## What a website's post holds [#post]
+
+On WordPress, WordPress.com, DEV and Hashnode, the post's text on the channel is the site's article, and its options are the article's other fields:
+
+| Field                        | Where                       | What it holds                                                                        |
+| ---------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
+| `bodyMarkdown`               | the channel's override      | The article's body, as Markdown ([below](#markdown)). Never answered.                |
+| `body`                       | the channel's override      | The same body as the editor's JSON document (`RichText` in the reference)            |
+| `text`                       | the channel's override      | `""` beside a body. Peal answers it as the body's plain text.                        |
+| `title`                      | the channel's `options`     | The title the site shows above the article. Needed to schedule the post.             |
+| `excerpt`, `coverMediaId`    | the channel's `options`     | The summary the site shows in lists, and a featured image from the media library     |
+| `tags`, `categories`         | the channel's `options`     | Names, as the site shows them. Categories are WordPress's alone.                     |
+| `siteStatus`                 | the channel's `options`     | `publish`, the default, or `draft`, which leaves the article as a draft on the site  |
+
+Each site's limits for the title and the tags are in [What each site takes](/guides/channels/websites#sites). Without a body, the site gets the channel's text as paragraphs, with the post's images after them.
+
+## The body as Markdown [#markdown]
+
+Send the body in `bodyMarkdown`, on the channel's override, with an empty `text`. Peal reads it as CommonMark with GitHub's extensions, checks it as any body, and keeps the formatted body: a read answers `body`, never the Markdown. Send `body` or `bodyMarkdown`, never both (400 `invalid_request`). The Markdown holds 400,000 characters at most.
+
+<CodeGroup>
+
+```ts Node.js
+const post = await peal.posts.create({
+  channelIds: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31"],
+  content: {
+    text: "Sow your peas early this year.",
+    media: [],
+    overrides: [
+      {
+        channelId: "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+        text: "",
+        bodyMarkdown:
+          "## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)",
+      },
+    ],
+  },
+  options: [
+    {
+      channelId: "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+      options: { platform: "wordpress", title: "Sow your peas early" },
+    },
+  ],
+  when: { _tag: "at", at: "2026-12-14T08:00:00Z", timeZone: "Europe/Paris" },
+});
+```
+
+```python Python
+from peal import (
+    ChannelOptions,
+    PostContent,
+    PostTiming_At,
+    TargetOptions_Wordpress,
+    TextOverride,
+)
+
+post = peal.posts.create(
+    channel_ids=["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31"],
+    content=PostContent(
+        text="Sow your peas early this year.",
+        media=[],
+        overrides=[
+            TextOverride(
+                channel_id="019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+                text="",
+                body_markdown="## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)",
+            )
+        ],
+    ),
+    options=[
+        ChannelOptions(
+            channel_id="019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+            options=TargetOptions_Wordpress(title="Sow your peas early"),
+        )
+    ],
+    when=PostTiming_At(at="2026-12-14T08:00:00Z", time_zone="Europe/Paris"),
+)
+```
+
+```go Go
+post, err := client.Posts.Create(context.TODO(), &peal.NewPost{
+	ChannelIDs: []string{"019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31"},
+	Content: &peal.PostContent{
+		Text:  "Sow your peas early this year.",
+		Media: []*peal.MediaAttachment{},
+		Overrides: []*peal.TextOverride{
+			{
+				ChannelID:    "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+				Text:         "",
+				BodyMarkdown: peal.String("## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)"),
+			},
+		},
+	},
+	Options: []*peal.ChannelOptions{
+		{
+			ChannelID: "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+			Options: &peal.TargetOptions{
+				Wordpress: &peal.WordPressOptions{Title: peal.String("Sow your peas early")},
+			},
+		},
+	},
+	When: &peal.PostTiming{
+		At: &peal.PostTimingAt{At: "2026-12-14T08:00:00Z", TimeZone: "Europe/Paris"},
+	},
+})
+```
+
+```ruby Ruby
+post = peal.posts.create(
+  channel_ids: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31"],
+  content: {
+    text: "Sow your peas early this year.",
+    media: [],
+    overrides: [{
+      channelId: "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+      text: "",
+      bodyMarkdown: "## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)"
+    }]
+  },
+  options: [{
+    channelId: "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+    options: { platform: "wordpress", title: "Sow your peas early" }
+  }],
+  when: { _tag: "at", at: "2026-12-14T08:00:00Z", timeZone: "Europe/Paris" }
+)
+```
+
+```java Java
+Post post = peal.posts().create(NewPost.builder()
+    .content(PostContent.builder()
+        .text("Sow your peas early this year.")
+        .overrides(List.of(TextOverride.builder()
+            .channelId("019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31")
+            .text("")
+            .bodyMarkdown("## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)")
+            .build()))
+        .build())
+    .when(PostTiming.at(PostTimingAt.builder()
+        .at("2026-12-14T08:00:00Z")
+        .timeZone("Europe/Paris")
+        .build()))
+    .channelIds(List.of("019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31"))
+    .options(List.of(ChannelOptions.builder()
+        .channelId("019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31")
+        .options(TargetOptions.wordpress(WordPressOptions.builder()
+            .title("Sow your peas early")
+            .build()))
+        .build()))
+    .build());
+```
+
+```php PHP
+use Peal\Posts\Requests\NewPost;
+use Peal\Types\ChannelOptions;
+use Peal\Types\PostContent;
+use Peal\Types\PostTiming;
+use Peal\Types\PostTimingAt;
+use Peal\Types\TargetOptions;
+use Peal\Types\TextOverride;
+use Peal\Types\WordPressOptions;
+
+$post = $peal->posts->create(new NewPost([
+    'channelIds' => ['019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31'],
+    'content' => new PostContent([
+        'text' => 'Sow your peas early this year.',
+        'media' => [],
+        'overrides' => [
+            new TextOverride([
+                'channelId' => '019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31',
+                'text' => '',
+                'bodyMarkdown' => "## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)",
+            ]),
+        ],
+    ]),
+    'options' => [
+        new ChannelOptions([
+            'channelId' => '019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31',
+            'options' => TargetOptions::wordpress(new WordPressOptions([
+                'title' => 'Sow your peas early',
+            ])),
+        ]),
+    ],
+    'when' => PostTiming::at(new PostTimingAt([
+        'at' => '2026-12-14T08:00:00Z',
+        'timeZone' => 'Europe/Paris',
+    ])),
+]));
+```
+
+```csharp .NET
+var post = await peal.Posts.CreateAsync(new NewPost
+{
+    ChannelIds = new List<string> { "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31" },
+    Content = new PostContent
+    {
+        Text = "Sow your peas early this year.",
+        Media = new List<MediaAttachment>(),
+        Overrides = new List<TextOverride>
+        {
+            new TextOverride
+            {
+                ChannelId = "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+                Text = "",
+                BodyMarkdown = "## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)",
+            },
+        },
+    },
+    Options = new List<ChannelOptions>
+    {
+        new ChannelOptions
+        {
+            ChannelId = "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+            Options = new TargetOptions(new TargetOptions.Wordpress(new WordPressOptions
+            {
+                Title = "Sow your peas early",
+            })),
+        },
+    },
+    When = new PostTiming(new PostTiming.At(new PostTimingAt
+    {
+        At = "2026-12-14T08:00:00Z",
+        TimeZone = "Europe/Paris",
+    })),
+});
+```
+
+```rust Rust
+let site = "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31".to_string();
+
+let post = peal
+    .posts
+    .create(
+        &NewPost::builder()
+            .channel_ids(vec![site.clone()])
+            .content(PostContent {
+                text: "Sow your peas early this year.".to_string(),
+                overrides: vec![TextOverride::builder()
+                    .channel_id(site.clone())
+                    .text("")
+                    .body_markdown("## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)")
+                    .build()?],
+                ..Default::default()
+            })
+            .options(vec![ChannelOptions::builder()
+                .channel_id(site.clone())
+                .options(TargetOptions::wordpress_with_title(
+                    None,
+                    None,
+                    None,
+                    None,
+                    "Sow your peas early".to_string(),
+                    None,
+                ))
+                .build()?])
+            .when(PostTiming::at(
+                "2026-12-14T08:00:00Z".to_string(),
+                "Europe/Paris".to_string(),
+            ))
+            .build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl -X POST "https://peal.example/api/v1/posts" \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "channelIds": ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31"],
+    "content": {
+      "text": "Sow your peas early this year.",
+      "media": [],
+      "overrides": [
+        {
+          "channelId": "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+          "text": "",
+          "bodyMarkdown": "## When to sow\n\nAs soon as the soil *thaws*.\n\n![A row of peas](media:019a5f10-2c41-7a08-b3d2-6e1f4a9c0f01)"
+        }
+      ]
+    },
+    "options": [
+      {
+        "channelId": "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+        "options": { "platform": "wordpress", "title": "Sow your peas early" }
+      }
+    ],
+    "when": { "_tag": "at", "at": "2026-12-14T08:00:00Z", "timeZone": "Europe/Paris" }
+  }'
+```
+
+```sh CLI
+peal post "Sow your peas early this year." \
+  --channel 019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31 \
+  --at 2026-12-14T08:00:00Z \
+  --markdown 019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31=peas.md \
+  --options '019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31={"platform":"wordpress","title":"Sow your peas early"}'
+```
+
+</CodeGroup>
+
+`bodyMarkdown` works wherever a body goes: `POST …/posts`, each item of `POST …/posts/bulk`, `POST …/posts/drafts`, `PUT …/posts/{postId}`, `POST …/posts/validate` and the edit of a published post ([below](#edit)). The CSV import has no column for it: a row is one text for all its channels, with no title.
+
+### What Peal reads [#taken]
+
+| Markdown                                                                        | In the body                                                                                    |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| A paragraph, a line break inside it                                             | A paragraph, the line break read as a space                                                    |
+| `**bold**`, `*italic*`, `~~struck~~`, `` `code` ``                              | The same marks, nested as written                                                              |
+| Two spaces or a backslash before a line's end, `<br>`                           | A line break                                                                                   |
+| `##` to `####`                                                                  | A heading of level 2 to 4                                                                      |
+| `-` and `1.` lists, nested; a task item                                         | Bulleted and numbered lists (from their first number); `[ ]` or `[x]` stays as the item's text |
+| `>`                                                                             | A quote                                                                                        |
+| `***`                                                                           | A separator                                                                                    |
+| A fenced or indented code block                                                 | A code block, with its language when it's 1 to 32 letters, digits or `_+#.-` (`ts`, `c++`)    |
+| `[text](address)`, `<address>`, a bare address, a reference and its definition  | A link, to an http, https or mailto address of 2,048 characters at most                        |
+| `![alt](media:<mediaId>)`                                                       | An image of the workspace's library, with its alt text. A paragraph is cut around it.          |
+| An HTML comment, a link's or an image's title                                   | Left out: nothing shows them                                                                   |
+
+A code block's language reaches the sites as their highlighting: a `language-…` class on WordPress, the fence's language on DEV and Hashnode. A language that isn't one word of those characters is left out, and the code kept.
+
+### What Peal refuses [#refused]
+
+Peal refuses a body that holds any of these, with each problem's kind and place, so nothing you wrote is dropped or reaches the site as stray characters:
+
+| Markdown                                                                      | `problem`      | Do instead                                                    |
+| ----------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------- |
+| A heading of level 1, 5 or 6 (`#`, `=====` under a line)                      | `headingLevel` | Put the title in the `title` option, and start at `##`        |
+| Raw HTML, a block or inline, but a comment or `<br>`                          | `html`         | Write it as Markdown                                          |
+| A table                                                                       | `table`        | Write it as a list, or as an image                            |
+| A footnote                                                                    | `footnote`     | Write it as a paragraph or a link                             |
+| Front matter (`---` on the first line, closed by `---`)                       | `frontMatter`  | Put the title and the tags in the channel's `options`         |
+| An image at an address, or with an id that is no media's, in a heading or a link | `image`     | [Import it](#images) first, and write `media:<mediaId>`       |
+| A link on another scheme, or a relative address                               | `link`         | Write the whole http, https or mailto address                 |
+| More than a body holds                                                        | `tooLarge`     | Keep to 200,000 characters of text, 8 levels of lists and quotes, 100 files |
+| Anything else a body doesn't hold                                             | `notTaken`     | Write it with what [Peal reads](#taken)                       |
+
+Text that looks like a reference without its definition (`[like this]`) is text in CommonMark, and stays text.
+
+## Images [#images]
+
+An image in the body is a file of the workspace's media library, written `![alt](media:<mediaId>)`. Peal checks each one is the workspace's and ready, as any file of a post (422 `unknown_media` otherwise), and sends it to the site before the article, once.
+
+Peal doesn't fetch an address while it reads a post. For an image at an address, import it first with `POST …/media/import`, then write the id it answers ([Media](/guides/media)). `peal post --markdown` uploads the files a Markdown file names by a path, from the file's folder, imports its https addresses, and sends their ids.
+
+## When Peal refuses a body [#problems]
+
+A body Peal refuses answers 422 `post_content_invalid` with a `bodyInvalid` violation on its channel. Sent as Markdown, it carries `problems`, up to 20, each with its `line` and `column` in the Markdown you sent, counted from 1. A problem never quotes the Markdown.
+
+```json
+{
+  "code": "post_content_invalid",
+  "violations": [
+    {
+      "_tag": "bodyInvalid",
+      "channelId": "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b31",
+      "problems": [
+        { "problem": "headingLevel", "line": 1, "column": 1 },
+        { "problem": "table", "line": 5, "column": 1 }
+      ]
+    }
+  ]
+}
+```
+
+`POST …/posts/validate` answers the same violation in `violations`, as data, and refuses nothing. A body on a channel that isn't a website's is `bodyNotTaken`, as for a rich text.
+
+## Edit a published article [#edit]
+
+`POST …/posts/{postId}/targets/{targetId}/edit` takes `bodyMarkdown` too, read the same way, and replaces the article the site shows ([Edit a post on a website](/developers/posting/published#edit-website)). A `text` replaces the body with plain paragraphs, so send `bodyMarkdown` to keep its formatting.
+
+```json
+{
+  "bodyMarkdown": "## When to sow\n\nAs soon as the soil *thaws*, and not before."
+}
+```
+
+From the command line, `peal posts edit <post-id> --channel <channel-id> --markdown-file peas.md` sends a file.
+
+## From MCP and the command line [#tools]
+
+The MCP tools `create_post`, `create_posts`, `create_draft`, `update_draft`, `validate_post` and `edit_published_post` take `bodyMarkdown` as the API does, and their descriptions ask an agent to write a website's body that way ([MCP tools](/developers/mcp/tools)). The command line has `--markdown <channel-id>=<file>` on `peal post` and `peal drafts save`, and `--markdown-file` on `peal posts edit` ([Posts and drafts](/developers/cli/posts)). It reads the file before sending anything, and never prints it.
+
+To connect a website and write articles in the app, read [Websites and articles](/guides/channels/websites).

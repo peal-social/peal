@@ -4,7 +4,7 @@ import { defineMeta } from "blume";
 // fr/developers/posting/meta.ts gives the French label.
 export const shared = {
   icon: "square-pen",
-  pages: ["index", "bulk", "list", "queues", "published"],
+  pages: ["index", "bulk", "list", "queues", "published", "websites"],
   title: "Posting",
 } as const;
 

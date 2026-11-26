@@ -196,14 +196,15 @@ Before calling the platform, Peal refuses a request it can't carry out with 409 
 
 `POST …/posts/{postId}/targets/{targetId}/edit` replaces the text of one part of a published post on one channel's platform, for everyone ([Edit a published post](/guides/posts/published#edit-live)). `livePost.edit` in the capabilities says where Peal edits.
 
-The body takes these fields, `text`, `body` or `options` at least:
+The body takes these fields, `text`, `bodyMarkdown`, `body` or `options` at least:
 
-| Field     | What it holds                                                             |
-| --------- | ------------------------------------------------------------------------- |
-| `text`    | The new text                                                              |
-| `part`    | The part, counted from 0. Left out, it's the post itself (part 0).        |
-| `body`    | On a website, a rich text that replaces the text ([below](#edit-website)) |
-| `options` | On a website, its options from now on, whole ([below](#edit-website))     |
+| Field          | What it holds                                                                         |
+| -------------- | ------------------------------------------------------------------------------------- |
+| `text`         | The new text                                                                          |
+| `part`         | The part, counted from 0. Left out, it's the post itself (part 0).                    |
+| `bodyMarkdown` | On a website, the body as Markdown, which replaces the text ([below](#edit-website)) |
+| `body`         | On a website, a rich text that replaces the text ([below](#edit-website))             |
+| `options`      | On a website, its options from now on, whole ([below](#edit-website))                 |
 
 On a social network or a chat, only the text changes, never the media, the options or the time. It needs post:publish, and an OAuth client needs the scope `workspace:publish`. Someone whose posts need an [approval](/guides/posts/review) can't edit a published post.
 
@@ -314,8 +315,9 @@ The request is accepted (202) with the change (`kind: "edit"`). A job makes the 
 
 On WordPress, WordPress.com, DEV and Hashnode, the edit replaces the article the site shows. Give any of these, and what you leave out stays as it is:
 
-- `text`, the new text, which the site gets as paragraphs with the post's images, as when it was published. It replaces a rich text with plain paragraphs, so send `body` to keep the formatting.
-- `body`, a rich text (the API reference's `RichText`), which replaces the text. Peal answers the channel's `text` as its plain text and its `media` as its images.
+- `text`, the new text, which the site gets as paragraphs with the post's images, as when it was published. It replaces a rich text with plain paragraphs, so send `bodyMarkdown` or `body` to keep the formatting.
+- `bodyMarkdown`, the body as Markdown, read as a post's is ([Post to a website](/developers/posting/websites#markdown)), which replaces the text. A refused one answers 422 `post_content_invalid` with `bodyInvalid` and its `problems`.
+- `body`, a rich text (the API reference's `RichText`), which replaces the text. Send it or `bodyMarkdown`, never both. Peal answers the channel's `text` as its plain text and its `media` as its images.
 - `options`, the website's options from now on, whole, with their `platform`. An option left out is removed on the site: leave out `coverMediaId` and the article loses its cover. A `siteStatus` left out is the target's.
 
 ```json

@@ -196,14 +196,15 @@ Avant d’appeler la plateforme, Peal refuse une requête impossible avec 409 `l
 
 `POST …/posts/{postId}/targets/{targetId}/edit` remplace le texte d’une partie d’une publication en ligne sur la plateforme d’un canal, pour tout le monde ([Modifier une publication en ligne](/guides/posts/published#edit-live)). `livePost.edit` dans les capacités dit où Peal modifie.
 
-Le corps prend ces champs, au moins `text`, `body` ou `options` :
+Le corps prend ces champs, au moins `text`, `bodyMarkdown`, `body` ou `options` :
 
-| Champ     | Ce qu’il contient                                                                   |
-| --------- | ----------------------------------------------------------------------------------- |
-| `text`    | Le nouveau texte                                                                    |
-| `part`    | La partie, comptée depuis 0. Omise, c’est la publication elle-même (la partie 0).   |
-| `body`    | Sur un site web, un texte enrichi qui remplace le texte ([plus bas](#edit-website)) |
-| `options` | Sur un site web, ses options désormais, entières ([plus bas](#edit-website))        |
+| Champ          | Ce qu’il contient                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------- |
+| `text`         | Le nouveau texte                                                                          |
+| `part`         | La partie, comptée depuis 0. Omise, c’est la publication elle-même (la partie 0).         |
+| `bodyMarkdown` | Sur un site web, le corps en Markdown, qui remplace le texte ([plus bas](#edit-website)) |
+| `body`         | Sur un site web, un texte enrichi qui remplace le texte ([plus bas](#edit-website))       |
+| `options`      | Sur un site web, ses options désormais, entières ([plus bas](#edit-website))              |
 
 Sur un réseau social ou une messagerie, seul le texte change, jamais les médias, les options ni l’heure. Il faut post:publish, et un client OAuth a besoin du scope `workspace:publish`. Quelqu’un qui doit faire approuver ses publications ([approbations](/guides/posts/review)) ne peut pas modifier une publication en ligne.
 
@@ -314,8 +315,9 @@ La requête est acceptée (202) avec le changement (`kind: "edit"`). Une tâche 
 
 Sur WordPress, WordPress.com, DEV et Hashnode, la modification remplace l’article que le site affiche. Donnez l’un de ces champs, et ce que vous ne donnez pas reste tel quel :
 
-- `text`, le nouveau texte, que le site reçoit en paragraphes avec les images de la publication, comme à sa publication. Il remplace un texte enrichi par des paragraphes simples : envoyez `body` pour garder la mise en forme.
-- `body`, un texte enrichi (le `RichText` de la référence de l’API), qui remplace le texte. Peal répond le `text` du canal comme son texte brut, et ses `media` comme ses images.
+- `text`, le nouveau texte, que le site reçoit en paragraphes avec les images de la publication, comme à sa publication. Il remplace un texte enrichi par des paragraphes simples : envoyez `bodyMarkdown` ou `body` pour garder la mise en forme.
+- `bodyMarkdown`, le corps en Markdown, lu comme celui d’une publication ([Publier sur un site web](/developers/posting/websites#markdown)), qui remplace le texte. Un corps refusé répond 422 `post_content_invalid` avec `bodyInvalid` et ses `problems`.
+- `body`, un texte enrichi (le `RichText` de la référence de l’API), qui remplace le texte. Envoyez-le ou `bodyMarkdown`, jamais les deux. Peal répond le `text` du canal comme son texte brut, et ses `media` comme ses images.
 - `options`, les options du site désormais, entières, avec leur `platform`. Une option absente est retirée sur le site : sans `coverMediaId`, l’article perd sa couverture. Un `siteStatus` absent est celui de la cible.
 
 ```json
