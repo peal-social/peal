@@ -1,7 +1,7 @@
 import { Context, Effect, Layer, Option } from "effect";
 
-import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
+import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import { withExternalId } from "#publishing/domain/post.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";

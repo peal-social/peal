@@ -27,9 +27,9 @@ import { PublicationOutcomes } from "#publishing/application/publication-outcome
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import { publishingWith } from "#publishing/container.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
+import { PostExternalIdSchema } from "#publishing/domain/post-external-id.ts";
 import { repostTarget } from "#publishing/domain/post-target.ts";
 import { reopenPost } from "#publishing/domain/post.ts";
-import { PostExternalIdSchema } from "#publishing/domain/post-external-id.ts";
 import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import {
@@ -337,7 +337,9 @@ describe("a post's webhook events", () => {
                 event.type,
                 "externalId" in event.data ? event.data.externalId : null,
               ])
-              .toSorted(),
+              .toSorted(([one], [other]) =>
+                String(one).localeCompare(String(other))
+              ),
             [
               ["post.published", "record-42"],
               ["post.scheduled", "record-42"],

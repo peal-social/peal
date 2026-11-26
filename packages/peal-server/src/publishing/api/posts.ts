@@ -530,7 +530,10 @@ export const PostsHandlers = HttpApiBuilder.group(
             limitReached,
             actor,
             sendable.map((request) => Result.succeed(request))
-          ).pipe(Effect.catchTags(failures), Effect.flatMap((made) => views.results(made)));
+          ).pipe(
+            Effect.catchTags(failures),
+            Effect.flatMap((made) => views.results(made))
+          );
 
           const results = answered.map((outcome, at): ImportRowResult => {
             const row = rows[at]?.row ?? at + 1;

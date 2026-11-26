@@ -450,17 +450,16 @@ const withTargets = (
   targetRows: readonly TargetRow[]
 ) =>
   Effect.all(
-    postRows.map(
-      (row): Effect.Effect<FreshPost> =>
-        Effect.all({
-          post: toStored(row).pipe(Effect.map(({ post }) => post)),
-          targets: Effect.all(
-            targetRows.flatMap((target) =>
-              target.postId === row.id ? [toTarget(target)] : []
-            )
-          ),
-          updatedAt: Effect.succeed(DateTime.fromDateUnsafe(row.updatedAt)),
-        })
+    postRows.map((row): Effect.Effect<FreshPost> =>
+      Effect.all({
+        post: toStored(row).pipe(Effect.map(({ post }) => post)),
+        targets: Effect.all(
+          targetRows.flatMap((target) =>
+            target.postId === row.id ? [toTarget(target)] : []
+          )
+        ),
+        updatedAt: Effect.succeed(DateTime.fromDateUnsafe(row.updatedAt)),
+      })
     )
   );
 

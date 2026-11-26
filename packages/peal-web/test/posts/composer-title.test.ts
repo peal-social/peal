@@ -1,5 +1,5 @@
-import { DateTime } from "effect";
 import { describe, expect, it } from "@effect/vitest";
+import { DateTime } from "effect";
 import type { Post, PostStatus } from "peal-contract";
 
 import { composerTitleOf } from "#posts/composer-title.ts";

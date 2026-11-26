@@ -10,8 +10,4 @@ import { PostIdSchema } from "#shared/domain/ids.ts";
 export class PostExternalIdTaken extends Schema.TaggedError<PostExternalIdTaken>()(
   "PostExternalIdTaken",
   { postId: Schema.Option(PostIdSchema) }
-) {
-  override get message(): string {
-    return "Another post of the workspace has this external id";
-  }
-}
+) {}

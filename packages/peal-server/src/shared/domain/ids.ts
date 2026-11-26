@@ -62,6 +62,4 @@ export type PostTargetId = typeof PostTargetIdSchema.Type;
  * column for when it was created.
  */
 export const createdAtOf = (id: Uuid7): DateTime.Utc =>
-  DateTime.makeUnsafe(
-    Number.parseInt(id.replaceAll("-", "").slice(0, 12), 16)
-  );
+  DateTime.makeUnsafe(Number.parseInt(id.replaceAll("-", "").slice(0, 12), 16));

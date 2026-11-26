@@ -223,11 +223,13 @@ const save = Command.make(
       onSome: (shortenLinks) => ({ ...tagged, shortenLinks }),
     });
 
-    if (input.clearExternalId && Option.isSome(input.externalId)) {
-      return yield* new Refused({
-        reason: "Give --external-id or --clear-external-id, not both.",
-      });
-    }
+    yield* input.clearExternalId && Option.isSome(input.externalId)
+      ? Effect.fail(
+          new Refused({
+            reason: "Give --external-id or --clear-external-id, not both.",
+          })
+        )
+      : Effect.void;
 
     // So is its external id: a draft that changes keeps its own.
     const filed = input.clearExternalId

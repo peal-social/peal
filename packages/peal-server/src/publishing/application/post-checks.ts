@@ -66,7 +66,7 @@ export interface CheckPostRequest {
   readonly channelIds: readonly ChannelId[];
   readonly content: PostContent;
   /** Its caller's own id for it, if it would have one. */
-  readonly externalId?: PostExternalId;
+  readonly externalId?: PostExternalId | undefined;
   // The options it has on some channels, one at most per channel.
   readonly options?: readonly ChannelOptions[];
   /**

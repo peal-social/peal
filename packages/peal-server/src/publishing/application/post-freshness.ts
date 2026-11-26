@@ -30,18 +30,17 @@ export class PostFreshness extends Context.Service<
       const repository = yield* PostRepository;
 
       const stampAll = <A extends PostWithTargets>(posts: readonly A[]) =>
-        Effect.gen(function* stampAll() {
+        Effect.gen(function* stamping() {
           const known = yield* repository.freshness(
             posts.map(({ post }) => post.id)
           );
+
           const now = yield* DateTime.now;
 
-          return posts.map(
-            (found): A & FreshPost => ({
-              ...found,
-              updatedAt: known.get(found.post.id) ?? now,
-            })
-          );
+          return posts.map((found): A & FreshPost => ({
+            ...found,
+            updatedAt: known.get(found.post.id) ?? now,
+          }));
         });
 
       return PostFreshness.of({

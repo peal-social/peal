@@ -235,15 +235,15 @@ export const freshPostViews = Effect.gen(function* freshPostViews() {
   const results = <A extends PostWithTargets, E>(
     made: readonly Result.Result<A, E>[]
   ) =>
-    Effect.forEach(
-      made,
-      (result): Effect.Effect<Result.Result<A & FreshPost, E>> =>
+    Effect.all(
+      made.map((result): Effect.Effect<Result.Result<A & FreshPost, E>> =>
         Result.isSuccess(result)
           ? freshness.stamp(result.success).pipe(
               Effect.orDie,
               Effect.map((stamped) => Result.succeed(stamped))
             )
           : Effect.succeed(Result.fail(result.failure))
+      )
     );
 
   return { one, results };

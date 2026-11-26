@@ -35,15 +35,7 @@ const source = path.join(import.meta.dirname, "..", "..", "..", "src");
 // Each statement that writes `posts` or a post's targets, by file and by
 // kind, as many as the file has: those that move the post, and those that
 // do not, each with its reason. A statement in neither fails the test.
-const writes: Readonly<
-  Record<
-    string,
-    {
-      readonly moving: number;
-      readonly still: readonly string[];
-    }
-  >
-> = {
+const writes = {
   "publishing/infrastructure/drizzle-content-fingerprints.ts": {
     moving: 0,
     // The content digest: no answer shows it.
@@ -79,14 +71,16 @@ const writes: Readonly<
     moving: 1,
     still: [],
   },
-};
+} satisfies Readonly<
+  Record<string, { readonly moving: number; readonly still: readonly string[] }>
+>;
 
 const statement =
   /\.(?:update\((?:posts|postTargets)\)|insert\(postTargets\)|delete\(postTargets\))/gu;
 
 // A statement moves the post when what follows it, to the end of the
 // write it is part of, sets `moved` or calls `movePosts`.
-const moves = (text: string, at: number): boolean => {
+const movesPost = (text: string, at: number): boolean => {
   const after = text.slice(at, at + 1200);
   const end = after.search(/\n {6}[a-zA-Z]+: \(|\n {4}const |\n {4}return /u);
   const write = end === -1 ? after : after.slice(0, end);
@@ -115,16 +109,21 @@ const filesUnder = async (folder: string): Promise<string[]> => {
 describe("the statements that write posts", () => {
   it("move updated_at, or say why not", async () => {
     const files = await filesUnder(source);
+
+    const texts = await Promise.all(
+      files.map(async (file) => await readFile(file, "utf-8"))
+    );
+
     const found: Record<string, { moving: number; still: number }> = {};
 
-    for (const file of files) {
-      const text = await readFile(file, "utf-8");
+    for (const [index, file] of files.entries()) {
+      const text = texts[index] ?? "";
       const relative = path.relative(source, file).split(path.sep).join("/");
 
       for (const match of text.matchAll(statement)) {
         const counted = found[relative] ?? { moving: 0, still: 0 };
 
-        found[relative] = moves(text, match.index)
+        found[relative] = movesPost(text, match.index)
           ? { ...counted, moving: counted.moving + 1 }
           : { ...counted, still: counted.still + 1 };
       }
@@ -148,45 +147,48 @@ const at = (instant: string) => DateTime.makeUnsafe(instant);
 const content = (text: string) =>
   new PostContent({ media: [], overrides: [], text });
 
-// Virtual time stays near the epoch, where the test clock starts: a jump of
-// years would wake the pool's timers for every second of them.
-layer(StorageTest)("a post's updated_at", (it) => {
-  const updatedAtOf = (postId: PostId) =>
-    PostRepository.use((posts) => posts.freshness([postId])).pipe(
-      Effect.map((known) =>
-        Option.fromUndefinedOr(known.get(postId)).pipe(
-          Option.map(DateTime.formatIso),
-          Option.getOrElse(() => "gone")
-        )
+const updatedAtOf = (postId: PostId) =>
+  PostRepository.use((posts) => posts.freshness([postId])).pipe(
+    Effect.map((known) =>
+      Option.fromUndefinedOr(known.get(postId)).pipe(
+        Option.map(DateTime.formatIso),
+        Option.getOrElse(() => "gone")
       )
+    )
+  );
+
+// A draft on one channel, inserted at `instant`.
+const draftAt = (instant: string) =>
+  Effect.gen(function* drafting() {
+    yield* TestClock.setTime(DateTime.toEpochMillis(at(instant)));
+
+    const posts = yield* PostRepository;
+    const workspaceId = yield* freshWorkspace;
+    const postId = yield* newId(PostIdSchema);
+    const channelId = yield* newId(ChannelIdSchema);
+    const targetId = yield* newId(PostTargetIdSchema);
+
+    const post = createDraft(
+      postId,
+      workspaceId,
+      content("A synthetic draft"),
+      Option.none()
     );
 
-  // A draft on one channel, inserted at `instant`.
-  const draftAt = (instant: string) =>
-    Effect.gen(function* draftAt() {
-      yield* TestClock.setTime(DateTime.toEpochMillis(at(instant)));
+    const target = createTarget(targetId, postId, channelId);
 
+    yield* posts.insert(post, [target]);
+
+    return { post, postId, target };
+  });
+
+// Virtual time stays near the epoch, where the test clock starts: a jump of
+// years would wake the pool's timers for every second of them.
+layer(StorageTest)("a post's updated_at", (storage) => {
+  storage.effect("is the insert's instant, then each write's", () =>
+    Effect.gen(function* moving() {
       const posts = yield* PostRepository;
-      const workspaceId = yield* freshWorkspace;
-      const postId = yield* newId(PostIdSchema);
-      const channelId = yield* newId(ChannelIdSchema);
-      const targetId = yield* newId(PostTargetIdSchema);
-      const post = createDraft(
-        postId,
-        workspaceId,
-        content("A synthetic draft"),
-        Option.none()
-      );
-      const target = createTarget(targetId, postId, channelId);
 
-      yield* posts.insert(post, [target]);
-
-      return { post, postId, target };
-    });
-
-  it.effect("is the insert's instant, then each write's", () =>
-    Effect.gen(function* moves() {
-      const posts = yield* PostRepository;
       const { post, postId, target } = yield* draftAt(
         "1970-01-01T00:01:00.000Z"
       );
@@ -260,48 +262,51 @@ layer(StorageTest)("a post's updated_at", (it) => {
     })
   );
 
-  it.effect("gives one external id to one post that is not cancelled", () =>
-    Effect.gen(function* unique() {
-      const posts = yield* PostRepository;
-      const first = yield* draftAt("1970-01-01T00:03:00.000Z");
-      const externalId = PostExternalIdSchema.make("record-unique");
+  storage.effect(
+    "gives one external id to one post that is not cancelled",
+    () =>
+      Effect.gen(function* unique() {
+        const posts = yield* PostRepository;
+        const first = yield* draftAt("1970-01-01T00:03:00.000Z");
+        const externalId = PostExternalIdSchema.make("record-unique");
 
-      yield* posts.setExternalId(first.postId, Option.some(externalId));
+        yield* posts.setExternalId(first.postId, Option.some(externalId));
 
-      assert.deepStrictEqual(
-        yield* posts.claimExternalId(first.post.workspaceId, externalId),
-        Option.some(first.postId)
-      );
+        assert.deepStrictEqual(
+          yield* posts.claimExternalId(first.post.workspaceId, externalId),
+          Option.some(first.postId)
+        );
 
-      // Another workspace's posts are none of its own.
-      const other = yield* draftAt("1970-01-01T00:03:00.000Z");
+        // Another workspace's posts are none of its own.
+        const other = yield* draftAt("1970-01-01T00:03:00.000Z");
 
-      assert.deepStrictEqual(
-        yield* posts.externalIdHolder(other.post.workspaceId, externalId),
-        Option.none()
-      );
+        assert.deepStrictEqual(
+          yield* posts.externalIdHolder(other.post.workspaceId, externalId),
+          Option.none()
+        );
 
-      // The index refuses a second post with it in the workspace.
-      const second = yield* newId(PostIdSchema);
-      const inserted = yield* posts
-        .insert(
-          withExternalId(
-            createDraft(
-              second,
-              first.post.workspaceId,
-              content("Another"),
-              Option.none()
+        // The index refuses a second post with it in the workspace.
+        const second = yield* newId(PostIdSchema);
+
+        const inserted = yield* posts
+          .insert(
+            withExternalId(
+              createDraft(
+                second,
+                first.post.workspaceId,
+                content("Another"),
+                Option.none()
+              ),
+              Option.some(externalId)
             ),
-            Option.some(externalId)
-          ),
-          []
-        )
-        .pipe(Effect.exit);
+            []
+          )
+          .pipe(Effect.exit);
 
-      assert.isTrue(inserted._tag === "Failure");
+        assert.isTrue(inserted._tag === "Failure");
 
-      yield* posts.remove(first.postId);
-      yield* posts.remove(other.postId);
-    })
+        yield* posts.remove(first.postId);
+        yield* posts.remove(other.postId);
+      })
   );
 });

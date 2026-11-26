@@ -232,9 +232,8 @@ export const draftTagsFrom = tagsGiven;
 const decodeExternalId = Schema.decodeUnknownEffect(PostExternalIdSchema);
 
 /** The external id a request gives a post, decoded. */
-export const externalIdFrom = (
-  raw: string
-): Effect.Effect<PostExternalId> => decodeExternalId(raw).pipe(Effect.orDie);
+export const externalIdFrom = (raw: string): Effect.Effect<PostExternalId> =>
+  decodeExternalId(raw).pipe(Effect.orDie);
 
 /**
  * The external id a new post's request gives, when it gives one: left

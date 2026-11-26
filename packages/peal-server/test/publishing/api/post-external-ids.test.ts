@@ -60,17 +60,23 @@ const studio = Effect.gen(function* studio() {
     at: string,
     externalId?: string,
     channelIds: readonly [ChannelId, ...ChannelId[]] = [mastodon]
-  ) =>
-    editor.posts.create({
-      headers,
-      payload: {
-        channelIds,
-        content: text(body),
-        ...(externalId === undefined ? {} : { externalId }),
-        when: { _tag: "at", at: utc(at), timeZone: "Europe/Paris" },
+  ) => {
+    const plain = {
+      channelIds,
+      content: text(body),
+      when: {
+        _tag: "at" as const,
+        at: utc(at),
+        timeZone: "Europe/Paris",
       },
+    };
+
+    return editor.posts.create({
+      headers,
+      payload: externalId === undefined ? plain : { ...plain, externalId },
       query: {},
     });
+  };
 
   return { editor, headers, mastodon, send, workspaceId };
 });
@@ -176,11 +182,7 @@ describe("a post's external id", () => {
             params: { postId: draft.id },
           });
 
-          const made = yield* send(
-            "Third",
-            "2026-06-18T08:00:00Z",
-            "record-2"
-          );
+          const made = yield* send("Third", "2026-06-18T08:00:00Z", "record-2");
 
           assert.strictEqual(made.externalId, "record-2");
         })

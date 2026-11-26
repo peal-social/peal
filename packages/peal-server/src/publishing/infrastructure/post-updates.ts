@@ -29,10 +29,7 @@ export const moved = (now: DateTime.Utc) =>
  * writes their targets (`post_targets`): a target that publishes, fails or
  * is taken off changes what its post's answer shows.
  */
-export const movePosts = (
-  db: Drizzle["Service"],
-  postIds: readonly PostId[]
-) =>
+export const movePosts = (db: Drizzle["Service"], postIds: readonly PostId[]) =>
   postIds.length === 0
     ? Effect.void
     : DateTime.now.pipe(

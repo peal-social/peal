@@ -1,5 +1,5 @@
-import { DateTime } from "effect";
 import { describe, expect, it } from "@effect/vitest";
+import { DateTime } from "effect";
 import { NextIntlClientProvider } from "next-intl";
 import type { Locale } from "next-intl";
 import {

@@ -367,7 +367,7 @@ export class PostBatches extends Context.Service<
                 allowDuplicate,
                 channelIds,
                 content,
-                ...(externalId === undefined ? {} : { externalId }),
+                externalId,
                 options,
                 presets: presets ?? nothingAsked,
                 when: Option.some(placement),

@@ -1043,12 +1043,14 @@ const externalId = Command.make(
     recordId: given,
     workspace: choice,
   }) {
-    if (clear === Option.isSome(given)) {
-      return yield* new Refused({
-        reason:
-          "Give the post's external id, or --clear to take it off: one of them.",
-      });
-    }
+    yield* clear === Option.isSome(given)
+      ? Effect.fail(
+          new Refused({
+            reason:
+              "Give the post's external id, or --clear to take it off: one of them.",
+          })
+        )
+      : Effect.void;
 
     const { client, url } = yield* inWorkspace(choice);
 

@@ -1,5 +1,5 @@
-import { DateTime } from "effect";
 import { describe, expect, it } from "@effect/vitest";
+import { DateTime } from "effect";
 import type { SocialChannel, Post } from "peal-contract";
 
 import {

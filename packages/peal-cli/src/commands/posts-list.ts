@@ -189,11 +189,13 @@ export const list = Command.make(
     // A time that cannot be read is refused before a request leaves.
     const from = yield* instantFor(input.from, input.timeZone, "--from");
     const to = yield* instantFor(input.to, input.timeZone, "--to");
+
     const updatedSince = yield* instantFor(
       input.updatedSince,
       input.timeZone,
       "--updated-since"
     );
+
     const session = yield* inWorkspace(input.workspace);
     const { client, url, workspace } = session;
 

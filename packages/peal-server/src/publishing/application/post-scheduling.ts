@@ -18,6 +18,8 @@ import type { InvalidTargetTransition } from "#publishing/domain/invalid-target-
 import type { LastTargetLeft } from "#publishing/domain/last-target-left.ts";
 import { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
+import type { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
+import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import type { PostOccurrence } from "#publishing/domain/post-occurrence.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import {
@@ -42,8 +44,6 @@ import {
   withExternalId,
   withLinksShortened,
 } from "#publishing/domain/post.ts";
-import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
-import type { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
 import type { Post } from "#publishing/domain/post.ts";
 import { postingMonthOf, sameMonth } from "#publishing/domain/posting-month.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
@@ -84,12 +84,12 @@ import type { ContentFingerprints } from "./content-fingerprints.ts";
 import { admit, remember } from "./duplicate-guard.ts";
 import { IdempotencyKeyReused } from "./idempotency-key-reused.ts";
 import { IdempotencyKeys } from "./idempotency-keys.ts";
-import { externalIdFree } from "./post-external-ids.ts";
 import type { KeyedRequest, KeyUse } from "./idempotency-keys.ts";
 import { freeSlotOf, queueNamed } from "./placement.ts";
 import type { Placement } from "./placement.ts";
 import { PostAllowance } from "./post-allowance.ts";
 import { PostEvents } from "./post-events.ts";
+import { externalIdFree } from "./post-external-ids.ts";
 import { PostNotFound } from "./post-not-found.ts";
 import { PostOrigins } from "./post-origins.ts";
 import { nothingAsked, PostPresets } from "./post-presets.ts";

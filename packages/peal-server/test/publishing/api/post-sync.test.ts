@@ -36,10 +36,7 @@ const studio = Effect.gen(function* studio() {
   const mastodon = yield* connect(workspaceId, "mastodon");
   const member = memberOf(workspaceId, permissionsFor("editor"));
 
-  const editor = yield* HttpApiTest.groups(Api, [
-    "posts",
-    "posts.drafts",
-  ]).pipe(
+  const editor = yield* HttpApiTest.groups(Api, ["posts", "posts.drafts"]).pipe(
     Effect.provide(
       Layer.mergeAll(
         Layer.merge(PostsHandlers, PostDraftsHandlers).pipe(
@@ -70,14 +67,13 @@ const studio = Effect.gen(function* studio() {
       let cursor: string | undefined;
 
       do {
+        const first = { limit, sort };
+        const paged = cursor === undefined ? first : { ...first, cursor };
+
         const page = yield* editor.posts.list({
           headers,
-          query: {
-            limit,
-            sort,
-            ...(cursor === undefined ? {} : { cursor }),
-            ...(since === undefined ? {} : { updatedSince: since }),
-          },
+          query:
+            since === undefined ? paged : { ...paged, updatedSince: since },
         });
 
         ids.push(...page.items.map(({ id }) => id));

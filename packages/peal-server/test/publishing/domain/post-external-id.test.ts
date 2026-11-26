@@ -90,9 +90,9 @@ describe("a post's external id", () => {
   it("is 1 to 255 characters, without NUL or a lone surrogate", () => {
     const decode = Schema.decodeUnknownOption(PostExternalIdSchema);
 
-    expect(Option.isSome(decode("a".repeat(maxPostExternalIdLength)))).toBe(
-      true
-    );
+    expect(
+      Option.isSome(decode("a".repeat(maxPostExternalIdLength)))
+    ).toBeTruthy();
 
     for (const refused of [
       "",
@@ -100,7 +100,7 @@ describe("a post's external id", () => {
       `record${String.fromCodePoint(0)}`,
       "half \uD83D",
     ]) {
-      expect(Option.isNone(decode(refused))).toBe(true);
+      expect(Option.isNone(decode(refused))).toBeTruthy();
     }
   });
 

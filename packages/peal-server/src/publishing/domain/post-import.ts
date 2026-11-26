@@ -215,9 +215,7 @@ const postOf = (
     ...(key.length > maxIdempotencyKeyLength || controlCharacter.test(key)
       ? [invalid("idempotency_key")]
       : []),
-    ...(Option.isNone(externalId)
-      ? [invalid("external_id")]
-      : []),
+    ...(Option.isNone(externalId) ? [invalid("external_id")] : []),
   ];
 
   if (

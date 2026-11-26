@@ -128,15 +128,15 @@ describe("the stored webhook events", () => {
   );
 });
 
-describe("the stored events that name a post's external id", () => {
-  const recorded = (event: typeof WebhookEventSchema.Type) =>
-    new RecordedEvent({
-      event,
-      id: WebhookEventIdSchema.make("019a6f3e-7b10-7c3a-9d41-5e2f8a6b4c09"),
-      occurredAt: DateTime.makeUnsafe("2026-11-26T08:00:03Z"),
-      workspaceId: WorkspaceIdSchema.make(event.data.workspaceId),
-    });
+const recorded = (event: typeof WebhookEventSchema.Type) =>
+  new RecordedEvent({
+    event,
+    id: WebhookEventIdSchema.make("019a6f3e-7b10-7c3a-9d41-5e2f8a6b4c09"),
+    occurredAt: DateTime.makeUnsafe("2026-11-26T08:00:03Z"),
+    workspaceId: WorkspaceIdSchema.make(event.data.workspaceId),
+  });
 
+describe("the stored events that name a post's external id", () => {
   it.effect("carry it to receivers, and those stored before do not", () =>
     Effect.gen(function* carries() {
       const named = yield* fixture(

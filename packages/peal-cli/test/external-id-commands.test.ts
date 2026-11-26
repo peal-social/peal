@@ -76,30 +76,32 @@ describe("a post's external id", () => {
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 
-  it.effect("sends a post with one, and refuses a second, naming the first", () =>
-    Effect.gen(function* sends() {
-      const session = yield* signedIn();
+  it.effect(
+    "sends a post with one, and refuses a second, naming the first",
+    () =>
+      Effect.gen(function* sends() {
+        const session = yield* signedIn();
 
-      const send = [
-        "post",
-        "A synthetic post from a record.",
-        "--channel",
-        mastodonId,
-        "--now",
-        "--external-id",
-        "record-7",
-        ...inStudio,
-      ];
+        const send = [
+          "post",
+          "A synthetic post from a record.",
+          "--channel",
+          mastodonId,
+          "--now",
+          "--external-id",
+          "record-7",
+          ...inStudio,
+        ];
 
-      yield* session.printed(send);
+        yield* session.printed(send);
 
-      const refused = yield* session.refused(send);
+        const refused = yield* session.refused(send);
 
-      assert.match(
-        refused,
-        /Post \S+ has this external id already: nothing was made or changed\./u
-      );
-    }).pipe(Effect.scoped, Effect.provide(filesLayer))
+        assert.match(
+          refused,
+          /Post \S+ has this external id already: nothing was made or changed\./u
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 
   it.effect("keeps a draft's id unless a flag says otherwise", () =>
@@ -115,7 +117,10 @@ describe("a post's external id", () => {
         "record-9",
         ...inStudio,
       ]);
-      assert.strictEqual(yield* externalIdOf(session.studio, draftId), "record-9");
+      assert.strictEqual(
+        yield* externalIdOf(session.studio, draftId),
+        "record-9"
+      );
 
       yield* session.printed([
         "drafts",
@@ -126,7 +131,10 @@ describe("a post's external id", () => {
         "A synthetic draft, changed.",
         ...inStudio,
       ]);
-      assert.strictEqual(yield* externalIdOf(session.studio, draftId), "record-9");
+      assert.strictEqual(
+        yield* externalIdOf(session.studio, draftId),
+        "record-9"
+      );
 
       yield* session.printed([
         "drafts",
