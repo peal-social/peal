@@ -350,6 +350,32 @@ describe("the agent's domain", () => {
         },
         withPost
       ),
+      // An edit with no new text, before any card is made.
+      refusalOf(
+        "edit_published_post",
+        { channelId: "channel-1", postId: "post-1" },
+        withPost
+      ),
+      // A new text over a website's rich text, which it would flatten.
+      refusalOf(
+        "edit_published_post",
+        { channelId: "channel-1", postId: "post-1", text: "Fixed typo" },
+        {
+          post: Option.some({
+            ...publishable,
+            content: {
+              ...publishable.content,
+              overrides: [
+                {
+                  body: { content: [], type: "doc" },
+                  channelId: "channel-1",
+                  text: "Rich",
+                },
+              ],
+            },
+          }),
+        }
+      ),
       // A post that could not be read.
       refusalOf("publish_post", { postId: "post-1" }),
       // A tag, a channel or a queue's channels nobody can show.
@@ -383,6 +409,8 @@ describe("the agent's domain", () => {
       approvalRefusals.parameters,
       approvalRefusals.parameters,
       approvalRefusals.parameters,
+      approvalRefusals.noText,
+      approvalRefusals.richText,
       approvalRefusals.post,
       approvalRefusals.tags,
       approvalRefusals.target,

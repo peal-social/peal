@@ -1,6 +1,7 @@
-import { Option, Result } from "effect";
+import { Option, Result, Schema } from "effect";
 
 import type { ChannelId } from "#shared/domain/ids.ts";
+import { isSitePlatform } from "#shared/domain/platform.ts";
 import type { ArticleBody } from "#shared/domain/rich-text/rich-body.ts";
 
 import { ChannelOptions } from "./channel-options.ts";
@@ -17,6 +18,7 @@ import {
 } from "./post-content.ts";
 import { richOverride } from "./rich-override.ts";
 import type { SiteStatusOption } from "./site-options.ts";
+import { TargetOptionsSchema } from "./target-options.ts";
 import type { TargetOptions } from "./target-options.ts";
 import { TextOverride } from "./text-override.ts";
 
@@ -179,6 +181,39 @@ const siteStatusOf = (
     ),
     Option.getOrElse((): SiteStatusOption => "publish")
   );
+
+const encodeOptions = Schema.encodeSync(TargetOptionsSchema);
+
+const decodeOptions = Schema.decodeUnknownSync(TargetOptionsSchema);
+
+/**
+ * A website's new options with the target's own `siteStatus` where they
+ * leave it out: the site keeps its status, so options sent again without
+ * it mean the one the target has.
+ */
+export const withSiteStatusKept = (
+  options: TargetOptions,
+  was: Option.Option<TargetOptions>
+): TargetOptions => {
+  const kept = was.pipe(
+    Option.flatMap((before) =>
+      Option.fromUndefinedOr(
+        "siteStatus" in before ? before.siteStatus : undefined
+      )
+    )
+  );
+
+  // An option left out is no key of the class at all.
+  if (
+    !isSitePlatform(options.platform) ||
+    ("siteStatus" in options && options.siteStatus !== undefined) ||
+    Option.isNone(kept)
+  ) {
+    return options;
+  }
+
+  return decodeOptions({ ...encodeOptions(options), siteStatus: kept.value });
+};
 
 /**
  * What a website would refuse in its post once edited, checked as

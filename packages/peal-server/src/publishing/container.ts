@@ -252,6 +252,7 @@ const publishingOver = <E, R, E2, R2, E3, R3, H, R4, R5, R6, E7, R7, E8, R8>(
         DrizzleQueueStore,
         DrizzleRecyclingStore,
         DrizzleSignatureStore,
+        DrizzleSiteFiles,
         DrizzleTagStore,
         DrizzleWorkspacePostStore,
         LoggedChannelHealth,

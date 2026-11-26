@@ -117,7 +117,7 @@
   tool's: a tool missing there, a parameter not in it or one that reads
   otherwise is never asked; `edit_published_post`'s `body` and `options`,
   a website's, are left out on purpose until a card shows them: the
-  agent edits a website's text alone), and what the call names, read as the
+  agent edits a website's text alone, never with no text (`noText`) nor over a rich text, which the text would flatten and no card shows (`richText`)), and what the call names, read as the
   person may read it when it is asked (`requested`, in the run): the post
   whole through `get_post` (`PublishablePostSchema`: text, media, poll,
   each channel's own text and media, the parts after it with their

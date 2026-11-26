@@ -400,7 +400,11 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `bodyInvalid` on the target's channel), and its options (`options`,
   its platform's class, whole), each kept when left out. A social target
   takes `text` alone: a body there is `bodyNotTaken`, options
-  `notSupported`. The post as the edit leaves it is `withEditOn`
+  `optionsNotTaken`. A website's `text` replaces a rich text with plain
+  paragraphs (said wherever the edit is described; the in-app agent's
+  card cannot show the rich text it would flatten, so `approvalOf`
+  refuses that call, `richText`). A text that is nothing once made
+  storable is `empty` there too. The post as the edit leaves it is `withEditOn`
   (`domain/live-post-edit.ts`; the first part's override becomes the
   body's through `richOverride`, or a plain text keeping the media its
   override gave, a body it had gone; the channel's own text again changes
@@ -409,10 +413,12 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   workspace) and the settling all read it. The check is scheduling's on
   the channel's first part alone (`siteContentOn`, so another channel's
   files never count), with its files the workspace's and ready
-  (`mediaFor`, UnknownMedia) and the options new or kept
+  (`mediaFor`, UnknownMedia) but for those the site took for the target
+  already (`SiteFiles.sent`, the `held` the editor reuses: a file deleted
+  from the library since never blocks an edit) and the options new or kept
   (`siteEditViolationsOn`: `checkPublishable`, a title needed); a
-  `siteStatus` other than the target's is `optionInvalid`, as the site
-  keeps its status and its date. Every pending edit holds its `text` (a
+  `siteStatus` left out is the target's (`withSiteStatusKept`), another
+  is `optionInvalid`, as the site keeps its status and its date. Every pending edit holds its `text` (a
   body's plain text, or the channel's text for an edit of the options
   alone), so the release before, which edits no website, fails it
   `notSupported`; `body` and `options` are held beside it

@@ -117,10 +117,12 @@ export type PostUnpublish = typeof PostUnpublishSchema.Type;
  * An edit of a live post on one channel. On a social network or a chat:
  * `text` for the part at `part` (from 0, the post itself, which it is when
  * left out), and only the text changes. On a website: its text there
- * (`text`, or a rich text, `body`) and its options (`options`, its
- * platform's, whole: an option left out of them is left out on the site),
- * each kept as it is when left out; its site status and its date never
- * change. One of `text`, `body` or `options` at least.
+ * (`text`, which replaces a rich text with plain paragraphs: send `body`
+ * to keep its formatting, or a rich text, `body`) and its options
+ * (`options`, its platform's, whole: an option left out of them is left
+ * out on the site, but for `siteStatus`, which is the target's), each kept
+ * as it is when left out; its site status and its date never change. One
+ * of `text`, `body` or `options` at least.
  */
 export const LivePostEditSchema = Schema.Struct({
   body: Schema.optionalKey(RichTextSchema),

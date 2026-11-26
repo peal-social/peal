@@ -14,6 +14,7 @@ import {
   siteContentOn,
   siteEditViolationsOn,
   withEditOn,
+  withSiteStatusKept,
 } from "#publishing/domain/live-post-edit.ts";
 import { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import {
@@ -505,6 +506,37 @@ describe("an edit of a website's live post", () => {
         })
       )
     ).toStrictEqual([]);
+  });
+
+  it("takes the target's site status where new options leave it out", () => {
+    const draft = Option.some(
+      new WordPressOptions({
+        platform: "wordpress",
+        siteStatus: "draft",
+        title: "Before",
+      })
+    );
+
+    expect(
+      withSiteStatusKept(
+        new WordPressOptions({ platform: "wordpress", title: "After" }),
+        draft
+      )
+    ).toStrictEqual(
+      new WordPressOptions({
+        platform: "wordpress",
+        siteStatus: "draft",
+        title: "After",
+      })
+    );
+
+    const published = new WordPressOptions({
+      platform: "wordpress",
+      siteStatus: "publish",
+      title: "After",
+    });
+
+    expect(withSiteStatusKept(published, draft)).toBe(published);
   });
 
   it("is checked as scheduling checks it: a title is still needed", () => {

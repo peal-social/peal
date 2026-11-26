@@ -28,6 +28,7 @@ import {
   editViolationsOn,
   siteContentOn,
   siteEditViolationsOn,
+  withSiteStatusKept,
   withEditOn,
 } from "#publishing/domain/live-post-edit.ts";
 import { deletionWindowPassed } from "#publishing/domain/live-post-support.ts";
@@ -63,6 +64,7 @@ import { PostOrigins } from "./post-origins.ts";
 import { maxOutcomeWait, maxWaitingRequests } from "./post-outcomes.ts";
 import { mediaFor } from "./post-references.ts";
 import { PostRepository } from "./post-repository.ts";
+import { SiteFiles } from "./site-files.ts";
 import type { UnknownMedia } from "./unknown-media.ts";
 import { findInWorkspace, lockInWorkspace } from "./workspace-posts.ts";
 
@@ -219,6 +221,7 @@ export class LivePostChanges extends Context.Service<
       const gate = yield* ApprovalGate;
       const credentials = yield* PlatformCredentials;
       const origins = yield* PostOrigins;
+      const siteFiles = yield* SiteFiles;
       const { transaction } = yield* TransactionRunner;
 
       const ports = yield* Effect.context<
@@ -358,7 +361,11 @@ export class LivePostChanges extends Context.Service<
           }
 
           if (edit.options !== undefined) {
-            return Result.fail<LivePostRefusal>("notSupported");
+            yield* rejected([
+              edit.part === 0
+                ? { _tag: "optionsNotTaken", ...channel }
+                : { _tag: "optionsNotTaken", ...channel, part: edit.part },
+            ]);
           }
 
           const text = edit.text ?? "";
@@ -397,18 +404,36 @@ export class LivePostChanges extends Context.Service<
             edit.body === invalidBody ? undefined : edit.body
           );
 
+          // A text that is nothing once made storable leaves the site an
+          // empty post, as it would a social network's.
+          if (
+            Option.isNone(body) &&
+            edit.text !== undefined &&
+            edit.text.trim() === ""
+          ) {
+            yield* rejected([{ _tag: "empty", ...channel }]);
+          }
+
           const text = Option.match(body, {
             onNone: () => edit.text ?? textOn(post.content, target.channelId),
             onSome: (rich) => textOfBody(rich, maxPostTextLength),
           });
 
-          const options = Option.fromUndefinedOr(edit.options);
+          // Options sent again without a site status mean the target's.
+          const options = Option.fromUndefinedOr(edit.options).pipe(
+            Option.map((given) => withSiteStatusKept(given, target.options))
+          );
+
           const chosen = Option.orElse(options, () => target.options);
 
           const shown = siteContentOn(
             withEditOn(post.content, 0, target.channelId, { body, text }),
             target.channelId
           );
+
+          // A file the site took for the target already is not sent again:
+          // only the others must still be the workspace's and ready.
+          const held = new Set((yield* siteFiles.sent(target.id)).keys());
 
           const files = yield* mediaFor(
             actor,
@@ -421,7 +446,8 @@ export class LivePostChanges extends Context.Service<
                   options: given,
                 }),
               ],
-            })
+            }),
+            held
           ).pipe(Effect.provideContext(ports));
 
           yield* rejected(

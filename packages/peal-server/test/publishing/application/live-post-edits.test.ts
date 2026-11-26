@@ -14,6 +14,7 @@ import { LivePostNotChangeable } from "#publishing/application/live-post-not-cha
 import { PostEvents } from "#publishing/application/post-events.ts";
 import { PostRepository } from "#publishing/application/post-repository.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
+import { SiteFiles } from "#publishing/application/site-files.ts";
 import { UnknownMedia } from "#publishing/application/unknown-media.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.ts";
@@ -1314,6 +1315,166 @@ describe("editing a website's live post", () => {
   );
 
   it.effect(
+    "takes a file the site holds already, gone from the library since, and keeps a site status left out",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* held() {
+          const changes = yield* LivePostChanges;
+
+          const { actor, channelId, postId, target } = yield* publishedOnSite();
+
+          // The cover went to the site when the post was published, and
+          // was deleted from the library since.
+          const gone = MediaAssetIdSchema.make(
+            "00000000-0000-7000-8000-00000000a0fe"
+          );
+
+          yield* SiteFiles.use((files) =>
+            files.record(target.id, gone, {
+              id: 7,
+              sourceUrl: "https://site.example.test/cover.jpg",
+            })
+          );
+
+          const change = yield* changes.editTarget(actor, postId, target.id, {
+            options: new WordPressOptions({
+              coverMediaId: gone,
+              platform: "wordpress",
+              title: "Fixed",
+            }),
+            part: 0,
+          });
+
+          yield* eventually("the edit is done", hasStatus(change.id, "done"));
+
+          assert.deepStrictEqual(
+            titleOf(yield* targetOn(postId, channelId)),
+            Option.some("Fixed")
+          );
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "keeps a draft's site status when the options leave it out",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* draft() {
+          const changes = yield* LivePostChanges;
+          const workspaceId = yield* freshWorkspace;
+          const channelId = yield* connect(workspaceId, "wordpress");
+
+          const postId = yield* sendNow(workspaceId, [channelId], 1, [
+            new ChannelOptions({
+              channelId,
+              options: new WordPressOptions({
+                platform: "wordpress",
+                siteStatus: "draft",
+                title: "A draft there",
+              }),
+            }),
+          ]);
+
+          const target = yield* targetOn(postId, channelId);
+
+          const change = yield* changes.editTarget(
+            actorIn(workspaceId),
+            postId,
+            target.id,
+            {
+              options: new WordPressOptions({
+                platform: "wordpress",
+                title: "Still a draft",
+              }),
+              part: 0,
+            }
+          );
+
+          yield* eventually("the edit is done", hasStatus(change.id, "done"));
+
+          const after = yield* targetOn(postId, channelId);
+
+          assert.deepStrictEqual(
+            after.options.pipe(
+              Option.flatMap((options) =>
+                Option.fromUndefinedOr(
+                  "siteStatus" in options ? options.siteStatus : undefined
+                )
+              )
+            ),
+            Option.some("draft")
+          );
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "refuses a text that is nothing once kept, as a social network's",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* nothing() {
+          const changes = yield* LivePostChanges;
+          const { actor, postId, target } = yield* publishedOnSite();
+
+          const refused = yield* changes
+            .editTarget(actor, postId, target.id, { part: 0, text: "\u0007" })
+            .pipe(Effect.exit);
+
+          assert.deepStrictEqual(violationsOf(refused), ["empty"]);
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "leaves no rich text or options on an edit that failed",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* failed() {
+          const changes = yield* LivePostChanges;
+          const removals = yield* FakeRemovals;
+          const { actor, channelId, postId, target } = yield* publishedOnSite();
+
+          yield* removals.script(channelId, [
+            {
+              _tag: "fail",
+              failure: new BadRequest({ code: "wordpress:rest_cannot_edit" }),
+            },
+          ]);
+
+          const change = yield* changes.editTarget(actor, postId, target.id, {
+            body: correctedBody,
+            options: new WordPressOptions({
+              platform: "wordpress",
+              title: "Never shown",
+            }),
+            part: 0,
+          });
+
+          yield* eventually("the edit failed", hasStatus(change.id, "failed"));
+
+          assert.deepStrictEqual(yield* storedSiteEditOf(change.id), {
+            body: null,
+            options: null,
+          });
+          assert.isNull(yield* storedTextOf(change.id));
+          assert.deepStrictEqual(
+            titleOf(yield* targetOn(postId, channelId)),
+            Option.some("Before")
+          );
+          assert.deepStrictEqual((yield* contentOf(postId)).overrides, []);
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
     "refuses another site status, a missing title and a file not the workspace's, before any call",
     () =>
       onPostsServerAt(
@@ -1392,7 +1553,7 @@ describe("editing a website's live post", () => {
             })
             .pipe(Effect.exit);
 
-          assert.strictEqual(refusalOf(options), "notSupported");
+          assert.deepStrictEqual(violationsOf(options), ["optionsNotTaken"]);
 
           const empty = yield* changes
             .editTarget(actor, postId, target.id, { part: 0 })

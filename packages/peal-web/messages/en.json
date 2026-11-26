@@ -1734,7 +1734,8 @@
         "optionInvalid": "{channel}: {reason}",
         "forbiddenCharacters": "{channel}: the text cannot hold {characters}.",
         "bodyInvalid": "{channel}: its rich text holds something Peal does not send, or is too long.",
-        "bodyNotTaken": "{channel}: only a website takes a rich text, on the post's first part."
+        "bodyNotTaken": "{channel}: only a website takes a rich text, on the post's first part.",
+        "optionsNotTaken": "{channel}: once a post is live, only a website's options change. Edit its text alone."
       },
       "channelDetail": "{handle} on {platform}",
       "placementLabel": "When the post goes out",
