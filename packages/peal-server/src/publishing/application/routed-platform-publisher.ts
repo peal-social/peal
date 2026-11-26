@@ -1,4 +1,4 @@
-import { Effect, Layer, Option, Result } from "effect";
+import { DateTime, Effect, Layer, Option, Result } from "effect";
 
 import { CurrentThreadedPlatforms } from "#publishing/application/threaded-platforms.ts";
 import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
@@ -14,6 +14,7 @@ import {
   linksToShorten,
   withShortLinks,
 } from "#publishing/domain/short-links.ts";
+import { siteUnchanged, standingWanted } from "#publishing/domain/site-hold.ts";
 import {
   storableFailure,
   storableResult,
@@ -28,6 +29,7 @@ import { withinAllowance } from "#shared/domain/allowance.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
+import { isSitePlatform } from "#shared/domain/platform.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
@@ -38,6 +40,8 @@ import type {
   OutgoingPost,
   PlatformClient,
   ReplyReference,
+  SiteCall,
+  SiteCallStanding,
 } from "./platform-client.ts";
 import { PlatformCredentials } from "./platform-credentials.ts";
 import { PlatformPublisher } from "./platform-publisher.ts";
@@ -133,6 +137,35 @@ const interrupted: PublishResult = {
   _tag: "unconfirmed",
   reason: "interrupted",
 };
+
+// A hand-over's call that finds nothing for the site to change: nothing
+// is sent.
+const nothingToChange = new BadRequest({ code: siteUnchanged });
+
+// How often a hand-over's call looks again at what the post wants, once
+// the site answered: a change made while the call was under way (a
+// cancel, a move) is followed in the same call.
+const handOverLooks = 3;
+
+// Whether the site was asked for what is wanted now.
+const sameStanding = (done: SiteCallStanding, wanted: SiteCallStanding) =>
+  done._tag === "hold"
+    ? wanted._tag === "hold" && DateTime.Equivalence(done.at, wanted.at)
+    : done._tag === wanted._tag;
+
+// A hand-over's standing as a call makes it: none when the site has
+// nothing to change.
+const callable = (
+  wanted: ReturnType<typeof standingWanted>
+): Option.Option<SiteCallStanding> =>
+  wanted._tag === "none" ? Option.none() : Option.some(wanted);
+
+// The site's call on the outgoing post, when it is a website's.
+const siteOn = (site: Option.Option<SiteCall>) =>
+  Option.match(site, {
+    onNone: () => ({}),
+    onSome: (call) => ({ site: call }),
+  });
 
 /**
  * The PlatformPublisher the channel gates run: it reads the post and its
@@ -302,7 +335,44 @@ export const RoutedPlatformPublisher = Layer.effect(
       }
     });
 
-    const outgoing = Effect.fn("Publishing.outgoing")(function* outgoing(
+    // The website's call the request makes, read inside the gate: a
+    // hand-over asks for what the post wants of the site now (nothing to
+    // change, and nothing is sent), any other call publishes the post.
+    const siteCallOf = Effect.fn("Publishing.siteCallOf")(function* siteCallOf(
+      request: PublishRequest,
+      platform: Platform,
+      post: Post,
+      target: PostTarget
+    ) {
+      if (!isSitePlatform(platform)) {
+        return request.handOver === true
+          ? yield* nothingToChange
+          : Option.none<SiteCall>();
+      }
+
+      const standing: Option.Option<SiteCallStanding> =
+        request.handOver === true
+          ? callable(standingWanted(post, target, yield* DateTime.now))
+          : Option.some({ _tag: "publish" });
+
+      if (Option.isNone(standing)) {
+        return yield* nothingToChange;
+      }
+
+      const call: SiteCall = {
+        held: Option.fromUndefinedOr(target.onSite),
+        record: (onSite) => posts.setSitePost(target.id, onSite),
+        standing: standing.value,
+      };
+
+      return Option.some(call);
+    });
+
+    // The post and the target the request is for. A hand-over whose post
+    // or target went meanwhile, with its draft, has nothing to change:
+    // the job that removes it there has its ids. Any other call finds
+    // both, as nothing deletes a post that is going out.
+    const readFor = Effect.fn("Publishing.readFor")(function* readFor(
       request: PublishRequest
     ) {
       const { stored, target } = yield* Effect.all({
@@ -310,13 +380,21 @@ export const RoutedPlatformPublisher = Layer.effect(
         target: posts.findTarget(request.targetId),
       }).pipe(Effect.catchTag("DatabaseError", databaseDown));
 
-      if (Option.isNone(stored)) {
-        return yield* Effect.die(`Post ${request.postId} is missing`);
+      if (Option.isNone(stored) || Option.isNone(target)) {
+        return request.handOver === true
+          ? yield* nothingToChange
+          : yield* Effect.die(
+              `Post ${request.postId} or its target ${request.targetId} is missing`
+            );
       }
 
-      if (Option.isNone(target)) {
-        return yield* Effect.die(`Target ${request.targetId} is missing`);
-      }
+      return { stored: stored.value, target: target.value };
+    });
+
+    const outgoing = Effect.fn("Publishing.outgoing")(function* outgoing(
+      request: PublishRequest
+    ) {
+      const { stored, target } = yield* readFor(request);
 
       const account = yield* credentials.account(request.channelId);
       const client = clients.for(account.platform);
@@ -325,7 +403,7 @@ export const RoutedPlatformPublisher = Layer.effect(
         return yield* new BadRequest({ code: "platformNotSupported" });
       }
 
-      const { post } = stored.value;
+      const { post } = stored;
       const part = partsOn(post.content, request.channelId)[request.part];
 
       // The post has fewer parts than the job was started for: it cannot
@@ -345,7 +423,7 @@ export const RoutedPlatformPublisher = Layer.effect(
         (followUpsThrough(
           account.platform,
           account.connection,
-          target.value.options
+          target.options
         ) === undefined ||
           !threaded.takesParts(account.platform))
       ) {
@@ -361,11 +439,8 @@ export const RoutedPlatformPublisher = Layer.effect(
       if (
         part.index === 0 &&
         post.content.followUps.length > 0 &&
-        followUpsThrough(
-          account.platform,
-          account.connection,
-          target.value.options
-        )?.kind === "comment" &&
+        followUpsThrough(account.platform, account.connection, target.options)
+          ?.kind === "comment" &&
         !threaded.takesParts(account.platform)
       ) {
         return yield* new BadRequest({ code: firstCommentsOff });
@@ -376,11 +451,8 @@ export const RoutedPlatformPublisher = Layer.effect(
       // of the comment, even if the comment is never sent.
       if (
         (part.index > 0 || post.content.followUps.length > 0) &&
-        followUpsThrough(
-          account.platform,
-          account.connection,
-          target.value.options
-        )?.kind === "comment"
+        followUpsThrough(account.platform, account.connection, target.options)
+          ?.kind === "comment"
       ) {
         yield* posts
           .markFirstComment(request.targetId)
@@ -393,10 +465,12 @@ export const RoutedPlatformPublisher = Layer.effect(
 
       if (
         Option.isSome(poll) &&
-        rulesFor(account.platform, target.value.options).poll === undefined
+        rulesFor(account.platform, target.options).poll === undefined
       ) {
         return yield* new BadRequest({ code: pollNotSupported });
       }
+
+      const site = yield* siteCallOf(request, account.platform, post, target);
 
       const sent: OutgoingPost = {
         accountId: account.accountId,
@@ -404,11 +478,12 @@ export const RoutedPlatformPublisher = Layer.effect(
         channelId: request.channelId,
         idempotencyKey: request.idempotencyKey,
         media: part.media,
-        options: target.value.options,
+        options: target.options,
         part: part.index,
         poll,
-        replyTo: yield* replyTargetOf(target.value, part.index),
-        round: target.value.round,
+        replyTo: yield* replyTargetOf(target, part.index),
+        round: target.round,
+        ...siteOn(site),
         startedAt: request.startedAt,
         targetId: request.targetId,
         text: yield* textSent(post, request, account.platform, part.text),
@@ -417,11 +492,18 @@ export const RoutedPlatformPublisher = Layer.effect(
 
       return {
         client: client.value,
+        // A website's call that publishes or holds the post asks the plan,
+        // as one that makes it live; a take-back or a removal does not.
+        planned: Option.match(site, {
+          onNone: () => true,
+          onSome: ({ standing }) =>
+            standing._tag === "publish" || standing._tag === "hold",
+        }),
         platform: account.platform,
         post: sent,
         stored: post,
         thread: {
-          live: target.value.liveParts.length,
+          live: target.liveParts.length,
           texts: partsOn(post.content, request.channelId).map(
             ({ text }) => text
           ),
@@ -429,21 +511,75 @@ export const RoutedPlatformPublisher = Layer.effect(
       };
     });
 
+    // Sends the part, the plan asked first for a post's first part.
+    const sendOnce = (request: PublishRequest) =>
+      outgoing(request).pipe(
+        Effect.tap(({ planned, post, stored }) =>
+          post.part === 0 && planned
+            ? withinPlan(stored).pipe(
+                Effect.catchTag("DatabaseError", databaseDown)
+              )
+            : Effect.void
+        ),
+        Effect.flatMap(({ client, platform, post, thread }) =>
+          sendMetered(client, post, platform, thread).pipe(
+            Effect.map((result) => ({ result, standing: post.site?.standing }))
+          )
+        )
+      );
+
+    // A hand-over's call: once the site answered, the post is read again,
+    // and what it wants now is asked in the same call when it changed
+    // meanwhile (a cancel, a move, a take-back), so no change made while
+    // the call was under way is left for nobody. Answered as the last
+    // call that changed the site.
+    const handOver = Effect.fn("Publishing.handOver")(function* handOver(
+      request: PublishRequest
+    ) {
+      let last = yield* sendOnce(request);
+
+      for (let look = 1; look < handOverLooks; look += 1) {
+        const done = last.standing;
+        const wanted = yield* standingNow(request);
+
+        if (
+          done === undefined ||
+          Option.isNone(wanted) ||
+          sameStanding(done, wanted.value)
+        ) {
+          break;
+        }
+
+        last = yield* sendOnce(request);
+      }
+
+      return last.result;
+    });
+
+    // What the target's site is to be made to do now, if anything.
+    const standingNow = (request: PublishRequest) =>
+      Effect.all({
+        stored: posts.find(request.postId),
+        target: posts.findTarget(request.targetId),
+      }).pipe(
+        Effect.catchTag("DatabaseError", databaseDown),
+        Effect.flatMap(({ stored, target }) =>
+          Option.isNone(stored) || Option.isNone(target)
+            ? Effect.succeed(Option.none<SiteCallStanding>())
+            : DateTime.now.pipe(
+                Effect.map((now) =>
+                  callable(standingWanted(stored.value.post, target.value, now))
+                )
+              )
+        )
+      );
+
     return PlatformPublisher.of({
       publish: (request) =>
-        outgoing(request).pipe(
-          Effect.tap(({ post, stored }) =>
-            post.part === 0
-              ? withinPlan(stored).pipe(
-                  Effect.catchTag("DatabaseError", databaseDown)
-                )
-              : Effect.void
-          ),
-          Effect.flatMap(({ client, platform, post, thread }) =>
-            sendMetered(client, post, platform, thread)
-          ),
-          storable
-        ),
+        (request.handOver === true
+          ? handOver(request)
+          : sendOnce(request).pipe(Effect.map(({ result }) => result))
+        ).pipe(storable),
       // Without the post or its channel, the earlier run cannot be checked.
       resume: (request) =>
         outgoing(request).pipe(

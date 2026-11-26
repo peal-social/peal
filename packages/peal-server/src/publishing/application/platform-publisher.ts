@@ -15,6 +15,12 @@ export const PublishRequestSchema = Schema.Struct({
   // by a server from before posts had parts.
   part: Schema.Int.pipe(Schema.withDecodingDefault(Effect.succeed(0))),
   postId: PostIdSchema,
+  // A hand-over's call (`SiteHoldV1`, `#publishing/domain/site-hold.ts`):
+  // the router asks the target's website for what the post wants of it
+  // as it is when the call runs, never to publish it, and answers
+  // `siteUnchanged` when nothing is to change. Left out by every other
+  // call, and by a server from before hand-overs.
+  handOver: Schema.optionalKey(Schema.Boolean),
   // When the attempt's call started, as the journal recorded it: the same
   // for every run of the attempt, so adapters can derive what they send
   // from it (Bluesky's record key and creation time).

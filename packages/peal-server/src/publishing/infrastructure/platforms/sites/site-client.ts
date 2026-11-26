@@ -1,9 +1,18 @@
-import { DateTime, Effect, Layer, Match, Option, Schema } from "effect";
+import {
+  DateTime,
+  Effect,
+  Layer,
+  Match,
+  Option,
+  Schedule,
+  Schema,
+} from "effect";
 
 import { PlatformClients } from "#publishing/application/platform-client.ts";
 import type {
   OutgoingPost,
   PlatformClient,
+  SiteCall,
 } from "#publishing/application/platform-client.ts";
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
 import type { PublishingToken } from "#publishing/application/platform-credentials.ts";
@@ -18,6 +27,8 @@ import { HashnodeOptions } from "#publishing/domain/hashnode-options.ts";
 import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import { bodyOfText } from "#publishing/domain/rich-override.ts";
+import { siteUnchanged } from "#publishing/domain/site-hold.ts";
+import type { SitePost } from "#publishing/domain/site-post.ts";
 import { SiteProgressSchema } from "#publishing/domain/site-progress.ts";
 import { WordPressComOptions } from "#publishing/domain/wordpress-com-options.ts";
 import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
@@ -33,17 +44,26 @@ import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { isSitePlatform } from "#shared/domain/platform.ts";
 import type { SitePlatform } from "#shared/domain/platform.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
-import type { PublishResult } from "#shared/domain/publish-result.ts";
+import type {
+  Published,
+  PublishResult,
+} from "#shared/domain/publish-result.ts";
 import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
 import type { SiteArticleContent } from "#shared/domain/rich-text/site-article-content.ts";
 import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
+import type { SiteStanding } from "#shared/domain/rich-text/site-standing.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 
 // A website's post goes out as an article: the options of its platform
 // give its title, excerpt, featured image, tags and categories, and how
 // the site shows it; its body is the channel's rich text, or the post's
-// text and images written as one. Peal sends it at the post's time: the
-// site publishes it as it gets it (`publishAt` none).
+// text and images written as one. Peal sends it at the post's time, the
+// site publishing it as it gets it, or, where the site publishes a post
+// at a time itself, hands it over ahead (`#publishing/domain/site-hold.ts`):
+// the router says in `OutgoingPost.site` what the call is to make of the
+// post the site holds for the target (hold it for a time, keep it as a
+// draft, take it off, or put it out), and the client records what the
+// site then holds as soon as it answered, inside the gate.
 
 const isSiteOptions = Schema.is(
   Schema.Union([
@@ -114,6 +134,7 @@ export const articleOf = (
  * the site's own codes never read as one of them.
  */
 const ownCodes: ReadonlySet<string> = new Set([
+  siteUnchanged,
   ownRefusalCodes.channelDisabled,
   ownRefusalCodes.channelDisconnected,
   ownRefusalCodes.mediaRemoved,
@@ -184,6 +205,63 @@ export const siteFilesOf =
         stores.articles.among(channelId, platformPostIds),
       ]).pipe(Effect.map(([posts, made]) => new Set([...posts, ...made]))),
   });
+
+/**
+ * The article a call sends: held for the site to publish it itself at a
+ * hand-over's time (`publishAt`), or as it goes out now.
+ */
+const articleFor = (post: OutgoingPost): OutgoingArticle => {
+  const article = articleOf(post);
+  const standing = post.site?.standing;
+
+  return standing?._tag === "hold"
+    ? { ...article, publishAt: Option.some(standing.at) }
+    : article;
+};
+
+// The call of a target whose router said nothing of its site: published
+// now, with nothing held there, as before hand-overs.
+const publishingNow: SiteCall = {
+  held: Option.none(),
+  record: () => Effect.succeed(true),
+  standing: { _tag: "publish" },
+};
+
+// Nothing for the site to change: nothing was sent.
+const nothingToChange = new BadRequest({ code: siteUnchanged });
+
+// What the site holds for a target is written while the call holds the
+// gate; a database that refuses is tried again for a little while.
+const recordRetry = Schedule.min([
+  Schedule.exponential("100 millis", 2),
+  Schedule.recurs(6),
+]);
+
+// Records what the site now holds for the target, as it answered.
+const noted = (call: SiteCall, kept: Option.Option<SitePost>) =>
+  call.record(kept).pipe(Effect.retry(recordRetry), Effect.orDie);
+
+// The site's post, as the target keeps it.
+const sitePostOf = (published: Published): SitePost =>
+  withPermalink(
+    { platformPostId: published.platformPostId },
+    Option.fromUndefinedOr(published.permalink)
+  );
+
+const withPermalink = (
+  held: SitePost,
+  permalink: Option.Option<string>
+): SitePost =>
+  Option.match(permalink, {
+    onNone: () => held,
+    onSome: (address) => ({ ...held, permalink: address }),
+  });
+
+// The site's post, as a call that changed it answers.
+const publishedAs = ({ permalink, platformPostId }: SitePost): PublishResult =>
+  permalink === undefined
+    ? { _tag: "published", platformPostId }
+    : { _tag: "published", permalink, platformPostId };
 
 /** The channel's token as a site's calls take it. */
 export const siteToken = (token: PublishingToken): Option.Option<SiteToken> =>
@@ -261,7 +339,7 @@ export const siteClient = Effect.fn("SiteClient.make")(function* siteClient(
           onNone: () => Effect.succeed(Option.none<PublishResult>()),
           onSome: (at) =>
             calls
-              .find({ startedAt: at }, articleOf(post), filesOf(post), token)
+              .find({ startedAt: at }, articleFor(post), filesOf(post), token)
               .pipe(
                 Effect.map((search) =>
                   Match.valueTags(search, {
@@ -289,14 +367,168 @@ export const siteClient = Effect.fn("SiteClient.make")(function* siteClient(
     lookedFor(post, token).pipe(
       Effect.flatMap(
         Option.match({
-          onNone: () => calls.publish(articleOf(post), callOf(post), token),
+          onNone: () => calls.publish(articleFor(post), callOf(post), token),
           onSome: Effect.succeed,
         })
       )
     );
 
+  // The site's post changed to stand as `standing` says.
+  const change = (
+    post: OutgoingPost,
+    token: SiteToken,
+    platformPostId: string,
+    standing: SiteStanding
+  ) =>
+    calls.update(
+      articleFor(post),
+      filesOf(post),
+      platformPostId,
+      token,
+      standing
+    );
+
+  // The site holds `made` for the target, to publish it itself at `at`:
+  // recorded at once. A target gone meanwhile, with its draft, leaves
+  // nobody to take it off but this call.
+  const holding = (
+    token: SiteToken,
+    call: SiteCall,
+    made: SitePost,
+    at: DateTime.Utc
+  ) =>
+    noted(call, Option.some({ ...made, publishAt: at })).pipe(
+      Effect.flatMap((kept) =>
+        kept
+          ? Effect.void
+          : calls.remove(made.platformPostId, token).pipe(Effect.ignore)
+      ),
+      Effect.as(publishedAs(made))
+    );
+
+  // A new post on the site, held for `at`: looked for first when a call
+  // of an earlier round or hand-over may have made it, then made.
+  const madeFor = (
+    post: OutgoingPost,
+    token: SiteToken,
+    call: SiteCall,
+    at: DateTime.Utc
+  ) =>
+    calls
+      .publish(articleFor(post), callOf(post), token)
+      .pipe(
+        Effect.flatMap((result) =>
+          result._tag === "published"
+            ? holding(token, call, sitePostOf(result), at)
+            : Effect.succeed(result)
+        )
+      );
+
+  // The post held for the site to publish it at `at`: the one the site
+  // holds changed, else one an earlier call made and the site has,
+  // else a new one.
+  const holdFor = (
+    post: OutgoingPost,
+    token: SiteToken,
+    call: SiteCall,
+    at: DateTime.Utc
+  ) => {
+    const changed = (held: SitePost) =>
+      change(post, token, held.platformPostId, { _tag: "hold", at }).pipe(
+        Effect.flatMap((site) =>
+          site._tag === "gone"
+            ? noted(call, Option.none()).pipe(
+                Effect.andThen(madeFor(post, token, call, at))
+              )
+            : holding(token, call, withPermalink(held, site.permalink), at)
+        )
+      );
+
+    return Option.match(call.held, {
+      onNone: () =>
+        lookedFor(post, token).pipe(
+          Effect.flatMap(
+            Option.match({
+              onNone: () => madeFor(post, token, call, at),
+              onSome: (found) =>
+                found._tag === "published"
+                  ? changed(sitePostOf(found))
+                  : Effect.succeed(found),
+            })
+          )
+        ),
+      onSome: changed,
+    });
+  };
+
+  // The post the site holds, a draft again: kept for the next hand-over,
+  // or forgotten once the site no longer has it.
+  const takeBack = (post: OutgoingPost, token: SiteToken, call: SiteCall) =>
+    Option.match(call.held, {
+      onNone: () => Effect.fail(nothingToChange),
+      onSome: (held) =>
+        change(post, token, held.platformPostId, { _tag: "draft" }).pipe(
+          Effect.flatMap((site) =>
+            site._tag === "gone"
+              ? noted(call, Option.none()).pipe(
+                  Effect.andThen(Effect.fail(nothingToChange))
+                )
+              : noted(
+                  call,
+                  Option.some(
+                    withPermalink(
+                      { platformPostId: held.platformPostId },
+                      Option.orElse(site.permalink, () =>
+                        Option.fromUndefinedOr(held.permalink)
+                      )
+                    )
+                  )
+                ).pipe(Effect.as(publishedAs(held)))
+          )
+        ),
+    });
+
+  // The post the site holds, taken off it, as unpublishing does.
+  const takeOff = (token: SiteToken, call: SiteCall) =>
+    Option.match(call.held, {
+      onNone: () => Effect.fail(nothingToChange),
+      onSome: (held) =>
+        calls
+          .remove(held.platformPostId, token)
+          .pipe(
+            Effect.andThen(noted(call, Option.none())),
+            Effect.as(publishedAs(held))
+          ),
+    });
+
+  // The post out now: the one the site holds for the target put out, or
+  // one made as any post's is.
+  const publishNow = (post: OutgoingPost, token: SiteToken, call: SiteCall) =>
+    Option.match(call.held, {
+      onNone: () => sent(post, token),
+      onSome: (held) =>
+        change(post, token, held.platformPostId, { _tag: "publish" }).pipe(
+          Effect.flatMap((site) =>
+            site._tag === "gone"
+              ? noted(call, Option.none()).pipe(
+                  Effect.andThen(sent(post, token))
+                )
+              : Effect.succeed(publishedAs(withPermalink(held, site.permalink)))
+          )
+        ),
+    });
+
   const publish = (post: OutgoingPost) =>
-    onSite(post, (token) => sent(post, token));
+    onSite(post, (token) => {
+      const call = post.site ?? publishingNow;
+
+      return Match.valueTags(call.standing, {
+        draft: () => takeBack(post, token, call),
+        hold: ({ at }) => holdFor(post, token, call, at),
+        publish: () => publishNow(post, token, call),
+        remove: () => takeOff(token, call),
+      });
+    });
 
   // A run that stopped: nothing recorded means the call never reached its
   // commit, so nothing is on the site and the attempt is tried again as
@@ -316,16 +548,34 @@ export const siteClient = Effect.fn("SiteClient.make")(function* siteClient(
 
         const mark = read.recorded.pipe(Option.flatMap(decodeProgress));
 
+        const standing = post.site?.standing;
+
         return Option.match(mark, {
           onNone: () => Effect.fail(new PlatformUnavailable()),
           onSome: ({ at }) =>
             onSite(post, (token) =>
-              calls.resume(
-                { startedAt: at },
-                articleOf(post),
-                filesOf(post),
-                token
-              )
+              calls
+                .resume(
+                  { startedAt: at },
+                  articleFor(post),
+                  filesOf(post),
+                  token
+                )
+                .pipe(
+                  // A hand-over's post found is held: recorded so.
+                  Effect.flatMap((result) =>
+                    standing?._tag === "hold" &&
+                    post.site !== undefined &&
+                    result._tag === "published"
+                      ? holding(
+                          token,
+                          post.site,
+                          sitePostOf(result),
+                          standing.at
+                        )
+                      : Effect.succeed(result)
+                  )
+                )
             ),
         });
       })

@@ -4,7 +4,10 @@ import type { DateTime, Effect, Option } from "effect";
 import type { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import type { Poll } from "#publishing/domain/poll.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
+import type { HoldStanding } from "#publishing/domain/site-hold.ts";
+import type { SitePost } from "#publishing/domain/site-post.ts";
 import type { TargetOptions } from "#publishing/domain/target-options.ts";
+import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
@@ -73,11 +76,43 @@ export interface OutgoingPost {
   readonly round: number;
   /** When the attempt's call started: the same for every run of it. */
   readonly startedAt: DateTime.Utc;
+  /**
+   * On a website's target, what the call is to make of the post the site
+   * holds for it (`SiteCall`), as the router read the post inside the
+   * gate; left out on every other channel, and read as publishing with
+   * nothing held.
+   */
+  readonly site?: SiteCall;
   /** The target the attempt is of: what a website's files are kept by. */
   readonly targetId: PostTargetId;
   /** The part's text on this channel: its own, or its override there. */
   readonly text: string;
   readonly workspaceId: WorkspaceId;
+}
+
+/**
+ * What a website's call is to do: publish the post at its time, or what a
+ * hand-over asks of the site (`#publishing/domain/site-hold.ts`): hold it
+ * for a time, keep it as a draft, take it off.
+ */
+export type SiteCallStanding =
+  | Exclude<HoldStanding, { readonly _tag: "none" }>
+  | { readonly _tag: "publish" };
+
+/** A website's call, as the router hands it to the site's client. */
+export interface SiteCall {
+  readonly standing: SiteCallStanding;
+  /** The post the site already holds for the target, if any. */
+  readonly held: Option.Option<SitePost>;
+  /**
+   * Records the post the site now holds for the target, or none, as soon
+   * as it answered, inside the gate: false when the target is gone or
+   * went out meanwhile, which leaves a post just made there for the
+   * client to take off.
+   */
+  readonly record: (
+    onSite: Option.Option<SitePost>
+  ) => Effect.Effect<boolean, DatabaseError>;
 }
 
 /**

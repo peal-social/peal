@@ -2,6 +2,8 @@ import { Context, DateTime, Effect, Latch, Layer, Match, Ref } from "effect";
 
 import { PlatformPublisher } from "#publishing/application/platform-publisher.ts";
 import type { PublishRequest } from "#publishing/application/platform-publisher.ts";
+import { siteUnchanged } from "#publishing/domain/site-hold.ts";
+import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
@@ -179,8 +181,15 @@ export class FakePlatform extends Context.Service<
           succeed: () => goLive(request),
         });
 
+      // A hand-over's call asks a website to hold a post ahead of its
+      // time: this platform holds nothing, so nothing is to change there,
+      // and the call is neither counted nor scripted.
       const publish = (request: PublishRequest) =>
         Effect.gen(function* answering() {
+          if (request.handOver === true) {
+            return yield* new BadRequest({ code: siteUnchanged });
+          }
+
           yield* enter({ at: yield* DateTime.now, request });
 
           const behaviour = yield* nextBehaviour(request.channelId);
