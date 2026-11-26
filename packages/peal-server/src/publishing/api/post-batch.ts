@@ -70,6 +70,10 @@ export const newPostOf = (
     overrides: [],
     text: post.text,
   },
+  ...Option.match(post.externalId, {
+    onNone: () => ({}),
+    onSome: (externalId) => ({ externalId }),
+  }),
   when: Option.match(post.at, {
     onNone: () => ({ _tag: "now" as const, timeZone: post.timeZone }),
     onSome: (at) => ({ _tag: "at" as const, at, timeZone: post.timeZone }),

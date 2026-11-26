@@ -14,6 +14,7 @@ import { PostIdSchema } from "#shared/domain/ids.ts";
 import type { PostId } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
+import { moved } from "./post-updates.ts";
 import { posts, queues } from "./schema.ts";
 
 type Row = typeof queues.$inferSelect;
@@ -165,10 +166,13 @@ export const DrizzleQueueStore = Layer.effect(
           ),
       remove: (workspaceId, queueId) =>
         Effect.gen(function* remove() {
-          // Its posts stay where they are, without it.
+          // Its posts stay where they are, without it: a change their
+          // answers show.
+          const now = yield* DateTime.now;
+
           yield* db
             .update(posts)
-            .set({ queueId: null })
+            .set({ queueId: null, updatedAt: moved(now) })
             .where(
               and(
                 eq(posts.workspaceId, workspaceId),

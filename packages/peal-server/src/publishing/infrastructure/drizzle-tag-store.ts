@@ -7,6 +7,7 @@ import { Tag, tagKeyOf } from "#publishing/domain/tag.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
+import { moved } from "./post-updates.ts";
 import { posts, tags } from "./schema.ts";
 
 type Row = typeof tags.$inferSelect;
@@ -75,9 +76,14 @@ export const DrizzleTagStore = Layer.effect(
           .pipe(Effect.mapError(failed), Effect.flatMap(Effect.forEach(toTag))),
       remove: (workspaceId, tagId) =>
         Effect.gen(function* remove() {
+          const now = yield* DateTime.now;
+
           yield* db
             .update(posts)
-            .set({ tagIds: sql`array_remove(${posts.tagIds}, ${tagId}::uuid)` })
+            .set({
+              tagIds: sql`array_remove(${posts.tagIds}, ${tagId}::uuid)`,
+              updatedAt: moved(now),
+            })
             .where(
               and(
                 eq(posts.workspaceId, workspaceId),

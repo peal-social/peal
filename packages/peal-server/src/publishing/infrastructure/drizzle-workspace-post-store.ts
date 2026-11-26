@@ -18,6 +18,7 @@ import type {
 import { PostIdSchema } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
+import { moved } from "./post-updates.ts";
 import {
   channelDefaults,
   channelSets,
@@ -370,16 +371,19 @@ export const DrizzleWorkspacePostStore = Layer.effect(
 
     const clearAuthor = Effect.fn("WorkspacePostStore.clearAuthor")(
       function* clearAuthor(userId: string) {
+        // Both show in the posts' answers: they move.
+        const now = yield* DateTime.now;
+
         yield* db
           .update(posts)
-          .set({ authorId: null })
+          .set({ authorId: null, updatedAt: moved(now) })
           .where(eq(posts.authorId, userId))
           .pipe(Effect.mapError(failed));
 
         // Nor that they scheduled any: how it was scheduled stays.
         yield* db
           .update(posts)
-          .set({ scheduledBy: null })
+          .set({ scheduledBy: null, updatedAt: moved(now) })
           .where(eq(posts.scheduledBy, userId))
           .pipe(Effect.mapError(failed));
 

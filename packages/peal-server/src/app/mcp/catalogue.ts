@@ -164,6 +164,7 @@ export const toolAreas: Readonly<Record<ToolArea, readonly ListedTool[]>> = {
       "unpublish_post",
       "edit_published_post",
       "list_post_changes",
+      "set_post_external_id",
     ]),
     ...Object.values(TagTools.tools),
     ...pick(SavedTools.tools, [

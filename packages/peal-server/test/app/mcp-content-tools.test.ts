@@ -73,6 +73,7 @@ const operationOf = new Map(
     send_private_reply: "inbox.messages.sendPrivateReply",
     send_test_webhook: "webhooks.sendTest",
     set_channel_defaults: "channels.defaultOptions.set",
+    set_post_external_id: "posts.setExternalId",
     start_comment_rule: "automations.commentRules.create",
     start_follow_up_rule: "automations.followUps.create",
     stop_boost: "ads.stopBoost",

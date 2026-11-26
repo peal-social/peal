@@ -1,0 +1,25 @@
+[
+  {
+    "data": {
+      "channelId": "019a6f3e-7b10-7c3a-9d41-5e2f8a6b4c03",
+      "externalId": "record-42",
+      "parts": { "count": 1, "live": 1 },
+      "permalink": "https://social.example/@peal_example/1",
+      "platform": "mastodon",
+      "postId": "019a6f3e-7b10-7c3a-9d41-5e2f8a6b4c02",
+      "publishedAt": "2026-11-26T08:00:02.000Z",
+      "round": 1,
+      "targetId": "019a6f3e-7b10-7c3a-9d41-5e2f8a6b4c04",
+      "workspaceId": "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f"
+    },
+    "type": "post.published"
+  },
+  {
+    "data": {
+      "externalId": "record-42",
+      "postId": "019a6f3e-7b10-7c3a-9d41-5e2f8a6b4c02",
+      "workspaceId": "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f"
+    },
+    "type": "post.unscheduled"
+  }
+]

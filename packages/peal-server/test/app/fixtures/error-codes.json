@@ -710,6 +710,11 @@
     "tag": "PostContentInvalid"
   },
   {
+    "code": "post_external_id_taken",
+    "status": 409,
+    "tag": "PostExternalIdTaken"
+  },
+  {
     "code": "post_not_found",
     "status": 404,
     "tag": "PostNotFound"

@@ -530,6 +530,9 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           server_health: [true, false, true, false],
           // They replace the options the channel had.
           set_channel_defaults: [false, true, true, false],
+          // The same id again changes nothing, and it says nothing to the
+          // platforms.
+          set_post_external_id: [false, false, true, false],
           stop_boost: [false, true, true, true],
           start_comment_rule: [false, false, false, true],
           start_follow_up_rule: [false, false, false, true],
@@ -1408,6 +1411,48 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             filed.posts.map(({ id }) => id).toSorted(),
             [draft.id, plain.id].toSorted()
           );
+
+          // A post's own id, its caller's: given with a draft, kept by an
+          // update that says nothing of it, found again, refused twice.
+          const recorded = yield* writer.call("create_draft", PostJsonSchema, {
+            channelIds: [],
+            content: content("A synthetic draft from a record."),
+            externalId: "record-42",
+          });
+
+          assert.strictEqual(recorded.externalId, "record-42");
+
+          const kept = yield* writer.call("update_draft", PostJsonSchema, {
+            channelIds: [],
+            content: content("A synthetic draft from a record, changed."),
+            postId: recorded.id,
+          });
+
+          assert.strictEqual(kept.externalId, "record-42");
+          assert.include(
+            yield* writer.refused("set_post_external_id", {
+              externalId: "record-42",
+              postId: plain.id,
+            }),
+            `Post ${recorded.id} has this externalId already`
+          );
+
+          const found = yield* reader.call("list_posts", PostsJsonSchema, {
+            externalId: "record-42",
+          });
+
+          assert.deepStrictEqual(
+            found.posts.map(({ id }) => id),
+            [recorded.id]
+          );
+
+          const freed = yield* writer.call(
+            "set_post_external_id",
+            PostJsonSchema,
+            { externalId: null, postId: recorded.id }
+          );
+
+          assert.strictEqual(freed.externalId, null);
 
           // No tag at all takes them off.
           const cleared = yield* writer.call("tag_post", PostJsonSchema, {

@@ -29,6 +29,7 @@ import { publishingWith } from "#publishing/container.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { repostTarget } from "#publishing/domain/post-target.ts";
 import { reopenPost } from "#publishing/domain/post.ts";
+import { PostExternalIdSchema } from "#publishing/domain/post-external-id.ts";
 import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import {
@@ -45,6 +46,7 @@ import type { Actor } from "#shared/domain/access.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
+import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 import { TransactionRunnerLive } from "#shared/infrastructure/transaction-runner-live.ts";
 import { connect } from "#test/publishing/posts-server.ts";
@@ -293,6 +295,54 @@ describe("a post's webhook events", () => {
             settled.find(({ channelId }) => channelId === live)?.id
           );
           assert.notInclude(JSON.stringify(sent), syntheticContent.text);
+          // A post without an id of its caller's names none.
+          assert.notInclude(JSON.stringify(sent), "externalId");
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "name the post's external id, its caller's, when it has one",
+    () =>
+      onServerAt(
+        "2026-06-15T07:00:00Z",
+        Effect.gen(function* externalIds() {
+          const { endpointId, owner } = yield* listening;
+          const live = yield* connect(owner.workspaceId, "mastodon");
+
+          const { post } = yield* PostScheduling.use((scheduling) =>
+            scheduling.send(owner, {
+              channelIds: [live],
+              content: syntheticContent,
+              externalId: PostExternalIdSchema.make("record-42"),
+              idempotency: Option.none(),
+              placement: {
+                _tag: "at",
+                at: DateTime.makeUnsafe("2026-06-15T08:00:00Z"),
+              },
+              timeZone: TimeZoneIdSchema.make("Europe/Paris"),
+            })
+          );
+
+          yield* eventually("the job sleeps", isSuspended(post.id));
+          yield* setTime("2026-06-15T08:00:00Z");
+          yield* eventually("the post finishes", isFinished(post.id));
+
+          const sent = yield* eventsSentTo(owner, endpointId);
+
+          assert.deepStrictEqual(
+            sent
+              .map((event) => [
+                event.type,
+                "externalId" in event.data ? event.data.externalId : null,
+              ])
+              .toSorted(),
+            [
+              ["post.published", "record-42"],
+              ["post.scheduled", "record-42"],
+            ]
+          );
         })
       ),
     timeout

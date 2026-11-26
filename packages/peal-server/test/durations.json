@@ -700,5 +700,9 @@
   "test/workspace/integration/two-step-requirement.test.ts": 5567,
   "test/workspace/integration/two-step-routes.test.ts": 5832,
   "test/workspace/integration/two-step.test.ts": 9830,
-  "test/workspace/integration/workspaces.test.ts": 8361
+  "test/workspace/integration/workspaces.test.ts": 8361,
+  "test/publishing/api/post-external-ids.test.ts": 1500,
+  "test/publishing/api/post-sync.test.ts": 1800,
+  "test/publishing/domain/post-external-id.test.ts": 5,
+  "test/publishing/infrastructure/post-updates.test.ts": 300
 }
