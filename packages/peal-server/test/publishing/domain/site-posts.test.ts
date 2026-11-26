@@ -10,17 +10,10 @@ import {
 import { DevtoOptions } from "#publishing/domain/devto-options.ts";
 import { contentOn } from "#publishing/domain/duplicate-window.ts";
 import { HashnodeOptions } from "#publishing/domain/hashnode-options.ts";
-import {
-  siteContentOn,
-  siteEditViolationsOn,
-  withEditOn,
-  withSiteStatusKept,
-} from "#publishing/domain/live-post-edit.ts";
 import { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import {
   PostContent,
   sentTo,
-  shownMedia,
   textOn,
 } from "#publishing/domain/post-content.ts";
 import { PostPart } from "#publishing/domain/post-part.ts";
@@ -425,142 +418,6 @@ describe("signatures", () => {
     );
 
     expect(defaults.overrides[0]).toStrictEqual(richOverride(site, body));
-  });
-});
-
-describe("an edit of a website's live post", () => {
-  const plain = new PostContent({
-    media: [new MediaAttachment({ altText: "A cake", mediaId: first })],
-    overrides: [],
-    text: "The post's text",
-  });
-
-  it("makes a rich text the channel's override, with its text and images", () => {
-    const edited = withEditOn(plain, 0, site, {
-      body: Option.some(body),
-      text: textOfBody(body, maxPostTextLength),
-    });
-
-    expect(edited.overrides).toStrictEqual([richOverride(site, body)]);
-    expect(edited.text).toBe("The post's text");
-  });
-
-  it("makes a text a plain override, the body gone and the media it gave kept", () => {
-    const rich = withEditOn(plain, 0, site, {
-      body: Option.some(body),
-      text: textOfBody(body, maxPostTextLength),
-    });
-
-    const edited = withEditOn(rich, 0, site, {
-      body: Option.none(),
-      text: "Plain again",
-    });
-
-    expect(edited.overrides).toStrictEqual([
-      new TextOverride({
-        channelId: site,
-        media: bodyAttachmentsOf(body),
-        text: "Plain again",
-      }),
-    ]);
-  });
-
-  it("changes nothing for the text the channel has, as an edit of options alone", () => {
-    expect(
-      withEditOn(plain, 0, site, {
-        body: Option.none(),
-        text: textOn(plain, site),
-      })
-    ).toBe(plain);
-  });
-
-  const was = Option.some(
-    new WordPressOptions({ platform: "wordpress", title: "Before" })
-  );
-
-  const checked = (options: WordPressOptions) =>
-    siteEditViolationsOn({
-      channel: { channelId: site, platform: "wordpress" },
-      content: siteContentOn(plain, site),
-      files: [],
-      options: Option.some(options),
-      was,
-    }).map(({ _tag }) => _tag);
-
-  it("keeps the site's status: another one is refused", () => {
-    expect(
-      checked(
-        new WordPressOptions({
-          platform: "wordpress",
-          siteStatus: "draft",
-          title: "After",
-        })
-      )
-    ).toStrictEqual(["optionInvalid"]);
-    expect(
-      checked(
-        new WordPressOptions({
-          platform: "wordpress",
-          siteStatus: "publish",
-          title: "After",
-        })
-      )
-    ).toStrictEqual([]);
-  });
-
-  it("takes the target's site status where new options leave it out", () => {
-    const draft = Option.some(
-      new WordPressOptions({
-        platform: "wordpress",
-        siteStatus: "draft",
-        title: "Before",
-      })
-    );
-
-    expect(
-      withSiteStatusKept(
-        new WordPressOptions({ platform: "wordpress", title: "After" }),
-        draft
-      )
-    ).toStrictEqual(
-      new WordPressOptions({
-        platform: "wordpress",
-        siteStatus: "draft",
-        title: "After",
-      })
-    );
-
-    const published = new WordPressOptions({
-      platform: "wordpress",
-      siteStatus: "publish",
-      title: "After",
-    });
-
-    expect(withSiteStatusKept(published, draft)).toBe(published);
-  });
-
-  it("is checked as scheduling checks it: a title is still needed", () => {
-    expect(checked(new WordPressOptions({ platform: "wordpress" }))).toContain(
-      "optionMissing"
-    );
-  });
-
-  it("shows the site only the channel's files", () => {
-    const shared = new PostContent({
-      media: [new MediaAttachment({ altText: "A cake", mediaId: first })],
-      overrides: [
-        new TextOverride({
-          channelId: mastodon,
-          media: [new MediaAttachment({ altText: "A shop", mediaId: second })],
-          text: "On Mastodon",
-        }),
-      ],
-      text: "The post's text",
-    });
-
-    expect(
-      shownMedia(siteContentOn(shared, site)).map(({ mediaId }) => mediaId)
-    ).toStrictEqual([first]);
   });
 });
 

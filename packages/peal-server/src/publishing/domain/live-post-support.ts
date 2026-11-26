@@ -55,10 +55,10 @@ export const livePostSupport = {
   bluesky: { edit: blockedBy("noApi"), unpublish: can },
   // DEV's `PUT /api/articles/{id}` with `published: false` takes an
   // article down (DEV deletes nothing an API key made). Its edit is the
-  // same call with the article's fields and no `published`, so DEV keeps
-  // its status and its date.
+  // same call, which posts do not make yet: a live article is changed
+  // through the articles' update for now.
   // https://developers.forem.com/api/v1#tag/articles/operation/updateArticle
-  devto: { edit: can, unpublish: can },
+  devto: { edit: blockedBy("unverified"), unpublish: can },
   // `DELETE /webhooks/{webhook.id}/{webhook.token}/messages/{message.id}`
   // ("Returns a 204 No Content response on success") and `PATCH` on the
   // same address ("Edits a previously-sent webhook message from the same
@@ -90,10 +90,9 @@ export const livePostSupport = {
   // https://developers.google.com/my-business/reference/rest/v4/accounts.locations.localPosts/patch
   googleBusiness: { edit: can, unpublish: can },
   // Hashnode's `removePost` (`deleteDraft` for a draft) removes it; its
-  // edit is `updatePost` (`updateDraft` for a draft), which keeps its
-  // status and its date.
+  // edit, `updatePost`, posts do not make yet.
   // https://apidocs.hashnode.com/
-  hashnode: { edit: can, unpublish: can },
+  hashnode: { edit: blockedBy("unverified"), unpublish: can },
   // `DELETE /<IG_MEDIA_ID>` needs `instagram_manage_contents` and Facebook
   // Login, which Peal does not ask for; only `comment_enabled` changes.
   // https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-media
@@ -157,14 +156,12 @@ export const livePostSupport = {
   tiktok: { edit: blockedBy("noApi"), unpublish: blockedBy("noApi") },
   // `DELETE /wp/v2/posts/{id}` without `force` moves the post to the
   // site's trash ("Whether to bypass Trash and force deletion"), for a
-  // user who may delete it, as the application password's is. Its edit is
-  // `POST /wp/v2/posts/{id}` with the post's fields and no `status` or
-  // `date_gmt`, which the site keeps. WordPress.com runs the same API
-  // under `/wp/v2/sites/{id}/`.
+  // user who may delete it, as the application password's is. Its edit,
+  // `POST /wp/v2/posts/{id}`, posts do not make yet. WordPress.com runs
+  // the same API under `/wp/v2/sites/{id}/`.
   // https://developer.wordpress.org/rest-api/reference/posts/#delete-a-post
-  // https://developer.wordpress.org/rest-api/reference/posts/#update-a-post
-  wordpress: { edit: can, unpublish: can },
-  wordpressCom: { edit: can, unpublish: can },
+  wordpress: { edit: blockedBy("unverified"), unpublish: can },
+  wordpressCom: { edit: blockedBy("unverified"), unpublish: can },
   // `DELETE /2/tweets/{id}`, with `tweet.read`, `users.read` and
   // `tweet.write`. https://docs.x.com/x-api/posts/delete-post
   // An edit is `POST /2/tweets` with `edit_options.previous_post_id`

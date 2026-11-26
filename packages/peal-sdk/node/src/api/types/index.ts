@@ -268,7 +268,6 @@ export * from "./ContentViolationNoChannels.js";
 export * from "./ContentViolationOptionInvalid.js";
 export * from "./ContentViolationOptionMissing.js";
 export * from "./ContentViolationOptionsForOtherPlatform.js";
-export * from "./ContentViolationOptionsNotTaken.js";
 export * from "./ContentViolationOptionsWithoutChannel.js";
 export * from "./ContentViolationOptionTooLong.js";
 export * from "./ContentViolationOverrideWithoutChannel.js";

@@ -808,24 +808,6 @@ class ContentViolation_BodyNotTaken(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-class ContentViolation_OptionsNotTaken(UniversalBaseModel):
-    type: typing_extensions.Annotated[
-        typing.Literal["optionsNotTaken"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
-    ] = "optionsNotTaken"
-    channel_id: typing_extensions.Annotated[str, FieldMetadata(alias="channelId"), pydantic.Field(alias="channelId")]
-    part: typing.Optional[int] = None
-    platform: Platform
-
-    if IS_PYDANTIC_V2:
-        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
-    else:
-
-        class Config:
-            frozen = True
-            smart_union = True
-            extra = pydantic.Extra.allow
-
-
 ContentViolation = typing_extensions.Annotated[
     typing.Union[
         ContentViolation_NoChannels,
@@ -868,7 +850,6 @@ ContentViolation = typing_extensions.Annotated[
         ContentViolation_AltTextTooLong,
         ContentViolation_BodyInvalid,
         ContentViolation_BodyNotTaken,
-        ContentViolation_OptionsNotTaken,
     ],
     pydantic.Field(discriminator="type"),
 ]

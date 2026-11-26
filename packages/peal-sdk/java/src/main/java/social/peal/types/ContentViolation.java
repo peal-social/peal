@@ -186,10 +186,6 @@ public final class ContentViolation {
         return new ContentViolation(new BodyNotTakenValue(value));
     }
 
-    public static ContentViolation optionsNotTaken(ContentViolationOptionsNotTaken value) {
-        return new ContentViolation(new OptionsNotTakenValue(value));
-    }
-
     public boolean isNoChannels() {
         return value instanceof NoChannelsValue;
     }
@@ -348,10 +344,6 @@ public final class ContentViolation {
 
     public boolean isBodyNotTaken() {
         return value instanceof BodyNotTakenValue;
-    }
-
-    public boolean isOptionsNotTaken() {
-        return value instanceof OptionsNotTakenValue;
     }
 
     public boolean _isUnknown() {
@@ -638,13 +630,6 @@ public final class ContentViolation {
         return Optional.empty();
     }
 
-    public Optional<ContentViolationOptionsNotTaken> getOptionsNotTaken() {
-        if (isOptionsNotTaken()) {
-            return Optional.of(((OptionsNotTakenValue) value).value);
-        }
-        return Optional.empty();
-    }
-
     public Optional<Object> _getUnknown() {
         if (_isUnknown()) {
             return Optional.of(((_UnknownValue) value).value);
@@ -754,8 +739,6 @@ public final class ContentViolation {
 
         T visitBodyNotTaken(ContentViolationBodyNotTaken bodyNotTaken);
 
-        T visitOptionsNotTaken(ContentViolationOptionsNotTaken optionsNotTaken);
-
         T _visitUnknown(Object unknownType);
     }
 
@@ -800,8 +783,7 @@ public final class ContentViolation {
         @JsonSubTypes.Type(AspectRatioUnsupportedValue.class),
         @JsonSubTypes.Type(AltTextTooLongValue.class),
         @JsonSubTypes.Type(BodyInvalidValue.class),
-        @JsonSubTypes.Type(BodyNotTakenValue.class),
-        @JsonSubTypes.Type(OptionsNotTakenValue.class)
+        @JsonSubTypes.Type(BodyNotTakenValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
@@ -2394,46 +2376,6 @@ public final class ContentViolation {
         }
 
         private boolean equalTo(BodyNotTakenValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "ContentViolation{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonTypeName("optionsNotTaken")
-    @JsonIgnoreProperties("_tag")
-    private static final class OptionsNotTakenValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private ContentViolationOptionsNotTaken value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private OptionsNotTakenValue() {}
-
-        private OptionsNotTakenValue(ContentViolationOptionsNotTaken value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitOptionsNotTaken(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof OptionsNotTakenValue && equalTo((OptionsNotTakenValue) other);
-        }
-
-        private boolean equalTo(OptionsNotTakenValue other) {
             return value.equals(other.value);
         }
 

@@ -26,8 +26,8 @@ import { ExecutionIdSchema } from "#publishing/application/publication-scheduler
 import type { ExecutionId } from "#publishing/application/publication-scheduler.ts";
 import { LivePartSchema } from "#publishing/domain/live-part.ts";
 import type { LivePart } from "#publishing/domain/live-part.ts";
-import { withEditOn } from "#publishing/domain/live-post-edit.ts";
 import type { MediaAttachment } from "#publishing/domain/media-attachment.ts";
+import { withTextOn } from "#publishing/domain/post-content.ts";
 import type { PostStatus } from "#publishing/domain/post-status.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTargetStatus } from "#publishing/domain/post-target-status.ts";
@@ -525,7 +525,7 @@ export const DrizzlePostRepository = Layer.effect(
       });
 
     return PostRepository.of({
-      amendText: (postId, index, channelId, edit) =>
+      amendText: (postId, index, channelId, text) =>
         Effect.gen(function* amendText() {
           const stored = yield* selectPost(postId).pipe(
             Effect.mapError(failed),
@@ -541,7 +541,7 @@ export const DrizzlePostRepository = Layer.effect(
           const amended = new Post({
             attribution: post.attribution,
             authorId: post.authorId,
-            content: withEditOn(post.content, index, channelId, edit),
+            content: withTextOn(post.content, index, channelId, text),
             id: post.id,
             queueId: post.queueId,
             scheduleRevision: post.scheduleRevision,
@@ -562,12 +562,6 @@ export const DrizzlePostRepository = Layer.effect(
 
           return Option.some(amended);
         }),
-      amendOptions: (targetId, options) =>
-        db
-          .update(postTargets)
-          .set({ options: encodeOptions(options) })
-          .where(eq(postTargets.id, targetId))
-          .pipe(Effect.mapError(failed), Effect.asVoid),
       channelsUsed: (workspaceId) =>
         db
           .selectDistinct({ channelId: postTargets.channelId })

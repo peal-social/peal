@@ -201,9 +201,6 @@ export const ContentViolationSchema = Schema.Union([
   // The channel's own text is a rich text, which only a website's first
   // part takes.
   Schema.TaggedStruct("bodyNotTaken", onChannel),
-  // An edit of a live post gives options on a channel whose options Peal
-  // does not change once it is live: only a website's are.
-  Schema.TaggedStruct("optionsNotTaken", onChannel),
 ]);
 
 export type ContentViolation = typeof ContentViolationSchema.Type;

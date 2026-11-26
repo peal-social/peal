@@ -16,7 +16,6 @@ import { SiteFiles } from "#publishing/application/site-files.ts";
 import { DevtoOptions } from "#publishing/domain/devto-options.ts";
 import { HashnodeOptions } from "#publishing/domain/hashnode-options.ts";
 import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
-import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import { bodyOfText } from "#publishing/domain/rich-override.ts";
 import { SiteProgressSchema } from "#publishing/domain/site-progress.ts";
 import { WordPressComOptions } from "#publishing/domain/wordpress-com-options.ts";
@@ -27,7 +26,6 @@ import type {
 } from "#shared/application/site-call-journal.ts";
 import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
-import type { ChannelId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { isSitePlatform } from "#shared/domain/platform.ts";
@@ -60,16 +58,8 @@ type SiteOptions =
   | WordPressComOptions
   | WordPressOptions;
 
-/**
- * The article a website gets of a post, as its adapter takes it: from the
- * post that goes out, or from a live post's edit.
- */
-export const articleOf = (
-  post: Pick<
-    OutgoingPost,
-    "body" | "channelId" | "media" | "options" | "text" | "workspaceId"
-  >
-): OutgoingArticle => {
+/** The article a website gets of a post, as its adapter takes it. */
+export const articleOf = (post: OutgoingPost): OutgoingArticle => {
   const options = post.options.pipe(Option.filter(isSiteOptions));
 
   const field = <A>(read: (chosen: SiteOptions) => A | undefined) =>
@@ -160,33 +150,8 @@ const searchRefused = (): PublishResult => ({
   reason: "searchRefused",
 });
 
-/**
- * The journal of a website target's files: those the site took
- * (`SiteFiles`, by target), never sent again, and the site's posts
- * another target or an article of the channel holds, never adopted.
- */
-export const siteFilesOf =
-  (stores: {
-    readonly articles: RecordedArticles["Service"];
-    readonly files: SiteFiles["Service"];
-    readonly recorded: RecordedPosts["Service"];
-  }) =>
-  (targetId: PostTargetId, channelId: ChannelId): SiteFileJournal => ({
-    featuredRefused: (mediaId) =>
-      stores.files.featuredRefused(targetId, mediaId),
-    fileSent: (mediaId, file) => stores.files.record(targetId, mediaId, file),
-    filesSent: stores.files.sent(targetId),
-    forgetFile: (mediaId) => stores.files.forget(targetId, mediaId),
-    // Another target's post, or an article's, until articles are posts.
-    recordedOn: (platformPostIds) =>
-      Effect.all([
-        stores.recorded.among(channelId, platformPostIds),
-        stores.articles.among(channelId, platformPostIds),
-      ]).pipe(Effect.map(([posts, made]) => new Set([...posts, ...made]))),
-  });
-
-/** The channel's token as a site's calls take it. */
-export const siteToken = (token: PublishingToken): Option.Option<SiteToken> =>
+// The channel's token as a site's calls take it.
+const siteToken = (token: PublishingToken): Option.Option<SiteToken> =>
   isSitePlatform(token.platform)
     ? Option.some({
         credential: token.accessToken,
@@ -215,10 +180,18 @@ export const siteClient = Effect.fn("SiteClient.make")(function* siteClient(
   const articles = yield* RecordedArticles;
   const journal = yield* PublicationJournal;
 
-  const journalOf = siteFilesOf({ articles, files, recorded });
-
-  const filesOf = (post: OutgoingPost): SiteFileJournal =>
-    journalOf(post.targetId, post.channelId);
+  const filesOf = (post: OutgoingPost): SiteFileJournal => ({
+    featuredRefused: (mediaId) => files.featuredRefused(post.targetId, mediaId),
+    fileSent: (mediaId, file) => files.record(post.targetId, mediaId, file),
+    filesSent: files.sent(post.targetId),
+    forgetFile: (mediaId) => files.forget(post.targetId, mediaId),
+    // Another target's post, or an article's, until articles are posts.
+    recordedOn: (platformPostIds) =>
+      Effect.all([
+        recorded.among(post.channelId, platformPostIds),
+        articles.among(post.channelId, platformPostIds),
+      ]).pipe(Effect.map(([posts, made]) => new Set([...posts, ...made]))),
+  });
 
   // The commit mark, recorded and committed before the post's request.
   const callOf = (post: OutgoingPost): SiteCallJournal => ({

@@ -42,8 +42,7 @@ export type ContentViolation =
     | Peal.ContentViolation.AspectRatioUnsupported
     | Peal.ContentViolation.AltTextTooLong
     | Peal.ContentViolation.BodyInvalid
-    | Peal.ContentViolation.BodyNotTaken
-    | Peal.ContentViolation.OptionsNotTaken;
+    | Peal.ContentViolation.BodyNotTaken;
 
 export namespace ContentViolation {
     export interface NoChannels extends Peal.ContentViolationNoChannels {
@@ -204,9 +203,5 @@ export namespace ContentViolation {
 
     export interface BodyNotTaken extends Peal.ContentViolationBodyNotTaken {
         _tag: "bodyNotTaken";
-    }
-
-    export interface OptionsNotTaken extends Peal.ContentViolationOptionsNotTaken {
-        _tag: "optionsNotTaken";
     }
 }

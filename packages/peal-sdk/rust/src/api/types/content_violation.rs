@@ -587,17 +587,6 @@ pub enum ContentViolation {
         platform: Platform,
     },
 
-    #[serde(rename = "optionsNotTaken")]
-    #[non_exhaustive]
-    OptionsNotTaken {
-        #[serde(rename = "channelId")]
-        #[serde(default)]
-        channel_id: String,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        part: Option<i64>,
-        platform: Platform,
-    },
-
     /// Catch-all variant for unrecognized discriminant values.
     /// If the server sends a discriminant not recognized by the current SDK
     /// version, the raw payload is captured here so callers can still inspect it.
@@ -1117,14 +1106,6 @@ impl ContentViolation {
 
     pub fn body_not_taken(channel_id: String, platform: Platform) -> Self {
         Self::BodyNotTaken {
-            channel_id,
-            part: None,
-            platform,
-        }
-    }
-
-    pub fn options_not_taken(channel_id: String, platform: Platform) -> Self {
-        Self::OptionsNotTaken {
             channel_id,
             part: None,
             platform,
@@ -1682,14 +1663,6 @@ impl ContentViolation {
 
     pub fn body_not_taken_with_part(channel_id: String, part: i64, platform: Platform) -> Self {
         Self::BodyNotTaken {
-            channel_id,
-            part: Some(part),
-            platform,
-        }
-    }
-
-    pub fn options_not_taken_with_part(channel_id: String, part: i64, platform: Platform) -> Self {
-        Self::OptionsNotTaken {
             channel_id,
             part: Some(part),
             platform,

@@ -908,35 +908,3 @@ stores what the release before cannot read:
    past this release; release a fix forward instead. Never change the
    rows by hand. The table `publishing.site_files` stays: the release
    before neither reads nor writes it.
-
-## Past edits of live websites
-
-The release that edits a published website post (`posts.editTarget` on
-a WordPress, WordPress.com, DEV or Hashnode target) adds two nullable
-columns to `publishing.live_post_changes`, `body` (the edit's rich text)
-and `options` (the target's new options), which a pending edit holds and
-its end clears, as `text`. The release before never reads them. It takes
-a pending website edit as a text edit. One whose call's result was not
-recorded yet it fails `notSupported` without calling the site, as it
-edits no website, even when that call already reached the site. One
-whose call's result was recorded, and only waits to be settled, it
-settles `done` with its own `amendText`: the new text goes over the
-channel's rich text, and the new options are never written to the
-target. Either way its end leaves `body` and `options` on the row,
-content Peal keeps of no ended change.
-What a finished edit wrote (a rich text in `text_overrides`, a website's
-options on its target) is the previous section's.
-
-1. **Website edits still pending:**
-
-   ```sh
-   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
-     "SELECT count(*) FROM publishing.live_post_changes c JOIN channels.channels ch ON ch.id = c.channel_id WHERE c.kind = 'edit' AND c.status = 'pending' AND ch.platform IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')"
-   ```
-
-2. **It counts more than 0:** wait for them to end (an edit tries again
-   after 1, 5, 15, 60 and 60 minutes, and longer while a site asks it to
-   wait), then check again; roll back once
-   it counts 0, and only if the previous section allows it. Never change
-   the rows by hand. The columns stay: the release before neither reads
-   nor writes them.

@@ -66,7 +66,6 @@ import {
   channelIdsFrom,
   contentFrom,
   draftTagsFrom,
-  liveEditFrom,
   optionsFrom,
   presetsFrom,
   postIdFrom,
@@ -272,10 +271,11 @@ export const PostsHandlers = HttpApiBuilder.group(
           const postId = yield* postIdFrom(params.postId);
           const targetId = yield* targetIdFrom(params.targetId);
 
-          const edit = yield* liveEditFrom(payload);
-
           const change = yield* live
-            .editTarget(actor, postId, targetId, edit)
+            .editTarget(actor, postId, targetId, {
+              part: payload.part ?? 0,
+              text: payload.text,
+            })
             .pipe(
               Effect.catchTags({
                 DatabaseError: Effect.die,
@@ -283,7 +283,6 @@ export const PostsHandlers = HttpApiBuilder.group(
                 MissingPermission: forbidden,
                 PostContentRejected: contentInvalid,
                 PostNotFound: notFound,
-                UnknownMedia: unknownMedia,
               })
             );
 

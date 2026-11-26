@@ -570,11 +570,7 @@ and no socket, for tests.
   release before cannot decode when it claims it, so the job stays
   `running` without anything sent until it goes stale: roll back past it
   only once no job on its way has one (the runbook's "Past edits rendered
-  whole"). Edits of live websites did too: a pending change holding a
-  website's rich text or options (`live_post_changes.body`, `options`),
-  which the release before fails `notSupported` without clearing them:
-  roll back past it only once none is pending (the runbook's "Past edits
-  of live websites").
+  whole").
 
 ### Product analytics
 

@@ -1,15 +1,11 @@
 pub use crate::prelude::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq, Hash)]
 pub struct LivePostEdit {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub body: Option<RichText>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub options: Option<TargetOptions>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub part: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub text: Option<String>,
+    #[serde(default)]
+    pub text: String,
     #[serde(skip)]
     pub wait: Option<String>,
 }
@@ -23,24 +19,12 @@ impl LivePostEdit {
 #[derive(Clone, PartialEq, Default, Debug)]
 #[non_exhaustive]
 pub struct LivePostEditBuilder {
-    body: Option<RichText>,
-    options: Option<TargetOptions>,
     part: Option<i64>,
     text: Option<String>,
     wait: Option<String>,
 }
 
 impl LivePostEditBuilder {
-    pub fn body(mut self, value: RichText) -> Self {
-        self.body = Some(value);
-        self
-    }
-
-    pub fn options(mut self, value: TargetOptions) -> Self {
-        self.options = Some(value);
-        self
-    }
-
     pub fn part(mut self, value: i64) -> Self {
         self.part = Some(value);
         self
@@ -57,12 +41,12 @@ impl LivePostEditBuilder {
     }
 
     /// Consumes the builder and constructs a [`LivePostEdit`].
+    /// This method will fail if any of the following fields are not set:
+    /// - [`text`](LivePostEditBuilder::text)
     pub fn build(self) -> Result<LivePostEdit, BuildError> {
         Ok(LivePostEdit {
-            body: self.body,
-            options: self.options,
             part: self.part,
-            text: self.text,
+            text: self.text.ok_or_else(|| BuildError::missing_field("text"))?,
             wait: self.wait,
         })
     }

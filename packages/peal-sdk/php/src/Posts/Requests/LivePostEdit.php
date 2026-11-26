@@ -3,9 +3,7 @@
 namespace Peal\Posts\Requests;
 
 use Peal\Core\Json\JsonSerializableType;
-use Peal\Types\RichText;
 use Peal\Core\Json\JsonProperty;
-use Peal\Types\TargetOptions;
 
 class LivePostEdit extends JsonSerializableType
 {
@@ -15,45 +13,29 @@ class LivePostEdit extends JsonSerializableType
     public ?string $wait;
 
     /**
-     * @var ?RichText $body
-     */
-    #[JsonProperty('body')]
-    public ?RichText $body;
-
-    /**
-     * @var ?TargetOptions $options
-     */
-    #[JsonProperty('options')]
-    public ?TargetOptions $options;
-
-    /**
      * @var ?int $part
      */
     #[JsonProperty('part')]
     public ?int $part;
 
     /**
-     * @var ?string $text
+     * @var string $text
      */
     #[JsonProperty('text')]
-    public ?string $text;
+    public string $text;
 
     /**
      * @param array{
+     *   text: string,
      *   wait?: ?string,
-     *   body?: ?RichText,
-     *   options?: ?TargetOptions,
      *   part?: ?int,
-     *   text?: ?string,
      * } $values
      */
     public function __construct(
-        array $values = [],
+        array $values,
     ) {
         $this->wait = $values['wait'] ?? null;
-        $this->body = $values['body'] ?? null;
-        $this->options = $values['options'] ?? null;
         $this->part = $values['part'] ?? null;
-        $this->text = $values['text'] ?? null;
+        $this->text = $values['text'];
     }
 }

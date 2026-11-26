@@ -750,8 +750,7 @@ export const WorkersLive = Layer.mergeAll(
     // YouTube's comment reads count their units in the server's ledger of
     // the project's day, which publishing keeps.
     PlatformEngagementLive.pipe(Layer.provide(PlatformQuotaLive)),
-    // A website's edit never takes an article's post for its own either.
-    LivePostPlatformsLive.pipe(Layer.provide(RecordedArticlesLive)),
+    LivePostPlatformsLive,
     FollowUpPlatformsLive
   ),
   // Articles' job sends the files on the server's one limiter of

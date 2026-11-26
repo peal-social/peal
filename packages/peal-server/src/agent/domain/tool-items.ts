@@ -29,9 +29,6 @@ const AttachmentItemSchema = Schema.Struct({
 
 /** What a part has instead on one channel: its text, and its own media. */
 const OverrideItemSchema = Schema.Struct({
-  // A website's rich text, which no card shows: read only to know that
-  // the channel has one.
-  body: Schema.optionalKey(Schema.Json),
   channelId: Schema.String,
   media: Schema.optionalKey(Schema.Array(AttachmentItemSchema)),
   text: Schema.String,

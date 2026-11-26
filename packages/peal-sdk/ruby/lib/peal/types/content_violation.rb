@@ -88,8 +88,6 @@ module Peal
       member -> { Peal::Types::ContentViolationBodyInvalid }, key: "bodyInvalid"
 
       member -> { Peal::Types::ContentViolationBodyNotTaken }, key: "bodyNotTaken"
-
-      member -> { Peal::Types::ContentViolationOptionsNotTaken }, key: "optionsNotTaken"
     end
   end
 end

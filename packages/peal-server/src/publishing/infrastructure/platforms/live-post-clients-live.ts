@@ -5,10 +5,7 @@ import { FetchHttpClient } from "effect/http";
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import { LivePostEdits } from "#publishing/application/live-post-edits.ts";
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
-import { RecordedArticles } from "#publishing/application/recorded-articles.ts";
-import { RecordedPosts } from "#publishing/application/recorded-posts.ts";
 import { SiteCalls } from "#publishing/application/site-calls.ts";
-import { SiteFiles } from "#publishing/application/site-files.ts";
 import {
   editBlocker,
   unpublishBlocker,
@@ -41,8 +38,7 @@ import {
   mastodonLivePost,
 } from "./mastodon/mastodon-live-post.ts";
 import { pinterestLivePost } from "./pinterest/pinterest-live-post.ts";
-import { siteFilesOf } from "./sites/site-client.ts";
-import { siteLiveEdit, siteLivePost } from "./sites/site-live-post.ts";
+import { siteLivePost } from "./sites/site-live-post.ts";
 import { slackLiveEdit, slackLivePost } from "./slack/slack-live-post.ts";
 import {
   telegramLiveEdit,
@@ -106,20 +102,11 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
     const telegram = { api, hosts: settings.telegramHosts };
     const mastodon = { api, scheme: settings.mastodonScheme };
 
-    // A website's post is taken down, and edited, by its adapter, with
-    // the files its target's site took.
-    const calls = yield* SiteCalls;
-
+    // A website's post is taken down by its adapter; its edit is not
+    // made yet.
     const site: LivePostAdapters = {
-      edit: siteLiveEdit(
-        calls,
-        siteFilesOf({
-          articles: yield* RecordedArticles,
-          files: yield* SiteFiles,
-          recorded: yield* RecordedPosts,
-        })
-      ),
-      remove: siteLivePost(calls),
+      edit: notEditing,
+      remove: siteLivePost(yield* SiteCalls),
     };
 
     const registry: Registry = {
@@ -202,8 +189,10 @@ export const livePostClientsWith = (settings: LivePostSettings) =>
               return yield* new BadRequest({ code: editEndedCode });
             }
 
+            const { media, options, text } = pending.value;
+
             return yield* credentials.withToken(channelId, (token) =>
-              editor(token, { ...pending.value, channelId, platformPostId })
+              editor(token, { media, options, platformPostId, text })
             );
           }),
         remove: ({ channelId, platformPostId }) =>

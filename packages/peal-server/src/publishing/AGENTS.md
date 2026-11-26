@@ -246,8 +246,8 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `mediaUnavailable`, `planLimit`, `sitePlanRequired`, which joins
   `platformRefusalCodes` and fails as `contentRejected`) as they are.
   Unpublishing is the adapter's removal (`sites/site-live-post.ts`:
-  WordPress's trash, DEV a draft, Hashnode's removal); an edit is the
-  adapter's `update` (see the edits below). Recycling leaves websites out of a rule's copies (a
+  WordPress's trash, DEV a draft, Hashnode's removal); edits are not made
+  yet (`unverified`). Recycling leaves websites out of a rule's copies (a
   source on websites only is `PostNotRecyclable` `websitesOnly`), feeds
   refuse a website's channel when saved (`UnknownChannels`) and leave
   their channel set's websites out of their posts
@@ -393,45 +393,6 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `summary` under `updateMask=summary`. A post gone from the platform is
   `BadRequest` `postGone` (a 404 counts only with the platform's own JSON).
   LinkedIn, Facebook Pages, Pinterest and X stay `unverified` for edits.
-- A website's edit (WordPress, WordPress.com, DEV, Hashnode, `edit: can`)
-  replaces what the site shows, as an article's update did: its text, or
-  a rich text (`TextEditRequest.body`, checked against the allow-list
-  where the request is read, `liveEditFrom`: `invalidBody`, then
-  `bodyInvalid` on the target's channel), and its options (`options`,
-  its platform's class, whole), each kept when left out. A social target
-  takes `text` alone: a body there is `bodyNotTaken`, options
-  `optionsNotTaken`. A website's `text` replaces a rich text with plain
-  paragraphs (said wherever the edit is described; the in-app agent's
-  card cannot show the rich text it would flatten, so `approvalOf`
-  refuses that call, `richText`). A text that is nothing once made
-  storable is `empty` there too. The post as the edit leaves it is `withEditOn`
-  (`domain/live-post-edit.ts`; the first part's override becomes the
-  body's through `richOverride`, or a plain text keeping the media its
-  override gave, a body it had gone; the channel's own text again changes
-  nothing): the check, the gate's side (`LivePostEdits`, whose
-  `PendingEdit.site` gives the editor the body, the target and the
-  workspace) and the settling all read it. The check is scheduling's on
-  the channel's first part alone (`siteContentOn`, so another channel's
-  files never count), with its files the workspace's and ready
-  (`mediaFor`, UnknownMedia) but for those the site took for the target
-  already (`SiteFiles.sent`, the `held` the editor reuses: a file deleted
-  from the library since never blocks an edit) and the options new or kept
-  (`siteEditViolationsOn`: `checkPublishable`, a title needed); a
-  `siteStatus` left out is the target's (`withSiteStatusKept`), another
-  is `optionInvalid`, as the site keeps its status and its date. Every pending edit holds its `text` (a
-  body's plain text, or the channel's text for an edit of the options
-  alone), so the release before, which edits no website, fails it
-  `notSupported`; `body` and `options` are held beside it
-  (`live_post_changes.body`, `options`) and cleared as it is. The editor
-  (`sites/site-live-post.ts`, `siteLiveEdit`) builds the adapter's
-  article with `articleOf`, as publishing does, and calls `update` with
-  the target's files (`siteFilesOf`: `SiteFiles`, `RecordedPosts`,
-  `RecordedArticles`), so a file the site took is not sent again and a
-  cover left out is taken away there; a site's code stays
-  `<platform>:<code>`. Settling writes the override (`amendText`, with
-  the body and its images) and the options alone (`amendOptions`), keeps
-  the digest of the target as edited, and tells `post.edited`. A post its
-  site still holds is not live: the edit refuses it `notPublished`.
 - Every way of scheduling passes the `ApprovalGate` in the transaction that
   saves the post: `schedule`, `scheduleDraft`, `reschedule` and `send` (so
   `posts.create`, `create_post`, `publish_post` and `peal post` too) ask

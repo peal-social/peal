@@ -7,11 +7,7 @@ import { referencedMedia } from "#publishing/domain/named-media.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
 import type { Actor } from "#shared/domain/access.ts";
-import type {
-  ChannelId,
-  MediaAssetId,
-  WorkspaceId,
-} from "#shared/domain/ids.ts";
+import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
 
 import { AttachableMedia } from "./attachable-media.ts";
 import { TagStore } from "./tag-store.ts";
@@ -62,14 +58,12 @@ export const channelsFor = Effect.fn("Publishing.channelsFor")(
  * content shows in any of its parts, then the files its options name on
  * its channels (`referencedMedia`). Fails with UnknownMedia when one is a
  * file the actor's posts may not use: another workspace's, or one that is
- * not ready, unless the platform holds it already (`held`: a website's
- * files of a live post, which is never sent again).
+ * not ready.
  */
 export const mediaFor = Effect.fn("Publishing.mediaFor")(function* mediaFor(
   actor: Actor,
   content: PostContent,
-  options: readonly ChannelOptions[] = [],
-  held: ReadonlySet<MediaAssetId> = new Set()
+  options: readonly ChannelOptions[] = []
 ) {
   const requested = referencedMedia(content, options);
 
@@ -84,10 +78,7 @@ export const mediaFor = Effect.fn("Publishing.mediaFor")(function* mediaFor(
   );
 
   const byId = new Map(found.map((file) => [file.mediaId, file]));
-
-  const missing = requested.filter(
-    (mediaId) => !byId.has(mediaId) && !held.has(mediaId)
-  );
+  const missing = requested.filter((mediaId) => !byId.has(mediaId));
 
   if (Arr.isReadonlyArrayNonEmpty(missing)) {
     return yield* new UnknownMedia({ mediaIds: missing });

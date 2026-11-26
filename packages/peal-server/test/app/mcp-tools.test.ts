@@ -2485,24 +2485,6 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             }),
             "The post is not on that channel"
           );
-          // An edit changes something: a text, a rich text or options.
-          assert.include(
-            yield* publisher.refused("edit_published_post", {
-              channelId: fixture.channelId,
-              postId: created.id,
-            }),
-            "Give text, body or options, one at least"
-          );
-          // A website's options are read as the API reads them, then the
-          // target is judged: a draft's is not live.
-          assert.include(
-            yield* publisher.refused("edit_published_post", {
-              channelId: fixture.channelId,
-              options: { platform: "wordpress", title: "After" },
-              postId: created.id,
-            }),
-            "The post is not on that channel"
-          );
           assert.deepStrictEqual(
             yield* writer.call("list_post_changes", ChangesJsonSchema, {
               postId: created.id,

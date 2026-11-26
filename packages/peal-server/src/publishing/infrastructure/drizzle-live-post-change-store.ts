@@ -12,9 +12,7 @@ import {
   PartToRemoveSchema,
 } from "#publishing/domain/live-post-change.ts";
 import { PostOriginSchema } from "#publishing/domain/post-origin.ts";
-import { TargetOptionsSchema } from "#publishing/domain/target-options.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
-import { ArticleBodySchema } from "#shared/domain/rich-text/rich-body.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { livePostChanges } from "./schema.ts";
@@ -41,37 +39,19 @@ const encodeParts = Schema.encodeSync(PartsJson);
 
 const encodeOrigin = Schema.encodeSync(OriginJson);
 
-// A website's edit: its rich text and its new options, as their columns
-// hold them while it is pending.
-const BodyJson = Schema.toCodecJson(Schema.NullOr(ArticleBodySchema));
-
-const OptionsJson = Schema.toCodecJson(Schema.NullOr(TargetOptionsSchema));
-
-const decodeBody = Schema.decodeUnknownEffect(BodyJson);
-
-const decodeOptions = Schema.decodeUnknownEffect(OptionsJson);
-
-const encodeBody = Schema.encodeSync(BodyJson);
-
-const encodeOptions = Schema.encodeSync(OptionsJson);
-
 const decodeChange = Schema.decodeUnknownEffect(LivePostChange);
 
 const toChange = Effect.fnUntraced(function* toChange(row: ChangeRow) {
   const partsLeft = yield* decodeParts(row.partsLeft);
   const requestedVia = yield* decodeOrigin(row.requestedVia);
-  const body = yield* decodeBody(row.body);
-  const options = yield* decodeOptions(row.options);
 
   return yield* decodeChange({
     alreadyGone: row.alreadyGone,
-    body: Option.fromNullOr(body),
     channelId: row.channelId,
     failureCode: Option.fromNullOr(row.failureCode),
     finishedAt: Option.fromNullOr(row.finishedAt).pipe(Option.map(utc)),
     id: row.id,
     kind: row.kind,
-    options: Option.fromNullOr(options),
     partsLeft,
     postId: row.postId,
     requestedAt: utc(row.requestedAt),
@@ -96,11 +76,8 @@ const changeFrom = (rows: readonly ChangeRow[]) => {
 // beginCall and endCall alone.
 const changeColumns = (change: LivePostChange) => ({
   alreadyGone: change.alreadyGone,
-  // A website's edit's body and options, cleared with its text.
-  body: encodeBody(Option.getOrNull(change.body)),
   failureCode: Option.getOrNull(change.failureCode),
   finishedAt: change.finishedAt.pipe(Option.map(date), Option.getOrNull),
-  options: encodeOptions(Option.getOrNull(change.options)),
   partsLeft: encodeParts(change.partsLeft),
   status: change.status,
   // An edit's text while it is pending: a change that ends clears it.

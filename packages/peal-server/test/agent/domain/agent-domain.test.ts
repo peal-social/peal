@@ -331,51 +331,6 @@ describe("the agent's domain", () => {
         { part: "one", postId: "post-1", text: "x" },
         withPost
       ),
-      // A website's rich text or options, which no card shows yet.
-      refusalOf(
-        "edit_published_post",
-        {
-          body: { content: [], type: "doc" },
-          channelId: "channel-1",
-          postId: "post-1",
-        },
-        withPost
-      ),
-      refusalOf(
-        "edit_published_post",
-        {
-          channelId: "channel-1",
-          options: { platform: "wordpress", title: "After" },
-          postId: "post-1",
-        },
-        withPost
-      ),
-      // An edit with no new text, before any card is made.
-      refusalOf(
-        "edit_published_post",
-        { channelId: "channel-1", postId: "post-1" },
-        withPost
-      ),
-      // A new text over a website's rich text, which it would flatten.
-      refusalOf(
-        "edit_published_post",
-        { channelId: "channel-1", postId: "post-1", text: "Fixed typo" },
-        {
-          post: Option.some({
-            ...publishable,
-            content: {
-              ...publishable.content,
-              overrides: [
-                {
-                  body: { content: [], type: "doc" },
-                  channelId: "channel-1",
-                  text: "Rich",
-                },
-              ],
-            },
-          }),
-        }
-      ),
       // A post that could not be read.
       refusalOf("publish_post", { postId: "post-1" }),
       // A tag, a channel or a queue's channels nobody can show.
@@ -407,10 +362,6 @@ describe("the agent's domain", () => {
       approvalRefusals.tool,
       approvalRefusals.parameters,
       approvalRefusals.parameters,
-      approvalRefusals.parameters,
-      approvalRefusals.parameters,
-      approvalRefusals.noText,
-      approvalRefusals.richText,
       approvalRefusals.post,
       approvalRefusals.tags,
       approvalRefusals.target,
