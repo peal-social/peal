@@ -19,6 +19,19 @@ export const connectedTargets = (
   );
 
 /**
+ * Whether the post goes to one of the workspace's websites, which the
+ * composer does not show yet: saving it from there would take the website,
+ * its options and its rich text off it.
+ */
+export const goesToWebsite = (
+  post: Post,
+  websites: ReadonlySet<string>
+): boolean =>
+  post.targets.some(
+    ({ channelId, dropped }) => dropped !== true && websites.has(channelId)
+  );
+
+/**
  * Every channel the picker offers, in the list's order, for "Select all":
  * those that publish, and those the post goes to already, which stay
  * chosen. A channel turned off or to reconnect publishes nothing, so it is

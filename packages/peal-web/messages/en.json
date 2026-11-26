@@ -1617,6 +1617,7 @@
       "retry": "Try again",
       "channelsLegend": "Channels",
       "channelsLoading": "Loading the channels…",
+      "websiteNotShown": "This post also goes to a website, which the editor does not show yet. Change it through the API or the command line: saved here, it would lose its website.",
       "channelsFailed": "The channels could not be loaded.",
       "channelsEmpty": "No channel is connected to this workspace yet.",
       "connectChannel": "Connect a channel",

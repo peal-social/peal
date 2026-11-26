@@ -9,7 +9,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { PlatformSchema } from "peal-contract";
+import { isSocialPlatform, PlatformSchema } from "peal-contract";
 import { Button, buttonVariants } from "peal-ui/components/button";
 import {
   Select,
@@ -243,7 +243,8 @@ export const WorkspaceHome = ({
               </h2>
               <p className="text-muted-foreground">
                 {t("channels.description", {
-                  count: PlatformSchema.literals.length,
+                  count:
+                    PlatformSchema.literals.filter(isSocialPlatform).length,
                 })}
               </p>
               <Link

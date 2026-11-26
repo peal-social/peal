@@ -1617,6 +1617,7 @@
       "retry": "Réessayer",
       "channelsLegend": "Canaux",
       "channelsLoading": "Chargement des canaux…",
+      "websiteNotShown": "Cette publication va aussi sur un site web, que l’éditeur n’affiche pas encore. Modifiez-la par l’API ou la ligne de commande : enregistrée ici, elle perdrait son site web.",
       "channelsFailed": "Les canaux n’ont pas pu être chargés.",
       "channelsEmpty": "Aucun canal n’est encore connecté à cet espace de travail.",
       "connectChannel": "Connecter un canal",
