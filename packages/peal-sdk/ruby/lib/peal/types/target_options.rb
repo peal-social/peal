@@ -38,6 +38,14 @@ module Peal
       member -> { Peal::Types::TelegramOptions }, key: "telegram"
 
       member -> { Peal::Types::SlackOptions }, key: "slack"
+
+      member -> { Peal::Types::WordPressOptions }, key: "wordpress"
+
+      member -> { Peal::Types::WordPressComOptions }, key: "wordpressCom"
+
+      member -> { Peal::Types::DevtoOptions }, key: "devto"
+
+      member -> { Peal::Types::HashnodeOptions }, key: "hashnode"
     end
   end
 end

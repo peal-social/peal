@@ -26,6 +26,10 @@ class TargetOptions extends JsonSerializableType
      *   |'discord'
      *   |'telegram'
      *   |'slack'
+     *   |'wordpress'
+     *   |'wordpressCom'
+     *   |'devto'
+     *   |'hashnode'
      *   |'_unknown'
      * ) $platform
      */
@@ -47,6 +51,10 @@ class TargetOptions extends JsonSerializableType
      *   |DiscordOptions
      *   |TelegramOptions
      *   |SlackOptions
+     *   |WordPressOptions
+     *   |WordPressComOptions
+     *   |DevtoOptions
+     *   |HashnodeOptions
      *   |mixed
      * ) $value
      */
@@ -69,6 +77,10 @@ class TargetOptions extends JsonSerializableType
      *   |'discord'
      *   |'telegram'
      *   |'slack'
+     *   |'wordpress'
+     *   |'wordpressCom'
+     *   |'devto'
+     *   |'hashnode'
      *   |'_unknown'
      * ),
      *   value: (
@@ -86,6 +98,10 @@ class TargetOptions extends JsonSerializableType
      *   |DiscordOptions
      *   |TelegramOptions
      *   |SlackOptions
+     *   |WordPressOptions
+     *   |WordPressComOptions
+     *   |DevtoOptions
+     *   |HashnodeOptions
      *   |mixed
      * ),
      * } $values
@@ -262,6 +278,54 @@ class TargetOptions extends JsonSerializableType
         return new TargetOptions([
             'platform' => 'slack',
             'value' => $slack,
+        ]);
+    }
+
+    /**
+     * @param WordPressOptions $wordpress
+     * @return TargetOptions
+     */
+    public static function wordpress(WordPressOptions $wordpress): TargetOptions
+    {
+        return new TargetOptions([
+            'platform' => 'wordpress',
+            'value' => $wordpress,
+        ]);
+    }
+
+    /**
+     * @param WordPressComOptions $wordpressCom
+     * @return TargetOptions
+     */
+    public static function wordpressCom(WordPressComOptions $wordpressCom): TargetOptions
+    {
+        return new TargetOptions([
+            'platform' => 'wordpressCom',
+            'value' => $wordpressCom,
+        ]);
+    }
+
+    /**
+     * @param DevtoOptions $devto
+     * @return TargetOptions
+     */
+    public static function devto(DevtoOptions $devto): TargetOptions
+    {
+        return new TargetOptions([
+            'platform' => 'devto',
+            'value' => $devto,
+        ]);
+    }
+
+    /**
+     * @param HashnodeOptions $hashnode
+     * @return TargetOptions
+     */
+    public static function hashnode(HashnodeOptions $hashnode): TargetOptions
+    {
+        return new TargetOptions([
+            'platform' => 'hashnode',
+            'value' => $hashnode,
         ]);
     }
 
@@ -574,6 +638,94 @@ class TargetOptions extends JsonSerializableType
     }
 
     /**
+     * @return bool
+     */
+    public function isWordpress(): bool
+    {
+        return $this->value instanceof WordPressOptions && $this->platform === 'wordpress';
+    }
+
+    /**
+     * @return WordPressOptions
+     */
+    public function asWordpress(): WordPressOptions
+    {
+        if (!($this->value instanceof WordPressOptions && $this->platform === 'wordpress')) {
+            throw new Exception(
+                "Expected wordpress; got " . $this->platform . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isWordpressCom(): bool
+    {
+        return $this->value instanceof WordPressComOptions && $this->platform === 'wordpressCom';
+    }
+
+    /**
+     * @return WordPressComOptions
+     */
+    public function asWordpressCom(): WordPressComOptions
+    {
+        if (!($this->value instanceof WordPressComOptions && $this->platform === 'wordpressCom')) {
+            throw new Exception(
+                "Expected wordpressCom; got " . $this->platform . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDevto(): bool
+    {
+        return $this->value instanceof DevtoOptions && $this->platform === 'devto';
+    }
+
+    /**
+     * @return DevtoOptions
+     */
+    public function asDevto(): DevtoOptions
+    {
+        if (!($this->value instanceof DevtoOptions && $this->platform === 'devto')) {
+            throw new Exception(
+                "Expected devto; got " . $this->platform . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHashnode(): bool
+    {
+        return $this->value instanceof HashnodeOptions && $this->platform === 'hashnode';
+    }
+
+    /**
+     * @return HashnodeOptions
+     */
+    public function asHashnode(): HashnodeOptions
+    {
+        if (!($this->value instanceof HashnodeOptions && $this->platform === 'hashnode')) {
+            throw new Exception(
+                "Expected hashnode; got " . $this->platform . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
@@ -647,6 +799,22 @@ class TargetOptions extends JsonSerializableType
                 break;
             case 'slack':
                 $value = $this->asSlack()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'wordpress':
+                $value = $this->asWordpress()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'wordpressCom':
+                $value = $this->asWordpressCom()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'devto':
+                $value = $this->asDevto()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'hashnode':
+                $value = $this->asHashnode()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case '_unknown':
@@ -726,6 +894,18 @@ class TargetOptions extends JsonSerializableType
                 break;
             case 'slack':
                 $args['value'] = SlackOptions::jsonDeserialize($data);
+                break;
+            case 'wordpress':
+                $args['value'] = WordPressOptions::jsonDeserialize($data);
+                break;
+            case 'wordpressCom':
+                $args['value'] = WordPressComOptions::jsonDeserialize($data);
+                break;
+            case 'devto':
+                $args['value'] = DevtoOptions::jsonDeserialize($data);
+                break;
+            case 'hashnode':
+                $args['value'] = HashnodeOptions::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

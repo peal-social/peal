@@ -44,11 +44,11 @@ public class ImportTest : BaseMockServerTest
                           "overrides": [
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             },
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             }
                           ],
                           "text": "text"
@@ -68,11 +68,11 @@ public class ImportTest : BaseMockServerTest
                           "overrides": [
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             },
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             }
                           ],
                           "text": "text"
@@ -90,6 +90,17 @@ public class ImportTest : BaseMockServerTest
                       ],
                       "overrides": [
                         {
+                          "body": {
+                            "content": [
+                              {
+                                "key": "value"
+                              },
+                              {
+                                "key": "value"
+                              }
+                            ],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [
                             {
@@ -101,9 +112,20 @@ public class ImportTest : BaseMockServerTest
                               "mediaId": "mediaId"
                             }
                           ],
-                          "text": "x"
+                          "text": "text"
                         },
                         {
+                          "body": {
+                            "content": [
+                              {
+                                "key": "value"
+                              },
+                              {
+                                "key": "value"
+                              }
+                            ],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [
                             {
@@ -115,7 +137,7 @@ public class ImportTest : BaseMockServerTest
                               "mediaId": "mediaId"
                             }
                           ],
-                          "text": "x"
+                          "text": "text"
                         }
                       ],
                       "poll": {
@@ -305,11 +327,11 @@ public class ImportTest : BaseMockServerTest
                           "overrides": [
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             },
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             }
                           ],
                           "text": "text"
@@ -329,11 +351,11 @@ public class ImportTest : BaseMockServerTest
                           "overrides": [
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             },
                             {
                               "channelId": "channelId",
-                              "text": "x"
+                              "text": "text"
                             }
                           ],
                           "text": "text"
@@ -351,6 +373,17 @@ public class ImportTest : BaseMockServerTest
                       ],
                       "overrides": [
                         {
+                          "body": {
+                            "content": [
+                              {
+                                "key": "value"
+                              },
+                              {
+                                "key": "value"
+                              }
+                            ],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [
                             {
@@ -362,9 +395,20 @@ public class ImportTest : BaseMockServerTest
                               "mediaId": "mediaId"
                             }
                           ],
-                          "text": "x"
+                          "text": "text"
                         },
                         {
+                          "body": {
+                            "content": [
+                              {
+                                "key": "value"
+                              },
+                              {
+                                "key": "value"
+                              }
+                            ],
+                            "type": "doc"
+                          },
                           "channelId": "channelId",
                           "media": [
                             {
@@ -376,7 +420,7 @@ public class ImportTest : BaseMockServerTest
                               "mediaId": "mediaId"
                             }
                           ],
-                          "text": "x"
+                          "text": "text"
                         }
                       ],
                       "poll": {

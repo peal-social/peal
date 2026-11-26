@@ -9,6 +9,12 @@ use Peal\Core\Types\ArrayType;
 class TextOverride extends JsonSerializableType
 {
     /**
+     * @var ?RichText $body
+     */
+    #[JsonProperty('body')]
+    public ?RichText $body;
+
+    /**
      * @var string $channelId
      */
     #[JsonProperty('channelId')]
@@ -30,12 +36,14 @@ class TextOverride extends JsonSerializableType
      * @param array{
      *   channelId: string,
      *   text: string,
+     *   body?: ?RichText,
      *   media?: ?array<MediaAttachment>,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
+        $this->body = $values['body'] ?? null;
         $this->channelId = $values['channelId'];
         $this->media = $values['media'] ?? null;
         $this->text = $values['text'];

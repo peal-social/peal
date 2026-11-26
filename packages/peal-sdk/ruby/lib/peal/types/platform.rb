@@ -21,6 +21,10 @@ module Peal
       DISCORD = "discord"
       TELEGRAM = "telegram"
       SLACK = "slack"
+      WORDPRESS = "wordpress"
+      DEVTO = "devto"
+      HASHNODE = "hashnode"
+      WORDPRESS_COM = "wordpressCom"
     end
   end
 end

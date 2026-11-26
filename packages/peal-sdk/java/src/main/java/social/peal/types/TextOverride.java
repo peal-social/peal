@@ -22,6 +22,8 @@ import social.peal.core.ObjectMappers;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = TextOverride.Builder.class)
 public final class TextOverride {
+    private final Optional<RichText> body;
+
     private final String channelId;
 
     private final Optional<List<MediaAttachment>> media;
@@ -31,14 +33,21 @@ public final class TextOverride {
     private final Map<String, Object> additionalProperties;
 
     private TextOverride(
+            Optional<RichText> body,
             String channelId,
             Optional<List<MediaAttachment>> media,
             String text,
             Map<String, Object> additionalProperties) {
+        this.body = body;
         this.channelId = channelId;
         this.media = media;
         this.text = text;
         this.additionalProperties = additionalProperties;
+    }
+
+    @JsonProperty("body")
+    public Optional<RichText> getBody() {
+        return body;
     }
 
     @JsonProperty("channelId")
@@ -68,12 +77,15 @@ public final class TextOverride {
     }
 
     private boolean equalTo(TextOverride other) {
-        return channelId.equals(other.channelId) && media.equals(other.media) && text.equals(other.text);
+        return body.equals(other.body)
+                && channelId.equals(other.channelId)
+                && media.equals(other.media)
+                && text.equals(other.text);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.channelId, this.media, this.text);
+        return Objects.hash(this.body, this.channelId, this.media, this.text);
     }
 
     @java.lang.Override
@@ -102,6 +114,10 @@ public final class TextOverride {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
+        _FinalStage body(Optional<RichText> body);
+
+        _FinalStage body(RichText body);
+
         _FinalStage media(Optional<List<MediaAttachment>> media);
 
         _FinalStage media(List<MediaAttachment> media);
@@ -115,12 +131,15 @@ public final class TextOverride {
 
         private Optional<List<MediaAttachment>> media = Optional.empty();
 
+        private Optional<RichText> body = Optional.empty();
+
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
 
         @java.lang.Override
         public Builder from(TextOverride other) {
+            body(other.getBody());
             channelId(other.getChannelId());
             media(other.getMedia());
             text(other.getText());
@@ -155,13 +174,29 @@ public final class TextOverride {
         }
 
         @java.lang.Override
+        public _FinalStage body(RichText body) {
+            this.body = Optional.ofNullable(body);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "body", nulls = Nulls.SKIP)
+        public _FinalStage body(Optional<RichText> body) {
+            this.body = body;
+            return this;
+        }
+
+        @java.lang.Override
         public TextOverride build() {
-            return new TextOverride(channelId, media, text, additionalProperties);
+            return new TextOverride(body, channelId, media, text, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("channelId") || key.equalsIgnoreCase("media") || key.equalsIgnoreCase("text")) {
+            if (key.equalsIgnoreCase("body")
+                    || key.equalsIgnoreCase("channelId")
+                    || key.equalsIgnoreCase("media")
+                    || key.equalsIgnoreCase("text")) {
                 return;
             }
             this.additionalProperties.put(key, value);

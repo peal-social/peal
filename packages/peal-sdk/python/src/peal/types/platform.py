@@ -18,6 +18,10 @@ Platform = typing.Union[
         "discord",
         "telegram",
         "slack",
+        "wordpress",
+        "devto",
+        "hashnode",
+        "wordpressCom",
     ],
     typing.Any,
 ]

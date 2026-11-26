@@ -13,6 +13,7 @@ module Peal
       REPEATING = "repeating"
       OCCURRENCE = "occurrence"
       NO_CHANNELS = "noChannels"
+      WEBSITES_ONLY = "websitesOnly"
     end
   end
 end

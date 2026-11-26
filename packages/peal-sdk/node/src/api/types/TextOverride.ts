@@ -3,6 +3,7 @@
 import * as Peal from "../index.js";
 
 export interface TextOverride {
+    body?: Peal.RichText | undefined;
     channelId: string;
     media?: Peal.MediaAttachment[] | undefined;
     text: string;

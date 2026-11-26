@@ -18,4 +18,8 @@ enum Platform: string
     case Discord = "discord";
     case Telegram = "telegram";
     case Slack = "slack";
+    case Wordpress = "wordpress";
+    case Devto = "devto";
+    case Hashnode = "hashnode";
+    case WordpressCom = "wordpressCom";
 }

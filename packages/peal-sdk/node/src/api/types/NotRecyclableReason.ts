@@ -6,6 +6,7 @@ export const NotRecyclableReason = {
         Cancelled: "cancelled",
         Repeating: "repeating",
         Occurrence: "occurrence",
-        NoChannels: "noChannels"
+        NoChannels: "noChannels",
+        WebsitesOnly: "websitesOnly"
     } as const;
 export type NotRecyclableReason = typeof NotRecyclableReason[keyof typeof NotRecyclableReason];

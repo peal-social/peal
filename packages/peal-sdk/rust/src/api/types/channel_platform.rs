@@ -1,6 +1,6 @@
 pub use crate::prelude::*;
 
-/// What a channel connects to: a social network (posts) or a website (articles).
+/// What a channel connects to: a social network, a chat or a website.
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ChannelPlatform {

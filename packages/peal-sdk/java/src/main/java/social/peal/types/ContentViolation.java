@@ -178,6 +178,14 @@ public final class ContentViolation {
         return new ContentViolation(new AltTextTooLongValue(value));
     }
 
+    public static ContentViolation bodyInvalid(ContentViolationBodyInvalid value) {
+        return new ContentViolation(new BodyInvalidValue(value));
+    }
+
+    public static ContentViolation bodyNotTaken(ContentViolationBodyNotTaken value) {
+        return new ContentViolation(new BodyNotTakenValue(value));
+    }
+
     public boolean isNoChannels() {
         return value instanceof NoChannelsValue;
     }
@@ -328,6 +336,14 @@ public final class ContentViolation {
 
     public boolean isAltTextTooLong() {
         return value instanceof AltTextTooLongValue;
+    }
+
+    public boolean isBodyInvalid() {
+        return value instanceof BodyInvalidValue;
+    }
+
+    public boolean isBodyNotTaken() {
+        return value instanceof BodyNotTakenValue;
     }
 
     public boolean _isUnknown() {
@@ -600,6 +616,20 @@ public final class ContentViolation {
         return Optional.empty();
     }
 
+    public Optional<ContentViolationBodyInvalid> getBodyInvalid() {
+        if (isBodyInvalid()) {
+            return Optional.of(((BodyInvalidValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<ContentViolationBodyNotTaken> getBodyNotTaken() {
+        if (isBodyNotTaken()) {
+            return Optional.of(((BodyNotTakenValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<Object> _getUnknown() {
         if (_isUnknown()) {
             return Optional.of(((_UnknownValue) value).value);
@@ -705,6 +735,10 @@ public final class ContentViolation {
 
         T visitAltTextTooLong(ContentViolationAltTextTooLong altTextTooLong);
 
+        T visitBodyInvalid(ContentViolationBodyInvalid bodyInvalid);
+
+        T visitBodyNotTaken(ContentViolationBodyNotTaken bodyNotTaken);
+
         T _visitUnknown(Object unknownType);
     }
 
@@ -747,7 +781,9 @@ public final class ContentViolation {
         @JsonSubTypes.Type(SideSumTooLargeValue.class),
         @JsonSubTypes.Type(MediaTotalTooLargeValue.class),
         @JsonSubTypes.Type(AspectRatioUnsupportedValue.class),
-        @JsonSubTypes.Type(AltTextTooLongValue.class)
+        @JsonSubTypes.Type(AltTextTooLongValue.class),
+        @JsonSubTypes.Type(BodyInvalidValue.class),
+        @JsonSubTypes.Type(BodyNotTakenValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
@@ -2260,6 +2296,86 @@ public final class ContentViolation {
         }
 
         private boolean equalTo(AltTextTooLongValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "ContentViolation{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("bodyInvalid")
+    @JsonIgnoreProperties("_tag")
+    private static final class BodyInvalidValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private ContentViolationBodyInvalid value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private BodyInvalidValue() {}
+
+        private BodyInvalidValue(ContentViolationBodyInvalid value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitBodyInvalid(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof BodyInvalidValue && equalTo((BodyInvalidValue) other);
+        }
+
+        private boolean equalTo(BodyInvalidValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "ContentViolation{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("bodyNotTaken")
+    @JsonIgnoreProperties("_tag")
+    private static final class BodyNotTakenValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private ContentViolationBodyNotTaken value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private BodyNotTakenValue() {}
+
+        private BodyNotTakenValue(ContentViolationBodyNotTaken value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitBodyNotTaken(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof BodyNotTakenValue && equalTo((BodyNotTakenValue) other);
+        }
+
+        private boolean equalTo(BodyNotTakenValue other) {
             return value.equals(other.value);
         }
 

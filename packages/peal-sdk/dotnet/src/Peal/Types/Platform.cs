@@ -36,6 +36,14 @@ public readonly record struct Platform : IStringEnum
 
     public static readonly Platform Slack = new(Values.Slack);
 
+    public static readonly Platform Wordpress = new(Values.Wordpress);
+
+    public static readonly Platform Devto = new(Values.Devto);
+
+    public static readonly Platform Hashnode = new(Values.Hashnode);
+
+    public static readonly Platform WordpressCom = new(Values.WordpressCom);
+
     public Platform(string value)
     {
         Value = value;
@@ -157,5 +165,13 @@ public readonly record struct Platform : IStringEnum
         public const string Telegram = "telegram";
 
         public const string Slack = "slack";
+
+        public const string Wordpress = "wordpress";
+
+        public const string Devto = "devto";
+
+        public const string Hashnode = "hashnode";
+
+        public const string WordpressCom = "wordpressCom";
     }
 }
