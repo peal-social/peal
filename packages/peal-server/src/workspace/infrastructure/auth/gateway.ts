@@ -1,5 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { Effect, Layer, Option, Redacted, Schema } from "effect";
+import { Digest } from "effect/crypto";
+import { Base64Url } from "effect/encoding";
 
 import { permissionsOf } from "#shared/domain/access.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -100,6 +102,31 @@ const isNotEnabled = Schema.is(
 
 const decodeVerifiedKey = Schema.decodeUnknownOption(VerifiedKeySchema);
 
+type VerifiedKey = typeof VerifiedKeySchema.Type.key;
+
+// A key's row as Peal reads it itself: its permissions and metadata are
+// JSON text, which Better Auth's answer would have parsed. Metadata that
+// does not parse to an object (an older row, stringified twice) is left
+// to Better Auth, which rewrites it.
+const StoredKeySchema = Schema.Struct({
+  id: Schema.NonEmptyString,
+  metadata: Schema.NullOr(
+    Schema.fromJsonString(
+      Schema.Struct({ createdBy: Schema.optional(UserIdSchema) })
+    )
+  ),
+  permissions: Schema.NullOr(
+    Schema.fromJsonString(
+      Schema.Record(Schema.String, Schema.Array(Schema.String))
+    )
+  ),
+  referenceId: WorkspaceIdSchema,
+});
+
+const decodeStoredKey = Schema.decodeUnknownOption(StoredKeySchema);
+
+const encoder = new TextEncoder();
+
 /** Better Auth behind the AuthGateway port. */
 export const AuthGatewayLive = Layer.effect(
   AuthGateway,
@@ -109,6 +136,74 @@ export const AuthGatewayLive = Layer.effect(
     const settings = yield* AuthSettings;
     const trusted = trustedOriginsOf(settings);
     const tokens = yield* makeAccessTokens;
+    const digest = yield* Digest.Digest;
+
+    // The key, read without writing anything. Better Auth's verification
+    // writes the key's row twice a request (`last_request`, then
+    // `updated_at`), which nothing of Peal's reads, and every request with
+    // a key made those writes on one row. Its own checks are few, and Peal
+    // makes them here on the row it stores: found by the digest it keeps
+    // (SHA-256, base64url without padding), not disabled. Anything else a
+    // row may hold is left to Better Auth (`Option.none()`): a key past
+    // its expiry, which it deletes, a quota of requests (`remaining`), a
+    // configuration other than the default, metadata it rewrites. Peal
+    // sets none of them but the expiry, so those keys keep the library's
+    // ways, and the others pay one read.
+    const readKey = Effect.fn("AuthGateway.readKey")(function* readKey(
+      key: Redacted.Redacted
+    ) {
+      const hashed = Base64Url.encode(
+        yield* digest
+          .digest(Digest.sha256, encoder.encode(Redacted.value(key)))
+          .pipe(Effect.orDie)
+      );
+
+      const [row] = yield* db
+        .select({
+          configId: apikey.configId,
+          enabled: apikey.enabled,
+          // On the database's clock, as Better Auth reads the real time:
+          // never a test's clock, on which a key past its expiry would
+          // still be let in.
+          expired: sql<boolean>`coalesce(${apikey.expiresAt} <= now(), false)`,
+          id: apikey.id,
+          metadata: apikey.metadata,
+          permissions: apikey.permissions,
+          referenceId: apikey.referenceId,
+          remaining: apikey.remaining,
+        })
+        .from(apikey)
+        .where(eq(apikey.key, hashed))
+        .limit(1)
+        .pipe(Effect.mapError((cause) => new AuthUnavailable({ cause })));
+
+      if (row === undefined) {
+        return Option.some(Option.none<VerifiedKey>());
+      }
+
+      if (row.configId !== "default" || row.remaining !== null || row.expired) {
+        return Option.none();
+      }
+
+      if (row.enabled === false) {
+        return Option.some(Option.none<VerifiedKey>());
+      }
+
+      return decodeStoredKey(row).pipe(
+        Option.map((stored): Option.Option<VerifiedKey> => Option.some(stored))
+      );
+    });
+
+    // Better Auth's own verification, for the keys `readKey` leaves to it.
+    const verifiedByLibrary = (key: Redacted.Redacted) =>
+      attempt(
+        async () =>
+          await auth.api.verifyApiKey({ body: { key: Redacted.value(key) } })
+      ).pipe(
+        Effect.map((answer) =>
+          decodeVerifiedKey(answer).pipe(Option.map(({ key: found }) => found))
+        )
+      );
 
     // The key's workspace, and, when the key records its maker, the role
     // they hold there now (none once they are no longer a member): one
@@ -176,15 +271,17 @@ export const AuthGatewayLive = Layer.effect(
 
     return AuthGateway.of({
       apiKey: (key) =>
-        attempt(
-          async () =>
-            await auth.api.verifyApiKey({ body: { key: Redacted.value(key) } })
-        ).pipe(
-          Effect.map(decodeVerifiedKey),
+        readKey(key).pipe(
+          Effect.flatMap(
+            Option.match({
+              onNone: () => verifiedByLibrary(key),
+              onSome: Effect.succeed,
+            })
+          ),
           Effect.flatMap(
             Option.match({
               onNone: () => Effect.succeedNone,
-              onSome: ({ key: verified }) =>
+              onSome: (verified) =>
                 Effect.gen(function* standing() {
                   const permissions = permissionsOf(verified.permissions ?? {});
 
@@ -301,4 +398,4 @@ export const AuthGatewayLive = Layer.effect(
         ),
     });
   })
-);
+).pipe(Layer.provide(Digest.layerWebCrypto));

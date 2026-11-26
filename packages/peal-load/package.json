@@ -1,0 +1,19 @@
+{
+  "name": "peal-load",
+  "private": true,
+  "homepage": "https://peal.social",
+  "bugs": "https://github.com/peal-social/peal/issues",
+  "license": "FSL-1.1-ALv2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peal-social/peal.git",
+    "directory": "packages/peal-load"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "1.4.5",
+    "@types/k6": "2.4.1",
+    "effect": "4.1.5",
+    "typescript": "7.0.2"
+  }
+}

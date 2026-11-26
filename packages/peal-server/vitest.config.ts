@@ -10,6 +10,10 @@ const durationsOutput = process.env["PEAL_TEST_DURATIONS_OUTPUT"];
 
 export default defineConfig({
   test: {
+    // Each test file's app opens a pool of its own: at the server's 20 a
+    // run could pass the 100 connections of CI's Postgres (the stack's
+    // allows 400), so tests keep 10 unless told otherwise.
+    env: { DATABASE_POOL_MAX: process.env["DATABASE_POOL_MAX"] ?? "10" },
     include: ["test/**/*.test.ts"],
     // Files share each worker's modules, so a file does not import the
     // server again (four times faster): no test keeps state in a module,

@@ -259,6 +259,20 @@ The staff context follows these rules too. What the law has a host keep is in
   owner in person gives them, as the owner's leave for an application;
   partner keys never hold those. Keys are created only through `POST /api/v1/workspace/api-keys`:
   Better Auth's own key routes are disabled.
+- A request's key is checked by Peal itself (`readKey` in
+  `auth/gateway.ts`), with one read and no write: Better Auth's
+  `verifyApiKey` writes the key's row twice a request (`last_request`,
+  `updated_at`), which nothing reads, and every request of a busy key
+  waited on that one row. `readKey` makes the library's checks for the
+  rows Peal makes: found by Better Auth's digest (SHA-256, base64url
+  without padding), refused when disabled. Every other row goes to
+  `verifyApiKey` as before: past its expiry (read on the database's clock,
+  which Better Auth deletes), with a quota (`remaining`), of a
+  configuration other than `default`, or with metadata that is no object
+  (stringified twice, which it rewrites).
+  `test/workspace/integration/api-key-verification.test.ts` holds both
+  ways. On a Better Auth upgrade, read `validateApiKey` and the verify
+  route again for a check `readKey` lacks.
 - A key records its maker in Better Auth's `metadata` (`makerMetadata`,
   `{"createdBy": <user id>}`, read with `makerOf`), and the list names
   them while they are a member. Keys follow their maker's standing

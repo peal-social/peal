@@ -163,6 +163,7 @@ SDKs derive their clients from it.
 | [`peal-site`](../packages/peal-site)         | The marketing site (Astro), with the legal pages                             |
 | [`peal-docker`](../packages/peal-docker)     | The development, production and self-hosting stacks, and the images          |
 | [`peal-e2e`](../packages/peal-e2e)           | End-to-end browser tests against the server and the web app's build          |
+| [`peal-load`](../packages/peal-load)         | Load tests with k6, run by hand: the API's rate and a burst of posts         |
 | [`peal-infra`](../packages/peal-infra)       | Peal's own infrastructure: Pulumi for Cloudflare, Ansible for its servers    |
 
 The data lives in Postgres, one schema per bounded context, with Drizzle;
