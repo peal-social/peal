@@ -21,6 +21,7 @@ module Peal
       DISCORD = "discord"
       TELEGRAM = "telegram"
       SLACK = "slack"
+      SNAPCHAT = "snapchat"
     end
   end
 end

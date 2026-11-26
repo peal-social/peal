@@ -38,6 +38,8 @@ module Peal
       member -> { Peal::Types::TelegramOptions }, key: "telegram"
 
       member -> { Peal::Types::SlackOptions }, key: "slack"
+
+      member -> { Peal::Types::SnapchatOptions }, key: "snapchat"
     end
   end
 end

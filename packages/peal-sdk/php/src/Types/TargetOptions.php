@@ -26,6 +26,7 @@ class TargetOptions extends JsonSerializableType
      *   |'discord'
      *   |'telegram'
      *   |'slack'
+     *   |'snapchat'
      *   |'_unknown'
      * ) $platform
      */
@@ -47,6 +48,7 @@ class TargetOptions extends JsonSerializableType
      *   |DiscordOptions
      *   |TelegramOptions
      *   |SlackOptions
+     *   |SnapchatOptions
      *   |mixed
      * ) $value
      */
@@ -69,6 +71,7 @@ class TargetOptions extends JsonSerializableType
      *   |'discord'
      *   |'telegram'
      *   |'slack'
+     *   |'snapchat'
      *   |'_unknown'
      * ),
      *   value: (
@@ -86,6 +89,7 @@ class TargetOptions extends JsonSerializableType
      *   |DiscordOptions
      *   |TelegramOptions
      *   |SlackOptions
+     *   |SnapchatOptions
      *   |mixed
      * ),
      * } $values
@@ -262,6 +266,18 @@ class TargetOptions extends JsonSerializableType
         return new TargetOptions([
             'platform' => 'slack',
             'value' => $slack,
+        ]);
+    }
+
+    /**
+     * @param SnapchatOptions $snapchat
+     * @return TargetOptions
+     */
+    public static function snapchat(SnapchatOptions $snapchat): TargetOptions
+    {
+        return new TargetOptions([
+            'platform' => 'snapchat',
+            'value' => $snapchat,
         ]);
     }
 
@@ -574,6 +590,28 @@ class TargetOptions extends JsonSerializableType
     }
 
     /**
+     * @return bool
+     */
+    public function isSnapchat(): bool
+    {
+        return $this->value instanceof SnapchatOptions && $this->platform === 'snapchat';
+    }
+
+    /**
+     * @return SnapchatOptions
+     */
+    public function asSnapchat(): SnapchatOptions
+    {
+        if (!($this->value instanceof SnapchatOptions && $this->platform === 'snapchat')) {
+            throw new Exception(
+                "Expected snapchat; got " . $this->platform . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
@@ -647,6 +685,10 @@ class TargetOptions extends JsonSerializableType
                 break;
             case 'slack':
                 $value = $this->asSlack()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'snapchat':
+                $value = $this->asSnapchat()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case '_unknown':
@@ -726,6 +768,9 @@ class TargetOptions extends JsonSerializableType
                 break;
             case 'slack':
                 $args['value'] = SlackOptions::jsonDeserialize($data);
+                break;
+            case 'snapchat':
+                $args['value'] = SnapchatOptions::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

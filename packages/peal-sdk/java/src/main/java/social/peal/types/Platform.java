@@ -17,6 +17,8 @@ public final class Platform {
 
     public static final Platform GOOGLE_BUSINESS = new Platform(Value.GOOGLE_BUSINESS, "googleBusiness");
 
+    public static final Platform SNAPCHAT = new Platform(Value.SNAPCHAT, "snapchat");
+
     public static final Platform TELEGRAM = new Platform(Value.TELEGRAM, "telegram");
 
     public static final Platform X = new Platform(Value.X, "x");
@@ -76,6 +78,8 @@ public final class Platform {
                 return visitor.visitDiscord();
             case GOOGLE_BUSINESS:
                 return visitor.visitGoogleBusiness();
+            case SNAPCHAT:
+                return visitor.visitSnapchat();
             case TELEGRAM:
                 return visitor.visitTelegram();
             case X:
@@ -113,6 +117,8 @@ public final class Platform {
                 return DISCORD;
             case "googleBusiness":
                 return GOOGLE_BUSINESS;
+            case "snapchat":
+                return SNAPCHAT;
             case "telegram":
                 return TELEGRAM;
             case "x":
@@ -165,6 +171,8 @@ public final class Platform {
 
         SLACK,
 
+        SNAPCHAT,
+
         UNKNOWN
     }
 
@@ -196,6 +204,8 @@ public final class Platform {
         T visitTelegram();
 
         T visitSlack();
+
+        T visitSnapchat();
 
         T visitUnknown(String unknownType);
     }

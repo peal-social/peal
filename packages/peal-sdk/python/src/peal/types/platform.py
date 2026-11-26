@@ -18,6 +18,7 @@ Platform = typing.Union[
         "discord",
         "telegram",
         "slack",
+        "snapchat",
     ],
     typing.Any,
 ]

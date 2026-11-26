@@ -18,4 +18,5 @@ enum Platform: string
     case Discord = "discord";
     case Telegram = "telegram";
     case Slack = "slack";
+    case Snapchat = "snapchat";
 }
