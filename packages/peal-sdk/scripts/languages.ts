@@ -96,11 +96,18 @@ const rust = "0.4.0-beta.1";
 
 /**
  * While the beta line is the only one that speaks the live API, npm's
- * `latest` takes a prerelease too, so `npm install peal-sdk` gets it. Set it
- * to false at general availability: a later prerelease then goes out under
- * `next`, and `latest` stays on the stable release.
+ * `latest` takes a prerelease too, so `npm install @peal-social/sdk` gets
+ * it. Set it to false at general availability: a later prerelease then goes
+ * out under `next`, and `latest` stays on the stable release.
  */
 export const prereleasesAreLatest = true;
+
+/**
+ * The Node.js SDK's package, under Peal's npm organization: npm refuses a
+ * bare `peal` as too close to other packages' names. Releases 0.1 to 0.3
+ * were published as `peal-sdk`.
+ */
+const nodePackage = "@peal-social/sdk";
 
 /** Where the SDKs' source lives, for the manifests that link to it. */
 export const sourceUrl = (language: LanguageName): string =>
@@ -133,8 +140,7 @@ export const languages: readonly Language[] = [
           description,
           homepage,
           license: "Apache-2.0",
-          // npm refuses `peal` as too close to other packages' names.
-          name: "peal-sdk",
+          name: nodePackage,
           repository: {
             directory: "packages/peal-sdk/node",
             type: "git",
@@ -149,7 +155,7 @@ export const languages: readonly Language[] = [
       version: "3.109.3",
     },
     name: "node",
-    package: { name: "peal-sdk", registry: "npm" },
+    package: { name: nodePackage, registry: "npm" },
     release: node,
     test: "node test/smoke.mjs",
     version: node,

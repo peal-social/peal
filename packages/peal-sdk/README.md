@@ -7,7 +7,7 @@ published to each language's registry.
 
 | Language              | Folder             | Registry                                                                          | Install                                                                 |
 | --------------------- | ------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| TypeScript/JavaScript | [`node`](node)     | [npm](https://www.npmjs.com/package/peal-sdk)                                     | `npm install --save-exact peal-sdk@0.4.0-beta.1`                        |
+| TypeScript/JavaScript | [`node`](node)     | [npm](https://www.npmjs.com/package/@peal-social/sdk)                             | `npm install --save-exact @peal-social/sdk@0.4.0-beta.1`                |
 | Python                | [`python`](python) | [PyPI](https://pypi.org/project/peal-sdk/)                                        | `pip install peal-sdk==0.4.0b1` (imported as `peal`)                    |
 | Go                    | [`go`](go)         | [Go modules](https://pkg.go.dev/github.com/peal-social/peal/packages/peal-sdk/go) | `go get github.com/peal-social/peal/packages/peal-sdk/go@v0.4.0-beta.1` |
 | Ruby                  | [`ruby`](ruby)     | [RubyGems](https://rubygems.org/gems/peal)                                        | `gem install peal --version 0.4.0.beta.1`                               |
@@ -24,7 +24,8 @@ exact version, and your project keeps it until you change it. Releases from
 
 0.4.0-beta.1 is published the day Peal Cloud moves to `/api/v1`. Until then
 the registries hold 0.3.0 (0.3.1 on Maven Central), the client that works
-against Peal Cloud today.
+against Peal Cloud today. On npm, 0.1 to 0.3 are the package `peal-sdk`, and
+0.4.0-beta.1 is the first release of `@peal-social/sdk`.
 
 Each folder's README shows how to use it, and its `reference.md` lists every
 operation. The docs' [SDKs page](https://docs.peal.social/developers/sdks) starts you:
@@ -32,7 +33,7 @@ checking the credential, a post from start to finish, errors, pages, and
 verifying a webhook in each language. In TypeScript:
 
 ```ts
-import { PealClient } from "peal-sdk";
+import { PealClient } from "@peal-social/sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 const credential = await peal.credential.get();
@@ -122,7 +123,7 @@ registry spells the release (`scripts/versions.ts`): PEP 440's `0.4.0b1` on
 PyPI, `0.4.0.beta.1` on RubyGems, the SemVer form everywhere else. npm
 refuses a prerelease without a dist-tag: the workflow names `latest` while
 `prereleasesAreLatest` (`scripts/languages.ts`) is true, so a plain
-`npm install peal-sdk` gets the beta, and `next` once it is false. At general
+`npm install @peal-social/sdk` gets the beta, and `next` once it is false. At general
 availability, the change that sets every release to 0.4.0 sets
 `prereleasesAreLatest` to false.
 
@@ -139,8 +140,13 @@ availability, the change that sets every release to 0.4.0 sets
 
 Each registry's trusted publisher names the repository `peal-social/peal`,
 the workflow `sdk-release.yml` and the environment `sdk-release`. npm and
-crates.io take one only for a package that exists: their first release is
-published by hand.
+crates.io take one only for a package that exists. `@peal-social/sdk` does
+not exist before its first release, which the workflow publishes with a
+short-lived granular token that may bypass two-factor authentication, in
+the `sdk-release` environment's secret `NPM_TOKEN`; npm holds that publish
+until the owner approves it with their security key. Once the package
+exists, add its trusted publisher, then delete the secret and revoke the
+token: npm takes the workflow's OIDC token before any other.
 
 Packagist reads a package from the root of a repository, so the PHP SDK also
 lives in [`peal-social/peal-php`](https://github.com/peal-social/peal-php), a
@@ -213,8 +219,8 @@ bun nx run peal-sdk-node:sdk:build
 bun nx run peal-sdk-python:sdk:build
 check=$(mktemp -d)
 (cd packages/peal-sdk/node && npm pack --silent --pack-destination "$check")
-(cd "$check" && npm init -y >/dev/null && npm install --silent ./peal-sdk-0.4.0-beta.1.tgz &&
-  node -e 'const { PealClient } = require("peal-sdk"); new PealClient({ token: process.env.PEAL_API_KEY }).credential.get().then((credential) => console.log(credential._tag, credential.workspace.name))')
+(cd "$check" && npm init -y >/dev/null && npm install --silent ./peal-social-sdk-0.4.0-beta.1.tgz &&
+  node -e 'const { PealClient } = require("@peal-social/sdk"); new PealClient({ token: process.env.PEAL_API_KEY }).credential.get().then((credential) => console.log(credential._tag, credential.workspace.name))')
 uv run --quiet --isolated --no-project --with "$(ls packages/peal-sdk/python/dist/*.whl)" \
   python -c 'import os; from peal import Peal; credential = Peal(token=os.environ["PEAL_API_KEY"]).credential.get(); print(type(credential).__name__, credential.workspace.name)'
 ```
@@ -252,16 +258,16 @@ for language in java php; do git tag "sdk-$language-v0.4.0-beta.1" "$commit"; do
 git push origin sdk-java-v0.4.0-beta.1 sdk-php-v0.4.0-beta.1
 ```
 
-| Tag                        | What its run does                                                                                  |
-| -------------------------- | -------------------------------------------------------------------------------------------------- |
-| `sdk-node-v0.4.0-beta.1`   | `npm publish --provenance --tag latest`: `npm install peal-sdk` then gets the beta                 |
-| `sdk-python-v0.4.0-beta.1` | Uploads the wheel and the source of `peal-sdk` 0.4.0b1 to PyPI                                     |
-| `sdk-go-v0.4.0-beta.1`     | Pushes the tag `packages/peal-sdk/go/v0.4.0-beta.1`, then asks Go's module proxy for it            |
-| `sdk-rust-v0.4.0-beta.1`   | `cargo publish` of `peal-sdk` 0.4.0-beta.1                                                         |
-| `sdk-dotnet-v0.4.0-beta.1` | Pushes `Peal.0.4.0-beta.1.nupkg` to NuGet                                                          |
-| `sdk-ruby-v0.4.0-beta.1`   | Pushes `peal-0.4.0.beta.1.gem` to RubyGems                                                         |
-| `sdk-java-v0.4.0-beta.1`   | Signs and deploys `social.peal:peal:0.4.0-beta.1` to Maven Central, waiting until Central shows it |
-| `sdk-php-v0.4.0-beta.1`    | Pushes the tag `v0.4.0-beta.1` to `peal-social/peal-php`, which Packagist reads                    |
+| Tag                        | What its run does                                                                                                                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sdk-node-v0.4.0-beta.1`   | `npm publish --provenance --tag latest` of `@peal-social/sdk`, its first release, with `NPM_TOKEN`: approve it on npm with the security key, and `npm install @peal-social/sdk` then gets the beta |
+| `sdk-python-v0.4.0-beta.1` | Uploads the wheel and the source of `peal-sdk` 0.4.0b1 to PyPI                                                                                                                                     |
+| `sdk-go-v0.4.0-beta.1`     | Pushes the tag `packages/peal-sdk/go/v0.4.0-beta.1`, then asks Go's module proxy for it                                                                                                            |
+| `sdk-rust-v0.4.0-beta.1`   | `cargo publish` of `peal-sdk` 0.4.0-beta.1                                                                                                                                                         |
+| `sdk-dotnet-v0.4.0-beta.1` | Pushes `Peal.0.4.0-beta.1.nupkg` to NuGet                                                                                                                                                          |
+| `sdk-ruby-v0.4.0-beta.1`   | Pushes `peal-0.4.0.beta.1.gem` to RubyGems                                                                                                                                                         |
+| `sdk-java-v0.4.0-beta.1`   | Signs and deploys `social.peal:peal:0.4.0-beta.1` to Maven Central, waiting until Central shows it                                                                                                 |
+| `sdk-php-v0.4.0-beta.1`    | Pushes the tag `v0.4.0-beta.1` to `peal-social/peal-php`, which Packagist reads                                                                                                                    |
 
 Go first, as its retraction (step 6) needs its tag. Java last: Central's
 publishing is the slowest.
@@ -272,7 +278,7 @@ Each must show 0.4.0-beta.1 in its spelling (NuGet and the Go proxy can
 take minutes):
 
 ```sh
-npm view peal-sdk dist-tags                    # latest: '0.4.0-beta.1'
+npm view @peal-social/sdk dist-tags            # latest: '0.4.0-beta.1'
 curl -s https://pypi.org/pypi/peal-sdk/0.4.0b1/json | jq -r .info.version
 curl -s https://proxy.golang.org/github.com/peal-social/peal/packages/peal-sdk/go/@v/v0.4.0-beta.1.info
 gem list peal --remote --exact --prerelease    # peal (0.4.0.beta.1)
@@ -295,9 +301,19 @@ wherever a registry takes one:
 Calls the API as it was before /api/v1, which Peal Cloud no longer serves. Install 0.4.0-beta.1 or later: https://docs.peal.social/developers/sdks
 ```
 
+On npm, the beta is another package, so the message names it:
+
+```text
+Renamed to @peal-social/sdk. Calls the API as it was before /api/v1, which Peal Cloud no longer serves. Install @peal-social/sdk: https://docs.peal.social/developers/sdks
+```
+
+With `@peal-social/sdk` published, add its trusted publisher on npm (the
+repository, `sdk-release.yml`, `sdk-release`), then delete the secret
+`NPM_TOKEN` and revoke its token.
+
 | Registry      | Action                                                                                                                                                                                                                         | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Undo                                                                                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| npm           | `npm login`, then `npm deprecate 'peal-sdk@<0.4.0-beta.1' "<message>"` (the range takes `0.0.0-stage` too)                                                                                                                     | Deprecates: every install of those versions prints the message. Nothing is removed. Unpublishing is not used: past 72 hours it needs no dependents, under 300 downloads a week and one owner, and a version number unpublished can never be used again                                                                                                                                                                                                                                | `npm deprecate 'peal-sdk@<0.4.0-beta.1' ""`                                                                                                               |
+| npm           | `npm login`, then `npm deprecate peal-sdk "<npm message>"`, for every version of the old package                                                                                                                               | Deprecates: every install of `peal-sdk` prints the message, and `@peal-social/sdk` is untouched. Nothing is removed. Unpublishing is not used: past 72 hours it needs no dependents, under 300 downloads a week and one owner, and a version number unpublished can never be used again                                                                                                                                                                                               | `npm deprecate peal-sdk ""`                                                                                                                               |
 | PyPI          | On pypi.org, Manage project, Releases: for 0.1.0, 0.2.0 and 0.3.0, Options, Yank, with the message as the reason                                                                                                               | Yanks: installers skip them unless pinned with `==`. A plain `pip install peal-sdk` then stops with "Could not find a version that satisfies the requirement" and lists 0.4.0b1; `uv add peal-sdk` installs 0.4.0b1                                                                                                                                                                                                                                                                   | Options, Un-yank, on the same release (PyPI's release menu, `warehouse/templates/manage/project/releases.html`; its yanking page does not say)            |
 | RubyGems      | `gem yank peal --version 0.3.0`, then 0.2.0 and 0.1.0, with a key that may yank (and the one-time code)                                                                                                                        | Removes each version from installs and the index. Takes no message. A plain `gem install peal` then finds nothing ("Could not find a valid gem"), as RubyGems skips prereleases without `--pre` or a version                                                                                                                                                                                                                                                                          | None documented, and a yanked version number can never be pushed again                                                                                    |
 | NuGet         | On nuget.org, Manage package, `Peal`: in Listing, unlist 0.1.0, 0.2.0 and 0.3.0; in Deprecation, select them, reason Legacy, the message as the custom message                                                                 | Unlisted versions leave search, and `dotnet add package Peal` then fails with "There are no stable versions available, 0.4.0-beta.1 is the best available. Consider adding the --prerelease option". A project naming one still restores it. Visual Studio's package manager and `dotnet list package --deprecated` show the deprecation, its reason and the alternative; the custom message shows on nuget.org only                                                                  | List them again in Listing; in Deprecation, save them with no reason checked, which removes the deprecation (nuget.org's own code; its page does not say) |

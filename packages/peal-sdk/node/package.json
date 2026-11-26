@@ -1,5 +1,5 @@
 {
-  "name": "peal-sdk",
+  "name": "@peal-social/sdk",
   "version": "0.4.0-beta.1",
   "private": false,
   "type": "commonjs",

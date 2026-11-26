@@ -63,7 +63,7 @@ const agentMarks: Readonly<Record<Agent, SimpleIcon | null>> = {
 
 const prompts = ["schedule", "results", "comments"] as const;
 
-const sdkSnippet = `import { PealClient } from "peal-sdk";
+const sdkSnippet = `import { PealClient } from "@peal-social/sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
@@ -434,7 +434,7 @@ export const WorkspaceHome = ({
                   <Step number={2} title={t("quickstart.app.install")}>
                     <CodeBlock
                       copyLabel={t("copy")}
-                      text="npm install peal-sdk"
+                      text="npm install @peal-social/sdk"
                     />
                   </Step>
                   <Step number={3} title={t("quickstart.app.call")}>

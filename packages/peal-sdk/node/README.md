@@ -1,6 +1,6 @@
 # Peal TypeScript Library
 
-[![npm shield](https://img.shields.io/npm/v/peal-sdk)](https://www.npmjs.com/package/peal-sdk)
+[![npm shield](https://img.shields.io/npm/v/@peal-social/sdk)](https://www.npmjs.com/package/@peal-social/sdk)
 
 The Peal TypeScript library provides convenient access to the Peal APIs from TypeScript.
 
@@ -29,10 +29,12 @@ The Peal TypeScript library provides convenient access to the Peal APIs from Typ
 ## Installation
 
 ```sh
-npm install --save-exact peal-sdk@0.4.0-beta.1
+npm install --save-exact @peal-social/sdk@0.4.0-beta.1
 ```
 
 The SDKs are in beta until general availability. A beta release may change a method or a type, so this installs one exact version, and your project keeps it until you change it. Releases from 0.4 call the API under `/api/v1`, and 0.1 to 0.3 the API before it, which Peal Cloud stops serving when 0.4.0-beta.1 is published.
+
+Releases 0.1 to 0.3 were published as `peal-sdk`.
 
 ## Reference
 
@@ -43,7 +45,7 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```typescript
-import { PealClient } from "peal-sdk";
+import { PealClient } from "@peal-social/sdk";
 
 const client = new PealClient({ token: "YOUR_TOKEN", workspace: "YOUR_WORKSPACE" });
 await client.posts.create({
@@ -70,7 +72,7 @@ await client.posts.create({
 This SDK allows you to configure different environments for API requests.
 
 ```typescript
-import { PealClient, PealEnvironment } from "peal-sdk";
+import { PealClient, PealEnvironment } from "@peal-social/sdk";
 
 const client = new PealClient({
     environment: PealEnvironment.Default,
@@ -83,7 +85,7 @@ The SDK exports all request and response types as TypeScript interfaces. Simply 
 following namespace:
 
 ```typescript
-import { Peal } from "peal-sdk";
+import { Peal } from "@peal-social/sdk";
 
 const request: Peal.CalendarPostsRequest = {
     ...
@@ -96,7 +98,7 @@ When the API returns a non-success status code (4xx or 5xx response), a subclass
 will be thrown.
 
 ```typescript
-import { PealError } from "peal-sdk";
+import { PealError } from "@peal-social/sdk";
 
 try {
     await client.posts.create(...);
@@ -506,7 +508,7 @@ const text = new TextDecoder().decode(bytes);
 This SDK supports direct imports of subpackage clients, which allows JavaScript bundlers to tree-shake and include only the imported subpackage code. This results in much smaller bundle sizes.
 
 ```typescript
-import { PostsClient } from 'peal-sdk/posts';
+import { PostsClient } from '@peal-social/sdk/posts';
 
 const client = new PostsClient({...});
 ```
@@ -516,7 +518,7 @@ const client = new PostsClient({...});
 If you would like to send additional headers as part of the request, use the `headers` request option.
 
 ```typescript
-import { PealClient } from "peal-sdk";
+import { PealClient } from "@peal-social/sdk";
 
 const client = new PealClient({
     ...
@@ -604,7 +606,7 @@ console.log(rawResponse.headers.get('X-My-Header'));
 The SDK supports logging. You can configure the logger by passing in a `logging` object to the client options.
 
 ```typescript
-import { PealClient, logging } from "peal-sdk";
+import { PealClient, logging } from "@peal-social/sdk";
 
 const client = new PealClient({
     ...
@@ -633,7 +635,7 @@ To provide a custom logger, you can pass in an object that implements the `loggi
 
 Here's an example using the popular `winston` logging library.
 ```ts
-import { logging } from "peal-sdk";
+import { logging } from "@peal-social/sdk";
 import winston from 'winston';
 
 const winstonLogger = winston.createLogger({...});
@@ -649,7 +651,7 @@ const logger: logging.ILogger = {
 Here's an example using the popular `pino` logging library.
 
 ```ts
-import { logging } from "peal-sdk";
+import { logging } from "@peal-social/sdk";
 import pino from 'pino';
 
 const pinoLogger = pino({...});
