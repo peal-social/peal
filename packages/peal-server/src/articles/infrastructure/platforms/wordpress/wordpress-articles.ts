@@ -2,9 +2,6 @@ import { DateTime, Duration, Effect, Option, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
-import type { SiteToken } from "#articles/application/site-credentials.ts";
-import type { SiteSearch } from "#articles/application/site-publisher.ts";
-import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
 import type { SiteAdapter } from "#articles/infrastructure/platforms/site-adapter.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
 import type {
@@ -13,6 +10,8 @@ import type {
   SiteFile,
   SiteFileJournal,
 } from "#shared/application/site-call-journal.ts";
+import type { SiteSearch } from "#shared/application/site-search.ts";
+import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
@@ -30,6 +29,7 @@ import {
   escapeHtml,
 } from "#shared/domain/rich-text/rich-body-html.ts";
 import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
+import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
 import {
@@ -193,7 +193,7 @@ const sentJson = <A, I>(schema: Schema.Codec<A, I>, ok: readonly number[]) =>
 const guardRefusalOf = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: articleRefusalCodes.channelDisconnected });
+    : new BadRequest({ code: siteRefusalCodes.channelDisconnected });
 
 // The site's answer; a failure to reach it is the site being down.
 const execute = (
@@ -489,7 +489,7 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         return fields;
       }
 
-      if (content.siteStatus === "future" && Option.isSome(article.publishAt)) {
+      if (content.siteStatus !== "draft" && Option.isSome(article.publishAt)) {
         return {
           ...fields,
           date_gmt: isoGmt(article.publishAt.value),
@@ -619,7 +619,6 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
       );
 
     const publish = Effect.fn("WordPressArticles.publish")(function* publish(
-      _request: SiteCallRequest,
       article: OutgoingArticle,
       journal: SiteCallJournal,
       token: SiteToken
@@ -693,14 +692,14 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
     const resume = (
       request: SiteCallRequest,
       article: OutgoingArticle,
-      journal: SiteCallJournal,
+      journal: SiteFileJournal,
       token: SiteToken
     ) => lookedUp(token, article, journal, request.startedAt, "interrupted");
 
     const find = (
       request: SiteCallRequest,
       article: OutgoingArticle,
-      journal: SiteCallJournal,
+      journal: SiteFileJournal,
       token: SiteToken
     ) => lookUp(token, article, journal, request.startedAt);
 

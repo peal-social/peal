@@ -1,9 +1,6 @@
 import { DateTime, Duration, Effect, Option, Schema } from "effect";
 import { HttpClientRequest } from "effect/http";
 
-import type { SiteToken } from "#articles/application/site-credentials.ts";
-import type { SiteSearch } from "#articles/application/site-publisher.ts";
-import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
 import type { SiteAdapter } from "#articles/infrastructure/platforms/site-adapter.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
 import type {
@@ -12,6 +9,8 @@ import type {
   SiteFile,
   SiteFileJournal,
 } from "#shared/application/site-call-journal.ts";
+import type { SiteSearch } from "#shared/application/site-search.ts";
+import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
@@ -25,6 +24,7 @@ import { RateLimited } from "#shared/domain/rate-limited.ts";
 import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
 import { articleMarkdown } from "#shared/domain/rich-text/rich-body-markdown.ts";
 import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
+import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
 import { hashnodeSlugOf } from "#shared/domain/rich-text/site-rules.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
@@ -77,7 +77,7 @@ const commitRefusals: ReadonlySet<string> = new Set([
   "bad_user_input",
   "forbidden",
   "not_found",
-  articleRefusalCodes.sitePlanRequired,
+  siteRefusalCodes.sitePlanRequired,
 ]);
 
 // How far before the call a post made by it may say it was published.
@@ -234,7 +234,7 @@ const refusalOf = (
   }
 
   if (errors.some(isPlanRefusal)) {
-    return new BadRequest({ code: articleRefusalCodes.sitePlanRequired });
+    return new BadRequest({ code: siteRefusalCodes.sitePlanRequired });
   }
 
   const [first] = errors;
@@ -251,7 +251,7 @@ const refusalOf = (
 const guardRefusalOf = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: articleRefusalCodes.channelDisconnected });
+    : new BadRequest({ code: siteRefusalCodes.channelDisconnected });
 
 const webAddress = (link: string | null | undefined): string | undefined => {
   if (link === null || link === undefined || !URL.canParse(link)) {
@@ -574,7 +574,6 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
       );
 
     const publish = Effect.fn("HashnodeArticles.publish")(function* publish(
-      _request: SiteCallRequest,
       article: OutgoingArticle,
       journal: SiteCallJournal,
       token: SiteToken
@@ -688,7 +687,7 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
     const find = Effect.fn("HashnodeArticles.find")(function* find(
       request: SiteCallRequest,
       article: OutgoingArticle,
-      journal: SiteCallJournal,
+      journal: SiteFileJournal,
       token: SiteToken
     ) {
       const now = yield* DateTime.now;

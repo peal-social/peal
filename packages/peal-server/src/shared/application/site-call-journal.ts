@@ -13,8 +13,6 @@ export interface SiteFile {
 
 /** One attempt's call to a website, as the journal that owns it began it. */
 export interface SiteCallRequest {
-  /** The same for every run of one attempt, different for each attempt. */
-  readonly idempotencyKey: string;
   /** When the attempt's call started, as the journal recorded it. */
   readonly startedAt: DateTime.Utc;
 }
@@ -47,8 +45,9 @@ export interface SiteFileJournal {
     mediaId: MediaAssetId
   ) => Effect.Effect<void, DatabaseError>;
   /**
-   * Which of these ids on the site another post or article of the channel
-   * is recorded to have made: a search on the site never adopts another's.
+   * Which of these ids on the site any post or article of the channel,
+   * this one's included, is recorded to have made: a search on the site
+   * never adopts one.
    */
   readonly recordedOn: (
     platformPostIds: readonly string[]

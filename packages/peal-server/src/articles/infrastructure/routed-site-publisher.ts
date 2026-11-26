@@ -4,7 +4,6 @@ import type { DateTime } from "effect";
 import { ArticleJournal } from "#articles/application/article-journal.ts";
 import { ArticleStore } from "#articles/application/article-store.ts";
 import { SiteCredentials } from "#articles/application/site-credentials.ts";
-import type { SiteToken } from "#articles/application/site-credentials.ts";
 import { SitePublisher } from "#articles/application/site-publisher.ts";
 import type { SitePublishRequest } from "#articles/application/site-publisher.ts";
 import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
@@ -14,6 +13,7 @@ import type {
   SiteCallJournal,
   SiteFileJournal,
 } from "#shared/application/site-call-journal.ts";
+import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { SitePlatform } from "#shared/domain/platform.ts";
 import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
@@ -135,8 +135,8 @@ export const routedSitePublisher = <E, R>(
         find: requested((adapter, request, article, calls, token) =>
           adapter.find(request, article, calls, token)
         ),
-        publish: requested((adapter, request, article, calls, token) =>
-          adapter.publish(request, article, calls, token)
+        publish: requested((adapter, _request, article, calls, token) =>
+          adapter.publish(article, calls, token)
         ),
         remove: (article, platformPostId) =>
           onSite(article, (adapter, token) =>

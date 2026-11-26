@@ -111,11 +111,14 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   channel's platform with the article as its site gets it
   (`OutgoingArticle`: the content, and `publishAt` for `future` once
   scheduled) and the article's journal as the call needs it
-  (`SiteCallJournal`: `committing`, the files sent from
-  `ArticleJournal`, and `ArticleStore.recordedOn`; an update gets the
-  files and the records alone, `SiteFileJournal`), both in the shared
-  kernel. The adapters know no article, store or journal of this
-  context, so publishing can call them with its own journal. WordPress's adapter serves `wordpress` and
+  (`SiteCallJournal` for a publish: `committing`, the files sent from
+  `ArticleJournal`, and `ArticleStore.recordedOn`; a search, a resume or
+  an update gets the files and the records alone, `SiteFileJournal`),
+  both in the shared kernel. The adapters import nothing of this
+  context: their token (`SiteToken`), their search (`SiteSearch`) and the
+  two refusal codes they write (`siteRefusalCodes`, which
+  `articleRefusalCodes` takes its two from) are the kernel's too, so
+  publishing can call them with its own journal. WordPress's adapter serves `wordpress` and
   `wordpressCom` (`siteRouteUrl`, `withSiteToken`: WordPress.com's
   `/wp/v2/sites/{id}/` with a bearer token). DEV's (`devto/`, Forem's API
   v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a 200) take Markdown written by `rich-body-markdown.ts` alone, where
@@ -143,7 +146,7 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   come from a cache, so `find` waits a minute past the earlier call; a
   commit answered with an undocumented code is looked for; it cannot
   publish at a time (`siteStatusNotTaken`) and refuses all without its
-  Pro plan (`articleRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
+  Pro plan (`siteRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
   `#shared/domain/rich-text/site-rules.ts`, checked by `articleViolations` with the
   channel's rules. Tests set the fakes' addresses on
   `testDevToHosts`, `testHashnodeHosts`, `testWordPressComHosts`.

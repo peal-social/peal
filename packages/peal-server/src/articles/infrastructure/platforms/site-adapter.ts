@@ -1,12 +1,12 @@
 import type { Effect } from "effect";
 
-import type { SiteToken } from "#articles/application/site-credentials.ts";
-import type { SiteSearch } from "#articles/application/site-publisher.ts";
 import type {
   SiteCallJournal,
   SiteCallRequest,
   SiteFileJournal,
 } from "#shared/application/site-call-journal.ts";
+import type { SiteSearch } from "#shared/application/site-search.ts";
+import type { SiteToken } from "#shared/application/site-token.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
 import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
@@ -22,7 +22,6 @@ import type { TokenRejected } from "#shared/domain/token-rejected.ts";
  */
 export interface SiteAdapter {
   readonly publish: (
-    request: SiteCallRequest,
     article: OutgoingArticle,
     journal: SiteCallJournal,
     token: SiteToken
@@ -30,13 +29,13 @@ export interface SiteAdapter {
   readonly resume: (
     request: SiteCallRequest,
     article: OutgoingArticle,
-    journal: SiteCallJournal,
+    journal: SiteFileJournal,
     token: SiteToken
   ) => Effect.Effect<PublishResult, PublishFailure | TokenRejected>;
   readonly find: (
     request: SiteCallRequest,
     article: OutgoingArticle,
-    journal: SiteCallJournal,
+    journal: SiteFileJournal,
     token: SiteToken
   ) => Effect.Effect<SiteSearch, PublishFailure | TokenRejected>;
   readonly remove: (

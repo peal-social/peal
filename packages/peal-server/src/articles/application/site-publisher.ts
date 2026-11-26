@@ -4,14 +4,9 @@ import type { DateTime, Effect } from "effect";
 import type { ArticleId } from "#articles/domain/article-id.ts";
 import type { Article } from "#articles/domain/article.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
+import type { SiteSearch } from "#shared/application/site-search.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
 import type { PublishResult } from "#shared/domain/publish-result.ts";
-
-/** What a search of the site for an article's post found. */
-export type SiteSearch =
-  | { readonly _tag: "found"; readonly result: PublishResult }
-  | { readonly _tag: "none" }
-  | { readonly _tag: "several" };
 
 /** Send this article to its site. */
 export interface SitePublishRequest {

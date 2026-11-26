@@ -11,17 +11,15 @@ import {
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
-import type { SiteToken } from "#articles/application/site-credentials.ts";
-import type { SiteSearch } from "#articles/application/site-publisher.ts";
-import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
 import type { SiteAdapter } from "#articles/infrastructure/platforms/site-adapter.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
 import type {
   SiteCallJournal,
-  SiteCallRequest,
   SiteFile,
   SiteFileJournal,
 } from "#shared/application/site-call-journal.ts";
+import type { SiteSearch } from "#shared/application/site-search.ts";
+import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
@@ -35,6 +33,7 @@ import { RateLimited } from "#shared/domain/rate-limited.ts";
 import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
 import { articleMarkdown } from "#shared/domain/rich-text/rich-body-markdown.ts";
 import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
+import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
   devtoErrorOf,
@@ -173,7 +172,7 @@ const refusalOf = Effect.fnUntraced(function* refusalOf(
 const guardRefusalOf = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: articleRefusalCodes.channelDisconnected });
+    : new BadRequest({ code: siteRefusalCodes.channelDisconnected });
 
 const execute = (
   client: Client,
@@ -257,9 +256,9 @@ const contentOf = (
 // When DEV is to publish it itself, as "scheduled there": none for a
 // draft or an article published at once.
 const plannedAt = (article: OutgoingArticle) =>
-  article.content.siteStatus === "future"
-    ? article.publishAt
-    : Option.none<DateTime.Utc>();
+  article.content.siteStatus === "draft"
+    ? Option.none<DateTime.Utc>()
+    : article.publishAt;
 
 // How it lands: a draft, published now, or at its time, by DEV itself. A
 // time gone by is left out: DEV refuses one more than 15 minutes past
@@ -619,7 +618,6 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
     );
 
   const publish = Effect.fn("DevToArticles.publish")(function* publish(
-    _request: SiteCallRequest,
     article: OutgoingArticle,
     journal: SiteCallJournal,
     token: SiteToken

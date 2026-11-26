@@ -1,10 +1,10 @@
 import { Context } from "effect";
-import type { Effect, Redacted } from "effect";
+import type { Effect } from "effect";
 
+import type { SiteToken } from "#shared/application/site-token.ts";
 import type { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import type { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
-import type { SitePlatform } from "#shared/domain/platform.ts";
 import type { TokenExpired } from "#shared/domain/token-expired.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 
@@ -17,15 +17,6 @@ export type SiteCredentialFailure =
   | BadRequest
   | PlatformUnavailable
   | TokenExpired;
-
-/** What a website's calls are made with. */
-export interface SiteToken {
-  /** The site's credential: its user and application password. */
-  readonly credential: Redacted.Redacted;
-  readonly platform: SitePlatform;
-  /** The root of the site's API, as the channel keeps it. */
-  readonly root: string;
-}
 
 /**
  * A website's credential, from the channels context: refused for a
