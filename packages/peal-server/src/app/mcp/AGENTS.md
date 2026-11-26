@@ -136,8 +136,8 @@
   names one channel by `channelId` or `targetId`, exactly one, checks
   `post:publish` before it reads the post, and says the change is public
   at once and which platforms take it. It takes `text`, and a website's
-  `body` and `options`, one at least, read as the API reads them
-  (`liveEditFrom`). Their refusals have their words in
+  `bodyMarkdown`, `body` (never both) and `options`, one at least, read
+  as the API reads them (`liveEditFrom`). Their refusals have their words in
   `refusals.ts` (`livePostRefusals`). Instants are
   `Schema.DateTimeUtcFromString` in tool parameters. The tools whose
   write the API's connection journal keeps are `contentTools`
@@ -237,7 +237,15 @@
   without any, its answer is the list it always was. It lists websites
   as any channel (their posts are articles), so `create_post`,
   `validate_post`, the capabilities tools and `get_post_review` serve
-  them with no tool of their own. `duplicate_post`
+  them with no tool of their own. A website's body is written as
+  Markdown (`bodyMarkdown`, the contract's, on an override or an edit):
+  the descriptions of `create_draft`, `update_draft`, `create_post`,
+  `create_posts`, `validate_post` and `edit_published_post` say so
+  (`websiteBody`: headings from `##`, the title in the options, an image
+  as `media:<id>` after `import_media`), never the rich text's JSON; the
+  handlers read it with the API's helpers and the `MarkdownBodies` the
+  tools' layer takes when it is built, and a refusal's violations carry
+  each problem's line and column. `duplicate_post`
   (`PostTools`) makes a draft of a post, a new one each call. Wherever a
   tool says a channel is turned off, it names `enable_channel`, never
   disconnecting. The CLI's are `peal channels rename|disable|enable` and

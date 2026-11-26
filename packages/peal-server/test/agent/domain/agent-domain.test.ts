@@ -331,7 +331,8 @@ describe("the agent's domain", () => {
         { part: "one", postId: "post-1", text: "x" },
         withPost
       ),
-      // A website's rich text or options, which no card shows yet.
+      // A website's rich text (as JSON or Markdown) or options, which no
+      // card shows yet.
       refusalOf(
         "edit_published_post",
         {
@@ -346,6 +347,15 @@ describe("the agent's domain", () => {
         {
           channelId: "channel-1",
           options: { platform: "wordpress", title: "After" },
+          postId: "post-1",
+        },
+        withPost
+      ),
+      refusalOf(
+        "edit_published_post",
+        {
+          bodyMarkdown: "## After",
+          channelId: "channel-1",
           postId: "post-1",
         },
         withPost
@@ -405,6 +415,7 @@ describe("the agent's domain", () => {
       ),
     ]).toStrictEqual([
       approvalRefusals.tool,
+      approvalRefusals.parameters,
       approvalRefusals.parameters,
       approvalRefusals.parameters,
       approvalRefusals.parameters,

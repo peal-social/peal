@@ -576,7 +576,15 @@ export const PostToolsLive = PostTools.toLayer(
         }).pipe(Effect.catchTags(malformedPost)),
       edit_published_post: (asked) =>
         Effect.gen(function* editPublishedPost() {
-          const { body, channelId, options, postId, targetId, text } = asked;
+          const {
+            body,
+            bodyMarkdown,
+            channelId,
+            options,
+            postId,
+            targetId,
+            text,
+          } = asked;
 
           // One channel of the post, named one way: never whichever of two
           // names comes first.
@@ -588,11 +596,18 @@ export const PostToolsLive = PostTools.toLayer(
 
           if (
             body === undefined &&
+            bodyMarkdown === undefined &&
             options === undefined &&
             text === undefined
           ) {
             return yield* refuse(
-              "Give text, body or options, one at least: nothing was edited."
+              "Give text, bodyMarkdown, body or options, one at least: nothing was edited."
+            );
+          }
+
+          if (body !== undefined && bodyMarkdown !== undefined) {
+            return yield* refuse(
+              "Give body or bodyMarkdown, not both: each is the whole body. Nothing was edited."
             );
           }
 

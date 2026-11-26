@@ -127,11 +127,12 @@ describe("the agent's toolkit", () => {
       })
     );
 
-    // A website's rich text and options, which no card shows yet: the
+    // A website's rich text (as JSON or Markdown) and options, which no
+    // card shows yet: the
     // agent's call that gives them is never asked (`approvalRefusals`
     // `parameters`), and a person edits a website in the app or the API.
     const notOnCards: ReadonlyMap<string, ReadonlySet<string>> = new Map([
-      ["edit_published_post", new Set(["body", "options"])],
+      ["edit_published_post", new Set(["body", "bodyMarkdown", "options"])],
     ]);
 
     for (const name of [...approvedTools, ...draftFreeTools]) {

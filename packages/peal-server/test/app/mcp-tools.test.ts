@@ -1452,6 +1452,106 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
+      "make a website's draft from Markdown, and refuse one with each problem's place",
+      () =>
+        Effect.gen(function* markdown() {
+          const fixture = yield* ToolsFixture;
+          const channels = yield* ChannelRepository;
+          const writer = yield* connected(fixture.writing);
+          const workspaceId = WorkspaceIdSchema.make(fixture.workspaceId);
+
+          const site = yield* freshChannel(workspaceId, {
+            platform: "wordpress",
+          });
+
+          yield* channels.insert(site, syntheticCredentials(site));
+          yield* Effect.addFinalizer(() =>
+            channels.remove(workspaceId, site.id).pipe(Effect.orDie)
+          );
+
+          const draft = yield* writer.call("create_draft", PostJsonSchema, {
+            channelIds: [site.id],
+            content: {
+              media: [],
+              overrides: [
+                {
+                  bodyMarkdown: "## Sow early\n\nPeas **first**.",
+                  channelId: site.id,
+                  text: "",
+                },
+              ],
+              text: "A synthetic article",
+            },
+          });
+
+          assert.deepStrictEqual(draft.content.overrides, [
+            {
+              body: {
+                content: [
+                  {
+                    attrs: { level: 2 },
+                    content: [{ text: "Sow early", type: "text" }],
+                    type: "heading",
+                  },
+                  {
+                    content: [
+                      { text: "Peas ", type: "text" },
+                      {
+                        marks: [{ type: "bold" }],
+                        text: "first",
+                        type: "text",
+                      },
+                      { text: ".", type: "text" },
+                    ],
+                    type: "paragraph",
+                  },
+                ],
+                type: "doc",
+              },
+              channelId: site.id,
+              media: [],
+              text: "Sow early\n\nPeas first.",
+            },
+          ]);
+
+          const refused = yield* writer.refused("create_draft", {
+            channelIds: [site.id],
+            content: {
+              media: [],
+              overrides: [
+                {
+                  bodyMarkdown: "# Title twice\n\n<div>raw</div>",
+                  channelId: site.id,
+                  text: "",
+                },
+              ],
+              text: "A synthetic article",
+            },
+          });
+
+          assert.include(
+            refused,
+            JSON.stringify([
+              {
+                _tag: "bodyInvalid",
+                channelId: site.id,
+                problems: [
+                  { column: 1, line: 1, problem: "headingLevel" },
+                  { column: 1, line: 3, problem: "html" },
+                ],
+              },
+            ])
+          );
+
+          yield* writer.call(
+            "discard_draft",
+            Schema.Struct({ discarded: Schema.String }),
+            { postId: draft.id }
+          );
+        })
+    );
+
+    it.effect(
       "name channels, turn them off and back on, find them, and duplicate a post",
       () =>
         Effect.gen(function* housekeeping() {
@@ -2491,7 +2591,16 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
               channelId: fixture.channelId,
               postId: created.id,
             }),
-            "Give text, body or options, one at least"
+            "Give text, bodyMarkdown, body or options, one at least"
+          );
+          assert.include(
+            yield* publisher.refused("edit_published_post", {
+              body: { content: [], type: "doc" },
+              bodyMarkdown: "Both",
+              channelId: fixture.channelId,
+              postId: created.id,
+            }),
+            "Give body or bodyMarkdown, not both"
           );
           // A website's options are read as the API reads them, then the
           // target is judged: a draft's is not live.
