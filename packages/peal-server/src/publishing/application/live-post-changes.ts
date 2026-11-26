@@ -9,6 +9,9 @@ import {
   Semaphore,
 } from "effect";
 
+import { ChannelOptions } from "#publishing/domain/channel-options.ts";
+import type { ChannelOnPlatform } from "#publishing/domain/content-rules.ts";
+import type { ContentViolation } from "#publishing/domain/content-violation.ts";
 import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.ts";
 import {
   editable,
@@ -21,13 +24,20 @@ import type {
   LivePostChange,
   LivePostRefusal,
 } from "#publishing/domain/live-post-change.ts";
-import { editViolationsOn } from "#publishing/domain/live-post-edit.ts";
+import {
+  editViolationsOn,
+  siteContentOn,
+  siteEditViolationsOn,
+  withEditOn,
+} from "#publishing/domain/live-post-edit.ts";
 import { deletionWindowPassed } from "#publishing/domain/live-post-support.ts";
 import { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
+import { textOn } from "#publishing/domain/post-content.ts";
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import { maxPostTextLength } from "#publishing/domain/post-text.ts";
 import type { Post } from "#publishing/domain/post.ts";
+import type { TargetOptions } from "#publishing/domain/target-options.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { newId } from "#shared/application/ids.ts";
 import type { Ids } from "#shared/application/ids.ts";
@@ -37,8 +47,12 @@ import { authorize } from "#shared/domain/authorize.ts";
 import type { PostId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import { storableText } from "#shared/domain/platform-text.ts";
+import { isSitePlatform } from "#shared/domain/platform.ts";
+import { textOfBody } from "#shared/domain/rich-text/rich-body.ts";
+import type { ArticleBody } from "#shared/domain/rich-text/rich-body.ts";
 
 import { ApprovalGate } from "./approval-gate.ts";
+import type { AttachableMedia } from "./attachable-media.ts";
 import { LivePostChangeStore } from "./live-post-change-store.ts";
 import { LivePostHolds } from "./live-post-holds.ts";
 import { LivePostJobs } from "./live-post-jobs.ts";
@@ -47,7 +61,9 @@ import { PlatformCredentials } from "./platform-credentials.ts";
 import { PostNotFound } from "./post-not-found.ts";
 import { PostOrigins } from "./post-origins.ts";
 import { maxOutcomeWait, maxWaitingRequests } from "./post-outcomes.ts";
+import { mediaFor } from "./post-references.ts";
 import { PostRepository } from "./post-repository.ts";
+import type { UnknownMedia } from "./unknown-media.ts";
 import { findInWorkspace, lockInWorkspace } from "./workspace-posts.ts";
 
 // How often a waiting request reads the change again.
@@ -59,12 +75,55 @@ type Failure =
   | MissingPermission
   | PostNotFound;
 
+/** A rich text a request gave that does not decode (`bodyInvalid`). */
+export const invalidBody = "invalidBody";
+
 /**
  * What an edit asks: `text` for the part at `part` (from 0, the post
- * itself) on the target's channel.
+ * itself) on the target's channel; on a website, its text or a rich text
+ * (`body`, or `invalidBody` for one that did not decode) and its options,
+ * whole, each kept when left out. A social target takes `text` alone.
  */
 export interface TextEditRequest {
+  readonly body?: ArticleBody | typeof invalidBody;
+  readonly options?: TargetOptions;
   readonly part: number;
+  readonly text?: string;
+}
+
+// Fails as scheduling does when there is a violation.
+const rejected = (violations: readonly ContentViolation[]) => {
+  const [first, ...others] = violations;
+
+  return first === undefined
+    ? Effect.void
+    : Effect.fail(new PostContentRejected({ violations: [first, ...others] }));
+};
+
+// A rich text the edit gives where none is taken, or that does not
+// decode, named on the target's channel and the part asked.
+const bodyViolation = (
+  tag: "bodyInvalid" | "bodyNotTaken",
+  channel: ChannelOnPlatform,
+  part: number
+): ContentViolation => {
+  if (tag === "bodyInvalid") {
+    return part === 0
+      ? { _tag: tag, channelId: channel.channelId }
+      : { _tag: tag, channelId: channel.channelId, part };
+  }
+
+  const named = { channelId: channel.channelId, platform: channel.platform };
+
+  return part === 0 ? { _tag: tag, ...named } : { _tag: tag, ...named, part };
+};
+
+// An edit as checked, as its change holds it: every edit's text (a
+// website's rich text's plain text, or the text the channel has when only
+// its options change), a website's rich text and its new options.
+interface AskedEdit {
+  readonly body: Option.Option<ArticleBody>;
+  readonly options: Option.Option<TargetOptions>;
   readonly text: string;
 }
 
@@ -106,15 +165,19 @@ export class LivePostChanges extends Context.Service<
     ) => Effect.Effect<LivePostChange, Failure>;
     /**
      * Replaces the text of one part of the post on one channel's
-     * platform; once done, that part's text on the channel is the new
-     * one. The text is made storable first.
+     * platform, and on a website its rich text and its options; once
+     * done, that part's text on the channel is the new one, and a
+     * website's options the target's. The text is made storable first.
      */
     readonly editTarget: (
       actor: Actor,
       postId: PostId,
       targetId: PostTargetId,
       edit: TextEditRequest
-    ) => Effect.Effect<LivePostChange, Failure | PostContentRejected>;
+    ) => Effect.Effect<
+      LivePostChange,
+      Failure | PostContentRejected | UnknownMedia
+    >;
     /**
      * Deletes the post from every channel where it can be, and answers,
      * target by target, the change made or why none could be.
@@ -157,7 +220,11 @@ export class LivePostChanges extends Context.Service<
       const credentials = yield* PlatformCredentials;
       const origins = yield* PostOrigins;
       const { transaction } = yield* TransactionRunner;
-      const ports = yield* Effect.context<Ids | PostRepository>();
+
+      const ports = yield* Effect.context<
+        AttachableMedia | Ids | PostRepository
+      >();
+
       const waiting = yield* Semaphore.make(maxWaitingRequests);
 
       // The channel's platform, while it can be used: none once it was
@@ -274,6 +341,103 @@ export class LivePostChanges extends Context.Service<
         }
       );
 
+      // A social network's or a chat's edit: its text alone, checked as
+      // scheduling checks that part. A rich text is no channel's there,
+      // and Peal changes no option of a post live there.
+      const socialEditOf = Effect.fn("LivePostChanges.socialEditOf")(
+        function* socialEditOf(
+          post: Post,
+          target: PostTarget,
+          channel: ChannelOnPlatform,
+          edit: TextEditRequest
+        ) {
+          if (edit.body !== undefined) {
+            yield* rejected([
+              bodyViolation("bodyNotTaken", channel, edit.part),
+            ]);
+          }
+
+          if (edit.options !== undefined) {
+            return Result.fail<LivePostRefusal>("notSupported");
+          }
+
+          const text = edit.text ?? "";
+
+          yield* rejected(
+            editViolationsOn({
+              channel,
+              content: post.content,
+              options: target.options,
+              part: edit.part,
+              text,
+            })
+          );
+
+          return Result.succeed<AskedEdit>({
+            body: Option.none(),
+            options: Option.none(),
+            text,
+          });
+        }
+      );
+
+      // A website's edit: its text, or a rich text, and its options, each
+      // kept when left out, checked as scheduling checks the post on the
+      // channel once edited (`siteEditViolationsOn`), its files the
+      // workspace's and ready (UnknownMedia).
+      const siteEditOf = Effect.fn("LivePostChanges.siteEditOf")(
+        function* siteEditOf(
+          actor: Actor,
+          post: Post,
+          target: PostTarget,
+          channel: ChannelOnPlatform,
+          edit: TextEditRequest
+        ) {
+          const body = Option.fromUndefinedOr(
+            edit.body === invalidBody ? undefined : edit.body
+          );
+
+          const text = Option.match(body, {
+            onNone: () => edit.text ?? textOn(post.content, target.channelId),
+            onSome: (rich) => textOfBody(rich, maxPostTextLength),
+          });
+
+          const options = Option.fromUndefinedOr(edit.options);
+          const chosen = Option.orElse(options, () => target.options);
+
+          const shown = siteContentOn(
+            withEditOn(post.content, 0, target.channelId, { body, text }),
+            target.channelId
+          );
+
+          const files = yield* mediaFor(
+            actor,
+            shown,
+            Option.match(chosen, {
+              onNone: () => [],
+              onSome: (given) => [
+                new ChannelOptions({
+                  channelId: target.channelId,
+                  options: given,
+                }),
+              ],
+            })
+          ).pipe(Effect.provideContext(ports));
+
+          yield* rejected(
+            siteEditViolationsOn({
+              channel,
+              content: shown,
+              files,
+              options: chosen,
+              was: target.options,
+            })
+          );
+
+          return Result.succeed<AskedEdit>({ body, options, text });
+        }
+      );
+
       // Why the locked target cannot be edited, or the change that will,
       // saved and started; a text its platform would refuse fails as
       // scheduling's does.
@@ -295,26 +459,31 @@ export class LivePostChanges extends Context.Service<
             );
           }
 
-          const [first, ...others] = editViolationsOn({
-            channel: { channelId: target.channelId, platform: platform.value },
-            content: post.content,
-            options: target.options,
-            part: edit.part,
-            text: edit.text,
-          });
+          const channel = {
+            channelId: target.channelId,
+            platform: platform.value,
+          };
 
-          if (first !== undefined) {
-            return yield* new PostContentRejected({
-              violations: [first, ...others],
-            });
+          if (edit.body === invalidBody) {
+            yield* rejected([bodyViolation("bodyInvalid", channel, edit.part)]);
+          }
+
+          const asked = isSitePlatform(platform.value)
+            ? yield* siteEditOf(actor, post, target, channel, edit)
+            : yield* socialEditOf(post, target, channel, edit);
+
+          if (Result.isFailure(asked)) {
+            return Result.fail<LivePostRefusal>(asked.failure);
           }
 
           const change = requestEdit({
+            body: asked.success.body,
             channelId: target.channelId,
             id: yield* newId(LivePostChangeIdSchema).pipe(
               Effect.provideContext(ports)
             ),
             now: yield* DateTime.now,
+            options: asked.success.options,
             part: part.success,
             postId: post.id,
             requestedBy:
@@ -323,7 +492,7 @@ export class LivePostChanges extends Context.Service<
                 : Option.none(),
             requestedVia: Option.some(yield* origins.of(actor)),
             targetId: target.id,
-            text: edit.text,
+            text: asked.success.text,
             workspaceId: post.workspaceId,
           });
 
@@ -357,10 +526,13 @@ export class LivePostChanges extends Context.Service<
 
           // Text Peal is given to keep: made storable before it is
           // checked, kept or sent.
-          const edit: TextEditRequest = {
-            part: asked.part,
-            text: storableText(asked.text, maxPostTextLength),
-          };
+          const edit: TextEditRequest =
+            asked.text === undefined
+              ? asked
+              : {
+                  ...asked,
+                  text: storableText(asked.text, maxPostTextLength),
+                };
 
           return yield* transaction(
             Effect.gen(function* inTransaction() {

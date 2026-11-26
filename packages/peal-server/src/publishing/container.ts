@@ -689,11 +689,20 @@ export const FollowUpPlatformsLive = RoutedFollowUpPublisher.pipe(
 
 /**
  * What the gates delete the posts members unpublish with, and edit those
- * they edit, with the channels' tokens and the edits' texts.
+ * they edit, with the channels' tokens and the edits' texts, a website's
+ * through its adapter with the files its target's site took. Needs the
+ * articles' posts on the sites (RecordedArticles), which the composition
+ * root provides, until the cutover.
  */
 export const LivePostPlatformsLive = LivePostClientsLive.pipe(
   Layer.provide(
-    Layer.mergeAll(ChannelAccessCredentials, LivePostEdits.layer, SiteCallsLive)
+    Layer.mergeAll(
+      ChannelAccessCredentials,
+      LivePostEdits.layer,
+      SiteCallsLive,
+      DrizzleSiteFiles,
+      DrizzleRecordedPosts
+    )
   )
 );
 

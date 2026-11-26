@@ -51,6 +51,7 @@ import {
   channelIdsFrom,
   contentFrom,
   draftTagsFrom,
+  liveEditFrom,
   optionsFrom,
   postIdFrom,
   postIdOption,
@@ -569,13 +570,25 @@ export const PostToolsLive = PostTools.toLayer(
 
           return postView(copy);
         }).pipe(Effect.catchTags(malformedPost)),
-      edit_published_post: ({ channelId, part, postId, targetId, text }) =>
+      edit_published_post: (asked) =>
         Effect.gen(function* editPublishedPost() {
+          const { body, channelId, options, postId, targetId, text } = asked;
+
           // One channel of the post, named one way: never whichever of two
           // names comes first.
           if ((channelId === undefined) === (targetId === undefined)) {
             return yield* refuse(
               "Give channelId or targetId, exactly one: nothing was edited."
+            );
+          }
+
+          if (
+            body === undefined &&
+            options === undefined &&
+            text === undefined
+          ) {
+            return yield* refuse(
+              "Give text, body or options, one at least: nothing was edited."
             );
           }
 
@@ -599,20 +612,22 @@ export const PostToolsLive = PostTools.toLayer(
             targetId,
           });
 
-          const change = yield* live
-            .editTarget(member, id, target, { part: part ?? 0, text })
-            .pipe(
-              Effect.catchTags({
-                DatabaseError: Effect.die,
-                LivePostNotChangeable: ({ reason }) =>
-                  refuse(
-                    `The post was not edited on that channel: ${livePostRefusals[reason]}.`
-                  ),
-                MissingPermission: notAllowed("edit published posts"),
-                PostContentRejected: contentRejected,
-                PostNotFound: notFound,
-              })
-            );
+          // What the tool takes of an edit is the API's.
+          const edit = yield* liveEditFrom(asked);
+
+          const change = yield* live.editTarget(member, id, target, edit).pipe(
+            Effect.catchTags({
+              DatabaseError: Effect.die,
+              LivePostNotChangeable: ({ reason }) =>
+                refuse(
+                  `The post was not edited on that channel: ${livePostRefusals[reason]}.`
+                ),
+              MissingPermission: notAllowed("edit published posts"),
+              PostContentRejected: contentRejected,
+              PostNotFound: notFound,
+              UnknownMedia: unknownMedia,
+            })
+          );
 
           return livePostChangeView(change);
         }).pipe(Effect.catchTags(malformedPost)),

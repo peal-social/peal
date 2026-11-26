@@ -17,19 +17,34 @@ import { RecordedPosts } from "#publishing/application/recorded-posts.ts";
 import { SiteCalls } from "#publishing/application/site-calls.ts";
 import { SiteFiles } from "#publishing/application/site-files.ts";
 import { DevtoOptions } from "#publishing/domain/devto-options.ts";
+import { HashnodeOptions } from "#publishing/domain/hashnode-options.ts";
 import { richOverride } from "#publishing/domain/rich-override.ts";
 import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
+import type { TextEdit } from "#publishing/infrastructure/platforms/live-post-editor.ts";
 import { siteCallsWith } from "#publishing/infrastructure/platforms/sites/site-calls-live.ts";
 import {
   articleOf,
   siteClient,
   siteCodeOf,
+  siteFilesOf,
 } from "#publishing/infrastructure/platforms/sites/site-client.ts";
-import { siteLivePost } from "#publishing/infrastructure/platforms/sites/site-live-post.ts";
+import {
+  siteLiveEdit,
+  siteLivePost,
+} from "#publishing/infrastructure/platforms/sites/site-live-post.ts";
 import type { SiteFile } from "#shared/application/site-call-journal.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
+import type { SitePlatform } from "#shared/domain/platform.ts";
+import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
+import type { ArticleBody } from "#shared/domain/rich-text/rich-body.ts";
+import { fakeDevTo, gardener } from "#test/channels/fakes/fake-devto.ts";
+import {
+  fakeHashnode,
+  gardenBlog,
+  writerOnHashnode,
+} from "#test/channels/fakes/fake-hashnode.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import type { FakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
@@ -45,7 +60,9 @@ import {
   mediaOf,
   outgoing,
   outgoingKey,
+  outgoingTargetId,
   testFile,
+  workspaceId,
 } from "./support.ts";
 
 // A post's target on a website, through the site client: its options and
@@ -117,21 +134,35 @@ const journalOf = (committed: Option.Option<OutgoingPost["startedAt"]>) =>
     })
   );
 
+// The site a client calls: WordPress at its root by default, or DEV or
+// Hashnode at their APIs.
+interface SiteUnderTest {
+  readonly api?: { readonly devto?: string; readonly hashnode?: string };
+  readonly credential: string;
+  readonly platform: SitePlatform;
+  readonly root: string;
+}
+
 const clientOn = (
-  site: FakeWordPress,
+  site: FakeWordPress | SiteUnderTest,
   committed: Option.Option<OutgoingPost["startedAt"]> = Option.none(),
   // The site's posts an article of the channel holds.
   articles: readonly string[] = []
 ) =>
   Effect.gen(function* building() {
+    const on: SiteUnderTest =
+      "posts" in site
+        ? { credential, platform: "wordpress", root: site.root }
+        : site;
+
     const credentials = credentialsOf(
-      { accountId: site.root, platform: "wordpress" },
-      [credential]
+      { accountId: on.root, platform: on.platform },
+      [on.credential]
     );
 
     const calls = siteCallsWith({
-      devto: { api: "http://127.0.0.1:9" },
-      hashnode: { api: "http://127.0.0.1:9/" },
+      devto: { api: on.api?.devto ?? "http://127.0.0.1:9" },
+      hashnode: { api: on.api?.hashnode ?? "http://127.0.0.1:9/" },
       wordpressCom: { api: "http://127.0.0.1:9" },
     }).pipe(
       Layer.provide(mediaOf([picture, cover])),
@@ -159,10 +190,25 @@ const clientOn = (
     );
 
     return {
-      client: yield* siteClient("wordpress").pipe(
+      client: yield* siteClient(on.platform).pipe(
         Effect.provideContext(context)
       ),
       context,
+      // The editor of the site's posts, with the target's files.
+      editor: siteLiveEdit(
+        Context.get(context, SiteCalls),
+        siteFilesOf({
+          articles: Context.get(context, RecordedArticles),
+          files: Context.get(context, SiteFiles),
+          recorded: Context.get(context, RecordedPosts),
+        })
+      ),
+      token: {
+        accessToken: Redacted.make(on.credential),
+        accountId: on.root,
+        connection: Option.none(),
+        platform: on.platform,
+      },
     };
   });
 
@@ -516,6 +562,228 @@ describe("a website's target", () => {
 
       assert.strictEqual(removed, "removed");
       assert.strictEqual(site.posts()[0]?.status, "trash");
+    }).pipe(Effect.scoped)
+  );
+});
+
+// A rich text of a heading and an image of the library.
+const richWith = (file: typeof picture) => ({
+  content: [
+    {
+      attrs: { level: 2 as const },
+      content: [{ text: "Corrected", type: "text" as const }],
+      type: "heading" as const,
+    },
+    {
+      attrs: { alt: "A synthetic picture", mediaId: file.media.mediaId },
+      type: "image" as const,
+    },
+  ],
+  type: "doc" as const,
+});
+
+// What the gate's side of an edit reads, as LivePostEdits answers it.
+const pendingOf = (
+  edit: Pick<TextEdit, "media" | "options" | "text"> & {
+    readonly body?: Option.Option<ArticleBody>;
+  },
+  platformPostId: string
+): TextEdit => ({
+  channelId,
+  media: edit.media,
+  options: edit.options,
+  platformPostId: PlatformPostIdSchema.make(platformPostId),
+  site: {
+    body: edit.body ?? Option.none(),
+    targetId: outgoingTargetId,
+    workspaceId,
+  },
+  text: edit.text,
+});
+
+describe("editing a website's post", () => {
+  it.effect(
+    "on WordPress, replaces its title and body, takes its cover away, and sends no file twice",
+    () =>
+      Effect.gen(function* wordpress() {
+        const site = yield* fakeWordPress();
+        const { client, context, editor: edit, token } = yield* clientOn(site);
+
+        yield* begun.pipe(Effect.provideContext(context));
+
+        const result = yield* client.publish(
+          yield* outgoing({
+            accountId: site.root,
+            media: [attached(picture)],
+            options: Option.some(
+              new WordPressOptions({
+                coverMediaId: cover.media.mediaId,
+                platform: "wordpress",
+                title: "Before",
+              })
+            ),
+          })
+        );
+
+        assert.strictEqual(result._tag, "published");
+
+        if (result._tag !== "published") {
+          return;
+        }
+
+        assert.strictEqual(site.media().length, 2);
+
+        const body = richWith(picture);
+
+        const outcome = yield* edit(
+          token,
+          pendingOf(
+            {
+              body: Option.some(body),
+              media: [attached(picture)],
+              options: Option.some(
+                new WordPressOptions({ platform: "wordpress", title: "After" })
+              ),
+              text: "Corrected",
+            },
+            result.platformPostId
+          )
+        );
+
+        const [post] = site.posts();
+
+        assert.strictEqual(outcome, "edited");
+        assert.strictEqual(post?.title, "After");
+        assert.include(post?.content ?? "", "<h2>Corrected</h2>");
+        assert.notInclude(post?.content ?? "", "Hello from a synthetic");
+        assert.strictEqual(post?.featured_media, 0);
+        // The site keeps its status, and the picture it has.
+        assert.strictEqual(post?.status, "publish");
+        assert.strictEqual(site.media().length, 2);
+      }).pipe(Effect.scoped)
+  );
+
+  it.effect("on WordPress, keeps a site's refusal as its own code", () =>
+    Effect.gen(function* refused() {
+      const site = yield* fakeWordPress({
+        intercept: (request) =>
+          request.method === "POST" && request.route === "/wp/v2/posts/404"
+            ? {
+                body: { code: "rest_post_invalid_id", message: "No" },
+                status: 404,
+              }
+            : undefined,
+      });
+
+      const { editor: edit, token } = yield* clientOn(site);
+
+      const failure = yield* failureOf(
+        edit(
+          token,
+          pendingOf(
+            {
+              media: [],
+              options: Option.some(
+                new WordPressOptions({ platform: "wordpress", title: "Gone" })
+              ),
+              text: "Corrected",
+            },
+            "404"
+          )
+        )
+      );
+
+      assert.strictEqual(failure._tag, "BadRequest");
+      assert.isTrue(
+        failure._tag === "BadRequest" && failure.code.startsWith("wordpress:")
+      );
+    }).pipe(Effect.scoped)
+  );
+
+  it.effect("on DEV, replaces its title, tags and Markdown", () =>
+    Effect.gen(function* devto() {
+      const site = yield* fakeDevTo();
+
+      const id = site.addArticle({
+        body_markdown: "Before",
+        published: true,
+        tags: ["old"],
+        title: "Before",
+        userId: gardener.id,
+      });
+
+      const { editor: edit, token } = yield* clientOn({
+        api: { devto: site.api },
+        credential: gardener.key,
+        platform: "devto",
+        root: String(gardener.id),
+      });
+
+      const outcome = yield* edit(
+        token,
+        pendingOf(
+          {
+            media: [],
+            options: Option.some(
+              new DevtoOptions({
+                platform: "devto",
+                tags: ["launch"],
+                title: "After",
+              })
+            ),
+            text: "Corrected on DEV",
+          },
+          String(id)
+        )
+      );
+
+      const [article] = site.articles();
+
+      assert.strictEqual(outcome, "edited");
+      assert.strictEqual(article?.title, "After");
+      assert.deepStrictEqual(article?.tags, ["launch"]);
+      assert.include(article?.body_markdown ?? "", "Corrected on DEV");
+      assert.isTrue(article?.published);
+    }).pipe(Effect.scoped)
+  );
+
+  it.effect("on Hashnode, replaces its title and Markdown", () =>
+    Effect.gen(function* hashnode() {
+      const site = yield* fakeHashnode();
+
+      const id = site.addPost({
+        markdown: "Before",
+        publicationId: gardenBlog.id,
+        title: "Before",
+      });
+
+      const { editor: edit, token } = yield* clientOn({
+        api: { hashnode: site.api },
+        credential: writerOnHashnode.token,
+        platform: "hashnode",
+        root: gardenBlog.id,
+      });
+
+      const outcome = yield* edit(
+        token,
+        pendingOf(
+          {
+            media: [],
+            options: Option.some(
+              new HashnodeOptions({ platform: "hashnode", title: "After" })
+            ),
+            text: "Corrected on Hashnode",
+          },
+          id
+        )
+      );
+
+      const [post] = site.posts();
+
+      assert.strictEqual(outcome, "edited");
+      assert.strictEqual(post?.title, "After");
+      assert.include(post?.markdown ?? "", "Corrected on Hashnode");
+      assert.isFalse(post?.removed);
     }).pipe(Effect.scoped)
   );
 });

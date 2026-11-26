@@ -1,6 +1,8 @@
 import { Schema } from "effect";
 
 import { maxPostTextLength } from "./post-text.ts";
+import { RichTextSchema } from "./rich-text.ts";
+import { TargetOptionsSchema } from "./target-options.ts";
 
 /**
  * Why a post cannot be changed on a channel now:
@@ -112,17 +114,40 @@ export const PostUnpublishSchema = Schema.Struct({
 export type PostUnpublish = typeof PostUnpublishSchema.Type;
 
 /**
- * An edit of a live post: `text` for the part at `part` (from 0, the
- * post itself, which it is when left out) on one channel. Only the text
- * changes.
+ * An edit of a live post on one channel. On a social network or a chat:
+ * `text` for the part at `part` (from 0, the post itself, which it is when
+ * left out), and only the text changes. On a website: its text there
+ * (`text`, or a rich text, `body`) and its options (`options`, its
+ * platform's, whole: an option left out of them is left out on the site),
+ * each kept as it is when left out; its site status and its date never
+ * change. One of `text`, `body` or `options` at least.
  */
 export const LivePostEditSchema = Schema.Struct({
+  body: Schema.optionalKey(RichTextSchema),
+  options: Schema.optionalKey(TargetOptionsSchema),
   part: Schema.optionalKey(Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))),
-  text: Schema.String.check(
-    Schema.isNonEmpty(),
-    Schema.isMaxLength(maxPostTextLength)
+  text: Schema.optionalKey(
+    Schema.String.check(
+      Schema.isNonEmpty(),
+      Schema.isMaxLength(maxPostTextLength)
+    )
   ),
-}).annotate({ identifier: "LivePostEdit" });
+})
+  .check(
+    Schema.makeFilter(
+      ({
+        body,
+        options,
+        text,
+      }: {
+        readonly body?: unknown;
+        readonly options?: unknown;
+        readonly text?: string;
+      }) => body !== undefined || options !== undefined || text !== undefined,
+      { expected: "a text, a body or options" }
+    )
+  )
+  .annotate({ identifier: "LivePostEdit" });
 
 export type LivePostEdit = typeof LivePostEditSchema.Type;
 

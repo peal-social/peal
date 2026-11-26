@@ -27,8 +27,10 @@ import type {
 import { PlatformQuota } from "#publishing/application/platform-quota.ts";
 import type { PublicationProgress } from "#publishing/application/publication-progress.ts";
 import type { StepTiming } from "#publishing/application/publication-steps.ts";
+import { RecordedArticles } from "#publishing/application/recorded-articles.ts";
 import { RecordedPosts } from "#publishing/application/recorded-posts.ts";
 import { SiteCalls } from "#publishing/application/site-calls.ts";
+import { SiteFiles } from "#publishing/application/site-files.ts";
 import { UploadSessions } from "#publishing/application/upload-sessions.ts";
 import type { UploadSession } from "#publishing/application/upload-sessions.ts";
 import { MediaAttachment } from "#publishing/domain/media-attachment.ts";
@@ -920,16 +922,21 @@ export const pendingEdits = (edits: ReadonlyMap<string, PendingEdit>) =>
   );
 
 // The websites' calls, which these tests make none of: each answers that
-// the site is unavailable.
-const noSiteCalls = Layer.succeed(
-  SiteCalls,
-  SiteCalls.of({
-    find: () => Effect.fail(new PlatformUnavailable()),
-    publish: () => Effect.fail(new PlatformUnavailable()),
-    remove: () => Effect.fail(new PlatformUnavailable()),
-    resume: () => Effect.fail(new PlatformUnavailable()),
-    update: () => Effect.fail(new PlatformUnavailable()),
-  })
+// the site is unavailable, with no file sent and no post recorded.
+const noSiteCalls = Layer.mergeAll(
+  Layer.succeed(
+    SiteCalls,
+    SiteCalls.of({
+      find: () => Effect.fail(new PlatformUnavailable()),
+      publish: () => Effect.fail(new PlatformUnavailable()),
+      remove: () => Effect.fail(new PlatformUnavailable()),
+      resume: () => Effect.fail(new PlatformUnavailable()),
+      update: () => Effect.fail(new PlatformUnavailable()),
+    })
+  ),
+  SiteFiles.none,
+  RecordedPosts.none,
+  RecordedArticles.none
 );
 
 /**

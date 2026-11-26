@@ -306,7 +306,10 @@ export const publicationCalls = publishing.table(
  * parts still to delete or edit, last first, by place and platform id:
  * never content. `text` is an edit's new text, while the change is
  * pending only: cleared when it ends, done or failed, and never in the
- * job's history. `call_started_at` is written and committed
+ * job's history; `body` (a website's rich text, the kernel's document)
+ * and `options` (a website's new options, the target's JSON) are kept
+ * and cleared as `text` is, and null on every other change.
+ * `call_started_at` is written and committed
  * before each call to the platform, and `call_finished_at` once it
  * answered: a call begun and not ended is in flight, which an erasure
  * waits for. `requested_via` is the `PostOrigin` JSON the domain decodes
@@ -320,6 +323,7 @@ export const livePostChanges = publishing.table(
   {
     alreadyGone: boolean("already_gone").notNull().default(false),
     attempts: integer("attempts").notNull().default(0),
+    body: jsonb("body"),
     callFinishedAt: instant("call_finished_at"),
     callStartedAt: instant("call_started_at"),
     channelId: uuid("channel_id").notNull(),
@@ -327,6 +331,7 @@ export const livePostChanges = publishing.table(
     finishedAt: instant("finished_at"),
     id: uuid("id").primaryKey(),
     kind: text("kind").notNull(),
+    options: jsonb("options"),
     partsLeft: jsonb("parts_left").notNull(),
     postId: uuid("post_id").notNull(),
     requestedAt: instant("requested_at").notNull(),

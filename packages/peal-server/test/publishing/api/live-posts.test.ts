@@ -536,6 +536,55 @@ describe("the editing endpoint", () => {
   );
 
   it.effect(
+    "names a rich text off the allow-list, and one a social network does not take",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* rich() {
+          const workspaceId = yield* freshId;
+          const editor = yield* clientAs(yield* freshId, workspaceId, "editor");
+          const mastodon = yield* connect(workspaceId, "mastodon");
+          const sent = yield* sentOn(editor, workspaceId, [mastodon], "Live");
+          const [target] = sent.targets;
+
+          assert(target !== undefined);
+
+          const edit = (body: { readonly content: readonly unknown[] }) =>
+            editor.posts
+              .editTarget({
+                headers: forWorkspace(workspaceId),
+                params: { postId: sent.id, targetId: target.id },
+                payload: { body: { content: body.content, type: "doc" } },
+                query: {},
+              })
+              .pipe(Effect.flip);
+
+          const offList = yield* edit({ content: [{ type: "script" }] });
+
+          const notTaken = yield* edit({
+            content: [
+              { content: [{ text: "Rich", type: "text" }], type: "paragraph" },
+            ],
+          });
+
+          assert.isTrue(offList instanceof PostContentInvalid);
+          assert.isTrue(notTaken instanceof PostContentInvalid);
+          assert.deepStrictEqual(
+            offList instanceof PostContentInvalid ? offList.violations : [],
+            [{ _tag: "bodyInvalid", channelId: mastodon }]
+          );
+          assert.deepStrictEqual(
+            notTaken instanceof PostContentInvalid
+              ? notTaken.violations.map(({ _tag }) => _tag)
+              : [],
+            ["bodyNotTaken"]
+          );
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
     "finds no target of another post, nor a post of another workspace",
     () =>
       onPostsServerAt(
