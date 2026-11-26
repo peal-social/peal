@@ -655,7 +655,14 @@ are text and JSON) stores what the release before cannot read:
   where it reads the post;
 - the events and notices that name Snapchat, at their top
   (`data.platform`) or among a post's targets (`data.targets[].platform`),
-  which it fails to decode where it reads them.
+  which it fails to decode where it reads them;
+- a signature meant for Snapchat (`publishing.signatures.scope_platform`
+  `snapchat`), which any workspace can save through the API without a
+  Snapchat channel, and a channel set that holds Snapchat's options
+  (`publishing.channel_sets.options`), which a set keeps after its channel
+  was disconnected: the release before fails to decode either where it
+  reads the workspace's signatures or sets, and where scheduling applies
+  them.
 
 1. **Channels of Snapchat, and analytics' rows for them:**
 
@@ -673,8 +680,15 @@ are text and JSON) stores what the release before cannot read:
      "SELECT 'target' AS kind, id FROM publishing.post_targets WHERE options->>'platform' = 'snapchat' UNION ALL SELECT 'event', id FROM webhooks.events WHERE data->>'platform' = 'snapchat' OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'targets') = 'array' THEN data->'targets' ELSE '[]' END) t WHERE t->>'platform' = 'snapchat') UNION ALL SELECT 'notice', id FROM notifications.notices WHERE event->'channel'->>'platform' = 'snapchat' OR event->'channel'->'value'->>'platform' = 'snapchat'"
    ```
 
-3. **Either lists a row:** do not roll back past this release; release a
-   fix forward instead. Never change the rows by hand.
+3. **Signatures and channel sets that name Snapchat:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT 'signature' AS kind, id, workspace_id FROM publishing.signatures WHERE scope_platform = 'snapchat' UNION ALL SELECT 'channel set', id, workspace_id FROM publishing.channel_sets WHERE jsonb_path_exists(options, '\$[*].options ? (@.platform == \"snapchat\")')"
+   ```
+
+4. **Any of them lists a row:** do not roll back past this release;
+   release a fix forward instead. Never change the rows by hand.
 
 ## Past Messenger's and Instagram's direct messages
 
