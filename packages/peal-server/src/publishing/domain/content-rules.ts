@@ -16,6 +16,7 @@ import { LinkedInOptions, pageProblems } from "./linkedin-options.ts";
 import type { Dimensions, MediaFile } from "./media-file.ts";
 import { mediaNamedBy } from "./named-media.ts";
 import type { OptionProblem } from "./option-problem.ts";
+import { mediaLimitOf } from "./platform-capabilities.ts";
 import {
   followUpsThrough,
   partRulesFor,
@@ -29,7 +30,6 @@ import type {
 } from "./platform-rules.ts";
 import { PostContentRejected } from "./post-content-rejected.ts";
 import {
-  maxMediaPerPost,
   emptyContent,
   overriddenChannels,
   partAlone,
@@ -520,14 +520,13 @@ export const violationsOn = (
           },
         ]
       : []),
-    // A platform that states no count takes what a part holds: an
-    // override may give a channel more (a website's rich text), which only
-    // a platform that says so takes.
+    // What the capabilities and the previews say: the platform's count,
+    // within a part's, or an override's on a website (`mediaLimitOf`).
     ...atMost(
       "tooManyMedia",
       channel,
       media,
-      rules.maxMedia ?? maxMediaPerPost
+      mediaLimitOf(rules, channel.platform)
     ),
     ...(rules.mediaRequired && media === 0
       ? [{ _tag: "mediaRequired" as const, ...channel }]

@@ -8,6 +8,7 @@ import { PostContent } from "#publishing/domain/post-content.ts";
 import { PostAttribution } from "#publishing/domain/post-origin.ts";
 import type { PostOrigin } from "#publishing/domain/post-origin.ts";
 import { PostPart } from "#publishing/domain/post-part.ts";
+import { richOverride } from "#publishing/domain/rich-override.ts";
 import { TextOverride } from "#publishing/domain/text-override.ts";
 import { newId } from "#shared/application/ids.ts";
 import { Actor } from "#shared/domain/access.ts";
@@ -129,6 +130,46 @@ describe("a post's attribution", () => {
             back.post.attribution,
             attributed(application)
           );
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "exports a website's rich text with its override",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* exportsBody() {
+          const drafts = yield* PostDrafts;
+          const records = yield* PostRecords;
+          const workspaceId = yield* freshWorkspace;
+          const site = yield* connect(workspaceId, "wordpress");
+
+          const body = {
+            content: [
+              {
+                content: [{ text: "A synthetic article.", type: "text" }],
+                type: "paragraph",
+              },
+            ],
+            type: "doc",
+          } as const;
+
+          yield* drafts.create(actorAs(yield* freshUser, workspaceId), {
+            channelIds: [site],
+            content: new PostContent({
+              media: [],
+              overrides: [richOverride(site, body)],
+              text: "Plain",
+            }),
+          });
+
+          const [exported] = yield* records.exportWorkspace(workspaceId);
+
+          assert.deepStrictEqual(exported?.textOverrides, [
+            { body, channelId: site, media: [], text: "A synthetic article." },
+          ]);
         })
       ),
     timeout

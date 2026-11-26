@@ -3284,6 +3284,32 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.isTrue(fine.valid);
           assert.isNull(fine.schedule);
 
+          // A rich text off the allow-list, with no text beside it, is
+          // answered as invalid, never a failure.
+          const offList = yield* reader.call(
+            "validate_post",
+            Schema.toCodecJson(PostValidationSchema),
+            {
+              channelIds: [fixture.channelId],
+              content: {
+                media: [],
+                overrides: [
+                  {
+                    body: { content: [{ type: "script" }], type: "doc" },
+                    channelId: fixture.channelId,
+                    text: "",
+                  },
+                ],
+                text: "A synthetic post.",
+              },
+            }
+          );
+
+          assert.isFalse(offList.valid);
+          assert.deepStrictEqual(offList.violations, [
+            { _tag: "bodyInvalid", channelId: fixture.channelId },
+          ]);
+
           // Several posts: each answered on its own, by its place.
           const several = {
             posts: [

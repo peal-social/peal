@@ -94,15 +94,20 @@ export const checkRequestFrom = (input: CheckInput) =>
           return [];
         }
 
-        // A rich text that does not decode is said apart, and the
-        // override checked on its text alone.
+        // A rich text that does not decode is said apart (`bodyInvalid`),
+        // and the override checked on its text alone, or left out of the
+        // check when it has no text beside the body.
         const { body, ...rest } = override;
 
-        const read =
-          body === undefined ||
-          invalidBodiesOf([{ overrides: [override] }]).length > 0
-            ? rest
-            : override;
+        const invalid =
+          body !== undefined &&
+          invalidBodiesOf([{ overrides: [override] }]).length > 0;
+
+        if (invalid && rest.text === "") {
+          return [];
+        }
+
+        const read = body === undefined || invalid ? rest : override;
 
         return read.media === undefined
           ? [read]

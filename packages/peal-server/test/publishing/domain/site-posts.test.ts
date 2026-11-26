@@ -350,6 +350,13 @@ describe("a platform that states no count of files", () => {
         platform: "googleBusiness",
       }).map(({ _tag }) => _tag)
     ).toContain("tooManyMedia");
+    // TikTok takes 35 photos, but a post holds 20, as its capabilities say.
+    expect(
+      violationsOn(sentTo(content, mastodon), {
+        channelId: mastodon,
+        platform: "tiktok",
+      }).map(({ _tag }) => _tag)
+    ).toContain("tooManyMedia");
   });
 });
 

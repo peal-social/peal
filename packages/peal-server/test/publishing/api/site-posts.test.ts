@@ -381,6 +381,31 @@ describe("what a request may not crash on", () => {
           assert.deepStrictEqual(crowded.violations, [
             { _tag: "bodyInvalid", channelId: site },
           ]);
+
+          // Checked, the same rich texts are answered as invalid, never a
+          // failure.
+          for (const body of [
+            { content: images, type: "doc" as const },
+            { content: [{ type: "script" }], type: "doc" as const },
+          ]) {
+            const read = yield* client.posts.validate({
+              headers: forWorkspace(workspaceId),
+              payload: {
+                channelIds: [site],
+                content: {
+                  media: [],
+                  overrides: [{ body, channelId: site, text: "" }],
+                  text: "Plain",
+                },
+              },
+            });
+
+            assert.isFalse(read.valid);
+            assert.deepInclude(read.violations, {
+              _tag: "bodyInvalid",
+              channelId: site,
+            });
+          }
         })
       ),
     timeout
