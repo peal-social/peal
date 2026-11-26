@@ -69,7 +69,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   channel:read; its tabs are the drafts and the posts that need an
   approval, and `…/drafts` and `…/approvals` only redirect to them; with
   `?layout=calendar`, the calendar, which `…/calendar` only redirects to,
-  its query kept),
+  its query kept; the workspace's articles beside its posts, `…/articles`
+  only redirecting to `?type=article`),
   `…/posts/import` (a CSV file's posts, for
   post:schedule, post:read and channel:read), `…/posts/new`,
   `…/posts/[postId]`, which opens
@@ -801,7 +802,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `filtersOf`, `queryOf`, `withFilter`), so a link shows the same list,
   and asks `posts.list` (`postSearchPage`) with them; "Show more"
   passes the page's cursor with the same filters and sort, as the API
-  requires. An outcome is a filter on finished posts only. Its tabs
+  requires. An outcome is a filter on finished posts only. It shows the
+  workspace's articles too (`ArticleItemView`, opening the editor), read
+  once without their bodies (`workspaceArticles`, every page) and put in
+  the page of posts where they sort (`#posts/articles-among-posts.ts`,
+  tested: `pageRows`, from the last post of the page before to the
+  page's own, by id or by `(scheduledAt, id)`, as the server orders
+  posts; `listedArticles`, an article's state read as a post's status
+  and outcome, none for a channel, tag or queue). Filter's Type (`type`
+  in the query, never sent to `posts.list`) keeps one kind; with Type
+  Article, no post is asked for. Article rows are never chosen. Its tabs
   (`postViews`, `postViewPath`) are All, Drafts, Scheduled and Needs
   approval: drafts and approvals have no page of their own, G then D and
   G then A open the tabs (`goViewKeys`, `#shell/keys.ts`), and the old
@@ -850,7 +860,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   open it (`navigation.ts`'s `calendar`, its path the posts page's with
   the layout).
 - The calendar filters the posts it loaded in the browser
-  (`#posts/calendar-filter.ts`) through `CalendarToolbar`, the list
+  (`#posts/calendar-filter.ts`, its Type too) and shows the articles
+  scheduled in its range (`scheduledArticles`, `from` and `to`), as chips
+  that link to the editor and are never dragged; a day's rows read an
+  item by `{ at, id }`. It goes through `CalendarToolbar`, the list
   toolbar of DESIGN.md (views as tabs, the way through time, the Filter
   menu, whose channels, tags and queues each keep several, and chips),
   and keeps its view, date and filters in the address
@@ -1610,7 +1623,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `TwoStepRefusalWatch` reads the page again. The owners' switch is
   `settings/security`.
 - Articles (`#articles/*`, `components/articles/`, the `Articles`
-  catalogue, under Posts in the sidebar at `/articles`) go to a website's
+  catalogue, listed on the Posts page, written at `…/articles/new` and
+  `…/articles/[articleId]`, details of Posts) go to a website's
   channel. The composer's posts read social channels only
   (`workspaceChannels` filters with `isSocialChannel`, and the posts area
   types its channels `SocialChannel`); a website's are `workspaceSites`.

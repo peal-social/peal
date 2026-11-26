@@ -456,6 +456,12 @@ describe("a new member's first post", { serial: true }, () => {
         .getByRole("navigation", "Calendar views")
         .getByRole("link", "Month")
     ).toHaveAttribute("aria-current", "page");
+
+    // The articles' old address opens the posts with their Type on them.
+    await app.open(`/${slug}/articles`);
+
+    await expect(browser).toHaveURL(`/${slug}/posts?type=article`);
+    await expect(screen.getByRole("heading", "No articles yet")).toBeVisible();
   });
 
   test("chooses French in the preferences, which the app then keeps", async ({

@@ -33,7 +33,7 @@ const errorsKept = `(() => {
 const pages = [
   "",
   "/platforms",
-  "/articles",
+  "/posts?type=article",
   "/channels",
   "/posts",
   "/posts?layout=calendar",
