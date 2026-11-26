@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "ba5aae37-089a-44d8-82ff-54814e94545c",
+  "id": "8d9805b6-a442-4724-8c7c-0bfa8a1ed9f4",
   "prevIds": [
     "956a7817-8357-45ce-8b47-e653e607639a"
   ],
@@ -56,6 +56,27 @@
         "n|idx|publishing.posts_workspace_external_id",
         "e|idx|publishing.posts_workspace_external_id",
         "n|rel|publishing.posts_workspace_external_id"
+      ],
+      "reads": [
+        "n|tbl|publishing.posts",
+        "n|sch|publishing",
+        "n|col|publishing.posts.workspace_id",
+        "n|col|publishing.posts.external_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "publishing",
+        "posts",
+        "posts_workspace_external_ids"
+      ],
+      "writes": [
+        "s|idx|publishing.posts_workspace_external_ids",
+        "n|idx|publishing.posts_workspace_external_ids",
+        "e|idx|publishing.posts_workspace_external_ids",
+        "n|rel|publishing.posts_workspace_external_ids"
       ],
       "reads": [
         "n|tbl|publishing.posts",
@@ -145,6 +166,37 @@
         ],
         "isUnique": true,
         "where": "\"external_id\" IS NOT NULL AND \"status\" <> 'cancelled'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "posts",
+        "name": "posts_workspace_external_ids",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "workspace_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "external_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"external_id\" IS NOT NULL",
         "with": "",
         "method": "btree",
         "concurrently": false,

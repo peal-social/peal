@@ -160,6 +160,11 @@ export const posts = publishing.table(
       .where(
         sql`${table.externalId} IS NOT NULL AND ${table.status} <> 'cancelled'`
       ),
+    // Every post with a caller's id, cancelled ones included: what the
+    // list's `externalId` filter reads.
+    index("posts_workspace_external_ids")
+      .on(table.workspaceId, table.externalId)
+      .where(sql`${table.externalId} IS NOT NULL`),
     // A workspace's posts by when they last changed: what a sync walks.
     index("posts_workspace_updated").on(
       table.workspaceId,
