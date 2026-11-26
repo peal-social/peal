@@ -14,7 +14,7 @@ import { PostIdSchema } from "#shared/domain/ids.ts";
 import type { PostId } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
-import { moved } from "./post-updates.ts";
+import { lockedPosts, moved } from "./post-updates.ts";
 import { posts, queues } from "./schema.ts";
 
 type Row = typeof queues.$inferSelect;
@@ -167,18 +167,19 @@ export const DrizzleQueueStore = Layer.effect(
       remove: (workspaceId, queueId) =>
         Effect.gen(function* remove() {
           // Its posts stay where they are, without it: a change their
-          // answers show.
+          // answers show. Their rows first, then the clock (`moved`).
+          const placed = yield* lockedPosts(
+            db,
+            and(eq(posts.workspaceId, workspaceId), eq(posts.queueId, queueId))
+          );
           const now = yield* DateTime.now;
 
-          yield* db
-            .update(posts)
-            .set({ queueId: null, updatedAt: moved(now) })
-            .where(
-              and(
-                eq(posts.workspaceId, workspaceId),
-                eq(posts.queueId, queueId)
-              )
-            );
+          if (placed.length > 0) {
+            yield* db
+              .update(posts)
+              .set({ queueId: null, updatedAt: moved(now) })
+              .where(inArray(posts.id, placed));
+          }
 
           yield* db
             .delete(queues)

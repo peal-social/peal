@@ -1,5 +1,15 @@
-import { and, asc, countDistinct, eq, inArray, isNull, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  countDistinct,
+  eq,
+  inArray,
+  isNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import { DateTime, Effect, Layer, Schema } from "effect";
+import { SqlClient } from "effect/sql";
 
 import { ExecutionIdSchema } from "#publishing/application/publication-scheduler.ts";
 import { WorkspacePostStore } from "#publishing/application/workspace-post-store.ts";
@@ -18,7 +28,7 @@ import type {
 import { PostIdSchema } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
-import { moved } from "./post-updates.ts";
+import { lockedPosts, moved } from "./post-updates.ts";
 import {
   channelDefaults,
   channelSets,
@@ -261,6 +271,7 @@ export const DrizzleWorkspacePostStore = Layer.effect(
   WorkspacePostStore,
   Effect.gen(function* DrizzleWorkspacePostStore() {
     const db = yield* Drizzle;
+    const client = yield* SqlClient.SqlClient;
 
     const lockAll = Effect.fn("WorkspacePostStore.lockAll")(function* lockAll(
       workspaceId: string
@@ -373,21 +384,36 @@ export const DrizzleWorkspacePostStore = Layer.effect(
 
     const clearAuthor = Effect.fn("WorkspacePostStore.clearAuthor")(
       function* clearAuthor(userId: string) {
-        // Both show in the posts' answers: they move.
-        const now = yield* DateTime.now;
+        // Both show in the posts' answers: they move. The rows first,
+        // then the clock (`moved`), in one transaction.
+        yield* client.withTransaction(
+          Effect.gen(function* clearing() {
+            const theirs = yield* lockedPosts(
+              db,
+              or(eq(posts.authorId, userId), eq(posts.scheduledBy, userId))
+            );
+            const now = yield* DateTime.now;
 
-        yield* db
-          .update(posts)
-          .set({ authorId: null, updatedAt: moved(now) })
-          .where(eq(posts.authorId, userId))
-          .pipe(Effect.mapError(failed));
+            if (theirs.length === 0) {
+              return;
+            }
 
-        // Nor that they scheduled any: how it was scheduled stays.
-        yield* db
-          .update(posts)
-          .set({ scheduledBy: null, updatedAt: moved(now) })
-          .where(eq(posts.scheduledBy, userId))
-          .pipe(Effect.mapError(failed));
+            yield* db
+              .update(posts)
+              .set({ authorId: null, updatedAt: moved(now) })
+              .where(
+                and(inArray(posts.id, theirs), eq(posts.authorId, userId))
+              );
+
+            // Nor that they scheduled any: how it was scheduled stays.
+            yield* db
+              .update(posts)
+              .set({ scheduledBy: null, updatedAt: moved(now) })
+              .where(
+                and(inArray(posts.id, theirs), eq(posts.scheduledBy, userId))
+              );
+          })
+        ).pipe(Effect.mapError(failed));
 
         // Nor that they started a rule that repeats one: the next run ends
         // it, as its starter is gone.

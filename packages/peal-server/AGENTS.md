@@ -575,7 +575,8 @@ and no socket, for tests.
   `updated_at` when it changes a post (a sync by change misses what it
   changed) and sends a stored event's `data.externalId` no more: nothing
   to check before, and once this release is back the operator moves every
-  post's `updated_at` forward with one statement, so every sync by change
+  post's `updated_at` forward with the one-off playbook
+  `posts-updated-at.yml`, a workspace at a time, so every sync by change
   reads each post once more and no customer acts (the runbook's "Past
   posts' own ids and updatedAt").
 

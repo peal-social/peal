@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { assert, describe, it, layer } from "@effect/vitest";
-import { DateTime, Effect, Layer, Option } from "effect";
+import { DateTime, Deferred, Duration, Effect, Fiber, Layer, Option } from "effect";
 import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
@@ -174,8 +174,19 @@ describe("the statements that write posts", () => {
 // Writing a target moves its post's row, so whoever locks a target has
 // locked its post first, as every use case does: one that locked the
 // target alone would wait on the post a cancel holds while the cancel waits
-// on the target. A `lockTarget` must come after `.lock(` or
-// `lockInWorkspace(` in the function that holds it.
+// on the target. A `lockTarget` or `lockTargets` must come after the
+// post's own lock (`posts.lock(` or `lockInWorkspace(`) in the function
+// that holds it.
+// The helpers that lock targets inside a function that holds the post's
+// row already, by the function that holds it.
+const underTheirCallersLock: Readonly<Record<string, string>> = {
+  cancelTargets: "cancel and unschedule, after lockPost",
+  draftScheduled: "scheduling a draft, given the locked post (`current`)",
+  dropAndAsk: "removing a target, after lockPost",
+  missAll: "claimPostRun, after posts.lock",
+  saveBackToDraft: "every way back to draft, under the post's lock",
+};
+
 describe("the use cases that lock a target", () => {
   it("lock its post first", async () => {
     const folder = path.join(source, "publishing", "application");
@@ -190,11 +201,15 @@ describe("the use cases that lock a target", () => {
     for (const [index, file] of files.entries()) {
       const text = texts[index] ?? "";
 
-      for (const match of text.matchAll(/lockTarget\(/gu)) {
+      for (const match of text.matchAll(/lockTargets?\(/gu)) {
         const before = text.slice(0, match.index);
         const scope = before.slice(before.lastIndexOf("function*"));
+        const holder = /^function\* (\w+)/u.exec(scope)?.[1] ?? "";
 
-        if (!/\.lock\(|lockInWorkspace\(/u.test(scope)) {
+        if (
+          !/posts\.lock\(|lockInWorkspace\(|lockPost\(/u.test(scope) &&
+          underTheirCallersLock[holder] === undefined
+        ) {
           alone.push(`${path.relative(source, file)}:${String(match.index)}`);
         }
       }
@@ -366,6 +381,63 @@ layer(StorageTest)("a post's updated_at", (storage) => {
           assert.isTrue(after > before, `${before} then ${after}`);
           before = after;
         }
+
+        yield* posts.remove(postId);
+      })
+  );
+
+  storage.effect(
+    "reads the clock of a tag's deletion once it holds the posts another transaction held",
+    () =>
+      Effect.gen(function* afterTheWait() {
+        const posts = yield* PostRepository;
+        const sql = yield* SqlClient.SqlClient;
+        const { post, postId } = yield* draftAt("1970-01-01T00:06:00.000Z");
+        const tagId = yield* newId(TagIdSchema);
+
+        yield* sql`UPDATE publishing.posts SET tag_ids = ARRAY[${tagId}]::uuid[] WHERE id = ${postId}`;
+
+        const locked = yield* Deferred.make<void>();
+        const release = yield* Deferred.make<void>();
+
+        // Another transaction holds the post's row, as a draft's scheduling
+        // does while a platform answers.
+        const holder = yield* sql
+          .withTransaction(
+            posts
+              .lock(postId)
+              .pipe(
+                Effect.andThen(Deferred.succeed(locked, undefined)),
+                Effect.andThen(Deferred.await(release))
+              )
+          )
+          .pipe(Effect.forkChild);
+
+        yield* Deferred.await(locked);
+        yield* TestClock.setTime(
+          DateTime.toEpochMillis(at("1970-01-01T00:06:10.000Z"))
+        );
+
+        const deleting = yield* sql
+          .withTransaction(
+            TagStore.use((tags) => tags.remove(post.workspaceId, tagId))
+          )
+          .pipe(Effect.forkChild);
+
+        // Long enough for the deletion to reach the held row, on any
+        // machine: the result does not depend on it once the clock is read
+        // after the lock.
+        yield* TestClock.withLive(Effect.sleep(Duration.millis(300)));
+        yield* TestClock.setTime(
+          DateTime.toEpochMillis(at("1970-01-01T00:06:20.000Z"))
+        );
+        yield* Deferred.succeed(release, undefined);
+        yield* Fiber.join(holder);
+        yield* Fiber.join(deleting);
+
+        assert.isTrue(
+          (yield* updatedAtOf(postId)) >= "1970-01-01T00:06:20.000Z"
+        );
 
         yield* posts.remove(postId);
       })

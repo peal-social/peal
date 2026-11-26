@@ -80,8 +80,8 @@ export interface PostFilter {
  * at all, as long as no transaction takes longer between its write and its
  * commit. Those that call a platform while they hold a post's row (a
  * draft's scheduling asks the accounts' own rules) write the post once the
- * answer came, just before they commit; a statement that waited on that
- * row writes the instant it wrote at (`moved`).
+ * answer came, just before they commit; a write that waited on that row
+ * reads its clock only once it holds it (`lockedPosts`, `moved`).
  */
 export const updateSettle = Duration.seconds(5);
 

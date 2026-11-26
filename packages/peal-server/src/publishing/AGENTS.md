@@ -1073,9 +1073,14 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   never not at all, as long as no transaction takes longer than that
   between its write and its commit: a use case that calls a platform
   while it holds a post's row (scheduling a draft asks the accounts' own
-  rules) writes the post after the answer, just before it commits, and a
-  statement that waited on the row writes the instant it wrote at
-  (`moved` adds the statement's own wait to `now`).
+  rules) writes the post after the answer, just before it commits. A
+  write reads its clock only once it holds the rows it writes: Postgres
+  computes a statement's values before it waits on a row another
+  transaction holds, and keeps them when the row did not change, so a
+  statement that waited would land behind its own commit. A write of one
+  post holds its row already; one of several (a tag or a queue deleted, an
+  account's authorship cleared) locks them first, in id order
+  (`lockedPosts`), then reads the clock.
   `updatedSince` keeps the posts changed at or after an instant, in any
   order. Publishing stores no platform: the platform
   filter asks `WorkspaceChannels` about `PostRepository.channelsUsed`, so a
