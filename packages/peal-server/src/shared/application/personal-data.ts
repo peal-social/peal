@@ -38,6 +38,8 @@ export interface PostOriginRecord {
 export interface PostRecord {
   /** How it was created; null on a post from before this was kept. */
   readonly createdVia: PostOriginRecord | null;
+  /** The id of its own a program gave it, if one did. */
+  readonly externalId: string | null;
   /**
    * The parts that follow its first, in order: a thread, or comments,
    * depending on the platform. None on a post of one part.
@@ -125,6 +127,8 @@ export interface PostRecord {
     readonly text: string;
   }[];
   readonly timeZone: string | null;
+  /** When what the post's answer shows last changed. */
+  readonly updatedAt: DateTime.Utc;
 }
 
 /**

@@ -241,6 +241,7 @@ const PortsLive = Layer.mergeAll(
             Effect.as(
               workspaceIds.map((workspaceId) => ({
                 createdVia: { name: null, via: "web" },
+                externalId: null,
                 followUps: [],
                 id: "019a6f10-0000-7000-8000-000000000001",
                 liveChanges: [],
@@ -253,6 +254,7 @@ const PortsLive = Layer.mergeAll(
                 text: "A synthetic post of Ana's.",
                 textOverrides: [],
                 timeZone: null,
+                updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
                 workspaceId,
               }))
             )

@@ -129,6 +129,8 @@ const ExportedOverrideSchema = Schema.Struct({
 const ExportedPostSchema = Schema.Struct({
   // How it was created; null on a post from before this was kept.
   createdVia: nullable(ExportedPostOriginSchema),
+  // The id of its own a program gave it (`externalId`); null without one.
+  externalId: nullable(Schema.String),
   // The parts that follow its first, in order (a thread, or comments,
   // depending on the platform), each with the seconds it waits after the
   // part before it. Empty on a post of one part.
@@ -194,6 +196,8 @@ const ExportedPostSchema = Schema.Struct({
   text: Schema.String,
   textOverrides: Schema.Array(ExportedOverrideSchema),
   timeZone: nullable(Schema.String),
+  // When what the post's answer shows last changed.
+  updatedAt: instant,
 });
 
 // Something staff did to the account, from the audit log, changes they

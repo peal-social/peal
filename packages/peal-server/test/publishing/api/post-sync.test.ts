@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { DateTime, Effect, Layer } from "effect";
+import { DateTime, Duration, Effect, Layer } from "effect";
 import { Base64Url } from "effect/encoding";
 import { HttpServer } from "effect/http";
 import { HttpApiError, HttpApiTest } from "effect/http-api";
@@ -91,7 +91,7 @@ const studio = Effect.gen(function* studio() {
   return { draft, editor, headers, mastodon, walk, workspaceId };
 });
 
-const seconds = (count: number) => TestClock.adjust(`${String(count)} seconds`);
+const seconds = (count: number) => TestClock.adjust(Duration.seconds(count));
 
 describe("a walk by change", () => {
   it.effect(

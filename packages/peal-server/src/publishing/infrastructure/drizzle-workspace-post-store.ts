@@ -202,6 +202,7 @@ const recordOf = Effect.fnUntraced(function* recordOf(
 
   const withoutPoll: PostRecord = {
     createdVia: yield* originRecord(row, "createdVia"),
+    externalId: row.externalId,
     followUps: followUps.map((part) => ({
       delaySeconds: part.delaySeconds,
       media: exportedMedia(part.media),
@@ -233,6 +234,7 @@ const recordOf = Effect.fnUntraced(function* recordOf(
     text: row.text,
     textOverrides: exportedOverrides(overrides),
     timeZone: row.scheduleZone,
+    updatedAt: DateTime.fromDateUnsafe(row.updatedAt),
   };
 
   const record: PostRecord =
