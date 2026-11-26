@@ -917,7 +917,8 @@ columns to `publishing.live_post_changes`, `body` (the edit's rich text)
 and `options` (the target's new options), which a pending edit holds and
 its end clears, as `text`. The release before never reads them. It takes
 a pending website edit as a text edit, and fails it `notSupported`
-without calling the site, as it edits no website; but its end leaves
+without calling the site, as it edits no website, even one whose call
+already reached the site and only waits to be settled; and its end leaves
 `body` and `options` on the row, content Peal keeps of no ended change.
 What a finished edit wrote (a rich text in `text_overrides`, a website's
 options on its target) is the previous section's.
@@ -926,7 +927,7 @@ options on its target) is the previous section's.
 
    ```sh
    sudo peal-compose exec postgres psql --username peal --dbname peal --command \
-     "SELECT count(*) FROM publishing.live_post_changes WHERE status = 'pending' AND (body IS NOT NULL OR options IS NOT NULL)"
+     "SELECT count(*) FROM publishing.live_post_changes c JOIN channels.channels ch ON ch.id = c.channel_id WHERE c.kind = 'edit' AND c.status = 'pending' AND ch.platform IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')"
    ```
 
 2. **It counts more than 0:** wait for them to end (an edit tries again

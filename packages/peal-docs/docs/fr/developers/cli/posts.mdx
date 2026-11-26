@@ -247,7 +247,7 @@ Sans `--channel`, elle supprime la publication de chaque canal où c’est possi
 `peal posts edit` remplace le texte d’une publication en ligne sur un canal, là où `peal channels capabilities` dit que Peal modifie ([Modifier une publication en ligne](/guides/posts/published#edit-live)). Sur un réseau social ou une messagerie, seul le texte change. Sur un site web, la modification remplace l’article : son texte, ou un texte enrichi, et ses options ([Modifier une publication sur un site web](/guides/posts/published#edit-website)). La modification est publique immédiatement. Il faut au moins `--text`, `--body` ou `--options`. La commande prend ces options :
 
 - `--channel` désigne le canal, comme pour `peal posts unpublish`.
-- `--text` est le nouveau texte.
+- `--text` est le nouveau texte. Sur un site web, il remplace un texte enrichi par des paragraphes simples : donnez `--body` pour garder la mise en forme.
 - `--body <json>`, sur un site web, est un texte enrichi, le document JSON de l’éditeur web, qui remplace le texte.
 - `--options <json>`, sur un site web, sont ses options désormais, entières, en JSON marqué par sa plateforme : `'{"platform":"wordpress","title":"Doors open at 7 pm"}'`.
 - `--part <n>` est la partie d’un fil, depuis 0 pour la publication elle-même.

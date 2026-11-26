@@ -118,7 +118,7 @@ export const edit = Command.make(
     text: Flag.String("text").pipe(
       Flag.withMetavar("<text>"),
       Flag.withDescription(
-        "The new text of that part on that channel. It is checked as the channel's text is when a post is scheduled. One of --text, --body and --options is needed."
+        "The new text of that part on that channel. On a website it replaces a rich text with plain paragraphs: give --body to keep its formatting. It is checked as the channel's text is when a post is scheduled. One of --text, --body and --options is needed."
       ),
       Flag.optional
     ),

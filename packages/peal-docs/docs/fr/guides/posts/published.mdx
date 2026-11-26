@@ -97,7 +97,7 @@ Seul le texte change. Les médias, les options, l’audience et l’heure resten
 
 ### Modifier une publication sur un site web [#edit-website]
 
-Sur WordPress, WordPress.com, DEV et Hashnode, une modification remplace l’article que le site affiche : son texte, ou un texte enrichi, et ses options (le titre, l’extrait, l’image de couverture, les étiquettes et les catégories). Ce que vous ne donnez pas reste tel quel. Le site garde le statut de la publication et sa date : un brouillon y reste un brouillon, et la modification ne peut pas changer le **Statut sur le site**.
+Sur WordPress, WordPress.com, DEV et Hashnode, une modification remplace l’article que le site affiche : son texte, ou un texte enrichi, et ses options (le titre, l’extrait, l’image de couverture, les étiquettes et les catégories). Ce que vous ne donnez pas reste tel quel. Le site garde le statut de la publication et sa date : un brouillon y reste un brouillon, et la modification ne peut pas changer le **Statut sur le site**. Un nouveau texte remplace un texte enrichi par des paragraphes simples : envoyez le texte enrichi (`body`) pour garder sa mise en forme.
 
 Depuis l’API, envoyez `text` ou `body`, et `options` avec toutes les options du site, à `POST …/posts/{postId}/targets/{targetId}/edit` ([Modifier une publication en ligne](/developers/posting/published#edit-live)). Une option absente d’`options` est retirée sur le site, comme une couverture que vous enlevez. En ligne de commande, `--options` prend le même JSON :
 

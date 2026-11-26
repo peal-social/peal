@@ -93,7 +93,7 @@ Only the text changes. The media, the options, the audience and the time stay as
 
 ### Edit a post on a website [#edit-website]
 
-On WordPress, WordPress.com, DEV and Hashnode, an edit replaces the article the site shows: its text, or a rich text, and its options (the title, the excerpt, the cover, the tags and the categories). What you leave out stays as it is. The site keeps the post's status and its date, so a draft stays a draft there, and the edit can't change **Site status**.
+On WordPress, WordPress.com, DEV and Hashnode, an edit replaces the article the site shows: its text, or a rich text, and its options (the title, the excerpt, the cover, the tags and the categories). What you leave out stays as it is. The site keeps the post's status and its date, so a draft stays a draft there, and the edit can't change **Site status**. A new text replaces a rich text with plain paragraphs: send the rich text (`body`) to keep its formatting.
 
 From the API, send `text` or `body`, and `options` with the website's whole options, to `POST …/posts/{postId}/targets/{targetId}/edit` ([Edit a published post](/developers/posting/published#edit-live)). An option left out of `options` is removed on the site, as a cover you take away is. On the command line, `--options` takes the same JSON:
 

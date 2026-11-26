@@ -242,7 +242,7 @@ Without `--channel`, it deletes the post from every channel it can. With `--chan
 `peal posts edit` replaces the text of a published post on one channel, where `peal channels capabilities` says Peal edits ([Edit a published post](/guides/posts/published#edit-live)). On a social network or a chat, only the text changes. On a website, the edit replaces the article: its text, or a rich text, and its options ([Edit a post on a website](/guides/posts/published#edit-website)). The change is public at once. It takes these flags, `--text`, `--body` or `--options` at least:
 
 - `--channel` names the channel, as `peal posts unpublish` does.
-- `--text` is the new text.
+- `--text` is the new text. On a website it replaces a rich text with plain paragraphs: give `--body` to keep the formatting.
 - `--body <json>`, on a website, is a rich text, the web editor's JSON document, which replaces the text.
 - `--options <json>`, on a website, is its options from now on, whole, as JSON tagged by its platform: `'{"platform":"wordpress","title":"Doors open at 7 pm"}'`.
 - `--part <n>` is the part of a thread, from 0 for the post itself.

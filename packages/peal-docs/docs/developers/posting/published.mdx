@@ -314,9 +314,9 @@ The request is accepted (202) with the change (`kind: "edit"`). A job makes the 
 
 On WordPress, WordPress.com, DEV and Hashnode, the edit replaces the article the site shows. Give any of these, and what you leave out stays as it is:
 
-- `text`, the new text, which the site gets as paragraphs with the post's images, as when it was published
+- `text`, the new text, which the site gets as paragraphs with the post's images, as when it was published. It replaces a rich text with plain paragraphs, so send `body` to keep the formatting.
 - `body`, a rich text (the API reference's `RichText`), which replaces the text. Peal answers the channel's `text` as its plain text and its `media` as its images.
-- `options`, the website's options from now on, whole, with their `platform`. An option left out is removed on the site: leave out `coverMediaId` and the article loses its cover.
+- `options`, the website's options from now on, whole, with their `platform`. An option left out is removed on the site: leave out `coverMediaId` and the article loses its cover. A `siteStatus` left out is the target's.
 
 ```json
 {
@@ -328,7 +328,7 @@ On WordPress, WordPress.com, DEV and Hashnode, the edit replaces the article the
 }
 ```
 
-The site keeps the article's status and its date, so a draft there stays a draft. A `siteStatus` other than the target's answers 422 `post_content_invalid` with `optionInvalid`. The edit is checked the way scheduling checks the post: the title is still needed, the files must be the workspace's and ready (422 `unknown_media` otherwise), and a `body` on a social network is `bodyNotTaken`, where `options` are refused 409 `notSupported`. A file the site already took for this post isn't sent again. A site's refusal keeps its code, prefixed with the platform (`wordpress:rest_cannot_edit`).
+The site keeps the article's status and its date, so a draft there stays a draft. A `siteStatus` other than the target's answers 422 `post_content_invalid` with `optionInvalid`. The edit is checked the way scheduling checks the post: the title is still needed, the files the site doesn't have yet must be the workspace's and ready (422 `unknown_media` otherwise), and on a social network a `body` is `bodyNotTaken` and `options` are `optionsNotTaken`. A file the site already took for this post isn't sent again. A site's refusal keeps its code, prefixed with the platform (`wordpress:rest_cannot_edit`).
 
 ### When the edit is done or fails [#edit-result]
 

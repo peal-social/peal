@@ -42,15 +42,35 @@ Which platforms let Peal delete: `peal channels capabilities <channel>
 ## Correct a live post's text
 
 Editing replaces the text of one part of a post on one channel, **for
-everyone, at once**: only the text, never media, options or the time. Peal
-edits on Mastodon, Google Business Profile, Discord, Telegram and Slack only (`livePost.edit` in the
-capabilities, `editBlockedBy` where not). Do it only when the user asked
-for that edit, and say which post and channel it changes.
+everyone, at once**. On a social network or a chat, only the text changes,
+never media, options or the time. Peal edits on Mastodon, Google Business
+Profile, Discord, Telegram, Slack and the websites (WordPress,
+WordPress.com, DEV, Hashnode): `livePost.edit` in the capabilities,
+`editBlockedBy` where not. Do it only when the user asked for that edit,
+and say which post and channel it changes.
 
 ```sh
 peal posts edit <post-id> --channel <channel-id> --text "The corrected text." --wait 30 --json
 peal posts edit <post-id> --channel <channel-id> --part 1 --text "The second part, corrected." --json
 ```
+
+On a website the edit replaces the article: its text, or a rich text
+(`--body`, the web editor's JSON document), and its options (`--options`,
+the website's, whole, as JSON tagged by its platform: an option left out is
+removed on the site, but a `siteStatus` left out stays the target's). What
+is left out of the command stays as it is, and the site keeps its status
+and its date. A `--text` replaces a rich text with plain paragraphs: when
+the article has formatting, send `--body` instead, or ask the user first.
+
+```sh
+peal posts edit <post-id> --channel <channel-id> --options '{"platform":"wordpress","title":"Doors open at 7 pm"}' --json
+peal posts edit <post-id> --channel <channel-id> --body '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Doors open at 7 pm."}]}]}' --json
+```
+
+The edit is checked as scheduling checks the post (the title is still
+needed; `optionInvalid` for another site status), and its files the site
+does not have yet must be the workspace's and ready (`unknown_media`). On a
+social network a body is `bodyNotTaken` and options `optionsNotTaken`.
 
 `--part` counts from 0, the post itself. The text is checked as the
 channel's is at scheduling (`post_content_invalid` lists what to fix). The
