@@ -35,7 +35,8 @@ export const moved = (now: DateTime.Utc) =>
  * Locks the posts that match, in id order (as every other lock of several
  * posts takes them), until the transaction ends, and answers their ids: a
  * write of several posts calls it first, then reads the clock, then writes
- * `moved(now)` to these ids alone.
+ * `moved(now)` to these ids alone, passed as one parameter (`anyUuid`), as
+ * a statement takes 65,535 at most and a tag may file more posts.
  */
 export const lockedPosts = (
   db: Drizzle["Service"],

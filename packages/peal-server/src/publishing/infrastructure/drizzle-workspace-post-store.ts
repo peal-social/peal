@@ -26,6 +26,7 @@ import type {
   SavedItemsRecord,
 } from "#shared/application/personal-data.ts";
 import { PostIdSchema } from "#shared/domain/ids.ts";
+import { anyUuid } from "#shared/infrastructure/any-uuid.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { lockedPosts, moved } from "./post-updates.ts";
@@ -404,7 +405,7 @@ export const DrizzleWorkspacePostStore = Layer.effect(
                 .update(posts)
                 .set({ authorId: null, updatedAt: moved(now) })
                 .where(
-                  and(inArray(posts.id, theirs), eq(posts.authorId, userId))
+                  and(anyUuid(posts.id, theirs), eq(posts.authorId, userId))
                 );
 
               // Nor that they scheduled any: how it was scheduled stays.
@@ -412,7 +413,7 @@ export const DrizzleWorkspacePostStore = Layer.effect(
                 .update(posts)
                 .set({ scheduledBy: null, updatedAt: moved(now) })
                 .where(
-                  and(inArray(posts.id, theirs), eq(posts.scheduledBy, userId))
+                  and(anyUuid(posts.id, theirs), eq(posts.scheduledBy, userId))
                 );
             })
           )

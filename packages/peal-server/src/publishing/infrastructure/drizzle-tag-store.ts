@@ -1,10 +1,11 @@
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
 import { TagStore } from "#publishing/application/tag-store.ts";
 import { Tag, tagKeyOf } from "#publishing/domain/tag.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
+import { anyUuid } from "#shared/infrastructure/any-uuid.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { lockedPosts, moved } from "./post-updates.ts";
@@ -94,7 +95,7 @@ export const DrizzleTagStore = Layer.effect(
                 tagIds: sql`array_remove(${posts.tagIds}, ${tagId}::uuid)`,
                 updatedAt: moved(now),
               })
-              .where(inArray(posts.id, filed));
+              .where(anyUuid(posts.id, filed));
           }
 
           yield* db

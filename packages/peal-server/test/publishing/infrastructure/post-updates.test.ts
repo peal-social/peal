@@ -405,6 +405,38 @@ layer(StorageTest)("a post's updated_at", (storage) => {
   );
 
   storage.effect(
+    "deletes a tag that files more posts than a statement takes parameters",
+    () =>
+      Effect.gen(function* manyFiled() {
+        const sql = yield* SqlClient.SqlClient;
+        const workspaceId = yield* freshWorkspace;
+        const tagId = yield* newId(TagIdSchema);
+
+        // Past the 65,535 parameters a statement takes, were each id one.
+        yield* sql`
+          INSERT INTO publishing.posts (id, workspace_id, status, tag_ids)
+          SELECT
+            ('01900000-0000-7000-8000-' || lpad(to_hex(n), 12, '0'))::uuid,
+            ${workspaceId}::uuid,
+            'draft',
+            ARRAY[${tagId}]::uuid[]
+          FROM generate_series(1, 70000) AS n
+        `;
+
+        yield* TagStore.use((tags) => tags.remove(workspaceId, tagId));
+
+        const [left] = yield* sql<{
+          readonly filed: number;
+        }>`SELECT count(*)::int AS filed FROM publishing.posts WHERE workspace_id = ${workspaceId} AND tag_ids @> ARRAY[${tagId}]::uuid[]`;
+
+        assert.strictEqual(left?.filed, 0);
+
+        yield* sql`DELETE FROM publishing.posts WHERE workspace_id = ${workspaceId}`;
+      }),
+    { timeout: 120_000 }
+  );
+
+  storage.effect(
     "reads the clock of a tag's deletion once it holds the posts another transaction held",
     () =>
       Effect.gen(function* afterTheWait() {

@@ -12,6 +12,7 @@ import type { TakenSlots } from "#publishing/domain/queue.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { PostIdSchema } from "#shared/domain/ids.ts";
 import type { PostId } from "#shared/domain/ids.ts";
+import { anyUuid } from "#shared/infrastructure/any-uuid.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { lockedPosts, moved } from "./post-updates.ts";
@@ -179,7 +180,7 @@ export const DrizzleQueueStore = Layer.effect(
             yield* db
               .update(posts)
               .set({ queueId: null, updatedAt: moved(now) })
-              .where(inArray(posts.id, placed));
+              .where(anyUuid(posts.id, placed));
           }
 
           yield* db
