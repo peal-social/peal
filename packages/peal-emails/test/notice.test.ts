@@ -491,6 +491,28 @@ describe(renderNoticeEmail, () => {
     );
   });
 
+  it("names a website the post did not go out on, in each language", async () => {
+    const event: NoticeEvent = {
+      _tag: "PostFailed",
+      channel: Option.some({
+        handle: "journal.example.test",
+        platform: "wordpress",
+      }),
+      postId,
+      reason: "contentRejected",
+    };
+
+    const english = await render(event, "en");
+    const french = await render(event, "fr");
+
+    expect(english.text).toContain(
+      "A post of Studio Nord did not go out on WordPress (journal.example.test)"
+    );
+    expect(french.text).toContain(
+      "Une publication de Studio Nord n’est pas partie sur WordPress (journal.example.test)"
+    );
+  });
+
   it("says the post went out when only its first comment did not", async () => {
     const event: NoticeEvent = {
       _tag: "PostFailed",

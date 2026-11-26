@@ -1472,7 +1472,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             platform: "threads",
           });
 
-          // A website to reconnect, which no tool lists or counts.
+          // A website to reconnect, listed and counted as any channel.
           const website = markRefreshNeeded(
             yield* freshChannel(workspaceId, { platform: "wordpress" }),
             yield* DateTime.now
@@ -1589,7 +1589,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [{ id: slackChannel.id, platform: "slack" }]
           );
 
-          // Every website is out of the counts as of the list.
+          // The counts are those of the list, websites included.
           const active = yield* reader.call(
             "list_channels",
             ChannelsJsonSchema,
@@ -1650,22 +1650,25 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.includeMembers(
             all.channels.map(({ id }) => id),
-            [fixture.channelId, fixture.youtubeId, lasting.id, lapsed.id]
-          );
-          assert.notInclude(
-            all.channels.map(({ id }) => id),
-            website.id
+            [
+              fixture.channelId,
+              fixture.youtubeId,
+              lasting.id,
+              lapsed.id,
+              website.id,
+              devto.id,
+            ]
           );
           assert.isUndefined(all.counts);
 
-          // Searched by status, the website is neither listed nor counted.
+          // Searched by status, the website is listed and counted.
           const toReconnect = yield* reader.call(
             "list_channels",
             ChannelsJsonSchema,
             { status: "refreshNeeded" }
           );
 
-          assert.notInclude(
+          assert.include(
             toReconnect.channels.map(({ id }) => id),
             website.id
           );
