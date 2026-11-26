@@ -8,6 +8,8 @@ sidebar:
 
 Each event below lists its fields and shows an example payload. Events that name a channel also carry the [fields of one channel](/developers/webhooks/events#per-channel).
 
+From `post.scheduled` to `post.edit_failed`, an event of a post that has [your own id](/developers/posting#external-id) carries it in `data.externalId`, so you can match the event to your record without reading the post. The field is left out when the post has none, and from events sent before it existed. The approval events don't carry it.
+
 ## post.scheduled [#post-scheduled]
 
 A post was scheduled, or moved to another time. A post waiting for an [approval](/guides/posts/review) isn't scheduled yet. It sends `post.approval_requested` instead, and this event only once it's approved.

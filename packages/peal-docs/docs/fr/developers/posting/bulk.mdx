@@ -385,6 +385,7 @@ Avec un en-tête `Idempotency-Key`, vous pouvez renvoyer toute la requête sans 
 - La même requête renvoyée répond les publications qu’elle a créées, avec `replayed` à vrai. Elle crée aussi les éléments qui ne l’avaient pas été la première fois, s’ils peuvent l’être désormais.
 - Un élément modifié sous la même clé est refusé avec `IdempotencyKeyReused`.
 - Un élément peut porter sa propre `idempotencyKey`, qui remplace alors celle de l’en-tête pour lui.
+- Un élément peut porter un `externalId`, votre propre identifiant pour sa publication. Un élément dont un élément précédent a pris l’identifiant est refusé avec `PostExternalIdTaken`, qui nomme la publication de cet élément.
 
 ## Importer des publications depuis un fichier CSV [#import]
 
@@ -392,15 +393,16 @@ Avec un en-tête `Idempotency-Key`, vous pouvez renvoyer toute la requête sans 
 
 La première ligne du fichier nomme les colonnes, dans n’importe quel ordre :
 
-| Colonne           | Obligatoire | Ce qu’elle contient                                                                                                                                               |
-| ----------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text`            | oui         | Le texte de la publication                                                                                                                                        |
-| `channels`        | oui         | Des identifiants de canaux, séparés par des espaces, des virgules ou des points-virgules                                                                          |
-| `at`              | oui         | `now`, un instant avec son décalage comme `2026-11-20T09:00:00Z`, ou une heure locale sans décalage comme `2026-11-20 10:00`, lue dans le `time_zone` de la ligne |
-| `time_zone`       | non         | Un fuseau IANA, comme `Europe/Paris`. UTC s’il est absent.                                                                                                        |
-| `media`           | non         | Des identifiants de médias prêts de l’espace de travail                                                                                                           |
-| `allow_duplicate` | non         | `true` ou `false` ([Publications en double](/developers/posting#duplicates))                                                                                      |
-| `idempotency_key` | non         | La clé d’idempotence propre à la ligne                                                                                                                            |
+| Colonne           | Obligatoire | Ce qu’elle contient                                                                                                                                                                                                                 |
+| ----------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`            | oui         | Le texte de la publication                                                                                                                                                                                                          |
+| `channels`        | oui         | Des identifiants de canaux, séparés par des espaces, des virgules ou des points-virgules                                                                                                                                            |
+| `at`              | oui         | `now`, un instant avec son décalage comme `2026-11-20T09:00:00Z`, ou une heure locale sans décalage comme `2026-11-20 10:00`, lue dans le `time_zone` de la ligne                                                                   |
+| `time_zone`       | non         | Un fuseau IANA, comme `Europe/Paris`. UTC s’il est absent.                                                                                                                                                                          |
+| `media`           | non         | Des identifiants de médias prêts de l’espace de travail                                                                                                                                                                             |
+| `allow_duplicate` | non         | `true` ou `false` ([Publications en double](/developers/posting#duplicates))                                                                                                                                                        |
+| `idempotency_key` | non         | La clé d’idempotence propre à la ligne                                                                                                                                                                                              |
+| `external_id`     | non         | Votre propre identifiant pour la publication ([Votre propre identifiant sur une publication](/developers/posting#external-id)). Une ligne dont l’identifiant est déjà pris par une publication ou une ligne précédente est refusée. |
 
 Une ligne est une publication seule, avec un seul texte pour tous ses canaux. Un [fil](/guides/posts#threads), un texte différent sur un canal ou les options d’une plateforme ne tiennent pas dans une cellule : envoyez-les par `create` ou `bulk`. Un fichier qui nomme une autre colonne est refusé en entier.
 

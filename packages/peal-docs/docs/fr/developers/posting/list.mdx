@@ -13,22 +13,24 @@ Vous pouvez retrouver les publications qui ont échoué la semaine dernière, to
 
 La requête prend ces paramètres :
 
-| Paramètre     | Ce qu’il garde                                                                                                                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`      | `draft`, `awaitingApproval` (en attente d’une [approbation](/guides/posts/review), son heure gardée), `scheduled`, `publishing`, `finished` ou `cancelled`                                        |
-| `outcome`     | Comment une publication terminée a fini : `published`, `partiallyPublished`, `unconfirmed`, `failed` ou `cancelled`                                                                               |
-| `channelId`   | Les publications qui ont une cible sur ce canal                                                                                                                                                   |
-| `platform`    | Les publications qui ont une cible sur un canal connecté de cette plateforme                                                                                                                      |
-| `tagId`       | Les publications classées sous cette étiquette                                                                                                                                                    |
-| `queueId`     | Les publications placées par cette file d’attente ([Files d’attente](/developers/posting/queues#queues))                                                                                          |
-| `recyclingId` | Les publications créées par cette règle de répétition ([Répéter une publication](/developers/posting/queues#recycling))                                                                           |
-| `removed`     | `true` : les publications que Peal a supprimées de la plateforme d’au moins un canal. `false` : celles supprimées d’aucune ([Dépublier une publication](/developers/posting/published#unpublish)) |
-| `from`, `to`  | Les publications programmées de `from` (compris) à `to` (exclu). L’un comme l’autre écarte les publications sans heure.                                                                           |
-| `createdVia`  | `web`, `apiKey` ou `application`                                                                                                                                                                  |
-| `authorId`    | Les publications créées par cet utilisateur                                                                                                                                                       |
-| `sort`        | `createdDesc` (par défaut) ou `createdAsc`, par date de création. `scheduledDesc` ou `scheduledAsc`, par instant programmé, qui ne listent que les publications avec une heure                    |
-| `limit`       | Le nombre de publications par page, de 1 à 100                                                                                                                                                    |
-| `cursor`      | Le `nextCursor` de la page précédente                                                                                                                                                             |
+| Paramètre      | Ce qu’il garde                                                                                                                                                                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`       | `draft`, `awaitingApproval` (en attente d’une [approbation](/guides/posts/review), son heure gardée), `scheduled`, `publishing`, `finished` ou `cancelled`                                                                                            |
+| `outcome`      | Comment une publication terminée a fini : `published`, `partiallyPublished`, `unconfirmed`, `failed` ou `cancelled`                                                                                                                                   |
+| `channelId`    | Les publications qui ont une cible sur ce canal                                                                                                                                                                                                       |
+| `platform`     | Les publications qui ont une cible sur un canal connecté de cette plateforme                                                                                                                                                                          |
+| `tagId`        | Les publications classées sous cette étiquette                                                                                                                                                                                                        |
+| `queueId`      | Les publications placées par cette file d’attente ([Files d’attente](/developers/posting/queues#queues))                                                                                                                                              |
+| `recyclingId`  | Les publications créées par cette règle de répétition ([Répéter une publication](/developers/posting/queues#recycling))                                                                                                                               |
+| `removed`      | `true` : les publications que Peal a supprimées de la plateforme d’au moins un canal. `false` : celles supprimées d’aucune ([Dépublier une publication](/developers/posting/published#unpublish))                                                     |
+| `from`, `to`   | Les publications programmées de `from` (compris) à `to` (exclu). L’un comme l’autre écarte les publications sans heure.                                                                                                                               |
+| `createdVia`   | `web`, `apiKey` ou `application`                                                                                                                                                                                                                      |
+| `authorId`     | Les publications créées par cet utilisateur                                                                                                                                                                                                           |
+| `externalId`   | La publication qui a cet identifiant à vous, comparé tel quel, et les publications annulées qui l’avaient ([Votre propre identifiant sur une publication](/developers/posting#external-id))                                                           |
+| `updatedSince` | Les publications dont `updatedAt` est à cet instant ou après                                                                                                                                                                                          |
+| `sort`         | `createdDesc` (par défaut) ou `createdAsc`, par date de création. `scheduledDesc` ou `scheduledAsc`, par instant programmé, qui ne listent que les publications avec une heure. `updatedDesc` ou `updatedAsc`, par moment de la dernière modification |
+| `limit`        | Le nombre de publications par page, de 1 à 100                                                                                                                                                                                                        |
+| `cursor`       | Le `nextCursor` de la page précédente                                                                                                                                                                                                                 |
 
 Cette requête liste les publications Bluesky en échec, la plus récemment programmée en premier :
 
@@ -228,6 +230,178 @@ Chaque publication arrive en entier, avec ses cibles, leur statut, leur adresse 
 Passez `nextCursor` dans `cursor`, avec les mêmes filtres et le même tri. Il est null sur la dernière page.
 
 Un curseur marque l’endroit où sa page s’est arrêtée. Les publications créées, déplacées ou supprimées entre-temps ne font donc jamais répéter ni sauter une publication d’une page à l’autre. Un curseur d’un autre tri, ou qu’aucune page n’a renvoyé, répond 400.
+
+## Tenir un autre système à jour [#sync]
+
+Chaque publication a `createdAt`, lu dans son identifiant, et `updatedAt`, le moment où ce que montre sa réponse a changé pour la dernière fois. Cela couvre le contenu de la publication, son heure, son statut, son résultat, ses étiquettes, sa file d’attente et son identifiant externe, et ses cibles : un canal qui publie, échoue, est modifié ou dépublié fait avancer sa publication. Chaque changement fait avancer `updatedAt`, jamais reculer.
+
+Pour copier les publications de l’espace de travail dans un autre système et l’y tenir à jour, parcourez la liste par changement :
+
+<Steps>
+  <Step title="Lisez chaque page depuis un instant">
+    Listez avec `sort=updatedAsc` et `updatedSince` à l’endroit où le dernier
+    passage s’est arrêté (laissez-le de côté la première fois), et suivez
+    `nextCursor` jusqu’à ce qu’il soit null.
+  </Step>
+  <Step title="Enregistrez chaque publication">
+    Écrivez chaque publication à mesure qu’elle arrive, par son `id`. Une
+    publication modifiée pendant le parcours revient à la fin : gardez la copie
+    lue en dernier.
+  </Step>
+  <Step title="Retenez où vous vous êtes arrêté">
+    Gardez le `updatedAt` de la dernière publication, et donnez-le comme
+    `updatedSince` la fois suivante. Cet instant est inclus : sa publication
+    revient une fois de plus, ce qui ne change rien.
+  </Step>
+</Steps>
+
+<CodeGroup>
+
+```ts Node.js
+import { PealClient } from "@peal-social/sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+const page = await peal.posts.list({
+  sort: "updatedAsc",
+  updatedSince: "2026-11-26T09:00:00.000Z",
+  limit: "100",
+});
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+page = peal.posts.list(
+    sort="updatedAsc",
+    updated_since="2026-11-26T09:00:00.000Z",
+    limit="100",
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+
+page, err := client.Posts.List(context.TODO(), &peal.ListPostsRequest{
+	Sort:         peal.PostSortUpdatedAsc.Ptr(),
+	UpdatedSince: peal.String("2026-11-26T09:00:00.000Z"),
+	Limit:        peal.String("100"),
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+page = peal.posts.list(
+  sort: "updatedAsc",
+  updated_since: "2026-11-26T09:00:00.000Z",
+  limit: "100"
+)
+```
+
+```java Java
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.ListPostsRequest;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+PostPage page = peal.posts().list(
+    ListPostsRequest.builder()
+        .sort(PostSort.UPDATED_ASC)
+        .updatedSince("2026-11-26T09:00:00.000Z")
+        .limit("100")
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\ListPostsRequest;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+$page = $peal->posts->list(new ListPostsRequest([
+    'sort' => 'updatedAsc',
+    'updatedSince' => '2026-11-26T09:00:00.000Z',
+    'limit' => '100',
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+var page = await peal.Posts.ListAsync(new ListPostsRequest
+{
+    Sort = PostSort.UpdatedAsc,
+    UpdatedSince = "2026-11-26T09:00:00.000Z",
+    Limit = "100",
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+let page = peal
+    .posts
+    .list(
+        &PostsListQueryRequest::builder()
+            .sort(PostSort::UpdatedAsc)
+            .updated_since("2026-11-26T09:00:00.000Z")
+            .limit("100")
+            .build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl "https://api.example.com/api/v1/posts?sort=updatedAsc&updatedSince=2026-11-26T09:00:00.000Z&limit=100" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
+```
+
+```json MCP (list_posts)
+{
+  "sort": "updatedAsc",
+  "updatedSince": "2026-11-26T09:00:00.000Z",
+  "limit": 100
+}
+```
+
+</CodeGroup>
+
+`updatedAsc` ne liste jamais une publication modifiée dans les 5 dernières secondes. Un changement pas encore enregistré ne peut pas se retrouver derrière un curseur que vous avez déjà : un parcours peut montrer une publication deux fois, jamais en manquer une. Les autres tris ne retiennent rien.
+
+<Callout type="info" title="Ce qu’un parcours ne dit pas">
+  Un brouillon supprimé n’est plus dans aucune liste, donc un parcours ne le
+  montre jamais. Après la mise à jour qui a ajouté `updatedAt`, toutes les
+  publications existantes ont le même instant : le premier parcours les lit
+  toutes une fois.
+</Callout>
 
 <Callout
   type="info"

@@ -8,6 +8,8 @@ sidebar:
 
 Chaque événement ci-dessous liste ses champs et montre un exemple de contenu. Les événements qui nomment un canal portent aussi les [champs d’un canal](/developers/webhooks/events#per-channel).
 
+De `post.scheduled` à `post.edit_failed`, un événement d’une publication qui a [votre propre identifiant](/developers/posting#external-id) le porte dans `data.externalId` : vous rattachez l’événement à votre enregistrement sans lire la publication. Le champ est absent quand la publication n’en a pas, et des événements envoyés avant qu’il n’existe. Les événements d’approbation ne le portent pas.
+
 ## post.scheduled [#post-scheduled]
 
 Une publication a été programmée, ou déplacée à une autre heure. Une publication en attente d’[approbation](/guides/posts/review) n’est pas encore programmée. Elle envoie `post.approval_requested` à la place, et cet événement seulement une fois approuvée.

@@ -713,6 +713,170 @@ Peal refuse une publication quand une autre publication de l’espace de travail
   doublons rattrape la même publication demandée deux fois.
 </Callout>
 
+## Votre propre identifiant sur une publication [#external-id]
+
+`externalId` est votre propre identifiant pour une publication : celui de l’enregistrement de votre système dont elle vient, de 1 à 255 caractères, comparé tel quel. Donnez-le en créant la publication (`create`, chaque élément de `bulk`, la colonne `external_id` d’un import, un brouillon). La réponse le porte, et `GET …/posts?externalId=…` retrouve la publication.
+
+Un identifiant externe est unique dans l’espace de travail parmi les publications qui ne sont pas annulées. Une deuxième publication avec le même identifiant est refusée avec 409 `PostExternalIdTaken`, et `postId` nomme la publication qui l’a :
+
+```json
+{
+  "_tag": "PostExternalIdTaken",
+  "code": "post_external_id_taken",
+  "postId": "0190f3a0-0000-7000-8000-00000000b001"
+}
+```
+
+Un programme qui renvoie une création, une heure ou un mois plus tard, ne fait donc jamais deux publications. Une `Idempotency-Key` est vérifiée d’abord : la même requête sous la même clé renvoie la publication qu’elle a créée. Une publication annulée et un brouillon supprimé libèrent leur identifiant. Quand un enregistrement donne plusieurs publications, donnez à chacune le sien, comme `crm-record-42:linkedin`.
+
+| Requête                 | Ce qu’elle fait de l’identifiant                                                    |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `create`, `bulk`        | Le donne à la nouvelle publication, ou le refuse quand une autre publication l’a    |
+| `validate`              | Répond `externalIdTakenBy`, la publication qui l’a déjà, ou `null`                  |
+| `drafts.create`         | Le donne au brouillon                                                               |
+| `update` d’un brouillon | Le laisse tel quel quand `externalId` est absent, le retire avec `null`             |
+| `setExternalId`         | Le change sur toute publication, quel que soit son statut, ou le retire avec `null` |
+
+`PUT …/posts/{postId}/external-id` donne un identifiant à une publication, quel que soit son statut. Servez-vous-en pour les publications créées avant que votre système ne garde les identifiants, ou pour libérer un identifiant. Rien n’est envoyé aux plateformes. Il faut post:update.
+
+<CodeGroup>
+
+```ts Node.js
+import { PealClient } from "@peal-social/sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+const post = await peal.posts.setExternalId({
+  postId: "0190f3a0-0000-7000-8000-00000000b001",
+  externalId: "crm-record-42",
+});
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+post = peal.posts.set_external_id(
+    post_id="0190f3a0-0000-7000-8000-00000000b001",
+    external_id="crm-record-42",
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+
+post, err := client.Posts.SetExternalID(context.TODO(), &peal.PostExternalIDChange{
+	PostID:     "0190f3a0-0000-7000-8000-00000000b001",
+	ExternalID: peal.String("crm-record-42"),
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+post = peal.posts.set_external_id(
+  post_id: "0190f3a0-0000-7000-8000-00000000b001",
+  external_id: "crm-record-42"
+)
+```
+
+```java Java
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.PostExternalIdChange;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+Post post = peal.posts().setExternalId(
+    "0190f3a0-0000-7000-8000-00000000b001",
+    PostExternalIdChange.builder()
+        .externalId("crm-record-42")
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\PostExternalIdChange;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+$post = $peal->posts->setExternalId(
+    '0190f3a0-0000-7000-8000-00000000b001',
+    new PostExternalIdChange(['externalId' => 'crm-record-42']),
+);
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+var post = await peal.Posts.SetExternalIdAsync(new PostExternalIdChange
+{
+    PostId = "0190f3a0-0000-7000-8000-00000000b001",
+    ExternalId = "crm-record-42",
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+let post = peal
+    .posts
+    .set_external_id(
+        "0190f3a0-0000-7000-8000-00000000b001",
+        &PostExternalIdChange {
+            external_id: Some("crm-record-42".to_string()),
+        },
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl -X PUT "https://api.example.com/api/v1/posts/0190f3a0-0000-7000-8000-00000000b001/external-id" \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "externalId": "crm-record-42" }'
+```
+
+```json MCP (set_post_external_id)
+{
+  "postId": "0190f3a0-0000-7000-8000-00000000b001",
+  "externalId": "crm-record-42"
+}
+```
+
+</CodeGroup>
+
+<Callout type="warning" title="Les webhooks portent l’identifiant externe">
+  Les événements webhook portent l’identifiant externe. Mettez-y l’identifiant
+  de votre enregistrement, jamais un nom, une adresse e-mail ni rien d’autre sur
+  une personne.
+</Callout>
+
 ## Des médias propres sur un canal [#channel-media]
 
 Le texte d’une publication sur un canal, une entrée de `content.overrides` ou des `overrides` d’une partie, peut aussi donner à ce canal ses propres images et vidéos, dans `media`. Le canal les montre alors à la place de celles de la publication :
@@ -877,6 +1041,7 @@ Chaque requête a un outil MCP ou une commande, ou les deux :
 | `POST …/posts/bulk`                             | `create_posts`                    |                                                  |
 | `POST …/posts/import`                           |                                   | `peal posts import <file.csv>`                   |
 | `GET …/posts`                                   | `list_posts`                      | `peal posts list`                                |
+| `PUT …/posts/{postId}/external-id`              | `set_post_external_id`            | `peal posts external-id <post-id> <id>`          |
 | `POST …/posts/{postId}/queue`                   | `queue_post`                      | `peal posts queue <post-id>`                     |
 | `POST …/posts/{postId}/unpublish`               | `unpublish_post`                  | `peal posts unpublish <post-id>`                 |
 | `POST …/targets/{targetId}/edit`                | `edit_published_post`             | `peal posts edit <post-id>`                      |

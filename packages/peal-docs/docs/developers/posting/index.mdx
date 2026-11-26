@@ -704,6 +704,169 @@ Peal refuses a post when another post of the workspace already sends the same co
   same post requested twice.
 </Callout>
 
+## Your own id on a post [#external-id]
+
+`externalId` is your own id for a post: the id of the record in your system it comes from, from 1 to 255 characters, compared exactly. Give it when you create the post (`create`, each item of `bulk`, the `external_id` column of an import, a draft). The answer carries it, and `GET …/posts?externalId=…` finds the post again.
+
+An external id is unique in the workspace among posts that aren't cancelled. A second post with the same id is refused with 409 `PostExternalIdTaken`, and `postId` names the post that has it:
+
+```json
+{
+  "_tag": "PostExternalIdTaken",
+  "code": "post_external_id_taken",
+  "postId": "0190f3a0-0000-7000-8000-00000000b001"
+}
+```
+
+So a program that sends a creation again, an hour or a month later, never makes two posts. An `Idempotency-Key` is checked first: the same request under the same key answers the post it made. A cancelled post and a deleted draft free their id. When one record makes several posts, give each its own id, such as `crm-record-42:linkedin`.
+
+| Request             | What it does with the id                                                     |
+| ------------------- | ---------------------------------------------------------------------------- |
+| `create`, `bulk`    | Gives the new post the id, or refuses it when another post has it            |
+| `validate`          | Answers `externalIdTakenBy`, the post that has the id already, or `null`     |
+| `drafts.create`     | Gives the draft the id                                                       |
+| `update` of a draft | Leaves the id as it is when `externalId` is left out, removes it with `null` |
+| `setExternalId`     | Changes it on any post, whatever its status, or removes it with `null`       |
+
+`PUT …/posts/{postId}/external-id` gives a post an id, whatever its status. Use it for posts made before your system kept ids, or to free an id. It says nothing to the platforms. It needs post:update.
+
+<CodeGroup>
+
+```ts Node.js
+import { PealClient } from "@peal-social/sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+const post = await peal.posts.setExternalId({
+  postId: "0190f3a0-0000-7000-8000-00000000b001",
+  externalId: "crm-record-42",
+});
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+post = peal.posts.set_external_id(
+    post_id="0190f3a0-0000-7000-8000-00000000b001",
+    external_id="crm-record-42",
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+
+post, err := client.Posts.SetExternalID(context.TODO(), &peal.PostExternalIDChange{
+	PostID:     "0190f3a0-0000-7000-8000-00000000b001",
+	ExternalID: peal.String("crm-record-42"),
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+post = peal.posts.set_external_id(
+  post_id: "0190f3a0-0000-7000-8000-00000000b001",
+  external_id: "crm-record-42"
+)
+```
+
+```java Java
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.PostExternalIdChange;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+Post post = peal.posts().setExternalId(
+    "0190f3a0-0000-7000-8000-00000000b001",
+    PostExternalIdChange.builder()
+        .externalId("crm-record-42")
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\PostExternalIdChange;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+$post = $peal->posts->setExternalId(
+    '0190f3a0-0000-7000-8000-00000000b001',
+    new PostExternalIdChange(['externalId' => 'crm-record-42']),
+);
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+var post = await peal.Posts.SetExternalIdAsync(new PostExternalIdChange
+{
+    PostId = "0190f3a0-0000-7000-8000-00000000b001",
+    ExternalId = "crm-record-42",
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+let post = peal
+    .posts
+    .set_external_id(
+        "0190f3a0-0000-7000-8000-00000000b001",
+        &PostExternalIdChange {
+            external_id: Some("crm-record-42".to_string()),
+        },
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl -X PUT "https://api.example.com/api/v1/posts/0190f3a0-0000-7000-8000-00000000b001/external-id" \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "externalId": "crm-record-42" }'
+```
+
+```json MCP (set_post_external_id)
+{
+  "postId": "0190f3a0-0000-7000-8000-00000000b001",
+  "externalId": "crm-record-42"
+}
+```
+
+</CodeGroup>
+
+<Callout type="warning" title="Webhooks carry the external id">
+  Webhook events carry the external id. Put your record's id there, never a
+  name, an email address or anything else about a person.
+</Callout>
+
 ## Media of its own on a channel [#channel-media]
 
 A post's text on one channel, an entry of `content.overrides` or of a part's `overrides`, can also give that channel its own images and videos, in `media`. The channel then shows those instead of the post's:
@@ -868,6 +1031,7 @@ Each request has an MCP tool or a command, or both:
 | `POST …/posts/bulk`                             | `create_posts`                    |                                                  |
 | `POST …/posts/import`                           |                                   | `peal posts import <file.csv>`                   |
 | `GET …/posts`                                   | `list_posts`                      | `peal posts list`                                |
+| `PUT …/posts/{postId}/external-id`              | `set_post_external_id`            | `peal posts external-id <post-id> <id>`          |
 | `POST …/posts/{postId}/queue`                   | `queue_post`                      | `peal posts queue <post-id>`                     |
 | `POST …/posts/{postId}/unpublish`               | `unpublish_post`                  | `peal posts unpublish <post-id>`                 |
 | `POST …/targets/{targetId}/edit`                | `edit_published_post`             | `peal posts edit <post-id>`                      |

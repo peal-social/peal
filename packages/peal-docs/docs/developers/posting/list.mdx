@@ -13,22 +13,24 @@ You can find the posts that failed last week, everything still scheduled on one 
 
 The request takes these parameters:
 
-| Parameter     | What it keeps                                                                                                                                                   |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`      | `draft`, `awaitingApproval` (waiting for an [approval](/guides/posts/review), with its time kept), `scheduled`, `publishing`, `finished` or `cancelled`         |
-| `outcome`     | How a finished post ended: `published`, `partiallyPublished`, `unconfirmed`, `failed` or `cancelled`                                                            |
-| `channelId`   | Posts with a target on that channel                                                                                                                             |
-| `platform`    | Posts with a target on a connected channel of that platform                                                                                                     |
-| `tagId`       | Posts filed under that tag                                                                                                                                      |
-| `queueId`     | Posts that queue placed ([Queues](/developers/posting/queues#queues))                                                                                           |
-| `recyclingId` | Posts that recycling rule made ([Repeat a post](/developers/posting/queues#recycling))                                                                          |
-| `removed`     | `true`: posts Peal deleted from at least one channel's platform; `false`: posts deleted from none ([Unpublish a post](/developers/posting/published#unpublish)) |
-| `from`, `to`  | Posts scheduled from `from` (included) to `to` (excluded). Either one leaves out posts without a time.                                                          |
-| `createdVia`  | `web`, `apiKey` or `application`                                                                                                                                |
-| `authorId`    | Posts that user created                                                                                                                                         |
-| `sort`        | `createdDesc` (the default) or `createdAsc`, by creation; `scheduledDesc` or `scheduledAsc`, by scheduled instant, which list only posts with a time            |
-| `limit`       | How many posts a page holds, from 1 to 100                                                                                                                      |
-| `cursor`      | The `nextCursor` of the previous page                                                                                                                           |
+| Parameter      | What it keeps                                                                                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`       | `draft`, `awaitingApproval` (waiting for an [approval](/guides/posts/review), with its time kept), `scheduled`, `publishing`, `finished` or `cancelled`                                                             |
+| `outcome`      | How a finished post ended: `published`, `partiallyPublished`, `unconfirmed`, `failed` or `cancelled`                                                                                                                |
+| `channelId`    | Posts with a target on that channel                                                                                                                                                                                 |
+| `platform`     | Posts with a target on a connected channel of that platform                                                                                                                                                         |
+| `tagId`        | Posts filed under that tag                                                                                                                                                                                          |
+| `queueId`      | Posts that queue placed ([Queues](/developers/posting/queues#queues))                                                                                                                                               |
+| `recyclingId`  | Posts that recycling rule made ([Repeat a post](/developers/posting/queues#recycling))                                                                                                                              |
+| `removed`      | `true`: posts Peal deleted from at least one channel's platform; `false`: posts deleted from none ([Unpublish a post](/developers/posting/published#unpublish))                                                     |
+| `from`, `to`   | Posts scheduled from `from` (included) to `to` (excluded). Either one leaves out posts without a time.                                                                                                              |
+| `createdVia`   | `web`, `apiKey` or `application`                                                                                                                                                                                    |
+| `authorId`     | Posts that user created                                                                                                                                                                                             |
+| `externalId`   | The post with that id of yours, compared exactly, and the cancelled ones that had it ([Your own id on a post](/developers/posting#external-id))                                                                     |
+| `updatedSince` | Posts whose `updatedAt` is at or after that instant                                                                                                                                                                 |
+| `sort`         | `createdDesc` (the default) or `createdAsc`, by creation; `scheduledDesc` or `scheduledAsc`, by scheduled instant, which list only posts with a time; `updatedDesc` or `updatedAsc`, by when each post last changed |
+| `limit`        | How many posts a page holds, from 1 to 100                                                                                                                                                                          |
+| `cursor`       | The `nextCursor` of the previous page                                                                                                                                                                               |
 
 This request lists the failed Bluesky posts, the latest scheduled first:
 
@@ -228,6 +230,176 @@ Each post comes whole, with its targets, their status, address and failure reaso
 Pass `nextCursor` as `cursor`, with the same filters and sort. It's null on the last page.
 
 A cursor marks where its page ended, so posts created, moved or deleted in the meantime never make a page repeat a post or skip one. A cursor from another sort, or one no page returned, answers 400.
+
+## Keep another system in step [#sync]
+
+Every post has `createdAt`, read from its id, and `updatedAt`, when what its answer shows last changed. That covers the post's content, time, status, outcome, tags, queue and external id, and its targets: a channel that publishes, fails, is edited or unpublished moves its post. Each change moves `updatedAt` forward, never back.
+
+To copy the workspace's posts into another system and keep it current, walk the list by change:
+
+<Steps>
+  <Step title="Read every page from an instant">
+    List with `sort=updatedAsc` and `updatedSince` set to where the last run
+    stopped (leave it out the first time), and follow `nextCursor` until it is
+    null.
+  </Step>
+  <Step title="Save each post">
+    Write each post as it comes, by its `id`. A post that changed during the
+    walk comes again at its end: keep the copy you read last.
+  </Step>
+  <Step title="Remember where you stopped">
+    Keep the last post's `updatedAt`, and give it as `updatedSince` next time.
+    That instant is included, so its post comes once more, which changes
+    nothing.
+  </Step>
+</Steps>
+
+<CodeGroup>
+
+```ts Node.js
+import { PealClient } from "@peal-social/sdk";
+
+const peal = new PealClient({ token: process.env.PEAL_API_KEY });
+
+const page = await peal.posts.list({
+  sort: "updatedAsc",
+  updatedSince: "2026-11-26T09:00:00.000Z",
+  limit: "100",
+});
+```
+
+```python Python
+import os
+
+from peal import Peal
+
+peal = Peal(token=os.environ["PEAL_API_KEY"])
+
+page = peal.posts.list(
+    sort="updatedAsc",
+    updated_since="2026-11-26T09:00:00.000Z",
+    limit="100",
+)
+```
+
+```go Go
+import (
+	"context"
+	"os"
+
+	peal "github.com/peal-social/peal/packages/peal-sdk/go"
+	"github.com/peal-social/peal/packages/peal-sdk/go/client"
+	"github.com/peal-social/peal/packages/peal-sdk/go/option"
+)
+
+client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
+
+page, err := client.Posts.List(context.TODO(), &peal.ListPostsRequest{
+	Sort:         peal.PostSortUpdatedAsc.Ptr(),
+	UpdatedSince: peal.String("2026-11-26T09:00:00.000Z"),
+	Limit:        peal.String("100"),
+})
+```
+
+```ruby Ruby
+require "peal"
+
+peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
+
+page = peal.posts.list(
+  sort: "updatedAsc",
+  updated_since: "2026-11-26T09:00:00.000Z",
+  limit: "100"
+)
+```
+
+```java Java
+import social.peal.PealClient;
+import social.peal.resources.posts.requests.ListPostsRequest;
+import social.peal.types.*;
+
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_API_KEY"))
+    .build();
+
+PostPage page = peal.posts().list(
+    ListPostsRequest.builder()
+        .sort(PostSort.UPDATED_ASC)
+        .updatedSince("2026-11-26T09:00:00.000Z")
+        .limit("100")
+        .build());
+```
+
+```php PHP
+<?php
+use Peal\PealClient;
+use Peal\Posts\Requests\ListPostsRequest;
+
+$peal = new PealClient(token: getenv('PEAL_API_KEY'));
+
+$page = $peal->posts->list(new ListPostsRequest([
+    'sort' => 'updatedAsc',
+    'updatedSince' => '2026-11-26T09:00:00.000Z',
+    'limit' => '100',
+]));
+```
+
+```csharp .NET
+using Peal;
+
+var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
+
+var page = await peal.Posts.ListAsync(new ListPostsRequest
+{
+    Sort = PostSort.UpdatedAsc,
+    UpdatedSince = "2026-11-26T09:00:00.000Z",
+    Limit = "100",
+});
+```
+
+```rust Rust
+use peal_sdk::prelude::*;
+
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_API_KEY").ok(),
+    ..Default::default()
+})?;
+
+let page = peal
+    .posts
+    .list(
+        &PostsListQueryRequest::builder()
+            .sort(PostSort::UpdatedAsc)
+            .updated_since("2026-11-26T09:00:00.000Z")
+            .limit("100")
+            .build()?,
+        None,
+    )
+    .await?;
+```
+
+```bash curl
+curl "https://api.example.com/api/v1/posts?sort=updatedAsc&updatedSince=2026-11-26T09:00:00.000Z&limit=100" \
+  -H "Authorization: Bearer $PEAL_API_KEY"
+```
+
+```json MCP (list_posts)
+{
+  "sort": "updatedAsc",
+  "updatedSince": "2026-11-26T09:00:00.000Z",
+  "limit": 100
+}
+```
+
+</CodeGroup>
+
+`updatedAsc` never lists a post that changed in the last 5 seconds. A change that has not finished saving can't land behind a cursor you already hold, so a walk may show a post twice but never misses one. The other orders hold nothing back.
+
+<Callout type="info" title="What a walk doesn't tell">
+  A deleted draft is in no list any more, so a walk never shows it. After the
+  upgrade that added `updatedAt`, every existing post has the same instant, so
+  the first walk reads them all once.
+</Callout>
 
 <Callout type="info" title="A calendar can read a whole range in one request">
   `GET …/posts/calendar?from=…&to=…` lists the posts scheduled between two

@@ -385,6 +385,7 @@ An `Idempotency-Key` header makes the whole request safe to send again within 24
 - The same request sent again answers the posts it made, with `replayed` true. It also makes the items that weren't made the first time, if they can be now.
 - An item that changed under the same key is refused with `IdempotencyKeyReused`.
 - An item can carry its own `idempotencyKey`, which then replaces the header's for that item.
+- An item can carry an `externalId`, your own id for its post. An item whose id an earlier item took is refused with `PostExternalIdTaken`, naming that item's post.
 
 ## Import posts from a CSV file [#import]
 
@@ -401,6 +402,7 @@ The file's first line names the columns, in any order:
 | `media`           | no       | Ids of ready media of the workspace                                                                                                                       |
 | `allow_duplicate` | no       | `true` or `false` ([Duplicate posts](/developers/posting#duplicates))                                                                                     |
 | `idempotency_key` | no       | The row's own idempotency key                                                                                                                             |
+| `external_id`     | no       | Your own id for the post ([Your own id on a post](/developers/posting#external-id)). A row whose id a post or an earlier row has is refused.              |
 
 A row is a single post, with one text for all its channels. A [thread](/guides/posts#threads), a different text on one channel or a platform's options don't fit in a cell, so send those through `create` or `bulk`. A file that names any other column is refused whole.
 

@@ -258,6 +258,10 @@ peal post "Our spring catalogue is out. Read it at https://example.com/spring" \
 
 [Posting from an AI agent](/developers/agents#api) shows a whole request.
 
+### A key for a day, an id for good [#external-id]
+
+A key lasts 24 hours. A program that runs again a day later, having lost its state, would make the post again. Give the post your own id as well (`externalId`, [Your own id on a post](/developers/posting#external-id)): a second post with it is refused with 409 `PostExternalIdTaken`, whenever it comes, and names the post that has it. The key is checked first, so a request sent again under its key answers its post rather than this conflict.
+
 ### Requests that take a key [#keyed]
 
 These requests take a key:

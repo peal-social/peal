@@ -259,6 +259,10 @@ peal post "Our spring catalogue is out. Read it at https://example.com/spring" \
 
 [Publier depuis un agent IA](/developers/agents#api) montre une requête entière.
 
+### Une clé pour un jour, un identifiant pour de bon [#external-id]
+
+Une clé dure 24 heures. Un programme qui tourne de nouveau un jour plus tard, après avoir perdu son état, créerait la publication une deuxième fois. Donnez aussi à la publication votre propre identifiant (`externalId`, [Votre propre identifiant sur une publication](/developers/posting#external-id)) : une deuxième publication avec lui est refusée avec 409 `PostExternalIdTaken`, quel que soit le moment, et nomme la publication qui l’a. La clé est vérifiée d’abord : une requête renvoyée sous sa clé renvoie sa publication plutôt que ce conflit.
+
 ### Les requêtes qui prennent une clé [#keyed]
 
 Ces requêtes prennent une clé :
