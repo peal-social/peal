@@ -296,15 +296,17 @@ describe("Pinterest's options", () => {
   });
 });
 
+// What Snap would refuse in a post's locale, left out when none is given.
+const snapchatProblems = (locale?: string) =>
+  new SnapchatOptions(locale === undefined ? {} : { locale }).problems();
+
 describe("Snapchat's options", () => {
   it("take a locale as Snap writes it, a language and a country", () => {
-    const problems = (locale?: string) =>
-      new SnapchatOptions(locale === undefined ? {} : { locale }).problems();
+    expect(snapchatProblems()).toStrictEqual([]);
+    expect(snapchatProblems("fr_FR")).toStrictEqual([]);
 
-    expect(problems()).toStrictEqual([]);
-    expect(problems("fr_FR")).toStrictEqual([]);
     for (const locale of ["fr", "fr-FR", "FR_fr"]) {
-      expect(problems(locale)).toStrictEqual([
+      expect(snapchatProblems(locale)).toStrictEqual([
         { _tag: "invalid", field: "locale" },
       ]);
     }

@@ -416,8 +416,9 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   server without a base, and an edit of a live post, send the text as
   written. Tests take `LinkShortener.none` unless they test this.
 - Platform adapters live in `publishing/infrastructure/platforms/<platform>/`
-  (Mastodon, Bluesky, LinkedIn, X, TikTok, YouTube, Pinterest and Google
-  Business Profile, and Threads, Instagram and Facebook Pages in `meta/`),
+  (Mastodon, Bluesky, LinkedIn, X, TikTok, YouTube, Pinterest, Google
+  Business Profile and Snapchat, and Threads, Instagram and Facebook Pages
+  in `meta/`),
   and implement the steps of
   `publishing/application/publication-steps.ts`, which `sequenced` runs:
   `prepare` uploads the media (safe to repeat: media alone shows nowhere),
@@ -568,6 +569,32 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   answers `found` or `unknown`, never `absent`. Refusals are read from the
   status and whether the body is Pinterest's own (`pinterest-refusal.ts`):
   only a 401 with it is `TokenRejected`.
+- Snapchat's adapter (`platforms/snapchat/`) posts a Spotlight through
+  Snap's Public Profile API: one MP4, refused unsent otherwise, as is an
+  account id that is not a profile's UUID (`snapchat:invalidProfileId`).
+  `prepare` draws a key and an IV for the run (`SecureRandom`), makes the
+  media object with them (`POST …/media`, the one body that holds them:
+  its client errors are typed where they happen, and neither value is
+  ever logged or traced), sends the video encrypted with AES-256-CBC
+  (`snapchat-encryption.ts`, `Cipher`: the whole file's encryption, cut
+  into parts of `partSizeOf`, 4 MiB up to 140 MiB, 35 parts at most, one
+  part and its ciphertext held at a time) to the answer's `add_path`, a
+  multipart form a part (`action=ADD`, `part_number`, then the file), and
+  finishes it at `finalize_path` (a form too); both paths are followed
+  only on the API's origin and under the profile's media object. Every
+  request is its own `withToken`, so a token that lapses sends one part
+  again. An answer is a success only when it is 2xx and says `SUCCESS`.
+  `commit` posts the Spotlight with the options' `locale` (`en_US` left
+  out) and the text as its description, published under `spotlight_id`
+  without a permalink while Snap reviews it. Confirmation is `none`: a
+  5xx, a lost or unreadable answer, a bare status of a server on the way
+  and `MEDIA_POSTING_ALREADY_IN_PROGRESS` are unconfirmed, and a resumed
+  run, the upload's included, `interrupted`. `snapchat-refusal.ts` reads
+  the status, `WWW-Authenticate` and whether the body is Snap's envelope,
+  never its messages: only a 401 naming `invalid_token` is
+  `TokenRejected`; Snap's own 401 or 403 fails the post
+  (`snapchat:<code>`), a bare one is `PlatformUnavailable`; a `MEDIA_`
+  code, or any code on a part or the finish, is the media's refusal.
 - A confirmation that searches the platform (Pinterest's board, a LinkedIn
   page's newest posts, a location's local posts) adopts a post only through
   `attemptAmong` (`platforms/attempt-match.ts`): the one match the channel

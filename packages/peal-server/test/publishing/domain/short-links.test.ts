@@ -107,7 +107,8 @@ describe("the links a platform treats natively", () => {
   });
 
   it("shorten a link in a Snapchat Spotlight, and leave Snapchat's own as written", () => {
-    const own = "https://www.snapchat.com/spotlight/synthetic-spotlight-id-1234";
+    const own =
+      "https://www.snapchat.com/spotlight/synthetic-spotlight-id-1234";
 
     expect(keepsLinksAsWritten("snapchat")).toBeFalsy();
     expect(linksToShorten(long, "snapchat", addresses)).toStrictEqual(

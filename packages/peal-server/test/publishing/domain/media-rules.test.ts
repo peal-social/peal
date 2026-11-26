@@ -459,7 +459,7 @@ describe(mediaViolationsOn, () => {
     ).toStrictEqual([["aspectRatioUnsupported"], ["aspectRatioUnsupported"]]);
   });
 
-  it("holds a Spotlight to one MP4 of 5 to 300 seconds, 1 GB at most", () => {
+  it("holds a Spotlight to 5 to 300 seconds", () => {
     expect(violations("snapchat", lasting(5000))).toStrictEqual([]);
     expect(violations("snapchat", lasting(300_000))).toStrictEqual([]);
     expect(
@@ -484,6 +484,9 @@ describe(mediaViolationsOn, () => {
         mediaId: first,
       },
     ]);
+  });
+
+  it("holds a Spotlight to one MP4 alone, of 1,000,000,000 bytes at most", () => {
     expect(
       violations("snapchat", video(first, { byteSize: 1_000_000_001 })).map(
         ({ _tag }) => _tag

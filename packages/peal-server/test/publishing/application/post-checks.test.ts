@@ -7,6 +7,7 @@ import { isSendable, PostChecks } from "#publishing/application/post-checks.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { PinterestOptions } from "#publishing/domain/pinterest-options.ts";
+import { SnapchatOptions } from "#publishing/domain/snapchat-options.ts";
 import { newId } from "#shared/application/ids.ts";
 import {
   ChannelIdSchema,
@@ -187,6 +188,39 @@ describe("PostChecks.check", () => {
             ["optionMissing"]
           );
           assert.strictEqual(pin.channels[0]?.media.maximum, 5);
+
+          // A Spotlight takes one MP4 video, a description of 160 UTF-16
+          // units, and a locale as Snap writes it.
+          const snapchat = yield* connect(workspaceId, "snapchat");
+
+          const spotlight = yield* checks.check(actorIn(workspaceId), {
+            channelIds: [snapchat],
+            content: contentOf("a".repeat(161), { media: [attachableImage] }),
+            options: [
+              new ChannelOptions({
+                channelId: snapchat,
+                options: new SnapchatOptions({ locale: "fr" }),
+              }),
+            ],
+            when: now,
+          });
+
+          assert.includeMembers(
+            (spotlight.channels[0]?.violations ?? []).map(({ _tag }) => _tag),
+            ["textTooLong", "mediaTypeUnsupported", "optionInvalid"]
+          );
+          assert.strictEqual(spotlight.channels[0]?.media.maximum, 1);
+
+          const noVideo = yield* checks.check(actorIn(workspaceId), {
+            channelIds: [snapchat],
+            content: contentOf("A synthetic Spotlight"),
+            when: now,
+          });
+
+          assert.includeMembers(
+            (noVideo.channels[0]?.violations ?? []).map(({ _tag }) => _tag),
+            ["mediaRequired"]
+          );
 
           // No channel at all, and a text for a channel it is not for.
           const empty = yield* checks.check(actorIn(workspaceId), {

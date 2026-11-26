@@ -27,9 +27,12 @@ export const largeUpload = 16 * mebibyte + 1;
  * How many large files a server with `memory` bytes sends at once when
  * `PEAL_MAX_CONCURRENT_UPLOADS` is not set: one per gibibyte, 2 at least
  * and 8 at most. An upload is streamed and holds a part of its file at a
- * time, 10 MB at most with what is on its way, so this bounds the memory
- * of the busiest minute to a few hundred megabytes, and the bandwidth and
- * store connections they share.
+ * time, 10 MB at most with what is on its way, but for Snapchat's, which
+ * holds a part and its ciphertext (about 8 MiB up to a video of 140 MiB,
+ * up to about 57 MB for one near 1 GB), so this bounds the memory of the
+ * busiest minute to a few hundred megabytes, under half a gigabyte when
+ * every slot holds a Snapchat video near 1 GB, and the bandwidth and store
+ * connections they share.
  */
 export const defaultUploadSlots = (memory: number): number =>
   Math.min(8, Math.max(2, Math.floor(memory / gibibyte)));
