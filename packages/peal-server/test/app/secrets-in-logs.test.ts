@@ -53,6 +53,7 @@ import { chatVerifiersLive } from "#channels/infrastructure/platforms/chat-verif
 import { instagramUnifiedAuthorizer } from "#channels/infrastructure/platforms/meta/instagram-unified-authorizer.ts";
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { slackAuthorizer } from "#channels/infrastructure/platforms/slack/slack-authorizer.ts";
+import { snapchatAuthorizer } from "#channels/infrastructure/platforms/snapchat/snapchat-authorizer.ts";
 import { wordpressComAuthorizer } from "#channels/infrastructure/platforms/wordpress-com/wordpress-com-authorizer.ts";
 import { RemoteMedia } from "#media/application/ports/remote-media.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
@@ -60,6 +61,7 @@ import { HttpRemoteMedia } from "#media/infrastructure/http-remote-media.ts";
 import { S3MediaStorageLive } from "#media/infrastructure/s3-media-storage.ts";
 import { FacebookOptions } from "#publishing/domain/facebook-options.ts";
 import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.ts";
+import { Ids } from "#shared/application/ids.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
@@ -92,10 +94,16 @@ import {
   unifiedPermissions,
 } from "#test/channels/fakes/fake-meta.ts";
 import { fakeSlack, slackClient } from "#test/channels/fakes/fake-slack.ts";
+import {
+  fakeSnapchat,
+  snapchatClient,
+  snapError,
+} from "#test/channels/fakes/fake-snapchat.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
   OpenOutboundGuard,
   DatabaseTest,
+  freshChannel,
   syntheticKeyring,
 } from "#test/channels/support.ts";
 import { storageSettings } from "#test/media/support.ts";
@@ -932,6 +940,117 @@ layer(
       assert.notInclude(written(), secret);
       assert.notInclude(written(), com.code);
       assert.notInclude(written(), com.token);
+    }).pipe(Effect.scoped)
+  );
+});
+
+// Snapchat's sign-in sends the app's secret and the member's code, gets an
+// access and a refresh token, reads the profile with the first and renews
+// with the second: what is written about a sign-in, one Snap refuses for
+// its allowlist, and a renewal holds none of them.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard),
+    SecureRandom.layerWebCrypto
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about signing in to Snapchat", (it) => {
+  it.effect("holds no client secret, code nor token", () =>
+    Effect.gen(function* searched() {
+      const snap = yield* fakeSnapchat();
+
+      const authorizer = yield* snapchatAuthorizer({
+        client: {
+          clientId: snapchatClient.clientId,
+          clientSecret: Redacted.make(snapchatClient.clientSecret),
+        },
+        hosts: snap.hosts,
+        http: yield* publicHttpClient,
+        publicUrl: "https://peal.example.com",
+      });
+
+      const now = DateTime.makeUnsafe("2026-11-26T09:00:00.000Z");
+
+      const signIn = Effect.gen(function* signingIn() {
+        const { authorizationUrl } = yield* authorizer.begin({
+          handle: Option.none(),
+          instance: Option.none(),
+          reconnecting: Option.none(),
+        });
+
+        const back = snap.approve(authorizationUrl);
+
+        const authorized = yield* authorizer
+          .complete({
+            attempt: new ConnectAttempt({
+              channelId: Option.none(),
+              connection: Option.none(),
+              createdAt: now,
+              expiresAt: DateTime.addDuration(now, "15 minutes"),
+              instance: Option.none(),
+              platform: "snapchat",
+              startedBy: "user:synthetic",
+              state: back.state,
+              workspaceId: WorkspaceIdSchema.make(
+                "01900000-0000-7000-8000-0000000000f5"
+              ),
+            }),
+            callback: {
+              code: Option.some(back.code),
+              error: Option.none(),
+              issuer: Option.none(),
+              state: back.state,
+            },
+            reconnecting: Option.none(),
+            secret: Redacted.make(""),
+          })
+          .pipe(Effect.withSpan("test.snapchat-sign-in"));
+
+        return { authorized, code: back.code };
+      });
+
+      const first = yield* signIn;
+
+      snap.failNext("GET /v1/public_profiles/my_profile", [
+        snapError("AUTHORIZATION_PERMISSION_DENIED", 403),
+      ]);
+
+      const refused = yield* signIn.pipe(Effect.flip);
+
+      assert.strictEqual(refused._tag, "AuthorizationFailed");
+      assert.isTrue("accountId" in first.authorized);
+
+      const tokens = yield* "accountId" in first.authorized
+        ? Effect.succeed(first.authorized.tokens)
+        : Effect.die("a sign-in that reached no profile");
+
+      const channel = yield* freshChannel(
+        WorkspaceIdSchema.make("01900000-0000-7000-8000-0000000000f5"),
+        { platform: "snapchat" }
+      ).pipe(Effect.provide(Ids.layerTest));
+
+      yield* authorizer
+        .refresh(channel, {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+        })
+        .pipe(Effect.withSpan("test.snapchat-refresh"));
+
+      assert.include(written(), "SnapchatAuthorizer");
+      assert.include(written(), "is SNAPCHAT_CLIENT_ID allowlisted?");
+
+      for (const secret of [
+        snapchatClient.clientSecret,
+        first.code,
+        Redacted.value(tokens.accessToken),
+        ...Option.toArray(tokens.refreshToken).map(Redacted.value),
+        "synthetic-snapchat-access-2",
+        "synthetic-snapchat-refresh-2",
+      ]) {
+        assert.notInclude(written(), secret);
+      }
     }).pipe(Effect.scoped)
   );
 });
