@@ -1472,7 +1472,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             platform: "threads",
           });
 
-          // A website to reconnect, listed and counted as any channel.
+          // A website to reconnect, which no tool lists or counts.
           const website = markRefreshNeeded(
             yield* freshChannel(workspaceId, { platform: "wordpress" }),
             yield* DateTime.now
@@ -1589,7 +1589,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [{ id: slackChannel.id, platform: "slack" }]
           );
 
-          // The counts are those of the list, websites included.
+          // Every website is out of the counts as of the list.
           const active = yield* reader.call(
             "list_channels",
             ChannelsJsonSchema,
@@ -1650,25 +1650,22 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.includeMembers(
             all.channels.map(({ id }) => id),
-            [
-              fixture.channelId,
-              fixture.youtubeId,
-              lasting.id,
-              lapsed.id,
-              website.id,
-              devto.id,
-            ]
+            [fixture.channelId, fixture.youtubeId, lasting.id, lapsed.id]
+          );
+          assert.notInclude(
+            all.channels.map(({ id }) => id),
+            website.id
           );
           assert.isUndefined(all.counts);
 
-          // Searched by status, the website is listed and counted.
+          // Searched by status, the website is neither listed nor counted.
           const toReconnect = yield* reader.call(
             "list_channels",
             ChannelsJsonSchema,
             { status: "refreshNeeded" }
           );
 
-          assert.include(
+          assert.notInclude(
             toReconnect.channels.map(({ id }) => id),
             website.id
           );
@@ -3283,32 +3280,6 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.isTrue(fine.valid);
           assert.isNull(fine.schedule);
-
-          // A rich text off the allow-list, with no text beside it, is
-          // answered as invalid, never a failure.
-          const offList = yield* reader.call(
-            "validate_post",
-            Schema.toCodecJson(PostValidationSchema),
-            {
-              channelIds: [fixture.channelId],
-              content: {
-                media: [],
-                overrides: [
-                  {
-                    body: { content: [{ type: "script" }], type: "doc" },
-                    channelId: fixture.channelId,
-                    text: "",
-                  },
-                ],
-                text: "A synthetic post.",
-              },
-            }
-          );
-
-          assert.isFalse(offList.valid);
-          assert.deepStrictEqual(offList.violations, [
-            { _tag: "bodyInvalid", channelId: fixture.channelId },
-          ]);
 
           // Several posts: each answered on its own, by its place.
           const several = {

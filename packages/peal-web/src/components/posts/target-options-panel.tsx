@@ -705,7 +705,7 @@ const acceptsOf =
   (field: MediaField) =>
   (media: Media): boolean =>
     field.contentTypes.includes(media.contentType) &&
-    (field.maxByteSize === undefined || media.byteSize <= field.maxByteSize);
+    media.byteSize <= field.maxByteSize;
 
 // The library's picker, for one file the field takes.
 const OptionMediaPicker = ({

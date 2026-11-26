@@ -10,11 +10,9 @@ import { PostOutcomes } from "#publishing/application/post-outcomes.ts";
 import { PostRepository } from "#publishing/application/post-repository.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import type { SendPostRequest } from "#publishing/application/post-scheduling.ts";
-import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
 import { PostPart } from "#publishing/domain/post-part.ts";
 import { isDropped } from "#publishing/domain/post-target.ts";
-import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
 import { newId } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
@@ -295,39 +293,6 @@ describe("a held post that lost a channel, back to draft", () => {
 });
 
 describe("posting in one call behind an ApprovalGate", () => {
-  it.effect(
-    "holds a post to a website as any other: no job until it is approved",
-    () =>
-      onGatedServer(
-        Effect.gen(function* website() {
-          const scheduling = yield* PostScheduling;
-          const workspaceId = yield* freshWorkspace;
-          const site = yield* connect(workspaceId, "wordpress");
-          const editor = actorIn(workspaceId);
-
-          const held = yield* scheduling.send(
-            editor,
-            at8(site, "An article that waits.", {
-              options: [
-                new ChannelOptions({
-                  channelId: site,
-                  options: new WordPressOptions({ title: "Waiting" }),
-                }),
-              ],
-            })
-          );
-
-          assert.strictEqual(held.post.status._tag, "awaitingApproval");
-          assert.isFalse(yield* isSuspended(held.post.id));
-
-          yield* HeldPosts.use((posts) =>
-            posts.sendBack(workspaceId, held.post.id)
-          );
-        })
-      ),
-    timeout
-  );
-
   it.effect(
     "holds a thread whole: every part kept, no job, and compared with the others that wait by all its parts",
     () =>

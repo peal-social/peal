@@ -11,9 +11,6 @@ public record TextOverride : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
-    [JsonPropertyName("body")]
-    public RichText? Body { get; set; }
-
     [JsonPropertyName("channelId")]
     public required string ChannelId { get; set; }
 

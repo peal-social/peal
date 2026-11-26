@@ -28,11 +28,9 @@ import { PlatformQuota } from "#publishing/application/platform-quota.ts";
 import type { PublicationProgress } from "#publishing/application/publication-progress.ts";
 import type { StepTiming } from "#publishing/application/publication-steps.ts";
 import { RecordedPosts } from "#publishing/application/recorded-posts.ts";
-import { SiteCalls } from "#publishing/application/site-calls.ts";
 import { UploadSessions } from "#publishing/application/upload-sessions.ts";
 import type { UploadSession } from "#publishing/application/upload-sessions.ts";
 import { MediaAttachment } from "#publishing/domain/media-attachment.ts";
-import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import { blueskyClient } from "#publishing/infrastructure/platforms/bluesky/bluesky-client.ts";
 import { discordClient } from "#publishing/infrastructure/platforms/discord/discord-client.ts";
 import { googleBusinessClient } from "#publishing/infrastructure/platforms/google-business/google-business-client.ts";
@@ -60,7 +58,6 @@ import {
 } from "#shared/domain/ids.ts";
 import type { ChannelId, MediaAssetId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
-import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import type { Platform } from "#shared/domain/platform.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
 import { isTokenRejected } from "#shared/domain/token-rejected.ts";
@@ -279,11 +276,6 @@ export const mediaOf = (files: readonly TestFile[]) => {
 export const attached = (file: TestFile, altText = "A synthetic picture") =>
   new MediaAttachment({ altText, mediaId: file.media.mediaId });
 
-/** The target of a post `outgoing` makes. */
-export const outgoingTargetId = PostTargetIdSchema.make(
-  "01900000-0000-7000-8000-0000000000b1"
-);
-
 /** The idempotency key of a post `outgoing` makes. */
 export const outgoingKey = "9f86d081884c7d659a2feaa0c55ad015";
 
@@ -292,7 +284,6 @@ export const outgoing = Effect.fn("test.outgoing")(function* outgoing(
   fields: Partial<OutgoingPost> & { readonly accountId: string }
 ) {
   const post: OutgoingPost = {
-    body: Option.none(),
     channelId,
     idempotencyKey: outgoingKey,
     media: [],
@@ -300,9 +291,7 @@ export const outgoing = Effect.fn("test.outgoing")(function* outgoing(
     part: 0,
     poll: Option.none(),
     replyTo: Option.none(),
-    round: 1,
     startedAt: yield* DateTime.now,
-    targetId: outgoingTargetId,
     text: "Hello from a synthetic account",
     workspaceId,
     ...fields,
@@ -919,19 +908,6 @@ export const pendingEdits = (edits: ReadonlyMap<string, PendingEdit>) =>
     })
   );
 
-// The websites' calls, which these tests make none of: each answers that
-// the site is unavailable.
-const noSiteCalls = Layer.succeed(
-  SiteCalls,
-  SiteCalls.of({
-    find: () => Effect.fail(new PlatformUnavailable()),
-    publish: () => Effect.fail(new PlatformUnavailable()),
-    remove: () => Effect.fail(new PlatformUnavailable()),
-    resume: () => Effect.fail(new PlatformUnavailable()),
-    update: () => Effect.fail(new PlatformUnavailable()),
-  })
-);
-
 /**
  * The clients that delete posts, with the fakes as the platforms, over
  * plain HTTP, with the credentials given.
@@ -964,7 +940,6 @@ export const liveClientsOn = (options: {
       }).pipe(
         Layer.provide(
           Layer.mergeAll(
-            noSiteCalls,
             HttpTest,
             options.credentials,
             pendingEdits(options.edits ?? new Map()),
@@ -979,7 +954,6 @@ export const liveClientsOn = (options: {
 /** What the registry of the clients that delete posts is built with. */
 export const LiveRegistryTest = Layer.mergeAll(
   HttpTest,
-  noSiteCalls,
   SecureRandom.layerWebCrypto,
   Digest.layerWebCrypto
 );

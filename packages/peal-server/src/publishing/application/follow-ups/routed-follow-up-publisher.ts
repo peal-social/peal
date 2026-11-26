@@ -173,7 +173,6 @@ export const RoutedFollowUpPublisher = Layer.effect(
         onSome: (text) =>
           Effect.succeed({
             accountId: account.accountId,
-            body: Option.none(),
             channelId: followUp.channelId,
             idempotencyKey: keyOf(followUp),
             media: [],
@@ -181,9 +180,7 @@ export const RoutedFollowUpPublisher = Layer.effect(
             part: livePartsOf(target).length,
             poll: Option.none(),
             replyTo: Option.some({ parent: ids.last, root: ids.root }),
-            round: target.round,
             startedAt,
-            targetId: target.id,
             text,
             workspaceId: followUp.workspaceId,
           }),

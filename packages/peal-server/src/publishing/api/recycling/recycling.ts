@@ -55,18 +55,12 @@ const dateOf = (day: string): LocalDate => {
 };
 
 // The variants a request gives, its texts by channel on channels that are
-// not even channel ids left out, as they name none the post goes to. A
-// variant is plain text: a rich text (`body`, a website's) is left out,
-// as no rule's copy goes to a website, and so is an override with no text
-// beside it.
+// not even channel ids left out, as they name none the post goes to.
 const variantsFrom = (variants: readonly VariantInput[]) =>
   decodeVariants(
     variants.map(({ overrides = [], text }) => ({
-      overrides: overrides.flatMap(({ body: _body, ...override }) =>
-        Option.isSome(decodeChannelId(override.channelId)) &&
-        override.text !== ""
-          ? [override]
-          : []
+      overrides: overrides.filter(({ channelId }) =>
+        Option.isSome(decodeChannelId(channelId))
       ),
       text,
     }))

@@ -40,9 +40,7 @@ export type ContentViolation =
     | Peal.ContentViolation.SideSumTooLarge
     | Peal.ContentViolation.MediaTotalTooLarge
     | Peal.ContentViolation.AspectRatioUnsupported
-    | Peal.ContentViolation.AltTextTooLong
-    | Peal.ContentViolation.BodyInvalid
-    | Peal.ContentViolation.BodyNotTaken;
+    | Peal.ContentViolation.AltTextTooLong;
 
 export namespace ContentViolation {
     export interface NoChannels extends Peal.ContentViolationNoChannels {
@@ -195,13 +193,5 @@ export namespace ContentViolation {
 
     export interface AltTextTooLong extends Peal.ContentViolationAltTextTooLong {
         _tag: "altTextTooLong";
-    }
-
-    export interface BodyInvalid extends Peal.ContentViolationBodyInvalid {
-        _tag: "bodyInvalid";
-    }
-
-    export interface BodyNotTaken extends Peal.ContentViolationBodyNotTaken {
-        _tag: "bodyNotTaken";
     }
 }

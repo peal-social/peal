@@ -1,9 +1,8 @@
 import { Schema } from "effect";
 
 /**
- * What a channel connects to: a social network, a chat or a website. The
- * server's list (src/shared/domain/platform.ts) is the source; a test keeps
- * the two equal.
+ * The social networks a channel can connect to. The server's list
+ * (src/channels/domain/platform.ts) is the source; a test keeps the two equal.
  */
 export const PlatformSchema = Schema.Literals([
   "x",
@@ -21,13 +20,8 @@ export const PlatformSchema = Schema.Literals([
   "telegram",
   "slack",
   "snapchat",
-  "wordpress",
-  "devto",
-  "hashnode",
-  "wordpressCom",
 ]).annotate({
-  description:
-    "What a channel connects to: a social network, a chat or a website.",
+  description: "A social network a channel connects to.",
   identifier: "Platform",
 });
 
@@ -51,7 +45,7 @@ export const ChatPlatformSchema = Schema.Literals([
 export type ChatPlatform = typeof ChatPlatformSchema.Type;
 
 /**
- * The websites a channel can publish to: `wordpress`, a WordPress
+ * The websites a channel can publish articles to: `wordpress`, a WordPress
  * site of its own, reached with an application password; `devto`, an
  * account on DEV (dev.to), reached with the member's API key; `hashnode`,
  * a publication on Hashnode, reached with the member's personal access
@@ -66,7 +60,7 @@ export const SitePlatformSchema = Schema.Literals([
   "hashnode",
   "wordpressCom",
 ]).annotate({
-  description: "A kind of website a channel publishes to.",
+  description: "A kind of website a channel publishes articles to.",
   identifier: "SitePlatform",
 });
 
@@ -103,32 +97,19 @@ export const OAuthSitePlatformSchema = Schema.Literal("wordpressCom").annotate({
 export type OAuthSitePlatform = typeof OAuthSitePlatformSchema.Type;
 
 /**
- * What a channel connects to: the same values as `Platform`, kept under its
- * own name, which `Channel.platform` refers to.
+ * What a channel connects to: a social network, whose channels take posts,
+ * or a website, whose channels take articles.
  */
-export const ChannelPlatformSchema = Schema.Literals(
-  PlatformSchema.literals
-).annotate({
+export const ChannelPlatformSchema = Schema.Literals([
+  ...PlatformSchema.literals,
+  ...SitePlatformSchema.literals,
+]).annotate({
   description:
-    "What a channel connects to: a social network, a chat or a website.",
+    "What a channel connects to: a social network (posts) or a website (articles).",
   identifier: "ChannelPlatform",
 });
 
 export type ChannelPlatform = typeof ChannelPlatformSchema.Type;
-
-/** A platform that is no website: a social network or a chat. */
-export type SocialPlatform = Exclude<Platform, SitePlatform>;
-
-const isSitePlatformValue = Schema.is(SitePlatformSchema);
-
-/** Whether a platform is a website's. */
-export const isSitePlatform = (platform: Platform): platform is SitePlatform =>
-  isSitePlatformValue(platform);
-
-/** Whether a platform is no website's: a social network or a chat. */
-export const isSocialPlatform = (
-  platform: Platform
-): platform is SocialPlatform => !isSitePlatformValue(platform);
 
 /**
  * How an Instagram channel reaches its account, one of Meta's three ways

@@ -21,17 +21,12 @@ export const shortLengthOf = (addresses: ShortAddresses): number =>
  * read 2026-11-12) says "we don't allow certain redirects or URL
  * shorteners"; Instagram and TikTok, whose captions make no link
  * clickable, so a short address would only be less readable and could
- * count no click; and every website, whose article is the member's own
- * page, its links theirs to keep as they wrote them.
+ * count no click.
  */
 const linksAsWritten: ReadonlySet<Platform> = new Set([
   "pinterest",
   "instagram",
   "tiktok",
-  "wordpress",
-  "wordpressCom",
-  "devto",
-  "hashnode",
 ]);
 
 /** Whether a platform's posts take their links as written. */
@@ -47,11 +42,9 @@ export const keepsLinksAsWritten = (platform: Platform): boolean =>
  */
 const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   bluesky: ["bsky.app"],
-  devto: [],
   discord: [],
   facebook: ["facebook.com", "fb.com", "fb.me", "fb.watch"],
   googleBusiness: [],
-  hashnode: [],
   instagram: ["instagram.com"],
   linkedin: ["linkedin.com", "lnkd.in"],
   mastodon: [],
@@ -61,8 +54,6 @@ const ownHosts: Readonly<Record<Platform, readonly string[]>> = {
   telegram: [],
   threads: ["threads.net", "threads.com"],
   tiktok: ["tiktok.com"],
-  wordpress: [],
-  wordpressCom: [],
   x: ["x.com", "twitter.com"],
   youtube: ["youtube.com", "youtu.be"],
 };

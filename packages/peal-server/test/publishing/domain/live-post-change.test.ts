@@ -446,10 +446,6 @@ describe("live post support", () => {
       "discord",
       "telegram",
       "slack",
-      "wordpress",
-      "devto",
-      "hashnode",
-      "wordpressCom",
     ]);
   });
 });

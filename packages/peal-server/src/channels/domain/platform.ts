@@ -6,7 +6,6 @@ export {
   PlatformSchema,
   platforms,
   SitePlatformSchema,
-  socialPlatforms,
 } from "#shared/domain/platform.ts";
 
 export type {

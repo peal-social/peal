@@ -30,10 +30,8 @@
   commenting or resolving: a comment shows under the member's name to
   people outside the workspace.
 - An approval covers a subject, publishing's `approvalSubject`: the text,
-  the media in order with their alt text, the per-channel texts and media
-  (a website's rich text, `TextOverride.body`, written only where a
-  channel has one), the channels and their options (a `dropped` one is
-  none of them). Never the time. The review context keeps its
+  the media in order with their alt text, the per-channel texts and media,
+  the channels and their options (a `dropped` one is none of them). Never the time. The review context keeps its
   SHA-256 only (`subject_hash`). Add what a new kind of content says to the
   subject, or an approval would cover a post that changed. Reviewers are
   shown all of it: `ReviewedChannel.options` (publishing's `plainOptions`)

@@ -46,7 +46,6 @@ import {
   maxAltTextLength,
   maxFollowUps,
   maxMediaPerPost,
-  maxOverrideMedia,
   maxPartDelaySeconds,
   maxPostTextLength,
 } from "./post-text.ts";
@@ -54,7 +53,6 @@ import { PostValidationSchema } from "./post-validation.ts";
 import { QueueHasNoRoom } from "./queue-has-no-room.ts";
 import { QueueNotFound } from "./queue-not-found.ts";
 import { queueHorizonDays } from "./queues.ts";
-import { RichTextSchema } from "./rich-text.ts";
 import { ScheduleInPast } from "./schedule-in-past.ts";
 import { SignatureNotFound } from "./signature-not-found.ts";
 import { maxTagsPerPost, PostTagIdsSchema } from "./tags.ts";
@@ -111,46 +109,21 @@ const PartMediaSchema = Schema.Array(MediaAttachmentSchema).check(
   )
 );
 
-// The media an override gives its channel, in order: each file once, up
-// to `maxOverrideMedia` (a website's rich text shows many).
-const OverrideMediaSchema = Schema.Array(MediaAttachmentSchema).check(
-  Schema.isMaxLength(maxOverrideMedia),
-  uniqueBy(
-    (attachment: MediaAttachment) => attachment.mediaId,
-    "each media attached once"
-  )
-);
-
 /**
  * What a part of a post has on one of its channels instead of its own: its
  * text there, and, when `media` is given, the images and videos it shows
  * there instead of the part's, in order (an empty list shows none there).
  * Left out, the channel shows the part's own media; Peal answers `media`
  * only on an override that gives some. Each channel is checked on the
- * media it receives. `text` is never empty but beside a `body`: to give a
- * channel media alone, send the post's text, which then stays the
- * channel's when the post's text changes, unless the client changes it
- * too.
- *
- * With `body`, a rich text, the channel's own text is that document: only
- * a website's first part takes one (PostContentInvalid `bodyNotTaken`).
- * Peal answers `text` as the body's plain text and `media` as its images,
- * in order, whatever the request said of them: send `text: ""`.
+ * media it receives. `text` is never empty: to give a channel media alone,
+ * send the post's text, which then stays the channel's when the post's
+ * text changes, unless the client changes it too.
  */
 export const TextOverrideSchema = Schema.Struct({
-  body: Schema.optionalKey(RichTextSchema),
   channelId: Schema.String,
-  media: Schema.optionalKey(OverrideMediaSchema),
-  text: PostTextSchema,
-})
-  .check(
-    Schema.makeFilter(
-      ({ body, text }: { readonly body?: unknown; readonly text: string }) =>
-        body !== undefined || text !== "",
-      { expected: "a text, unless a body is given" }
-    )
-  )
-  .annotate({ identifier: "TextOverride" });
+  media: Schema.optionalKey(PartMediaSchema),
+  text: PostTextSchema.check(Schema.isNonEmpty()),
+}).annotate({ identifier: "TextOverride" });
 
 export type TextOverride = typeof TextOverrideSchema.Type;
 

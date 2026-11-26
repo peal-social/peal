@@ -24,10 +24,8 @@ import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { PublicationOutcomes } from "#publishing/application/publication-outcomes.ts";
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import { publishingWith } from "#publishing/container.ts";
-import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import type { PostTargetStatus } from "#publishing/domain/post-target-status.ts";
 import { PostTarget } from "#publishing/domain/post-target.ts";
-import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import {
   FakePlatform,
@@ -39,7 +37,6 @@ import {
   publishingOutcomes,
 } from "#publishing/infrastructure/notified-publication-outcomes.ts";
 import type { Actor } from "#shared/domain/access.ts";
-import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId, UserId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
@@ -219,83 +216,6 @@ const outcomeCount = (attributes: Readonly<Record<string, string>>) =>
   );
 
 describe("the notices of a post's outcomes", () => {
-  it.effect(
-    "tell a website's target as any other's: one published, one failed, the website named",
-    () =>
-      onServerAt(
-        "2026-06-15T07:00:00Z",
-        Effect.gen(function* website() {
-          const { actor, email, userId, workspaceId } =
-            yield* workspaceWithEditor;
-
-          const mastodon = yield* connect(workspaceId, "mastodon");
-          const site = yield* connect(workspaceId, "wordpress");
-
-          yield* FakePlatform.use((platform) =>
-            platform.script(site, [
-              {
-                _tag: "fail",
-                failure: new BadRequest({
-                  code: "wordpress:rest_cannot_create",
-                }),
-              },
-            ])
-          );
-
-          const { post } = yield* PostScheduling.use((scheduling) =>
-            scheduling.schedule(actor, {
-              channelIds: [mastodon, site],
-              content: syntheticContent,
-              options: [
-                new ChannelOptions({
-                  channelId: site,
-                  options: new WordPressOptions({
-                    title: "A synthetic article",
-                  }),
-                }),
-              ],
-              schedule: scheduleIn("2026-06-15T08:00:00Z"),
-            })
-          );
-
-          yield* eventually("the job sleeps", isSuspended(post.id));
-          yield* setTime("2026-06-15T08:00:00Z");
-          yield* eventually("the post finishes", isFinished(post.id));
-
-          const notices = yield* noticesOf(userId);
-
-          assert.deepStrictEqual(
-            notices.map(({ event }) => event._tag).toSorted(),
-            ["PostFailed", "PostPublished"]
-          );
-
-          const failed = notices.find(
-            ({ event }) => event._tag === "PostFailed"
-          )?.event;
-
-          assert(failed?._tag === "PostFailed");
-          assert.deepStrictEqual(
-            failed.channel.pipe(Option.map(({ platform }) => platform)),
-            Option.some("wordpress")
-          );
-          assert.strictEqual(failed.reason, "contentRejected");
-
-          yield* eventually(
-            "the failure is emailed",
-            sentTo(email).pipe(Effect.map((sent) => sent.length > 0))
-          );
-
-          const sent = yield* sentTo(email);
-
-          assert.match(
-            sent[0]?.subject ?? "",
-            /^A post did not go out on WordPress /u
-          );
-        })
-      ),
-    timeout
-  );
-
   it.effect(
     "tell the workspace's editors in the app, and email a failure",
     () =>

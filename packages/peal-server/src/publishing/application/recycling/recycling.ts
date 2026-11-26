@@ -33,7 +33,6 @@ import {
 import type { TagStore } from "#publishing/application/tag-store.ts";
 import type { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
 import { findInWorkspace } from "#publishing/application/workspace-posts.ts";
-import type { ChannelOnPlatform } from "#publishing/domain/content-rules.ts";
 import type { ContentViolation } from "#publishing/domain/content-violation.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
 import type { Post } from "#publishing/domain/post.ts";
@@ -76,7 +75,6 @@ import type { Actor } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
 import type { PostId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
-import { isSitePlatform } from "#shared/domain/platform.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
 
 import { LeftForNextRun } from "./left-for-next-run.ts";
@@ -87,11 +85,6 @@ import { RecyclingRuleNotFound } from "./recycling-rule-not-found.ts";
 import { RecyclingStore } from "./recycling-store.ts";
 import { RecyclingVariantsRejected } from "./recycling-variants-rejected.ts";
 import { TooManyRecyclingRules } from "./too-many-recycling-rules.ts";
-
-// A rule's copies leave websites out: a copy on a blog is a duplicate
-// article (owner's decision: recycling does not reach websites).
-const recycled = (channel: ChannelOnPlatform) =>
-  !isSitePlatform(channel.platform);
 
 /** How many due instants a rule's page shows. */
 export const comingShown = 3;
@@ -366,8 +359,7 @@ export class Recycling extends Context.Service<
           const copy = yield* copyOf(
             actor,
             post,
-            yield* posts.targets(post.id),
-            recycled
+            yield* posts.targets(post.id)
           );
 
           const channels = yield* channelsFor(actor, copy.channelIds).pipe(
@@ -485,14 +477,13 @@ export class Recycling extends Context.Service<
         const copy = yield* copyOf(
           actor,
           post,
-          yield* posts.targets(post.id),
-          recycled
+          yield* posts.targets(post.id)
         ).pipe(withPorts);
 
         if (copy.channelIds.length === 0) {
           return yield* new PostNotRecyclable({
             postId: post.id,
-            reason: copy.leftOut.length > 0 ? "websitesOnly" : "noChannels",
+            reason: "noChannels",
           });
         }
 
@@ -800,7 +791,7 @@ export class Recycling extends Context.Service<
 
         // A starter who may no longer read the channels can no longer
         // schedule there either.
-        const copy = yield* copyOf(actor, post, targets, recycled).pipe(
+        const copy = yield* copyOf(actor, post, targets).pipe(
           withPorts,
           Effect.map(Option.some),
           Effect.catchTag("MissingPermission", () =>

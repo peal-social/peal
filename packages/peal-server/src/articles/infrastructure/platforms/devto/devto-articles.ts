@@ -11,8 +11,8 @@ import {
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
+import type { SiteAdapter } from "#articles/infrastructure/platforms/site-adapter.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
-import type { SiteAdapter } from "#publishing/application/site-calls.ts";
 import type {
   SiteCallJournal,
   SiteFile,

@@ -190,17 +190,6 @@ export const ContentViolationSchema = Schema.Union([
     length: Schema.Int,
     maximum: Schema.Int,
   }),
-  // The channel's own text is a rich text (`body`) that does not decode:
-  // a node or a mark off the allow-list, or past its bounds.
-  Schema.TaggedStruct("bodyInvalid", {
-    channelId: ChannelIdSchema,
-    part: Schema.optionalKey(
-      Schema.Int.check(Schema.isGreaterThanOrEqualTo(1))
-    ),
-  }),
-  // The channel's own text is a rich text, which only a website's first
-  // part takes.
-  Schema.TaggedStruct("bodyNotTaken", onChannel),
 ]);
 
 export type ContentViolation = typeof ContentViolationSchema.Type;

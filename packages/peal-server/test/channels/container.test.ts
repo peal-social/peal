@@ -22,6 +22,7 @@ import { PlatformAuthorizers } from "#channels/application/platform-authorizer.t
 import { SiteAuthorizers } from "#channels/application/site-authorizer.ts";
 import { TokenCipher } from "#channels/application/token-cipher.ts";
 import { ChannelsLive } from "#channels/container.ts";
+import { platforms } from "#channels/domain/platform.ts";
 import { platformRegistrations } from "#channels/infrastructure/platforms/platform-addresses.ts";
 import type { PlatformRegistration } from "#channels/infrastructure/platforms/platform-addresses.ts";
 import { CommentRuleNotices } from "#engagement/application/ports/comment-rule-notices.ts";
@@ -29,10 +30,7 @@ import { DrizzleEngagementRecords } from "#engagement/infrastructure/drizzle-eng
 import { Notify } from "#notifications/application/notify.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import type { ChannelConnection } from "#shared/domain/channel-connection.ts";
-import {
-  OAuthSitePlatformSchema,
-  socialPlatforms,
-} from "#shared/domain/platform.ts";
+import { OAuthSitePlatformSchema } from "#shared/domain/platform.ts";
 import {
   AccountDaysUncountedTest,
   AloneInAccountsTest,
@@ -572,8 +570,7 @@ layer(DatabaseTest)(
         // above, so it must be in the list to be connected here.
         assert.deepStrictEqual([...authorizers.unconfigured], []);
 
-        // A website signs in through the site authorizers, not these.
-        for (const platform of socialPlatforms) {
+        for (const platform of platforms) {
           assert.strictEqual(
             registered(platform).length > 0,
             Option.isSome(authorizers.for(platform)),

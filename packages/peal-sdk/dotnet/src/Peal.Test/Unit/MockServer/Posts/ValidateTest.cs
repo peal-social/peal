@@ -32,11 +32,11 @@ public class ValidateTest : BaseMockServerTest
                 "overrides": [
                   {
                     "channelId": "channelId",
-                    "text": "text"
+                    "text": "x"
                   },
                   {
                     "channelId": "channelId",
-                    "text": "text"
+                    "text": "x"
                   }
                 ],
                 "text": "text"
@@ -360,17 +360,15 @@ public class ValidateTest : BaseMockServerTest
                     {
                         new TextOverride
                         {
-                            Body = null,
                             ChannelId = "channelId",
                             Media = null,
-                            Text = "text",
+                            Text = "x",
                         },
                         new TextOverride
                         {
-                            Body = null,
                             ChannelId = "channelId",
                             Media = null,
-                            Text = "text",
+                            Text = "x",
                         },
                     },
                     Poll = null,

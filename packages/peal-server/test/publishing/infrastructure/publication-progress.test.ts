@@ -8,7 +8,6 @@ import { SqlClient } from "effect/sql";
 import { PublicationJournal } from "#publishing/application/publication-journal.ts";
 import { PublicationProgress } from "#publishing/application/publication-progress.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
-import { SiteProgressSchema } from "#publishing/domain/site-progress.ts";
 import { DrizzlePublicationJournal } from "#publishing/infrastructure/drizzle-publication-journal.ts";
 import { DrizzlePublicationProgress } from "#publishing/infrastructure/drizzle-publication-progress.ts";
 import { FacebookFormatProgressSchema } from "#publishing/infrastructure/platforms/meta/facebook-format-progress.ts";
@@ -209,37 +208,6 @@ layer(StorageTest)("a call's recorded progress", (it) => {
             "finishing videoStory",
             "finishing photoStory",
           ]
-        );
-      })
-  );
-
-  it.effect(
-    "keeps a website's commit mark decoding as this release writes it",
-    () =>
-      Effect.gen(function* siteSteps() {
-        const stored = yield* Effect.promise(
-          async () =>
-            await readFile(
-              path.join(
-                import.meta.dirname,
-                "fixtures",
-                "persisted",
-                "publication-calls",
-                "site-progress.json"
-              ),
-              "utf-8"
-            )
-        );
-
-        const steps = yield* Schema.decodeUnknownEffect(
-          Schema.fromJsonString(
-            Schema.Array(Schema.toCodecJson(SiteProgressSchema))
-          )
-        )(stored);
-
-        assert.deepStrictEqual(
-          steps.map(({ _tag }) => _tag),
-          ["committing"]
         );
       })
   );

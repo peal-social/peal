@@ -200,66 +200,6 @@ describe("a recycling variant on a source with a channel's own media", () => {
 
 describe("recycling rules", () => {
   it.effect(
-    "keep a variant's text alone: a rich text, valid or not, is left out",
-    () =>
-      onServer(
-        Effect.gen(function* richVariants() {
-          const { editor, headers, mastodon, sent } = yield* studio;
-          const source = yield* sent("Our opening hours, all summer.");
-
-          const rule = yield* editor["automations.recycling"].create({
-            headers,
-            payload: {
-              every: { count: 1, unit: "weeks" },
-              postId: source.id,
-              variants: [
-                {
-                  overrides: [
-                    {
-                      body: { content: [{ type: "script" }], type: "doc" },
-                      channelId: mastodon,
-                      text: "",
-                    },
-                  ],
-                  text: "Open all summer.",
-                },
-                {
-                  overrides: [
-                    {
-                      body: {
-                        content: [
-                          {
-                            content: [{ text: "Rich", type: "text" }],
-                            type: "paragraph",
-                          },
-                        ],
-                        type: "doc",
-                      },
-                      channelId: mastodon,
-                      text: "Plain on Mastodon",
-                    },
-                  ],
-                  text: "Open all year.",
-                },
-              ],
-            },
-          });
-
-          assert.deepStrictEqual(
-            rule.variants.map(({ overrides }) => overrides),
-            [[], [{ channelId: mastodon, text: "Plain on Mastodon" }]]
-          );
-
-          yield* editor.posts.cancel({
-            headers,
-            params: { postId: source.id },
-          });
-        })
-      ),
-    timeout
-  );
-
-  it.effect(
     "start from a scheduled post and say what comes next, with each variant",
     () =>
       onServer(

@@ -13018,7 +13018,7 @@ func (c *ChannelOptions) String() string {
 	return fmt.Sprintf("%#v", c)
 }
 
-// What a channel connects to: a social network, a chat or a website.
+// What a channel connects to: a social network (posts) or a website (articles).
 type ChannelPlatform string
 
 const (
@@ -18445,157 +18445,6 @@ func NewDeletionIncompleteEncodedTagFromString(s string) (DeletionIncompleteEnco
 
 func (d DeletionIncompleteEncodedTag) Ptr() *DeletionIncompleteEncodedTag {
 	return &d
-}
-
-var (
-	devtoOptionsFieldCoverMediaID = big.NewInt(1 << 0)
-	devtoOptionsFieldExcerpt      = big.NewInt(1 << 1)
-	devtoOptionsFieldSiteStatus   = big.NewInt(1 << 2)
-	devtoOptionsFieldTags         = big.NewInt(1 << 3)
-	devtoOptionsFieldTitle        = big.NewInt(1 << 4)
-)
-
-// How a post goes out on DEV, as an article. Scheduling needs `title`; at most 4 tags, each letters and digits.
-type DevtoOptions struct {
-	CoverMediaID *string           `json:"coverMediaId,omitempty" url:"coverMediaId,omitempty"`
-	Excerpt      *string           `json:"excerpt,omitempty" url:"excerpt,omitempty"`
-	SiteStatus   *SiteStatusOption `json:"siteStatus,omitempty" url:"siteStatus,omitempty"`
-	Tags         []string          `json:"tags,omitempty" url:"tags,omitempty"`
-	Title        *string           `json:"title,omitempty" url:"title,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DevtoOptions) GetCoverMediaID() *string {
-	if d == nil {
-		return nil
-	}
-	return d.CoverMediaID
-}
-
-func (d *DevtoOptions) GetExcerpt() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Excerpt
-}
-
-func (d *DevtoOptions) GetSiteStatus() *SiteStatusOption {
-	if d == nil {
-		return nil
-	}
-	return d.SiteStatus
-}
-
-func (d *DevtoOptions) GetTags() []string {
-	if d == nil {
-		return nil
-	}
-	return d.Tags
-}
-
-func (d *DevtoOptions) GetTitle() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Title
-}
-
-func (d *DevtoOptions) GetExtraProperties() map[string]interface{} {
-	if d == nil {
-		return nil
-	}
-	return d.extraProperties
-}
-
-func (d *DevtoOptions) require(field *big.Int) {
-	next := new(big.Int)
-	if d.explicitFields != nil {
-		next.Set(d.explicitFields)
-	}
-	next.Or(next, field)
-	d.explicitFields = next
-}
-
-// SetCoverMediaID sets the CoverMediaID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DevtoOptions) SetCoverMediaID(coverMediaID *string) {
-	d.CoverMediaID = coverMediaID
-	d.require(devtoOptionsFieldCoverMediaID)
-}
-
-// SetExcerpt sets the Excerpt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DevtoOptions) SetExcerpt(excerpt *string) {
-	d.Excerpt = excerpt
-	d.require(devtoOptionsFieldExcerpt)
-}
-
-// SetSiteStatus sets the SiteStatus field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DevtoOptions) SetSiteStatus(siteStatus *SiteStatusOption) {
-	d.SiteStatus = siteStatus
-	d.require(devtoOptionsFieldSiteStatus)
-}
-
-// SetTags sets the Tags field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DevtoOptions) SetTags(tags []string) {
-	d.Tags = tags
-	d.require(devtoOptionsFieldTags)
-}
-
-// SetTitle sets the Title field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DevtoOptions) SetTitle(title *string) {
-	d.Title = title
-	d.require(devtoOptionsFieldTitle)
-}
-
-func (d *DevtoOptions) UnmarshalJSON(data []byte) error {
-	type unmarshaler DevtoOptions
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DevtoOptions(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DevtoOptions) MarshalJSON() ([]byte, error) {
-	type embed DevtoOptions
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*d),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (d *DevtoOptions) String() string {
-	if d == nil {
-		return "<nil>"
-	}
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
 }
 
 var (
@@ -24163,157 +24012,6 @@ func NewGoogleBusinessPostTypeFromString(s string) (GoogleBusinessPostType, erro
 
 func (g GoogleBusinessPostType) Ptr() *GoogleBusinessPostType {
 	return &g
-}
-
-var (
-	hashnodeOptionsFieldCoverMediaID = big.NewInt(1 << 0)
-	hashnodeOptionsFieldExcerpt      = big.NewInt(1 << 1)
-	hashnodeOptionsFieldSiteStatus   = big.NewInt(1 << 2)
-	hashnodeOptionsFieldTags         = big.NewInt(1 << 3)
-	hashnodeOptionsFieldTitle        = big.NewInt(1 << 4)
-)
-
-// How a post goes out on a Hashnode publication, as an article. Scheduling needs `title`; at most 15 tags.
-type HashnodeOptions struct {
-	CoverMediaID *string           `json:"coverMediaId,omitempty" url:"coverMediaId,omitempty"`
-	Excerpt      *string           `json:"excerpt,omitempty" url:"excerpt,omitempty"`
-	SiteStatus   *SiteStatusOption `json:"siteStatus,omitempty" url:"siteStatus,omitempty"`
-	Tags         []string          `json:"tags,omitempty" url:"tags,omitempty"`
-	Title        *string           `json:"title,omitempty" url:"title,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (h *HashnodeOptions) GetCoverMediaID() *string {
-	if h == nil {
-		return nil
-	}
-	return h.CoverMediaID
-}
-
-func (h *HashnodeOptions) GetExcerpt() *string {
-	if h == nil {
-		return nil
-	}
-	return h.Excerpt
-}
-
-func (h *HashnodeOptions) GetSiteStatus() *SiteStatusOption {
-	if h == nil {
-		return nil
-	}
-	return h.SiteStatus
-}
-
-func (h *HashnodeOptions) GetTags() []string {
-	if h == nil {
-		return nil
-	}
-	return h.Tags
-}
-
-func (h *HashnodeOptions) GetTitle() *string {
-	if h == nil {
-		return nil
-	}
-	return h.Title
-}
-
-func (h *HashnodeOptions) GetExtraProperties() map[string]interface{} {
-	if h == nil {
-		return nil
-	}
-	return h.extraProperties
-}
-
-func (h *HashnodeOptions) require(field *big.Int) {
-	next := new(big.Int)
-	if h.explicitFields != nil {
-		next.Set(h.explicitFields)
-	}
-	next.Or(next, field)
-	h.explicitFields = next
-}
-
-// SetCoverMediaID sets the CoverMediaID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HashnodeOptions) SetCoverMediaID(coverMediaID *string) {
-	h.CoverMediaID = coverMediaID
-	h.require(hashnodeOptionsFieldCoverMediaID)
-}
-
-// SetExcerpt sets the Excerpt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HashnodeOptions) SetExcerpt(excerpt *string) {
-	h.Excerpt = excerpt
-	h.require(hashnodeOptionsFieldExcerpt)
-}
-
-// SetSiteStatus sets the SiteStatus field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HashnodeOptions) SetSiteStatus(siteStatus *SiteStatusOption) {
-	h.SiteStatus = siteStatus
-	h.require(hashnodeOptionsFieldSiteStatus)
-}
-
-// SetTags sets the Tags field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HashnodeOptions) SetTags(tags []string) {
-	h.Tags = tags
-	h.require(hashnodeOptionsFieldTags)
-}
-
-// SetTitle sets the Title field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HashnodeOptions) SetTitle(title *string) {
-	h.Title = title
-	h.require(hashnodeOptionsFieldTitle)
-}
-
-func (h *HashnodeOptions) UnmarshalJSON(data []byte) error {
-	type unmarshaler HashnodeOptions
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*h = HashnodeOptions(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *h)
-	if err != nil {
-		return err
-	}
-	h.extraProperties = extraProperties
-	h.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (h *HashnodeOptions) MarshalJSON() ([]byte, error) {
-	type embed HashnodeOptions
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*h),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, h.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (h *HashnodeOptions) String() string {
-	if h == nil {
-		return "<nil>"
-	}
-	if len(h.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(h.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(h); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", h)
 }
 
 type HeldLimit string
@@ -38723,7 +38421,6 @@ const (
 	NotRecyclableReasonRepeating        NotRecyclableReason = "repeating"
 	NotRecyclableReasonOccurrence       NotRecyclableReason = "occurrence"
 	NotRecyclableReasonNoChannels       NotRecyclableReason = "noChannels"
-	NotRecyclableReasonWebsitesOnly     NotRecyclableReason = "websitesOnly"
 )
 
 func NewNotRecyclableReasonFromString(s string) (NotRecyclableReason, error) {
@@ -38740,8 +38437,6 @@ func NewNotRecyclableReasonFromString(s string) (NotRecyclableReason, error) {
 		return NotRecyclableReasonOccurrence, nil
 	case "noChannels":
 		return NotRecyclableReasonNoChannels, nil
-	case "websitesOnly":
-		return NotRecyclableReasonWebsitesOnly, nil
 	}
 	var t NotRecyclableReason
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -43506,7 +43201,7 @@ func (p *PlanPrice) String() string {
 	return fmt.Sprintf("%#v", p)
 }
 
-// What a channel connects to: a social network, a chat or a website.
+// A social network a channel connects to.
 type Platform string
 
 const (
@@ -43525,10 +43220,6 @@ const (
 	PlatformTelegram       Platform = "telegram"
 	PlatformSlack          Platform = "slack"
 	PlatformSnapchat       Platform = "snapchat"
-	PlatformWordpress      Platform = "wordpress"
-	PlatformDevto          Platform = "devto"
-	PlatformHashnode       Platform = "hashnode"
-	PlatformWordpressCom   Platform = "wordpressCom"
 )
 
 func NewPlatformFromString(s string) (Platform, error) {
@@ -43563,14 +43254,6 @@ func NewPlatformFromString(s string) (Platform, error) {
 		return PlatformSlack, nil
 	case "snapchat":
 		return PlatformSnapchat, nil
-	case "wordpress":
-		return PlatformWordpress, nil
-	case "devto":
-		return PlatformDevto, nil
-	case "hashnode":
-		return PlatformHashnode, nil
-	case "wordpressCom":
-		return PlatformWordpressCom, nil
 	}
 	var t Platform
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -53367,128 +53050,6 @@ func (r *ReviewLinkNotFoundEncoded) String() string {
 	return fmt.Sprintf("%#v", r)
 }
 
-var (
-	richTextFieldContent = big.NewInt(1 << 0)
-	richTextFieldType    = big.NewInt(1 << 1)
-)
-
-// The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code and images.
-type RichText struct {
-	Content []any        `json:"content" url:"content"`
-	Type    RichTextType `json:"type" url:"type"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (r *RichText) GetContent() []any {
-	if r == nil {
-		return nil
-	}
-	return r.Content
-}
-
-func (r *RichText) GetType() RichTextType {
-	if r == nil {
-		return ""
-	}
-	return r.Type
-}
-
-func (r *RichText) GetExtraProperties() map[string]interface{} {
-	if r == nil {
-		return nil
-	}
-	return r.extraProperties
-}
-
-func (r *RichText) require(field *big.Int) {
-	next := new(big.Int)
-	if r.explicitFields != nil {
-		next.Set(r.explicitFields)
-	}
-	next.Or(next, field)
-	r.explicitFields = next
-}
-
-// SetContent sets the Content field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RichText) SetContent(content []any) {
-	r.Content = content
-	r.require(richTextFieldContent)
-}
-
-// SetType sets the Type field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RichText) SetType(type_ RichTextType) {
-	r.Type = type_
-	r.require(richTextFieldType)
-}
-
-func (r *RichText) UnmarshalJSON(data []byte) error {
-	type unmarshaler RichText
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*r = RichText(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *r)
-	if err != nil {
-		return err
-	}
-	r.extraProperties = extraProperties
-	r.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (r *RichText) MarshalJSON() ([]byte, error) {
-	type embed RichText
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*r),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (r *RichText) String() string {
-	if r == nil {
-		return "<nil>"
-	}
-	if len(r.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(r); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", r)
-}
-
-type RichTextType string
-
-const (
-	RichTextTypeDoc RichTextType = "doc"
-)
-
-func NewRichTextTypeFromString(s string) (RichTextType, error) {
-	switch s {
-	case "doc":
-		return RichTextTypeDoc, nil
-	}
-	var t RichTextType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (r RichTextType) Ptr() *RichTextType {
-	return &r
-}
-
 type Role string
 
 const (
@@ -54895,29 +54456,6 @@ func NewSiteNotConnectedReasonFromString(s string) (SiteNotConnectedReason, erro
 }
 
 func (s SiteNotConnectedReason) Ptr() *SiteNotConnectedReason {
-	return &s
-}
-
-// What the site makes of a post once it shows it: published, or a draft to finish there.
-type SiteStatusOption string
-
-const (
-	SiteStatusOptionPublish SiteStatusOption = "publish"
-	SiteStatusOptionDraft   SiteStatusOption = "draft"
-)
-
-func NewSiteStatusOptionFromString(s string) (SiteStatusOption, error) {
-	switch s {
-	case "publish":
-		return SiteStatusOptionPublish, nil
-	case "draft":
-		return SiteStatusOptionDraft, nil
-	}
-	var t SiteStatusOption
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SiteStatusOption) Ptr() *SiteStatusOption {
 	return &s
 }
 
@@ -57121,10 +56659,6 @@ type TargetOptions struct {
 	Telegram       *TelegramOptions
 	Slack          *SlackOptions
 	Snapchat       *SnapchatOptions
-	Wordpress      *WordPressOptions
-	WordpressCom   *WordPressComOptions
-	Devto          *DevtoOptions
-	Hashnode       *HashnodeOptions
 
 	rawJSON json.RawMessage
 }
@@ -57241,34 +56775,6 @@ func (t *TargetOptions) GetSnapchat() *SnapchatOptions {
 	return t.Snapchat
 }
 
-func (t *TargetOptions) GetWordpress() *WordPressOptions {
-	if t == nil {
-		return nil
-	}
-	return t.Wordpress
-}
-
-func (t *TargetOptions) GetWordpressCom() *WordPressComOptions {
-	if t == nil {
-		return nil
-	}
-	return t.WordpressCom
-}
-
-func (t *TargetOptions) GetDevto() *DevtoOptions {
-	if t == nil {
-		return nil
-	}
-	return t.Devto
-}
-
-func (t *TargetOptions) GetHashnode() *HashnodeOptions {
-	if t == nil {
-		return nil
-	}
-	return t.Hashnode
-}
-
 func (t *TargetOptions) UnmarshalJSON(data []byte) error {
 	var unmarshaler struct {
 		Platform string `json:"platform"`
@@ -57371,30 +56877,6 @@ func (t *TargetOptions) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		t.Snapchat = value
-	case "wordpress":
-		value := new(WordPressOptions)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		t.Wordpress = value
-	case "wordpressCom":
-		value := new(WordPressComOptions)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		t.WordpressCom = value
-	case "devto":
-		value := new(DevtoOptions)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		t.Devto = value
-	case "hashnode":
-		value := new(HashnodeOptions)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		t.Hashnode = value
 	}
 	t.rawJSON = json.RawMessage(data)
 	return nil
@@ -57449,18 +56931,6 @@ func (t TargetOptions) MarshalJSON() ([]byte, error) {
 	if t.Snapchat != nil {
 		return internal.MarshalJSONWithExtraProperty(t.Snapchat, "platform", "snapchat")
 	}
-	if t.Wordpress != nil {
-		return internal.MarshalJSONWithExtraProperty(t.Wordpress, "platform", "wordpress")
-	}
-	if t.WordpressCom != nil {
-		return internal.MarshalJSONWithExtraProperty(t.WordpressCom, "platform", "wordpressCom")
-	}
-	if t.Devto != nil {
-		return internal.MarshalJSONWithExtraProperty(t.Devto, "platform", "devto")
-	}
-	if t.Hashnode != nil {
-		return internal.MarshalJSONWithExtraProperty(t.Hashnode, "platform", "hashnode")
-	}
 	if len(t.rawJSON) > 0 {
 		return t.rawJSON, nil
 	}
@@ -57483,10 +56953,6 @@ type TargetOptionsVisitor interface {
 	VisitTelegram(*TelegramOptions) error
 	VisitSlack(*SlackOptions) error
 	VisitSnapchat(*SnapchatOptions) error
-	VisitWordpress(*WordPressOptions) error
-	VisitWordpressCom(*WordPressComOptions) error
-	VisitDevto(*DevtoOptions) error
-	VisitHashnode(*HashnodeOptions) error
 }
 
 func (t *TargetOptions) Accept(visitor TargetOptionsVisitor) error {
@@ -57534,18 +57000,6 @@ func (t *TargetOptions) Accept(visitor TargetOptionsVisitor) error {
 	}
 	if t.Snapchat != nil {
 		return visitor.VisitSnapchat(t.Snapchat)
-	}
-	if t.Wordpress != nil {
-		return visitor.VisitWordpress(t.Wordpress)
-	}
-	if t.WordpressCom != nil {
-		return visitor.VisitWordpressCom(t.WordpressCom)
-	}
-	if t.Devto != nil {
-		return visitor.VisitDevto(t.Devto)
-	}
-	if t.Hashnode != nil {
-		return visitor.VisitHashnode(t.Hashnode)
 	}
 	return fmt.Errorf("type %T does not define a non-empty union type", t)
 }
@@ -57599,18 +57053,6 @@ func (t *TargetOptions) validate() error {
 	}
 	if t.Snapchat != nil {
 		fields = append(fields, "snapchat")
-	}
-	if t.Wordpress != nil {
-		fields = append(fields, "wordpress")
-	}
-	if t.WordpressCom != nil {
-		fields = append(fields, "wordpressCom")
-	}
-	if t.Devto != nil {
-		fields = append(fields, "devto")
-	}
-	if t.Hashnode != nil {
-		fields = append(fields, "hashnode")
 	}
 	if len(fields) == 0 {
 		if t.Platform != "" {
@@ -58713,14 +58155,12 @@ func (t *TextLimit) String() string {
 }
 
 var (
-	textOverrideFieldBody      = big.NewInt(1 << 0)
-	textOverrideFieldChannelID = big.NewInt(1 << 1)
-	textOverrideFieldMedia     = big.NewInt(1 << 2)
-	textOverrideFieldText      = big.NewInt(1 << 3)
+	textOverrideFieldChannelID = big.NewInt(1 << 0)
+	textOverrideFieldMedia     = big.NewInt(1 << 1)
+	textOverrideFieldText      = big.NewInt(1 << 2)
 )
 
 type TextOverride struct {
-	Body      *RichText          `json:"body,omitempty" url:"body,omitempty"`
 	ChannelID string             `json:"channelId" url:"channelId"`
 	Media     []*MediaAttachment `json:"media,omitempty" url:"media,omitempty"`
 	Text      string             `json:"text" url:"text"`
@@ -58730,13 +58170,6 @@ type TextOverride struct {
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
-}
-
-func (t *TextOverride) GetBody() *RichText {
-	if t == nil {
-		return nil
-	}
-	return t.Body
 }
 
 func (t *TextOverride) GetChannelID() string {
@@ -58774,13 +58207,6 @@ func (t *TextOverride) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	t.explicitFields = next
-}
-
-// SetBody sets the Body field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TextOverride) SetBody(body *RichText) {
-	t.Body = body
-	t.require(textOverrideFieldBody)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -67793,340 +67219,6 @@ func NewWeekdayFromString(s string) (Weekday, error) {
 
 func (w Weekday) Ptr() *Weekday {
 	return &w
-}
-
-var (
-	wordPressComOptionsFieldCoverMediaID = big.NewInt(1 << 0)
-	wordPressComOptionsFieldExcerpt      = big.NewInt(1 << 1)
-	wordPressComOptionsFieldSiteStatus   = big.NewInt(1 << 2)
-	wordPressComOptionsFieldTags         = big.NewInt(1 << 3)
-	wordPressComOptionsFieldTitle        = big.NewInt(1 << 4)
-	wordPressComOptionsFieldCategories   = big.NewInt(1 << 5)
-)
-
-// How a post goes out on a site on WordPress.com, as an article. Scheduling needs `title`; `coverMediaId` names an image of the library, the featured image.
-type WordPressComOptions struct {
-	CoverMediaID *string           `json:"coverMediaId,omitempty" url:"coverMediaId,omitempty"`
-	Excerpt      *string           `json:"excerpt,omitempty" url:"excerpt,omitempty"`
-	SiteStatus   *SiteStatusOption `json:"siteStatus,omitempty" url:"siteStatus,omitempty"`
-	Tags         []string          `json:"tags,omitempty" url:"tags,omitempty"`
-	Title        *string           `json:"title,omitempty" url:"title,omitempty"`
-	Categories   []string          `json:"categories,omitempty" url:"categories,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (w *WordPressComOptions) GetCoverMediaID() *string {
-	if w == nil {
-		return nil
-	}
-	return w.CoverMediaID
-}
-
-func (w *WordPressComOptions) GetExcerpt() *string {
-	if w == nil {
-		return nil
-	}
-	return w.Excerpt
-}
-
-func (w *WordPressComOptions) GetSiteStatus() *SiteStatusOption {
-	if w == nil {
-		return nil
-	}
-	return w.SiteStatus
-}
-
-func (w *WordPressComOptions) GetTags() []string {
-	if w == nil {
-		return nil
-	}
-	return w.Tags
-}
-
-func (w *WordPressComOptions) GetTitle() *string {
-	if w == nil {
-		return nil
-	}
-	return w.Title
-}
-
-func (w *WordPressComOptions) GetCategories() []string {
-	if w == nil {
-		return nil
-	}
-	return w.Categories
-}
-
-func (w *WordPressComOptions) GetExtraProperties() map[string]interface{} {
-	if w == nil {
-		return nil
-	}
-	return w.extraProperties
-}
-
-func (w *WordPressComOptions) require(field *big.Int) {
-	next := new(big.Int)
-	if w.explicitFields != nil {
-		next.Set(w.explicitFields)
-	}
-	next.Or(next, field)
-	w.explicitFields = next
-}
-
-// SetCoverMediaID sets the CoverMediaID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressComOptions) SetCoverMediaID(coverMediaID *string) {
-	w.CoverMediaID = coverMediaID
-	w.require(wordPressComOptionsFieldCoverMediaID)
-}
-
-// SetExcerpt sets the Excerpt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressComOptions) SetExcerpt(excerpt *string) {
-	w.Excerpt = excerpt
-	w.require(wordPressComOptionsFieldExcerpt)
-}
-
-// SetSiteStatus sets the SiteStatus field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressComOptions) SetSiteStatus(siteStatus *SiteStatusOption) {
-	w.SiteStatus = siteStatus
-	w.require(wordPressComOptionsFieldSiteStatus)
-}
-
-// SetTags sets the Tags field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressComOptions) SetTags(tags []string) {
-	w.Tags = tags
-	w.require(wordPressComOptionsFieldTags)
-}
-
-// SetTitle sets the Title field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressComOptions) SetTitle(title *string) {
-	w.Title = title
-	w.require(wordPressComOptionsFieldTitle)
-}
-
-// SetCategories sets the Categories field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressComOptions) SetCategories(categories []string) {
-	w.Categories = categories
-	w.require(wordPressComOptionsFieldCategories)
-}
-
-func (w *WordPressComOptions) UnmarshalJSON(data []byte) error {
-	type unmarshaler WordPressComOptions
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*w = WordPressComOptions(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *w)
-	if err != nil {
-		return err
-	}
-	w.extraProperties = extraProperties
-	w.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (w *WordPressComOptions) MarshalJSON() ([]byte, error) {
-	type embed WordPressComOptions
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*w),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, w.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (w *WordPressComOptions) String() string {
-	if w == nil {
-		return "<nil>"
-	}
-	if len(w.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(w.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(w); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", w)
-}
-
-var (
-	wordPressOptionsFieldCoverMediaID = big.NewInt(1 << 0)
-	wordPressOptionsFieldExcerpt      = big.NewInt(1 << 1)
-	wordPressOptionsFieldSiteStatus   = big.NewInt(1 << 2)
-	wordPressOptionsFieldTags         = big.NewInt(1 << 3)
-	wordPressOptionsFieldTitle        = big.NewInt(1 << 4)
-	wordPressOptionsFieldCategories   = big.NewInt(1 << 5)
-)
-
-// How a post goes out on a WordPress site, as an article. Scheduling needs `title`; `coverMediaId` names an image of the library, the featured image.
-type WordPressOptions struct {
-	CoverMediaID *string           `json:"coverMediaId,omitempty" url:"coverMediaId,omitempty"`
-	Excerpt      *string           `json:"excerpt,omitempty" url:"excerpt,omitempty"`
-	SiteStatus   *SiteStatusOption `json:"siteStatus,omitempty" url:"siteStatus,omitempty"`
-	Tags         []string          `json:"tags,omitempty" url:"tags,omitempty"`
-	Title        *string           `json:"title,omitempty" url:"title,omitempty"`
-	Categories   []string          `json:"categories,omitempty" url:"categories,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (w *WordPressOptions) GetCoverMediaID() *string {
-	if w == nil {
-		return nil
-	}
-	return w.CoverMediaID
-}
-
-func (w *WordPressOptions) GetExcerpt() *string {
-	if w == nil {
-		return nil
-	}
-	return w.Excerpt
-}
-
-func (w *WordPressOptions) GetSiteStatus() *SiteStatusOption {
-	if w == nil {
-		return nil
-	}
-	return w.SiteStatus
-}
-
-func (w *WordPressOptions) GetTags() []string {
-	if w == nil {
-		return nil
-	}
-	return w.Tags
-}
-
-func (w *WordPressOptions) GetTitle() *string {
-	if w == nil {
-		return nil
-	}
-	return w.Title
-}
-
-func (w *WordPressOptions) GetCategories() []string {
-	if w == nil {
-		return nil
-	}
-	return w.Categories
-}
-
-func (w *WordPressOptions) GetExtraProperties() map[string]interface{} {
-	if w == nil {
-		return nil
-	}
-	return w.extraProperties
-}
-
-func (w *WordPressOptions) require(field *big.Int) {
-	next := new(big.Int)
-	if w.explicitFields != nil {
-		next.Set(w.explicitFields)
-	}
-	next.Or(next, field)
-	w.explicitFields = next
-}
-
-// SetCoverMediaID sets the CoverMediaID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressOptions) SetCoverMediaID(coverMediaID *string) {
-	w.CoverMediaID = coverMediaID
-	w.require(wordPressOptionsFieldCoverMediaID)
-}
-
-// SetExcerpt sets the Excerpt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressOptions) SetExcerpt(excerpt *string) {
-	w.Excerpt = excerpt
-	w.require(wordPressOptionsFieldExcerpt)
-}
-
-// SetSiteStatus sets the SiteStatus field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressOptions) SetSiteStatus(siteStatus *SiteStatusOption) {
-	w.SiteStatus = siteStatus
-	w.require(wordPressOptionsFieldSiteStatus)
-}
-
-// SetTags sets the Tags field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressOptions) SetTags(tags []string) {
-	w.Tags = tags
-	w.require(wordPressOptionsFieldTags)
-}
-
-// SetTitle sets the Title field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressOptions) SetTitle(title *string) {
-	w.Title = title
-	w.require(wordPressOptionsFieldTitle)
-}
-
-// SetCategories sets the Categories field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WordPressOptions) SetCategories(categories []string) {
-	w.Categories = categories
-	w.require(wordPressOptionsFieldCategories)
-}
-
-func (w *WordPressOptions) UnmarshalJSON(data []byte) error {
-	type unmarshaler WordPressOptions
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*w = WordPressOptions(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *w)
-	if err != nil {
-		return err
-	}
-	w.extraProperties = extraProperties
-	w.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (w *WordPressOptions) MarshalJSON() ([]byte, error) {
-	type embed WordPressOptions
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*w),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, w.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (w *WordPressOptions) String() string {
-	if w == nil {
-		return "<nil>"
-	}
-	if len(w.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(w.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(w); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", w)
 }
 
 var (

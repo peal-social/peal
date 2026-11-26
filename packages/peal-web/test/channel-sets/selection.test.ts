@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Option } from "effect";
-import type { SocialChannel, ChannelSet, SocialPlatform } from "peal-contract";
+import type { SocialChannel, ChannelSet, Platform } from "peal-contract";
 
 import {
   appliedSet,
@@ -14,7 +14,7 @@ import { initialValues } from "#posts/target-options.ts";
 
 const channel = (
   id: string,
-  platform: SocialPlatform = "mastodon"
+  platform: Platform = "mastodon"
 ): SocialChannel => ({
   avatarUrl: null,
   connection: null,

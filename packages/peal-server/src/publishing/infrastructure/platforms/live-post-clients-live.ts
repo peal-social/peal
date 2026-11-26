@@ -5,7 +5,6 @@ import { FetchHttpClient } from "effect/http";
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
 import { LivePostEdits } from "#publishing/application/live-post-edits.ts";
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
-import { SiteCalls } from "#publishing/application/site-calls.ts";
 import {
   editBlocker,
   unpublishBlocker,
@@ -38,7 +37,6 @@ import {
   mastodonLivePost,
 } from "./mastodon/mastodon-live-post.ts";
 import { pinterestLivePost } from "./pinterest/pinterest-live-post.ts";
-import { siteLivePost } from "./sites/site-live-post.ts";
 import { slackLiveEdit, slackLivePost } from "./slack/slack-live-post.ts";
 import {
   telegramLiveEdit,
@@ -102,16 +100,8 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
     const telegram = { api, hosts: settings.telegramHosts };
     const mastodon = { api, scheme: settings.mastodonScheme };
 
-    // A website's post is taken down by its adapter; its edit is not
-    // made yet.
-    const site: LivePostAdapters = {
-      edit: notEditing,
-      remove: siteLivePost(yield* SiteCalls),
-    };
-
     const registry: Registry = {
       bluesky: { edit: notEditing, remove: yield* blueskyLivePost({ api }) },
-      devto: site,
       discord: {
         edit: discordLiveEdit(discord),
         remove: discordLivePost(discord),
@@ -121,7 +111,6 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
         edit: googleBusinessLiveEdit(google),
         remove: googleBusinessLivePost(google),
       },
-      hashnode: site,
       instagram: neither,
       linkedin: neither,
       mastodon: {
@@ -140,8 +129,6 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
       },
       threads: neither,
       tiktok: neither,
-      wordpress: site,
-      wordpressCom: site,
       x: {
         edit: notEditing,
         remove: xLivePost({ api, apiUrl: settings.xApi }),

@@ -232,10 +232,7 @@
   the channel fail there until it is back on. `list_channels` takes
   `platform`, `status` and `search`, reads every page of
   `ListChannels.search` once one is given, and answers `counts` then;
-  without any, its answer is the list it always was. It lists websites
-  as any channel (their posts are articles), so `create_post`,
-  `validate_post`, the capabilities tools and `get_post_review` serve
-  them with no tool of their own. `duplicate_post`
+  without any, its answer is the list it always was. `duplicate_post`
   (`PostTools`) makes a draft of a post, a new one each call. Wherever a
   tool says a channel is turned off, it names `enable_channel`, never
   disconnecting. The CLI's are `peal channels rename|disable|enable` and

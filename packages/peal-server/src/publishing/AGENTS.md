@@ -192,71 +192,8 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   (`lockRounds` and `lockOpen` with a channel, `lockFollowUpCalls`),
   held in the caller's transaction: a channel moving to another
   workspace waits for no scheduled post, and for no call but its own.
-- A website (`wordpress`, `wordpressCom`, `devto`, `hashnode`: a
-  `Platform` like any other, `isSitePlatform`) is a channel a post goes
-  to, as an article. Its target's options are its platform's class
-  (`wordpress-options.ts`, `wordpress-com-options.ts`, `devto-options.ts`,
-  `hashnode-options.ts`, sharing their fields, notes and problems through
-  `site-options.ts` and the kernel's `site-rules.ts`): `title` (needed to
-  schedule), `excerpt`, `coverMediaId` (a named file, as YouTube's
-  thumbnail), `tags`, WordPress's `categories`, and `siteStatus`
-  (`publish`, the default, or `draft`; no `future`: Peal sends at the
-  post's time). Its body is the channel's text, or a rich text of its
-  own: `TextOverride.body` (the kernel's allow-listed document), written
-  only when given, and only through `richOverride` (`rich-override.ts`),
-  which mirrors the body's plain text (`textOfBody`) and images
-  (`bodyAttachmentsOf`) on the override's `text` and `media`, so every
-  reader of a channel's text and files reads the body's; an override's
-  `media` may hold `maxOverrideMedia` (100), as may a part in the domain
-  (requests hold a part's own to 20), so the copy a channel gets
-  (`sentTo`) holds what its override gives, and a platform that states no
-  `maxMedia` is held to a part's 20 when the post is scheduled. Its
-  `text` may be empty only beside a body (the contract refuses one
-  without either); a body is stored in `text_overrides` with the
-  override. A request's body is checked against the allow-list
-  where requests are read (`contentFrom`, `checkRequestFrom`:
-  `bodyInvalid`), then made with `richOverride`; a body on a platform
-  that is no website's, or on a later part, is `bodyNotTaken`, on a draft
-  too. Without a body the site gets `bodyOfText` (a paragraph a block, a
-  hard break a line, `http(s)` addresses as links, then the part's
-  images). The approval subject and the duplicate digest add a body only
-  when there is one; a signature never goes under one; deleting a library
-  file takes its images out of a body (`bodyWithout`, then
-  `richOverride`), as copies do for files gone (`richOverrideKeeping`);
-  links are never shortened there. `platformRules` give a website no text
-  limit, images only (Hashnode's of 8 MiB), up to 100, one part, no poll.
-  A website target goes out through `siteClient`
-  (`platforms/sites/site-client.ts`, over the other clients by
-  `withSiteClients`), which builds the adapter's `OutgoingArticle` from
-  `OutgoingPost` (its `body`, `targetId` and `round`) and calls the
-  adapters through `SiteCalls` (`application/site-calls.ts`, which the
-  articles context calls too), with the target's journal: the commit
-  mark on the call's progress (`SiteProgressSchema`, `committing` and
-  its time, persisted contract: `fixtures/persisted/publication-calls`),
-  the files in `publishing.site_files` by target (`SiteFiles`), never sent
-  twice, and `RecordedPosts` with `RecordedArticles` (the articles'
-  posts, a port the articles context backs until the cutover), never
-  adopted. A resumed run with no mark sent nothing, and is tried again as
-  a new attempt (`PlatformUnavailable`), through the plan's check; one
-  with it looks for the post from then; a new round first looks for the
-  post of an earlier round's call left unconfirmed
-  (`PublicationJournal.committedBefore`: adopted, `severalOnSite`, or
-  `searchRefused`). A site's own code is kept as `<platform>:<code>`
-  (`siteCodeOf`), Peal's own (`channelDisabled`, `channelDisconnected`,
-  `mediaUnavailable`, `planLimit`, `sitePlanRequired`, which joins
-  `platformRefusalCodes` and fails as `contentRejected`) as they are.
-  Unpublishing is the adapter's removal (`sites/site-live-post.ts`:
-  WordPress's trash, DEV a draft, Hashnode's removal); edits are not made
-  yet (`unverified`). Recycling leaves websites out of a rule's copies (a
-  source on websites only is `PostNotRecyclable` `websitesOnly`), feeds
-  refuse a website's channel when saved (`UnknownChannels`) and leave
-  their channel set's websites out of their posts
-  (`PresetAsk.withoutSites`), and
-  follow-up rules say `noApi` there; analytics, the inbox, ads, comment
-  rules, connect links and channel moves leave websites out as before.
-  A website's post counts as a post and tells what any target tells.
-- Articles, which go to a workspace's websites, are still the articles
-  context's until the cutover: [`../articles/AGENTS.md`](../articles/AGENTS.md). A
+- Articles, which go to a workspace's websites, are the articles
+  context's: [`../articles/AGENTS.md`](../articles/AGENTS.md). A
   transaction that locks a workspace's posts and its articles locks the
   posts first (erasing a workspace, and deleting a library file through
   `MediaInPosts.hold`, which locks the drafts showing it and changes

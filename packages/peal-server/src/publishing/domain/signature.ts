@@ -229,14 +229,10 @@ export const withSignature = (
   const last = lastPartOf(content);
 
   return withLastPart(content, {
-    // A rich text (a website's body) is never signed: its plain text is
-    // the body's, which a signature under it would contradict.
     overrides: last.overrides.map((override) =>
-      override.body === undefined
-        ? changedOverride(override, {
-            text: signed(override.text, signature.text),
-          })
-        : override
+      changedOverride(override, {
+        text: signed(override.text, signature.text),
+      })
     ),
     text: signed(last.text, signature.text),
   });
@@ -287,16 +283,6 @@ export const withDefaultSignatures = (
   const known = new Set<ChannelId>(channels.map(({ channelId }) => channelId));
 
   const onChannels = channels.flatMap((channel) => {
-    const rich = last.overrides.find(
-      (override) =>
-        override.channelId === channel.channelId && override.body !== undefined
-    );
-
-    // A rich text (a website's body) is kept as it is, never signed.
-    if (rich !== undefined) {
-      return [rich];
-    }
-
     const own = defaultFor(signatures, channel);
     const written = Option.fromUndefinedOr(overridden.get(channel.channelId));
 

@@ -18,22 +18,21 @@ import { InvalidTimeZone } from "./invalid-time-zone.ts";
 import { PlanLimitReached } from "./plan-limit-reached.ts";
 import { PlatformUnreachable } from "./platform-unreachable.ts";
 import { FailureReasonSchema, UnconfirmedReasonSchema } from "./posts.ts";
-import {
-  maxArticleExcerptLength,
-  maxArticleTermLength,
-  maxArticleTerms,
-  maxArticleTitleLength,
-} from "./target-options.ts";
 import { UnknownMedia } from "./unknown-media.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
 import { workspaceHeaders } from "./workspace-header.ts";
 
-export {
-  maxArticleExcerptLength,
-  maxArticleTermLength,
-  maxArticleTerms,
-  maxArticleTitleLength,
-} from "./target-options.ts";
+/** The longest title an article takes. */
+export const maxArticleTitleLength = 500;
+
+/** The longest excerpt. */
+export const maxArticleExcerptLength = 1000;
+
+/** The most tags, and the most categories, an article names. */
+export const maxArticleTerms = 20;
+
+/** The longest name of a tag or a category. */
+export const maxArticleTermLength = 200;
 
 /** The most articles a page holds, and how many when not told. */
 export const maxArticlePageSize = 100;

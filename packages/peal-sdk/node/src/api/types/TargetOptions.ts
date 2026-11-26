@@ -20,11 +20,7 @@ export type TargetOptions =
     | Peal.TargetOptions.Discord
     | Peal.TargetOptions.Telegram
     | Peal.TargetOptions.Slack
-    | Peal.TargetOptions.Snapchat
-    | Peal.TargetOptions.Wordpress
-    | Peal.TargetOptions.WordpressCom
-    | Peal.TargetOptions.Devto
-    | Peal.TargetOptions.Hashnode;
+    | Peal.TargetOptions.Snapchat;
 
 export namespace TargetOptions {
     export interface Youtube extends Peal.YouTubeOptions {
@@ -85,21 +81,5 @@ export namespace TargetOptions {
 
     export interface Snapchat extends Peal.SnapchatOptions {
         platform: "snapchat";
-    }
-
-    export interface Wordpress extends Peal.WordPressOptions {
-        platform: "wordpress";
-    }
-
-    export interface WordpressCom extends Peal.WordPressComOptions {
-        platform: "wordpressCom";
-    }
-
-    export interface Devto extends Peal.DevtoOptions {
-        platform: "devto";
-    }
-
-    export interface Hashnode extends Peal.HashnodeOptions {
-        platform: "hashnode";
     }
 }

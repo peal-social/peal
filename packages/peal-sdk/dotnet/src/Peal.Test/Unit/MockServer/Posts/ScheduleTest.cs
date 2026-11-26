@@ -42,17 +42,6 @@ public class ScheduleTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
-                        "body": {
-                          "content": [
-                            {
-                              "key": "value"
-                            },
-                            {
-                              "key": "value"
-                            }
-                          ],
-                          "type": "doc"
-                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -64,20 +53,9 @@ public class ScheduleTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "text"
+                        "text": "x"
                       },
                       {
-                        "body": {
-                          "content": [
-                            {
-                              "key": "value"
-                            },
-                            {
-                              "key": "value"
-                            }
-                          ],
-                          "type": "doc"
-                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -89,7 +67,7 @@ public class ScheduleTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "text"
+                        "text": "x"
                       }
                     ],
                     "text": "text"
@@ -108,17 +86,6 @@ public class ScheduleTest : BaseMockServerTest
                     ],
                     "overrides": [
                       {
-                        "body": {
-                          "content": [
-                            {
-                              "key": "value"
-                            },
-                            {
-                              "key": "value"
-                            }
-                          ],
-                          "type": "doc"
-                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -130,20 +97,9 @@ public class ScheduleTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "text"
+                        "text": "x"
                       },
                       {
-                        "body": {
-                          "content": [
-                            {
-                              "key": "value"
-                            },
-                            {
-                              "key": "value"
-                            }
-                          ],
-                          "type": "doc"
-                        },
                         "channelId": "channelId",
                         "media": [
                           {
@@ -155,7 +111,7 @@ public class ScheduleTest : BaseMockServerTest
                             "mediaId": "mediaId"
                           }
                         ],
-                        "text": "text"
+                        "text": "x"
                       }
                     ],
                     "text": "text"
@@ -173,17 +129,6 @@ public class ScheduleTest : BaseMockServerTest
                 ],
                 "overrides": [
                   {
-                    "body": {
-                      "content": [
-                        {
-                          "key": "value"
-                        },
-                        {
-                          "key": "value"
-                        }
-                      ],
-                      "type": "doc"
-                    },
                     "channelId": "channelId",
                     "media": [
                       {
@@ -195,20 +140,9 @@ public class ScheduleTest : BaseMockServerTest
                         "mediaId": "mediaId"
                       }
                     ],
-                    "text": "text"
+                    "text": "x"
                   },
                   {
-                    "body": {
-                      "content": [
-                        {
-                          "key": "value"
-                        },
-                        {
-                          "key": "value"
-                        }
-                      ],
-                      "type": "doc"
-                    },
                     "channelId": "channelId",
                     "media": [
                       {
@@ -220,7 +154,7 @@ public class ScheduleTest : BaseMockServerTest
                         "mediaId": "mediaId"
                       }
                     ],
-                    "text": "text"
+                    "text": "x"
                   }
                 ],
                 "poll": {

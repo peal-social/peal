@@ -100,17 +100,6 @@ export class PublicationJournal extends Context.Service<
     readonly earlierRefusals: (
       call: CallId
     ) => Effect.Effect<EarlierRefusals, DatabaseError>;
-    /**
-     * When the latest of the target's calls in rounds before `round`
-     * that reached its commit and never ended published or refused
-     * (unconfirmed, or never ended) committed (`SiteProgressSchema`): a
-     * website's new round first looks there for the post it may have
-     * made. None when no such call committed.
-     */
-    readonly committedBefore: (
-      targetId: PostTargetId,
-      round: number
-    ) => Effect.Effect<Option.Option<DateTime.Utc>, DatabaseError>;
     /** Records an attempt. Recording one again leaves the first record. */
     readonly recordAttempt: (
       attempt: AttemptRecord
