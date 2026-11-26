@@ -1,9 +1,18 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Context, Effect, Layer, Option, Redacted, Ref } from "effect";
+import {
+  Context,
+  DateTime,
+  Effect,
+  Layer,
+  Option,
+  Redacted,
+  Ref,
+} from "effect";
 import { FetchHttpClient } from "effect/http";
 
 import type { OutgoingPost } from "#publishing/application/platform-client.ts";
 import { PublicationJournal } from "#publishing/application/publication-journal.ts";
+import { RecordedArticles } from "#publishing/application/recorded-articles.ts";
 import { RecordedPosts } from "#publishing/application/recorded-posts.ts";
 import { SiteCalls } from "#publishing/application/site-calls.ts";
 import { SiteFiles } from "#publishing/application/site-files.ts";
@@ -20,6 +29,7 @@ import { siteLivePost } from "#publishing/infrastructure/platforms/sites/site-li
 import type { SiteFile } from "#shared/application/site-call-journal.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
+import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { editor, fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import type { FakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
@@ -109,7 +119,9 @@ const journalOf = (committed: Option.Option<OutgoingPost["startedAt"]>) =>
 
 const clientOn = (
   site: FakeWordPress,
-  committed: Option.Option<OutgoingPost["startedAt"]> = Option.none()
+  committed: Option.Option<OutgoingPost["startedAt"]> = Option.none(),
+  // The site's posts an article of the channel holds.
+  articles: readonly string[] = []
 ) =>
   Effect.gen(function* building() {
     const credentials = credentialsOf(
@@ -133,6 +145,15 @@ const clientOn = (
         filesInMemory,
         progressInMemory,
         RecordedPosts.none,
+        Layer.succeed(
+          RecordedArticles,
+          RecordedArticles.of({
+            among: (_channel, ids) =>
+              Effect.succeed(
+                new Set(ids.filter((id) => articles.includes(id)))
+              ),
+          })
+        ),
         journalOf(committed)
       )
     );
@@ -266,25 +287,29 @@ describe("a website's target", () => {
     }).pipe(Effect.scoped)
   );
 
-  it.effect("after a run cut before its commit, is sent anew", () =>
-    Effect.gen(function* cutBefore() {
-      const site = yield* fakeWordPress();
-      const { client, context } = yield* clientOn(site);
+  it.effect(
+    "after a run cut before its commit, is tried again as a new attempt, nothing sent",
+    () =>
+      Effect.gen(function* cutBefore() {
+        const site = yield* fakeWordPress();
+        const { client, context } = yield* clientOn(site);
 
-      yield* begun.pipe(Effect.provideContext(context));
+        yield* begun.pipe(Effect.provideContext(context));
 
-      const result = yield* client.resume(
-        yield* outgoing({
-          accountId: site.root,
-          options: Option.some(
-            new WordPressOptions({ platform: "wordpress", title: "Anew" })
-          ),
-        })
-      );
+        const result = yield* failureOf(
+          client.resume(
+            yield* outgoing({
+              accountId: site.root,
+              options: Option.some(
+                new WordPressOptions({ platform: "wordpress", title: "Anew" })
+              ),
+            })
+          )
+        );
 
-      assert.strictEqual(result._tag, "published");
-      assert.lengthOf(site.posts(), 1);
-    }).pipe(Effect.scoped)
+        assert.deepStrictEqual(result, new PlatformUnavailable());
+        assert.lengthOf(site.posts(), 0);
+      }).pipe(Effect.scoped)
   );
 
   it.effect(
@@ -339,6 +364,119 @@ describe("a website's target", () => {
 
         assert.strictEqual(adopted._tag, "published");
         assert.lengthOf(site.posts(), 1);
+      }).pipe(Effect.scoped)
+  );
+
+  it.effect(
+    "in a new round, makes no second post where the site holds several it may be",
+    () =>
+      Effect.gen(function* several() {
+        const site = yield* fakeWordPress();
+        const first = yield* clientOn(site);
+
+        yield* begun.pipe(Effect.provideContext(first.context));
+
+        const post = yield* outgoing({
+          accountId: site.root,
+          options: Option.some(
+            new WordPressOptions({ platform: "wordpress", title: "Twin" })
+          ),
+        });
+
+        yield* first.client.publish(post);
+        yield* ProgressLog.use((log) => log.begin(`${outgoingKey}-2`)).pipe(
+          Effect.provideContext(first.context)
+        );
+        yield* first.client.publish({
+          ...post,
+          idempotencyKey: `${outgoingKey}-2`,
+        });
+
+        const again = yield* clientOn(site, Option.some(post.startedAt));
+
+        yield* begun.pipe(Effect.provideContext(again.context));
+
+        const looked = yield* again.client.publish({ ...post, round: 2 });
+
+        assert.deepStrictEqual(looked, {
+          _tag: "unconfirmed",
+          reason: "severalOnSite",
+        });
+        assert.lengthOf(site.posts(), 2);
+      }).pipe(Effect.scoped)
+  );
+
+  it.effect(
+    "in a new round, leaves the target to check where the site refuses the search",
+    () =>
+      Effect.gen(function* refused() {
+        const site = yield* fakeWordPress({
+          intercept: (request) =>
+            request.method === "GET" && request.route === "/wp/v2/posts"
+              ? {
+                  body: { code: "rest_forbidden", message: "No" },
+                  status: 403,
+                }
+              : undefined,
+        });
+
+        const { client, context } = yield* clientOn(
+          site,
+          Option.some(yield* DateTime.now)
+        );
+
+        yield* begun.pipe(Effect.provideContext(context));
+
+        const looked = yield* client.publish(
+          yield* outgoing({
+            accountId: site.root,
+            options: Option.some(
+              new WordPressOptions({ platform: "wordpress", title: "Hidden" })
+            ),
+            round: 2,
+          })
+        );
+
+        assert.deepStrictEqual(looked, {
+          _tag: "unconfirmed",
+          reason: "searchRefused",
+        });
+        assert.lengthOf(site.posts(), 0);
+      }).pipe(Effect.scoped)
+  );
+
+  it.effect(
+    "in a new round, never takes an article's post of the same title for its own",
+    () =>
+      Effect.gen(function* article() {
+        const site = yield* fakeWordPress();
+        const first = yield* clientOn(site);
+
+        yield* begun.pipe(Effect.provideContext(first.context));
+
+        const post = yield* outgoing({
+          accountId: site.root,
+          options: Option.some(
+            new WordPressOptions({ platform: "wordpress", title: "Shared" })
+          ),
+        });
+
+        // An article of the channel made this one.
+        const made = yield* first.client.publish(post);
+
+        assert(made._tag === "published");
+
+        const again = yield* clientOn(site, Option.some(post.startedAt), [
+          made.platformPostId,
+        ]);
+
+        yield* begun.pipe(Effect.provideContext(again.context));
+
+        const sent = yield* again.client.publish({ ...post, round: 2 });
+
+        assert(sent._tag === "published");
+        assert.notStrictEqual(sent.platformPostId, made.platformPostId);
+        assert.lengthOf(site.posts(), 2);
       }).pipe(Effect.scoped)
   );
 

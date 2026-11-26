@@ -7,6 +7,7 @@ import { FetchHttpClient } from "effect/http";
 import { LinkShortener } from "#publishing/application/link-shortener.ts";
 import { PostMeter } from "#publishing/application/post-meter.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
+import { RecordedArticles } from "#publishing/application/recorded-articles.ts";
 import { RoutedPlatformPublisher } from "#publishing/application/routed-platform-publisher.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
@@ -108,6 +109,7 @@ const platformsOn = (root: string) => {
         calls,
         LinkShortener.none,
         PostMeter.unmetered,
+        RecordedArticles.none,
         DrizzlePublicationProgress,
         DrizzlePublicationJournal,
         DrizzleSiteFiles,

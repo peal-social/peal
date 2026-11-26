@@ -56,6 +56,7 @@ import {
   ArticlesApiLive,
   ArticlesLive,
   MediaInArticlesLive,
+  RecordedArticlesLive,
 } from "#articles/container.ts";
 import {
   AssistantApiLive,
@@ -743,7 +744,8 @@ const HttpServerLive = Layer.unwrap(
  */
 export const WorkersLive = Layer.mergeAll(
   publishingWorkers(
-    PlatformsLive,
+    // A website's post never takes an article's for its own.
+    PlatformsLive.pipe(Layer.provide(RecordedArticlesLive)),
     PlatformMetricsReaderLive,
     // YouTube's comment reads count their units in the server's ledger of
     // the project's day, which publishing keeps.

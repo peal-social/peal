@@ -13,6 +13,7 @@ import { ListedSiteChannels } from "#articles/infrastructure/listed-site-channel
 import { PostingArticleGates } from "#articles/infrastructure/posting-article-gates.ts";
 import { RoutedSitePublisher } from "#articles/infrastructure/routed-site-publisher.ts";
 import { SqlArticleSendTurns } from "#articles/infrastructure/sql-article-send-turns.ts";
+import { StoreRecordedArticles } from "#articles/infrastructure/store-recorded-articles.ts";
 import { WebhookArticleEvents } from "#articles/infrastructure/webhook-article-events.ts";
 import { WorkflowArticleJobs } from "#articles/infrastructure/workflow-article-jobs.ts";
 import { PublishArticleV1Live } from "#articles/infrastructure/workflows/publish-article.ts";
@@ -89,3 +90,12 @@ export const MediaInArticlesLive = MediaInArticles.layer.pipe(
 // The articles endpoints, behind the Authentication and WorkspaceAccess
 // middleware of the workspace context, which the composition root brings.
 export { ArticlesHandlers as ArticlesApiLive } from "#articles/api/articles.ts";
+
+/**
+ * The posts the articles recorded on their sites, for publishing's site
+ * client, which never adopts one (RecordedArticles). Needs the database
+ * (Drizzle).
+ */
+export const RecordedArticlesLive = StoreRecordedArticles.pipe(
+  Layer.provide(DrizzleArticleStore)
+);

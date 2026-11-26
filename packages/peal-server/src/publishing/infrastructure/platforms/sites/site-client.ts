@@ -9,6 +9,7 @@ import { PlatformCredentials } from "#publishing/application/platform-credential
 import type { PublishingToken } from "#publishing/application/platform-credentials.ts";
 import { PublicationJournal } from "#publishing/application/publication-journal.ts";
 import { PublicationProgress } from "#publishing/application/publication-progress.ts";
+import { RecordedArticles } from "#publishing/application/recorded-articles.ts";
 import { RecordedPosts } from "#publishing/application/recorded-posts.ts";
 import { SiteCalls } from "#publishing/application/site-calls.ts";
 import { SiteFiles } from "#publishing/application/site-files.ts";
@@ -26,6 +27,7 @@ import type {
 import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
+import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { isSitePlatform } from "#shared/domain/platform.ts";
 import type { SitePlatform } from "#shared/domain/platform.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
@@ -175,6 +177,7 @@ export const siteClient = Effect.fn("SiteClient.make")(function* siteClient(
   const progress = yield* PublicationProgress;
   const files = yield* SiteFiles;
   const recorded = yield* RecordedPosts;
+  const articles = yield* RecordedArticles;
   const journal = yield* PublicationJournal;
 
   const filesOf = (post: OutgoingPost): SiteFileJournal => ({
@@ -182,8 +185,12 @@ export const siteClient = Effect.fn("SiteClient.make")(function* siteClient(
     fileSent: (mediaId, file) => files.record(post.targetId, mediaId, file),
     filesSent: files.sent(post.targetId),
     forgetFile: (mediaId) => files.forget(post.targetId, mediaId),
+    // Another target's post, or an article's, until articles are posts.
     recordedOn: (platformPostIds) =>
-      recorded.among(post.channelId, platformPostIds),
+      Effect.all([
+        recorded.among(post.channelId, platformPostIds),
+        articles.among(post.channelId, platformPostIds),
+      ]).pipe(Effect.map(([posts, made]) => new Set([...posts, ...made]))),
   });
 
   // The commit mark, recorded and committed before the post's request.
@@ -265,7 +272,9 @@ export const siteClient = Effect.fn("SiteClient.make")(function* siteClient(
     onSite(post, (token) => sent(post, token));
 
   // A run that stopped: nothing recorded means the call never reached its
-  // commit, so it is sent anew; the commit mark means the post may be
+  // commit, so nothing is on the site and the attempt is tried again as
+  // a new one (`PlatformUnavailable`), through every check a publish
+  // makes, the plan's included; the commit mark means the post may be
   // there, looked for from then, never made again.
   const resume = (post: OutgoingPost) =>
     progress.read(post.idempotencyKey).pipe(
@@ -281,7 +290,7 @@ export const siteClient = Effect.fn("SiteClient.make")(function* siteClient(
         const mark = read.recorded.pipe(Option.flatMap(decodeProgress));
 
         return Option.match(mark, {
-          onNone: () => publish(post),
+          onNone: () => Effect.fail(new PlatformUnavailable()),
           onSome: ({ at }) =>
             onSite(post, (token) =>
               calls.resume(
