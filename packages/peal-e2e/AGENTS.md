@@ -137,11 +137,12 @@
   as the web app's registry holds what a render reads until its commit
   (`#api/registry.ts`). It then reads the calendar again after
   each change, which a query kept past its last reader would miss.
-- `tests/composer-comforts.e2e.ts` seeds three channels, selects them all
-  and none, ticks one by pointer and by Space and scrolls the wheel, the
+- `tests/composer-comforts.e2e.ts` seeds three channels, picks them all
+  and none from the Channels property's menu (**All channels**), one by
+  pointer and by Enter, and scrolls the wheel, the
   document staying the window's height and unscrolled throughout (the
   composer's panel scrolls, never the frame), inserts an emoji from the
-  picker, reads the previews, opens
+  picker, reads the previews **Preview** docks in the column, opens
   **Publish now** and leaves it ("Not now": nothing goes out), finds the
   saved draft among **Posts**, filters it out by status (the Filter
   menu's Cancelled, which no tab shows) and back with **Clear**, then

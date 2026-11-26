@@ -19,6 +19,11 @@ import {
   DialogTrigger,
 } from "peal-ui/components/dialog";
 import { Skeleton } from "peal-ui/components/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "peal-ui/components/tooltip";
 import { useState } from "react";
 
 import { GenerateImage } from "#components/media/generate-image.tsx";
@@ -212,12 +217,50 @@ export interface MediaPickerTexts {
   readonly title: string;
 }
 
+// What opens the picker: an outline button with its name, or, in a
+// toolbar, an icon button named in its tooltip.
+const PickerTrigger = ({
+  compact,
+  disabled,
+  label,
+}: {
+  readonly compact: boolean;
+  readonly disabled: boolean;
+  readonly label: string;
+}) =>
+  compact ? (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <DialogTrigger
+            render={
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-label={label}
+                disabled={disabled}
+              />
+            }
+          />
+        }
+      >
+        <LibraryIcon aria-hidden />
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  ) : (
+    <DialogTrigger render={<Button variant="outline" disabled={disabled} />}>
+      <LibraryIcon aria-hidden data-icon="inline-start" />
+      {label}
+    </DialogTrigger>
+  );
+
 interface MediaPickerProps {
   /** Whether the media may be picked, when only some may: others show why not. */
   readonly accepts?: (media: Media) => boolean;
   /** The media the post shows already. */
   readonly attached: readonly string[];
-  /** A page's action: a small ghost button, its icon alone under 1280 px. */
+  /** A toolbar's icon button, its name in a tooltip. */
   readonly compact?: boolean;
   /**
    * Whether the member may have the assistant make an image here (they
@@ -275,20 +318,11 @@ export const MediaPicker = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={
-          <Button
-            size={compact ? "sm" : "default"}
-            variant={compact ? "ghost" : "outline"}
-            disabled={disabled || room === 0}
-          />
-        }
-      >
-        <LibraryIcon aria-hidden data-icon="inline-start" />
-        <span className={compact ? "max-xl:sr-only" : undefined}>
-          {texts?.open ?? t("open")}
-        </span>
-      </DialogTrigger>
+      <PickerTrigger
+        compact={compact}
+        disabled={disabled || room === 0}
+        label={texts?.open ?? t("open")}
+      />
       <DialogContent className="sm:max-w-2xl" closeLabel={t("close")}>
         <DialogHeader>
           <DialogTitle>{texts?.title ?? t("title")}</DialogTitle>

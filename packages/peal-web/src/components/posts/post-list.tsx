@@ -23,6 +23,7 @@ import { useHydrated } from "#components/media/use-hydrated.ts";
 import { PostDecisionActions } from "#components/posts/post-decision-actions.tsx";
 import { PostListToolbar } from "#components/posts/post-list-toolbar.tsx";
 import { PostSelectionBar } from "#components/posts/post-selection-bar.tsx";
+import { usePostsLayouts } from "#components/posts/posts-layouts.ts";
 import { useChoosing } from "#components/posts/use-choosing.ts";
 import type { Choosing } from "#components/posts/use-choosing.ts";
 import { PostDecisionsProvider } from "#components/review/post-decisions-provider.tsx";
@@ -337,6 +338,8 @@ const LoadedList = ({
     () => noQueues
   );
 
+  const layouts = usePostsLayouts("list");
+
   const handleFilters = (next: PostListFilters) => {
     const written = queryOf(next);
 
@@ -385,6 +388,7 @@ const LoadedList = ({
         actions={null}
         channels={channels}
         filters={filters}
+        layouts={layouts}
         queues={queues}
         tags={tags}
         views={views}
@@ -428,6 +432,48 @@ const LoadedList = ({
 };
 
 /**
+ * The posts page's actions, in the panel's header (DESIGN.md, "The
+ * frame"), whatever its layout: Import posts and New post, for members
+ * who may.
+ */
+export const PostsActions = ({
+  canCreate,
+  canImport,
+  workspaceId,
+}: {
+  readonly canCreate: boolean;
+  /** Whether the member may schedule posts, as an import does. */
+  readonly canImport: boolean;
+  readonly workspaceId: string;
+}) => {
+  const workspaceHref = useWorkspaceHref();
+  const t = useTranslations("Posts.List");
+
+  return (
+    <PageActions>
+      {canImport ? (
+        <Link
+          href={workspaceHref(workspaceId, "/posts/import")}
+          className={buttonVariants({ size: "sm", variant: "ghost" })}
+        >
+          <FileUpIcon aria-hidden />
+          {t("importPosts")}
+        </Link>
+      ) : null}
+      {canCreate ? (
+        <Link
+          href={workspaceHref(workspaceId, "/posts/new")}
+          className={buttonVariants({ size: "sm", variant: "ghost" })}
+        >
+          <PlusIcon aria-hidden />
+          {t("newPost")}
+        </Link>
+      ) : null}
+    </PageActions>
+  );
+};
+
+/**
  * The workspace's posts, whatever their state, a page at a time, as the
  * filters in the page's query string keep and order them, so a link shows
  * the same list; with a way to write a new post, and to import posts from
@@ -454,33 +500,13 @@ export const PostList = ({
   // sends.
   const hydrated = useHydrated();
 
-  // The page's actions, in the panel's header (DESIGN.md, "The frame").
-  const actions = (
-    <PageActions>
-      {canImport ? (
-        <Link
-          href={workspaceHref(workspaceId, "/posts/import")}
-          className={buttonVariants({ size: "sm", variant: "ghost" })}
-        >
-          <FileUpIcon aria-hidden />
-          {t("importPosts")}
-        </Link>
-      ) : null}
-      {canCreate ? (
-        <Link
-          href={workspaceHref(workspaceId, "/posts/new")}
-          className={buttonVariants({ size: "sm", variant: "ghost" })}
-        >
-          <PlusIcon aria-hidden />
-          {t("newPost")}
-        </Link>
-      ) : null}
-    </PageActions>
-  );
-
   return (
     <section className="flex flex-col gap-4">
-      {actions}
+      <PostsActions
+        canCreate={canCreate}
+        canImport={canImport}
+        workspaceId={workspaceId}
+      />
       {hydrated ? (
         <LoadedList
           emptyAction={

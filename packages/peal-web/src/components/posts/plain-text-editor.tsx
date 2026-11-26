@@ -74,6 +74,11 @@ const Highlight = Extension.create({
 const extensions = [Document, Paragraph, Text, UndoRedo, Highlight];
 
 interface PlainTextEditorProps {
+  /**
+   * Drawn without a border or a focus ring of its own, inside a box that
+   * draws them around it and its toolbar (the composer's main text).
+   */
+  readonly bare?: boolean;
   /** The element whose text describes the editor. */
   readonly describedBy: string;
   readonly id: string;
@@ -95,6 +100,7 @@ interface PlainTextEditorProps {
 }
 
 export const PlainTextEditor = ({
+  bare = false,
   describedBy,
   id,
   labelledBy,
@@ -114,8 +120,9 @@ export const PlainTextEditor = ({
     // which read this instead.
     "aria-placeholder": placeholder,
     "aria-readonly": readOnly ? "true" : "false",
-    class:
-      "min-h-32 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base whitespace-pre-wrap outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30",
+    class: bare
+      ? "min-h-40 w-full bg-transparent px-3 py-3 text-base whitespace-pre-wrap outline-none md:text-sm"
+      : "min-h-32 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base whitespace-pre-wrap outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30",
     id,
     role: "textbox",
   };
@@ -168,7 +175,11 @@ export const PlainTextEditor = ({
       {value === "" ? (
         <span
           aria-hidden
-          className="text-muted-foreground pointer-events-none absolute top-2 left-2.5 text-base md:text-sm"
+          className={
+            bare
+              ? "text-muted-foreground pointer-events-none absolute top-3 left-3 text-base md:text-sm"
+              : "text-muted-foreground pointer-events-none absolute top-2 left-2.5 text-base md:text-sm"
+          }
         >
           {placeholder}
         </span>

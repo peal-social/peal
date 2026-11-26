@@ -86,18 +86,24 @@ describe("a member's tags", { serial: true }, () => {
     await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
-    await screen.getByRole("checkbox", handle).check();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", handle).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await screen.getByRole("textbox", "Text for all channels").fill(tagged);
 
-    await screen.getByRole("button", "Choose tags").tap();
+    await screen.getByRole("button", /^Tags /u).tap();
     await screen.getByRole("checkbox", tag).check();
     await screen.getByRole("checkbox", tag).press("Escape");
 
     // Late in the day, so the time is ahead whenever the test runs.
+    await screen.getByRole("button", /^When /u).tap();
     await screen.getByRole("textbox", "Time").fill("23:59");
+    await screen.getByRole("textbox", "Time").press("Escape");
     await screen.getByRole("button", "Schedule").tap();
 
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     await expect(screen.getByRole("link", taggedPost)).toBeVisible();
   });
 
@@ -105,12 +111,18 @@ describe("a member's tags", { serial: true }, () => {
     await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
-    await screen.getByRole("checkbox", handle).check();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", handle).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await screen.getByRole("textbox", "Text for all channels").fill(plain);
+    await screen.getByRole("button", /^When /u).tap();
     await screen.getByRole("textbox", "Time").fill("23:58");
+    await screen.getByRole("textbox", "Time").press("Escape");
     await screen.getByRole("button", "Schedule").tap();
 
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     await expect(screen.getByRole("link", plainPost)).toBeVisible();
     await expect(screen.getByRole("link", taggedPost)).toBeVisible();
   });
@@ -160,7 +172,9 @@ describe("a member's tags", { serial: true }, () => {
     await expect(
       screen.getByRole("region", "Notifications").getByText("Post cancelled.")
     ).toBeVisible();
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     // The next test cancels a post too: its toast must be the only one.
     await expect(
       screen.getByRole("region", "Notifications").getByText("Post cancelled.")
@@ -181,7 +195,9 @@ describe("a member's tags", { serial: true }, () => {
     await expect(
       screen.getByRole("region", "Notifications").getByText("Post cancelled.")
     ).toBeVisible();
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     await expect(screen.getByRole("link", plainPost)).toBeHidden();
   });
 });

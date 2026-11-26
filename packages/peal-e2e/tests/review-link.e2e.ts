@@ -68,14 +68,18 @@ describe("a review link", { serial: true }, () => {
     screen,
   }) => {
     await app.open(`/${slug}/posts/new`);
-    await screen.getByRole("checkbox", handle).check();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", handle).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await screen.getByRole("textbox", "Text for all channels").fill(text);
+    await screen.getByRole("button", /^When /u).tap();
     await screen.getByRole("textbox", "Time").fill("23:59");
+    await screen.getByRole("textbox", "Time").press("Escape");
     await screen.getByRole("button", "Ask for approval").tap();
 
     // Sent, then the calendar renders on the server: longer than an
     // assertion's 5 seconds on a loaded machine.
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible({
+    await expect(screen.getByRole("navigation", "Calendar views")).toBeVisible({
       timeout: 30_000,
     });
 

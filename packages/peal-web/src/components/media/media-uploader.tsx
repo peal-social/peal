@@ -377,11 +377,19 @@ export interface MediaUploaderHandle {
  * only leaving the page cancels them.
  */
 export const MediaUploader = ({
+  compact = false,
   disabled = false,
   onUploaded,
   ref,
   workspaceId,
 }: {
+  /**
+   * The drop zone alone, smaller, without the card and its title: for a
+   * section that names it already. `hidden`: no drop zone at all, the
+   * files chosen through `choose` (a toolbar's button) or pasted, the
+   * uploads listed.
+   */
+  readonly compact?: boolean | "hidden";
   readonly disabled?: boolean;
   readonly onUploaded?: (media: Media) => void;
   /** Takes files from outside, such as a paste, as a drop does. */
@@ -488,7 +496,92 @@ export const MediaUploader = ({
     setDragging(false);
   };
 
-  return (
+  const input = (
+    <input
+      ref={picker}
+      type="file"
+      accept={accept}
+      multiple
+      disabled={disabled}
+      aria-label={t("choose")}
+      aria-describedby={acceptedId}
+      className={
+        compact === "hidden"
+          ? "sr-only"
+          : "absolute inset-0 cursor-pointer opacity-0 disabled:cursor-not-allowed"
+      }
+      tabIndex={compact === "hidden" ? -1 : undefined}
+      onChange={handlePick}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragEnd}
+      onDrop={handleDragEnd}
+    />
+  );
+
+  const uploads =
+    entries.length === 0 ? null : (
+      <section aria-label={t("uploads")}>
+        <ul className="flex flex-col gap-3">
+          {entries.map((entry) => (
+            <UploadItem
+              key={entry.id}
+              entry={entry}
+              workspaceId={workspaceId}
+              onCancel={handleCancel}
+              onRemove={handleRemove}
+              onRetry={start}
+              onUploaded={onUploaded === undefined ? undefined : handleUploaded}
+            />
+          ))}
+        </ul>
+      </section>
+    );
+
+  if (compact === "hidden") {
+    return (
+      <div className="relative flex flex-col gap-3">
+        <p id={acceptedId} className="sr-only">
+          {t("accepted")}
+        </p>
+        {input}
+        {uploads}
+      </div>
+    );
+  }
+
+  const body = (
+    <div className="flex flex-col gap-4">
+      <div
+        data-dragging={dragging}
+        className={
+          compact
+            ? "border-input has-focus-visible:border-ring has-focus-visible:ring-ring data-[dragging=true]:border-ring data-[dragging=true]:bg-muted relative flex flex-col items-center gap-1 rounded-lg border border-dashed px-4 py-3 text-center has-focus-visible:ring-3 has-disabled:opacity-60"
+            : "border-input has-focus-visible:border-ring has-focus-visible:ring-ring data-[dragging=true]:border-ring data-[dragging=true]:bg-muted relative flex flex-col items-center gap-2 rounded-lg border border-dashed p-6 text-center has-focus-visible:ring-3 has-disabled:opacity-60"
+        }
+      >
+        <UploadIcon
+          aria-hidden
+          className={
+            compact
+              ? "text-muted-foreground size-4"
+              : "text-muted-foreground size-6"
+          }
+        />
+        <p className="text-sm">{dragging ? t("dropping") : t("dropzone")}</p>
+        <p id={acceptedId} className="text-muted-foreground text-xs">
+          {t("accepted")}
+        </p>
+        {input}
+      </div>
+      {uploads}
+    </div>
+  );
+
+  // Inside a section that names it (the composer's images and videos),
+  // the drop zone alone; on its own, a card with its title.
+  return compact ? (
+    body
+  ) : (
     <Card>
       <CardHeader>
         <CardTitle>
@@ -496,55 +589,7 @@ export const MediaUploader = ({
         </CardTitle>
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-4">
-          <div
-            data-dragging={dragging}
-            className="border-input has-focus-visible:border-ring has-focus-visible:ring-ring data-[dragging=true]:border-ring data-[dragging=true]:bg-muted relative flex flex-col items-center gap-2 rounded-lg border border-dashed p-6 text-center has-focus-visible:ring-3 has-disabled:opacity-60"
-          >
-            <UploadIcon aria-hidden className="text-muted-foreground size-6" />
-            <p className="text-sm">
-              {dragging ? t("dropping") : t("dropzone")}
-            </p>
-            <p id={acceptedId} className="text-muted-foreground text-xs">
-              {t("accepted")}
-            </p>
-            <input
-              ref={picker}
-              type="file"
-              accept={accept}
-              multiple
-              disabled={disabled}
-              aria-label={t("choose")}
-              aria-describedby={acceptedId}
-              className="absolute inset-0 cursor-pointer opacity-0 disabled:cursor-not-allowed"
-              onChange={handlePick}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragEnd}
-              onDrop={handleDragEnd}
-            />
-          </div>
-          {entries.length === 0 ? null : (
-            <section aria-label={t("uploads")}>
-              <ul className="flex flex-col gap-3">
-                {entries.map((entry) => (
-                  <UploadItem
-                    key={entry.id}
-                    entry={entry}
-                    workspaceId={workspaceId}
-                    onCancel={handleCancel}
-                    onRemove={handleRemove}
-                    onRetry={start}
-                    onUploaded={
-                      onUploaded === undefined ? undefined : handleUploaded
-                    }
-                  />
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-      </CardContent>
+      <CardContent>{body}</CardContent>
     </Card>
   );
 };

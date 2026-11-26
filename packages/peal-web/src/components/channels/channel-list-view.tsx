@@ -221,20 +221,22 @@ export const ChannelsToolbarView = ({
           />
           <DisplayMenu
             active={isReordered(filter)}
-            direction={filter.direction}
-            field={filter.order}
-            fields={channelOrders.map((order) => ({
-              id: order,
-              label: t("list.order", { order }),
-            }))}
-            onChange={(field, direction) => {
-              onFilter({
-                ...filter,
-                direction,
-                order:
-                  channelOrders.find((order) => order === field) ??
-                  filter.order,
-              });
+            ordering={{
+              direction: filter.direction,
+              field: filter.order,
+              fields: channelOrders.map((order) => ({
+                id: order,
+                label: t("list.order", { order }),
+              })),
+              onChange: (field, direction) => {
+                onFilter({
+                  ...filter,
+                  direction,
+                  order:
+                    channelOrders.find((order) => order === field) ??
+                    filter.order,
+                });
+              },
             }}
           />
         </ListToolbarEnd>
